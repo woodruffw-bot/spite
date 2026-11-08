@@ -38,6 +38,32 @@ fn primitive_context_sources_preserve_utf16_exact_lexemes_and_descriptors() {
 
 #[test]
 fn changed_values_and_replaced_containers_do_not_reuse_original_sources() {
+    // InternalizeJSONProperty uses SameValue without primitive coercion.
+    for (token, replacement, same) in [
+        ("0", "-0", false),
+        ("-0", "0", false),
+        ("0.0", "0", true),
+        ("-0.0", "-0", true),
+        ("0e400", "0", true),
+        ("-0e400", "-0", true),
+        ("1e400", "Infinity", true),
+        ("-1e400", "-Infinity", true),
+    ] {
+        let expected = if same {
+            format!("'{token}'")
+        } else {
+            "undefined".into()
+        };
+        check(&format!(
+            "let own=false,source,seen=0;JSON.parse('[0,{token}]',function(k,v,c){{if(k==='0')this[1]={replacement};if(k==='1'){{seen++;own=Object.hasOwn(c,'source');source=c.source}}return v}});seen===1&&own==={same}&&source==={expected}"
+        ));
+    }
+    check(
+        r#"let seen=[];JSON.parse('{"t":0,"v":[-0,1e400]}',function(k,v,c){if(k==='t')this.v=new Proxy(this.v,{});if(k==='0'||k==='1')seen.push([Object.hasOwn(c,'source'),c.source]);return v});seen.length===2&&seen.every(row=>!row[0]&&row[1]===undefined)"#,
+    );
+    check(
+        "let touched=false,seen=false,boxed=new Number(0);Object.defineProperty(boxed,Symbol.toPrimitive,{value(){touched=true;throw 7}});JSON.parse('[0,0]',function(k,v,c){if(k==='0')this[1]=boxed;if(k==='1')seen=v===boxed&&!Object.hasOwn(c,'source');return v});seen&&!touched",
+    );
     check(
         r#"let seen=[];JSON.parse('{"a":1,"b":2,"c":3,"d":4,"e":{"x":5}}',function(k,v,c){if(k==='a'){this.b=9;delete this.c;this.d=4;this.e={x:5};}if(k)seen.push(k+':'+(Object.hasOwn(c,'source')?c.source:'none'));return v;});seen.join(',')==='a:1,b:none,c:none,d:4,x:none,e:none'"#,
     );

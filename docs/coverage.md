@@ -61,6 +61,20 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## JSON reviver SameValue source eligibility
+
+All 270 audited programs match Node 26.13.0 across ten zero/overflow spellings,
+nine replacement types and ordinary-object, Array and Proxy-wrapped containers.
+The audit observes primitive identity and exact source eligibility independently.
+
+Regressions protect InternalizeJSONProperty's SameValue check (25.5.1): changing
+zero's sign removes source, while matching zero/Infinity retains the original
+lexeme, including overflowing exponents. A Proxy-wrapped replacement ancestor
+discards descendant source records even when underlying child values match.
+Boxed replacements do not invoke primitive coercion. All seven reviver groups and
+the full quality gate pass, including 30 CLI groups. Runtime code, snapshots and
+test/fixture inventories are unchanged.
+
 ## Array length coercion reentry
 
 All 720 audited programs match Node 26.13.0 using arrays of at most seven slots.
