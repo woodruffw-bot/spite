@@ -61,6 +61,24 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Static Module files in the CLI
+
+Module mode loads static imports as literal paths relative to their referring
+file, or the current directory for argument/stdin roots. Canonical paths cache
+records before expansion, preserving shared dependencies, aliases and cycles.
+The iterative loader uses the existing graph/link/evaluation API and adds no
+package or extension search. Unknown import attributes reject before file access;
+filesystem/encoding failures remain Host errors and imported syntax keeps its
+diagnostic. Dynamic imports remain available through embedding hosts.
+
+Two new CLI groups exercise a shared asynchronous dependency, re-exports,
+alternate path spellings, a cycle to the entry file, file versus process-directory
+resolution, imported syntax, missing files, unsupported attributes and invalid
+Unicode/NUL paths. The missing-file control now expects the implemented loader's
+Host failure instead of the earlier Unsupported capability boundary.
+All eighteen CLI groups, the facade smoke/doc tests and full quality gate pass.
+Runtime and pinned Test262 inventories remain unchanged.
+
 ## Standalone Modules in the CLI
 
 The --module flag runs Module source from an argument, file or UTF-8 stdin,

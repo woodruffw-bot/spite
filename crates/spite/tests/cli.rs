@@ -196,7 +196,7 @@ fn module_failures_and_host_limits_have_failing_exit_statuses() {
         ("throw 8", "uncaught 8"),
         ("await new Promise(()=>{})", "did not settle"),
         ("export const = 1", "Syntax"),
-        ("import 'missing'", "Unsupported"),
+        ("import 'missing'", "Host"),
     ] {
         let output = Command::new(env!("CARGO_BIN_EXE_spite"))
             .args(["--module", "--eval", source])
@@ -258,6 +258,67 @@ fn modules_accept_files_and_utf8_stdin() {
             .unwrap()
             .contains("valid UTF-8")
     );
+}
+
+#[test]
+fn modules_load_relative_graphs_with_shared_records_cycles_and_awaits() {
+    let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+        .current_dir(std::env::temp_dir())
+        .args([
+            "--module",
+            concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/tests/fixtures/module-graph/root.mjs"
+            ),
+        ])
+        .output()
+        .unwrap();
+    assert!(output.status.success(), "{output:?}");
+    assert_eq!(
+        String::from_utf8(output.stdout).unwrap().trim(),
+        "undefined"
+    );
+    assert!(output.stderr.is_empty());
+    let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+        .current_dir(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/fixtures/module-graph"
+        ))
+        .args([
+            "--module",
+            "--eval",
+            "import{readRoot}from'./root.mjs';if(readRoot()!==42)throw 7",
+        ])
+        .output()
+        .unwrap();
+    assert!(output.status.success(), "{output:?}");
+    assert_eq!(
+        String::from_utf8(output.stdout).unwrap().trim(),
+        "undefined"
+    );
+}
+
+#[test]
+fn module_file_loading_preserves_syntax_host_and_attribute_failures() {
+    for (source, expected) in [
+        ("import './invalid.mjs'", "Syntax"),
+        ("import './absent.mjs'", "Host"),
+        ("import './absent.mjs' with {type:'json'}", "SyntaxError"),
+        ("import '\\uD800'", "valid Unicode"),
+        ("import '\\u0000'", "Host"),
+    ] {
+        let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+            .current_dir(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/tests/fixtures/module-graph"
+            ))
+            .args(["--module", "--eval", source])
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(1), "{source}: {output:?}");
+        assert!(output.stdout.is_empty());
+        assert!(String::from_utf8(output.stderr).unwrap().contains(expected));
+    }
 }
 
 #[test]

@@ -624,6 +624,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Define the Test262 print global with the required writable, configurable and non-enumerable descriptor while preserving private completion capture and raw source behavior.
 - [x] Share direct UTF-16 index formatting across the remaining Array factories, callbacks, mutations, copies, sorting, concatenation and stringification, preserving unsigned bounds and property-operation order.
 - [x] Expose standalone Module evaluation through the CLI with top-level Await, Promise and finite Atomics job delivery, rejection/unsettled reporting and opt-in per-evaluation/job limits.
+- [x] Load CLI static Module graphs from canonical file paths, retaining shared/cyclic records, re-exports and asynchronous dependencies, with import-attribute validation before file access.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

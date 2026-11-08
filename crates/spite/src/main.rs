@@ -1,10 +1,13 @@
 //! A minimal command-line host with no extra JavaScript globals.
 
+mod module_files;
+
 use spite::{Error, Limits, PromiseJobOutcome, PromiseState, Realm, Value};
 use std::{
     env,
     fs::File,
     io::{self, Read},
+    path::{Path, PathBuf},
     process::ExitCode,
     thread,
     time::Duration,
@@ -18,8 +21,15 @@ fn read_source(mut reader: impl Read) -> Result<String, String> {
     String::from_utf8(bytes).map_err(|_| "source must be valid UTF-8".into())
 }
 
-fn evaluate_module(realm: &mut Realm, source: &str) -> Result<Value, String> {
-    let promise = realm.eval_module(source).map_err(|e| e.to_string())?;
+fn evaluate_module(
+    realm: &mut Realm,
+    source: &str,
+    filename: Option<&Path>,
+) -> Result<Value, String> {
+    let module = module_files::load(realm, source, filename).map_err(|e| e.to_string())?;
+    let promise = realm
+        .evaluate_module_record(&module)
+        .map_err(|e| e.to_string())?;
     let promise = realm
         .root_value(promise, usize::MAX)
         .map_err(|e| e.to_string())?;
@@ -86,10 +96,14 @@ fn main() -> ExitCode {
     }
     if args.len() == 1 && (args[0] == "--help" || args[0] == "-h") {
         println!(
-            "{USAGE}\n\nEvaluates a Script and prints its completion value.\nUse --module for a standalone Module, awaiting its evaluation.\nExecution work per evaluation/job is unlimited unless --max-steps is supplied.\nThe ECMAScript implementation is incomplete. Input must be UTF-8."
+            "{USAGE}\n\nEvaluates a Script and prints its completion value.\nUse --module for a Module with static file imports, awaiting its evaluation.\nExecution work per evaluation/job is unlimited unless --max-steps is supplied.\nThe ECMAScript implementation is incomplete. Input must be UTF-8."
         );
         return ExitCode::SUCCESS;
     }
+    let filename = match args {
+        [path] if path != "-" => Some(PathBuf::from(path)),
+        _ => None,
+    };
     let source = match args {
         [flag, text] if flag == "--eval" => text
             .clone()
@@ -110,7 +124,7 @@ fn main() -> ExitCode {
             ..Limits::default()
         });
         if module {
-            evaluate_module(&mut realm, &source)
+            evaluate_module(&mut realm, &source, filename.as_deref())
         } else {
             realm.eval(&source).map_err(|e| e.to_string())
         }

@@ -27,10 +27,13 @@ The CLI prints the Script's completion value. Strings use a quoted representatio
 that preserves lone surrogates. Source input must be UTF-8. The host installs no
 console, process, filesystem, or other non-standard JavaScript globals.
 
-Use `--module` for standalone Module sources from an argument, file or stdin.
+Use `--module` for Module sources from an argument, file or stdin.
 Module mode waits for top-level Await and prints the evaluation completion value,
-normally `undefined`. Rejected or unsettled evaluations fail. Loading imported
-files currently requires the embedding's Module loader API.
+normally `undefined`. Rejected or unsettled evaluations fail. Static imports are
+literal filesystem paths resolved relative to their importing file, or the current
+directory for argument/stdin sources. Canonical paths share dependency records,
+including cycles. Paths are read as UTF-8 Module source without package or extension
+search. Dynamic imports currently require the embedding loader API.
 
 Host resource quotas are disabled by default. Supply `--max-steps N` before the input
 arguments to opt into a work limit for each evaluation or job. Work units count interpreter and
