@@ -24,6 +24,7 @@ cargo run -p spite -- --module --eval 'export const answer = await Promise.resol
 ```
 
 The CLI drains queued Promise jobs, then prints the Script's completion value.
+Dynamic import() calls load Module files through the same cache as Module mode.
 An idle pending Promise does not delay Script completion. Strings use a quoted
 representation that preserves lone surrogates. Source input must be UTF-8. The
 host installs no console, process, filesystem, or other non-standard JavaScript globals.

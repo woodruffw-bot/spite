@@ -61,6 +61,22 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## CLI Script file imports
+
+The Script host now enables dynamic import requests and services them through the
+existing Module file cache between Promise jobs. Script files resolve paths from
+their canonical directory; argument/stdin Scripts use the process directory.
+Imported Module functions and nested imports retain their own referring records.
+The host still prints the original Script completion and ends at an idle queue,
+including when an imported Module has unsettled top-level Await.
+
+Three new CLI groups cover file/argument/stdin inputs, shared and cyclic graphs,
+nested relative dynamic imports, asynchronous language rejection/throw identity,
+initial Script throws, and uncatchable filesystem/unsupported/work-limit failures.
+All 25 CLI groups and facade smoke/doc tests pass. Runtime algorithms and Test262
+inventories are unchanged. Formatting, strict workspace Clippy, Rust 1.99 all-target
+checks, dependency/inventory checks and workspace documentation tests also pass.
+
 ## Unchanged TrimString storage
 
 TrimString now returns its converted receiver directly when trim, trimStart or

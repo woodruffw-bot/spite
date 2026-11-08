@@ -632,6 +632,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Reuse exact unsigned UTF-16 keys for arguments, array-like calls, rest bindings, templates, String.raw, JSON traversal and Proxy lists, preserving observable access and quota order.
 - [x] Recognize canonical Array-index keys directly in TypedArray numeric-index classification, preserving exact Number spelling, negative zero and work charges for every key.
 - [x] Drain queued CLI Script Promise jobs transitively before reporting completion, retaining object values and propagating reported job failures and opted-in work limits.
+- [x] Service dynamic imports from CLI Scripts through the shared file loader, retaining Script-relative paths, nested Module referrers, cached graph identities and idle Script completion.
 - [x] Return the converted receiver for argument-free String.concat, reusing immutable UTF-16 storage after the existing work and output-length checks.
 - [x] Bind TypedArray prototype catalogue entries directly to their implementation enums, keeping initial names, lengths and property order in one table.
 - [x] Reuse the converted String when trim/trimStart/trimEnd leaves its full UTF-16 range intact, preserving both work charges and output-length validation.

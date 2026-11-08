@@ -70,7 +70,14 @@ fn display_error(realm: &Realm, error: Error) -> String {
     format!("uncaught {text}")
 }
 
-fn evaluate_script(realm: &mut Realm, source: &str) -> Result<Value, String> {
+fn evaluate_script(
+    realm: &mut Realm,
+    source: &str,
+    filename: Option<&Path>,
+) -> Result<Value, String> {
+    let mut files =
+        module_files::FileModules::for_script(filename).map_err(|e| display_error(realm, e))?;
+    realm.enable_module_imports();
     let value = realm.eval(source).map_err(|e| display_error(realm, e))?;
     let _completion_root = if matches!(&value, Value::Object(_)) {
         Some(
@@ -82,6 +89,9 @@ fn evaluate_script(realm: &mut Realm, source: &str) -> Result<Value, String> {
         None
     };
     loop {
+        files
+            .service_requests(realm)
+            .map_err(|e| display_error(realm, e))?;
         match realm
             .run_next_promise_job()
             .map_err(|e| display_error(realm, e))?
@@ -176,7 +186,7 @@ fn main() -> ExitCode {
     }
     if args.len() == 1 && (args[0] == "--help" || args[0] == "-h") {
         println!(
-            "{USAGE}\n\nEvaluates a Script, drains queued Promise jobs, and prints its completion value.\nUse --module for a Module with file imports, awaiting its evaluation.\nExecution work per evaluation/job is unlimited unless --max-steps is supplied.\nThe ECMAScript implementation is incomplete. Input must be UTF-8."
+            "{USAGE}\n\nEvaluates a Script with dynamic file imports, drains queued Promise jobs, and prints its completion value.\nUse --module for a Module with static file imports and top-level Await.\nExecution work per evaluation/job is unlimited unless --max-steps is supplied.\nThe ECMAScript implementation is incomplete. Input must be UTF-8."
         );
         return ExitCode::SUCCESS;
     }
@@ -210,7 +220,7 @@ fn main() -> ExitCode {
         if module {
             evaluate_module(&mut realm, &source, filename.as_deref())
         } else {
-            evaluate_script(&mut realm, &source)
+            evaluate_script(&mut realm, &source, filename.as_deref())
         }
     });
     match result {

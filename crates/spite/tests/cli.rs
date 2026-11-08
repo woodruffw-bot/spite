@@ -368,6 +368,96 @@ fn dynamic_file_imports_keep_host_failures_outside_language_rejections() {
 }
 
 #[test]
+fn script_imports_share_graphs_and_resolve_from_files_arguments_and_stdin() {
+    let directory = concat!(env!("CARGO_MANIFEST_DIR"), "/tests/fixtures/module-graph");
+    let source = include_str!("fixtures/module-graph/dynamic-script.js");
+    let file = format!("{directory}/dynamic-script.js");
+    for (cwd, arguments) in [
+        (std::env::temp_dir(), vec![file.as_str()]),
+        (std::path::PathBuf::from(directory), vec!["--eval", source]),
+    ] {
+        let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+            .current_dir(cwd)
+            .args(arguments)
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(1), "{output:?}");
+        assert!(output.stdout.is_empty());
+        assert_eq!(
+            String::from_utf8(output.stderr).unwrap().trim(),
+            "uncaught Error: fulfilled 42"
+        );
+    }
+    let mut child = Command::new(env!("CARGO_BIN_EXE_spite"))
+        .current_dir(directory)
+        .arg("-")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+    child
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(source.as_bytes())
+        .unwrap();
+    let output = child.wait_with_output().unwrap();
+    assert_eq!(output.status.code(), Some(1), "{output:?}");
+    assert!(output.stdout.is_empty());
+    assert_eq!(
+        String::from_utf8(output.stderr).unwrap().trim(),
+        "uncaught Error: fulfilled 42"
+    );
+}
+
+#[test]
+fn script_imports_preserve_language_rejections_and_host_failures() {
+    let directory = concat!(env!("CARGO_MANIFEST_DIR"), "/tests/fixtures/module-graph");
+    for (source, expected) in [
+        (
+            "const p=import('./dynamic-errors.mjs');p.constructor={[Symbol.species]:class{constructor(executor){executor(()=>{throw new Error('imports checked')},reason=>{throw reason})}}};p.then(()=>{});42",
+            "uncaught Error: imports checked",
+        ),
+        ("import('./absent.mjs').catch(()=>42);42", "Host"),
+        (
+            "import('./unsupported.mjs').catch(()=>42);42",
+            "Unsupported",
+        ),
+        ("import('./forever.mjs').catch(()=>42);42", "Limit"),
+        ("import('./absent.mjs');throw 7", "uncaught 7"),
+    ] {
+        let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+            .current_dir(directory)
+            .args(["--max-steps", "100000", "--eval", source])
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(1), "{source}: {output:?}");
+        assert!(output.stdout.is_empty());
+        assert!(
+            String::from_utf8(output.stderr)
+                .unwrap()
+                .starts_with(expected)
+        );
+    }
+}
+
+#[test]
+fn pending_imports_keep_the_original_script_completion() {
+    let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+        .current_dir(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/fixtures/module-graph"
+        ))
+        .args(["--eval", "import('./pending.mjs');42"])
+        .output()
+        .unwrap();
+    assert!(output.status.success(), "{output:?}");
+    assert_eq!(String::from_utf8(output.stdout).unwrap().trim(), "42");
+    assert!(output.stderr.is_empty());
+}
+
+#[test]
 fn error_diagnostics_show_data_without_executing_user_code() {
     insta::allow_duplicates! {
         for flags in [vec![], vec!["--module"]] {

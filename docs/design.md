@@ -93,6 +93,11 @@ The default CLI goal is Script. It retains the completion while FIFO Promise job
 drain, including jobs queued by earlier jobs. Reported job failures abort the host
 turn; ordinary rejected Promises retain the no-op rejection-tracker policy. An
 empty queue completes the Script host turn even when a Promise remains pending.
+Script import() requests use the shared file loader between jobs. Requests without
+a referring Module resolve relative to the canonical Script file's directory, or
+the process directory for argument/stdin inputs. Imported Modules retain their own
+referrers, cached graph identities and evaluation promises. Pending imported
+top-level Await does not extend an otherwise idle Script turn.
 
 The --module option selects Module
 parsing and evaluation (16.2.1), including strict scope and top-level Await.

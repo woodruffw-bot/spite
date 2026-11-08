@@ -14,10 +14,12 @@ struct Node {
     expanded: bool,
 }
 
+#[derive(Default)]
 pub(super) struct FileModules {
     nodes: Vec<Node>,
     files: HashMap<PathBuf, usize>,
     records: HashMap<ModuleHandle, usize>,
+    script_directory: PathBuf,
 }
 
 fn host(message: String) -> Error {
@@ -40,6 +42,18 @@ fn canonical(path: &Path) -> Result<PathBuf, Error> {
 }
 
 impl FileModules {
+    pub(super) fn for_script(filename: Option<&Path>) -> Result<Self, Error> {
+        let filename = filename.map(canonical).transpose()?;
+        let script_directory = match filename {
+            Some(path) => path.parent().expect("canonical file parent").to_path_buf(),
+            None => PathBuf::from("."),
+        };
+        Ok(Self {
+            script_directory,
+            ..Self::default()
+        })
+    }
+
     pub(super) fn load(
         realm: &mut Realm,
         source: &str,
@@ -52,9 +66,8 @@ impl FileModules {
         };
         let root = realm.create_module(source)?;
         let mut loader = Self {
-            nodes: Vec::new(),
-            files: HashMap::new(),
-            records: HashMap::new(),
+            script_directory: PathBuf::from("."),
+            ..Self::default()
         };
         loader.insert(root, directory, filename)?;
         let root = loader.publish_graph(realm, 0)?;
@@ -174,7 +187,7 @@ impl FileModules {
                     .ok_or_else(|| host("unknown Module import referrer".into()))?]
                 .directory
                 .clone(),
-                None => PathBuf::from("."),
+                None => self.script_directory.clone(),
             };
             let result = self
                 .resolve(realm, &directory, request.request())
