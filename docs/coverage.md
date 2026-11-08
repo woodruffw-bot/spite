@@ -61,6 +61,19 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## CLI source-byte limits
+
+The CLI exposes --max-source-bytes for the existing per-source UTF-8 byte limit.
+It selects the limited Script/Module Parser entry points for --check and forwards
+the same option to Realm execution, covering loaded Module graphs and generated
+eval/Function sources. Limits remain opt-in; failures retain their host category.
+
+All 30 CLI groups pass. Two added groups cover exact multibyte boundaries,
+arguments/stdin/files, both parse goals and check mode, zero/malformed counts,
+UTF-8 and syntax/limit error ordering, static/dynamic imports and compilation
+inside Promise jobs. Runtime/Parser library code and fixture inventories are
+unchanged.
+
 ## Restricted line terminators through comments
 
 All 160 generated sources match Node 26.13.0 under both Script and Module goals,

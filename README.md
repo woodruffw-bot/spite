@@ -49,6 +49,9 @@ apply to evaluations and jobs.
 Host resource quotas are disabled by default. Supply `--max-steps N` before the input
 arguments to opt into a work limit for each evaluation or job. Work units count interpreter and
 builtin operations, rather than JavaScript statements or elapsed time.
+Supply `--max-source-bytes N` to limit each parsed source in UTF-8 bytes. This
+applies to `--check`, evaluated inputs, imported Modules and eval/Function-generated
+source. Source-limit failures are host failures rather than catchable exceptions.
 
 ## Test
 

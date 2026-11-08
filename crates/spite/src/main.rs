@@ -13,7 +13,7 @@ use std::{
     time::Duration,
 };
 
-const USAGE: &str = "Usage: spite [--max-steps N] [--module] [--check] (--eval SOURCE | FILE | -)";
+const USAGE: &str = "Usage: spite [--max-steps N] [--max-source-bytes N] [--module] [--check] (--eval SOURCE | FILE | -)";
 
 fn read_source(mut reader: impl Read) -> Result<String, String> {
     let mut bytes = Vec::new();
@@ -161,6 +161,7 @@ fn main() -> ExitCode {
     let args: Vec<_> = env::args_os().skip(1).collect();
     let mut args = args.as_slice();
     let mut max_steps = None;
+    let mut max_source_bytes = None;
     let mut module = false;
     let mut check = false;
     loop {
@@ -173,17 +174,21 @@ fn main() -> ExitCode {
                 module = true;
                 args = rest;
             }
-            [flag, count, rest @ ..] if flag == "--max-steps" => {
+            [flag, count, rest @ ..] if flag == "--max-steps" || flag == "--max-source-bytes" => {
                 let Some(count) = count.to_str().and_then(|count| count.parse::<usize>().ok())
                 else {
-                    eprintln!("--max-steps requires a non-negative integer");
+                    eprintln!("{} requires a non-negative integer", flag.to_string_lossy());
                     return ExitCode::from(2);
                 };
-                max_steps = Some(count);
+                if flag == "--max-steps" {
+                    max_steps = Some(count);
+                } else {
+                    max_source_bytes = Some(count);
+                }
                 args = rest;
             }
-            [flag] if flag == "--max-steps" => {
-                eprintln!("--max-steps requires a non-negative integer");
+            [flag] if flag == "--max-steps" || flag == "--max-source-bytes" => {
+                eprintln!("{} requires a non-negative integer", flag.to_string_lossy());
                 return ExitCode::from(2);
             }
             _ => break,
@@ -191,7 +196,7 @@ fn main() -> ExitCode {
     }
     if args.len() == 1 && (args[0] == "--help" || args[0] == "-h") {
         println!(
-            "{USAGE}\n\nEvaluates a Script with dynamic file imports, drains queued Promise jobs, and prints its completion value.\nUse --module for a Module with static file imports and top-level Await.\nUse --check to validate syntax and early errors without evaluating input.\nExecution work per evaluation/job is unlimited unless --max-steps is supplied.\nThe ECMAScript implementation is incomplete. Input must be UTF-8."
+            "{USAGE}\n\nEvaluates a Script with dynamic file imports, drains queued Promise jobs, and prints its completion value.\nUse --module for a Module with static file imports and top-level Await.\nUse --check to validate syntax and early errors without evaluating input.\nExecution work per evaluation/job is unlimited unless --max-steps is supplied.\nUse --max-source-bytes to limit each parsed source in UTF-8 bytes, including checks and imported Modules.\nThe ECMAScript implementation is incomplete. Input must be UTF-8."
         );
         return ExitCode::SUCCESS;
     }
@@ -219,15 +224,21 @@ fn main() -> ExitCode {
     };
     let result = source.and_then(|source| {
         if check {
-            let parsed = if module {
-                spite::parse_module(&source).map(drop)
-            } else {
-                spite::parse_script(&source).map(drop)
+            let parsed = match (module, max_source_bytes) {
+                (true, Some(limit)) => {
+                    spite::parse_module_with_source_limit(&source, limit).map(drop)
+                }
+                (true, None) => spite::parse_module(&source).map(drop),
+                (false, Some(limit)) => {
+                    spite::parse_script_with_source_limit(&source, limit).map(drop)
+                }
+                (false, None) => spite::parse_script(&source).map(drop),
             };
             return parsed.map(|()| None).map_err(|error| error.to_string());
         }
         let mut realm = Realm::new(Limits {
             max_steps,
+            max_source_bytes,
             ..Limits::default()
         });
         let value = if module {

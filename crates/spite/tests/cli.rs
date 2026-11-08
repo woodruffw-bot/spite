@@ -157,6 +157,174 @@ fn execution_work_limit_is_optional() {
 }
 
 #[test]
+fn source_byte_limits_cover_goals_checks_utf8_and_argument_validation() {
+    for module in [false, true] {
+        let source = if module {
+            "export const π=7"
+        } else {
+            "let π=7;π"
+        };
+        for check in [false, true] {
+            for limit in [source.len(), source.len() - 1] {
+                let count = limit.to_string();
+                let mut flags = vec!["--max-source-bytes", count.as_str()];
+                if module {
+                    flags.push("--module");
+                }
+                if check {
+                    flags.push("--check");
+                }
+                let argument = Command::new(env!("CARGO_BIN_EXE_spite"))
+                    .args(&flags)
+                    .args(["--eval", source])
+                    .output()
+                    .unwrap();
+                let stdin = stdin_with_flags(source.as_bytes(), &flags);
+                for output in [argument, stdin] {
+                    if limit == source.len() {
+                        assert!(output.status.success(), "{flags:?}: {output:?}");
+                        assert!(output.stderr.is_empty());
+                        if check {
+                            assert!(output.stdout.is_empty());
+                        } else {
+                            assert_eq!(
+                                String::from_utf8(output.stdout).unwrap().trim(),
+                                if module { "undefined" } else { "7" }
+                            );
+                        }
+                    } else {
+                        assert_eq!(output.status.code(), Some(1), "{flags:?}: {output:?}");
+                        assert!(output.stdout.is_empty());
+                        let diagnostic = String::from_utf8(output.stderr).unwrap();
+                        assert!(
+                            diagnostic.starts_with("Limit")
+                                && diagnostic.contains("source size limit exceeded"),
+                            "{diagnostic}"
+                        );
+                    }
+                }
+            }
+            let mut command = Command::new(env!("CARGO_BIN_EXE_spite"));
+            if module {
+                command.arg("--module");
+            }
+            if check {
+                command.args(["--check", "--max-steps", "0"]);
+            }
+            let output = command
+                .args(["--max-source-bytes", "0", "--eval", ""])
+                .output()
+                .unwrap();
+            assert!(output.status.success(), "{output:?}");
+        }
+    }
+    for args in [
+        vec!["--max-source-bytes"],
+        vec!["--max-source-bytes", "-1", "--eval", "1"],
+        vec!["--max-source-bytes", "invalid", "--eval", "1"],
+        vec!["--max-source-bytes", "184467440737095516160", "--eval", "1"],
+    ] {
+        let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+            .args(args)
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(2));
+        assert_eq!(
+            String::from_utf8(output.stderr).unwrap().trim(),
+            "--max-source-bytes requires a non-negative integer"
+        );
+    }
+    let output = stdin_with_flags(&[0xff], &["--check", "--max-source-bytes", "0"]);
+    assert_eq!(output.status.code(), Some(1));
+    assert!(
+        String::from_utf8(output.stderr)
+            .unwrap()
+            .contains("valid UTF-8")
+    );
+    for (limit, expected) in [("0", "Limit"), ("1", "Syntax")] {
+        let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+            .args(["--check", "--max-source-bytes", limit, "--eval", "("])
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(1));
+        assert!(
+            String::from_utf8(output.stderr)
+                .unwrap()
+                .starts_with(expected)
+        );
+    }
+}
+
+#[test]
+fn source_byte_limits_reach_imported_and_dynamically_compiled_sources() {
+    let directory = std::env::temp_dir().join(format!(
+        "spite-source-limit-{}-{}",
+        std::process::id(),
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos()
+    ));
+    std::fs::create_dir(&directory).unwrap();
+    std::fs::write(
+        directory.join("large.mjs"),
+        format!("export const value=7;/*{}*/", "x".repeat(256)),
+    )
+    .unwrap();
+    for (file, source, module) in [
+        ("script.js", "import('./large.mjs');42", false),
+        ("static.mjs", "import './large.mjs';", true),
+        ("dynamic.mjs", "await import('./large.mjs');", true),
+    ] {
+        std::fs::write(directory.join(file), source).unwrap();
+        let mut command = Command::new(env!("CARGO_BIN_EXE_spite"));
+        command
+            .current_dir(&directory)
+            .args(["--max-source-bytes", "64"]);
+        if module {
+            command.arg("--module");
+        }
+        let output = command.arg(file).output().unwrap();
+        assert_eq!(output.status.code(), Some(1), "{file}: {output:?}");
+        assert!(output.stdout.is_empty());
+        let diagnostic = String::from_utf8(output.stderr).unwrap();
+        assert!(
+            diagnostic.starts_with("Limit") && diagnostic.contains("source size limit exceeded"),
+            "{diagnostic}"
+        );
+        let mut command = Command::new(env!("CARGO_BIN_EXE_spite"));
+        command
+            .current_dir(&directory)
+            .args(["--check", "--max-source-bytes", "64"]);
+        if module {
+            command.arg("--module");
+        }
+        let output = command.arg(file).output().unwrap();
+        assert!(output.status.success(), "{file}: {output:?}");
+        assert!(output.stdout.is_empty() && output.stderr.is_empty());
+    }
+    for source in [
+        "try{eval('1;'.repeat(64))}catch{42}",
+        "try{Function('return 1;'.repeat(16))}catch{42}",
+        "Promise.resolve().then(()=>eval('1;'.repeat(64)));42",
+    ] {
+        assert!(source.len() <= 64);
+        let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+            .args(["--max-source-bytes", "64", "--eval", source])
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(1), "{source}: {output:?}");
+        assert!(output.stdout.is_empty());
+        let diagnostic = String::from_utf8(output.stderr).unwrap();
+        assert!(
+            diagnostic.starts_with("Limit") && diagnostic.contains("source size limit exceeded"),
+            "{diagnostic}"
+        );
+    }
+    std::fs::remove_dir_all(directory).unwrap();
+}
+
+#[test]
 fn errors_have_a_failing_exit_status() {
     for (source, expected) in [
         ("missing", "ReferenceError"),

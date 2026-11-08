@@ -95,6 +95,13 @@ Input errors and Syntax/Unsupported/Limit diagnostics retain failing statuses.
 Module dependency loading and runtime work limits belong to evaluation; checking
 validates only the supplied UTF-8 source.
 
+The --max-source-bytes option forwards the existing optional source-byte limit
+to both Parser check entry points and Realm execution. It applies independently
+to each parsed source, including static/dynamic Module dependencies and generated
+eval/Function source. Arguments, files and stdin retain their UTF-8 handling.
+Parsing rejects an exceeded limit before syntax validation; the host failure
+bypasses JavaScript catch/cleanup through the existing Runtime behavior.
+
 The default CLI goal is Script. It retains the completion while FIFO Promise jobs
 drain, including jobs queued by earlier jobs. Reported job failures abort the host
 turn; ordinary rejected Promises retain the no-op rejection-tracker policy. An
@@ -125,7 +132,7 @@ so an earlier failed graph cannot block an unrelated later import.
 
 The --max-steps allowance applies separately to evaluation and each host job,
 using the existing Runtime limit semantics. There is no default work or job-count
-quota. Module and limit flags can appear in either order before the input.
+quota. Module, check and limit flags can appear in any order before the input.
 The facade reexports PromiseJobOutcome for hosts driving the same public API.
 
 CLI diagnostics recognize physically branded Error values and inspect stored
