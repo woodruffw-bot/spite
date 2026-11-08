@@ -5,6 +5,16 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## ASCII normalization execution receipt
+
+A frozen gate compiled on clean ea83dbdf6 passes all 87 runner controls and all
+80,060 modes from 41,550 unchanged originals, with zero other outcomes. Saved
+four-worker executable and fixture hashes match across the 1,121.559-second run.
+The ASCII normalization guard preserves form validation, output limits and the
+existing work-accounted and agent-controlled paths. Fixture bytes, helpers and
+reviews are unchanged. This receipt predates the later Array.fromAsync tests and
+records retained-corpus execution.
+
 ## Simple parameter analysis execution receipt
 
 A frozen gate compiled on clean cd62f2711 passes all 87 runner controls and all

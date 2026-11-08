@@ -93,13 +93,25 @@ The fifty-second workload normalizes 16,384 ASCII units sixteen times across all
 four forms. All 52 checked outputs pass with 54 CSV rows. Five checked
 evaluation/collection iterations, including initialization and parsing, record
 782,334,189 instructions before and 23,156,098 after (-97.04%) in Callgrind.
-Rust calls to free fall from 5,286 to 4,966 (-320). These are scoped counts;
-full-corpus and wall-time evidence remain pending.
+Rust calls to free fall from 5,286 to 4,966 (-320). These are scoped counts.
 
 All 574 Runtime units and 2,431 non-RegExp integrations pass, including the
 complete Unicode 18 normalization oracle. Added cases cover all ASCII code points,
 all four forms, output-length boundaries and opted-in work limits; test/fixture
 inventories are unchanged.
+
+The frozen gate compiled on clean ea83dbdf6 passes all 87 controls and all 80,060
+modes from 41,550 originals, with zero other outcomes. Saved executable and
+fixture hashes match across its 1,121.559-second four-worker run.
+
+Twelve quiet CPU-0-pinned ABBA processes compare 2f19d077a with ea83dbdf6 using
+the same 52 checked workloads and 54 CSV rows, seven samples of ten iterations.
+ASCII normalization measures 17,778.724 to 157.612 microseconds (-99.11%);
+separate collection measures 182.883 to 153.306 (-16.17%). Other evaluation
+changes range from -8.40% to +6.64%, and collection from -5.64% to +4.03%.
+Parse-all changes +6.19% and initialization/drop -0.90%. The large target reduction
+supports this workload's speedup; the control variation does not support a general
+performance claim. The receipt predates the later Array.fromAsync test additions.
 
 ## Single simple-parameter name analysis
 
