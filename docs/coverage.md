@@ -61,6 +61,28 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Short-circuit exact-sum rounding analysis
+
+Math.sumPrecise only scans discarded bits when the guard bit is set and the
+retained significand is even (21.3.2.34). A clear guard cannot round upward; an
+odd retained significand with a set guard rounds upward immediately. This
+short-circuits the same pure rounding predicate, removing one production line
+without new state, helpers, allocations or work-charge changes. All surrounding
+summation and rounding code is byte-identical.
+
+The fifty-seventh workload exactly sums four integers 2,048 times and checks
+every result. All 57 checked workloads pass with 59 CSV rows. Five checked
+evaluation/collection iterations, including initialization and parsing, record
+786,656,528 to 697,435,381 instructions (11.34% fewer) and the same 372,216 Rust
+frees. These are scoped instruction counts; full-corpus and quiet wall-clock
+evidence remain pending.
+
+All 575 Runtime units, 2,432 non-RegExp integrations and the quality gate pass,
+including formatting, strict Clippy, the explicit MSRV, policy/inventory checks,
+30 CLI groups and all three facade doctests. The 464 independent rational
+fixtures regenerate byte-for-byte; existing exponent, halfway, carry and
+cancellation tests remain unchanged.
+
 ## Promise combinator callbacks during abrupt iteration
 
 Promise.all, allSettled, any and race retain their existing behavior under

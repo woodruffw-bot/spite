@@ -173,8 +173,7 @@ impl ExactSum {
         }
         if discarded != 0 {
             let guard = bit(discarded - 1) != 0;
-            let sticky = (0..discarded - 1).any(|index| bit(index) != 0);
-            if guard && (sticky || significand & 1 != 0) {
+            if guard && (significand & 1 != 0 || (0..discarded - 1).any(|index| bit(index) != 0)) {
                 significand += 1;
                 if significand == 1 << 53 {
                     significand >>= 1;

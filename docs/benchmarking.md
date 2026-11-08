@@ -19,8 +19,9 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all 56 program workloads |
+| parse_all | Parse and drop the ASTs for all 57 program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
+| sum_precise_integer | Sum four integers exactly 2,048 times with Math.sumPrecise, checking every result |
 | arithmetic | Evaluate a 1,000-iteration numeric/bitwise loop |
 | arguments_body_scan | Call default-parameter and arguments-named functions with two local lexical bindings 2,048 times each, checking the returned sum |
 | lexical_bindings | Call a plain-parameter function with two local lexical bindings 2,048 times, checking the returned sum |

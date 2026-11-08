@@ -20,6 +20,12 @@ struct Case {
 
 const CASES: &[Case] = &[
     Case {
+        name: "sum_precise_integer",
+        source: "(()=>{const values=[1,2,3,4];let count=0;for(let i=0;i<2048;i++)if(Math.sumPrecise(values)===10)count++;return count})()",
+        expected: 2048.0,
+        jobs: false,
+    },
+    Case {
         name: "arithmetic",
         source: "(()=>{let sum=0;for(let i=0;i<1000;i++)sum=(sum+i)|0;return sum})()",
         expected: 499500.0,
