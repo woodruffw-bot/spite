@@ -93,8 +93,17 @@ All 574 Runtime units, 2,431 non-RegExp integrations, 4,448 modes from 2,247
 unchanged TypedArray/Uint8Array originals and the full quality gate pass. All
 1,734 indexed-collection comparisons match Node. The 7,092 receiver cases match
 the published-rule oracle with identical result hashes before and after collection.
-The manual benchmark now includes a checked TypedArray construction/map/reduce
-workload; no timing result is claimed here.
+The checked TypedArray construction/map/reduce workload measures evaluation
+19.65% lower and collection 17.65% lower in twelve matched ABBA process runs.
+Exact revisions, controls and limitations appear in
+[the benchmark receipt](benchmarking.md#direct-typedarray-numeric-index-classification).
+
+A full gate compiled on clean e10e6a2ad passes all 87 noncorpus controls and all
+80,028 modes from 41,531 reviewed originals, with zero other outcomes. Its frozen
+corpus run takes 1,417.99 seconds; fixture and executable hashes match before and
+after execution. The executable SHA-256 is
+b7dd9b430efab93c08a27983068d311cce9fa46e1f465ef28d4e47a25cb27b2c.
+This binary includes the shared generic keys and direct numeric-index classification.
 
 ## Shared generic index formatting
 

@@ -82,6 +82,34 @@ their ordinary unlimited defaults.
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
 
+## Direct TypedArray numeric-index classification
+
+Canonical Array-index keys now use the existing checked UTF-16 parser before
+general String-to-Number/Number-to-String conversion. Other numeric spellings
+keep the existing conversion path. Baseline production is 6924e5b0d and candidate
+production is e10e6a2ad; both saved binaries contain identical 46-workload sources.
+The candidate passes the full 80,028-mode gate before timing.
+
+Rust 1.99/conformance-profile measurements use Linux x86_64 on an Intel Xeon
+Platinum 8573C, one CPU, no active builds/tests, twelve ABBA process runs, seven
+samples and ten iterations per sample.
+
+| Row | Eval before | Eval after | Collection before | Collection after |
+| --- | ---: | ---: | ---: | ---: |
+| typed_array_indices | 45816.6 | 36814.1 | 9948.9 | 8193.2 |
+| arithmetic | 1010.1 | 1002.5 | 275.0 | 269.7 |
+| properties | 502.6 | 488.3 | 180.3 | 178.4 |
+| object_group_by | 7707.0 | 7780.4 | 920.4 | 929.4 |
+| parse_all | 1136.5 | 1110.6 | 0 | 0 |
+| initialize_and_drop | 621.9 | 608.4 | 0 | 0 |
+
+Values are microseconds, using medians of six per-process medians per revision.
+TypedArray evaluation is 19.65% lower and collection 17.65% lower in this batch.
+Other program evaluation changes range from -9.88% to +2.43%, and collection
+changes from -2.85% to +5.81%. Parsing and initialization differ by -2.28% and
+-2.16%. These observations apply to this workload and host; they add no CI
+timing threshold or execution allowance.
+
 ## Shared TypedArray index keys
 
 Twenty-one TypedArray key conversions reuse the exact unsigned UTF-16 formatter.
