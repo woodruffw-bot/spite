@@ -116,8 +116,24 @@ empty/lone-surrogate text and abrupt completions. A new direct unit protects
 exact and oversized output limits, exhausted work and agent termination.
 All 576 Runtime units, 2,432 non-RegExp integrations and the quality gate pass,
 including formatting, strict Clippy, the explicit MSRV, policy/inventory checks,
-30 CLI groups and all three facade doctests. Full-corpus and quiet timing
-evidence remain pending.
+30 CLI groups and all three facade doctests.
+
+A frozen gate compiled on clean e6577c7ca passes all 87 controls and all 80,060
+modes from 41,550 originals, with zero other outcomes. Saved executable and
+fixture hashes match across its 1,290.035-second four-worker run.
+
+Twelve quiet CPU-0-pinned ABBA processes compare e9b8d2d1f with e6577c7ca using
+the same 60 checked workloads and 62 CSV rows, seven samples of ten iterations.
+The sole-literal workload measures 115.508 to 75.357 microseconds
+(-34.76%); separate collection measures 176.798 to
+163.990 (-7.24%). The multi-literal control measures
+196.663 to 200.080 (+1.74%), with collection
+184.216 to 190.228 (+3.26%). Other evaluation
+changes range from -8.92% to +13.77%, and collection from
+-7.95% to +12.07%. Parse-all changes
++1.12% and initialization/drop
+-5.91%. Any benefit is scoped to returning a sole literal; these
+measurements establish no general String performance claim.
 
 ## Short-circuit BigInt-to-Number rounding analysis
 
