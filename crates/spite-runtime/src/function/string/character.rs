@@ -11,6 +11,7 @@ impl Realm {
         code_points: bool,
         span: Span,
     ) -> Result<Value, Error> {
+        let single = arguments.len() == 1;
         let mut result = Vec::new();
         for argument in arguments {
             self.tick(span)?;
@@ -52,6 +53,13 @@ impl Realm {
                     span,
                     message: "string length limit exceeded".into(),
                 });
+            }
+            if single {
+                return Ok(Value::String(if count == 1 {
+                    JsString::from([encoded[0]])
+                } else {
+                    JsString::from(encoded)
+                }));
             }
             result.extend_from_slice(&encoded[..count]);
         }

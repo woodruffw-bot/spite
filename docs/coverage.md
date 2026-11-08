@@ -61,6 +61,30 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Single-argument String code construction
+
+String.fromCharCode and String.fromCodePoint construct a sole result through
+the existing fixed-array String conversion (22.1.2.1–2). The eight-line change
+retains each tick, ToNumber, integer/range conversion, UTF-16 encoding and output
+check before returning the one- or two-unit String. Multi-argument vector
+construction is unchanged. It adds no helper, stored state or public API.
+
+Two workloads construct BMP and supplementary Strings from one or multiple
+inputs, checking decoded units/code points across 4,096 calls per method. All 62
+checked workloads pass with 64 CSV rows; Node independently checks both new
+workloads. Before/after audits each match Node in all 118 cases covering missing
+inputs, wrapped integers, nonfinite/fractional values, surrogate/range boundaries,
+Symbols/BigInts, coercion hints and later coercion failures.
+
+Five checked evaluation/collection iterations, including initialization and
+parsing, record 667,738,769 to 653,885,288 instructions (2.07% fewer) and
+269,756 to 228,796 Rust frees (40,960 fewer, 15.18%). These counts apply to the
+single-input workload. All 576 Runtime units, 2,433 non-RegExp integrations and
+the quality gate pass, including formatting, strict Clippy, the explicit MSRV,
+policy/inventory checks, 30 CLI groups and all three facade doctests.
+Full-corpus and quiet timing evidence remain pending. Existing character-construction tests cover output limits and
+numeric errors; snapshots and fixture inventories are unchanged.
+
 ## Release apply argument captures after failures
 
 A focused host-lifetime regression checks object and unregistered Symbol

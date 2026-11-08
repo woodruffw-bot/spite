@@ -104,6 +104,18 @@ const CASES: &[Case] = &[
         jobs: false,
     },
     Case {
+        name: "string_codes_single",
+        source: "(()=>{let total=0;for(let i=0;i<4096;i++)total+=String.fromCharCode(i).charCodeAt(0)+String.fromCodePoint(0x10000+i).codePointAt(0);return total})()",
+        expected: 285_208_576.0,
+        jobs: false,
+    },
+    Case {
+        name: "string_codes_multiple",
+        source: "(()=>{let total=0;for(let i=0;i<4096;i++){const a=String.fromCharCode(i,0xd800,0xdc00),b=String.fromCodePoint(65,0x10000+i);if(a.length===3&&a.codePointAt(1)===0x10000&&b.length===3)total+=a.charCodeAt(0)+b.codePointAt(1)}return total})()",
+        expected: 285_208_576.0,
+        jobs: false,
+    },
+    Case {
         name: "string_character",
         source: "(()=>{const text='ab漢\\ud800';let sum=0;for(let i=0;i<4096;i++){const c=i%2?text.at(i%4):text.charAt(i%4);sum+=c.charCodeAt(0)}return sum})()",
         expected: 85_955_584.0,

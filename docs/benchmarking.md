@@ -19,7 +19,7 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all 60 program workloads |
+| parse_all | Parse and drop the ASTs for all 62 program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
 | sum_precise_integer | Sum four integers exactly 2,048 times with Math.sumPrecise, checking every result |
 | arithmetic | Evaluate a 1,000-iteration numeric/bitwise loop |
@@ -35,6 +35,8 @@ and collection medians are computed independently.
 | string_raw_multiple | Repeat with two literals and an empty substitution, checking each 32,768-unit result as a concatenation control |
 | string_search | Search eight times for a 129-unit needle near the end of a repeated-prefix String |
 | string_box | Box a 2,048-unit BMP/lone-surrogate String eight times, checking lengths and outer indexed units |
+| string_codes_single | Construct BMP and supplementary Strings from one numeric input 4,096 times each, checking decoded code points |
+| string_codes_multiple | Repeat with multiple numeric inputs per construction as a control, checking lengths and decoded code points |
 | string_character | Alternate at/charAt over 4,096 ASCII/BMP/lone-surrogate units, checking their numeric code units |
 | string_slice | Alternate sixteen slice/substring copies from a 16,384-unit BMP/lone-surrogate input, checking lengths and edge units |
 | string_slice_full | Alternate slice/substring of that complete input 64 times, checking length and final unit |
