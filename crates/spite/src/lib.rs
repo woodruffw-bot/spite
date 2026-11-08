@@ -21,6 +21,6 @@ pub use spite_parser::{
 };
 pub use spite_runtime::{
     AgentControl, Collection, ConversionError, Error, ExceptionKind, Limits, ModuleHandle,
-    ModuleImportRequest, ObjectHandle, PromiseState, Realm, RootedValue, SharedBuffer, TimeZone,
-    TimeZoneError, Value,
+    ModuleImportRequest, ObjectHandle, PromiseJobOutcome, PromiseState, Realm, RootedValue,
+    SharedBuffer, TimeZone, TimeZoneError, Value,
 };

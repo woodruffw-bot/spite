@@ -87,6 +87,22 @@ library's internal implementation.
 Correctness comes first, followed by simplicity and safety. Optimize only after
 measurements identify a problem and conformance tests protect the behavior.
 
+## Command-line host
+
+The default CLI goal is Script. The --module option selects standalone Module
+parsing and evaluation (16.2.1), including strict scope and top-level Await.
+Arguments, files and stdin share the same UTF-8 input handling. The host roots
+the evaluation Promise, drains FIFO Promise jobs and services finite Atomics
+waits at idle boundaries until evaluation settles. Fulfillment prints its value;
+rejection, reported job failure or an idle unsettled evaluation exits with an
+error. Imported files require an embedding loader and are not loaded by this
+standalone CLI mode.
+
+The --max-steps allowance applies separately to evaluation and each host job,
+using the existing Runtime limit semantics. There is no default work or job-count
+quota. Module and limit flags can appear in either order before the input.
+The facade reexports PromiseJobOutcome for hosts driving the same public API.
+
 ## Crates
 
 | Crate | Responsibility | Dependencies |

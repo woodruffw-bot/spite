@@ -61,6 +61,32 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80028 reviewed Test262 variants, twenty-eight pinned harness files, plus 13 identifier lexer and 6 statement parser fixtures |
 
+## Standalone Modules in the CLI
+
+The --module flag runs Module source from an argument, file or UTF-8 stdin,
+preserving Module scope and top-level Await. The host drives Promise and finite
+Atomics wait jobs, prints the fulfilled evaluation value and fails on rejection,
+reported errors or an unsettled idle evaluation. Limit and Module flags work in
+either order; existing per-evaluation/job work limits remain opt-in. Imported
+files still require an embedding loader. PromiseJobOutcome is now reexported by
+the facade for embedding hosts.
+
+Three CLI groups cover the Module goal, await/thenable/finite-wait delivery,
+argument ordering, rejection, unresolved awaits, syntax/missing-loader failures,
+uncatchable host limits after Await, files and valid/invalid UTF-8 stdin.
+All sixteen CLI groups, the facade's Test262 smoke test and documentation test
+pass. Runtime and Test262 source/fixture inventories are unchanged.
+
+## Frozen combined Array and runner gate
+
+A full gate compiled on clean 145f2abc0 passes all 87 noncorpus controls and all
+80,028 official modes from 41,531 unchanged originals, with zero other outcomes.
+It includes the complete Array index formatter reuse and the print conversion,
+negative-test and descriptor fixes. The saved three-worker executable and pinned
+inputs retain their hashes throughout the 1,526.565-second corpus process.
+GitHub CI also succeeds for this commit. The later CLI change has separate
+focused validation and is outside this compiled scope.
+
 ## Array index formatting across indexed algorithms
 
 The remaining 26 temporary UTF-8 index conversions across fourteen Array modules
@@ -84,7 +110,7 @@ A full gate compiled on clean 75497345c passes all 87 noncorpus Test262 package
 controls and all 80,028 official modes from 41,531 originals, with zero other
 outcomes. It includes the distinct-key result append path. The saved three-worker
 executable and complete pinned input hashes remain unchanged throughout its
-1,703.58-second corpus run. Later Array formatter and runner changes have their
+1,703.53-second corpus run. Later Array formatter and runner changes have their
 own focused checks and are outside this frozen production scope.
 
 ## Test262 print host descriptor

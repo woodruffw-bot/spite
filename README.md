@@ -20,14 +20,20 @@ Rust 1.99 or later is required.
 cargo run -p spite -- --eval 'let x = 6; x * 7'
 cargo run -p spite -- example.js
 printf '1 + 2' | cargo run -p spite -- -
+cargo run -p spite -- --module --eval 'export const answer = await Promise.resolve(42)'
 ```
 
 The CLI prints the Script's completion value. Strings use a quoted representation
 that preserves lone surrogates. Source input must be UTF-8. The host installs no
 console, process, filesystem, or other non-standard JavaScript globals.
 
+Use `--module` for standalone Module sources from an argument, file or stdin.
+Module mode waits for top-level Await and prints the evaluation completion value,
+normally `undefined`. Rejected or unsettled evaluations fail. Loading imported
+files currently requires the embedding's Module loader API.
+
 Host resource quotas are disabled by default. Supply `--max-steps N` before the input
-arguments to opt into a per-Script work limit. Work units count interpreter and
+arguments to opt into a work limit for each evaluation or job. Work units count interpreter and
 builtin operations, rather than JavaScript statements or elapsed time.
 
 ## Test

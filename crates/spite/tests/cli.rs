@@ -123,7 +123,12 @@ fn bigint_host_display_is_exact_and_language_string_conversion_is_decimal() {
 }
 
 fn stdin(source: &[u8]) -> std::process::Output {
+    stdin_with_flags(source, &[])
+}
+
+fn stdin_with_flags(source: &[u8], flags: &[&str]) -> std::process::Output {
     let mut child = Command::new(env!("CARGO_BIN_EXE_spite"))
+        .args(flags)
         .arg("-")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
@@ -154,6 +159,105 @@ fn stdin_accepts_sources_above_the_former_default_size_cutoff() {
     let output = stdin(source.as_bytes());
     assert!(output.status.success());
     assert_eq!(String::from_utf8(output.stdout).unwrap().trim(), "42");
+}
+
+#[test]
+fn modules_use_the_module_goal_and_await_evaluation() {
+    for source in [
+        "export const value=42;if(this!==undefined||Object.hasOwn(globalThis,'value'))throw 7",
+        "const value=await Promise.resolve(42);if(value!==42)throw value;export{value}",
+        "const value=await{then(resolve){resolve(42)}};if(value!==42)throw value",
+        "const view=new Int32Array(new SharedArrayBuffer(4));if(await Atomics.waitAsync(view,0,0,1).value!=='timed-out')throw 7",
+    ] {
+        for flags in [
+            vec!["--module"],
+            vec!["--module", "--max-steps", "100000"],
+            vec!["--max-steps", "100000", "--module"],
+        ] {
+            let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+                .args(flags)
+                .args(["--eval", source])
+                .output()
+                .unwrap();
+            assert!(output.status.success(), "{source}: {output:?}");
+            assert_eq!(
+                String::from_utf8(output.stdout).unwrap().trim(),
+                "undefined"
+            );
+            assert!(output.stderr.is_empty());
+        }
+    }
+}
+
+#[test]
+fn module_failures_and_host_limits_have_failing_exit_statuses() {
+    for (source, expected) in [
+        ("await Promise.reject(7)", "uncaught 7"),
+        ("throw 8", "uncaught 8"),
+        ("await new Promise(()=>{})", "did not settle"),
+        ("export const = 1", "Syntax"),
+        ("import 'missing'", "Unsupported"),
+    ] {
+        let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+            .args(["--module", "--eval", source])
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(1), "{source}: {output:?}");
+        assert!(output.stdout.is_empty());
+        assert!(String::from_utf8(output.stderr).unwrap().contains(expected));
+    }
+    let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+        .args([
+            "--module",
+            "--max-steps",
+            "100000",
+            "--eval",
+            "try{await 0;while(true){}}catch{}finally{throw 7}",
+        ])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(1));
+    assert!(output.stdout.is_empty());
+    assert!(
+        String::from_utf8(output.stderr)
+            .unwrap()
+            .starts_with("Limit")
+    );
+}
+
+#[test]
+fn modules_accept_files_and_utf8_stdin() {
+    let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+        .args([
+            "--module",
+            concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/tests/fixtures/standalone-module.mjs"
+            ),
+        ])
+        .output()
+        .unwrap();
+    assert!(output.status.success(), "{output:?}");
+    assert_eq!(
+        String::from_utf8(output.stdout).unwrap().trim(),
+        "undefined"
+    );
+    let output = stdin_with_flags(
+        "const π=await Promise.resolve(42);export{π}".as_bytes(),
+        &["--module"],
+    );
+    assert!(output.status.success(), "{output:?}");
+    assert_eq!(
+        String::from_utf8(output.stdout).unwrap().trim(),
+        "undefined"
+    );
+    let output = stdin_with_flags(&[0xff], &["--module"]);
+    assert_eq!(output.status.code(), Some(1));
+    assert!(
+        String::from_utf8(output.stderr)
+            .unwrap()
+            .contains("valid UTF-8")
+    );
 }
 
 #[test]
