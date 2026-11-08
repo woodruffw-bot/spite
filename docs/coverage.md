@@ -105,8 +105,21 @@ unchanged String originals pass. All 1,024 Node comparisons match, including 768
 receiver/coercion/ignored-argument cases and all 65,536 UTF-16 units across the
 three methods. All 3,456 before/after quota cases have identical complete results,
 including limit messages and visible flags. The manual workload exercises this
-path; no post-change timing is claimed yet. Inventories and default quotas are unchanged.
+path with evaluation 33.95% lower and collection 17.07% lower in twelve matched
+ABBA process runs; exact revisions and controls are in
+[the benchmark receipt](benchmarking.md#unchanged-trimstring-storage).
+Inventories and default quotas are unchanged.
 The full quality gate passes, including 22 CLI groups and dependency/inventory checks.
+
+A full gate compiled on clean 28ddd189f passes all 87 controls and all 80,060 modes
+from 41,550 originals, with zero other outcomes. The frozen corpus run takes
+1,525.43 seconds. Its executable SHA-256 is
+c77674a11df06ebef3b03acb69fdeb6f897868ea48be9f2548b290f169a3f7e6;
+its fixture-tree SHA-256 is
+bbb0c884783c55d00607244636a0a61e1281f74b80cd5d43b564ca70aab83169.
+Both hashes match before and after execution. This gate precedes the later CLI
+Script import and Uint8Array encoding-catalogue changes, which have separate
+focused receipts above.
 
 ## TypedArray method catalogue
 

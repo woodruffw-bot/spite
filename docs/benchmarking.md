@@ -84,6 +84,35 @@ their ordinary unlimited defaults.
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
 
+## Unchanged TrimString storage
+
+When trim/trimStart/trimEnd removes no units, TrimString returns its converted
+receiver after the existing work and output checks, reusing immutable UTF-16
+storage. The added workload alternates the three methods 64 times on a 16,384-unit
+BMP/lone-surrogate String. Baseline production is e9b27f0b3 and candidate production
+is 28ddd189f. Both saved binaries use identical 48-workload sources. The
+candidate's full 80,060-mode gate passes before timing.
+
+Rust 1.99/conformance-profile measurements use Linux x86_64 on an Intel Xeon
+Platinum 8573C, one CPU, no active builds/tests, twelve ABBA process runs, seven
+samples and ten iterations per sample.
+
+| Row | Eval before | Eval after | Collection before | Collection after |
+| --- | ---: | ---: | ---: | ---: |
+| string_trim_noop | 359.1 | 237.2 | 208.4 | 172.8 |
+| string_concat_no_args | 194.5 | 201.8 | 166.0 | 171.4 |
+| string_add_empty | 192.8 | 187.2 | 171.9 | 166.2 |
+| string_slice | 100.5 | 96.6 | 168.3 | 159.5 |
+| typed_array_indices | 35370.5 | 34599.5 | 7309.7 | 6855.7 |
+| parse_all | 1242.1 | 1302.0 | 0 | 0 |
+| initialize_and_drop | 645.8 | 673.6 | 0 | 0 |
+
+Values are microseconds, using medians of six per-process medians per revision.
+Unchanged trimming evaluation is 33.95% lower and collection 17.07% lower in this
+batch. Other program evaluation changes range from -5.02% to +5.94%, and collection
+changes from -7.15% to +6.27%. Parsing and initialization differ by +4.82% and
++4.31%. These observations add no CI timing threshold or execution allowance.
+
 ## Argument-free String.concat
 
 With no arguments, concat now returns its converted receiver after the existing
