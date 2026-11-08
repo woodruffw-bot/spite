@@ -5,6 +5,14 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Forwarded-call Realm execution receipt
+
+A frozen gate compiled on clean ca6e9f4f0 passes all 87 runner controls and all
+80,060 modes from 41,550 unchanged originals, with zero other outcomes. Saved
+four-worker executable and fixture hashes match across the 1,313.523-second run.
+This records forwarding Realm preservation before the later disposal-wrapper
+change. Fixture bytes, helpers, modes and reviews are unchanged.
+
 ## Internal disposal wrapper Realm regression
 
 Retained adopt and async-from-sync wrappers keep their registration Realm across

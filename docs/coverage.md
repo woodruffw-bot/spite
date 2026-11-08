@@ -125,6 +125,12 @@ tail calls and record-restoration checks.
 The quality gate also passes formatting, strict Clippy, the explicit MSRV,
 dependency/inventory checks, 30 CLI groups and all three facade doctests.
 
+A frozen gate compiled on clean ca6e9f4f0 passes all 87 controls and all
+80,060 modes from 41,550 unchanged originals, with zero other outcomes. Saved
+executable and fixture hashes match across the 1,313.523-second four-worker run.
+This records the forwarded-call Realm fix before the later internal disposal
+wrapper change. Original fixture bytes, helpers, modes and reviews are unchanged.
+
 ## Instance checks across callable revocation
 
 A 144-program audit matches Node 26.13.0 exactly for instanceof and direct
