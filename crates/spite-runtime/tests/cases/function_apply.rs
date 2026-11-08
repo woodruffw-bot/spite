@@ -204,3 +204,36 @@ fn apply_metadata_and_native_source_are_standard() {
         "function apply() { [native code] }",
     );
 }
+
+// Completed failures retain no argument captures after the host checkpoint.
+#[test]
+fn failed_argument_lists_and_calls_release_object_and_symbol_captures() {
+    for invoke in [
+        "Reflect.apply(target,null,list)",
+        "Function.prototype.apply.call(target,null,list)",
+    ] {
+        for path in ["get", "call", "class", "revoked"] {
+            let source = r#"
+                let state=(()=>{
+                    const path='PATH';
+                    let object={},symbol=Symbol(),weak=[new WeakRef(object),new WeakRef(symbol)],caught=false;
+                    let target=path==='class'?class{}:function(a,b){throw 7};
+                    if(path==='revoked'){let pair=Proxy.revocable(target,{});pair.revoke();target=pair.proxy}
+                    let list={length:path==='get'?3:2,get 0(){return object},get 1(){return symbol},get 2(){throw 7}};
+                    try{INVOKE}catch(e){caught=path==='get'||path==='call'?e===7:e instanceof TypeError}
+                    return{weak,caught}
+                })();
+                state.caught&&state.weak.every(r=>r.deref()!==undefined)
+            "#
+            .replace("PATH", path)
+            .replace("INVOKE", invoke);
+            let mut realm = Realm::default();
+            let before = realm.eval(&source);
+            assert_eq!(before, Ok(Value::Boolean(true)), "{invoke}/{path}: before");
+            realm.clear_kept_objects().unwrap();
+            realm.collect(usize::MAX).unwrap();
+            let after = realm.eval("state.weak.every(r=>r.deref()===undefined)");
+            assert_eq!(after, Ok(Value::Boolean(true)), "{invoke}/{path}: after");
+        }
+    }
+}

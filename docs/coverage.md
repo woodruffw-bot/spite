@@ -61,6 +61,22 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Release apply argument captures after failures
+
+A focused host-lifetime regression checks object and unregistered Symbol
+arguments after Reflect.apply and Function.prototype.apply fail. It covers a
+later list getter throwing, an ordinary body throwing, class-call rejection and
+revoked-call rejection. Both weak targets remain alive through the synchronous
+turn and become unavailable after the host clears kept objects and completes
+collection. This protects partial argument vectors and failed invocation scopes
+without retaining their captures.
+
+Eight standalone probes pass against the current Runtime, and the same cases
+pass in a new Function.apply integration group. Runtime code and fixture bytes
+are unchanged. All eight selected integration groups and the quality gate pass,
+including formatting, strict Clippy, the explicit MSRV, policy/inventory checks,
+30 CLI groups and all three facade doctests.
+
 ## Apply argument lists across callable revocation
 
 Reflect.apply and Function.prototype.apply retain cached callability while an
