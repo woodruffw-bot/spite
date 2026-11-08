@@ -76,11 +76,24 @@ with 57 CSV rows. Five checked evaluation/collection iterations, including
 initialization and parsing, record 535,809,033 instructions before and 524,992,399
 after (-2.02%) in Callgrind. Rust calls to free fall from 454,456 to 413,496
 (-40,960/-9.01%). These are scoped instruction/allocation counts, with no wall-time
-speedup claim; full-corpus and quiet timing evidence remain pending.
+speedup claim.
 
 All 575 Runtime units, 2,431 non-RegExp integrations and the full quality gate
 pass, including mapped/default/rest/destructuring arguments coverage, three facade
 doctests and 30 CLI groups. Snapshots and fixture inventories are unchanged.
+
+A frozen gate compiled on clean cca06cb98 passes all 87 controls and all 80,060
+modes from 41,550 originals, with zero other outcomes. Saved executable and
+fixture hashes match across its 1,098.778-second four-worker run.
+
+Twelve quiet CPU-0-pinned ABBA processes compare 3ad25d6cc with cca06cb98 using
+the same 55 checked workloads and 57 CSV rows, seven samples of ten iterations.
+The arguments-setup workload measures 11,962.271 to 11,617.590 microseconds
+(-2.88%); separate collection measures 3,136.681 to 3,186.598 (+1.59%). Other
+evaluation changes range from -35.39% to +6.97%, and collection from -7.09% to
++9.80%. Parse-all changes +0.61% and initialization/drop -4.43%. These timings do
+not establish a wall-time speedup; retain the lazy body-name analysis for its
+scoped allocation/instruction reduction.
 
 ## Windows cleanup example stack contract
 
