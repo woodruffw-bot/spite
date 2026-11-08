@@ -85,6 +85,35 @@ their ordinary unlimited defaults.
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
 
+## Whole-range String slicing
+
+slice/substring retain their converted receiver when normalized endpoints select
+the complete String, preserving endpoint coercion and output/work checks. The
+added workload alternates the two methods 64 times on a 16,384-unit BMP/lone-surrogate
+String. Baseline production is 824cfbf93 and candidate production is 7fdb8d6cb.
+Both saved binaries use identical 49-workload sources. The candidate's full
+80,060-mode gate passes before timing.
+
+Rust 1.99/conformance-profile measurements use Linux x86_64 on an Intel Xeon
+Platinum 8573C, one CPU, no active builds/tests, twelve ABBA process runs, seven
+samples and ten iterations per sample.
+
+| Row | Eval before | Eval after | Collection before | Collection after |
+| --- | ---: | ---: | ---: | ---: |
+| string_slice_full | 332.6 | 218.7 | 195.2 | 175.7 |
+| string_slice | 92.3 | 90.9 | 157.8 | 158.4 |
+| string_concat_no_args | 196.9 | 196.6 | 163.4 | 164.5 |
+| string_trim_noop | 228.2 | 235.0 | 164.7 | 169.0 |
+| typed_array_indices | 34950.2 | 35104.5 | 6430.6 | 6637.8 |
+| parse_all | 1235.9 | 1216.2 | 0 | 0 |
+| initialize_and_drop | 638.0 | 665.6 | 0 | 0 |
+
+Values are microseconds, using medians of six per-process medians per revision.
+Whole-range slicing evaluation is 34.25% lower and collection 9.96% lower in this
+batch. Other program evaluation changes range from -8.03% to +7.34%, and collection
+changes from -6.28% to +6.81%. Parsing and initialization differ by -1.59% and
++4.34%. These observations add no CI timing threshold or execution allowance.
+
 ## Unchanged TrimString storage
 
 When trim/trimStart/trimEnd removes no units, TrimString returns its converted

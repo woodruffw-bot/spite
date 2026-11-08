@@ -143,9 +143,8 @@ debug escaping. Other thrown values retain their ordinary host representation.
 
 Create crates when they first have real functionality. Keep parser internals in
 one crate. Keep built-ins inside the runtime until an actual dependency boundary
-justifies another crate. Integer arithmetic lives in `spite-bigint`. A regular
-expression implementation may later need its own crate and may use `regex` or
-`regress`, subject to the language's matching and UTF-16 requirements.
+justifies another crate. Integer arithmetic lives in `spite-bigint`. RegExp
+matching uses regress through the Runtime's UTF-16 adapter.
 
 ## Syntax
 
@@ -159,14 +158,15 @@ JsString uses shared immutable Arc slice storage. Cloning a String value does
 not copy its code units, so repeated custom exec calls and iterator snapshots do
 not duplicate the complete input. Concatenation checks and reserves its complete
 output buffer before copying nonempty operands, and reuses the other input when
-either is empty. Substrings copy into owned storage. Equality, hashing and
-ordering compare UTF-16 contents, and the public
+either is empty. Partial substrings copy into owned storage; selections of the
+complete converted input can share its storage after the same checks. Equality,
+hashing and ordering compare UTF-16 contents, and the public
 type remains Send/Sync. Existing optional work charges stay conservative and
 unchanged; actual scans and output allocations retain their checks.
 Fixed UTF-16 arrays convert directly through the standard Arc array conversion.
 Single-unit String indices, boxed String properties and at/charAt results use
 this path instead of first building a Vec. Raw surrogates remain unchanged.
-Borrowed UTF-16 slices likewise copy directly into owned Arc storage for
+Borrowed UTF-16 slices likewise copy directly into owned Arc storage for copied
 substring/trim/split results and String iterator yields. Existing output-length,
 work, code-point pairing and iterator-position checks precede the same copies.
 StringCreate and intrinsic Array list construction format unsigned index keys
@@ -2594,15 +2594,20 @@ Otherwise it reserves output fallibly, copies the valid prefix, replaces the fir
 error and continues the same decoder so buffered lookahead is preserved.
 concat uses String-hint conversion for its receiver and each argument in order,
 checking cumulative output lengths before extending the result (22.1.3.5).
+With no arguments it retains the converted receiver after the existing work and
+output-length checks.
 slice and substring convert the receiver, start, and end in order even for empty
 inputs (22.1.3.22/25). Their shared implementation distinguishes relative negative
 indices from clamping/swapping endpoints and slices code units without repairing
-surrogates. Output allocation and copying remain subject to host limits.
+surrogates. Whole-range selections retain the converted receiver after both
+endpoint conversions and normalization, with the original output-length check
+and result work charge. Partial-range allocation and copying retain their checks.
 trim/trimStart/trimEnd use the shared ECMAScript WhiteSpace and LineTerminator
 predicates (22.1.3.32–34), preserving internal whitespace and all other code units.
 All baseline whitespace code points lie in the BMP, so checking code units is
 equivalent to decoding code points for this membership test; surrogates cannot
-match. Scanning and copying are charged separately. Optional trimLeft/trimRight
+match. Unchanged ranges retain the converted receiver. Scanning and result work
+are charged separately, including when storage is reused. Optional trimLeft/trimRight
 aliases remain disabled with other Annex B methods.
 repeat validates the converted count before returning an empty string; finite
 counts on empty input take no repetition loop (22.1.3.18). After checked output
@@ -4315,6 +4320,12 @@ the source without changing the captured iteration range or triggering an extra
 validation step. Includes reads invalid indices as undefined; indexOf and
 lastIndexOf use live presence checks and skip them.
 
+Without work accounting or agent control, at, reductions and string conversion
+pass known numeric indices to the existing live element reader, avoiding property
+key construction and parsing. Every read still checks the current buffer before
+decoding. Accounted and agent-controlled calls retain the original property
+dispatch and its checks.
+
 Callback methods preserve their specified direction, arguments, thisArg, and
 early returns. Find methods retain the value read before the predicate runs.
 Reductions distinguish an omitted accumulator from explicit undefined. Join
@@ -4330,8 +4341,7 @@ content type. Custom species
 may return an aliased view or another compatible element kind. Subsequent
 writes retain ordinary Set conversion and live bounds behavior, including
 reentrant detachment or resizing. Filter's scratch list is independent of
-call-argument quotas. Sorting and Uint8Array encoding algorithms remain
-separate work.
+call-argument quotas. Sorting and Uint8Array encoding use separate algorithms.
 
 ## TypedArray mutation
 

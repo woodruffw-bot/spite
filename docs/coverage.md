@@ -112,9 +112,20 @@ unchanged String originals pass. The cohort's 1,222 review rows and all 1,250
 original/helper files match the live pinned corpus exactly. All 1,012 Node cases
 match, covering 756 receiver/endpoint-coercion cases and every UTF-16 code unit.
 All 6,144 before/after quota cases have identical complete results, including
-limit messages and visible flags. The new manual workload has checked results;
-no post-change timing is claimed yet. Inventories and default quotas are unchanged.
+limit messages and visible flags. The manual workload measures evaluation 34.25%
+lower and collection 9.96% lower in twelve matched ABBA process runs; exact
+revisions and controls are in [the benchmark receipt](benchmarking.md#whole-range-string-slicing).
+Inventories and default quotas are unchanged.
 The full quality gate passes, including 25 CLI groups and dependency/inventory checks.
+
+A full gate compiled on clean 7fdb8d6cb passes all 87 controls and all 80,060 modes
+from 41,550 originals, with zero other outcomes. The frozen corpus run takes
+1,703.58 seconds. Its executable SHA-256 is
+f9f1c1befa33edf277f4f41d8983f4bac62d001615ac535f464c8117e0f7579b;
+its fixture-tree SHA-256 is
+bbb0c884783c55d00607244636a0a61e1281f74b80cd5d43b564ca70aab83169.
+Both hashes match before and after execution. This gate precedes the direct
+TypedArray observer reads described above.
 
 ## Uint8Array encoding method catalogue
 
