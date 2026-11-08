@@ -1,5 +1,8 @@
 //! A safe Rust ECMAScript parser and interpreter under development.
 //!
+//! Embedders must provide at least a 2 MiB native thread stack. The cleanup
+//! example below shows how to create an explicit host thread with that stack.
+//!
 //! # Example
 //!
 //! ```
@@ -35,15 +38,22 @@
 //! ```
 //! use spite::{FinalizationCleanupOutcome, Realm, Value};
 //!
-//! let mut realm = Realm::default();
-//! realm.eval("let finalized=0, registry=new FinalizationRegistry(v=>finalized=v); registry.register({},7)").unwrap();
-//! realm.clear_kept_objects().unwrap();
-//! realm.collect(usize::MAX).unwrap();
-//! assert!(matches!(realm.run_finalization_cleanup_job().unwrap(),
-//!                  FinalizationCleanupOutcome::Completed));
-//! assert_eq!(realm.eval("finalized").unwrap(), Value::Number(7.0));
-//! assert!(matches!(realm.run_finalization_cleanup_job().unwrap(),
-//!                  FinalizationCleanupOutcome::NoJob));
+//! std::thread::Builder::new()
+//!     .stack_size(2 * 1024 * 1024)
+//!     .spawn(|| {
+//!         let mut realm = Realm::default();
+//!         realm.eval("let finalized=0, registry=new FinalizationRegistry(v=>finalized=v); registry.register({},7)").unwrap();
+//!         realm.clear_kept_objects().unwrap();
+//!         realm.collect(usize::MAX).unwrap();
+//!         assert!(matches!(realm.run_finalization_cleanup_job().unwrap(),
+//!                          FinalizationCleanupOutcome::Completed));
+//!         assert_eq!(realm.eval("finalized").unwrap(), Value::Number(7.0));
+//!         assert!(matches!(realm.run_finalization_cleanup_job().unwrap(),
+//!                          FinalizationCleanupOutcome::NoJob));
+//!     })
+//!     .unwrap()
+//!     .join()
+//!     .unwrap();
 //! ```
 //!
 //! Implementation status, conformance evidence and constraints are documented in the
