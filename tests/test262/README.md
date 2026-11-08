@@ -5,6 +5,15 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Simple var-name iterator execution receipt
+
+A frozen gate compiled on clean fa3b2d950 passes all 87 runner controls and all
+80,060 modes from 41,550 unchanged originals, with zero other outcomes. Saved
+four-worker executable and fixture hashes match across the 1,069.890-second run.
+Simple var identifiers use direct singleton iteration; destructuring traversal,
+spans and source order are unchanged. Fixture bytes, helpers, reviews and work
+charges are unchanged. This records retained-corpus execution.
+
 ## ASCII normalization execution receipt
 
 A frozen gate compiled on clean ea83dbdf6 passes all 87 runner controls and all

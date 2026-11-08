@@ -87,11 +87,24 @@ The fifty-third workload calls an ordinary function with two local var bindings
 evaluation/collection iterations, including initialization and parsing, record
 357,981,490 instructions before and 355,526,515 after (-0.69%) in Callgrind.
 Rust calls to free fall from 249,366 to 228,876 (-20,490/-8.22%). These are scoped
-counts; full-corpus and quiet wall-time evidence remain pending.
+instruction/allocation counts.
 
 All 18 Parser units, 443 Parser integrations, 574 Runtime units, 2,431 non-RegExp
 integrations and the full quality gate pass, including 30 CLI groups. Snapshots,
 fixture inventories and work charges are unchanged.
+
+A frozen gate compiled on clean fa3b2d950 passes all 87 controls and all 80,060
+modes from 41,550 originals, with zero other outcomes. Saved executable and
+fixture hashes match across its 1,069.890-second four-worker run.
+
+Twelve quiet CPU-0-pinned ABBA processes compare 88e871d18 with fa3b2d950 using
+the same 53 checked workloads and 55 CSV rows, seven samples of ten iterations.
+The local-var workload measures 7,300.656 to 7,213.133 microseconds (-1.20%);
+separate collection measures 1,873.451 to 1,899.626 (+1.40%). Other evaluation
+changes range from -35.90% to +8.17%, and collection from -2.80% to +5.21%.
+Parse-all changes -0.99% and initialization/drop -0.93%. These timings do not
+establish a wall-time speedup; retain the direct iterator for its scoped
+instruction/allocation reduction.
 
 ## JSON reviver SameValue source eligibility
 
