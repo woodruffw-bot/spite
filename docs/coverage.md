@@ -110,6 +110,20 @@ apply/construct, Proxy, JSON, String.raw, templates and destructuring. The exist
 1,613 JSON/DataView and 1,296 Proxy key-list comparisons have zero Node differences.
 This is a construction cleanup without a timing claim; inventories are unchanged.
 
+Follow-up protocol audits compare complete values and access/conversion traces.
+All 4,500 String.raw cases match Node 24.19.0, including Proxy reads, primitive
+raw values, missing/throwing substitutions, UTF-16 units and huge lengths with
+a throwing first getter.
+
+Of 2,176 array-like call cases, 2,128 match Node exactly across apply, Reflect
+call/construction, Proxy traps, mapped arguments and iterator rest bindings.
+The remaining 48 validate the published
+[CreateListFromArrayLike](https://262.ecma-international.org/17.0/#sec-createlistfromarraylike)
+order: huge lengths still read element zero and propagate its getter exception.
+Node instead raises RangeError before that read. All 48 engine traces match the
+published rule; the raw differences remain recorded. Runtime behavior, default
+limits and fixture inventories are unchanged.
+
 ## Shared TypedArray index formatting
 
 Twenty-one index conversions across six TypedArray modules now use the shared
