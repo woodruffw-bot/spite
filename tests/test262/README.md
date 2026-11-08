@@ -5,6 +5,15 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## String-pair comparison work regression
+
+One native group protects equality, ordering and switch scan charges, recovery,
+surrogates and unequal-length shortcuts. All 577 Runtime units, 2,444 non-RegExp
+integrations and the quality gate pass. All 65,536 UTF-16 units in 512 programs
+match Python and Node before and after; earlier numeric-conversion work curves
+are unchanged. The full corpus receipt for this change is pending. Fixtures,
+helpers, modes and reviews are unchanged.
+
 ## String-to-Number work regression
 
 Two native groups check long-input scan refusal, host-abort cleanup boundaries,

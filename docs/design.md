@@ -1774,6 +1774,10 @@ ToNumber operation when their selected branches require it (7.2.12–7.2.13).
 String/String and BigInt/String branches retain their own semantics; type-only
 equality decisions do not scan String contents. Numeric conversion still runs
 left to right, preserving an earlier Symbol error before a later String scan.
+Equal-length String equality prepays the input length through one shared
+budgeted strict-equality operation, including loose equality and switch matching
+(7.2.13–7.2.14). Different lengths require no content scan. Relational String
+comparison prepays the shorter input length before UTF-16 ordering (7.2.12).
 The parser/evaluator native-stack guards are current implementation constraints;
 removing them safely requires replacing recursive execution with explicit frames.
 References below to execution

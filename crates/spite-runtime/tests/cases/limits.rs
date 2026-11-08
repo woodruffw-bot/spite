@@ -162,3 +162,41 @@ fn numeric_comparison_string_scans_consume_evaluation_work() {
         Err(Error::Limit { .. })
     ));
 }
+
+#[test]
+fn string_pair_comparison_scans_consume_evaluation_work() {
+    let left = "0".repeat(4096) + "1";
+    let right = "0".repeat(4096) + "2";
+    for source in [
+        format!("'{left}'==='{left}'"),
+        format!("'{left}'=='{left}'"),
+        format!("'{left}'<'{right}'"),
+        format!("switch('{left}'){{case '{left}':true;break;default:false}}"),
+    ] {
+        let script = spite_parser::parse_script(&source).unwrap();
+        assert_eq!(Realm::default().evaluate(&script), Ok(Value::Boolean(true)));
+        let mut realm = Realm::new(Limits {
+            max_steps: Some(512),
+            ..Limits::default()
+        });
+        assert!(matches!(realm.evaluate(&script), Err(Error::Limit { .. })));
+        assert_eq!(realm.eval("'a'==='a'"), Ok(Value::Boolean(true)));
+        assert_eq!(realm.eval("'\\uD800'<'\\uD801'"), Ok(Value::Boolean(true)));
+    }
+
+    for (source, expected) in [
+        (format!("'{left}'==='x'"), false),
+        (format!("'{left}'=='x'"), false),
+        (format!("'{left}'>'0'"), true),
+    ] {
+        let script = spite_parser::parse_script(&source).unwrap();
+        assert_eq!(
+            Realm::new(Limits {
+                max_steps: Some(512),
+                ..Limits::default()
+            })
+            .evaluate(&script),
+            Ok(Value::Boolean(expected))
+        );
+    }
+}

@@ -61,6 +61,22 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## String-pair comparison scan work
+
+Equal-length String equality and switch matching prepay the input length;
+relational String comparison prepays the shorter length (7.2.12–7.2.14).
+Different-length equality keeps its constant-work rejection. Public pre-parsed
+probes now require exactly the input length above the former four-unit
+allowance for equal and long-prefix pairs. Earlier unary and mixed numeric
+comparison work curves remain identical.
+
+The new native group covers strict/loose equality, ordering, switch, recovery,
+surrogates and cheap unequal-length decisions. All 577 Runtime units, 2,444
+non-RegExp integrations and the quality gate pass. All 65,536 UTF-16 units in
+512 programs match independent Python and Node expectations before and after,
+including distinct equal Strings, shared prefixes and supplementary pairs.
+Fixture bytes and default quotas are unchanged.
+
 ## String-to-Number scan work
 
 Realm-level ToNumber charges the complete UTF-16 input after primitive

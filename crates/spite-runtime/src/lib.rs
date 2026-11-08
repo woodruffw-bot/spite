@@ -484,7 +484,9 @@ impl Realm {
 
     fn strictly_equal(&mut self, left: &Value, right: &Value, span: Span) -> Result<bool, Error> {
         self.comparison_work(left, right, span)?;
-        Ok(left.strictly_equal(right))
+        self.integer_work(span, |budget| {
+            left.strictly_equal_with_budget(right, budget)
+        })
     }
     fn check_string(&self, value: &Value, span: Span) -> Result<(), Error> {
         if let Value::String(s) = value

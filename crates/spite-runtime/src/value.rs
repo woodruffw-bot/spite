@@ -145,6 +145,19 @@ impl Value {
         }
     }
 
+    pub(crate) fn strictly_equal_with_budget(
+        &self,
+        other: &Self,
+        budget: &mut Budget,
+    ) -> Result<bool, IntegerError> {
+        if let (Self::String(a), Self::String(b)) = (self, other)
+            && a.len() == b.len()
+        {
+            budget.charge(a.len())?;
+        }
+        Ok(self.strictly_equal(other))
+    }
+
     /// Implements SameValue, distinguishing signed zeros and equating NaNs.
     pub fn same_value(&self, other: &Self) -> bool {
         match (self, other) {
@@ -186,7 +199,7 @@ impl Value {
             ) => {
                 return Err(ConversionError::ObjectNeedsContext);
             }
-            _ => self.strictly_equal(other),
+            _ => self.strictly_equal_with_budget(other, budget)?,
         })
     }
 
@@ -200,7 +213,10 @@ impl Value {
             (Self::Object(_), _) | (_, Self::Object(_)) => {
                 return Err(ConversionError::ObjectNeedsContext);
             }
-            (Self::String(a), Self::String(b)) => Some(a.cmp(b)),
+            (Self::String(a), Self::String(b)) => {
+                budget.charge(a.len().min(b.len()))?;
+                Some(a.cmp(b))
+            }
             (Self::BigInt(a), Self::String(b)) => string_to_bigint(b, budget)?.map(|b| a.cmp(&b)),
             (Self::String(a), Self::BigInt(b)) => string_to_bigint(a, budget)?.map(|a| a.cmp(b)),
             (Self::BigInt(a), Self::BigInt(b)) => Some(a.cmp(b)),
