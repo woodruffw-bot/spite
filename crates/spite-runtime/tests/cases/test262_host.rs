@@ -57,6 +57,55 @@ fn forwarded_call_errors_use_the_forwarding_realm_until_the_callee_enters_its_ow
 }
 
 #[test]
+fn proxy_errors_distinguish_operation_realms_from_foreign_trap_realms() {
+    let mut realm = host();
+    check(
+        &mut realm,
+        r#"
+        // 10.5: invariant and revocation errors belong to the operation's
+        // Realm; an abrupt trap call keeps the trap body's exception identity.
+        const globals=[globalThis,$262.createRealm().global];
+        const returns={getPrototypeOf:'0',setPrototypeOf:'true',isExtensible:'true',
+            preventExtensions:'true',getOwnPropertyDescriptor:'0',defineProperty:'true',
+            has:'false',get:'0',set:'true',deleteProperty:'true',ownKeys:"['x','x']",
+            apply:'0',construct:'0'};
+        let correct=true;
+        for(const G of globals)for(const R of globals)for(const T of globals){
+            for(const op of Object.keys(returns)){
+                for(const mode of ['invariant','throw','revoked','revoked_trap']){
+                    const target=op==='apply'||op==='construct'?G.Function(''):new G.Object();
+                    Object.defineProperty(target,'x',{value:1,writable:false,configurable:false});
+                    if(['setPrototypeOf','isExtensible','defineProperty'].includes(op))Object.preventExtensions(target);
+                    let trap=T.Function(mode==='throw'?'return null.x':'return '+returns[op]);
+                    if(mode==='revoked_trap'){
+                        const pair=T.Proxy.revocable(trap,{});trap=pair.proxy.bind(null);pair.revoke();
+                    }
+                    const pair=G.Proxy.revocable(target,{[op]:trap});
+                    if(mode==='revoked')pair.revoke();
+                    const args=[pair.proxy];
+                    if(op==='setPrototypeOf')args.push(null);
+                    if(['getOwnPropertyDescriptor','has','get','set','deleteProperty'].includes(op))args.push('x');
+                    if(op==='set')args.push(2);
+                    if(op==='defineProperty')args.push('newKey',{value:2});
+                    if(op==='apply')args.push(null,[]);
+                    if(op==='construct')args.push([]);
+                    const returnsNormally=mode==='invariant'&&op==='apply';
+                    try{
+                        const result=R.Reflect[op](...args);
+                        correct=returnsNormally&&result===0&&correct;
+                    }catch(e){
+                        const expected=mode==='throw'?T:R;
+                        correct=!returnsNormally&&Object.getPrototypeOf(e)===expected.TypeError.prototype&&correct;
+                    }
+                }
+            }
+        }
+        correct&&Object.getPrototypeOf({})===Object.prototype
+        "#,
+    );
+}
+
+#[test]
 fn host_installation_is_explicit_with_the_current_global_and_native_method_metadata() {
     let mut realm = Realm::default();
     check(&mut realm, "typeof $262==='undefined'");

@@ -680,6 +680,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Reuse the converted sole String.raw literal after the same property observations, work charge and output-length check, preserving concatenation and abrupt completion order.
 - [x] Construct single-input String.fromCharCode/fromCodePoint results through standard fixed-array String storage after the same numeric, work and output checks.
 - [x] Preserve the forwarding Realm across builtin and strict tail transfers, creating revoked-Proxy and non-callable errors there while ordinary callees enter their own Realms.
+- [x] Protect exception Realms across all thirteen Proxy operations, distinguishing invalid/revoked traps and invariants from abrupt foreign trap bodies.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

@@ -5,6 +5,13 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Proxy operation Realm regression
+
+An independent 1,404-program comparison matches the reference for all thirteen
+Proxy operations across target, operation and trap Realms. One native group
+retains 416 cases; all 30 selected host groups and the quality gate pass.
+This adds no Runtime or fixture changes.
+
 ## Forwarded-call Realm regression
 
 The native regression adds 130 cross-Realm call checks for revoked targets,

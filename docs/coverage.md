@@ -61,6 +61,20 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Proxy operation and trap exception Realms
+
+An independent 1,404-program audit matches Node 26.13.0 for all thirteen Proxy
+internal methods across three target, operation and trap Realms. Invalid trap
+results, invariant failures, revoked proxies and revoked bound traps use the
+operation Realm; an abrupt foreign trap preserves its own exception (10.5).
+The apply control also verifies that a primitive trap result remains valid.
+
+A native group retains 416 cases across two Realms. All 30 host integration
+groups and the quality gate pass, including strict Clippy, the explicit MSRV,
+dependency/inventory checks, 30 CLI groups and all three facade doctests.
+Runtime code and fixture inventories are unchanged; the native inventory now
+contains 5,052 integration groups, including 2,435 non-RegExp groups.
+
 ## Forwarded-call exception Realms
 
 Pending synchronous calls retain the forwarding Realm's global-environment
