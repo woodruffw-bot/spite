@@ -101,25 +101,25 @@ impl Realm {
                     .any(|(name, _)| name == "arguments"),
             }
         });
-        let body_arguments = body
-            .statements()
-            .iter()
-            .any(|statement| match &statement.kind {
-                spite_parser::ast::StatementKind::Function(function) => function
-                    .name
-                    .as_ref()
-                    .is_some_and(|name| name.name == "arguments"),
-                spite_parser::ast::StatementKind::Lexical { bindings, .. }
-                | spite_parser::ast::StatementKind::Using(bindings) => bindings
-                    .iter()
-                    .flat_map(|binding| binding.pattern.bound_names())
-                    .any(|(name, _)| name == "arguments"),
-                _ => false,
-            });
         // 10.2.11: body lexical/function names suppress arguments when parameters
         // have no expressions; a parameter named arguments always suppresses it.
-        let arguments_needed =
-            !parameter_arguments && (has_parameter_expressions || !body_arguments);
+        let arguments_needed = !parameter_arguments
+            && (has_parameter_expressions
+                || !body
+                    .statements()
+                    .iter()
+                    .any(|statement| match &statement.kind {
+                        spite_parser::ast::StatementKind::Function(function) => function
+                            .name
+                            .as_ref()
+                            .is_some_and(|name| name.name == "arguments"),
+                        spite_parser::ast::StatementKind::Lexical { bindings, .. }
+                        | spite_parser::ast::StatementKind::Using(bindings) => bindings
+                            .iter()
+                            .flat_map(|binding| binding.pattern.bound_names())
+                            .any(|(name, _)| name == "arguments"),
+                        _ => false,
+                    }));
         let mut bindings = self.pattern_bindings(
             code.parameters
                 .iter()

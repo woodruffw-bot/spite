@@ -61,6 +61,27 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Lazy body-name analysis for arguments
+
+Ordinary calls inspect body declaration names only when parameter information
+leaves that inspection necessary (10.2.11). A parameter named arguments suppresses
+the arguments object; parameter expressions otherwise require one regardless of
+body names. The existing predicate now sits inside that short-circuit expression.
+Its tokens and all surrounding setup are unchanged, with no added production
+lines, cache, helper, state or work charges.
+
+The fifty-fifth workload calls default-parameter and arguments-named functions
+with two local lexical bindings 2,048 times each. All 55 checked workloads pass
+with 57 CSV rows. Five checked evaluation/collection iterations, including
+initialization and parsing, record 535,809,033 instructions before and 524,992,399
+after (-2.02%) in Callgrind. Rust calls to free fall from 454,456 to 413,496
+(-40,960/-9.01%). These are scoped instruction/allocation counts, with no wall-time
+speedup claim; full-corpus and quiet timing evidence remain pending.
+
+All 575 Runtime units, 2,431 non-RegExp integrations and the full quality gate
+pass, including mapped/default/rest/destructuring arguments coverage, three facade
+doctests and 30 CLI groups. Snapshots and fixture inventories are unchanged.
+
 ## Windows cleanup example stack contract
 
 The cleanup doctest now creates a 2 MiB host thread, matching the existing

@@ -26,6 +26,12 @@ const CASES: &[Case] = &[
         jobs: false,
     },
     Case {
+        name: "arguments_body_scan",
+        source: "(()=>{function f(value=1){let a=value,b=a+1;return b}function g(arguments){let a=arguments,b=a+1;return b}let sum=0;for(let i=0;i<2048;i++)sum+=f(i)+g(i);return sum})()",
+        expected: 4_196_352.0,
+        jobs: false,
+    },
+    Case {
         name: "var_bindings",
         source: "(()=>{function f(value){var a=value,b=a+1;return b}let sum=0;for(let i=0;i<2048;i++)sum+=f(i);return sum})()",
         expected: 2_098_176.0,

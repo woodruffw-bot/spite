@@ -19,9 +19,10 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all 54 program workloads |
+| parse_all | Parse and drop the ASTs for all 55 program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
 | arithmetic | Evaluate a 1,000-iteration numeric/bitwise loop |
+| arguments_body_scan | Call default-parameter and arguments-named functions with two local lexical bindings 2,048 times each, checking the returned sum |
 | var_bindings | Call an ordinary function with two local var bindings 2,048 times, checking the returned sum |
 | radix_overflow | Convert an overflowing 8,192-digit hexadecimal string and its invalid-suffix variant sixteen times, checking Infinity and NaN |
 | parse_int_overflow | Parse an overflowing 8,192-digit hexadecimal prefix and its non-digit suffix sixteen times, checking Infinity for both |
