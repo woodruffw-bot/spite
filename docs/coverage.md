@@ -61,6 +61,22 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Lazy concat open-method capabilities
+
+Iterator.concat regressions now capture class, bound-class and revoked callable
+iterator methods without invoking them. Earlier sources yield before opening
+those later sources fails; completed sources stay unclosed, and the failed helper
+stays completed. Revocation and method replacement after capture retain the
+original method. Returning before first next opens no source, including a revoked
+method that was already captured.
+
+All 64 audited programs match native Node 26.13.0 in ordinary execution and with
+collection between jobs, for 128 comparisons. The matrix covers eight method
+forms, four next/return sequences and empty/nonempty leading sources. It observes
+method-getter/open/step/close order, receivers, argument counts, helper completion
+and failure kinds. All ten concat integration groups and the full quality gate
+pass, including 28 CLI groups. Runtime and fixture inventories are unchanged.
+
 ## Computed Map callback capabilities
 
 Map and WeakMap computed-insertion regressions distinguish IsCallable from

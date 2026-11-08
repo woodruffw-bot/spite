@@ -33,6 +33,18 @@ fn ordered_method_capture_is_eager_but_iterator_opening_and_next_capture_are_laz
     check(
         "let reads=0,a={};Object.defineProperty(a,Symbol.iterator,{get:()=>{reads++;return ()=>{throw 7;};}});let caught=false;try{Iterator.concat(a,null,{get [Symbol.iterator](){throw 8;}});}catch(e){caught=e instanceof TypeError;}caught && reads===1",
     );
+    for method in [
+        "class{}",
+        "(class{}).bind(null)",
+        "(()=>{let {proxy,revoke}=Proxy.revocable(function(){},{});revoke();return proxy})()",
+    ] {
+        check(&format!(
+            "let closed=0,count=0,inner={{next(){{return {{value:7,done:count++>0}}}},return(){{closed++;return {{}}}}}},first={{[Symbol.iterator]:()=>inner}};let w=Iterator.concat(first,{{[Symbol.iterator]:{method}}}),head=w.next(),failed=false;try{{w.next()}}catch(error){{failed=error instanceof TypeError}}head.value===7&&!head.done&&failed&&closed===0&&w.next().done&&w.return().done"
+        ));
+    }
+    check(
+        "let opened=0,replacement=0,{proxy,revoke}=Proxy.revocable(function(){opened++;return [8].values()},{}),source={[Symbol.iterator]:proxy},w=Iterator.concat([7],source);revoke();source[Symbol.iterator]=()=>{replacement++;return [9].values()};let head=w.next(),failed=false;try{w.next()}catch(error){failed=error instanceof TypeError}head.value===7&&failed&&opened===0&&replacement===0&&w.next().done",
+    );
 }
 
 #[test]
@@ -95,6 +107,9 @@ fn return_closes_only_the_yielded_source_once_with_zero_arguments() {
     );
     check(
         "let calls=0,a={[Symbol.iterator](){calls++;throw 7;}},w=Iterator.concat(a);w.return(99).done && w.next().done && w.return().done && calls===0",
+    );
+    check(
+        "let opened=0,{proxy,revoke}=Proxy.revocable(function(){opened++;throw 7},{});revoke();let w=Iterator.concat({[Symbol.iterator]:proxy}),result=w.return(99);result.done&&result.value===undefined&&w.next().done&&opened===0",
     );
     check(
         "let closed=0,w=Iterator.concat({[Symbol.iterator]:()=>({next:()=>({done:true}),return:()=>{closed++;throw 7;}})});w.next().done && w.return().done && closed===0",
