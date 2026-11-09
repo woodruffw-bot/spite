@@ -5,6 +5,18 @@ These 41772 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## BigInt zero-operand regression
+
+OR/XOR with zero copies the retained magnitude directly while preserving full
+work and result limits. All 37 BigInt tests, 591 Runtime units, 2,445 non-RegExp
+integrations, 270 selected RegExp groups and 91 runner controls pass. All 3,072
+supplemental programs and 72 work probes retain their before/after results.
+Original fixtures, metadata, modes and reviews are unchanged.
+
+All 17 hosted CI jobs pass for 3f6081fd6, 950fd1424, d045b5e5f and c1ae69847.
+The preceding 3f6081fd6 full gate remains 91/41,563/80,074 with zero other
+outcomes; full-corpus and hosted receipts for the BigInt increment are pending.
+
 ## Exact summation protocol audit
 
 All 354 iterator/Realm programs agree with the published algorithms and flagged

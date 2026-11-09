@@ -19,8 +19,10 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all 78 program workloads |
+| parse_all | Parse and drop the ASTs for all 80 program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
+| bigint_or_xor_zero | Alternate OR/XOR with zero, both operand orders and positive/negative 4,097-bit values across 2,048 operations |
+| bigint_or_xor_one | Repeat with 1n as a nonzero control, checking retained OR values and toggled XOR values |
 | bigint_equal_and_or | Alternate equal positive AND and negative OR operands of 4,097 bits across 2,048 operations, checking each retained value |
 | bigint_unequal_and_or | Repeat with unequal operands sharing their low words, checking the same results |
 | bigint_xor_equal | XOR equal positive/negative 4,097-bit values 2,048 times, checking zero |
@@ -113,6 +115,29 @@ their ordinary unlimited defaults.
 
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
+
+## BigInt OR/XOR with zero
+
+After the existing width-based work debit, OR/XOR with zero copies the retained
+magnitude directly and validates the result limit. Baseline production is
+3f6081fd6. Matched Rust 1.99 executables use identical 80-workload sources and
+optimized conformance libraries with debug assertions and overflow checks.
+
+Each instrumented process evaluates five times, alternating OR/XOR, operand
+order and positive/negative 4,097-bit values across 2,048 loop operations. Two
+additional XORs prepare expected values per evaluation. The control uses 1n.
+Counts include initialization, parsing/evaluation and collection.
+
+| Workload | Instructions before | Instructions after | Rust deallocations before | Rust deallocations after |
+| --- | ---: | ---: | ---: | ---: |
+| Zero operand | 535,750,843 | 502,542,859 | 239,961 | 229,711 |
+| Nonzero control | 537,571,962 | 537,592,457 | 250,216 | 250,216 |
+
+The target uses 6.1984% fewer instructions and removes one buffer per operation.
+The control uses 0.0038% more instructions with unchanged deallocations. Both
+benchmark smokes pass all 82 rows; 3,072 semantic programs and 72 work probes
+remain exact before and after. One instrumented process per workload/revision
+supports these counts, with no elapsed-time or general speedup claim.
 
 ## Equal BigInt AND/OR operands
 

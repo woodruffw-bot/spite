@@ -1522,10 +1522,13 @@ AND with zero retains the width calculation and full work debit, then returns
 canonical zero before reserving either temporary buffer. Result-magnitude
 validation still applies. JavaScript operands evaluate and convert before this
 integer-backend shortcut.
+OR and XOR with zero use the same prepaid-width rule and return a checked copy
+of the other operand's magnitude in either order, avoiding two's-complement
+conversion and its second buffer.
 Equal operands use the same prepaid-width rule before constructing the
 two's-complement buffers: XOR returns canonical zero, while AND/OR return a
 checked copy of the operand (6.1.6.2.18–20). Operand equality includes the sign;
-unequal values retain the general bitwise path.
+unequal nonzero values retain the general bitwise path.
 Divisors whose magnitude fits one u32 word use division from the highest word
 down, carrying a remainder in u64. Without work or magnitude quotas, two-word
 divisors similarly use a u128 carry; each combined dividend fits 96 bits and

@@ -20,6 +20,18 @@ struct Case {
 
 const CASES: &[Case] = &[
     Case {
+        name: "bigint_or_xor_zero",
+        source: "(()=>{const positive=(1n<<4096n)+12345n,negative=-positive,mask=0n,positiveXor=positive^mask,negativeXor=negative^mask;let count=0;for(let i=0;i<2048;i++){const value=i&1?negative:positive,expected=i&2?(i&1?negativeXor:positiveXor):value;const result=i&2?(i&1?mask^value:value^mask):(i&1?mask|value:value|mask);if(result===expected)count++}return count})()",
+        expected: 2048.0,
+        jobs: false,
+    },
+    Case {
+        name: "bigint_or_xor_one",
+        source: "(()=>{const positive=(1n<<4096n)+12345n,negative=-positive,mask=1n,positiveXor=positive^mask,negativeXor=negative^mask;let count=0;for(let i=0;i<2048;i++){const value=i&1?negative:positive,expected=i&2?(i&1?negativeXor:positiveXor):value;const result=i&2?(i&1?mask^value:value^mask):(i&1?mask|value:value|mask);if(result===expected)count++}return count})()",
+        expected: 2048.0,
+        jobs: false,
+    },
+    Case {
         name: "bigint_equal_and_or",
         source: "(()=>{const positive=(1n<<4096n)+12345n,negative=-positive;let count=0;for(let i=0;i<2048;i++){const expected=i%2?positive:negative;const result=i%2?(positive&positive):(negative|negative);if(result===expected)count++}return count})()",
         expected: 2048.0,

@@ -649,8 +649,17 @@ impl BigInt {
             .checked_add(1)
             .ok_or(Error::Limit)?;
         budget.charge(width.checked_mul(6).ok_or(Error::Limit)?)?;
-        if op == BitwiseOp::And && (self.is_zero() || other.is_zero()) {
-            return budget.finish(Self::default());
+        if self.is_zero() || other.is_zero() {
+            return budget.finish(match op {
+                BitwiseOp::And => Self::default(),
+                BitwiseOp::Or | BitwiseOp::Xor => {
+                    if self.is_zero() {
+                        other.clone()
+                    } else {
+                        self.clone()
+                    }
+                }
+            });
         }
         if self == other {
             return budget.finish(match op {

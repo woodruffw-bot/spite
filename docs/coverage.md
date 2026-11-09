@@ -61,6 +61,27 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80074 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## BigInt OR/XOR with zero
+
+The integer backend copies the retained magnitude directly for OR/XOR with zero
+in either order, after the unchanged width-based work charge and before result
+limit validation. The existing zero-operand unit now checks all three bitwise
+operations, both orders, signs, exact/short work and result limits.
+
+All 37 BigInt tests, 591 Runtime units, 2,445 non-RegExp integrations, 270 selected
+RegExp groups and 91 runner controls pass. All 3,072 supplemental programs match
+before/after Python/Node oracles as applicable; all 72 work probes are identical.
+Formatting, strict Clippy, Rust 1.99 checks, policy/inventory validation, metadata,
+CLI and documentation tests also pass.
+Both 80-program benchmark smokes pass 82 rows. The instrumented target removes
+10,250 buffer deallocations and 6.1984% of instructions, with unchanged control
+deallocations and +0.0038% instructions; [scope](benchmarking.md#bigint-orxor-with-zero)
+includes initialization and collection, with no wall-time claim.
+
+All 17 hosted CI jobs pass for 3f6081fd6, 950fd1424, d045b5e5f and c1ae69847.
+The preceding frozen full gate remains 91 controls, 41,563 originals and 80,074
+modes, with zero other outcomes. This increment changes no original fixtures.
+
 ## Exact summation iterator and Realm audit
 
 All 354 supplemental Math.sumPrecise programs match the published algorithms and
