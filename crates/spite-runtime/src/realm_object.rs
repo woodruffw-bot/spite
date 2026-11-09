@@ -955,10 +955,7 @@ impl Realm {
         let Some(key) = key.as_string() else {
             return Ok(false);
         };
-        if self.record.global_object.as_ref() == Some(object) {
-            return self.missing_global_property(key, span);
-        }
-        Ok(false)
+        self.missing_global_property(object, key, span)
     }
 }
 
@@ -1032,7 +1029,10 @@ mod tests {
                 Ok(Value::Number(7.0))
             );
             let large = JsString::from_code_units(vec![u16::from(b'a'); 65537]);
-            let lookup = realm.missing_global_property(&large, Span::new(0, 0));
+            let Value::Object(global_object) = &global else {
+                panic!("global object")
+            };
+            let lookup = realm.missing_global_property(global_object, &large, Span::new(0, 0));
             if max_steps.is_some() {
                 assert!(matches!(lookup, Err(Error::Limit { .. })));
             } else {

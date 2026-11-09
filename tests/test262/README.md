@@ -5,6 +5,22 @@ These 41772 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Foreign global capability accounting
+
+Three raw runtime-TypeError negative probes previously passed after unavailable
+child-host globals appeared undefined. They now report Unsupported through direct,
+Reflect and Proxy calls. Native tests cover per-Realm reservations, eleven property
+operations through three receiver shapes, preserved own properties, immutable
+owner identity and collection of a bare global/Realm cycle. All 591 Runtime units,
+2,445 non-RegExp integrations, 270 selected RegExp groups, 91 runner controls and
+the quality gate pass. Object size/alignment remain 800/8 bytes on x86-64. No
+original fixture, helper, mode or review changes; full-corpus/hosted CI receipts
+for this increment are pending.
+
+The preceding 950fd1424 gate passes all 90 controls and 80,074 modes from 41,563
+originals, with zero other outcomes in 1,354.049 seconds and matching saved hashes.
+Its hosted CI receipt remains pending.
+
 ## Host-global key-work regression
 
 The new accounting prepays UTF-16 decoding and host-name lookup. All 588 Runtime

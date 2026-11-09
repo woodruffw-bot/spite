@@ -453,6 +453,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Accept lossless UTF-16 JSON module source, preserving lone surrogates and encoded source-byte limits.
 - [x] Bound CLI file/stdin reads by opted-in source-byte allowances before buffering complete JavaScript or JSON inputs.
 - [x] Prepay arbitrary property-key decoding and lookup for configured unavailable host globals.
+- [x] Associate global objects with traced owner Realms so foreign property operations preserve unavailable-host failures and cannot satisfy runtime negatives through incidental TypeErrors.
 
 - [x] Add module parsing, linking, namespace objects, live bindings, and cycles.
 - [x] Add distinct public UTF-8/lossless UTF-16 Module parsing with strict lexical function scope, Module-wide await identifier restrictions, retained top-level Await/import.meta and explicit static-declaration boundaries.

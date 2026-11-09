@@ -32,6 +32,31 @@ fn negative(phase: &str, error_type: &str, body: &str) -> Outcome {
 }
 
 #[test]
+fn unavailable_child_globals_cannot_satisfy_runtime_type_error_negatives() {
+    for operation in [
+        "child.$DONE()",
+        "Reflect.get(child,'$DONE')()",
+        "(new Proxy(child,{})).$DONE()",
+    ] {
+        let outcome = negative(
+            "runtime",
+            "TypeError",
+            &format!("const child=$262.createRealm().global;{operation}"),
+        );
+        assert!(
+            matches!(
+                outcome,
+                Outcome::Unsupported {
+                    stage: Stage::Runtime,
+                    ..
+                }
+            ),
+            "{operation}: {outcome:?}"
+        );
+    }
+}
+
+#[test]
 fn default_execution_has_no_work_cutoff() {
     assert_eq!(
         raw("if('a'.repeat(2000).indexOf('a'.repeat(999)+'b')!==-1)throw 1;"),

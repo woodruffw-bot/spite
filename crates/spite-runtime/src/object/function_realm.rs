@@ -32,11 +32,26 @@ impl Objects {
     ) -> Result<(), Error> {
         let realm = self.active_function_realm()?;
         let record = self.object_mut(function)?;
-        if record.callable.is_some() {
+        if record.callable.is_some() || record.global {
             return Err(Error::WrongKind);
         }
-        record.function_realm = realm;
+        record.realm = realm;
         record.callable = Some(callable);
+        Ok(())
+    }
+
+    pub(crate) fn initialize_global_realm(
+        &mut self,
+        global: &Handle,
+        realm: &EnvironmentHandle,
+    ) -> Result<(), Error> {
+        self.environment(realm)?;
+        let record = self.object_mut(global)?;
+        if record.realm.is_some() || record.global || record.callable.is_some() {
+            return Err(Error::WrongKind);
+        }
+        record.realm = Some(realm.clone());
+        record.global = true;
         Ok(())
     }
 }
@@ -46,6 +61,34 @@ mod tests {
     use super::*;
     use crate::{BindingState, Value, object::Budget};
     use std::collections::BTreeMap;
+
+    #[test]
+    fn global_realm_is_immutable_traced_and_separate_from_function_realm() {
+        let mut objects = Objects::with_limits(None, None);
+        let mut budget = Budget::with_limits(None, None);
+        let realm = objects
+            .create_environment(None, BTreeMap::new(), &mut budget)
+            .unwrap();
+        let global = objects.create(None).unwrap();
+        objects.initialize_global_realm(&global, &realm).unwrap();
+        let object = objects.inspect(&global).unwrap();
+        assert_eq!(object.global_realm(), Some(&realm));
+        assert!(object.function_realm().is_none());
+        assert!(!object.is_callable());
+        assert_eq!(
+            objects.initialize_global_realm(&global, &realm),
+            Err(Error::WrongKind)
+        );
+        assert_eq!(
+            objects
+                .initialize_callable(&global, Callable::Builtin(crate::function::Builtin::Number)),
+            Err(Error::WrongKind)
+        );
+        objects.collect([&global], usize::MAX).unwrap();
+        assert!(objects.environment(&realm).is_ok());
+        objects.collect([], usize::MAX).unwrap();
+        assert!(objects.environment(&realm).is_err());
+    }
 
     #[test]
     fn builtin_creation_realm_is_immutable_and_traces_its_global_bindings() {

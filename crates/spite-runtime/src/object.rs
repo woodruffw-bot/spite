@@ -126,9 +126,10 @@ pub struct OrdinaryObject {
     private_elements: Vec<(crate::private::PrivateName, private::PrivateElement)>,
     max_properties: Option<usize>,
     callable: Option<Callable>,
-    // Checked global-environment handle identifying a function's creation Realm.
+    // Checked creation Realm for functions and the branded global object.
     // Bound functions and Proxies resolve through their targets instead.
-    function_realm: Option<crate::environment::EnvironmentHandle>,
+    realm: Option<crate::environment::EnvironmentHandle>,
+    global: bool,
     constructible: bool,
     proxy: Option<proxy::ProxyData>,
     primitive_data: Option<PrimitiveData>,
@@ -184,7 +185,8 @@ impl OrdinaryObject {
             private_elements: Vec::new(),
             max_properties,
             callable: None,
-            function_realm: None,
+            realm: None,
+            global: false,
             constructible: false,
             proxy: None,
             primitive_data: None,
@@ -234,7 +236,19 @@ impl OrdinaryObject {
     }
 
     pub(crate) fn function_realm(&self) -> Option<&crate::environment::EnvironmentHandle> {
-        self.function_realm.as_ref()
+        if self.global {
+            None
+        } else {
+            self.realm.as_ref()
+        }
+    }
+
+    pub(crate) fn global_realm(&self) -> Option<&crate::environment::EnvironmentHandle> {
+        if self.global {
+            self.realm.as_ref()
+        } else {
+            None
+        }
     }
 
     /// Returns whether the object has a [[Construct]] internal method.
@@ -557,7 +571,7 @@ impl Trace for OrdinaryObject {
         // Preserve slot order while bounding the intermediate iterator values
         // built by this function in unoptimized native stack frames.
         let initial_slots = std::iter::once(self.prototype.as_ref())
-            .chain(self.function_realm.iter().map(|realm| Some(&realm.0)))
+            .chain(self.realm.iter().map(|realm| Some(&realm.0)))
             .chain(self.proxy.iter().flat_map(|proxy| {
                 proxy
                     .snapshot

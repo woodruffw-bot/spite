@@ -5,7 +5,7 @@ use crate::{
     object::{DataDescriptor, Property},
 };
 use spite_core::{JsString, Span};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 impl Realm {
     pub(super) fn initialize_realm(&mut self) -> Result<(), Error> {
@@ -313,6 +313,14 @@ impl Realm {
         for (name, value) in globals {
             self.define_builtin_property(&object, name, Value::Object(value), true, span)?;
         }
+        let realm = self
+            .record
+            .global_environment
+            .clone()
+            .expect("Realm identity");
+        self.object_work(span, |objects, _| {
+            objects.initialize_global_realm(&object, &realm)
+        })?;
         self.record.global_object = Some(object);
         Ok(())
     }
@@ -490,15 +498,17 @@ impl Realm {
 
     pub(super) fn missing_global_property(
         &mut self,
+        object: &ObjectHandle,
         key: &JsString,
         span: Span,
     ) -> Result<bool, Error> {
-        if self.record.unsupported_host_globals.is_empty() {
+        let count = self.host_global_names(object)?.map_or(0, BTreeSet::len);
+        if count == 0 {
             return Ok(false);
         }
         // Prepay decoding and tree lookup before converting the key. Work units
         // count UTF-16 input units, as for supported import-attribute lookups.
-        let levels = self.record.unsupported_host_globals.len().ilog2() as usize + 1;
+        let levels = count.ilog2() as usize + 1;
         let work = key
             .len()
             .checked_add(1)
@@ -510,8 +520,38 @@ impl Realm {
         self.object_work(span, |_, budget| budget.charge(work))?;
         // Identifier names are UTF-8 scalar strings, while arbitrary property
         // names may contain lone surrogates; those never name configured host barriers.
-        Ok(String::from_utf16(key.code_units())
-            .is_ok_and(|name| self.record.unsupported_host_globals.contains(&name)))
+        let Ok(name) = String::from_utf16(key.code_units()) else {
+            return Ok(false);
+        };
+        Ok(self
+            .host_global_names(object)?
+            .expect("checked global owner")
+            .contains(&name))
+    }
+
+    fn host_global_names(&self, object: &ObjectHandle) -> Result<Option<&BTreeSet<String>>, Error> {
+        if self.record.global_object.as_ref() == Some(object) {
+            return Ok(Some(&self.record.unsupported_host_globals));
+        }
+        let Some(owner) = self
+            .objects
+            .inspect(object)
+            .map_err(Error::InvalidObject)?
+            .global_realm()
+        else {
+            return Ok(None);
+        };
+        let record = self
+            .objects
+            .environment(owner)
+            .map_err(Error::InvalidObject)?
+            .inactive_realm
+            .as_ref()
+            .ok_or(Error::InvalidObject(crate::object::Error::WrongKind))?;
+        if record.global_object.as_ref() != Some(object) {
+            return Err(Error::InvalidObject(crate::object::Error::WrongKind));
+        }
+        Ok(Some(&record.unsupported_host_globals))
     }
 
     pub(super) fn check_global_property_operation<'key>(
@@ -523,8 +563,7 @@ impl Realm {
         let Some(key) = key.into().as_string() else {
             return Ok(());
         };
-        if self.record.global_object.as_ref() == Some(object)
-            && self.missing_global_property(key, span)?
+        if self.missing_global_property(object, key, span)?
             && !self.object_work(span, |objects, budget| objects.has_own(object, key, budget))?
         {
             return Err(Self::unsupported(

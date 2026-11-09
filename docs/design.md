@@ -31,6 +31,16 @@ the input-length and tree-height convention used for supported import attributes
 An exhausted opt-in allowance remains a host Limit; unlimited evaluation retains
 the configured Unsupported barriers and ordinary properties that already exist.
 
+Global objects retain a checked owner-environment handle, using the same traced
+realm slot as functions with a separate global kind flag. Function realm lookup
+excludes globals. The slot is initialized once during Realm bootstrap; native
+callable initialization rejects a branded global. Foreign property operations
+read reservations from the target's inactive Realm record without activating it.
+Direct, reflected and Proxy-forwarded access therefore preserve host failures
+and the caller's execution context. The global-to-environment edge retains this
+metadata after globals/prototypes are cleared, and ordinary cycle collection
+releases the Realm when its global becomes unreachable.
+
 ### Published host policies
 
 The edition-17 normative optional clauses have explicit choices: the legacy

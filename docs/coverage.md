@@ -61,6 +61,28 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80074 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Foreign global host guards
+
+Unavailable globals now follow the target object's Realm through direct,
+reflected and Proxy-forwarded operations. Previously, another Realm could read
+such a name as undefined and produce a catchable TypeError. A runner probe shows
+three raw runtime-TypeError negatives incorrectly passing before this fix; all
+three now report Unsupported. Four public access/call probes also report
+Unsupported, including the unchanged in-Realm control.
+
+The global reuses the checked, traced realm-handle slot with an explicit kind
+flag. Three new Runtime units protect owner selection, all eleven property
+operations through three receiver shapes, immutable kind/realm identity and
+retention/release of a bare global's Realm. Function objects keep their creation
+Realm behavior. Object size/alignment remain 800/8 bytes on the supported x86-64
+build. All 591 Runtime units, 2,445 non-RegExp integrations, 270 selected RegExp
+groups, 91 runner controls and the quality gate pass. Original fixtures and modes
+are unchanged; this increment's full-corpus and hosted CI receipts are pending.
+
+The preceding work-accounting commit 950fd1424 passes its frozen full gate:
+90 controls and 80,074 modes from 41,563 originals, with zero other outcomes in
+1,354.049 seconds. Saved fixture/executable hashes match; its hosted CI is pending.
+
 ## Host-global property-key work
 
 Configured unavailable host globals now prepay property-key decoding and indexed

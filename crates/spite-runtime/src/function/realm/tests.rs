@@ -29,6 +29,100 @@ fn expose_child(
 }
 
 #[test]
+fn foreign_global_barriers_follow_the_target_realm_through_proxy_operations() {
+    let mut realm = Realm::default();
+    realm.reserve_unsupported_global("sharedHost");
+    realm.eval("").unwrap();
+    let (_, child) = realm
+        .with_new_realm(Span::new(0, 0), |child| {
+            child.reserve_unsupported_global("childOnly");
+            child.eval("globalThis.existing=7")?;
+            child.reserve_unsupported_global("existing");
+            Ok(child.global_object())
+        })
+        .unwrap();
+    expose(&mut realm, "child", Value::Object(child));
+    realm.reserve_unsupported_global("parentOnly");
+    assert_eq!(
+        realm.eval("child.parentOnly===undefined && globalThis.childOnly===undefined && child.existing===7 && typeof child.Object.childOnly==='undefined' && typeof(function(){}).childOnly==='undefined' && ('childOnly' in child) && !('parentOnly' in child)"),
+        Ok(Value::Boolean(true))
+    );
+    for receiver in [
+        "child",
+        "new Proxy(child,{})",
+        "new Proxy(new Proxy(child,{}),{})",
+    ] {
+        for operation in [
+            "target.childOnly",
+            "typeof target.childOnly",
+            "Reflect.get(target,'childOnly')",
+            "Object.getOwnPropertyDescriptor(target,'childOnly')",
+            "Reflect.getOwnPropertyDescriptor(target,'childOnly')",
+            "Object.hasOwn(target,'childOnly')",
+            "target.childOnly=1",
+            "Object.defineProperty(target,'childOnly',{value:1})",
+            "Reflect.defineProperty(target,'childOnly',{value:1})",
+            "delete target.childOnly",
+            "Reflect.deleteProperty(target,'childOnly')",
+        ] {
+            let source = format!(
+                "var effects=0;{{const target={receiver};try{{{operation}}}catch(e){{effects=1}}finally{{effects=2}}}}"
+            );
+            let result = realm.eval(&source);
+            assert!(
+                matches!(result, Err(Error::Unsupported { .. })),
+                "{receiver}: {operation}: {result:?}"
+            );
+            assert_eq!(realm.eval("effects"), Ok(Value::Number(0.0)));
+        }
+    }
+    assert!(matches!(
+        realm.eval("child.sharedHost"),
+        Err(Error::Unsupported { .. })
+    ));
+    assert_eq!(
+        realm.eval("child.existing=9;child.existing"),
+        Ok(Value::Number(9.0))
+    );
+    assert_eq!(
+        realm.eval("delete child.existing"),
+        Ok(Value::Boolean(true))
+    );
+    assert!(matches!(
+        realm.eval("child.existing"),
+        Err(Error::Unsupported { .. })
+    ));
+}
+
+#[test]
+fn a_bare_global_retains_its_realm_and_releases_the_cycle_when_unreachable() {
+    let mut realm = Realm::default();
+    realm.eval("").unwrap();
+    let (owner, child) = realm
+        .with_new_realm(Span::new(0, 0), |child| {
+            child.reserve_unsupported_global("childOnly");
+            Ok(child.global_object())
+        })
+        .unwrap();
+    expose(&mut realm, "child", Value::Object(child.clone()));
+    realm
+        .eval("Object.setPrototypeOf(child,null);for(const key of Reflect.ownKeys(child))Reflect.deleteProperty(child,key)")
+        .unwrap();
+    realm.clear_kept_objects().unwrap();
+    realm.collect(usize::MAX).unwrap();
+    assert!(realm.objects.environment(&owner).is_ok());
+    assert!(matches!(
+        realm.eval("child.childOnly"),
+        Err(Error::Unsupported { .. })
+    ));
+    realm.eval("child=null").unwrap();
+    realm.clear_kept_objects().unwrap();
+    realm.collect(usize::MAX).unwrap();
+    assert!(realm.objects.environment(&owner).is_err());
+    assert!(realm.objects.inspect(&child).is_err());
+}
+
+#[test]
 fn foreign_calls_use_creation_intrinsics_and_restore_the_caller() {
     let mut realm = Realm::default();
     let (environment, function) = child_realm_fixture(

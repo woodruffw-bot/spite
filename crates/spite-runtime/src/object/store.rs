@@ -324,7 +324,7 @@ impl Objects {
         self.inspect(prototype)?;
         let mut object =
             OrdinaryObject::with_property_limit(Some(prototype.clone()), self.max_properties);
-        object.function_realm = self.active_function_realm()?;
+        object.realm = self.active_function_realm()?;
         object.callable = Some(Callable::Builtin(builtin));
         object.constructible = matches!(
             builtin,
@@ -500,7 +500,7 @@ impl Objects {
         }
         let mut object =
             OrdinaryObject::with_property_limit(Some(prototype.clone()), self.max_properties);
-        object.function_realm = self.active_function_realm()?;
+        object.realm = self.active_function_realm()?;
         object.callable = Some(Callable::Arrow(arrow));
         Ok(self.heap.insert(Entry::Object(object))?)
     }
@@ -518,7 +518,7 @@ impl Objects {
         let mut object =
             OrdinaryObject::with_property_limit(Some(prototype.clone()), self.max_properties);
         object.constructible = function.kind == spite_parser::ast::FunctionKind::Ordinary;
-        object.function_realm = self.active_function_realm()?;
+        object.realm = self.active_function_realm()?;
         object.callable = Some(Callable::Ordinary(function));
         Ok(self.heap.insert(Entry::Object(object))?)
     }
@@ -536,7 +536,7 @@ impl Objects {
         }
         let mut object =
             OrdinaryObject::with_property_limit(Some(prototype.clone()), self.max_properties);
-        object.function_realm = self.active_function_realm()?;
+        object.realm = self.active_function_realm()?;
         object.callable = Some(Callable::Method(Box::new(method)));
         Ok(self.heap.insert(Entry::Object(object))?)
     }
@@ -707,7 +707,7 @@ impl Objects {
             Some(function_prototype.clone()),
             self.max_properties,
         );
-        record.function_realm = self.active_function_realm()?;
+        record.realm = self.active_function_realm()?;
         record.callable = Some(Callable::ProxyRevoker(Some(proxy.clone())));
         Ok(self.heap.insert(Entry::Object(record))?)
     }
@@ -721,7 +721,7 @@ impl Objects {
         self.inspect(capability)?;
         let mut record =
             OrdinaryObject::with_property_limit(Some(prototype.clone()), self.max_properties);
-        record.function_realm = self.active_function_realm()?;
+        record.realm = self.active_function_realm()?;
         record.callable = Some(Callable::PromiseCapabilityExecutor(capability.clone()));
         Ok(self.heap.insert(Entry::Object(record))?)
     }
@@ -736,7 +736,7 @@ impl Objects {
         self.inspect(cell)?;
         let mut record =
             OrdinaryObject::with_property_limit(Some(prototype.clone()), self.max_properties);
-        record.function_realm = self.active_function_realm()?;
+        record.realm = self.active_function_realm()?;
         record.callable = Some(Callable::PromiseResolvingFunction {
             cell: cell.clone(),
             resolve,
@@ -754,7 +754,7 @@ impl Objects {
         self.inspect(cell)?;
         let mut record =
             OrdinaryObject::with_property_limit(Some(prototype.clone()), self.max_properties);
-        record.function_realm = self.active_function_realm()?;
+        record.realm = self.active_function_realm()?;
         record.callable = Some(Callable::PromiseFinally {
             cell: cell.clone(),
             kind,
