@@ -19,8 +19,10 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all 74 program workloads |
+| parse_all | Parse and drop the ASTs for all 76 program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
+| bigint_xor_equal | XOR equal positive/negative 4,097-bit values 2,048 times, checking zero |
+| bigint_xor_different | Repeat with unequal operands sharing their low words, checking the high-bit mask |
 | array_locale_single | Stringify a one-element Array containing a 16,384-unit BMP/lone-surrogate String sixteen times with toLocaleString, checking length and final unit |
 | array_locale_multiple | Repeat with two elements as a control |
 | array_join_single | Join a one-element Array containing a 16,384-unit BMP/lone-surrogate String sixteen times, checking length and final unit |
@@ -109,6 +111,30 @@ their ordinary unlimited defaults.
 
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
+
+## Equal BigInt XOR operands
+
+After prepaying the existing width-based work, the integer backend returns
+canonical zero for equal XOR operands. Baseline production is c59cf28f8.
+Matched executables use identical 76-workload sources, Rust 1.99, optimized
+conformance libraries, debug assertions and overflow checks. Parser source is
+unchanged; its binary rebuilds with its BigInt dependency.
+
+Each Callgrind program evaluates five times, with 2,048 XOR operations per
+evaluation on positive/negative 4,097-bit magnitudes. Unequal control operands
+share their low words and differ in a high-bit mask. Counts include
+initialization, parsing/evaluation and collection.
+
+| Workload | Instructions before | Instructions after | Rust deallocations before | Rust deallocations after |
+| --- | ---: | ---: | ---: | ---: |
+| Equal operands | 400,744,872 | 355,636,103 | 126,676 | 106,196 |
+| Unequal control | 409,213,628 | 410,409,712 | 147,451 | 147,451 |
+
+The target uses 11.2562% fewer instructions and removes two buffers per XOR.
+The control uses 0.2923% more instructions and retains its deallocation count.
+Both benchmark smokes pass all 78 rows; 3,072 semantic programs and all 24
+measured work allowances remain exact before and after. These counts support
+no elapsed-time or general workload speedup claim and add no CI timing threshold.
 
 ## Singleton Array.toLocaleString
 

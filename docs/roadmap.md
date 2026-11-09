@@ -698,6 +698,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Reuse immutable cooked String storage for templates without substitutions through the ordinary evaluator, preserving work allowances and async delegation.
 - [x] Reuse the converted singleton Array.join result after separator/element observations and existing work/output checks, retaining generic receivers and length snapshots.
 - [x] Reuse a singleton Array.toLocaleString result after ordered method lookup, invocation and conversion, preserving primitive receivers, captured length and existing work/output checks.
+- [x] Return canonical zero for equal BigInt XOR operands after the existing width-based work charge and result validation.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

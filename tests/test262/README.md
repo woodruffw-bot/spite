@@ -5,6 +5,16 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Equal BigInt XOR regression
+
+All 37 BigInt tests, 577 Runtime units, 2,445 non-RegExp integrations,
+270 selected RegExp groups and the quality gate pass. Before and after,
+1,536 coercion/error cases, 1,024 wide-integer oracle programs and 512 additional
+Python/Node programs match their expectations. Exact and insufficient budgets
+remain protected; all 24 measured work allowances are identical. Both benchmark
+smokes pass all 78 rows. The corpus receipt is pending. Fixtures, helpers,
+modes and reviews are unchanged.
+
 ## Singleton Array.toLocaleString storage regression
 
 All 577 Runtime units, 2,445 non-RegExp integrations, 270 selected RegExp groups
@@ -21,7 +31,10 @@ All 577 Runtime units, 2,445 non-RegExp integrations, 270 selected RegExp groups
 and the quality gate pass. All 405 generic/Array/Proxy programs plus 405 collection
 repeats match Node before and after, including mutation and abrupt conversion
 order. Work allowances remain identical; both benchmark smokes pass all 74 rows.
-The corpus receipt is pending. Fixtures, helpers, modes and reviews are unchanged.
+The gate frozen on clean 6298b20ef passes all 87 controls and 80,060 modes from
+41,550 originals, with zero other outcomes in 1,405.620 seconds. Saved executable
+and fixture hashes match; all 17 CI jobs pass. Fixtures, helpers, modes and
+reviews are unchanged.
 
 ## Templates without substitutions regression
 

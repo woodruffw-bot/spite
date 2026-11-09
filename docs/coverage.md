@@ -61,6 +61,25 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Equal BigInt XOR operands
+
+After prepaying the existing width-based work, BigInt XOR returns canonical
+zero for equal operands, retaining result validation (6.1.6.2.19). One existing
+native group now protects exact and insufficient budgets for zero, both signs
+and wide values. All 37 BigInt tests, 577 Runtime units, 2,445 non-RegExp
+integrations, 270 selected RegExp groups and the quality gate pass.
+
+Before and after, all 1,536 coercion/error cases match Node, the 1,024-program
+wide-integer oracle remains exact and 512 additional programs match Python
+and Node. All 24 measured work allowances are identical. Both benchmark smokes
+pass all 78 rows from 76 workloads.
+
+Five evaluations of 2,048 XOR operations remove 20,480 Rust deallocations,
+two buffers per equal pair. Callgrind instructions change from 400,744,872 to
+355,636,103 (-11.256%). The unequal-operand control retains its deallocation
+count and uses 0.292% more instructions. Profiles include initialization,
+parsing/evaluation and collection, without a general wall-time claim.
+
 ## Singleton Array.toLocaleString storage reuse
 
 Array.toLocaleString reuses the converted singleton result after the same method
@@ -95,6 +114,11 @@ to 179,031,202 (-2.905%); the multiple-element control changes by ten instructio
 with identical deallocation counts. Profiles include initialization, parsing,
 evaluation and collection, without a general wall-time claim.
 
+The gate frozen on clean 6298b20ef passes all 87 controls and 80,060 modes from
+41,550 originals, with zero other outcomes in 1,405.620 seconds. Saved executable
+and fixture hashes match; all 17 CI jobs pass. This receipt precedes singleton
+Array.toLocaleString reuse.
+
 ## Number formatting bit-pattern audit
 
 A read-only audit checks 16,384 values in 512 programs across String conversion,
@@ -114,6 +138,13 @@ All 163,840 results match independent Python calculations and Node bit for bit,
 with NaNs compared by classification. Inputs cover every binary exponent
 transition, adjacent rounding ties, signed zero, subnormals, infinities and a
 seeded random sample. This audit changes no implementation or fixture bytes.
+
+A separate read-only Number-operator audit checks 16,384 operand pairs across
+eleven arithmetic, bitwise and shift operators, their compound assignments and
+five comparisons. All 442,368 observations match independent Python calculations
+and Node, including signed zeros and NaN classification. Inputs cover every
+binary exponent transition, boundary operands and seeded random pairs. This
+adds evidence without changing Number implementation or fixture bytes.
 
 ## Templates without substitutions
 

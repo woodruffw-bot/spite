@@ -160,6 +160,26 @@ fn infinite_bitwise_operations_match_signed_native_integers() {
 
 #[test]
 fn bitwise_limits_apply_to_results_and_work() {
+    let large = parse(&format!("1{}", "0".repeat(256)), 2);
+    for (value, work) in [
+        (BigInt::default(), 6),
+        (BigInt::from(1), 12),
+        (BigInt::from(-1), 12),
+        (large.clone(), 60),
+        (large.neg(&mut budget()).unwrap(), 60),
+    ] {
+        let other = value.clone();
+        let mut exact = Budget::new(0, work);
+        assert_eq!(
+            value.bitwise(&other, BitwiseOp::Xor, &mut exact),
+            Ok(BigInt::default())
+        );
+        assert_eq!(exact.remaining_work(), Some(0));
+        assert_eq!(
+            value.bitwise(&other, BitwiseOp::Xor, &mut Budget::new(0, work - 1)),
+            Err(Error::Limit)
+        );
+    }
     assert_eq!(
         BigInt::from(-1).bitnot(&mut Budget::new(0, 100)).unwrap(),
         BigInt::default()
