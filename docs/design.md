@@ -3795,6 +3795,9 @@ syntax errors, without imposing a default quota. Number conversion uses correctl
 rounded binary64 decimal parsing and preserves negative zero, overflow, and
 underflow. JSON.parse converts text once with the string hint, reports invalid
 text as an intrinsic SyntaxError, and materializes the flat tree iteratively.
+The crate-private text entry point separates input conversion from this shared
+materialization/reviver path, allowing native module parsing to reuse it without
+looking up the public JSON.parse property.
 Objects and dense arrays use retained intrinsic prototypes. Own writable,
 enumerable, configurable data properties bypass inherited setters; duplicate
 names replace earlier values without changing their initial property order, and

@@ -88,7 +88,16 @@ impl Realm {
         span: Span,
     ) -> Result<Value, Error> {
         let text = self.string(text, span)?;
-        let document = self.json_document(&text, span)?;
+        self.json_parse_text(&text, reviver, span)
+    }
+
+    pub(crate) fn json_parse_text(
+        &mut self,
+        text: &JsString,
+        reviver: Value,
+        span: Span,
+    ) -> Result<Value, Error> {
+        let document = self.json_document(text, span)?;
         let mut values: Vec<Value> = Vec::new();
         for node in &document.nodes {
             self.tick(span)?;
@@ -145,7 +154,7 @@ impl Realm {
         if !self.is_callable(&reviver, span)? {
             return Ok(value);
         }
-        self.json_revive(&text, &document, &values, reviver, span)
+        self.json_revive(text, &document, &values, reviver, span)
     }
 
     fn json_document(&mut self, text: &JsString, span: Span) -> Result<JsonDocument, Error> {

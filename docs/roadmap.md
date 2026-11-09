@@ -446,6 +446,9 @@ silently acquire substitute semantics. The coverage document must list gaps.
 
 ## 5. Modules and suspended execution
 
+- [ ] Add retained JSON Synthetic Module Records with initialized default exports and normal graph linking/evaluation.
+- [ ] Load JSON modules through explicit type attributes, preserving file confinement and cache identity by module type.
+
 - [x] Add module parsing, linking, namespace objects, live bindings, and cycles.
 - [x] Add distinct public UTF-8/lossless UTF-16 Module parsing with strict lexical function scope, Module-wide await identifier restrictions, retained top-level Await/import.meta and explicit static-declaration boundaries.
 - [x] Validate reviewed Test262 Module parse negatives with the Module goal, exact unprefixed rejection evidence, phase checks and separate unsupported linking/execution outcomes.
@@ -702,6 +705,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Share the equal-operand branch with BigInt AND/OR, returning checked operand copies after the existing work charge without temporary two's-complement buffers.
 - [x] Express validated private-name grammar invariants in ordinary object, binding, assignment and super property consumers, removing obsolete unavailable-feature fallbacks while retaining computed private expressions and assignment targets.
 - [x] Assert ordinary-evaluator suspension exclusions after resumable-driver dispatch, replacing obsolete Await, Yield and for-await-of unavailable-feature fallbacks.
+- [x] Factor intrinsic JSON text materialization behind a crate-private entry point, preserving builtin ToString, revivers and limits.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

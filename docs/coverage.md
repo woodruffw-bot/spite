@@ -61,6 +61,36 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Intrinsic JSON text parsing
+
+JSON.parse performs its existing ToString conversion before a crate-private
+text entry point constructs values and applies an optional reviver. Source
+comparison confirms the materialization/reviver body is identical after
+adjusting the borrowed-text spelling. All 577 Runtime units, 2,445 non-RegExp
+integrations, 270 selected RegExp groups and the quality gate pass. Public
+work allowances for 1/65/4,097/16,385 data units remain 1,047/1,431/25,623/99,351.
+This prepares native JSON module parsing without enabling a new module format.
+
+## Saved baseline catalog reconciliation
+
+At c7cfca611, 19 saved catalogs contain 11,053 distinct paths. All 9,861 retained
+originals match their pinned Git blob IDs; no byte mismatches occur. All 1,192
+absent rows have recorded reasons:
+
+| Reason | Rows |
+| --- | ---: |
+| Beyond the published target, including resource-management forms | 964 |
+| Unused support files | 85 |
+| Optional legacy methods | 27 |
+| Post-publication iterator-helper limit assertions | 6 |
+| Host allocation assumptions | 5 |
+| JSON loading outside the current host attribute policy | 13 |
+| Pinned tests require membership different from Unicode18 | 92 |
+
+No newly missing mandatory originals are identified within these catalogs.
+This reconciles saved inventories; it does not audit the whole upstream tree.
+Fixture bytes, selection, flags and execution counts remain unchanged.
+
 ## Resumable driver dispatch invariants
 
 The ordinary evaluator records the established dispatch invariants for Await,
@@ -75,6 +105,12 @@ for-await programs across four iterator sources, twelve statement contexts and
 two function goals. Observations include requests, coercions, finalizers and
 Promise-job effects. Public eval parsing retains Script-level Await/Yield
 restrictions. Fixtures, snapshots and native group inventories are unchanged.
+
+The combined gate frozen on clean c7cfca611 passes all 87 controls and 80,060
+modes from 41,550 originals, with zero other outcomes in 1,110.324 seconds.
+Saved executable and fixture hashes match. This includes both grammar and
+dispatch cleanups, before JSON text extraction. All 17 CI jobs pass at c7cfca611
+and at the earlier private-property commit 5e1d14ca8.
 
 ## Validated private-property grammar
 

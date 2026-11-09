@@ -5,13 +5,30 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Intrinsic JSON text parsing regression
+
+All 577 Runtime units, 2,445 non-RegExp integrations, 270 selected RegExp groups
+and the quality gate pass. The materialization/reviver body is unchanged after
+borrowed-text adjustment; four public work allowances are identical. This
+prepares native JSON module parsing. Fixtures, helpers, modes and reviews are
+unchanged.
+
+## Grammar/dispatch execution receipt
+
+The combined gate frozen on clean c7cfca611 passes all 87 controls and 80,060
+modes from 41,550 originals, with zero other outcomes in 1,110.324 seconds.
+Saved executable and fixture hashes match. This includes the private-property
+and suspension-dispatch cleanups, before JSON text extraction. All 17 CI jobs
+pass at c7cfca611 and at the earlier private-property commit 5e1d14ca8.
+
 ## Resumable driver dispatch regression
 
 All 577 Runtime units, 2,445 non-RegExp integrations, 270 selected RegExp groups
 and the quality gate pass. All 1,632 Await/Yield/async-Yield/for-await programs
 match Node before and after, including collection repeats. The fresh Runtime
-retains identical Parser and specialized executor hashes. The corpus receipt
-is pending. Fixtures, helpers, modes and reviews are unchanged.
+retains identical Parser and specialized executor hashes. The combined
+execution receipt above covers this implementation. Fixtures, helpers, modes
+and reviews are unchanged.
 
 ## Validated private-property grammar regression
 
@@ -20,8 +37,8 @@ and the quality gate pass. The unchanged Parser passes all 18 units and 443
 integrations; library and syntax-source hashes match across the Runtime change.
 All 216 raw Script/Module checks and 648 execution programs meet published
 expectations and Node behavior, including 648 collection repeats before and
-after. The corpus receipt is pending. Fixtures, helpers, modes and reviews
-are unchanged.
+after. The combined execution receipt above covers this implementation.
+Fixtures, helpers, modes and reviews are unchanged.
 
 ## Combined locale/XOR execution receipt
 
@@ -41,8 +58,9 @@ Python/Node programs meet expectations. All 72 measured work allowances are
 identical, including result-size refusals. Both benchmark smokes pass all
 80 rows. The gate frozen on clean 168209442 passes all 87 controls and 80,060
 modes from 41,550 originals, with zero other outcomes in 1,398.333 seconds.
-Saved executable and fixture hashes match. This precedes the grammar/dispatch
-cleanups. Fixtures, helpers, modes and reviews are unchanged.
+Saved executable and fixture hashes match; all 17 CI jobs pass at 168209442.
+This precedes the grammar/dispatch cleanups. Fixtures, helpers, modes and reviews
+are unchanged.
 
 ## Equal BigInt XOR regression
 
