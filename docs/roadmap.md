@@ -447,7 +447,8 @@ silently acquire substitute semantics. The coverage document must list gaps.
 ## 5. Modules and suspended execution
 
 - [x] Add retained JSON Synthetic Module Records with initialized default exports and normal graph linking/evaluation.
-- [ ] Load JSON modules through explicit type attributes, preserving file confinement and cache identity by module type.
+- [x] Load JSON modules through explicit type attributes, preserving filesystem-only resolution and cache identity by module type.
+- [ ] Run and retain the published JSON-module Test262 originals with their unchanged JSON support files.
 
 - [x] Add module parsing, linking, namespace objects, live bindings, and cycles.
 - [x] Add distinct public UTF-8/lossless UTF-16 Module parsing with strict lexical function scope, Module-wide await identifier restrictions, retained top-level Await/import.meta and explicit static-declaration boundaries.

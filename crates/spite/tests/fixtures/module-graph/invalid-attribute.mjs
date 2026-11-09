@@ -1,1 +1,1 @@
-import './absent.mjs' with { type: 'json' };
+import './absent.mjs' with { unknown: 'json' };

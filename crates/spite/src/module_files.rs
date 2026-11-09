@@ -1,6 +1,8 @@
 //! Explicit filesystem paths for the command-line Module host.
 
-use spite::{DiagnosticKind, Error, ExceptionKind, ModuleHandle, Realm, Span, ast::ModuleRequest};
+use spite::{
+    DiagnosticKind, Error, ExceptionKind, JsString, ModuleHandle, Realm, Span, ast::ModuleRequest,
+};
 use std::{
     collections::{HashMap, HashSet},
     fs,
@@ -14,10 +16,40 @@ struct Node {
     expanded: bool,
 }
 
+#[derive(Clone, Copy, Eq, Hash, PartialEq)]
+enum ModuleType {
+    JavaScript,
+    Json,
+}
+
+impl ModuleType {
+    fn from_request(request: &ModuleRequest) -> Result<Self, Error> {
+        let mut kind = Self::JavaScript;
+        for attribute in &request.attributes {
+            if attribute.key != JsString::from("type") {
+                return Err(Error::Exception {
+                    kind: ExceptionKind::SyntaxError,
+                    span: Span::new(0, 0),
+                    message: "unsupported import attribute key".into(),
+                });
+            }
+            if attribute.value != JsString::from("json") {
+                return Err(Error::Exception {
+                    kind: ExceptionKind::TypeError,
+                    span: Span::new(0, 0),
+                    message: "unsupported module type".into(),
+                });
+            }
+            kind = Self::Json;
+        }
+        Ok(kind)
+    }
+}
+
 #[derive(Default)]
 pub(super) struct FileModules {
     nodes: Vec<Node>,
-    files: HashMap<PathBuf, usize>,
+    files: HashMap<(PathBuf, ModuleType), usize>,
     records: HashMap<ModuleHandle, usize>,
     script_directory: PathBuf,
 }
@@ -69,7 +101,7 @@ impl FileModules {
             script_directory: PathBuf::from("."),
             ..Self::default()
         };
-        loader.insert(root, directory, filename)?;
+        loader.insert(root, directory, filename, ModuleType::JavaScript)?;
         let root = loader.publish_graph(realm, 0)?;
         Ok((loader, root))
     }
@@ -79,6 +111,7 @@ impl FileModules {
         record: ModuleHandle,
         directory: PathBuf,
         filename: Option<PathBuf>,
+        kind: ModuleType,
     ) -> Result<usize, Error> {
         self.nodes.try_reserve(1).map_err(|_| capacity())?;
         self.records.try_reserve(1).map_err(|_| capacity())?;
@@ -88,7 +121,7 @@ impl FileModules {
         let index = self.nodes.len();
         self.records.insert(record.clone(), index);
         if let Some(filename) = filename {
-            self.files.insert(filename, index);
+            self.files.insert((filename, kind), index);
         }
         self.nodes.push(Node {
             record,
@@ -105,26 +138,23 @@ impl FileModules {
         directory: &Path,
         request: &ModuleRequest,
     ) -> Result<usize, Error> {
-        // The host supports no import-attribute keys. Static requests must reject
-        // before file access; dynamic outer requests are already checked by Runtime.
-        if !request.attributes.is_empty() {
-            return Err(Error::Exception {
-                kind: ExceptionKind::SyntaxError,
-                span: Span::new(0, 0),
-                message: "unsupported import attribute key".into(),
-            });
-        }
+        // Select the host module type before filesystem access or cache lookup.
+        // An explicit type chooses JSON; absent attributes select JavaScript.
+        let kind = ModuleType::from_request(request)?;
         let specifier = String::from_utf16(request.specifier.code_units())
             .map_err(|_| host("Module file paths require valid Unicode".into()))?;
         let path = canonical(&directory.join(specifier))?;
-        if let Some(&index) = self.files.get(&path) {
+        if let Some(&index) = self.files.get(&(path.clone(), kind)) {
             return Ok(index);
         }
         let source = fs::read_to_string(&path)
             .map_err(|error| host(format!("cannot read Module {}: {error}", path.display())))?;
-        let record = realm.create_module(&source)?;
+        let record = match kind {
+            ModuleType::JavaScript => realm.create_module(&source)?,
+            ModuleType::Json => realm.create_json_module(&source)?,
+        };
         let directory = path.parent().expect("canonical file parent").to_path_buf();
-        self.insert(record, directory, Some(path))
+        self.insert(record, directory, Some(path), kind)
     }
 
     fn publish_graph(&mut self, realm: &mut Realm, root: usize) -> Result<ModuleHandle, Error> {

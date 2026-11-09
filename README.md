@@ -34,9 +34,12 @@ Use `--module` for Module sources from an argument, file or stdin.
 Module mode waits for top-level Await and prints the evaluation completion value,
 normally `undefined`. Rejected or unsettled evaluations fail. Static and dynamic imports are
 literal filesystem paths resolved relative to their importing file, or the current
-directory for argument/stdin sources. Canonical paths share dependency records,
-including cycles. Paths are read as UTF-8 Module source without package or extension
-search. Imported syntax errors reject dynamic imports with SyntaxError; filesystem,
+directory for argument/stdin sources. Canonical paths and module types share
+dependency records, including cycles. Use `with { type: "json" }` for a JSON
+default export, or `import(path, { with: { type: "json" } })` dynamically. Without
+attributes, files are JavaScript Modules. The explicit type selects the parser
+independently of the file suffix; no package or extension search is performed.
+Imported syntax errors reject dynamic imports with SyntaxError; filesystem,
 unsupported-feature and opted-in limit failures remain host failures.
 Uncaught Error values show their stored name and message in diagnostics.
 

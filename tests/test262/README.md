@@ -5,6 +5,17 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## CLI JSON file import regression
+
+The CLI now loads JSON through explicit type attributes and caches canonical
+path/module-type pairs. All 34 CLI groups and the quality gate pass. All 512
+generated JSON file imports match the saved Node SyntheticModule oracle, including
+static/dynamic namespace identity. Unknown keys/types reject before file access;
+JSON syntax, filesystem and source-limit failures retain distinct diagnostics.
+No fixture/helper bytes, modes or reviews change. The preceding ef818043b Runtime
+full-corpus and hosted CI receipts remain pending; original JSON-module fixture
+admission is the next milestone.
+
 ## Retained JSON Synthetic Module regression
 
 Eight native tests cover intrinsic parsed defaults, pre-evaluation undefined,

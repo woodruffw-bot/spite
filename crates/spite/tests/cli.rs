@@ -567,7 +567,9 @@ fn module_file_loading_preserves_syntax_host_and_attribute_failures() {
     for (source, expected) in [
         ("import './invalid.mjs'", "Syntax"),
         ("import './absent.mjs'", "Host"),
-        ("import './absent.mjs' with {type:'json'}", "SyntaxError"),
+        ("import './absent.mjs' with {unknown:'json'}", "SyntaxError"),
+        ("import './absent.mjs' with {type:'css'}", "TypeError"),
+        ("import './absent.mjs' with {type:'json'}", "Host"),
         ("import '\\uD800'", "valid Unicode"),
         ("import '\\u0000'", "Host"),
     ] {
@@ -582,6 +584,165 @@ fn module_file_loading_preserves_syntax_host_and_attribute_failures() {
         assert_eq!(output.status.code(), Some(1), "{source}: {output:?}");
         assert!(output.stdout.is_empty());
         assert!(String::from_utf8(output.stderr).unwrap().contains(expected));
+    }
+}
+
+#[test]
+fn json_file_imports_share_values_across_static_dynamic_and_canonical_paths() {
+    let source = r#"
+        import data,* as ns from './data.json' with {type:'json'};
+        export {default as forwarded} from './data.json' with {type:'json'};
+        JSON=undefined;
+        const again=await import('./../module-graph/data.json',{with:{type:'json'}});
+        if(again!==ns || ns.default!==data || data.answer!==42 ||
+           Object.getPrototypeOf(data)!==Object.prototype ||
+           !Object.hasOwn(data,'__proto__') || !data.__proto__.own ||
+           data.duplicate!==2 || data.text.charCodeAt(1)!==0xd800 ||
+           !data.array[0] || data.array[1]!==null) throw 7;
+        data.answer=43;
+        if(again.default.answer!==43 || Reflect.set(ns,'default',0)) throw 8;
+    "#;
+    let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+        .current_dir(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/fixtures/module-graph"
+        ))
+        .args(["--module", "--eval", source])
+        .output()
+        .unwrap();
+    assert!(output.status.success(), "{output:?}");
+    assert_eq!(
+        String::from_utf8(output.stdout).unwrap().trim(),
+        "undefined"
+    );
+    assert!(output.stderr.is_empty());
+}
+
+#[test]
+fn json_file_cache_distinguishes_module_types_for_the_same_canonical_path() {
+    // This host selects the parser from the type attribute, independent of suffix.
+    let source = r#"
+        import * as js from './number.json';
+        import value,* as json from './number.json' with {type:'json'};
+        const dynamicJs=await import('./number.json');
+        const dynamicJson=await import('./number.json',{with:{type:'json'}});
+        if(value!==7 || js===json || dynamicJs!==js || dynamicJson!==json ||
+           Object.keys(js).length!==0 || Object.keys(json).join(',')!=='default') throw 7;
+    "#;
+    let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+        .current_dir(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/fixtures/module-graph"
+        ))
+        .args(["--module", "--eval", source])
+        .output()
+        .unwrap();
+    assert!(output.status.success(), "{output:?}");
+    assert_eq!(
+        String::from_utf8(output.stdout).unwrap().trim(),
+        "undefined"
+    );
+    assert!(output.stderr.is_empty());
+}
+
+#[test]
+fn script_json_imports_validate_types_and_recover_from_json_syntax_failures() {
+    let source = r#"
+        JSON=undefined;
+        let checks=0;
+        const checked=Promise.all([
+        import('./invalid.json',{with:{type:'json'}}).then(()=>{throw 8},error=>{
+            if(!(error instanceof SyntaxError)) throw error;checks++;
+        }),
+        import('./absent.json',{with:{type:'css'}}).then(()=>{throw 9},error=>{
+            if(!(error instanceof TypeError)) throw error;checks++;
+        }),
+        import('./absent.json',{with:{unknown:'json'}}).then(()=>{throw 10},error=>{
+            if(!(error instanceof TypeError)) throw error;checks++;
+        }),
+        import('./data.json',{with:{type:'json'}})
+        ]).then(results=>{
+            if(checks!==3 || results[3].default.answer!==42) throw 7;
+            return 42;
+        });
+        checked.constructor={ [Symbol.species]:class {
+            constructor(executor){executor(
+                value=>{throw new Error('fulfilled '+value)},
+                reason=>{throw new Error('rejected '+reason)}
+            )}
+        }};
+        checked.then(value=>value);
+        42
+    "#;
+    let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+        .current_dir(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/fixtures/module-graph"
+        ))
+        .args(["--eval", source])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(1), "{output:?}");
+    assert!(output.stdout.is_empty());
+    assert_eq!(
+        String::from_utf8(output.stderr).unwrap().trim(),
+        "uncaught Error: fulfilled 42"
+    );
+}
+
+#[test]
+fn json_file_import_syntax_and_host_failures_keep_distinct_diagnostics() {
+    for (source, expected) in [
+        (
+            "import value from './invalid.json' with {type:'json'}",
+            "SyntaxError",
+        ),
+        (
+            "try{await import('./absent.json',{with:{type:'json'}})}catch{throw 7}",
+            "Host",
+        ),
+        (
+            "import {answer} from './data.json' with {type:'json'}",
+            "SyntaxError",
+        ),
+    ] {
+        let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+            .current_dir(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/tests/fixtures/module-graph"
+            ))
+            .args(["--module", "--eval", source])
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(1), "{source}: {output:?}");
+        assert!(output.stdout.is_empty());
+        assert!(
+            String::from_utf8(output.stderr)
+                .unwrap()
+                .starts_with(expected)
+        );
+    }
+    for source in [
+        "import './data.json' with {type:'json'}",
+        "await import('./data.json',{with:{type:'json'}})",
+    ] {
+        assert!(source.len() <= 80);
+        assert!(include_str!("fixtures/module-graph/data.json").len() > 80);
+        let output = Command::new(env!("CARGO_BIN_EXE_spite"))
+            .current_dir(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/tests/fixtures/module-graph"
+            ))
+            .args(["--module", "--max-source-bytes", "80", "--eval", source])
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(1), "{output:?}");
+        assert!(output.stdout.is_empty());
+        assert!(
+            String::from_utf8(output.stderr)
+                .unwrap()
+                .starts_with("Limit")
+        );
     }
 }
 

@@ -61,6 +61,20 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## CLI JSON file imports
+
+The CLI accepts static and dynamic type: "json" imports and parses them with the
+intrinsic JSON parser. Canonical path plus module type determines record identity;
+requests without attributes use JavaScript parsing independently of file suffix.
+Unsupported keys/types reject before filesystem access or cache lookup. JSON
+syntax failures stay language SyntaxErrors, while filesystem and opt-in source
+limits stay host failures. Four new CLI groups cover these paths, value/namespace
+identity, prototypes, poisoned public JSON and recovery after rejected imports.
+All 34 CLI groups and the quality gate pass. All 512 generated real-file imports
+match the Node SyntheticModule oracle and share their static/dynamic namespace.
+The Runtime and fixture corpus are unchanged from ef818043b; its full run and
+hosted CI remain pending. Published JSON-module fixture admission is next.
+
 ## Retained JSON Synthetic Modules
 
 Realm::create_json_module retains an intrinsic parsed JSON value with one default

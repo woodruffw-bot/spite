@@ -5,7 +5,7 @@ for (const path of ['./invalid.mjs', './invalid-attribute.mjs']) {
     caught++;
   }
 }
-try { await import('./absent.mjs', { with: { type: 'json' } }); } catch (error) {
+try { await import('./absent.mjs', { with: { type: 'css' } }); } catch (error) {
   if (!(error instanceof TypeError)) throw error;
   caught++;
 }

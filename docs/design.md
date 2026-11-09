@@ -119,10 +119,15 @@ the evaluation Promise, drains FIFO Promise jobs and services finite Atomics
 waits at idle boundaries until evaluation settles. Fulfillment prints its value;
 rejection, reported job failure or an idle unsettled evaluation exits with an
 error. Static imports resolve literal paths relative to their referring file, or
-the process directory for argument/stdin roots. Canonical paths cache retained
-records before their requests are expanded, preserving shared dependencies and
+the process directory for argument/stdin roots. Canonical paths paired with module
+types cache retained records before their requests are expanded, preserving shared dependencies and
 cycles. Graph loading is iterative and runs no module body before linking.
-Unknown import-attribute keys reject before file access. Filesystem/encoding
+The CLI registers the type attribute key and accepts only its json value. Such
+requests use create_json_module; absent attributes use JavaScript Module parsing.
+This explicit type selects the parser independently of a file's suffix. Unknown
+keys and unsupported type values reject before file access or cache lookup.
+The same path with different module types has distinct records and namespaces.
+Filesystem/encoding
 failures remain Host errors; imported syntax retains its parser diagnostic.
 Dynamic requests use the same retained file cache, serviced between Promise jobs.
 Imported syntax and static-attribute errors reject with SyntaxError; evaluation
@@ -684,7 +689,7 @@ evaluation publishes the captured value once, using the existing cached Promise
 and namespace machinery. Namespace imports, reexports, dynamic import completion
 and top-level-Await parents accept either record kind. Work, source, string and
 heap limits remain opt-in. This library API leaves supported import attributes
-and file resolution to the host; the CLI does not yet load JSON files.
+and file resolution to the host; the CLI opts in to the type key for JSON files.
 
 Realm::module_namespace links a loaded record's graph and caches its
 namespace without entering the body (10.4.6, GetModuleNamespace). Evaluation reuses

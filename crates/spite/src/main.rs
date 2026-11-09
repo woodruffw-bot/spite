@@ -236,11 +236,14 @@ fn main() -> ExitCode {
             };
             return parsed.map(|()| None).map_err(|error| error.to_string());
         }
-        let mut realm = Realm::new(Limits {
-            max_steps,
-            max_source_bytes,
-            ..Limits::default()
-        });
+        let mut realm = Realm::new_with_supported_import_attributes(
+            Limits {
+                max_steps,
+                max_source_bytes,
+                ..Limits::default()
+            },
+            [JsString::from("type")],
+        );
         let value = if module {
             evaluate_module(&mut realm, &source, filename.as_deref())
         } else {
