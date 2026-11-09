@@ -700,6 +700,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Reuse a singleton Array.toLocaleString result after ordered method lookup, invocation and conversion, preserving primitive receivers, captured length and existing work/output checks.
 - [x] Return canonical zero for equal BigInt XOR operands after the existing width-based work charge and result validation.
 - [x] Share the equal-operand branch with BigInt AND/OR, returning checked operand copies after the existing work charge without temporary two's-complement buffers.
+- [x] Express validated private-name grammar invariants in ordinary object, binding, assignment and super property consumers, removing obsolete unavailable-feature fallbacks while retaining computed private expressions and assignment targets.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

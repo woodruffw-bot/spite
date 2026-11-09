@@ -61,6 +61,24 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Validated private-property grammar
+
+Ordinary object, binding, assignment and super property consumers now express
+the Parser's grammar invariants, replacing four obsolete unavailable-feature
+fallbacks. Scripts and Modules expose immutable views of Parser-private
+statement storage. Legal computed private expressions and private assignment
+targets retain their evaluation paths.
+
+All 577 Runtime units, 2,445 non-RegExp integrations, 270 selected RegExp groups
+and the quality gate pass. All 18 Parser units and 443 integrations pass; the
+fresh Runtime build retains identical Parser library and syntax-source hashes.
+Across 108 distinct sources, all 216 raw Script/Module checks match Node and
+published grammar expectations: 48 invalid and 60 legal forms per goal.
+All 648 execution programs plus 648 collection repeats match expected results
+and Node before and after, covering six source goals, six private-name spellings,
+unexecuted invalid branches, computed keys, private targets and resumed methods.
+Fixtures, modes, snapshots and native group inventories are unchanged.
+
 ## Equal BigInt AND/OR operands
 
 AND and OR share XOR's equal-operand branch, returning a checked copy after
@@ -99,6 +117,12 @@ two buffers per equal pair. Callgrind instructions change from 400,744,872 to
 355,636,103 (-11.256%). The unequal-operand control retains its deallocation
 count and uses 0.292% more instructions. Profiles include initialization,
 parsing/evaluation and collection, without a general wall-time claim.
+
+The gate frozen on clean 5e6966f89 passes all 87 controls and 80,060 modes from
+41,550 originals, with zero other outcomes in 1,326.035 seconds. Saved executable
+and fixture hashes match. This includes singleton locale reuse and XOR, before
+the shared AND/OR branch; all 17 CI jobs pass at both 5e6966f89 and the earlier
+locale commit c59cf28f8.
 
 ## Singleton Array.toLocaleString storage reuse
 

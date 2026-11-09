@@ -4066,6 +4066,13 @@ its own heritage (AllPrivateIdentifiersValid, 16.1.1). Duplicate names fail exce
 for one getter/setter pair with matching staticness. Escapes normalize before
 comparison; private constructor names, deletion, and super access are early errors.
 
+Scripts and Modules expose immutable statement views over Parser-private storage.
+Ordinary object, binding, assignment and super consumers therefore assert their
+validated name grammar. [PropertyName](https://262.ecma-international.org/17.0/#sec-object-initializer)
+and [SuperProperty](https://262.ecma-international.org/17.0/#sec-super-keyword)
+exclude direct private names in these positions. Computed private expressions
+and private member assignment targets retain their dedicated evaluation paths.
+
 ## Private fields and environments
 
 Each ClassDefinitionEvaluation creates fresh opaque private-name identities

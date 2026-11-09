@@ -193,10 +193,7 @@ impl Realm {
     ) -> Result<PropertyKey, Error> {
         let value = match &property.key {
             PropertyName::Private(_) => {
-                return Err(Self::unsupported(
-                    span,
-                    "private elements are not implemented",
-                ));
+                unreachable!("validated object bindings cannot have private property names")
             }
             PropertyName::Literal(literal) => {
                 self.literal_value(literal, property.element.pattern.span)?

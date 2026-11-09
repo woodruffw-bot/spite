@@ -123,10 +123,7 @@ impl Realm {
         let this_value = self.this_value(span)?;
         let key = match name {
             PropertyName::Private(_) => {
-                return Err(Self::unsupported(
-                    span,
-                    "private elements are not implemented",
-                ));
+                unreachable!("validated super properties cannot have private names")
             }
             PropertyName::Literal(literal) => self.literal_value(literal, span)?,
             PropertyName::Computed(expression) => self.expression(expression)?,

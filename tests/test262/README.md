@@ -5,6 +5,25 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Validated private-property grammar regression
+
+All 577 Runtime units, 2,445 non-RegExp integrations, 270 selected RegExp groups
+and the quality gate pass. The unchanged Parser passes all 18 units and 443
+integrations; library and syntax-source hashes match across the Runtime change.
+All 216 raw Script/Module checks and 648 execution programs meet published
+expectations and Node behavior, including 648 collection repeats before and
+after. The corpus receipt is pending. Fixtures, helpers, modes and reviews
+are unchanged.
+
+## Combined locale/XOR execution receipt
+
+The gate frozen on clean 5e6966f89 passes all 87 controls and 80,060 modes from
+41,550 originals, with zero other outcomes in 1,326.035 seconds. Saved executable
+and fixture hashes match. This includes singleton Array.toLocaleString reuse
+and equal-operand XOR, before the shared AND/OR branch. All 17 CI jobs pass at
+both 5e6966f89 and the earlier locale commit c59cf28f8. Fixtures, helpers,
+modes and reviews are unchanged.
+
 ## Equal BigInt AND/OR regression
 
 All 37 BigInt tests, 577 Runtime units, 2,445 non-RegExp integrations,
@@ -22,8 +41,8 @@ All 37 BigInt tests, 577 Runtime units, 2,445 non-RegExp integrations,
 1,536 coercion/error cases, 1,024 wide-integer oracle programs and 512 additional
 Python/Node programs match their expectations. Exact and insufficient budgets
 remain protected; all 24 measured work allowances are identical. Both benchmark
-smokes pass all 78 rows. The corpus receipt is pending. Fixtures, helpers,
-modes and reviews are unchanged.
+smokes pass all 78 rows. The combined execution receipt above covers this
+implementation. Fixtures, helpers, modes and reviews are unchanged.
 
 ## Singleton Array.toLocaleString storage regression
 
@@ -32,8 +51,8 @@ and the quality gate pass. All 540 Array/generic/Proxy programs meet published
 expectations before and after, plus collection repeats. Of these, 420 match
 Node exactly; 120 differ only in the specified ECMA-262/ECMA-402 method argument
 count. Raw differences are retained. Work allowances are identical; both
-benchmark smokes pass all 76 rows. The corpus receipt is pending. Fixtures,
-helpers, modes and reviews are unchanged.
+benchmark smokes pass all 76 rows. The combined execution receipt above covers
+this implementation. Fixtures, helpers, modes and reviews are unchanged.
 
 ## Singleton Array.join storage regression
 
