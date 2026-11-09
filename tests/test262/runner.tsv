@@ -41549,3 +41549,16 @@ test/language/statements/if/let-block-with-newline.js	-	-	-
 test/language/statements/if/let-identifier-with-newline.js	-	-	-
 test/language/statements/for/let-block-with-newline.js	-	-	-
 test/language/statements/for/let-identifier-with-newline.js	-	-	-
+test/language/expressions/dynamic-import/import-attributes/2nd-param-with-enumeration-enumerable.js	-	-	-
+test/language/import/import-attributes/json-extensibility-array.js	-	-	-
+test/language/import/import-attributes/json-extensibility-object.js	-	-	-
+test/language/import/import-attributes/json-idempotency.js	-	-	-
+test/language/import/import-attributes/json-invalid.js	-	-	-
+test/language/import/import-attributes/json-named-bindings.js	-	-	-
+test/language/import/import-attributes/json-value-array.js	-	-	-
+test/language/import/import-attributes/json-value-boolean.js	-	-	-
+test/language/import/import-attributes/json-value-null.js	-	-	-
+test/language/import/import-attributes/json-value-number.js	-	-	-
+test/language/import/import-attributes/json-value-object.js	-	-	-
+test/language/import/import-attributes/json-value-string.js	-	-	-
+test/language/import/import-attributes/json-via-namespace.js	-	-	-

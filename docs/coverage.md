@@ -57,9 +57,29 @@ claim complete conformance or define an alternative language specification.
 | Using declarations | Synchronous declarations and loop headers, contextual grammar, immutable bindings/TDZ, lexical disposal, abrupt completion/suppression and iterator cleanup |
 | Promise protocols | Branded construction/settlement, all static methods, generic catch/finally, species-aware then, traced capabilities/reactions, and explicit FIFO thenable/reaction jobs |
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
-| Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained record identity, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
+| Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained Source Text and JSON Synthetic Module records, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80074 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
+
+## Published JSON-module originals
+
+All 90 runner controls and the quality gate pass after admission.
+
+Thirteen unmodified originals add fourteen modes for JSON primitives, intrinsic
+prototypes, extensibility, namespace/default identity, repeated static/dynamic
+imports and dynamic attribute enumeration. Both resolution negatives now exercise
+JSON parsing or missing exports. Twelve support sources preserve eleven JSON files
+and one indirect JavaScript importer, including intentionally invalid JSON text.
+All bytes match pinned Git blobs, and existing manifest/review rows are unchanged.
+The inventory is 41,772 fixtures, 41,563 originals and 80,074 modes. The isolated
+cohort passes all fourteen modes; full-corpus and hosted CI receipts are pending.
+
+The UTF-16 audit at 1db08c476 matches Node for all 65,536 raw units in 512 groups,
+including collection before evaluation and after each value is published. The
+512 UTF-8 observations also match Node with and without collection. The preceding
+JSON backend ef818043b now has all 17 CI jobs successful alongside its saved
+87-control/80,060-mode full-corpus result. No later increment is credited with
+that earlier binary's result.
 
 ## Lossless UTF-16 JSON module input
 

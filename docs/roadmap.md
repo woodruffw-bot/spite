@@ -449,7 +449,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add retained JSON Synthetic Module Records with initialized default exports and normal graph linking/evaluation.
 - [x] Load JSON modules through explicit type attributes, preserving filesystem-only resolution and cache identity by module type.
 - [x] Add an explicit JSON conformance-host capability with typed source identities, correct loading-error phases and unchanged agent suspension policies.
-- [ ] Run and retain the published JSON-module Test262 originals with their unchanged JSON support files.
+- [x] Run and retain the published JSON-module Test262 originals with their unchanged JSON support files.
 - [x] Accept lossless UTF-16 JSON module source, preserving lone surrogates and encoded source-byte limits.
 
 - [x] Add module parsing, linking, namespace objects, live bindings, and cycles.

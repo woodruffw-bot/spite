@@ -1,9 +1,28 @@
 # Test262 regression fixtures
 
-These 41747 unmodified test fixtures and twenty-eight harness files come from
+These 41772 unmodified test fixtures and twenty-eight harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Published JSON-module originals
+
+All 90 runner controls and the quality gate pass after admission.
+
+Thirteen unchanged originals add fourteen required modes: twelve Module modes and
+both Script modes for dynamic attribute enumeration. They cover JSON primitives,
+intrinsic object/Array prototypes, extensibility, namespaces, static/dynamic/shared
+identity and genuine JSON-syntax/missing-export resolution failures. Twelve support
+files retain eleven JSON inputs and one indirect JavaScript importer, including
+deliberately invalid JSON. All original bytes match the pinned Git blobs; existing
+manifest rows and runner reviews are preserved. The retained inventory is 41,772
+fixtures, 41,563 originals and 80,074 modes. Full-corpus and hosted CI receipts for
+this admission are pending.
+
+The UTF-16 source audit at 1db08c476 also matches Node for all 65,536 code units
+with collection before and during evaluation. All 512 UTF-8 JSON observations
+match Node again, including collection repeats. The preceding JSON backend
+ef818043b has all 17 CI jobs successful alongside its saved full-corpus result.
 
 ## Lossless JSON module source regression
 
