@@ -728,6 +728,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Audit TypedArray.with captured negative indices and live range checks across resize/detach, all element kinds and parent/foreign method Realms, preserving intrinsic result/error ownership.
 - [x] Audit same-Agent Atomics.waitAsync intrinsic record/Promise ownership, conversion reentry, notification order and pending foreign-Realm lifetimes through collection.
 - [x] Skip discarded-bit scans for positive BigInt right shifts while retaining negative rounding, reversed shifts, result checks and exact word-work accounting.
+- [x] Audit flatMap nested closing across initial/yielded states and parent/foreign creation/return Realms, preserving error precedence, completed state and collection lifetimes.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

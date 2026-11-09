@@ -61,6 +61,30 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80074 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## FlatMap nested closing and Realm ownership
+
+All 648 supplemental programs match the published Iterator Helper return,
+flatMap and generator-resumption algorithms under ordinary and forced
+collection. Cases combine nine inner/outer return modes, parent/foreign helper
+creation and borrowed return methods, and closing before/after yielding. They
+check live closing order, original-error precedence, constructor/proxy errors,
+result prototypes and completed state. Queued phases permit collection with
+an active mapped iterator.
+
+Node agrees on 576 cases. Its remaining 72 observations match a separate model
+that creates yielded-close intrinsic TypeErrors in the return method's Realm.
+GeneratorResumeAbrupt resumes the helper's captured context, so these errors
+belong to its creation Realm; initial return closes in the method Realm.
+The Runtime retains the published behavior. All raw observations and the
+initial failed equality assertion remain in the flatmap-close-realms artifacts
+under /workspace/work, with all 72 differences classified.
+
+Thirty-two cases extend an existing Realm unit. All 595 Runtime units,
+12 flatMap integration groups and quality pass; inventories retain their
+existing counts. Production is unchanged. The fe44fa3c4 frozen full and all
+17 hosted jobs pass, including the String optimization and TypedArray audit.
+The e3078f8af shift full gate is running.
+
 ## Positive BigInt right-shift scanning
 
 Positive right shifts now skip the discarded-bit scan used only for negative

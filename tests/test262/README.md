@@ -5,6 +5,19 @@ These 41772 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## FlatMap closing Realm audit
+
+All 648 supplemental programs match the published nested-closing and generator-
+resumption algorithms under ordinary and forced collection. Node agrees on 576;
+72 classified differences use the borrowed return method's Realm for intrinsic
+TypeErrors after yielding, instead of the resumed helper's creation Realm.
+The Runtime retains the published behavior and all raw oracle observations.
+
+Thirty-two cases extend an existing Realm unit. All 595 Runtime units,
+12 flatMap integration groups and quality pass. Production, test-group counts,
+originals, helpers, modes and reviews are unchanged. The fe44fa3c4 frozen full
+and all 17 hosted jobs pass; the e3078f8af shift full gate is running.
+
 ## Positive BigInt right-shift regression
 
 Positive shifts skip the negative-rounding discarded-bit scan, preserving work

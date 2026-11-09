@@ -1498,6 +1498,23 @@ fn helper_body_errors_initial_return_and_reentry_preserve_their_distinct_realms(
         });
         P.next.call(reentrant);
         if(entered!==1)failures.push('callback-count');
+        // FlatMap closes its inner and outer within the resumed closure;
+        // suspended-start return closes only the outer in the method Realm.
+        for(let creator of [globalThis,child])for(let [methods,methodRealm] of [[P,globalThis],[C,child]])
+        for(let started of [false,true])for(let failing of ['inner','outer'])for(let mode of ['primitive','noncallable']){
+            const calls=[];
+            function input(name){return {next(){return {done:false,value:1}},get return(){calls.push(name);
+                if(name===failing)return mode==='primitive'?function(){return 1}:1;
+                return function(){return {}};
+            }}}
+            const inner=input('inner'),outer=input('outer'),h=creator.Iterator.prototype.flatMap.call(outer,()=>inner);
+            if(started)P.next.call(h);
+            if(!started && failing==='inner'){
+                const result=methods.return.call(h);
+                if(!result.done || result.value!==undefined || Object.getPrototypeOf(result)!==methodRealm.Object.prototype)failures.push('flatMap:initial-result');
+            }else expect(()=>methods.return.call(h),(started?creator:methodRealm).TypeError,'flatMap:close-realm');
+            if(!P.next.call(h).done || !methods.return.call(h).done || calls.join(',')!==(started?'inner,outer':'outer'))failures.push('flatMap:close-state');
+        }
         JSON.stringify(failures)
     "#),Ok(Value::String("[]".into())));
     assert_eq!(
