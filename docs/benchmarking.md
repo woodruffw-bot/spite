@@ -19,8 +19,10 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all 82 program workloads |
+| parse_all | Parse and drop the ASTs for all 84 program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
+| bigint_multiply_one | Multiply signed 4,097-bit values by ±1n in both orders across 2,048 operations, checking the signed result |
+| bigint_multiply_two | Repeat with ±2n as a nonunit control, checking doubled magnitudes |
 | string_split_miss | Split a 16,385-unit BMP/lone-surrogate String sixteen times with an unmatched separator, checking the sole result |
 | string_split_hit | Repeat with one leading separator, checking the 16,384-unit tail |
 | bigint_or_xor_zero | Alternate OR/XOR with zero, both operand orders and positive/negative 4,097-bit values across 2,048 operations |
@@ -117,6 +119,29 @@ their ordinary unlimited defaults.
 
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
+
+## BigInt multiplication by unit magnitudes
+
+After the existing width checks and work debit, multiplication by ±1 copies
+the retained magnitude and applies the product sign. Baseline production is
+81b56b271. Matched Rust 1.99 executables use identical 84-workload sources and
+optimized conformance libraries with debug/overflow checks enabled.
+
+Each instrumented process evaluates five times, multiplying signed 4,097-bit
+values by both signs of one in either order across 2,048 operations. The control
+uses both signs of two. Counts include initialization, parsing/evaluation and
+collection.
+
+| Workload | Instructions before | Instructions after | Rust deallocations before | Rust deallocations after |
+| --- | ---: | ---: | ---: | ---: |
+| Unit magnitude | 591,388,675 | 563,599,598 | 290,971 | 290,971 |
+| Nonunit control | 595,846,442 | 596,872,721 | 291,156 | 291,156 |
+
+The target uses 4.6990% fewer instructions; the control uses 0.1722% more.
+Deallocation counts are unchanged. Both benchmark smokes pass all 86 rows;
+2,688 semantic programs and 96 work probes remain exact before and after.
+One instrumented process per revision/workload supports these counts, with no
+wall-time or general speedup claim.
 
 ## String split without a match
 

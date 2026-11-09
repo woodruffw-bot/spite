@@ -20,6 +20,18 @@ struct Case {
 
 const CASES: &[Case] = &[
     Case {
+        name: "bigint_multiply_one",
+        source: "(()=>{const positive=(1n<<4096n)+12345n,negative=-positive,unit=1n,opposite=-unit;let count=0;for(let i=0;i<2048;i++){const value=i&1?negative:positive,factor=i&2?opposite:unit,expected=(i&1?1:0)^(i&2?1:0)?negative:positive;const result=i&4?factor*value:value*factor;if(result===expected)count++}return count})()",
+        expected: 2048.0,
+        jobs: false,
+    },
+    Case {
+        name: "bigint_multiply_two",
+        source: "(()=>{const positive=(1n<<4096n)+12345n,negative=-positive,unit=2n,opposite=-unit;const twice=positive<<1n,twiceNegative=-twice;let count=0;for(let i=0;i<2048;i++){const value=i&1?negative:positive,factor=i&2?opposite:unit,expected=(i&1?1:0)^(i&2?1:0)?twiceNegative:twice;const result=i&4?factor*value:value*factor;if(result===expected)count++}return count})()",
+        expected: 2048.0,
+        jobs: false,
+    },
+    Case {
         name: "string_split_miss",
         source: "(()=>{const text='a'+'x\\uD800\\u4E2D\\uDC00'.repeat(4096);let total=0;for(let i=0;i<16;i++){const out=text.split(',');if(out.length===1&&out[0].charCodeAt(out[0].length-1)===0xDC00)total+=out[0].length}return total})()",
         expected: 262160.0,

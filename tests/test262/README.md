@@ -5,6 +5,21 @@ These 41772 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## BigInt unit-factor regression
+
+Multiplication by ±1 copies the retained magnitude after unchanged width/work
+checks, preserving sign and operand-order accounting. All 37 BigInt tests, 592
+Runtime units, 2,445 non-RegExp integrations, 270 selected RegExp groups, 91
+runner controls and quality checks pass. All 2,688 supplemental programs and
+96 quota probes retain exact before/after results. Originals and reviews are
+unchanged; this increment's full-corpus/hosted receipts remain pending.
+Core's 113 units and the Parser's 18 units/443 integrations also pass.
+
+The preceding 15a685c21 frozen full gate passes 91/41,563/80,074 with zero other
+outcomes in 1,392.048 seconds and matching saved hashes. All 17 hosted jobs pass
+for 15a685c21 and e7172c8e6. The fc5195aa3 full gate
+for String production 81b56b271 is running; hosted CI is tracked separately.
+
 ## Array.fromAsync Realm audit
 
 All 432 supplemental cases match the published algorithms ordinarily and with

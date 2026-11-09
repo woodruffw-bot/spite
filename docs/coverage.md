@@ -61,6 +61,32 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80074 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## BigInt multiplication by unit magnitudes
+
+After the existing work debit and width checks, multiplication by either sign
+of one copies the other magnitude and applies the product sign. Zero and other
+factors keep their prior paths. The expanded arithmetic unit checks both orders,
+signs, exact/short work and failure before the full debit for undersized results.
+All 37 BigInt tests, 592 Runtime units, 2,445 non-RegExp integrations, 270 selected
+RegExp groups, 91 runner controls and quality checks pass.
+
+Core's 113 units and the Parser's 18 units/443 integrations also pass.
+
+All 2,688 supplemental programs retain exact before/after results: 1,152 Node
+coercion cases, 1,024 broad signed/word-boundary cases and 512 Python/Node wide
+multiplication/exponentiation cases. All 96 work probes are identical, including
+the two operand orders' different charges. Both 84-program benchmark smokes pass
+86 rows. The instrumented target uses 4.6990% fewer instructions, with +0.1722%
+in the nonunit control; deallocation counts are unchanged in both. [Scope](benchmarking.md#bigint-multiplication-by-unit-magnitudes)
+includes initialization and collection, with no wall-time claim.
+
+The preceding 15a685c21 frozen full gate passes 91 controls and 80,074 modes from
+41,563 originals, with zero other outcomes in 1,392.048 seconds. Saved binary
+and fixture hashes match. All 17 hosted CI jobs pass for 15a685c21 and e7172c8e6.
+The next gate, frozen on clean fc5195aa3 with String
+production 81b56b271, is running. Hosted CI is tracked separately. Original
+fixtures, helpers, modes and reviews are unchanged.
+
 ## Array.fromAsync iterator and Realm audit
 
 All 432 supplemental cases match the published algorithms on Runtime 81b56b271,

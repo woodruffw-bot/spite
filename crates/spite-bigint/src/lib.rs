@@ -485,6 +485,17 @@ impl BigInt {
             .and_then(|n| n.checked_add(self.words.len()))
             .ok_or(Error::Limit)?;
         budget.charge(work)?;
+        // Unit magnitudes need only a signed copy after the ordinary work debit.
+        let left_unit = self.words == [1];
+        if left_unit || other.words == [1] {
+            let mut result = if left_unit {
+                other.clone()
+            } else {
+                self.clone()
+            };
+            result.negative = self.negative != other.negative;
+            return budget.finish(result);
+        }
         let length = self
             .words
             .len()

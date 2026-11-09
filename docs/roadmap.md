@@ -718,6 +718,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Assert ordinary-evaluator suspension exclusions after resumable-driver dispatch, replacing obsolete Await, Yield and for-await-of unavailable-feature fallbacks.
 - [x] Factor intrinsic JSON text materialization behind a crate-private entry point, preserving builtin ToString, revivers and limits.
 - [x] Retain the converted String for split with a nonempty unmatched separator after the same search, output-length check and copy-work charge.
+- [x] Copy the retained magnitude for BigInt multiplication by either sign of one in either order, preserving sign, minimum/result width checks and the existing operand-order work charges.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

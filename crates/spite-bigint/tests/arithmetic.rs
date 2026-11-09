@@ -468,6 +468,40 @@ fn single_word_division_preserves_carries_and_signed_remainders() {
 
 #[test]
 fn multiplication_and_division_limits_are_checked() {
+    let large = parse(&format!("1{}", "0".repeat(256)), 2);
+    for value in [
+        BigInt::default(),
+        BigInt::from(1),
+        BigInt::from(-1),
+        large.clone(),
+        large.neg(&mut budget()).unwrap(),
+    ] {
+        for unit in [-1, 1] {
+            let factor = BigInt::from(unit);
+            let expected = if unit < 0 {
+                value.neg(&mut budget()).unwrap()
+            } else {
+                value.clone()
+            };
+            for (left, right) in [(&value, &factor), (&factor, &value)] {
+                let n = left.bit_length().div_ceil(32);
+                let m = right.bit_length().div_ceil(32);
+                let work = if value.is_zero() { 1 } else { 1 + n * m + n };
+                let mut exact = Budget::new(expected.bit_length(), work);
+                assert_eq!(left.mul(right, &mut exact), Ok(expected.clone()));
+                assert_eq!(exact.remaining_work(), Some(0));
+                assert_eq!(
+                    left.mul(right, &mut Budget::new(expected.bit_length(), work - 1)),
+                    Err(Error::Limit)
+                );
+                if !expected.is_zero() {
+                    let mut small = Budget::new(expected.bit_length() - 1, work);
+                    assert_eq!(left.mul(right, &mut small), Err(Error::Limit));
+                    assert_eq!(small.remaining_work(), Some(work - 1));
+                }
+            }
+        }
+    }
     assert_eq!(
         BigInt::from(1).div_rem(&BigInt::default(), &mut budget()),
         Err(Error::DivisionByZero)
