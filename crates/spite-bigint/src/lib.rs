@@ -526,6 +526,12 @@ impl BigInt {
         if self.cmp_magnitude(other).is_lt() {
             return Ok((Self::default(), budget.finish(self.clone())?));
         }
+        // Accounted division retains its per-word charges and partial refusals.
+        if other.words == [1] && budget.remaining_work.is_none() {
+            let mut quotient = self.clone();
+            quotient.negative = self.negative != other.negative;
+            return Ok((budget.finish(quotient)?, Self::default()));
+        }
         let mut quotient = Self::zero_words(self.words.len())?;
         if other.words.len() == 1 {
             let divisor = u64::from(other.words[0]);

@@ -61,6 +61,28 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80074 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## BigInt division by unit magnitudes
+
+With work accounting disabled, division by ±1 returns a checked signed quotient
+copy and canonical zero remainder. Accounted division retains its per-word loop
+and exact partial-work refusals. The new unit covers zero, signs, result limits
+and both quota paths. All 38 BigInt tests, 593 Runtime units, 2,445 non-RegExp
+integrations, 270 selected RegExp groups, 91 controls and quality pass, as do
+Core's 113 units and the Parser's 18 units/443 integrations.
+
+All 3,840 supplemental programs agree before/after with Node and independent
+wide-integer predictions as applicable. All 12,576 budget observations are
+identical, including unspent work on refusal. Both 88-program benchmark smokes
+pass 90 rows. [Profiling](benchmarking.md#bigint-division-by-unit-magnitudes)
+removes 20,480 zero-remainder buffers and 7.1651% of instructions in the target;
+the nonunit control has unchanged deallocations and +0.0684% instructions.
+These counts support no wall-time claim.
+
+The 7ced6d404 frozen full gate passes 91 controls and 80,074 modes from 41,563
+originals, with zero other outcomes in 1,312.280 seconds and matching saved
+hashes. All 17 hosted jobs pass for that commit. The 8a61c1f50 JSON full gate
+is running. This increment changes no original fixture, helper, mode or review.
+
 ## Complete JSON reviver source
 
 A primitive spanning all input now retains that String for context.source after

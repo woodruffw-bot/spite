@@ -467,6 +467,50 @@ fn single_word_division_preserves_carries_and_signed_remainders() {
 }
 
 #[test]
+fn unit_division_preserves_result_limits_and_partial_work_refusal() {
+    let large = parse(&format!("1{}", "0".repeat(256)), 2);
+    for value in [
+        BigInt::default(),
+        BigInt::from(1),
+        BigInt::from(-1),
+        large.clone(),
+        large.neg(&mut budget()).unwrap(),
+    ] {
+        for unit in [-1, 1] {
+            let divisor = BigInt::from(unit);
+            let quotient = if unit < 0 {
+                value.neg(&mut budget()).unwrap()
+            } else {
+                value.clone()
+            };
+            let bits = quotient.bit_length();
+            let expected = (quotient, BigInt::default());
+            assert_eq!(
+                value.div_rem(&divisor, &mut Budget::with_limits(Some(bits), None)),
+                Ok(expected.clone())
+            );
+            let words = value.bit_length().div_ceil(32);
+            let work = 5 * words + 1;
+            let mut exact = Budget::new(bits, work);
+            assert_eq!(value.div_rem(&divisor, &mut exact), Ok(expected));
+            assert_eq!(exact.remaining_work(), Some(0));
+            let mut short = Budget::new(bits, work - 1);
+            assert_eq!(value.div_rem(&divisor, &mut short), Err(Error::Limit));
+            assert_eq!(short.remaining_work(), Some(if words == 0 { 0 } else { 3 }));
+            if bits != 0 {
+                assert_eq!(
+                    value.div_rem(&divisor, &mut Budget::with_limits(Some(bits - 1), None)),
+                    Err(Error::Limit)
+                );
+                let mut limited = Budget::new(bits - 1, work);
+                assert_eq!(value.div_rem(&divisor, &mut limited), Err(Error::Limit));
+                assert_eq!(limited.remaining_work(), Some(0));
+            }
+        }
+    }
+}
+
+#[test]
 fn multiplication_and_division_limits_are_checked() {
     let large = parse(&format!("1{}", "0".repeat(256)), 2);
     for value in [

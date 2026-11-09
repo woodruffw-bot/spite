@@ -1534,6 +1534,9 @@ product sign after the ordinary work debit and minimum-result-width check
 (6.1.6.2.4). Both operand orders retain their existing asymmetric work charges;
 the final result-magnitude check still applies. Other nonzero factors retain
 the schoolbook multiplication loop.
+With work accounting disabled, division by either sign of one returns a signed
+copy and canonical zero remainder, retaining initial work and result checks.
+Accounted unit division retains its per-word loop and partial-work refusals.
 Divisors whose magnitude fits one u32 word use division from the highest word
 down, carrying a remainder in u64. Without work or magnitude quotas, two-word
 divisors similarly use a u128 carry; each combined dividend fits 96 bits and

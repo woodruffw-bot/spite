@@ -720,6 +720,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Retain the converted String for split with a nonempty unmatched separator after the same search, output-length check and copy-work charge.
 - [x] Copy the retained magnitude for BigInt multiplication by either sign of one in either order, preserving sign, minimum/result width checks and the existing operand-order work charges.
 - [x] Retain complete primitive input text for JSON reviver context.source, preserving SameValue eligibility, partial source copies, output limits and foreign-Realm contexts.
+- [x] Copy the checked quotient for unaccounted BigInt division by either sign of one, retaining canonical zero remainders and accounted per-word refusal behavior.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

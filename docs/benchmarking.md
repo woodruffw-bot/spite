@@ -19,8 +19,10 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all 86 program workloads |
+| parse_all | Parse and drop the ASTs for all 88 program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
+| bigint_div_rem_one | Divide signed 4,097-bit values by ±1n across 2,048 quotient/remainder pairs, checking both results |
+| bigint_div_rem_two | Repeat with ±2n as a nonunit control, checking halved magnitudes and signed remainders |
 | json_reviver_whole | Parse a 4,098-unit quoted BMP/lone-surrogate primitive sixteen times, returning and checking its reviver source |
 | json_reviver_padded | Repeat with outer whitespace so the reviver source remains a copied substring |
 | bigint_multiply_one | Multiply signed 4,097-bit values by ±1n in both orders across 2,048 operations, checking the signed result |
@@ -121,6 +123,31 @@ their ordinary unlimited defaults.
 
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
+
+## BigInt division by unit magnitudes
+
+With work accounting disabled, division by ±1 copies the checked quotient and
+returns canonical zero remainder. Accounted division retains the per-word loop
+and partial refusals. Baseline production is 8a61c1f50. Matched Rust 1.99
+executables use identical 88-workload sources and optimized conformance libraries
+with debug/overflow checks enabled; both smokes pass all 90 rows.
+
+Each instrumented process evaluates five times, with 2,048 quotient/remainder
+pairs on signed 4,097-bit dividends and both divisor signs. The control divides
+by ±2. Each evaluation makes 4,096 div_rem calls. Counts include initialization,
+parsing/evaluation and collection.
+
+| Workload | Instructions before | Instructions after | Rust deallocations before | Rust deallocations after |
+| --- | ---: | ---: | ---: | ---: |
+| Unit divisor | 653,026,658 | 606,236,813 | 332,141 | 311,661 |
+| Nonunit control | 660,147,747 | 660,599,215 | 357,776 | 357,776 |
+
+The target uses 7.1651% fewer instructions and removes one zero-remainder buffer
+per division call. The control uses 0.0684% more instructions with unchanged
+deallocations. All 3,840 semantic programs and 12,576 budget observations retain
+their before/after results, including exact unspent work on refusal. One
+instrumented process per revision/workload supports these counts, with no
+wall-time or general speedup claim.
 
 ## Complete JSON reviver source
 

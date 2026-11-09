@@ -5,6 +5,19 @@ These 41772 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## BigInt unit-divisor regression
+
+Unaccounted division by ±1 copies the checked quotient and returns canonical
+zero remainder; accounted division keeps exact per-word refusal behavior.
+All 38 BigInt tests, 593 Runtime units, 2,445 non-RegExp integrations, 270 selected
+RegExp groups, 91 controls and quality pass, plus 113 Core units and the Parser's
+18 units/443 integrations. All 3,840 semantic programs and 12,576 quota
+observations match before/after. Originals and reviews are unchanged.
+
+The 7ced6d404 full gate passes 91/41,563/80,074 with zero other outcomes in
+1,312.280 seconds and matching saved hashes; all 17 hosted jobs pass. The
+8a61c1f50 full gate is running. This increment's full/hosted receipts are pending.
+
 ## JSON reviver source storage
 
 Whole-input primitive source contexts retain immutable String storage after the
