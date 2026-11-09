@@ -871,6 +871,9 @@ impl BigInt {
 
 impl From<i64> for BigInt {
     fn from(value: i64) -> Self {
+        if value == 0 {
+            return Self::default();
+        }
         let magnitude = value.unsigned_abs();
         Self::normalized(value < 0, vec![magnitude as u32, (magnitude >> 32) as u32])
     }

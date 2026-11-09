@@ -19,8 +19,10 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all 88 program workloads |
+| parse_all | Parse and drop the ASTs for all 90 program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
+| bigint_remainder_even | Divide signed even 4,097-bit values by ±2n across 2,048 quotient/remainder pairs, checking canonical zero |
+| bigint_remainder_odd | Repeat with odd dividends, checking signed nonzero remainders |
 | bigint_div_rem_one | Divide signed 4,097-bit values by ±1n across 2,048 quotient/remainder pairs, checking both results |
 | bigint_div_rem_two | Repeat with ±2n as a nonunit control, checking halved magnitudes and signed remainders |
 | json_reviver_whole | Parse a 4,098-unit quoted BMP/lone-surrogate primitive sixteen times, returning and checking its reviver source |
@@ -123,6 +125,29 @@ their ordinary unlimited defaults.
 
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
+
+## Native BigInt zero construction
+
+Converting native signed integer zero returns canonical empty BigInt storage
+before creating a magnitude buffer. Baseline production is 0a966bd32. Matched
+Rust 1.99 executables use identical 90-workload sources and optimized conformance
+libraries with debug/overflow checks enabled; both smokes pass all 92 rows.
+
+Each instrumented process evaluates five times, with 2,048 quotient/remainder
+pairs on signed 4,097-bit dividends divided by ±2. Even dividends produce zero
+remainders; odd control dividends produce ±1. These cases use the existing
+word-division loop. Counts include initialization, parsing/evaluation and collection.
+
+| Workload | Instructions before | Instructions after | Rust deallocations before | Rust deallocations after |
+| --- | ---: | ---: | ---: | ---: |
+| Zero remainder | 653,845,526 | 651,011,195 | 332,171 | 311,691 |
+| Nonzero control | 660,898,481 | 660,918,947 | 357,776 | 357,776 |
+
+The target removes one discarded zero buffer per division call and uses 0.4335%
+fewer instructions. The control uses 0.0031% more instructions with unchanged
+deallocations. All 3,840 semantic programs and 12,576 budget observations retain
+their before/after results. One instrumented process per revision/workload
+supports these counts, with no wall-time or general speedup claim.
 
 ## BigInt division by unit magnitudes
 

@@ -1513,7 +1513,8 @@ keep Number and BigInt distinct. Do not use Rust equality as a substitute for th
 language's separate equality algorithms.
 
 BigInt uses a sign and a normalized little-endian vector of 32-bit magnitude
-words. Zero has no words and no negative sign. Start with straightforward carry,
+words. Zero has no words and no negative sign; native zero construction
+returns that empty representation directly. Start with straightforward carry,
 borrow, multiplication, and division algorithms. Bitwise operands reserve their
 complete two's-complement width once, copy the retained words and extend with
 zeroes before sign conversion. Width overflow and reservation failure return a

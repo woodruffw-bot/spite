@@ -721,6 +721,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Copy the retained magnitude for BigInt multiplication by either sign of one in either order, preserving sign, minimum/result width checks and the existing operand-order work charges.
 - [x] Retain complete primitive input text for JSON reviver context.source, preserving SameValue eligibility, partial source copies, output limits and foreign-Realm contexts.
 - [x] Copy the checked quotient for unaccounted BigInt division by either sign of one, retaining canonical zero remainders and accounted per-word refusal behavior.
+- [x] Construct native BigInt zero directly in its empty representation, avoiding discarded magnitude storage while preserving conversion, arithmetic and quota behavior.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

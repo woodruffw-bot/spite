@@ -61,6 +61,25 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80074 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Native BigInt zero construction
+
+Native signed-integer zero now returns canonical empty storage directly, avoiding
+a temporary magnitude buffer. Existing constructor/radix/normalization tests and
+all 38 BigInt tests pass, along with 593 Runtime units, 2,445 non-RegExp
+integrations, 270 selected RegExp groups, 91 controls and quality. Core's 113
+units and the Parser's 18 units/443 integrations also pass.
+
+All 3,840 supplemental programs and 12,576 budget observations match before/after.
+Both 90-program benchmark smokes pass 92 rows. [Profiling](benchmarking.md#native-bigint-zero-construction)
+removes 20,480 zero buffers and 0.4335% of instructions through the existing
+division-by-two loop. The nonzero control retains its deallocation count with
++0.0031% instructions. No wall-time claim results.
+
+The 8a61c1f50 JSON full gate passes 91 controls and 80,074 modes from 41,563
+originals, with zero other outcomes in 1,579.385 seconds and matching saved
+hashes. All 17 hosted jobs pass for that commit. Original fixtures, helpers,
+modes and reviews are unchanged by this increment.
+
 ## BigInt division by unit magnitudes
 
 With work accounting disabled, division by ±1 returns a checked signed quotient
