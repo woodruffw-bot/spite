@@ -153,6 +153,32 @@ observations are byte-identical. The bigint-positive-shift artifacts under
 and oracle records. These are scoped instruction results, without a wall-time
 or allocation-count improvement claim.
 
+## General bitwise iterator experiment (rejected)
+
+An experiment streamed sign-extended two's-complement operands into one reserved
+result buffer. It preserved all 7,800 native budget observations and passed all
+39 BigInt tests, plus 1,536 supplemental programs against saved/new Python/Node
+models; 512 wide signed cases also passed forced collection before/after.
+
+Matched Rust 1.99 profiles each use five fresh Realms, 2,048 alternating AND/OR/
+XOR operations per Realm, and 4,097-/3,073-bit operands. They include source
+decoding, Test262 host setup, parsing/evaluation, job draining, collection and
+output. Compared with e3078f8af:
+
+| Operands | Instruction change | Change in Rust frees |
+| --- | --- | --- |
+| Positive/positive | +3.1775% | −10,240 |
+| Negative/positive | +2.6581% | −10,240 |
+| Negative/negative | +2.0116% | −10,240 |
+| Zero control | +0.0032% | 0 |
+
+Removing one temporary buffer per general operation increased instructions in
+all three sign profiles. The candidate was rejected and the production source
+restored. The bigint-stream-bitwise artifacts under /workspace/work preserve
+the candidate source/patch, baseline/candidate executables, raw profiles,
+oracle data, quota comparisons and restoration checks. Benchmark inventory
+remains 96 programs/98 rows. These profiles make no wall-time claim.
+
 ## Whole functional String replacement
 
 String.replace retains the callback's converted String when the match covers

@@ -14,7 +14,10 @@ RegExp groups, 91 controls and quality pass; the benchmark smoke passes 98 rows/
 programs. All 512 signed/word-boundary cases match Python and Node before/after
 with ordinary and forced collection; all 4,480 budget observations are identical.
 Originals, helpers, modes and reviews are unchanged. The fe44fa3c4 full gate,
-including the preceding String optimization, is running.
+including the preceding String optimization and TypedArray audit, passes
+91/41,563/80,074 with zero other outcomes in 1,375.463 seconds and checked
+saved hashes. All 17 hosted jobs pass for String production 1faca1e22.
+The e3078f8af shift full gate is running.
 
 ## Cross-Realm Atomics.waitAsync audit
 

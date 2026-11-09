@@ -79,8 +79,18 @@ The initial oracle generator hit Python's decimal-digit formatting guard;
 the corrected source constructs wide low masks with shifts. Both attempts
 are retained, with no Runtime limit change.
 
-The fe44fa3c4 full gate is running on the preceding String optimization and
-TypedArray audit. Original fixtures, helpers, modes and reviews are unchanged.
+The fe44fa3c4 full gate passes 91/41,563/80,074 with zero other outcomes in
+1,375.463 seconds, with saved hashes checked. It includes the preceding String
+optimization and TypedArray audit; all 17 hosted jobs pass for String production
+commit 1faca1e22. The e3078f8af shift full gate is running. Original fixtures,
+helpers, modes and reviews are unchanged.
+
+A separate [general bitwise iterator experiment](benchmarking.md#general-bitwise-iterator-experiment-rejected)
+was rejected: it removed one temporary buffer but increased instructions by
+2.0116–3.1775% across the three sign profiles. All 1,536 supplemental programs,
+39 BigInt tests and 7,800 budget observations passed; the original production
+source was restored. Candidate artifacts and restoration checks are retained.
+Production and test inventories are unchanged by that experiment.
 
 ## Cross-Realm asynchronous atomic waits
 
