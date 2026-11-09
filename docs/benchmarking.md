@@ -19,8 +19,9 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all 67 program workloads |
+| parse_all | Parse and drop the ASTs for all 68 program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
+| tagged_template_creation | Compile and call sixteen fresh Function bodies with a 4,096-unit tagged template, checking cooked and raw lengths |
 | sum_precise_integer | Sum four integers exactly 2,048 times with Math.sumPrecise, checking every result |
 | arithmetic | Evaluate a 1,000-iteration numeric/bitwise loop |
 | arguments_body_scan | Call default-parameter and arguments-named functions with two local lexical bindings 2,048 times each, checking the returned sum |

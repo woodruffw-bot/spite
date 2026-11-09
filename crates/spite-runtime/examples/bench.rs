@@ -20,6 +20,12 @@ struct Case {
 
 const CASES: &[Case] = &[
     Case {
+        name: "tagged_template_creation",
+        source: "(()=>{const text='x'.repeat(4096),source='return tag`'+text+'`';function tag(parts){return parts[0].length+parts.raw[0].length}let total=0;for(let i=0;i<16;i++)total+=Function('tag',source)(tag);return total})()",
+        expected: 131072.0,
+        jobs: false,
+    },
+    Case {
         name: "sum_precise_integer",
         source: "(()=>{const values=[1,2,3,4];let count=0;for(let i=0;i<2048;i++)if(Math.sumPrecise(values)===10)count++;return count})()",
         expected: 2048.0,

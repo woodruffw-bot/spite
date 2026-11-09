@@ -694,6 +694,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Share budgeted primitive ToNumber with numeric comparison branches, preserving type-only decisions, conversion order and exact BigInt/String comparisons.
 - [x] Charge String equality and relational scans, including switch matching, while retaining length-only equality rejection and UTF-16 ordering.
 - [x] Charge String addition copies and immediate/resumed template buffer appends before allocation, preserving conversion order, growth accounting and empty-operand storage reuse.
+- [x] Share immutable parsed cooked/raw String storage in frozen template objects after the existing length, work and agent checks, preserving site identity and descriptors.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

@@ -61,6 +61,34 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Tagged-template String storage reuse
+
+GetTemplateObject retains immutable parsed cooked/raw Strings after the same
+length, work and agent checks (13.2.8.4). Site arrays keep their identity and
+descriptors. All 577 Runtime units, 2,445 non-RegExp integrations, 270 selected
+RegExp groups and the quality gate pass. All 256 metadata/value programs and
+256 collection repeats match Node before and after. Public work allowances are
+identical at four input sizes. Both benchmark smokes pass all 70 rows from
+68 workloads, including fresh template-site creation through dynamic Functions.
+
+A matched Callgrind run over five evaluations with sixteen fresh sites each
+records 320 fewer Rust deallocations, matching two avoided buffers per cooked/raw
+component. Instructions change from 352,198,860 to 351,600,597 (-0.170%); the
+untagged control changes +0.012% with identical deallocation counts. Profiles
+include initialization, dynamic compilation/evaluation and collection. These
+counters make no general wall-time claim.
+
+## Construction and comparison execution receipts
+
+The frozen construction gate on clean a705f7cbb passes all 87 controls and all
+80,060 modes from 41,550 unchanged originals, with zero other outcomes in
+1,421.324 seconds. The earlier frozen 747c21de4 gate covers both comparison
+increments with the same counts in 1,350.086 seconds; all 17 CI jobs pass there.
+Executable and fixture hashes match for both runs. The setup repair in
+78ac1e0d5 leaves production identical to a705f7cbb, and all four previously
+failing CI jobs pass on that repair. These receipts precede template storage
+reuse; fixtures, helpers, modes and reviews are unchanged.
+
 ## RegExp quota fixture setup
 
 CI exposed two native setups whose String repetition and concatenation exceed

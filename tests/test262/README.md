@@ -5,6 +5,23 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Tagged-template String storage regression
+
+All 577 Runtime units, 2,445 non-RegExp integrations, 270 selected RegExp groups
+and the quality gate pass. All 256 tagged-template programs plus 256 collection
+repeats match Node before and after. Work allowances remain identical at four
+input sizes; both benchmark smokes pass all 70 rows. The storage change's full
+corpus receipt is pending. Fixtures, helpers, modes and reviews are unchanged.
+
+## Construction and comparison execution receipts
+
+The gate frozen on clean a705f7cbb passes all 87 controls and all 80,060 modes
+from 41,550 unchanged originals, with zero other outcomes in 1,421.324 seconds.
+The earlier 747c21de4 comparison gate passes the same counts in 1,350.086 seconds;
+all 17 CI jobs pass there. Saved executable and fixture hashes match for both
+runs. Test-only repair 78ac1e0d5 retains a705f7cbb's production behavior; its
+four previously failing CI jobs now pass. These receipts precede storage reuse.
+
 ## Native RegExp quota setup repair
 
 Two native tests now receive the same host-built input Strings after updated
@@ -36,7 +53,7 @@ One native group protects equality, ordering and switch scan charges, recovery,
 surrogates and unequal-length shortcuts. All 577 Runtime units, 2,444 non-RegExp
 integrations and the quality gate pass. All 65,536 UTF-16 units in 512 programs
 match Python and Node before and after; earlier numeric-conversion work curves
-are unchanged. The full corpus receipt for this change is pending. Fixtures,
+are unchanged. The comparison corpus receipt appears above. Fixtures,
 helpers, modes and reviews are unchanged.
 
 ## String-to-Number work regression
@@ -48,7 +65,7 @@ pass. The initial 824 conversion programs match Node before and after, including
 every single UTF-16 unit. Another 1,508 comparison programs meet published
 expectations before and after; eight retain the documented StringToBigInt
 behavior where Node differs. The receipt above covers the initial conversion
-charge; the comparison receipt is pending. Fixture bytes, helpers, modes and
+charge; the comparison receipt appears above. Fixture bytes, helpers, modes and
 reviews are unchanged.
 
 ## Async-generator rejection boundary regressions

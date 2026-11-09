@@ -146,15 +146,7 @@ impl Realm {
             });
         }
         self.object_work(span, |_, budget| budget.charge(string.len()))?;
-        let mut units = Vec::new();
-        units
-            .try_reserve_exact(string.len())
-            .map_err(|_| Error::Limit {
-                span,
-                message: "template string allocation failed".into(),
-            })?;
-        units.extend_from_slice(string.code_units());
-        Ok(Value::String(JsString::from_code_units(units)))
+        Ok(Value::String(string.clone()))
     }
 }
 

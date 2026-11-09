@@ -1784,6 +1784,9 @@ an empty operand still permits constant-work storage reuse. Untagged template
 fragments in immediate and resumed execution use the same bounded append as
 TypedArray joins (13.2.8.6). It checks output size, charges incoming units and
 any existing buffer units moved by growth, then reserves and copies.
+GetTemplateObject stores cloned immutable parsed cooked/raw Strings after the
+existing length and work checks (13.2.8.4). Frozen site arrays retain their
+identity, descriptors and creation Realm while sharing primitive String storage.
 The parser/evaluator native-stack guards are current implementation constraints;
 removing them safely requires replacing recursive execution with explicit frames.
 References below to execution
