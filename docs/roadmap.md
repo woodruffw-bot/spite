@@ -719,6 +719,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Factor intrinsic JSON text materialization behind a crate-private entry point, preserving builtin ToString, revivers and limits.
 - [x] Retain the converted String for split with a nonempty unmatched separator after the same search, output-length check and copy-work charge.
 - [x] Copy the retained magnitude for BigInt multiplication by either sign of one in either order, preserving sign, minimum/result width checks and the existing operand-order work charges.
+- [x] Retain complete primitive input text for JSON reviver context.source, preserving SameValue eligibility, partial source copies, output limits and foreign-Realm contexts.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

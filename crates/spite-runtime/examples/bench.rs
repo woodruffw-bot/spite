@@ -20,6 +20,18 @@ struct Case {
 
 const CASES: &[Case] = &[
     Case {
+        name: "json_reviver_whole",
+        source: "(()=>{const text='\"'+'x\\uD800\\u4E2D\\uDC00'.repeat(1024)+'\"';let total=0;for(let i=0;i<16;i++){const out=JSON.parse(text,(key,value,context)=>context.source);if(out.charCodeAt(out.length-1)===34)total+=out.length}return total})()",
+        expected: 65568.0,
+        jobs: false,
+    },
+    Case {
+        name: "json_reviver_padded",
+        source: "(()=>{const body='\"'+'x\\uD800\\u4E2D\\uDC00'.repeat(1024)+'\"';const text=' '+body+' ';let total=0;for(let i=0;i<16;i++){const out=JSON.parse(text,(key,value,context)=>context.source);if(out.charCodeAt(out.length-1)===34)total+=out.length}return total})()",
+        expected: 65568.0,
+        jobs: false,
+    },
+    Case {
         name: "bigint_multiply_one",
         source: "(()=>{const positive=(1n<<4096n)+12345n,negative=-positive,unit=1n,opposite=-unit;let count=0;for(let i=0;i<2048;i++){const value=i&1?negative:positive,factor=i&2?opposite:unit,expected=(i&1?1:0)^(i&2?1:0)?negative:positive;const result=i&4?factor*value:value*factor;if(result===expected)count++}return count})()",
         expected: 2048.0,

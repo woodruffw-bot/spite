@@ -203,6 +203,45 @@ mod tests {
     use super::*;
 
     #[test]
+    fn whole_primitive_reviver_sources_retain_input_storage_and_limits() {
+        let mut realm = Realm::default();
+        let reviver = realm
+            .eval("(function(key,value,context){return context.source})")
+            .unwrap();
+        let span = Span::new(0, 0);
+        for text in ["0", "-0", "1e400", "true", "false", "null", r#""\uD800""#] {
+            let source = JsString::from(text);
+            let Value::String(result) = realm
+                .json_parse_text(&source, reviver.clone(), span)
+                .unwrap()
+            else {
+                panic!("reviver source");
+            };
+            assert_eq!(result, source);
+            assert_eq!(result.code_units().as_ptr(), source.code_units().as_ptr());
+            let padded = JsString::from(format!(" {text} ").as_str());
+            assert_eq!(
+                realm.json_parse_text(&padded, reviver.clone(), span),
+                Ok(Value::String(source))
+            );
+        }
+        let source = JsString::from([0x22, 0xd800, 0x22]);
+        let Value::String(result) = realm
+            .json_parse_text(&source, reviver.clone(), span)
+            .unwrap()
+        else {
+            panic!("lossless reviver source");
+        };
+        assert_eq!(result, source);
+        assert_eq!(result.code_units().as_ptr(), source.code_units().as_ptr());
+        realm.limits.max_string_units = Some(0);
+        assert!(matches!(
+            realm.json_parse_text(&JsString::from("0"), reviver, span),
+            Err(Error::Limit { .. })
+        ));
+    }
+
+    #[test]
     fn final_decoded_strings_and_keys_respect_opted_in_string_quotas() {
         let mut realm = Realm::new(crate::Limits {
             max_string_units: Some(1),

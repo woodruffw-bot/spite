@@ -19,8 +19,10 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all 84 program workloads |
+| parse_all | Parse and drop the ASTs for all 86 program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
+| json_reviver_whole | Parse a 4,098-unit quoted BMP/lone-surrogate primitive sixteen times, returning and checking its reviver source |
+| json_reviver_padded | Repeat with outer whitespace so the reviver source remains a copied substring |
 | bigint_multiply_one | Multiply signed 4,097-bit values by ±1n in both orders across 2,048 operations, checking the signed result |
 | bigint_multiply_two | Repeat with ±2n as a nonunit control, checking doubled magnitudes |
 | string_split_miss | Split a 16,385-unit BMP/lone-surrogate String sixteen times with an unmatched separator, checking the sole result |
@@ -119,6 +121,31 @@ their ordinary unlimited defaults.
 
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
+
+## Complete JSON reviver source
+
+For a primitive spanning all input, context.source retains the converted String
+after SameValue eligibility and with the existing output check. Partial spans
+keep their checked copy. Baseline production is 7ced6d404. Matched Rust 1.99
+executables use identical 86-workload sources and optimized conformance libraries
+with debug/overflow checks enabled; both smokes pass all 88 rows.
+
+Each instrumented process reads five copies of a Script, each in a fresh Realm
+with the Test262 host. Each Script parses a 4,098-unit quoted BMP/lone-surrogate
+primitive sixteen times and returns its source through the reviver. The control
+adds outer whitespace. Counts include input/output, host initialization,
+parsing/evaluation, job draining and explicit collection.
+
+| Workload | Instructions before | Instructions after | Rust deallocations before | Rust deallocations after |
+| --- | ---: | ---: | ---: | ---: |
+| Whole input | 244,911,686 | 243,377,124 | 19,150 | 18,990 |
+| Whitespace control | 245,149,985 | 245,150,046 | 19,280 | 19,280 |
+
+The target removes two allocations per parse and uses 0.6266% fewer instructions.
+The control adds 61 instructions with unchanged deallocations. All 762 distinct
+semantic programs match before/after, ordinarily and with forced collection;
+all 28 work thresholds are identical. One instrumented process per revision and
+workload supports these counts, with no wall-time or general speedup claim.
 
 ## BigInt multiplication by unit magnitudes
 

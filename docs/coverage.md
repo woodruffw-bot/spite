@@ -61,6 +61,28 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80074 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Complete JSON reviver source
+
+A primitive spanning all input now retains that String for context.source after
+the existing SameValue gate, preserving output limits and partial source copies.
+The new unit checks exact storage, whitespace, nonfinite numbers, booleans/null,
+escaped/raw lone surrogates and output refusal. All 593 Runtime units, 2,445
+non-RegExp integrations, 270 selected RegExp groups, 91 controls and quality pass.
+
+All 762 distinct supplemental programs match before/after in ordinary and forced
+collection runs: a 512-case mutation/Realm matrix (492 distinct sources), plus
+270 retained SameValue cases. The matrix independently predicts 256 primitive
+source/value observations with Python and retains contexts across a queued job.
+All 28 work thresholds are identical. Both 86-program benchmark smokes pass 88
+rows; [profiling](benchmarking.md#complete-json-reviver-source) removes 160
+deallocations and 0.6266% of instructions in the target. No wall-time claim.
+
+The gate frozen on clean fc5195aa3 (String production 81b56b271) passes all
+91 controls and 80,074 modes from 41,563 originals, with zero other outcomes in
+1,393.974 seconds. Saved fixture/binary hashes match; all 17 hosted jobs pass
+for both fc5195aa3 and 81b56b271. The 7ced6d404 full gate is running. Original
+fixtures, helpers, modes and reviews are unchanged.
+
 ## BigInt multiplication by unit magnitudes
 
 After the existing work debit and width checks, multiplication by either sign

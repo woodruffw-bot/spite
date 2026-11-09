@@ -158,11 +158,17 @@ impl Realm {
             && let Some(record) = record
         {
             let units = &source.code_units()[document.nodes[record].source.clone()];
-            let mut text = Vec::new();
-            text.try_reserve(units.len())
-                .map_err(|_| capacity_error(span))?;
-            text.extend_from_slice(units);
-            let text = JsString::from_code_units(text);
+            // A primitive spanning the entire input can retain its source text
+            // for InternalizeJSONProperty's context.source (25.5.1.1).
+            let text = if units.len() == source.len() {
+                (*source).clone()
+            } else {
+                let mut text = Vec::new();
+                text.try_reserve(units.len())
+                    .map_err(|_| capacity_error(span))?;
+                text.extend_from_slice(units);
+                JsString::from_code_units(text)
+            };
             self.check_json_string(&text, span)?;
             self.json_create_data(
                 &context,

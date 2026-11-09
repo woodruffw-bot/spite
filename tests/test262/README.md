@@ -5,6 +5,19 @@ These 41772 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## JSON reviver source storage
+
+Whole-input primitive source contexts retain immutable String storage after the
+same eligibility and output checks. All 593 Runtime units, 2,445 non-RegExp
+integrations, 270 selected RegExp groups, 91 controls and quality pass. All 762
+distinct semantic programs match before/after, including forced collection;
+28 work thresholds are identical. Originals and reviews are unchanged.
+
+The fc5195aa3 full gate for String production 81b56b271 passes 91/41,563/80,074
+with zero other outcomes in 1,393.974 seconds and matching saved hashes. Both
+commits have all 17 CI jobs successful. The 7ced6d404 full gate is running;
+this JSON increment's full-corpus and hosted receipts remain pending.
+
 ## BigInt unit-factor regression
 
 Multiplication by ±1 copies the retained magnitude after unchanged width/work

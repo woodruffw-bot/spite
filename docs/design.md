@@ -3868,7 +3868,10 @@ names replace earlier values without changing their initial property order, and
 __proto__ is an ordinary JSON key. Noncallable revivers are ignored. Callable
 revivers use an immutable flat parse snapshot and explicit traversal frames.
 Get precedes creation of each fresh context object; SameValue determines whether
-the original primitive lexeme or child snapshot remains available. Duplicate
+the original primitive lexeme or child snapshot remains available. A primitive
+spanning the whole input retains that String's immutable storage for context.source;
+other spans keep the checked copy path. Output limits and source eligibility
+are unchanged. Duplicate
 names use the last source occurrence. Snapshot enumerable string keys or array
 length before visiting children, then invoke the reviver in postorder with its
 holder as this and exactly three arguments. Read each child live, so mutations,
