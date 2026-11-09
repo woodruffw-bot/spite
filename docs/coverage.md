@@ -61,6 +61,16 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## RegExp quota fixture setup
+
+CI exposed two native setups whose String repetition and concatenation exceed
+their work allowances after construction accounting. The test host now builds
+the same 15,001-unit and 8,001-unit inputs as literals. Node and Runtime agree
+on the original/replacement input bytes, RegExp source, marker and lastIndex.
+Both failing groups and 269 selected RegExp groups pass with the original
+execution budgets and matcher assertions. Runtime behavior and upstream
+fixtures are unchanged.
+
 ## String construction work
 
 String addition prepays both input lengths after conversion when neither input

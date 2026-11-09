@@ -5,6 +5,14 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Native RegExp quota setup repair
+
+Two native tests now receive the same host-built input Strings after updated
+construction accounting exhausted their former setup allowances. Their work
+budgets and matcher assertions are unchanged. Both groups and 269 selected
+RegExp groups pass; input bytes and state match in Node and Runtime. Fixtures,
+helpers, modes and reviews are unchanged.
+
 ## String construction work regression
 
 One native group protects copy refusal, recovery, storage reuse and conversion

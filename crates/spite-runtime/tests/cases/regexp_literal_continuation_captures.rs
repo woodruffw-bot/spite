@@ -97,7 +97,10 @@ fn opted_in_host_aborts_and_unsupported_suffixes_remain_distinct() {
         ..Limits::default()
     });
     realm
-        .eval("let r=/(a)+(b)/y,s='a'.repeat(8000)+'b',flag=0")
+        .eval(&format!(
+            "let r=/(a)+(b)/y,s='{}b',flag=0",
+            "a".repeat(8000)
+        ))
         .unwrap();
     assert!(matches!(
         realm.eval("try{r.exec(s)}catch{flag=1}finally{flag=2}"),

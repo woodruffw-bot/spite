@@ -102,7 +102,12 @@ fn explicit_work_aborts_preserve_last_index_and_bypass_handlers() {
         max_steps: Some(30000),
         ..Limits::default()
     });
-    realm.eval(r"let marker=0,r=/(a)(?<=(\3(b)\1){2})c/g;r.lastIndex=1;let text='bba'.repeat(5000)+'c'").unwrap();
+    realm
+        .eval(&format!(
+            r"let marker=0,r=/(a)(?<=(\3(b)\1){{2}})c/g;r.lastIndex=1;let text='{}c'",
+            "bba".repeat(5000)
+        ))
+        .unwrap();
     assert!(matches!(
         realm.eval("try{r.exec(text)}catch{marker=1}finally{marker=2}"),
         Err(Error::Limit { .. })
