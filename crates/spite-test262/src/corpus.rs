@@ -243,6 +243,10 @@ fn run_entry(root: &Path, entry: &Entry<'_>) -> io::Result<CorpusTest> {
         &source,
         review.as_ref(),
         entry.path,
+        // JSON support is an explicit conformance-host capability. Other tests
+        // retain the existing empty supported-attribute policy.
+        crate::Metadata::parse(&source)
+            .is_ok_and(|metadata| metadata.features.iter().any(|f| f == "json-modules")),
         |name| {
             fs::read_to_string(root.join("upstream/harness").join(name))
                 .map_err(|error| error.to_string())

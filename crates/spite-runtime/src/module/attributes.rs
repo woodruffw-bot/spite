@@ -19,6 +19,19 @@ impl Realm {
         realm
     }
 
+    /// Creates a suspending agent with a fixed set of import attribute keys.
+    ///
+    /// Combines [`Self::new_suspending`] with the host attribute policy of
+    /// [`Self::new_with_supported_import_attributes`].
+    pub fn new_suspending_with_supported_import_attributes(
+        limits: Limits,
+        keys: impl IntoIterator<Item = JsString>,
+    ) -> Self {
+        let mut realm = Self::new_with_supported_import_attributes(limits, keys);
+        realm.can_suspend = true;
+        realm
+    }
+
     pub(crate) fn check_import_attributes(
         &mut self,
         attributes: &[ImportAttribute],

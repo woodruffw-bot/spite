@@ -25,6 +25,161 @@ fn outcome(
 }
 
 #[test]
+fn json_module_cache_shares_values_and_distinguishes_module_types() {
+    let result = Runner::default()
+        .run_with_json_module_loader(
+            &source(
+                "flags: [module]",
+                "import data,* as ns from'data' with{type:'json'};import * as js from'number';import value,* as json from'number' with{type:'json'};const again=await import('data',{with:{type:'json'}});const againJs=await import('number');const againJson=await import('number',{with:{type:'json'}});if(again!==ns||again.default!==data||data.x!==7||value!==7||js===json||againJs!==js||againJson!==json||Object.keys(js).length!==0)throw 1",
+            ),
+            None,
+            "root",
+            |_| Ok(String::new()),
+            |_, request| {
+                let identifier = request.specifier.to_utf8().unwrap();
+                Ok(ModuleSource {
+                    source: if identifier == "data" { r#"{"x":7}"# } else { "7" }.into(),
+                    identifier,
+                })
+            },
+        )
+        .unwrap();
+    assert_eq!(result[0].outcome, Outcome::Passed);
+}
+
+#[test]
+fn json_source_errors_preserve_phase_and_host_failure_accounting() {
+    for (metadata, body, expected) in [
+        (
+            "flags: [module]\nnegative:\n  phase: resolution\n  type: SyntaxError",
+            "import data from'bad' with{type:'json'};throw 1",
+            None,
+        ),
+        (
+            "flags: [module]\nnegative:\n  phase: runtime\n  type: SyntaxError",
+            "import data from'bad' with{type:'json'};throw 1",
+            Some(Stage::Resolution),
+        ),
+        (
+            "flags: [module]",
+            "try{await import('bad',{with:{type:'json'}});throw 1}catch(e){if(!(e instanceof SyntaxError))throw e}const good=await import('good',{with:{type:'json'}});if(good.default!==7)throw 2",
+            None,
+        ),
+        (
+            "flags: [module]\nnegative:\n  phase: resolution\n  type: TypeError",
+            "import'blocked' with{type:'css'}",
+            None,
+        ),
+        (
+            "flags: [module]",
+            "try{await import('blocked',{with:{type:'css'}});throw 1}catch(e){if(!(e instanceof TypeError))throw e}",
+            None,
+        ),
+    ] {
+        let result = Runner::default()
+            .run_with_json_module_loader(
+                &source(metadata, body),
+                None,
+                "root",
+                |_| Ok(String::new()),
+                |_, request| {
+                    let identifier = request.specifier.to_utf8().unwrap();
+                    assert_ne!(
+                        identifier, "blocked",
+                        "type validation must precede loading"
+                    );
+                    Ok(ModuleSource {
+                        source: if identifier == "bad" { "[1,]" } else { "7" }.into(),
+                        identifier,
+                    })
+                },
+            )
+            .unwrap();
+        match expected {
+            None => assert_eq!(result[0].outcome, Outcome::Passed, "{body}"),
+            Some(expected) => {
+                assert!(matches!(&result[0].outcome, Outcome::Failed{stage,..} if *stage==expected))
+            }
+        }
+    }
+    let result = Runner::default()
+        .run_with_json_module_loader(
+            &source(
+                "flags: [module]\nnegative:\n  phase: runtime\n  type: SyntaxError",
+                "await import('missing',{with:{type:'json'}})",
+            ),
+            None,
+            "root",
+            |_| Ok(String::new()),
+            |_, _| Err("unavailable source".into()),
+        )
+        .unwrap();
+    assert!(matches!(result[0].outcome, Outcome::SetupFailure(_)));
+    let root = source("flags: [module]", "import'data' with{type:'json'}");
+    let result = Runner {
+        limits: Limits {
+            max_source_bytes: Some(root.len()),
+            ..Limits::default()
+        },
+    }
+    .run_with_json_module_loader(
+        &root,
+        None,
+        "root",
+        |_| Ok(String::new()),
+        |_, _| {
+            Ok(ModuleSource {
+                identifier: "data".into(),
+                source: format!("\"{}\"", "x".repeat(root.len())),
+            })
+        },
+    )
+    .unwrap();
+    assert!(matches!(
+        result[0].outcome,
+        Outcome::Limit {
+            stage: Stage::Resolution,
+            ..
+        }
+    ));
+}
+
+#[test]
+fn json_module_host_preserves_agent_suspension_policy() {
+    for (flags, body) in [
+        (
+            "[module]",
+            "if(Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,0)!=='timed-out')throw 1",
+        ),
+        (
+            "[module, CanBlockIsFalse]",
+            "try{Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,0);throw 1}catch(e){if(!(e instanceof TypeError))throw e}",
+        ),
+    ] {
+        let result = Runner::default()
+            .run_with_json_module_loader(
+                &source(
+                    &format!("flags: {flags}"),
+                    &format!(
+                        "import value from'data' with{{type:'json'}};if(value!==7)throw 2;{body}"
+                    ),
+                ),
+                None,
+                "root",
+                |_| Ok(String::new()),
+                |_, _| {
+                    Ok(ModuleSource {
+                        identifier: "data".into(),
+                        source: "7".into(),
+                    })
+                },
+            )
+            .unwrap();
+        assert_eq!(result[0].outcome, Outcome::Passed);
+    }
+}
+
+#[test]
 fn self_aliases_shared_dependencies_and_cycles_use_stable_host_identities() {
     let root = source(
         "flags: [module]",

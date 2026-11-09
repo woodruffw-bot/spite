@@ -140,6 +140,34 @@ impl Runner {
             source,
             review,
             root_identifier,
+            false,
+            load_harness,
+            |referrer, request| load_module(referrer, request).map_err(ModuleLoadError::from),
+        )
+    }
+
+    /// Runs with JSON module loading and the fixed `type` import attribute key.
+    ///
+    /// Requests with `type: "json"` parse intrinsic JSON; requests without
+    /// attributes parse JavaScript. Stable identities are cached by module type.
+    /// Unsupported types reject before the loader is called. Other behavior
+    /// follows [`Self::run_with_module_loader`].
+    pub fn run_with_json_module_loader(
+        &self,
+        source: &str,
+        review: Option<&ParseExpectation>,
+        root_identifier: &str,
+        load_harness: impl FnMut(&str) -> Result<String, String>,
+        mut load_module: impl FnMut(
+            &str,
+            &spite_parser::ast::ModuleRequest,
+        ) -> Result<ModuleSource, String>,
+    ) -> Result<Vec<CaseResult>, MetadataError> {
+        self.run_with_source_loader(
+            source,
+            review,
+            root_identifier,
+            true,
             load_harness,
             |referrer, request| load_module(referrer, request).map_err(ModuleLoadError::from),
         )
@@ -150,6 +178,7 @@ impl Runner {
         source: &str,
         review: Option<&ParseExpectation>,
         root_identifier: &str,
+        json_modules: bool,
         mut load_harness: impl FnMut(&str) -> Result<String, String>,
         mut load_module: impl FnMut(
             &str,
@@ -158,6 +187,7 @@ impl Runner {
     ) -> Result<Vec<CaseResult>, MetadataError> {
         let mut loader = ModuleLoader {
             root_identifier,
+            json_modules,
             load: &mut load_module,
         };
         self.run_variants(source, review, &mut load_harness, Some(&mut loader))
@@ -241,7 +271,15 @@ impl Runner {
             return self.run_module_resolution(module, original, negative, modules);
         }
         let asynchronous = metadata.has_flag("async");
-        let mut realm = if metadata.has_flag("CanBlockIsFalse") {
+        let json_modules = modules.as_ref().is_some_and(|loader| loader.json_modules);
+        let mut realm = if json_modules && metadata.has_flag("CanBlockIsFalse") {
+            Realm::new_with_supported_import_attributes(self.limits, [JsString::from("type")])
+        } else if json_modules {
+            Realm::new_suspending_with_supported_import_attributes(
+                self.limits,
+                [JsString::from("type")],
+            )
+        } else if metadata.has_flag("CanBlockIsFalse") {
             Realm::new(self.limits)
         } else {
             Realm::new_suspending(self.limits)

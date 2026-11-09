@@ -5,6 +5,17 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## JSON conformance-host candidate
+
+The explicit JSON loader preserves typed source identities, loading-error phases,
+host failures and agent suspension policy. All 20 module-loading controls pass.
+The isolated JSON candidate passes all 14 modes from 13 original tests, including
+both resolution negatives and async completion. Twelve unchanged support files
+provide eleven JSON inputs and one indirect JavaScript importer. All bytes match
+the pinned Git blobs. These candidate files have not yet entered this corpus.
+All 585 Runtime units, 2,445 non-RegExp integrations, 270 selected RegExp groups
+and the quality gate pass; all 90 runner controls also pass.
+
 ## CLI JSON file import regression
 
 The CLI now loads JSON through explicit type attributes and caches canonical

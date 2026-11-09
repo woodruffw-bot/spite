@@ -287,7 +287,13 @@ fn all_pinned_fixture_metadata_is_read_without_rewriting_sources() {
         }
         let original = fs::read_to_string(root.join("upstream").join(fields[2])).unwrap();
         if fields[0] == "module-fixture" {
-            verify_module_fixture(fields[2], &original);
+            if fields[2].ends_with(".json") {
+                // Support text includes deliberately invalid JSON. It never
+                // enters metadata or JavaScript parsing; byte hashes are pinned.
+                assert!(fields[2].ends_with("_FIXTURE.json"));
+            } else {
+                verify_module_fixture(fields[2], &original);
+            }
             count += 1;
             continue;
         }

@@ -5,18 +5,25 @@ use spite_parser::ast::{Module, ModuleRequest};
 use spite_runtime::ModuleHandle;
 use std::collections::{HashMap, HashSet};
 
-/// A host-resolved Source Text Module and its stable identity.
+/// Host-resolved JavaScript or JSON module text and its stable identity.
 #[derive(Clone, Debug)]
 pub struct ModuleSource {
-    /// Equal identifiers reuse one record, including the root identifier.
+    /// Equal identifiers and module types reuse one record, including the root.
     pub identifier: String,
-    /// Unmodified UTF-8 Module text. Repeated identities must have equal sources.
+    /// Unmodified UTF-8 text. Repeated identity/type pairs must have equal sources.
     pub source: String,
 }
 
 pub(super) struct ModuleLoader<'a> {
     pub root_identifier: &'a str,
+    pub json_modules: bool,
     pub load: &'a mut dyn FnMut(&str, &ModuleRequest) -> Result<ModuleSource, ModuleLoadError>,
+}
+
+#[derive(Clone, Copy, Eq, Hash, PartialEq)]
+enum ModuleType {
+    JavaScript,
+    Json,
 }
 
 pub(crate) enum ModuleLoadError {
@@ -59,7 +66,7 @@ struct Node {
 #[derive(Default)]
 pub(super) struct ModuleCache {
     nodes: Vec<Node>,
-    identifiers: HashMap<String, usize>,
+    identifiers: HashMap<(String, ModuleType), usize>,
     records: HashMap<ModuleHandle, usize>,
 }
 
@@ -87,20 +94,35 @@ fn imported_source_error(error: Error) -> ModuleLoadError {
                 message: diagnostic.message,
             })
         }
+        error @ Error::Exception {
+            kind: spite_runtime::ExceptionKind::SyntaxError,
+            ..
+        } => ModuleLoadError::Resolution(error),
         error => ModuleLoadError::Preparation(error),
     }
 }
 
-fn supported_attributes(request: &ModuleRequest) -> Result<(), Error> {
+fn module_type(request: &ModuleRequest, json_modules: bool) -> Result<ModuleType, Error> {
     if request.attributes.is_empty() {
-        return Ok(());
+        return Ok(ModuleType::JavaScript);
     }
-    // The conformance host uses HostGetSupportedImportAttributes' empty default.
-    Err(Error::Exception {
-        kind: spite_runtime::ExceptionKind::SyntaxError,
-        span: Span::new(0, 0),
-        message: "unsupported import attribute key".into(),
-    })
+    for attribute in &request.attributes {
+        if !json_modules || attribute.key != JsString::from("type") {
+            return Err(Error::Exception {
+                kind: spite_runtime::ExceptionKind::SyntaxError,
+                span: Span::new(0, 0),
+                message: "unsupported import attribute key".into(),
+            });
+        }
+        if attribute.value != JsString::from("json") {
+            return Err(Error::Exception {
+                kind: spite_runtime::ExceptionKind::TypeError,
+                span: Span::new(0, 0),
+                message: "unsupported module type".into(),
+            });
+        }
+    }
+    Ok(ModuleType::Json)
 }
 
 impl ModuleCache {
@@ -109,8 +131,9 @@ impl ModuleCache {
         realm: &mut Realm,
         source: ModuleSource,
         parsed: Option<&Module>,
+        kind: ModuleType,
     ) -> Result<usize, Error> {
-        if let Some(&index) = self.identifiers.get(&source.identifier) {
+        if let Some(&index) = self.identifiers.get(&(source.identifier.clone(), kind)) {
             if self.nodes[index].source != source.source {
                 return Err(host(format!(
                     "module identity changed source: {}",
@@ -119,16 +142,18 @@ impl ModuleCache {
             }
             return Ok(index);
         }
-        let handle = match parsed {
-            Some(module) => realm.create_module_from_ast(module)?,
-            None => realm.create_module(&source.source)?,
+        let handle = match (kind, parsed) {
+            (ModuleType::JavaScript, Some(module)) => realm.create_module_from_ast(module)?,
+            (ModuleType::JavaScript, None) => realm.create_module(&source.source)?,
+            (ModuleType::Json, _) => realm.create_json_module(&source.source)?,
         };
         let requests = realm.module_requests(&handle)?;
         self.nodes.try_reserve(1).map_err(|_| capacity())?;
         self.identifiers.try_reserve(1).map_err(|_| capacity())?;
         self.records.try_reserve(1).map_err(|_| capacity())?;
         let index = self.nodes.len();
-        self.identifiers.insert(source.identifier.clone(), index);
+        self.identifiers
+            .insert((source.identifier.clone(), kind), index);
         self.records.insert(handle.clone(), index);
         self.nodes.push(Node {
             identifier: source.identifier,
@@ -159,6 +184,7 @@ impl ModuleLoader<'_> {
                 source: source.into(),
             },
             Some(module),
+            ModuleType::JavaScript,
         )?;
         self.publish_graph(realm, root, cache)
     }
@@ -191,13 +217,16 @@ impl ModuleLoader<'_> {
                     .try_reserve_exact(requests.len())
                     .map_err(|_| capacity())?;
                 for request in requests {
-                    if let Err(error) = supported_attributes(&request) {
-                        cache.nodes[index].attribute_error = Some(error.clone());
-                        return Err(ModuleLoadError::Resolution(error));
-                    }
+                    let kind = match module_type(&request, self.json_modules) {
+                        Ok(kind) => kind,
+                        Err(error) => {
+                            cache.nodes[index].attribute_error = Some(error.clone());
+                            return Err(ModuleLoadError::Resolution(error));
+                        }
+                    };
                     let loaded = (self.load)(&cache.nodes[index].identifier, &request)?;
                     let target = cache
-                        .insert(realm, loaded, None)
+                        .insert(realm, loaded, None, kind)
                         .map_err(imported_source_error)?;
                     dependencies.push(cache.nodes[target].handle.clone());
                 }
@@ -234,7 +263,6 @@ impl ModuleLoader<'_> {
         cache: &mut ModuleCache,
     ) -> Result<(), Error> {
         while let Some(request) = realm.take_module_import_request() {
-            supported_attributes(request.request())?;
             let referrer = match request.referrer() {
                 None => self.root_identifier,
                 Some(record) => {
@@ -245,10 +273,14 @@ impl ModuleLoader<'_> {
                     .identifier
                 }
             };
-            let loaded = (self.load)(referrer, request.request());
-            let result = loaded.and_then(|loaded| {
+            let loaded = module_type(request.request(), self.json_modules)
+                .map_err(ModuleLoadError::Resolution)
+                .and_then(|kind| {
+                    (self.load)(referrer, request.request()).map(|source| (source, kind))
+                });
+            let result = loaded.and_then(|(loaded, kind)| {
                 let target = cache
-                    .insert(realm, loaded, None)
+                    .insert(realm, loaded, None, kind)
                     .map_err(imported_source_error)?;
                 self.publish_graph(realm, target, cache)
             });
@@ -277,7 +309,11 @@ impl Runner {
         negative: &Negative,
         loader: Option<&mut ModuleLoader<'_>>,
     ) -> Outcome {
-        let mut realm = Realm::new(self.limits);
+        let mut realm = if loader.as_ref().is_some_and(|loader| loader.json_modules) {
+            Realm::new_with_supported_import_attributes(self.limits, [JsString::from("type")])
+        } else {
+            Realm::new(self.limits)
+        };
         let loaded = match loader {
             Some(loader) => {
                 loader.load_graph(&mut realm, module, source, &mut ModuleCache::default())

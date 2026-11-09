@@ -18,7 +18,10 @@ for line in (root / "manifest.tsv").read_text().splitlines():
     }:
         raise SystemExit(f"unsupported fixture mode: {expectation}")
     relative = PurePosixPath(path)
-    if relative.is_absolute() or ".." in relative.parts or relative.suffix != ".js":
+    if relative.is_absolute() or ".." in relative.parts or not (
+        relative.suffix == ".js"
+        or (expectation == "module-fixture" and relative.suffix == ".json")
+    ):
         raise SystemExit(f"invalid fixture path: {path}")
     if (expectation == "harness") != (relative.parts[0] == "harness"):
         raise SystemExit(f"harness mode/path mismatch: {path}")
@@ -31,7 +34,10 @@ for line in (root / "manifest.tsv").read_text().splitlines():
     actual = hashlib.sha256((root / "upstream" / path).read_bytes()).hexdigest()
     if actual != checksum:
         raise SystemExit(f"fixture bytes changed: {path}")
-actual_paths = {p.relative_to(root / "upstream").as_posix() for p in (root / "upstream").rglob("*.js")}
+actual_paths = {
+    p.relative_to(root / "upstream").as_posix()
+    for p in (root / "upstream").rglob("*") if p.is_file()
+}
 if paths != actual_paths or not paths:
     raise SystemExit("fixture inventory does not match the manifest")
 reviewed = set()

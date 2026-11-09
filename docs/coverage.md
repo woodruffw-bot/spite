@@ -61,6 +61,28 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## JSON-enabled conformance host
+
+run_with_json_module_loader explicitly opts in to type: "json" parsing and caches
+source identity/module-type pairs. The corpus selects this host for json-modules
+tests. Other tests keep their existing attribute policy. Three added controls
+protect typed identity, static resolution versus dynamic rejection, unavailable
+source and opt-in limits, and CanBlockIsFalse versus suspending agents. All 20
+module-loading controls pass. In an isolated candidate, all 13 unchanged published
+JSON-module originals pass their 14 modes using twelve unchanged support files
+(eleven JSON and one JavaScript). Original bytes match the pinned Git blobs.
+These files have not yet entered the retained corpus. All 585 Runtime units,
+2,445 non-RegExp integrations, 270 selected RegExp groups and the quality gate
+pass. All 90 runner controls also pass.
+
+An additional pinned-tree inventory reviews all 1,328 unretained built-in/language
+test paths outside Temporal and ShadowRealm, including 221 outside the earlier
+saved catalogs. It accounts for 1,113 proposal sources, 98 optional legacy-method
+sources, 92 Unicode-version cases, six later helper-limit assertions, five host
+allocation assumptions, one whole String.split test requiring disabled Annex B
+identity escapes, and the thirteen JSON candidates. No unclassified rows remain
+within this scope. It does not claim ECMA-402, Annex B or whole-upstream coverage.
+
 ## CLI JSON file imports
 
 The CLI accepts static and dynamic type: "json" imports and parses them with the

@@ -691,6 +691,16 @@ and top-level-Await parents accept either record kind. Work, source, string and
 heap limits remain opt-in. This library API leaves supported import attributes
 and file resolution to the host; the CLI opts in to the type key for JSON files.
 
+The Test262 runner offers run_with_json_module_loader as an explicit host
+capability. Corpus tests declaring json-modules use that capability; other tests
+retain the empty supported-attribute policy. Returned source identifiers are
+cached with their module type. Invalid JSON is a loading-time SyntaxError, so
+static resolution negatives and dynamic rejections remain distinct from root
+parsing and runtime negatives. Missing source preparation remains a host failure.
+The JSON host preserves CanBlockIsFalse through the ordinary or suspending Realm
+constructor with fixed attribute keys. JSON support files retain their original
+bytes, including intentionally invalid text; they never become executable tests.
+
 Realm::module_namespace links a loaded record's graph and caches its
 namespace without entering the body (10.4.6, GetModuleNamespace). Evaluation reuses
 that prepared environment. Namespace exports resolve to live target cells; lexical
