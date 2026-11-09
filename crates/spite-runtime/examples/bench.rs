@@ -20,6 +20,18 @@ struct Case {
 
 const CASES: &[Case] = &[
     Case {
+        name: "template_no_substitutions",
+        source: "(()=>{const text='x'.repeat(16384),source='return `'+text+'`',f=Function(source);let total=0;for(let i=0;i<16;i++)total+=f().length;return total})()",
+        expected: 262144.0,
+        jobs: false,
+    },
+    Case {
+        name: "template_empty_substitution",
+        source: "(()=>{const text='x'.repeat(16384),source='return `'+text+'${\"\"}`',f=Function(source);let total=0;for(let i=0;i<16;i++)total+=f().length;return total})()",
+        expected: 262144.0,
+        jobs: false,
+    },
+    Case {
         name: "tagged_template_creation",
         source: "(()=>{const text='x'.repeat(4096),source='return tag`'+text+'`';function tag(parts){return parts[0].length+parts.raw[0].length}let total=0;for(let i=0;i<16;i++)total+=Function('tag',source)(tag);return total})()",
         expected: 131072.0,

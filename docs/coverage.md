@@ -61,6 +61,23 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Templates without substitutions
+
+The ordinary evaluator reuses the immutable cooked String after the same entry,
+length, work and agent checks (13.2.8.6). Async expressions delegate to this path.
+Templates with substitutions retain their ordered conversions and append path.
+All 577 Runtime units, 2,445 non-RegExp integrations, 270 selected RegExp groups
+and the quality gate pass. All 65,536 UTF-16 units in 512 synchronous/resumed
+programs match Python and Node before and after, including 512 collection repeats
+per build. All eight measured work allowances remain identical. Both benchmark
+smokes pass all 72 rows from 70 workloads.
+
+Five evaluations with sixteen literal returns each remove 160 Rust deallocations,
+matching two avoided buffers per return. Callgrind instructions change from
+219,419,477 to 213,968,167 (-2.484%); the empty-substitution control changes
+-0.007% with identical deallocation counts. Profiles include initialization,
+dynamic compilation/evaluation and collection, without a general wall-time claim.
+
 ## Tagged-template String storage reuse
 
 GetTemplateObject retains immutable parsed cooked/raw Strings after the same
@@ -86,8 +103,8 @@ The frozen construction gate on clean a705f7cbb passes all 87 controls and all
 increments with the same counts in 1,350.086 seconds; all 17 CI jobs pass there.
 Executable and fixture hashes match for both runs. The setup repair in
 78ac1e0d5 leaves production identical to a705f7cbb, and all four previously
-failing CI jobs pass on that repair. These receipts precede template storage
-reuse; fixtures, helpers, modes and reviews are unchanged.
+failing CI jobs pass on that repair; all 17 jobs subsequently pass. These receipts
+precede template storage reuse; fixtures, helpers, modes and reviews are unchanged.
 
 ## RegExp quota fixture setup
 

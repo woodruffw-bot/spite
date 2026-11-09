@@ -134,7 +134,11 @@ impl Realm {
         Ok(template)
     }
 
-    fn template_string(&mut self, string: &JsString, span: Span) -> Result<Value, Error> {
+    pub(crate) fn template_string(
+        &mut self,
+        string: &JsString,
+        span: Span,
+    ) -> Result<Value, Error> {
         if self
             .limits
             .max_string_units

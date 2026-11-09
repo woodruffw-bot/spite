@@ -695,6 +695,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Charge String equality and relational scans, including switch matching, while retaining length-only equality rejection and UTF-16 ordering.
 - [x] Charge String addition copies and immediate/resumed template buffer appends before allocation, preserving conversion order, growth accounting and empty-operand storage reuse.
 - [x] Share immutable parsed cooked/raw String storage in frozen template objects after the existing length, work and agent checks, preserving site identity and descriptors.
+- [x] Reuse immutable cooked String storage for templates without substitutions through the ordinary evaluator, preserving work allowances and async delegation.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

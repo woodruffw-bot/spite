@@ -1787,6 +1787,9 @@ any existing buffer units moved by growth, then reserves and copies.
 GetTemplateObject stores cloned immutable parsed cooked/raw Strings after the
 existing length and work checks (13.2.8.4). Frozen site arrays retain their
 identity, descriptors and creation Realm while sharing primitive String storage.
+Untagged templates without substitutions return their immutable cooked String
+through the same checked helper (13.2.8.6), retaining the literal entry tick and
+work allowance. Async execution delegates these expressions to that evaluator.
 The parser/evaluator native-stack guards are current implementation constraints;
 removing them safely requires replacing recursive execution with explicit frames.
 References below to execution

@@ -19,8 +19,10 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all 68 program workloads |
+| parse_all | Parse and drop the ASTs for all 70 program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
+| template_no_substitutions | Call a dynamically compiled function returning a 16,384-unit template without substitutions sixteen times, checking lengths |
+| template_empty_substitution | Repeat with one empty String substitution as a control |
 | tagged_template_creation | Compile and call sixteen fresh Function bodies with a 4,096-unit tagged template, checking cooked and raw lengths |
 | sum_precise_integer | Sum four integers exactly 2,048 times with Math.sumPrecise, checking every result |
 | arithmetic | Evaluate a 1,000-iteration numeric/bitwise loop |

@@ -5,6 +5,15 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Templates without substitutions regression
+
+All 577 Runtime units, 2,445 non-RegExp integrations, 270 selected RegExp groups
+and the quality gate pass. All 65,536 UTF-16 units in 512 synchronous/resumed
+programs match Python and Node before and after, plus 512 collection repeats per
+build. Work allowances remain identical in both execution paths; both benchmark
+smokes pass all 72 rows. The full corpus receipt is pending. Fixtures, helpers,
+modes and reviews are unchanged.
+
 ## Tagged-template String storage regression
 
 All 577 Runtime units, 2,445 non-RegExp integrations, 270 selected RegExp groups
@@ -20,7 +29,8 @@ from 41,550 unchanged originals, with zero other outcomes in 1,421.324 seconds.
 The earlier 747c21de4 comparison gate passes the same counts in 1,350.086 seconds;
 all 17 CI jobs pass there. Saved executable and fixture hashes match for both
 runs. Test-only repair 78ac1e0d5 retains a705f7cbb's production behavior; its
-four previously failing CI jobs now pass. These receipts precede storage reuse.
+four previously failing CI jobs now pass, followed by all 17 jobs. These receipts
+precede storage reuse.
 
 ## Native RegExp quota setup repair
 
@@ -36,8 +46,8 @@ One native group protects copy refusal, recovery, storage reuse and conversion
 order. All 577 Runtime units, 2,445 non-RegExp integrations and the quality gate
 pass. All 704 programs match Node before and after, including 64 resumed
 templates; 512 UTF-16 batches also match Python for all 65,536 units. The work
-probes retain earlier scan charges. The full corpus receipt is pending; fixtures,
-helpers, modes and reviews are unchanged.
+probes retain earlier scan charges. The construction corpus receipt appears
+above; fixtures, helpers, modes and reviews are unchanged.
 
 ## Initial String-to-Number execution receipt
 

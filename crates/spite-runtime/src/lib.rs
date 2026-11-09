@@ -1700,6 +1700,20 @@ impl Realm {
             ExprKind::Template {
                 elements,
                 substitutions,
+            } if substitutions.is_empty() => {
+                let element = &elements[0];
+                self.tick(element.span)?;
+                self.template_string(
+                    element
+                        .cooked
+                        .as_ref()
+                        .expect("validated untagged template"),
+                    element.span,
+                )?
+            }
+            ExprKind::Template {
+                elements,
+                substitutions,
             } => {
                 // ECMA-262 13.2.8.6: each substitution is evaluated and converted
                 // with ToString before the next one. Raw text is not evaluated.
