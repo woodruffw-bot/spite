@@ -5,6 +5,17 @@ These 41772 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Exact summation protocol audit
+
+All 354 iterator/Realm programs agree with the published algorithms and flagged
+Node: validation after nonfinite values, close lookup/calls/error precedence,
+step failures without closing and foreign TypeError identity. Runtime 3f6081fd6
+is the audited build; original fixtures and production code are unchanged.
+
+The frozen 3f6081fd6 gate passes all 91 controls and 80,074 modes from 41,563
+originals, with zero other outcomes in 1,138.738 seconds and matching saved hashes.
+Hosted CI remains pending for that commit.
+
 ## Exact summation audit
 
 All 4,096 Math.sumPrecise sequences (103,136 inputs in 256 programs) match exact

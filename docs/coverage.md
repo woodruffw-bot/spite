@@ -61,6 +61,19 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80074 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Exact summation iterator and Realm audit
+
+All 354 supplemental Math.sumPrecise programs match the published algorithms and
+Node with --js-sum-precise on Runtime 3f6081fd6. They validate nonnumbers after
+empty, NaN and conflicting-infinity prefixes; absent/null/callable/primitive/
+throwing/noncallable return behavior; close receivers and throw precedence;
+next/done/value failures without closing; and parent/foreign TypeError identity.
+This read-only audit changes no production code or original fixtures.
+
+The foreign-global fix at clean 3f6081fd6 passes all 91 runner controls and 80,074
+modes from 41,563 originals, with zero other outcomes in 1,138.738 seconds. Saved
+fixture/executable hashes match. Its hosted CI receipt remains pending.
+
 ## Exact summation bit audit
 
 A read-only Math.sumPrecise audit checks 4,096 sequences containing 103,136
