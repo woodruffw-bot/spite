@@ -61,6 +61,27 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80074 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Positive BigInt right-shift scanning
+
+Positive right shifts now skip the discarded-bit scan used only for negative
+rounding. The existing word-work debit, negative rounding, result checks and
+both shift directions are unchanged. All 39 BigInt tests, 113 Core units,
+18 Parser units/443 integrations, 595 Runtime units, 2,445 non-RegExp groups,
+270 selected RegExp groups, 91 controls and quality pass. The benchmark smoke passes
+98 rows across 96 programs.
+
+All 512 supplemental signed/word-boundary shift cases match Python and Node
+before/after under ordinary and forced collection. All 4,480 budget observations
+are identical. [Matched profiles](benchmarking.md#positive-bigint-right-shifts)
+reduce positive-target instructions by 7.0493%; the negative control changes
+by +0.0083%, with unchanged free counts in both profiles. No wall-time claim.
+The initial oracle generator hit Python's decimal-digit formatting guard;
+the corrected source constructs wide low masks with shifts. Both attempts
+are retained, with no Runtime limit change.
+
+The fe44fa3c4 full gate is running on the preceding String optimization and
+TypedArray audit. Original fixtures, helpers, modes and reviews are unchanged.
+
 ## Cross-Realm asynchronous atomic waits
 
 All 768 supplemental same-Agent Atomics.waitAsync programs match the published

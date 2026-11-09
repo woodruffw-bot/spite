@@ -718,8 +718,9 @@ impl BigInt {
         let whole = count / 32;
         let part = count % 32;
         if right {
-            let discarded = self.words[..whole].iter().any(|&word| word != 0)
-                || (part != 0 && self.words[whole] & ((1 << part) - 1) != 0);
+            let discarded = self.negative
+                && (self.words[..whole].iter().any(|&word| word != 0)
+                    || (part != 0 && self.words[whole] & ((1 << part) - 1) != 0));
             let mut words = self.words[whole..].to_vec();
             if part != 0 {
                 let mut carry = 0;

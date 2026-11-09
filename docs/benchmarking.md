@@ -19,8 +19,10 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all 94 program workloads |
+| parse_all | Parse and drop the ASTs for all 96 program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
+| bigint_shift_positive | Right-shift a positive 32,769-bit power of two by 16,384 bits across 2,048 operations, checking every result |
+| bigint_shift_negative | Repeat with the negative power as a rounding/scan control |
 | string_replace_whole | Replace a complete 4,096-unit String sixteen times with callback-returned 16,384-unit BMP/lone-surrogate text, checking length and final unit |
 | string_replace_prefix | Repeat with an unmatched leading unit so the replacement is a proper substring |
 | bigint_bitnot_one | Complement -1n 2,048 times, checking canonical zero |
@@ -129,6 +131,27 @@ their ordinary unlimited defaults.
 
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
+
+## Positive BigInt right shifts
+
+Discarded bits affect rounding only for negative operands. The backend now
+checks the sign before scanning those bits, preserving the existing word-work
+debit and result validation. Matched optimized Rust 1.99 executables run five
+fresh Realms with 2,048 shifts each. Profiles include source decoding, Test262
+host setup, parsing/evaluation, queued-job drain, explicit collection and output.
+
+| Profile | Instructions before/after | Rust frees before/after |
+| --- | --- | --- |
+| Positive power, zero low half | 372,592,864 / 346,327,631 (−7.0493%) | 87,580 / 87,580 |
+| Negative power control | 372,437,902 / 372,468,949 (+0.0083%) | 87,580 / 87,580 |
+
+All 512 supplemental shift cases match Python and Node before/after with
+ordinary and forced collection, including reversed directions, signed operands,
+word boundaries and zero/nonzero discarded tails. All 4,480 native budget
+observations are byte-identical. The bigint-positive-shift artifacts under
+/workspace/work retain source/library hashes, matched executables, profiles
+and oracle records. These are scoped instruction results, without a wall-time
+or allocation-count improvement claim.
 
 ## Whole functional String replacement
 

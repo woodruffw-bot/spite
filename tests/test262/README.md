@@ -5,6 +5,17 @@ These 41772 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Positive BigInt right-shift regression
+
+Positive shifts skip the negative-rounding discarded-bit scan, preserving work
+debits and result checks. All 39 BigInt tests, 113 Core units, 18 Parser units/
+443 integrations, 595 Runtime units, 2,445 non-RegExp groups, 270 selected
+RegExp groups, 91 controls and quality pass; the benchmark smoke passes 98 rows/96
+programs. All 512 signed/word-boundary cases match Python and Node before/after
+with ordinary and forced collection; all 4,480 budget observations are identical.
+Originals, helpers, modes and reviews are unchanged. The fe44fa3c4 full gate,
+including the preceding String optimization, is running.
+
 ## Cross-Realm Atomics.waitAsync audit
 
 All 768 supplemental same-Agent cases match the published model and Node under

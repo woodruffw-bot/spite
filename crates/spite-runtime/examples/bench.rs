@@ -20,6 +20,18 @@ struct Case {
 
 const CASES: &[Case] = &[
     Case {
+        name: "bigint_shift_positive",
+        source: "(()=>{const operand=1n<<32768n,count=16384n,expected=1n<<16384n;let matches=0;for(let i=0;i<2048;i++)if((operand>>count)===expected)matches++;return matches})()",
+        expected: 2048.0,
+        jobs: false,
+    },
+    Case {
+        name: "bigint_shift_negative",
+        source: "(()=>{const operand=-(1n<<32768n),count=16384n,expected=-(1n<<16384n);let matches=0;for(let i=0;i<2048;i++)if((operand>>count)===expected)matches++;return matches})()",
+        expected: 2048.0,
+        jobs: false,
+    },
+    Case {
         name: "string_replace_whole",
         source: "(()=>{const needle='a'.repeat(4096),text='x\\uD800\\u4E2D\\uDC00'.repeat(4096);let total=0;for(let i=0;i<16;i++){const out=needle.replace(needle,()=>text);if(out.charCodeAt(out.length-1)===0xDC00)total+=out.length}return total})()",
         expected: 262144.0,
