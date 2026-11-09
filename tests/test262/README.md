@@ -12,7 +12,10 @@ and collected runs. They cover trap-list conversion/error precedence, duplicate
 Strings/Symbols, cached extensibility/key lists, live descriptor changes and
 foreign method result/error ownership. Five examples extend an existing group;
 all 31 Proxy groups and quality pass. Production, test-group counts, originals,
-helpers, modes and reviews are unchanged. The 23124dcb6 full gate is running.
+helpers, modes and reviews are unchanged. The 23124dcb6 full gate passes
+91/41,563/80,074 with zero other outcomes in 1,143.893 seconds and checked
+binary/driver hashes. All 17 hosted jobs pass for 6d649b96e and 9159fbc7b;
+newer hosted runs remain pending.
 
 ## Direct builtin Object tag regression
 

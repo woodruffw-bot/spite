@@ -79,7 +79,10 @@ group. All 31 Proxy groups and quality pass. Production and test inventories
 are unchanged. The proxy-ownkeys-snapshots artifacts under /workspace/work
 retain predictions, raw Node/Runtime observations, source hashes and checks.
 
-The 23124dcb6 full gate is running on the builtin Object tag construction change.
+The 23124dcb6 full gate passes 91/41,563/80,074 with zero other outcomes in
+1,143.893 seconds and checked saved binary/driver hashes. It includes the
+builtin Object tag construction change. All 17 hosted jobs pass for the
+6d649b96e FlatMap and 9159fbc7b branding audits; newer hosted runs are pending.
 
 ## Direct builtin Object tag construction
 
