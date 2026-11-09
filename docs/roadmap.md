@@ -446,7 +446,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 
 ## 5. Modules and suspended execution
 
-- [ ] Add retained JSON Synthetic Module Records with initialized default exports and normal graph linking/evaluation.
+- [x] Add retained JSON Synthetic Module Records with initialized default exports and normal graph linking/evaluation.
 - [ ] Load JSON modules through explicit type attributes, preserving file confinement and cache identity by module type.
 
 - [x] Add module parsing, linking, namespace objects, live bindings, and cycles.

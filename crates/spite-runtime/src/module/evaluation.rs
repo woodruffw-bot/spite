@@ -176,7 +176,7 @@ impl Realm {
                 let (has_tla, pending) = self.object_work(span, |objects, budget| {
                     budget.charge(1)?;
                     Ok((
-                        objects.module_source(record)?.has_top_level_await(),
+                        objects.module_has_top_level_await(record)?,
                         objects
                             .module_execution(record)?
                             .expect("visited module")

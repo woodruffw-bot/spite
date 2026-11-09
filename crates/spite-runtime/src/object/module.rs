@@ -1,9 +1,10 @@
-//! Retained Source Text Module records (16.2.1).
+//! Retained Source Text and JSON Synthetic Module records (16.2.1).
 
 use super::{Budget, Error, Objects};
 use crate::{Value, environment::EnvironmentHandle};
+use spite_core::JsString;
 use spite_heap::{Handle, Trace};
-use spite_parser::ast::Module;
+use spite_parser::ast::{LocalExportEntry, Module, ModuleEntries, ModuleRequest};
 
 mod evaluation;
 pub(crate) use evaluation::{ModuleExecution, ModuleExecutionStatus};
@@ -16,8 +17,23 @@ pub(crate) enum ModuleLinkState {
 }
 
 #[derive(Debug)]
+enum ModuleSource {
+    SourceText(Module),
+    Json(Value),
+}
+
+impl ModuleSource {
+    fn json_value(&self) -> Option<&Value> {
+        match self {
+            Self::SourceText(_) => None,
+            Self::Json(value) => Some(value),
+        }
+    }
+}
+
+#[derive(Debug)]
 pub(super) struct ModuleData {
-    source: Module,
+    source: ModuleSource,
     realm: EnvironmentHandle,
     environment: Option<EnvironmentHandle>,
     evaluation: Option<Value>,
@@ -30,15 +46,17 @@ pub(super) struct ModuleData {
 
 impl ModuleData {
     pub(super) fn values(&self) -> impl Iterator<Item = &Value> {
-        self.evaluation
-            .iter()
-            .chain(self.namespace.iter())
-            .chain(self.import_meta.iter())
-            .chain(
-                self.execution
-                    .iter()
-                    .flat_map(|execution| execution.values()),
-            )
+        self.source.json_value().into_iter().chain(
+            self.evaluation
+                .iter()
+                .chain(self.namespace.iter())
+                .chain(self.import_meta.iter())
+                .chain(
+                    self.execution
+                        .iter()
+                        .flat_map(|execution| execution.values()),
+                ),
+        )
     }
 
     pub(super) fn trace(&self) -> impl Iterator<Item = Option<&Handle>> {
@@ -158,7 +176,7 @@ impl Objects {
     ) -> Result<(), Error> {
         budget.charge(imports.len())?;
         for binding in imports.values() {
-            self.module_source(&binding.module)?;
+            self.module_realm(&binding.module)?;
         }
         self.environment_mut(environment)?.imports = imports;
         Ok(())
@@ -184,7 +202,7 @@ impl Objects {
                 return Err(Error::WrongKind);
             };
             for dependency in dependencies {
-                self.module_source(dependency)?;
+                self.module_realm(dependency)?;
             }
         }
         for (record, dependencies) in graph {
@@ -244,6 +262,19 @@ impl Objects {
         budget.charge(source.statements().len())?;
         budget.charge(source.imports().len())?;
         budget.charge(source.exports().len())?;
+        self.create_module_record_source(ModuleSource::SourceText(source))
+    }
+
+    pub(crate) fn create_json_module_record(
+        &mut self,
+        value: Value,
+        budget: &mut Budget,
+    ) -> Result<Handle, Error> {
+        budget.value(&value)?;
+        self.create_module_record_source(ModuleSource::Json(value))
+    }
+
+    fn create_module_record_source(&mut self, source: ModuleSource) -> Result<Handle, Error> {
         // Source Text Module [[Realm]] is fixed at ParseModule, before linking
         // has created its environment (16.2.1.6). The factory hint is checked.
         let realm = self.active_function_realm()?.ok_or(Error::WrongKind)?;
@@ -272,12 +303,64 @@ impl Objects {
     }
 
     pub(crate) fn module_source(&self, record: &Handle) -> Result<&Module, Error> {
-        Ok(&self
+        let source = &self
             .inspect(record)?
             .module_record
             .as_ref()
             .ok_or(Error::WrongKind)?
-            .source)
+            .source;
+        match source {
+            ModuleSource::SourceText(source) => Ok(source),
+            ModuleSource::Json(_) => Err(Error::WrongKind),
+        }
+    }
+
+    pub(crate) fn module_json_value(&self, record: &Handle) -> Result<Option<&Value>, Error> {
+        Ok(self
+            .inspect(record)?
+            .module_record
+            .as_ref()
+            .ok_or(Error::WrongKind)?
+            .source
+            .json_value())
+    }
+
+    pub(crate) fn module_entries(&self, record: &Handle) -> Result<ModuleEntries, Error> {
+        if self.module_json_value(record)?.is_some() {
+            return Ok(ModuleEntries {
+                requested_modules: Vec::new(),
+                import_entries: Vec::new(),
+                local_export_entries: vec![LocalExportEntry {
+                    local: JsString::from("default"),
+                    exported: JsString::from("default"),
+                }],
+                indirect_export_entries: Vec::new(),
+                star_export_entries: Vec::new(),
+            });
+        }
+        Ok(self.module_source(record)?.entries())
+    }
+
+    pub(crate) fn module_declaration_count(&self, record: &Handle) -> Result<usize, Error> {
+        if self.module_json_value(record)?.is_some() {
+            return Ok(1);
+        }
+        let source = self.module_source(record)?;
+        Ok(source.imports().len() + source.exports().len())
+    }
+
+    pub(crate) fn module_requests(&self, record: &Handle) -> Result<Vec<ModuleRequest>, Error> {
+        if self.module_json_value(record)?.is_some() {
+            return Ok(Vec::new());
+        }
+        Ok(self.module_source(record)?.requested_modules())
+    }
+
+    pub(crate) fn module_has_top_level_await(&self, record: &Handle) -> Result<bool, Error> {
+        if self.module_json_value(record)?.is_some() {
+            return Ok(false);
+        }
+        Ok(self.module_source(record)?.has_top_level_await())
     }
 
     pub(crate) fn module_evaluation(&self, record: &Handle) -> Result<Option<Value>, Error> {

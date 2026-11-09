@@ -118,7 +118,7 @@ impl Realm {
         match &completion {
             Ok(module) => {
                 self.objects
-                    .module_source(module.root.handle())
+                    .module_realm(module.root.handle())
                     .map_err(Error::InvalidObject)?;
             }
             Err(Value::Object(reason)) => {

@@ -5,6 +5,21 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Retained JSON Synthetic Module regression
+
+Eight native tests cover intrinsic parsed defaults, pre-evaluation undefined,
+namespace/reexport identity, Await parents, dynamic import completion, limits,
+poisoned public JSON and object/Symbol collection lifetimes. All 585 Runtime units,
+2,445 non-RegExp integrations, 270 selected RegExp groups and the quality gate
+pass. All 512 generated documents match Node SyntheticModule observations, also
+with collection before linking/evaluation and after each job. This library API
+does not yet add CLI JSON file loading. Fixture bytes, helpers, modes and reviews
+are unchanged; this increment's full-corpus and hosted CI receipts are pending.
+
+The preceding parser extraction at clean 7d75edc16 passes all 87 runner controls
+and 80,060 modes from 41,550 originals, with zero other outcomes in 1,188.877
+seconds. Saved fixture/executable hashes match and all 17 CI jobs pass.
+
 ## Intrinsic JSON text parsing regression
 
 All 577 Runtime units, 2,445 non-RegExp integrations, 270 selected RegExp groups

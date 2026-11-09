@@ -61,6 +61,23 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Retained JSON Synthetic Modules
+
+Realm::create_json_module retains an intrinsic parsed JSON value with one default
+export. Linking initializes the cell to undefined; evaluation publishes the value
+and reuses the graph's cached Promise and namespace. Eight focused tests cover
+scalar values, prototypes, duplicate keys, reexports, Await parents, dynamic import
+completion, limits, poisoned public JSON and object/Symbol collection lifetimes.
+All 585 Runtime units, 2,445 non-RegExp integrations, 270 selected RegExp groups
+and the quality gate pass. All 512 generated documents match Node SyntheticModule
+observations, including a repeat with collection before linking/evaluation and
+after every job. Fixtures and modes are unchanged; CLI JSON file loading remains
+the next milestone. This increment's full-corpus and hosted CI receipts are pending.
+
+The preceding intrinsic-parser extraction at clean 7d75edc16 passes all 87 runner
+controls and 80,060 modes from 41,550 originals, with zero other outcomes in
+1,188.877 seconds. Saved fixture/executable hashes match and all 17 CI jobs pass.
+
 ## Intrinsic JSON text parsing
 
 JSON.parse performs its existing ToString conversion before a crate-private

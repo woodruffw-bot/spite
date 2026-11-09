@@ -68,7 +68,7 @@ impl Objects {
         budget.charge(1)?;
         self.inspect(&start.callee)?;
         if let Some(module) = &start.context.module {
-            self.module_source(module)?;
+            self.module_realm(module)?;
         }
         for environment in start.environments() {
             self.environment(environment)?;

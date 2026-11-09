@@ -663,7 +663,7 @@ The caller's scopes/strictness/variable environment restore on every exit.
 Graphs execute dependencies before their dependent bodies; pending top-level
 Await defers those bodies while unrelated siblings continue evaluating.
 
-ModuleHandle retains a realm-owned Source Text Module record through an ordinary
+ModuleHandle retains a realm-owned Source Text or JSON Synthetic Module record through an ordinary
 host root (16.2.1). create_module/create_module_from_ast parse or retain syntax
 without body evaluation. evaluate_module_record instantiates its environment and
 caches the intrinsic evaluation Promise before entering the body. Subsequent
@@ -674,6 +674,17 @@ their fresh-instance behavior by creating a new record per call. Records trace
 their environment and Promise; cloned handles share a root token and dropping
 the last token permits ordinary collection. Handles from another realm are
 rejected. Heap fields store handles rather than host root tokens.
+
+Realm::create_json_module parses JSON through the intrinsic text parser, without
+looking up the public JSON object (ParseJSONModule,
+CreateDefaultExportSyntheticModule). The record retains and traces the
+parsed value before linking. Synthetic records have no dependencies and one
+default export. Linking creates its mutable binding initialized to undefined;
+evaluation publishes the captured value once, using the existing cached Promise
+and namespace machinery. Namespace imports, reexports, dynamic import completion
+and top-level-Await parents accept either record kind. Work, source, string and
+heap limits remain opt-in. This library API leaves supported import attributes
+and file resolution to the host; the CLI does not yet load JSON files.
 
 Realm::module_namespace links a loaded record's graph and caches its
 namespace without entering the body (10.4.6, GetModuleNamespace). Evaluation reuses

@@ -45,7 +45,7 @@ impl Objects {
         budget: &mut Budget,
     ) -> Result<(), Error> {
         budget.charge(1)?;
-        self.module_source(module)?;
+        self.module_realm(module)?;
         let data = self
             .object_mut(state)?
             .module_import

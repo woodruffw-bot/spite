@@ -66,7 +66,7 @@ impl Objects {
         mut exports: Vec<(JsString, ModuleBinding)>,
         budget: &mut Budget,
     ) -> Result<Handle, Error> {
-        self.module_source(record)?;
+        self.module_realm(record)?;
         for (name, local) in &exports {
             budget.charge(name.len())?;
             budget.charge(local.name.as_ref().map_or(1, |name| name.len() + 1))?;

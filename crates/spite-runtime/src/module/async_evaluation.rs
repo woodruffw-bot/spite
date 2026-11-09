@@ -126,6 +126,9 @@ impl Realm {
         asynchronous: bool,
         span: Span,
     ) -> Result<(), Error> {
+        if self.execute_json_module_record(record, span)? {
+            return Ok(());
+        }
         let (source, environment) = self.object_work(span, |objects, budget| {
             budget.charge(1)?;
             Ok((
@@ -249,7 +252,7 @@ impl Realm {
                     if root.error.is_some() || root.host_failure.is_some() {
                         return Ok(None);
                     }
-                    let has_tla = objects.module_source(&parent)?.has_top_level_await();
+                    let has_tla = objects.module_has_top_level_await(&parent)?;
                     let execution = objects.module_execution_mut(&parent)?;
                     debug_assert_eq!(execution.status, ModuleExecutionStatus::EvaluatingAsync);
                     debug_assert!(execution.pending_async_dependencies > 0);
@@ -288,7 +291,7 @@ impl Realm {
                 let execution = objects.module_execution(&parent)?.expect("ready ancestor");
                 Ok((
                     execution.status == ModuleExecutionStatus::EvaluatingAsync,
-                    objects.module_source(&parent)?.has_top_level_await(),
+                    objects.module_has_top_level_await(&parent)?,
                 ))
             })?;
             if !active.0 {

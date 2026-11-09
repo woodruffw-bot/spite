@@ -253,10 +253,9 @@ impl Realm {
         while next < records.len() {
             let record = &records[next];
             let (entries, dependencies) = self.object_work(span, |objects, budget| {
-                let source = objects.module_source(record)?;
-                budget.charge(source.imports().len() + source.exports().len() + 1)?;
+                budget.charge(objects.module_declaration_count(record)? + 1)?;
                 Ok((
-                    source.entries(),
+                    objects.module_entries(record)?,
                     objects.module_dependencies(record)?.map(<[_]>::to_vec),
                 ))
             })?;

@@ -21,11 +21,9 @@ fn capacity_error() -> Error {
 impl Realm {
     /// Returns distinct static requests in source order, with canonical attributes.
     pub fn module_requests(&self, module: &ModuleHandle) -> Result<Vec<ModuleRequest>, Error> {
-        Ok(self
-            .objects
-            .module_source(module.root.handle())
-            .map_err(Error::InvalidObject)?
-            .requested_modules())
+        self.objects
+            .module_requests(module.root.handle())
+            .map_err(Error::InvalidObject)
     }
 
     /// Loads a dependency graph using records supplied by the embedding host.
@@ -108,6 +106,10 @@ impl Realm {
 
     fn module_load_node(&mut self, module: ModuleHandle) -> Result<LoadNode, Error> {
         let requests = self.object_work(Span::new(0, 0), |objects, budget| {
+            if objects.module_json_value(module.root.handle())?.is_some() {
+                budget.charge(1)?;
+                return Ok(Vec::new());
+            }
             let source = objects.module_source(module.root.handle())?;
             let count = source
                 .imports()

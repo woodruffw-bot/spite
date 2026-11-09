@@ -496,7 +496,7 @@ impl Objects {
         self.inspect(prototype)?;
         self.environment(&arrow.environment)?;
         if let Some(module) = &arrow.module {
-            self.module_source(module)?;
+            self.module_realm(module)?;
         }
         let mut object =
             OrdinaryObject::with_property_limit(Some(prototype.clone()), self.max_properties);
@@ -513,7 +513,7 @@ impl Objects {
         self.inspect(prototype)?;
         self.environment(&function.environment)?;
         if let Some(module) = &function.module {
-            self.module_source(module)?;
+            self.module_realm(module)?;
         }
         let mut object =
             OrdinaryObject::with_property_limit(Some(prototype.clone()), self.max_properties);
@@ -532,7 +532,7 @@ impl Objects {
         self.inspect(&method.home_object)?;
         self.environment(&method.code.environment)?;
         if let Some(module) = &method.code.module {
-            self.module_source(module)?;
+            self.module_realm(module)?;
         }
         let mut object =
             OrdinaryObject::with_property_limit(Some(prototype.clone()), self.max_properties);
@@ -583,7 +583,7 @@ impl Objects {
                 self.environment(&initializer.environment)?;
                 self.inspect(&initializer.home_object)?;
                 if let Some(module) = &initializer.module {
-                    self.module_source(module)?;
+                    self.module_realm(module)?;
                 }
             }
         }

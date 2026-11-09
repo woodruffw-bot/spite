@@ -183,6 +183,9 @@ impl Realm {
                 ));
             };
         }
+        if self.initialize_json_module_record(&info.record, span)? {
+            return Ok(());
+        }
         let source = self
             .objects
             .module_source(&info.record)

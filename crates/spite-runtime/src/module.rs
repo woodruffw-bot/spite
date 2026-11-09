@@ -8,6 +8,7 @@ pub use dynamic::ModuleImportRequest;
 mod evaluation;
 mod graph;
 mod import;
+mod json;
 mod link;
 mod meta;
 mod resolution;
@@ -22,7 +23,7 @@ use spite_parser::{
 };
 use std::collections::BTreeMap;
 
-/// A retained Source Text Module record owned by one Realm.
+/// A retained Source Text or JSON Synthetic Module record owned by one Realm.
 ///
 /// Clones refer to the same record. The record, bindings and evaluation Promise
 /// remain reachable until the last handle is dropped. Loaded graphs support
