@@ -5,6 +5,16 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Equal BigInt AND/OR regression
+
+All 37 BigInt tests, 577 Runtime units, 2,445 non-RegExp integrations,
+270 selected RegExp groups and the quality gate pass. Before and after,
+1,536 coercion/error cases, 1,024 wide-integer oracle programs and 512 further
+Python/Node programs meet expectations. All 72 measured work allowances are
+identical, including result-size refusals. Both benchmark smokes pass all
+80 rows. The corpus receipt is pending. Fixtures, helpers, modes and reviews
+are unchanged.
+
 ## Equal BigInt XOR regression
 
 All 37 BigInt tests, 577 Runtime units, 2,445 non-RegExp integrations,

@@ -652,8 +652,11 @@ impl BigInt {
         if op == BitwiseOp::And && (self.is_zero() || other.is_zero()) {
             return budget.finish(Self::default());
         }
-        if op == BitwiseOp::Xor && self == other {
-            return budget.finish(Self::default());
+        if self == other {
+            return budget.finish(match op {
+                BitwiseOp::Xor => Self::default(),
+                BitwiseOp::And | BitwiseOp::Or => self.clone(),
+            });
         }
         let mut left = self.twos_complement(width)?;
         let right = other.twos_complement(width)?;

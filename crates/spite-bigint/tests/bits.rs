@@ -169,16 +169,29 @@ fn bitwise_limits_apply_to_results_and_work() {
         (large.neg(&mut budget()).unwrap(), 60),
     ] {
         let other = value.clone();
-        let mut exact = Budget::new(0, work);
-        assert_eq!(
-            value.bitwise(&other, BitwiseOp::Xor, &mut exact),
-            Ok(BigInt::default())
-        );
-        assert_eq!(exact.remaining_work(), Some(0));
-        assert_eq!(
-            value.bitwise(&other, BitwiseOp::Xor, &mut Budget::new(0, work - 1)),
-            Err(Error::Limit)
-        );
+        for (op, expected) in [
+            (BitwiseOp::Xor, BigInt::default()),
+            (BitwiseOp::And, value.clone()),
+            (BitwiseOp::Or, value.clone()),
+        ] {
+            let mut exact = Budget::new(expected.bit_length(), work);
+            assert_eq!(value.bitwise(&other, op, &mut exact), Ok(expected.clone()));
+            assert_eq!(exact.remaining_work(), Some(0));
+            assert_eq!(
+                value.bitwise(
+                    &other,
+                    op,
+                    &mut Budget::new(expected.bit_length(), work - 1)
+                ),
+                Err(Error::Limit)
+            );
+            if !expected.is_zero() {
+                assert_eq!(
+                    value.bitwise(&other, op, &mut Budget::new(0, work)),
+                    Err(Error::Limit)
+                );
+            }
+        }
     }
     assert_eq!(
         BigInt::from(-1).bitnot(&mut Budget::new(0, 100)).unwrap(),

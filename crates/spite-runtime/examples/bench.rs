@@ -20,6 +20,18 @@ struct Case {
 
 const CASES: &[Case] = &[
     Case {
+        name: "bigint_equal_and_or",
+        source: "(()=>{const positive=(1n<<4096n)+12345n,negative=-positive;let count=0;for(let i=0;i<2048;i++){const expected=i%2?positive:negative;const result=i%2?(positive&positive):(negative|negative);if(result===expected)count++}return count})()",
+        expected: 2048.0,
+        jobs: false,
+    },
+    Case {
+        name: "bigint_unequal_and_or",
+        source: "(()=>{const positive=(1n<<4096n)+12345n,negative=-positive,mask=1n<<4095n,other=positive^mask,otherNegative=negative^mask;let count=0;for(let i=0;i<2048;i++){const expected=i%2?positive:negative;const result=i%2?(positive&other):(negative|otherNegative);if(result===expected)count++}return count})()",
+        expected: 2048.0,
+        jobs: false,
+    },
+    Case {
         name: "bigint_xor_equal",
         source: "(()=>{const positive=(1n<<4096n)+12345n,negative=-positive;let count=0;for(let i=0;i<2048;i++){const result=i%2?(positive^positive):(negative^negative);if(result===0n)count++}return count})()",
         expected: 2048.0,

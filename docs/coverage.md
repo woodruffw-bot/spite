@@ -61,6 +61,26 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Equal BigInt AND/OR operands
+
+AND and OR share XOR's equal-operand branch, returning a checked copy after
+the existing width-based work debit (6.1.6.2.18–20). The expanded native group
+checks exact and insufficient work plus result-size refusals for all three
+operators. All 37 BigInt tests, 577 Runtime units, 2,445 non-RegExp integrations,
+270 selected RegExp groups and the quality gate pass.
+
+Before and after, 1,536 coercion/error cases match Node, 1,024 wide-integer
+oracle programs remain exact and 512 further programs match Python and Node.
+All 72 work allowances are identical. Both benchmark smokes pass all 80 rows
+from 78 workloads.
+
+Five evaluations alternating 2,048 positive AND/negative OR operations remove
+10,240 Rust deallocations, one buffer per operation. Callgrind instructions
+change from 464,314,973 to 428,757,009 (-7.658%). The unequal-operand control
+retains its deallocation count and uses 0.235% more instructions. Profiles
+include initialization, parsing/evaluation and collection, without a general
+wall-time claim.
+
 ## Equal BigInt XOR operands
 
 After prepaying the existing width-based work, BigInt XOR returns canonical
@@ -145,6 +165,13 @@ five comparisons. All 442,368 observations match independent Python calculations
 and Node, including signed zeros and NaN classification. Inputs cover every
 binary exponent transition, boundary operands and seeded random pairs. This
 adds evidence without changing Number implementation or fixture bytes.
+
+A mixed Number/BigInt audit checks another 16,384 pairs across loose/strict
+equality, both-order relational comparisons and BigInt-to-Number conversion.
+All 196,608 observations match independent Python calculations and Node.
+Inputs cover every binary exponent transition, adjacent integer boundaries,
+wide signed values, zeros, infinities and NaN. This read-only audit changes
+no conversion or comparison implementation.
 
 ## Templates without substitutions
 

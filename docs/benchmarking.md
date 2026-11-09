@@ -19,8 +19,10 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all 76 program workloads |
+| parse_all | Parse and drop the ASTs for all 78 program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
+| bigint_equal_and_or | Alternate equal positive AND and negative OR operands of 4,097 bits across 2,048 operations, checking each retained value |
+| bigint_unequal_and_or | Repeat with unequal operands sharing their low words, checking the same results |
 | bigint_xor_equal | XOR equal positive/negative 4,097-bit values 2,048 times, checking zero |
 | bigint_xor_different | Repeat with unequal operands sharing their low words, checking the high-bit mask |
 | array_locale_single | Stringify a one-element Array containing a 16,384-unit BMP/lone-surrogate String sixteen times with toLocaleString, checking length and final unit |
@@ -111,6 +113,31 @@ their ordinary unlimited defaults.
 
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
+
+## Equal BigInt AND/OR operands
+
+The equal-operand branch now handles AND/OR with a checked operand copy,
+retaining the existing work debit. Baseline production is 5e6966f89. Matched
+executables use identical 78-workload sources, Rust 1.99, optimized conformance
+libraries, debug assertions and overflow checks. Parser source is unchanged;
+its binary rebuilds with its BigInt dependency.
+
+Each Callgrind program evaluates five times, alternating positive AND and
+negative OR across 2,048 operations on 4,097-bit magnitudes. Unequal control
+operands share their low words and differ in a high-bit mask, producing the
+same checked results. Counts include initialization, parsing/evaluation and
+collection.
+
+| Workload | Instructions before | Instructions after | Rust deallocations before | Rust deallocations after |
+| --- | ---: | ---: | ---: | ---: |
+| Equal operands | 464,314,973 | 428,757,009 | 198,451 | 188,211 |
+| Unequal control | 469,922,293 | 471,024,087 | 198,746 | 198,746 |
+
+The target uses 7.6582% fewer instructions and removes one buffer per operation.
+The control uses 0.2345% more instructions and retains its deallocation count.
+Both benchmark smokes pass all 80 rows; 3,072 semantic programs and all 72 work
+allowances remain exact before and after. These counts support no elapsed-time
+or general workload speedup claim and add no CI timing threshold.
 
 ## Equal BigInt XOR operands
 
