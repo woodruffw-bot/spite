@@ -597,6 +597,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Audit every signed binary16 rounding midpoint and adjacent binary64 value across Math.f16round, DataView byte orders and Float16Array conversion.
 - [x] Audit Math.sumPrecise over signed-zero, cancellation, exponent-extreme and nonfinite sequences against exact rational single rounding.
 - [x] Audit Math.sumPrecise iterator-closing precedence, validation after nonfinite inputs and foreign-Realm error construction.
+- [x] Audit Array.fromAsync construction, stepping, mapping, definition and final-length failures across both iterator kinds and parent/foreign method Realms, including closing precedence and completed sync value reads.
 - [x] Review clause-22 UTF-16 String operations, pinned Unicode transforms, pattern delegation and regress-backed RegExp protocols.
 - [x] Review clause-23 indexed factories, traversal, copying, sorting and byte codecs, and clause-24 ordered/weak collection protocols.
 - [x] Review clause-25 buffers/views, Atomics and JSON, and clause-26 kept-object and finalization lifetime protocols.

@@ -61,6 +61,27 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80074 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Array.fromAsync iterator and Realm audit
+
+All 432 supplemental cases match the published algorithms on Runtime 81b56b271,
+ordinarily and with collection after evaluation/every job. Twelve result/failure
+stages, nine return modes and both iterator kinds cover cached next acquisition,
+constructor/step/mapper/definition/final-length failures, original throw
+precedence, closing result observation and retained async iterator values.
+The 216 foreign-method cases include 36 foreign TypeError identity checks.
+
+Node matches 96 raw observations. The remaining 336 are classified: 96 extra
+sync next-getter reads, 88 extra closes on step/final-length failure, eight
+duplicate sync rejected-value closes, 72 unsettled observations and 72 bounded
+process observations. Each bounded Node process gets two seconds; Runtime
+retains unlimited default quotas. These differences add no compatibility
+exception. The initial oracle omitted completed sync value reads; the published
+continuation requires them, and all 54 predictions were corrected before the
+assessment. Initial attempts are retained separately. An older plain-text log
+was replaced by the initial probe; both earlier structured 814-case audits and
+their classification remain intact with saved hashes. This read-only audit
+changes no production code, original fixture or pass count.
+
 ## String split without a match
 
 For an unmatched nonempty separator, split retains the complete converted

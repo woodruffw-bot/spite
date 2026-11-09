@@ -5,6 +5,14 @@ These 41772 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Array.fromAsync Realm audit
+
+All 432 supplemental cases match the published algorithms ordinarily and with
+collection after every job on Runtime 81b56b271. They include 216 foreign-method
+cases and 36 foreign TypeError identity checks. All 336 raw Node differences are
+classified separately; bounded Node observations introduce no Runtime quota or
+compatibility exception. Production code, originals and pass counts are unchanged.
+
 ## String split storage regression
 
 An unmatched nonempty separator now retains the whole converted String after
