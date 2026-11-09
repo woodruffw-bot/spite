@@ -1519,6 +1519,8 @@ borrow, multiplication, and division algorithms. Bitwise operands reserve their
 complete two's-complement width once, copy the retained words and extend with
 zeroes before sign conversion. Width overflow and reservation failure return a
 host limit; per-word work charging and infinite sign extension are unchanged.
+Complementing minus one returns canonical zero after the existing work debit
+and result-magnitude validation (6.1.6.2.17).
 AND with zero retains the width calculation and full work debit, then returns
 canonical zero before reserving either temporary buffer. Result-magnitude
 validation still applies. JavaScript operands evaluate and convert before this

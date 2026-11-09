@@ -5,6 +5,17 @@ These 41772 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## BigInt complement regression
+
+The -1n complement returns canonical zero after unchanged work/result checks.
+All 38 BigInt tests, 593 Runtime units, 2,445 non-RegExp integrations, 270 selected
+RegExp groups, 91 controls and quality pass, plus 113 Core units and the Parser's
+18 units/443 integrations. All 584 semantic cases and 360 budget observations
+match before/after. An initial selected-build linker failure was retried after
+reclaiming duplicate toolchain storage; no test changes were made. Originals
+and reviews are unchanged. The 7e0b4be8c full gate is running; this increment's
+full-corpus and hosted receipts remain pending.
+
 ## Native BigInt zero regression
 
 Native zero construction avoids discarded magnitude storage. All 38 BigInt

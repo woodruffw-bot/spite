@@ -197,6 +197,12 @@ fn bitwise_limits_apply_to_results_and_work() {
         BigInt::from(-1).bitnot(&mut Budget::new(0, 100)).unwrap(),
         BigInt::default()
     );
+    let mut exact = Budget::new(0, 2);
+    assert_eq!(BigInt::from(-1).bitnot(&mut exact), Ok(BigInt::default()));
+    assert_eq!(exact.remaining_work(), Some(0));
+    let mut short = Budget::new(0, 1);
+    assert_eq!(BigInt::from(-1).bitnot(&mut short), Err(Error::Limit));
+    assert_eq!(short.remaining_work(), Some(1));
     assert_eq!(
         BigInt::from(255).bitnot(&mut Budget::new(8, 100)),
         Err(Error::Limit)

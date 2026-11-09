@@ -648,6 +648,9 @@ impl BigInt {
     /// Complements every bit, including the infinite sign extension.
     pub fn bitnot(&self, budget: &mut Budget) -> Result<Self, Error> {
         budget.charge(self.words.len() + 1)?;
+        if self.negative && self.words == [1] {
+            return budget.finish(Self::default());
+        }
         let words = if self.negative {
             Self::sub_magnitudes(&self.words, &[1])
         } else {

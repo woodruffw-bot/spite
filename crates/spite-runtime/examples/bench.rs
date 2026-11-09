@@ -20,6 +20,18 @@ struct Case {
 
 const CASES: &[Case] = &[
     Case {
+        name: "bigint_bitnot_one",
+        source: "(()=>{const operand=-1n;let count=0;for(let i=0;i<2048;i++)if((~operand)===0n)count++;return count})()",
+        expected: 2048.0,
+        jobs: false,
+    },
+    Case {
+        name: "bigint_bitnot_two",
+        source: "(()=>{const operand=-2n;let count=0;for(let i=0;i<2048;i++)if((~operand)===1n)count++;return count})()",
+        expected: 2048.0,
+        jobs: false,
+    },
+    Case {
         name: "bigint_remainder_even",
         source: "(()=>{const positive=(1n<<4096n)+12344n,negative=-positive,unit=2n,opposite=-unit,magnitude=positive>>1n,other=-magnitude,remainderMagnitude=0n;let count=0;for(let i=0;i<2048;i++){const value=i&1?negative:positive,divisor=i&2?opposite:unit,expected=(i&1?1:0)^(i&2?1:0)?other:magnitude,remainder=i&1?-remainderMagnitude:remainderMagnitude;if(value/divisor===expected&&value%divisor===remainder)count++}return count})()",
         expected: 2048.0,

@@ -19,8 +19,10 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all 90 program workloads |
+| parse_all | Parse and drop the ASTs for all 92 program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
+| bigint_bitnot_one | Complement -1n 2,048 times, checking canonical zero |
+| bigint_bitnot_two | Repeat with -2n as a nonzero-result control, checking one |
 | bigint_remainder_even | Divide signed even 4,097-bit values by ±2n across 2,048 quotient/remainder pairs, checking canonical zero |
 | bigint_remainder_odd | Repeat with odd dividends, checking signed nonzero remainders |
 | bigint_div_rem_one | Divide signed 4,097-bit values by ±1n across 2,048 quotient/remainder pairs, checking both results |
@@ -125,6 +127,28 @@ their ordinary unlimited defaults.
 
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
+
+## BigInt complement of minus one
+
+After the existing word-work charge, complementing -1n returns canonical zero
+through the result limit check. Baseline production is 7e0b4be8c. Matched Rust
+1.99 executables use identical 92-workload sources and optimized conformance
+libraries with debug/overflow checks enabled; both smokes pass all 94 rows.
+
+Each instrumented process evaluates five times, complementing -1n 2,048 times
+per evaluation and checking zero. The control complements -2n and checks one.
+Counts include initialization, parsing/evaluation and collection.
+
+| Workload | Instructions before | Instructions after | Rust deallocations before | Rust deallocations after |
+| --- | ---: | ---: | ---: | ---: |
+| Minus one | 269,824,001 | 267,671,579 | 54,666 | 44,426 |
+| Minus-two control | 272,381,827 | 272,490,606 | 64,906 | 64,906 |
+
+The target removes one temporary buffer per operation and uses 0.7977% fewer
+instructions. The control uses 0.0399% more instructions with unchanged
+deallocations. All 584 semantic cases and 360 budget observations retain their
+before/after results. One instrumented process per revision/workload supports
+these counts, with no wall-time or general speedup claim.
 
 ## Native BigInt zero construction
 

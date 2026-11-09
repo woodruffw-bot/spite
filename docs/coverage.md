@@ -61,6 +61,27 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80074 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## BigInt complement of minus one
+
+Complementing -1n now returns canonical zero after the existing work debit and
+result check. The existing limit unit also checks exact-budget success and
+one-step-short refusal. All 38 BigInt tests, 593 Runtime units, 2,445 non-RegExp
+integrations, 270 selected RegExp groups, 91 controls and quality pass, plus
+113 Core units and the Parser's 18 units/443 integrations.
+
+All 584 supplemental cases match Node/Python as applicable before/after; all
+360 budget observations are identical. Both 92-program benchmark smokes pass
+94 rows. [Profiling](benchmarking.md#bigint-complement-of-minus-one) removes
+10,240 temporary buffers and 0.7977% of instructions in the target; the control
+retains its deallocation count with +0.0399% instructions. No wall-time claim.
+
+The first selected build hit linker signal 7 before tests ran while workspace
+space was low. Sharing byte-identical, hash-named Rust standard libraries
+reclaimed 152 MB; unchanged selected tests and controls then passed, as did
+the pinned Rust 1.99 check. The initial failure log is retained. Original
+fixtures, helpers, modes and reviews are unchanged. The 7e0b4be8c full gate
+is running; this increment's full-corpus and hosted receipts are pending.
+
 ## Native BigInt zero construction
 
 Native signed-integer zero now returns canonical empty storage directly, avoiding
