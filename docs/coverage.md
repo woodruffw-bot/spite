@@ -61,6 +61,21 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Lossless UTF-16 JSON module input
+
+Realm::create_json_module_utf16 borrows a JsString and retains unescaped lone
+surrogates in JSON values and property names. Source-byte limits use scalar UTF-8
+widths and three bytes per unpaired surrogate, matching existing source APIs.
+The two entry points share intrinsic parsing and record construction. Ten focused
+tests, all 587 Runtime units, 2,445 non-RegExp integrations and 270 selected RegExp
+groups and the quality gate pass. Every one of 65,536 raw UTF-16 units in quoted
+JSON source matches Node across 512 groups. The exhaustive collection repeat and
+UTF-8 API regression audit are pending. Fixtures are unchanged.
+
+The preceding JSON record backend at clean ef818043b passes all 87 runner controls
+and 80,060 modes from 41,550 originals, with zero other outcomes in 1,564.851
+seconds. Saved fixture/executable hashes match; hosted CI remains pending.
+
 ## JSON-enabled conformance host
 
 run_with_json_module_loader explicitly opts in to type: "json" parsing and caches

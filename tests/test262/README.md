@@ -5,6 +5,19 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Lossless JSON module source regression
+
+The embedding API accepts raw UTF-16 JSON source and preserves surrogate values
+and keys. Focused tests cover exact encoded source-byte limits and work-limit
+recovery. All ten JSON tests, 587 Runtime units, 2,445 non-RegExp integrations and
+270 selected RegExp groups and the quality gate pass. All 65,536 raw UTF-16 units
+in quoted JSON source match Node in 512 groups. The collection repeat and UTF-8
+regression audit are pending; fixtures, helpers, modes and reviews are unchanged.
+
+The preceding JSON backend at clean ef818043b passes all 87 runner controls and
+80,060 modes from 41,550 originals, with zero other outcomes in 1,564.851 seconds.
+Saved fixture/executable hashes match; hosted CI remains pending.
+
 ## JSON conformance-host candidate
 
 The explicit JSON loader preserves typed source identities, loading-error phases,

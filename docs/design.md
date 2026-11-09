@@ -690,6 +690,11 @@ and namespace machinery. Namespace imports, reexports, dynamic import completion
 and top-level-Await parents accept either record kind. Work, source, string and
 heap limits remain opt-in. This library API leaves supported import attributes
 and file resolution to the host; the CLI opts in to the type key for JSON files.
+create_json_module_utf16 borrows lossless UTF-16 input, including unescaped lone
+surrogates in JSON strings and keys. Its optional source-byte preflight uses
+UTF-8 scalar widths and three bytes per unpaired surrogate, matching the existing
+Script/Module source convention. Both entry points prepay source work before
+intrinsic parsing and share record construction, linking and evaluation.
 
 The Test262 runner offers run_with_json_module_loader as an explicit host
 capability. Corpus tests declaring json-modules use that capability; other tests

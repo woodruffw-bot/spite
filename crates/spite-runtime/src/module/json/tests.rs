@@ -51,6 +51,93 @@ fn scalar_defaults_preserve_json_number_and_utf16_semantics() {
 }
 
 #[test]
+fn lossless_utf16_json_preserves_raw_surrogates_in_values_and_property_names() {
+    let mut realm = Realm::default();
+    realm.eval("JSON=undefined").unwrap();
+    let text = JsString::from_code_units(vec![0x22, 0xd800, 0xfffd, 0xdc00, 0x22]);
+    let scalar = realm.create_json_module_utf16(&text).unwrap();
+    realm.evaluate_module_record(&scalar).unwrap();
+    assert_eq!(
+        default_value(&mut realm, &scalar),
+        Value::String(JsString::from_code_units(vec![0xd800, 0xfffd, 0xdc00]))
+    );
+    let object = JsString::from_code_units(vec![
+        0x7b, 0x22, 0xd800, 0x22, 0x3a, 0x22, 0xdc00, 0x22, 0x7d,
+    ]);
+    let data = realm.create_json_module_utf16(&object).unwrap();
+    realm.clear_kept_objects().unwrap();
+    realm.collect(usize::MAX).unwrap();
+    let root = realm
+        .create_module("import value from'data';globalThis.result=value['\\ud800']==='\\udc00'&&Object.keys(value)[0]==='\\ud800'")
+        .unwrap();
+    realm
+        .load_module_graph(&root, |_, _| Ok(data.clone()))
+        .unwrap();
+    realm.evaluate_module_record(&root).unwrap();
+    drain(&mut realm);
+    assert_eq!(realm.eval("result"), Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn lossless_json_source_limits_count_scalar_and_unpaired_surrogate_widths() {
+    for (units, bytes) in [
+        (vec![0x22, 0xd800, 0x22], 5),
+        (vec![0x22, 0xd83d, 0xde00, 0x22], 6),
+        (vec![0x22, 0x4e2d, 0x22], 5),
+    ] {
+        for limit in [bytes - 1, bytes] {
+            let mut realm = Realm::new(Limits {
+                max_source_bytes: Some(limit),
+                ..Limits::default()
+            });
+            let source = JsString::from_code_units(units.clone());
+            let result = realm.create_json_module_utf16(&source);
+            if limit < bytes {
+                assert!(matches!(result, Err(Error::Limit { .. })));
+            } else {
+                let record = result.unwrap();
+                realm.evaluate_module_record(&record).unwrap();
+                assert_eq!(
+                    default_value(&mut realm, &record),
+                    Value::String(JsString::from_code_units(
+                        units[1..units.len() - 1].to_vec()
+                    ))
+                );
+            }
+            assert!(
+                realm
+                    .create_json_module_utf16(&JsString::from("true"))
+                    .is_ok()
+            );
+        }
+    }
+    let mut realm = Realm::default();
+    let invalid = JsString::from_code_units(vec![0x22, 0x0, 0xd800, 0x22]);
+    assert!(matches!(
+        realm.create_json_module_utf16(&invalid),
+        Err(Error::Exception {
+            kind: ExceptionKind::SyntaxError,
+            ..
+        })
+    ));
+    let mut realm = Realm::new(Limits {
+        max_steps: Some(2000),
+        ..Limits::default()
+    });
+    let source = format!("\"{}\"", "x".repeat(4096));
+    let source = JsString::from(source.as_str());
+    assert!(matches!(
+        realm.create_json_module_utf16(&source),
+        Err(Error::Limit { .. })
+    ));
+    assert!(
+        realm
+            .create_json_module_utf16(&JsString::from("true"))
+            .is_ok()
+    );
+}
+
+#[test]
 fn synthetic_binding_initializes_before_evaluation_and_evaluation_is_cached() {
     let mut realm = Realm::default();
     let module = realm.create_json_module("7").unwrap();

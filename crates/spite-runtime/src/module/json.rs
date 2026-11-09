@@ -27,7 +27,42 @@ impl Realm {
             self.remaining_steps = self.limits.max_steps;
         }
         self.object_work(span, |_, budget| budget.charge(source.len()))?;
-        let value = self.json_parse_text(&JsString::from(source), Value::Undefined, span)?;
+        self.retain_json_module_text(&JsString::from(source), span)
+    }
+
+    /// Parses lossless UTF-16 JSON into a retained Synthetic Module.
+    ///
+    /// Unpaired surrogates are preserved in strings and property names. An
+    /// opted-in source-byte limit uses UTF-8 widths for scalar code points and
+    /// three bytes per unpaired surrogate, matching the Script/Module source APIs.
+    pub fn create_json_module_utf16(&mut self, source: &JsString) -> Result<ModuleHandle, Error> {
+        let span = Span::new(0, 0);
+        if let Some(limit) = self.limits.max_source_bytes {
+            let mut bytes = 0usize;
+            for point in char::decode_utf16(source.code_units().iter().copied()) {
+                bytes = bytes
+                    .checked_add(point.map_or(3, char::len_utf8))
+                    .filter(|&bytes| bytes <= limit)
+                    .ok_or_else(|| Error::Limit {
+                        span,
+                        message: "JSON module source exceeds the host byte limit".into(),
+                    })?;
+            }
+        }
+        self.initialize_realm()?;
+        if !self.job_active {
+            self.remaining_steps = self.limits.max_steps;
+        }
+        self.object_work(span, |_, budget| budget.charge(source.len()))?;
+        self.retain_json_module_text(source, span)
+    }
+
+    fn retain_json_module_text(
+        &mut self,
+        source: &JsString,
+        span: Span,
+    ) -> Result<ModuleHandle, Error> {
+        let value = self.json_parse_text(source, Value::Undefined, span)?;
         let root = self.object_work(span, |objects, budget| {
             let record = objects.create_json_module_record(value, budget)?;
             objects.root(&record, budget)
