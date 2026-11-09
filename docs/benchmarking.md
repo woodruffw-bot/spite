@@ -19,8 +19,10 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all 72 program workloads |
+| parse_all | Parse and drop the ASTs for all 74 program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
+| array_locale_single | Stringify a one-element Array containing a 16,384-unit BMP/lone-surrogate String sixteen times with toLocaleString, checking length and final unit |
+| array_locale_multiple | Repeat with two elements as a control |
 | array_join_single | Join a one-element Array containing a 16,384-unit BMP/lone-surrogate String sixteen times, checking length and final unit |
 | array_join_multiple | Repeat with two elements as a control |
 | template_no_substitutions | Call a dynamically compiled function returning a 16,384-unit template without substitutions sixteen times, checking lengths |
@@ -107,6 +109,29 @@ their ordinary unlimited defaults.
 
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
+
+## Singleton Array.toLocaleString
+
+The non-nullish singleton path reuses the method's converted result after the
+existing observations and checks. Baseline production is 6298b20ef. Matched
+executables use identical 74-workload sources, Rust 1.99, optimized conformance
+libraries, debug assertions and overflow checks.
+
+Each Callgrind program evaluates five times, with sixteen calls per evaluation
+over a 16,384-unit BMP/lone-surrogate String. The control uses two elements.
+Counts include initialization, parsing/evaluation and collection.
+
+| Workload | Instructions before | Instructions after | Rust deallocations before | Rust deallocations after |
+| --- | ---: | ---: | ---: | ---: |
+| Singleton | 184,816,867 | 179,461,588 | 5,061 | 4,901 |
+| Two-element control | 192,543,264 | 192,543,662 | 5,326 | 5,326 |
+
+The target removes two buffers per call and uses 2.8976% fewer instructions.
+The control changes by +0.0002%, with identical deallocations. All 540 semantic
+programs meet published expectations before and after, including collection
+repeats; only the documented ECMA-262/ECMA-402 argument count differs from Node.
+Work allowances remain identical and both benchmark smokes pass all 76 rows.
+These counts support no elapsed-time or general workload speedup claim.
 
 ## BigInt AND with zero
 

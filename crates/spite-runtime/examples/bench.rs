@@ -20,6 +20,18 @@ struct Case {
 
 const CASES: &[Case] = &[
     Case {
+        name: "array_locale_single",
+        source: "(()=>{const text='x\\uD800\\u4E2D\\uDC00'.repeat(4096),values=[text];let total=0;for(let i=0;i<16;i++){const out=values.toLocaleString();if(out.charCodeAt(out.length-1)===0xDC00)total+=out.length}return total})()",
+        expected: 262144.0,
+        jobs: false,
+    },
+    Case {
+        name: "array_locale_multiple",
+        source: "(()=>{const text='x\\uD800\\u4E2D\\uDC00'.repeat(4096),values=[text,text];let total=0;for(let i=0;i<16;i++){const out=values.toLocaleString();if(out.charCodeAt(out.length-1)===0xDC00)total+=out.length}return total})()",
+        expected: 524304.0,
+        jobs: false,
+    },
+    Case {
         name: "array_join_single",
         source: "(()=>{const text='x\\uD800\\u4E2D\\uDC00'.repeat(4096),values=[text];let total=0;for(let i=0;i<16;i++){const out=values.join(',');if(out.charCodeAt(out.length-1)===0xDC00)total+=out.length}return total})()",
         expected: 262144.0,

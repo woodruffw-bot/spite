@@ -61,6 +61,24 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Singleton Array.toLocaleString storage reuse
+
+Array.toLocaleString reuses the converted singleton result after the same method
+lookup, invocation, work and output checks (23.1.3.32). All 577 Runtime units,
+2,445 non-RegExp integrations, 270 selected RegExp groups and the quality gate
+pass. All 540 Array/generic/Proxy programs meet published expectations before
+and after, including collection repeats: 420 match Node exactly and 120 differ
+only because Node's ECMA-402 implementation passes two method arguments while
+this ECMA-262 host passes none. Raw differences are retained. Callback receivers,
+mutation, conversion order and errors match. Four work allowances are identical;
+both benchmark smokes pass all 76 rows from 74 workloads.
+
+Five evaluations with sixteen calls each remove 160 Rust deallocations, matching
+two avoided buffers per singleton. Callgrind instructions change from 184,816,867
+to 179,461,588 (-2.898%); the multiple-element control changes by +0.0002% with
+identical deallocations. Profiles include initialization, parsing, evaluation
+and collection, without a general wall-time claim.
+
 ## Singleton Array.join storage reuse
 
 Array.join returns the converted singleton String after the same separator,
@@ -88,6 +106,15 @@ The normative Number::toString rule permits both. Closest/even selection appears
 in a recommended alternative in a note. Exact rational evidence preserves the
 raw mismatch; no formatter change or compatibility exception is added.
 
+## Deterministic Math bit-pattern audit
+
+A read-only audit compares 16,384 binary64 inputs across ten deterministic Math
+operations: abs, sign, floor, ceil, trunc, round, fround, f16round, sqrt and clz32.
+All 163,840 results match independent Python calculations and Node bit for bit,
+with NaNs compared by classification. Inputs cover every binary exponent
+transition, adjacent rounding ties, signed zero, subnormals, infinities and a
+seeded random sample. This audit changes no implementation or fixture bytes.
+
 ## Templates without substitutions
 
 The ordinary evaluator reuses the immutable cooked String after the same entry,
@@ -98,6 +125,12 @@ and the quality gate pass. All 65,536 UTF-16 units in 512 synchronous/resumed
 programs match Python and Node before and after, including 512 collection repeats
 per build. All eight measured work allowances remain identical. Both benchmark
 smokes pass all 72 rows from 70 workloads.
+
+The gate frozen on clean 8cf9634a7 passes all 87 controls and 80,060 modes from
+41,550 originals, with zero other outcomes in 1,254.152 seconds. The earlier
+tagged-template gate at 46805345e passes the same counts in 1,385.607 seconds.
+Saved executable and fixture hashes match for both runs; all 17 CI jobs pass
+at both commits. These receipts precede singleton Array stringification reuse.
 
 Five evaluations with sixteen literal returns each remove 160 Rust deallocations,
 matching two avoided buffers per return. Callgrind instructions change from

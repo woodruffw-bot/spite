@@ -1793,6 +1793,10 @@ work allowance. Async execution delegates these expressions to that evaluator.
 Array.prototype.join reuses the converted String for a non-nullish singleton
 after separator conversion, element access, work and output checks (23.1.3.18).
 The captured length still controls access when callbacks mutate the receiver.
+Array.prototype.toLocaleString likewise reuses a non-nullish singleton's
+converted result after method lookup, invocation, ToString, work and output
+checks (23.1.3.32). The ECMA-262 algorithm without ECMA-402 invokes the element
+method with no arguments and preserves primitive receivers.
 The parser/evaluator native-stack guards are current implementation constraints;
 removing them safely requires replacing recursive execution with explicit frames.
 References below to execution

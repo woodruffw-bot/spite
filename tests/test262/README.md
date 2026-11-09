@@ -5,6 +5,16 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Singleton Array.toLocaleString storage regression
+
+All 577 Runtime units, 2,445 non-RegExp integrations, 270 selected RegExp groups
+and the quality gate pass. All 540 Array/generic/Proxy programs meet published
+expectations before and after, plus collection repeats. Of these, 420 match
+Node exactly; 120 differ only in the specified ECMA-262/ECMA-402 method argument
+count. Raw differences are retained. Work allowances are identical; both
+benchmark smokes pass all 76 rows. The corpus receipt is pending. Fixtures,
+helpers, modes and reviews are unchanged.
+
 ## Singleton Array.join storage regression
 
 All 577 Runtime units, 2,445 non-RegExp integrations, 270 selected RegExp groups
@@ -19,16 +29,20 @@ All 577 Runtime units, 2,445 non-RegExp integrations, 270 selected RegExp groups
 and the quality gate pass. All 65,536 UTF-16 units in 512 synchronous/resumed
 programs match Python and Node before and after, plus 512 collection repeats per
 build. Work allowances remain identical in both execution paths; both benchmark
-smokes pass all 72 rows. The full corpus receipt is pending. Fixtures, helpers,
-modes and reviews are unchanged.
+smokes pass all 72 rows. The gate frozen on clean 8cf9634a7 passes all 87 controls
+and 80,060 modes from 41,550 originals, with zero other outcomes in 1,254.152
+seconds. Saved executable and fixture hashes match; all 17 CI jobs pass.
+Fixtures, helpers, modes and reviews are unchanged.
 
 ## Tagged-template String storage regression
 
 All 577 Runtime units, 2,445 non-RegExp integrations, 270 selected RegExp groups
 and the quality gate pass. All 256 tagged-template programs plus 256 collection
 repeats match Node before and after. Work allowances remain identical at four
-input sizes; both benchmark smokes pass all 70 rows. The storage change's full
-corpus receipt is pending. Fixtures, helpers, modes and reviews are unchanged.
+input sizes; both benchmark smokes pass all 70 rows. The gate frozen on clean
+46805345e passes all 87 controls and 80,060 modes from 41,550 originals, with
+zero other outcomes in 1,385.607 seconds. Saved executable and fixture hashes
+match; all 17 CI jobs pass. Fixtures, helpers, modes and reviews are unchanged.
 
 ## Construction and comparison execution receipts
 

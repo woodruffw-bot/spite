@@ -697,6 +697,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Share immutable parsed cooked/raw String storage in frozen template objects after the existing length, work and agent checks, preserving site identity and descriptors.
 - [x] Reuse immutable cooked String storage for templates without substitutions through the ordinary evaluator, preserving work allowances and async delegation.
 - [x] Reuse the converted singleton Array.join result after separator/element observations and existing work/output checks, retaining generic receivers and length snapshots.
+- [x] Reuse a singleton Array.toLocaleString result after ordered method lookup, invocation and conversion, preserving primitive receivers, captured length and existing work/output checks.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all
