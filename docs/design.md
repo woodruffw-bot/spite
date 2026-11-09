@@ -2785,6 +2785,9 @@ values and return the hook's result without conversion. Fallback converts this
 to a String, limit through ToUint32 (undefined defaults to 2^32-1), then separator
 to a String even when the limit is zero. Undefined separators return the full
 String; empty separators split individual UTF-16 units with no extra empty parts.
+When a nonempty separator has no match, the sole result retains the converted
+String's immutable storage after the same output-length check and copy-work
+charge. Conversion, search and intrinsic Array construction keep their order.
 Nonempty separators use non-overlapping searches, retaining leading/trailing
 empty substrings and stopping at the limit. Checked copies and each search
 comparison charge opted-in work. Fresh intrinsic Arrays bypass constructors,

@@ -61,6 +61,27 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80074 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## String split without a match
+
+For an unmatched nonempty separator, split retains the complete converted
+String after the unchanged output check and copy-work charge. A native unit
+checks shared storage, lone surrogates, longer separators and output refusal.
+All 592 Runtime units, 2,445 non-RegExp integrations, 270 selected RegExp groups,
+91 runner controls and quality checks pass.
+
+All 1,024 supplemental programs agree with an independent UTF-16 split model
+and Node before/after, ordinarily and with forced collection. Of these, 276
+exercise the complete-source result. All 21 work thresholds are identical.
+Both 82-program benchmark smokes pass 84 rows. The instrumented target removes
+80 String deallocations and 1.2225% of instructions; the control retains its
+deallocation count with -0.0595% instructions. [Measurement scope](benchmarking.md#string-split-without-a-match)
+includes initialization and collection, with no wall-time claim. Initial probe
+API and many-element quota attempts were corrected and retained separately.
+
+The preceding BigInt commit 15a685c21 is running its frozen full gate with
+91 controls, 41,563 originals and 80,074 modes. This increment changes no
+original fixture, helper, mode or review. Hosted CI is tracked separately.
+
 ## BigInt OR/XOR with zero
 
 The integer backend copies the retained magnitude directly for OR/XOR with zero

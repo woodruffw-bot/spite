@@ -61,7 +61,17 @@ impl Realm {
             }
             start = position + separator.len();
         }
-        let value = self.copy_string_units(&string.code_units()[start..], span)?;
+        let value = if start == 0 {
+            // With no match, the final substring is the complete converted S.
+            // Preserve the copy path's output check and work charge.
+            let length = string.len();
+            let value = Value::String(string);
+            self.check_string(&value, span)?;
+            self.object_work(span, |_, budget| budget.charge(length))?;
+            value
+        } else {
+            self.copy_string_units(&string.code_units()[start..], span)?
+        };
         self.create_array_element(&result, u64::from(count), value, span)?;
         Ok(Value::Object(result))
     }

@@ -5,6 +5,16 @@ These 41772 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## String split storage regression
+
+An unmatched nonempty separator now retains the whole converted String after
+unchanged work/output checks. All 592 Runtime units, 2,445 non-RegExp
+integrations, 270 selected RegExp groups, 91 runner controls and quality checks
+pass. All 1,024 supplemental programs match Python and Node before/after,
+including forced collection; 21 work thresholds are identical. Original
+fixtures, metadata, modes and reviews are unchanged. The preceding BigInt
+15a685c21 full gate is running; hosted receipts remain tracked separately.
+
 ## BigInt zero-operand regression
 
 OR/XOR with zero copies the retained magnitude directly while preserving full

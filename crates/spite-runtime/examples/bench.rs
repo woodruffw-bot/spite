@@ -20,6 +20,18 @@ struct Case {
 
 const CASES: &[Case] = &[
     Case {
+        name: "string_split_miss",
+        source: "(()=>{const text='a'+'x\\uD800\\u4E2D\\uDC00'.repeat(4096);let total=0;for(let i=0;i<16;i++){const out=text.split(',');if(out.length===1&&out[0].charCodeAt(out[0].length-1)===0xDC00)total+=out[0].length}return total})()",
+        expected: 262160.0,
+        jobs: false,
+    },
+    Case {
+        name: "string_split_hit",
+        source: "(()=>{const text='a'+'x\\uD800\\u4E2D\\uDC00'.repeat(4096);let total=0;for(let i=0;i<16;i++){const out=text.split('a');if(out.length===2&&out[1].charCodeAt(out[1].length-1)===0xDC00)total+=out[1].length}return total})()",
+        expected: 262144.0,
+        jobs: false,
+    },
+    Case {
         name: "bigint_or_xor_zero",
         source: "(()=>{const positive=(1n<<4096n)+12345n,negative=-positive,mask=0n,positiveXor=positive^mask,negativeXor=negative^mask;let count=0;for(let i=0;i<2048;i++){const value=i&1?negative:positive,expected=i&2?(i&1?negativeXor:positiveXor):value;const result=i&2?(i&1?mask^value:value^mask):(i&1?mask|value:value|mask);if(result===expected)count++}return count})()",
         expected: 2048.0,

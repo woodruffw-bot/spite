@@ -196,6 +196,47 @@ fn sequence_methods_bound_copying_and_output_lengths() {
 }
 
 #[test]
+fn splitting_without_matches_retains_source_storage_and_output_checks() {
+    let mut realm = Realm::default();
+    realm.eval("").unwrap();
+    let span = Span::new(0, 0);
+    let string = JsString::from_code_units(vec![0x61, 0xd800, 0x4e2d, 0xdc00]);
+    for separator in [",", "long separator"] {
+        realm.remaining_steps = Some(1000);
+        let Value::Object(array) = realm
+            .string_split(
+                Value::String(string.clone()),
+                Value::String(JsString::from(separator)),
+                Value::Undefined,
+                span,
+            )
+            .unwrap()
+        else {
+            panic!("split result");
+        };
+        let Value::String(part) = realm
+            .get_property(&array, &JsString::from("0"), span)
+            .unwrap()
+        else {
+            panic!("split substring");
+        };
+        assert_eq!(part, string);
+        assert_eq!(part.code_units().as_ptr(), string.code_units().as_ptr());
+    }
+    realm.remaining_steps = Some(1000);
+    realm.limits.max_string_units = Some(string.len() - 1);
+    assert!(matches!(
+        realm.string_split(
+            Value::String(string),
+            Value::String(JsString::from(",")),
+            Value::Undefined,
+            span,
+        ),
+        Err(Error::Limit { .. })
+    ));
+}
+
+#[test]
 fn trimming_bounds_scans_and_copies_only_the_result() {
     let mut realm = Realm::default();
     let span = Span::new(0, 0);

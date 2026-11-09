@@ -716,6 +716,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Express validated private-name grammar invariants in ordinary object, binding, assignment and super property consumers, removing obsolete unavailable-feature fallbacks while retaining computed private expressions and assignment targets.
 - [x] Assert ordinary-evaluator suspension exclusions after resumable-driver dispatch, replacing obsolete Await, Yield and for-await-of unavailable-feature fallbacks.
 - [x] Factor intrinsic JSON text materialization behind a crate-private entry point, preserving builtin ToString, revivers and limits.
+- [x] Retain the converted String for split with a nonempty unmatched separator after the same search, output-length check and copy-work charge.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

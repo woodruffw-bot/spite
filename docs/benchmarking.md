@@ -19,8 +19,10 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all 80 program workloads |
+| parse_all | Parse and drop the ASTs for all 82 program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
+| string_split_miss | Split a 16,385-unit BMP/lone-surrogate String sixteen times with an unmatched separator, checking the sole result |
+| string_split_hit | Repeat with one leading separator, checking the 16,384-unit tail |
 | bigint_or_xor_zero | Alternate OR/XOR with zero, both operand orders and positive/negative 4,097-bit values across 2,048 operations |
 | bigint_or_xor_one | Repeat with 1n as a nonzero control, checking retained OR values and toggled XOR values |
 | bigint_equal_and_or | Alternate equal positive AND and negative OR operands of 4,097 bits across 2,048 operations, checking each retained value |
@@ -115,6 +117,30 @@ their ordinary unlimited defaults.
 
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
+
+## String split without a match
+
+For an unmatched nonempty separator, split retains the complete converted
+String after the same output-length check and copy-work charge. Baseline
+production is 15a685c21. Matched Rust 1.99 executables use identical 82-workload
+sources and optimized conformance libraries with debug/overflow checks enabled.
+
+Each instrumented process evaluates five times, splitting a 16,385-unit String
+with BMP text and lone surrogates sixteen times per evaluation. The control
+finds one leading separator and copies the remaining 16,384-unit tail. Counts
+include initialization, parsing/evaluation and collection.
+
+| Workload | Instructions before | Instructions after | Rust deallocations before | Rust deallocations after |
+| --- | ---: | ---: | ---: | ---: |
+| Unmatched separator | 229,832,340 | 227,022,745 | 5,411 | 5,331 |
+| Leading-separator control | 230,415,048 | 230,277,911 | 6,051 | 6,051 |
+
+The target removes one String allocation per split and uses 1.2225% fewer
+instructions. The control retains its deallocation count with 0.0595% fewer
+instructions. Both benchmark smokes pass all 84 rows. All 1,024 supplemental
+programs agree with Python and Node, before/after and with forced collection;
+all 21 work thresholds are identical. One instrumented process per revision
+and workload supports these counts, with no wall-time or general speed claim.
 
 ## BigInt OR/XOR with zero
 
