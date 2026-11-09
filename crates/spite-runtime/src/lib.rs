@@ -1035,12 +1035,10 @@ impl Realm {
                 body,
                 awaited,
             } => {
-                if *awaited {
-                    return Err(Self::unsupported(
-                        statement.span,
-                        "for-await-of execution is not implemented",
-                    ));
-                }
+                assert!(
+                    !*awaited,
+                    "for-await-of is handled by the async execution driver"
+                );
                 // IteratorClose must observe the actual call completion.
                 let tail_scope = self.tail_scope.take();
                 let result = self.for_of(binding, iterable, body, labels, statement.span);
@@ -1801,16 +1799,10 @@ impl Realm {
                 self.import_call_values(specifier, options, expr.span)?
             }
             ExprKind::Yield { .. } => {
-                return Err(Self::unsupported(
-                    expr.span,
-                    "yield suspension is not implemented",
-                ));
+                unreachable!("yield is handled by the resumable execution driver")
             }
             ExprKind::Await(_) => {
-                return Err(Self::unsupported(
-                    expr.span,
-                    "await suspension is not implemented",
-                ));
+                unreachable!("await is handled by the async execution driver")
             }
             ExprKind::Unary(op, inner) => {
                 if *op == UnaryOp::Delete && reference_expression(inner) {

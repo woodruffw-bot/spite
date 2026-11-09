@@ -61,6 +61,21 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Resumable driver dispatch invariants
+
+The ordinary evaluator records the established dispatch invariants for Await,
+Yield and awaited ForOf nodes, replacing three obsolete unavailable-feature
+fallbacks. Async and generator executors retain identical source hashes, as do
+the Parser library and syntax sources. All 577 Runtime units, 2,445 non-RegExp
+integrations, 270 selected RegExp groups and the quality gate pass.
+
+All 1,632 programs plus collection repeats match Node before and after: 512
+seeded expression programs each for Await, Yield and async Yield, plus 96
+for-await programs across four iterator sources, twelve statement contexts and
+two function goals. Observations include requests, coercions, finalizers and
+Promise-job effects. Public eval parsing retains Script-level Await/Yield
+restrictions. Fixtures, snapshots and native group inventories are unchanged.
+
 ## Validated private-property grammar
 
 Ordinary object, binding, assignment and super property consumers now express
@@ -98,6 +113,11 @@ change from 464,314,973 to 428,757,009 (-7.658%). The unequal-operand control
 retains its deallocation count and uses 0.235% more instructions. Profiles
 include initialization, parsing/evaluation and collection, without a general
 wall-time claim.
+
+The gate frozen on clean 168209442 passes all 87 controls and 80,060 modes from
+41,550 originals, with zero other outcomes in 1,398.333 seconds. Saved executable
+and fixture hashes match. This receipt covers the shared AND/OR branch before
+the private-property and suspension-dispatch cleanups.
 
 ## Equal BigInt XOR operands
 

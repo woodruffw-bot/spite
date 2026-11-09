@@ -5,6 +5,14 @@ These 41747 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Resumable driver dispatch regression
+
+All 577 Runtime units, 2,445 non-RegExp integrations, 270 selected RegExp groups
+and the quality gate pass. All 1,632 Await/Yield/async-Yield/for-await programs
+match Node before and after, including collection repeats. The fresh Runtime
+retains identical Parser and specialized executor hashes. The corpus receipt
+is pending. Fixtures, helpers, modes and reviews are unchanged.
+
 ## Validated private-property grammar regression
 
 All 577 Runtime units, 2,445 non-RegExp integrations, 270 selected RegExp groups
@@ -31,8 +39,10 @@ All 37 BigInt tests, 577 Runtime units, 2,445 non-RegExp integrations,
 1,536 coercion/error cases, 1,024 wide-integer oracle programs and 512 further
 Python/Node programs meet expectations. All 72 measured work allowances are
 identical, including result-size refusals. Both benchmark smokes pass all
-80 rows. The corpus receipt is pending. Fixtures, helpers, modes and reviews
-are unchanged.
+80 rows. The gate frozen on clean 168209442 passes all 87 controls and 80,060
+modes from 41,550 originals, with zero other outcomes in 1,398.333 seconds.
+Saved executable and fixture hashes match. This precedes the grammar/dispatch
+cleanups. Fixtures, helpers, modes and reviews are unchanged.
 
 ## Equal BigInt XOR regression
 

@@ -934,9 +934,10 @@ receive an explicit classification before Rust can compile the driver. All
 statement forms route through dedicated continuations or synchronous terminal
 evaluation; method/field bodies keep their independent source contexts.
 
-The generic expression evaluator reports Unsupported before an AwaitExpression
-operand. An async body cursor intercepts direct await expression statements and
-return-await in block bodies, and direct await concise arrows, including transparent
+The ordinary evaluator asserts that Await, Yield and awaited ForOf nodes have
+been claimed by their resumable drivers. An async body cursor intercepts direct
+await expression statements and return-await in block bodies, and direct await
+concise arrows, including transparent
 parentheses (Await, sec-asyncblockstart). Body-level let/const and synchronous
 using declarations also support direct awaited initializers. Their continuations
 record statement/binding indices and resume the current binding before later
