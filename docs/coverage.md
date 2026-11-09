@@ -61,6 +61,32 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80074 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## TypedArray replacement during resize and detach
+
+A supplemental audit checks 3,072 TypedArray.with programs across all twelve
+kinds, fixed/tracking views, zero/nonzero offsets, growth/shrink/detach during
+index or replacement conversion, and parent/foreign method Realms. All match
+an independent published-algorithm model under ordinary and forced collection;
+1,536 use foreign methods. Result and buffer prototypes, error Realm, conversion
+order and retained results are checked.
+
+Node agrees on 2,880 cases. Its other 192 observations match a separate model
+that recalculates negative indices from the resized length. Edition 17
+23.2.3.36 captures length before either conversion, then checks the resulting
+index against the live view. Growth therefore preserves the original selected
+index; shrink can invalidate it. The Runtime retains this published behavior.
+No compatibility exception or production change was introduced.
+
+The existing growth/range groups now include 48 examples across all kinds and
+both conversion stages; all 25 TypedArray copy groups and quality pass. Native and fixture
+inventories are unchanged. The typedarray-with-realms artifacts under
+/workspace/work retain all raw Node differences, predictions, Runtime results,
+source hashes and the final classification. The initial unclassified audit's
+failed equality assertion is retained. The 7a5dba3b3 full gate passes
+91/41,563/80,074 with zero other outcomes in 1,463.764 seconds and matching
+saved hashes; all 17 hosted jobs pass. The String optimization's full receipt
+remains pending.
+
 ## Whole functional String replacement
 
 String.replace now retains the callback's converted String when a literal

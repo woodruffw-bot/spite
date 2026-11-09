@@ -725,6 +725,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Return canonical zero for BigInt complement of minus one after the existing work debit and result-magnitude check.
 - [x] Release spare BigInt magnitude storage when returning zero results, preserving internal scratch reuse, result-size limits and word-work accounting.
 - [x] Retain a functional String.replace result when the match covers the complete input, preserving callback conversion, output checks and all append work ticks.
+- [x] Audit TypedArray.with captured negative indices and live range checks across resize/detach, all element kinds and parent/foreign method Realms, preserving intrinsic result/error ownership.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

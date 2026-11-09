@@ -5,6 +5,21 @@ These 41772 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## TypedArray replacement conversion audit
+
+All 3,072 supplemental TypedArray.with programs match the published algorithm
+under ordinary and forced collection, including 1,536 foreign-method cases.
+Node has 2,880 exact matches and 192 classified differences from recalculating
+negative indices after resize. The Runtime retains edition 17's captured length.
+The original equality failure and all raw observations are preserved.
+
+Forty-eight examples extend the existing growth/range groups across all twelve
+kinds and both conversion stages. All 25 TypedArray copy groups and quality pass. Production,
+originals, helpers, modes, reviews and test-group inventories are unchanged.
+The 7a5dba3b3 full gate passes 91/41,563/80,074 with zero other outcomes in
+1,463.764 seconds and matching saved hashes; all 17 hosted jobs pass. The String
+optimization's full receipt remains pending.
+
 ## Whole functional String replacement
 
 Complete literal matches retain the functional replacement's converted String,

@@ -371,6 +371,26 @@ fn with_converts_index_then_replacement_before_any_live_range_rejection() {
 
 #[test]
 fn with_accepts_live_auto_growth_beyond_original_length_but_copies_only_the_original_range() {
+    // 23.2.3.36 computes negative indices from the length captured before
+    // either conversion, even when the replacement conversion grows the view.
+    for (name, bigint) in KINDS {
+        let values = if bigint { "1n,2n,3n,4n" } else { "1,2,3,4" };
+        let replacement = if bigint { "99n" } else { "99" };
+        for (index, value) in [
+            (
+                "{valueOf(){buffer.resize(6*size);return -2;}}".to_owned(),
+                replacement.to_owned(),
+            ),
+            (
+                "-2".to_owned(),
+                format!("{{valueOf(){{buffer.resize(6*size);return {replacement};}}}}"),
+            ),
+        ] {
+            check(&format!(
+                "let A={name},size=A.BYTES_PER_ELEMENT,buffer=new ArrayBuffer(4*size,{{maxByteLength:6*size}}),a=new A(buffer);a.set([{values}]);let b=a.with({index},{value});b.length===4 && b.join()==='1,2,99,4' && a.length===6 && a.join()==='1,2,3,4,0,0'"
+            ));
+        }
+    }
     check(
         "let buffer=new ArrayBuffer(3,{maxByteLength:6}),a=new Uint8Array(buffer),hits=0;a.set([1,2,3]);let b=a.with(5,{valueOf(){hits++;buffer.resize(6);a[5]=9;return 7;}});hits===1 && b.length===3 && b.join()==='1,2,3' && a.length===6 && a[5]===9 && b.buffer!==buffer",
     );
@@ -384,6 +404,25 @@ fn with_accepts_live_auto_growth_beyond_original_length_but_copies_only_the_orig
 
 #[test]
 fn with_uses_final_live_index_validity_and_retains_conversion_side_effects() {
+    // The captured negative index can become invalid after shrinking, even
+    // though recalculating it from the live length would select a valid index.
+    for (name, bigint) in KINDS {
+        let replacement = if bigint { "99n" } else { "99" };
+        for (index, value) in [
+            (
+                "{valueOf(){buffer.resize(2*size);return -2;}}".to_owned(),
+                replacement.to_owned(),
+            ),
+            (
+                "-2".to_owned(),
+                format!("{{valueOf(){{buffer.resize(2*size);return {replacement};}}}}"),
+            ),
+        ] {
+            check(&format!(
+                "let A={name},size=A.BYTES_PER_ELEMENT,buffer=new ArrayBuffer(4*size,{{maxByteLength:6*size}}),a=new A(buffer),caught=false;try{{a.with({index},{value});}}catch(e){{caught=e instanceof RangeError;}}caught && a.length===2"
+            ));
+        }
+    }
     for invalidation in ["buffer.transfer()", "buffer.resize(1)"] {
         check(&format!(
             "let buffer=new ArrayBuffer(3,{{maxByteLength:6}}),a=new Uint8Array(buffer,0,3),log='',caught=false;try{{a.with({{valueOf(){{log+='i';return 0;}}}},{{valueOf(){{log+='v';{invalidation};return 7;}}}});}}catch(e){{caught=e instanceof RangeError;}}caught && log==='iv' && a.length===0"
