@@ -5,6 +5,19 @@ These 41772 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Cross-Realm Atomics.waitAsync audit
+
+All 768 supplemental same-Agent cases match the published model and Node under
+ordinary and forced collection. Both waitable kinds, parent/foreign method
+ownership, immediate and infinite waits, growable views, conversion reentry,
+intrinsic Promise creation, species and notification order are covered.
+
+A native unit verifies pending capabilities and queued reactions preserve the
+foreign Realm after visible references are removed, then allow its collection
+after reactions finish. All 595 Runtime units and quality pass. Production,
+integration groups, originals, helpers, modes and reviews are unchanged.
+The fe44fa3c4 full gate, including the String optimization, is running.
+
 ## TypedArray replacement conversion audit
 
 All 3,072 supplemental TypedArray.with programs match the published algorithm

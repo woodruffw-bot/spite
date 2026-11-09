@@ -61,6 +61,28 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80074 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Cross-Realm asynchronous atomic waits
+
+All 768 supplemental same-Agent Atomics.waitAsync programs match the published
+DoWait/NotifyWaiter model and Node under ordinary and forced collection. Cases
+cover both waitable kinds, parent/foreign wait and notify methods, immediate
+mismatch/zero-timeout results, infinite waits, fixed/tracking growable views,
+offsets and reentry during each conversion. They check intrinsic record/Promise
+ownership despite replacing the public Promise constructor, default species,
+property descriptors, notification counts and queued reaction order.
+
+A new native unit removes the visible child-Realm references after registering
+nested parent/foreign waits. Pending capabilities preserve the Realm through
+collection; queued reactions preserve it after notification; it becomes
+collectible after both reactions finish. Both waitable kinds pass. All 595
+Runtime units and quality pass. Production and integration/fixture inventories
+are unchanged. The atomics-wait-realms artifacts under /workspace/work retain
+raw observations, model predictions, driver/source hashes and checks.
+
+The fe44fa3c4 frozen full gate is running with the String optimization and
+TypedArray regression audit. The preceding 7a5dba3b3 full and all 17 hosted
+jobs pass, as recorded below.
+
 ## TypedArray replacement during resize and detach
 
 A supplemental audit checks 3,072 TypedArray.with programs across all twelve

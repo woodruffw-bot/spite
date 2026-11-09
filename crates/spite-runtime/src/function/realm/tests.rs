@@ -840,6 +840,68 @@ fn drain_realm_test_jobs(realm: &mut Realm) {
 }
 
 #[test]
+fn foreign_atomic_wait_capabilities_keep_their_realm_until_reactions_complete() {
+    // DoWait and NotifyWaiter (25.4.3) use intrinsic capabilities and resolve
+    // same-Agent waits inline; queued reactions retain their own Realm graphs.
+    for (kind, zero) in [("Int32Array", "0"), ("BigInt64Array", "0n")] {
+        let mut realm = Realm::default();
+        let (environment, function) = child_realm_fixture(&mut realm, "Atomics.waitAsync");
+        expose_child(&mut realm, &environment, function);
+        assert_eq!(
+            realm.eval(&format!(
+                r#"
+                let a=new {kind}(new SharedArrayBuffer(2*{kind}.BYTES_PER_ELEMENT)),log='';
+                {{
+                    const P=child.Promise,objectPrototype=child.Object.prototype;
+                    child.Promise=function(){{throw 'public Promise'}};
+                    let inner;
+                    const outer=foreign(a,{{valueOf(){{inner=Atomics.waitAsync(a,1,{zero});return 0;}}}},{zero});
+                    if(!outer.async || !inner.async || Object.getPrototypeOf(outer)!==objectPrototype ||
+                       Object.getPrototypeOf(outer.value)!==P.prototype)throw 'wait record';
+                    outer.value.constructor=undefined;
+                    const chain=outer.value.then(v=>log+='outer:'+v+';');
+                    if(Object.getPrototypeOf(chain)!==P.prototype)throw 'Promise Realm';
+                    inner.value.then(v=>log+='inner:'+v+';');
+                }}
+                delete globalThis.child;delete globalThis.foreign;
+                log===''
+                "#
+            )),
+            Ok(Value::Boolean(true))
+        );
+        realm.clear_kept_objects().unwrap();
+        realm.collect(usize::MAX).unwrap();
+        assert!(realm.objects.environment(&environment).is_ok());
+        assert_eq!(
+            realm.eval("Atomics.notify(a,0,1)===1 && Atomics.notify(a,1,1)===1 && log===''"),
+            Ok(Value::Boolean(true))
+        );
+        realm.collect(usize::MAX).unwrap();
+        assert!(realm.objects.environment(&environment).is_ok());
+        loop {
+            match realm.run_next_promise_job().unwrap() {
+                crate::PromiseJobOutcome::NoJob => break,
+                crate::PromiseJobOutcome::Completed => (),
+                outcome => panic!("unexpected job result: {outcome:?}"),
+            }
+            realm.clear_kept_objects().unwrap();
+            realm.collect(usize::MAX).unwrap();
+        }
+        assert_eq!(
+            realm.eval("log"),
+            Ok(Value::String("outer:ok;inner:ok;".into()))
+        );
+        realm.clear_kept_objects().unwrap();
+        realm.collect(usize::MAX).unwrap();
+        assert!(realm.objects.environment(&environment).is_err());
+        assert_eq!(
+            realm.record.global_environment.as_ref(),
+            realm.scopes.first()
+        );
+    }
+}
+
+#[test]
 fn linked_foreign_module_context_uses_its_defining_global_environment() {
     let mut realm = Realm::default();
     let (environment, function) = child_realm_fixture(&mut realm, "function noop(){}noop");
