@@ -55,6 +55,8 @@ builtin operations, rather than JavaScript statements or elapsed time.
 Supply `--max-source-bytes N` to limit each parsed source in UTF-8 bytes. This
 applies to `--check`, evaluated inputs, imported Modules and eval/Function-generated
 source. Source-limit failures are host failures rather than catchable exceptions.
+File and stdin readers stop after at most one byte beyond that limit, including
+JavaScript and JSON dependencies, so oversized streams need not reach EOF.
 
 ## Test
 

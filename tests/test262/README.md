@@ -5,6 +5,14 @@ These 41772 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## CLI bounded input regression
+
+The shared reader enforces opted-in source-byte limits while reading files and
+stdin, including JavaScript/JSON dependencies. The new reader unit, all 34 CLI
+groups and the quality gate pass. Four before/after probes retain open stdin;
+the new host rejects oversized input without waiting for EOF. Existing UTF-8
+diagnostic expectations are preserved. No Runtime or original fixture bytes change.
+
 ## Binary16 boundary audit
 
 All 190,464 signed midpoint/adjacent inputs agree with Python and Node across

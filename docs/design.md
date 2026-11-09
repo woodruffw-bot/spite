@@ -138,6 +138,12 @@ so an earlier failed graph cannot block an unrelated later import.
 The --max-steps allowance applies separately to evaluation and each host job,
 using the existing Runtime limit semantics. There is no default work or job-count
 quota. Module, check and limit flags can appear in any order before the input.
+With --max-source-bytes, the shared file/stdin reader consumes at most the limit
+plus one byte before rejecting oversized input. Static and dynamic JavaScript
+and JSON dependencies use the same reader. Definite UTF-8 errors in that bounded
+prefix retain encoding diagnostics; a final incomplete sequence caused by the
+cutoff reports the source limit. Inputs within the allowance require complete
+UTF-8 validation. Argument and eval/Function sources retain their parser limits.
 The facade reexports PromiseJobOutcome and FinalizationCleanupOutcome for hosts
 driving the same public APIs. It also exposes parse_script_utf16 so embeddings
 can pass lossless UTF-16 Scripts to Realm::evaluate.

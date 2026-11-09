@@ -451,6 +451,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Add an explicit JSON conformance-host capability with typed source identities, correct loading-error phases and unchanged agent suspension policies.
 - [x] Run and retain the published JSON-module Test262 originals with their unchanged JSON support files.
 - [x] Accept lossless UTF-16 JSON module source, preserving lone surrogates and encoded source-byte limits.
+- [x] Bound CLI file/stdin reads by opted-in source-byte allowances before buffering complete JavaScript or JSON inputs.
 
 - [x] Add module parsing, linking, namespace objects, live bindings, and cycles.
 - [x] Add distinct public UTF-8/lossless UTF-16 Module parsing with strict lexical function scope, Module-wide await identifier restrictions, retained top-level Await/import.meta and explicit static-declaration boundaries.

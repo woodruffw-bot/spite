@@ -15,10 +15,43 @@ use std::{
 
 const USAGE: &str = "Usage: spite [--max-steps N] [--max-source-bytes N] [--module] [--check] (--eval SOURCE | FILE | -)";
 
-fn read_source(mut reader: impl Read) -> Result<String, String> {
+fn read_source(mut reader: impl Read, max_bytes: Option<usize>) -> Result<String, Error> {
     let mut bytes = Vec::new();
-    reader.read_to_end(&mut bytes).map_err(|e| e.to_string())?;
-    String::from_utf8(bytes).map_err(|_| "source must be valid UTF-8".into())
+    let result = match max_bytes {
+        Some(limit) => reader
+            .take(u64::try_from(limit.saturating_add(1)).unwrap_or(u64::MAX))
+            .read_to_end(&mut bytes),
+        None => reader.read_to_end(&mut bytes),
+    };
+    result.map_err(|error| Error::Host {
+        span: spite::Span::new(0, 0),
+        message: error.to_string(),
+    })?;
+    if max_bytes.is_some_and(|limit| bytes.len() > limit) {
+        // Preserve definite encoding errors in the bounded prefix. An incomplete
+        // sequence can instead be caused by stopping in a valid UTF-8 character.
+        if std::str::from_utf8(&bytes).is_err_and(|error| error.error_len().is_some()) {
+            return Err(Error::Host {
+                span: spite::Span::new(0, 0),
+                message: "source must be valid UTF-8".into(),
+            });
+        }
+        return Err(Error::Limit {
+            span: spite::Span::new(0, bytes.len()),
+            message: "source size limit exceeded".into(),
+        });
+    }
+    String::from_utf8(bytes).map_err(|_| Error::Host {
+        span: spite::Span::new(0, 0),
+        message: "source must be valid UTF-8".into(),
+    })
+}
+
+fn source_error_message(error: Error) -> String {
+    match error {
+        Error::Host { message, .. } => message,
+        error => error.to_string(),
+    }
 }
 
 fn data_string(realm: &Realm, object: &ObjectHandle, key: &str) -> Option<JsString> {
@@ -74,9 +107,10 @@ fn evaluate_script(
     realm: &mut Realm,
     source: &str,
     filename: Option<&Path>,
+    max_source_bytes: Option<usize>,
 ) -> Result<Value, String> {
-    let mut files =
-        module_files::FileModules::for_script(filename).map_err(|e| display_error(realm, e))?;
+    let mut files = module_files::FileModules::for_script(filename, max_source_bytes)
+        .map_err(|e| display_error(realm, e))?;
     realm.enable_module_imports();
     let value = realm.eval(source).map_err(|e| display_error(realm, e))?;
     let _completion_root = if matches!(&value, Value::Object(_)) {
@@ -107,9 +141,11 @@ fn evaluate_module(
     realm: &mut Realm,
     source: &str,
     filename: Option<&Path>,
+    max_source_bytes: Option<usize>,
 ) -> Result<Value, String> {
-    let (mut files, module) = module_files::FileModules::load(realm, source, filename)
-        .map_err(|e| display_error(realm, e))?;
+    let (mut files, module) =
+        module_files::FileModules::load(realm, source, filename, max_source_bytes)
+            .map_err(|e| display_error(realm, e))?;
     realm.enable_module_imports();
     let promise = realm
         .evaluate_module_record(&module)
@@ -213,10 +249,12 @@ fn main() -> ExitCode {
             .clone()
             .into_string()
             .map_err(|_| "source must be valid UTF-8".into()),
-        [path] if path == "-" => read_source(io::stdin().lock()),
+        [path] if path == "-" => {
+            read_source(io::stdin().lock(), max_source_bytes).map_err(source_error_message)
+        }
         [path] => File::open(path)
             .map_err(|e| e.to_string())
-            .and_then(read_source),
+            .and_then(|file| read_source(file, max_source_bytes).map_err(source_error_message)),
         _ => {
             eprintln!("{USAGE}");
             return ExitCode::from(2);
@@ -245,9 +283,9 @@ fn main() -> ExitCode {
             [JsString::from("type")],
         );
         let value = if module {
-            evaluate_module(&mut realm, &source, filename.as_deref())
+            evaluate_module(&mut realm, &source, filename.as_deref(), max_source_bytes)
         } else {
-            evaluate_script(&mut realm, &source, filename.as_deref())
+            evaluate_script(&mut realm, &source, filename.as_deref(), max_source_bytes)
         }?;
         Ok(Some(value))
     });
@@ -262,5 +300,64 @@ fn main() -> ExitCode {
             eprintln!("{error}");
             ExitCode::FAILURE
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    struct OpenSource {
+        remaining: usize,
+        read: usize,
+    }
+
+    impl Read for OpenSource {
+        fn read(&mut self, buffer: &mut [u8]) -> io::Result<usize> {
+            if buffer.is_empty() {
+                return Ok(0);
+            }
+            assert!(self.remaining > 0, "reader must stop before requesting EOF");
+            let count = self.remaining.min(buffer.len());
+            buffer[..count].fill(b'x');
+            self.remaining -= count;
+            self.read += count;
+            Ok(count)
+        }
+    }
+
+    #[test]
+    fn source_limits_bound_reads_before_eof_and_utf8_decoding() {
+        for limit in [0, 1, 64, 4096] {
+            let mut reader = OpenSource {
+                remaining: limit + 1,
+                read: 0,
+            };
+            assert!(matches!(
+                read_source(&mut reader, Some(limit)),
+                Err(Error::Limit { .. })
+            ));
+            assert_eq!(reader.read, limit + 1);
+        }
+        for limit in [None, Some(2), Some(usize::MAX)] {
+            assert_eq!(read_source("π".as_bytes(), limit).unwrap(), "π");
+        }
+        assert!(matches!(
+            read_source("π".as_bytes(), Some(1)),
+            Err(Error::Limit { .. })
+        ));
+        assert!(matches!(
+            read_source(&[0xff][..], Some(1)),
+            Err(Error::Host { .. })
+        ));
+        assert!(matches!(
+            read_source(&[0xff][..], Some(0)),
+            Err(Error::Host { .. })
+        ));
+        assert!(matches!(
+            read_source("π".as_bytes(), Some(0)),
+            Err(Error::Limit { .. })
+        ));
+        assert_eq!(read_source(&[][..], Some(0)).unwrap(), "");
     }
 }

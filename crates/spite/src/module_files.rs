@@ -52,6 +52,7 @@ pub(super) struct FileModules {
     files: HashMap<(PathBuf, ModuleType), usize>,
     records: HashMap<ModuleHandle, usize>,
     script_directory: PathBuf,
+    max_source_bytes: Option<usize>,
 }
 
 fn host(message: String) -> Error {
@@ -74,7 +75,10 @@ fn canonical(path: &Path) -> Result<PathBuf, Error> {
 }
 
 impl FileModules {
-    pub(super) fn for_script(filename: Option<&Path>) -> Result<Self, Error> {
+    pub(super) fn for_script(
+        filename: Option<&Path>,
+        max_source_bytes: Option<usize>,
+    ) -> Result<Self, Error> {
         let filename = filename.map(canonical).transpose()?;
         let script_directory = match filename {
             Some(path) => path.parent().expect("canonical file parent").to_path_buf(),
@@ -82,6 +86,7 @@ impl FileModules {
         };
         Ok(Self {
             script_directory,
+            max_source_bytes,
             ..Self::default()
         })
     }
@@ -90,6 +95,7 @@ impl FileModules {
         realm: &mut Realm,
         source: &str,
         filename: Option<&Path>,
+        max_source_bytes: Option<usize>,
     ) -> Result<(Self, ModuleHandle), Error> {
         let filename = filename.map(canonical).transpose()?;
         let directory = match &filename {
@@ -99,6 +105,7 @@ impl FileModules {
         let root = realm.create_module(source)?;
         let mut loader = Self {
             script_directory: PathBuf::from("."),
+            max_source_bytes,
             ..Self::default()
         };
         loader.insert(root, directory, filename, ModuleType::JavaScript)?;
@@ -147,8 +154,15 @@ impl FileModules {
         if let Some(&index) = self.files.get(&(path.clone(), kind)) {
             return Ok(index);
         }
-        let source = fs::read_to_string(&path)
+        let file = fs::File::open(&path)
             .map_err(|error| host(format!("cannot read Module {}: {error}", path.display())))?;
+        let source =
+            super::read_source(file, self.max_source_bytes).map_err(|error| match error {
+                Error::Host { message, .. } => {
+                    host(format!("cannot read Module {}: {message}", path.display()))
+                }
+                error => error,
+            })?;
         let record = match kind {
             ModuleType::JavaScript => realm.create_module(&source)?,
             ModuleType::Json => realm.create_json_module(&source)?,

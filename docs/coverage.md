@@ -61,6 +61,18 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80074 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Bounded CLI source reads
+
+Opted-in source-byte limits now bound the file/stdin reader before it buffers an
+entire input. At most limit+1 bytes are consumed, including static/dynamic
+JavaScript and JSON dependencies. A deterministic reader test checks 0/1/64/4,096
+byte allowances without requesting EOF, exact UTF-8 boundaries, invalid prefixes,
+empty input and usize::MAX. All 34 CLI groups, the reader unit and the quality
+gate pass. A saved before/after probe keeps stdin open: all four Script/Module/
+check combinations previously wait, and now reject oversized input with Limit.
+The initial draft's encoding-priority regression was caught by an existing test
+and fixed without changing its expectation. Runtime and fixture bytes are unchanged.
+
 ## Exhaustive binary16 rounding boundaries
 
 A read-only audit checks all 31,744 nonnegative binary16 rounding midpoints,
