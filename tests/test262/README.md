@@ -5,6 +5,20 @@ These 41772 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Whole functional String replacement
+
+Complete literal matches retain the functional replacement's converted String,
+with unchanged callback order, output checks and all append work ticks.
+All 594 Runtime units, 2,445 non-RegExp integrations, 270 selected RegExp groups,
+91 controls and quality pass; the benchmark smoke passes 96 rows/94 programs.
+All 576 supplemental cases match before/after and Node with ordinary and forced
+collection, including 384 independent UTF-16 checks; 24 public work thresholds
+are identical. Originals and reviews are unchanged.
+
+The ecfa84003 full gate passes 91/41,563/80,074 with zero other outcomes in
+1,350.511 seconds and matching saved hashes; all 17 hosted jobs pass.
+The 7a5dba3b3 storage increment's full gate is running.
+
 ## BigInt returned-zero storage
 
 Returned zero results release spare magnitude storage without changing internal
@@ -16,7 +30,8 @@ Originals and reviews are unchanged.
 
 The 7e0b4be8c full gate passes 91/41,563/80,074 with zero other outcomes in
 1,358.543 seconds and matching saved hashes. All 17 hosted jobs pass for
-7e0b4be8c and 0a966bd32. The ecfa84003 full gate is running; this increment's
+7e0b4be8c and 0a966bd32. The ecfa84003 full gate and all 17 hosted jobs also
+pass; the 7a5dba3b3 full gate is running. This increment's
 full-corpus and hosted receipts remain pending.
 
 ## BigInt complement regression

@@ -55,6 +55,20 @@ impl Realm {
         };
         let mut result = Vec::new();
         self.append_replacement_units(&mut result, &string.code_units()[..position], span)?;
+        if !substitute && position == 0 && search.len() == string.len() {
+            // The callback's literal text is the complete result. Retain it,
+            // preserving both remaining append ticks and the output check.
+            if self
+                .limits
+                .max_string_units
+                .is_some_and(|limit| replacement.len() > limit)
+            {
+                return Err(replacement_limit(span));
+            }
+            self.object_work(span, |_, budget| budget.charge(replacement.len()))?;
+            self.object_work(span, |_, budget| budget.charge(0))?;
+            return Ok(Value::String(replacement));
+        }
         if substitute {
             self.append_uncaptured_substitution(
                 &mut result,

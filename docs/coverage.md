@@ -61,6 +61,28 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80074 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Whole functional String replacement
+
+String.replace now retains the callback's converted String when a literal
+search matches the entire input. Callback invocation/conversion, output checks
+and all three append ticks retain their order. A native unit checks shared
+UTF-16 storage for complete and empty inputs, lone surrogates, callback effects
+and length refusal. All 594 Runtime units, 2,445 non-RegExp integrations,
+270 selected RegExp groups, 91 controls and quality pass. The benchmark smoke
+passes 96 rows across 94 programs.
+
+All 576 supplemental cases match before/after and Node under ordinary and
+forced collection; 384 also match an independent UTF-16 model. All 24 public
+work thresholds remain identical. [Matched profiles](benchmarking.md#whole-functional-string-replacement)
+remove 160 temporary-buffer frees and 2.6003% of instructions in the target;
+the partial-match control retains its free count with −0.0006% instructions.
+These are scoped instruction/allocation results, without a wall-time claim.
+
+The ecfa84003 full gate passes 91/41,563/80,074 with zero other outcomes in
+1,350.511 seconds and matching saved hashes; all 17 hosted jobs pass. The
+7a5dba3b3 storage increment's full gate is running. Original fixtures, helpers,
+modes and reviews are unchanged.
+
 ## Returned BigInt zero storage
 
 Result validation releases spare magnitude storage when returning zero, while
@@ -81,7 +103,8 @@ time utility was unavailable, so the matched probe reads /proc directly.
 
 The 7e0b4be8c full gate passes 91/41,563/80,074 with zero other outcomes in
 1,358.543 seconds and matching saved hashes. All 17 hosted jobs pass for
-7e0b4be8c and 0a966bd32. The ecfa84003 full gate is running. Originals, helpers,
+7e0b4be8c and 0a966bd32. The ecfa84003 full gate also passes all modes and
+all 17 hosted jobs; the 7a5dba3b3 full gate is running. Originals, helpers,
 modes and reviews are unchanged by this increment.
 
 ## BigInt complement of minus one

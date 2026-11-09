@@ -196,6 +196,45 @@ fn sequence_methods_bound_copying_and_output_lengths() {
 }
 
 #[test]
+fn whole_functional_replacement_retains_returned_storage_and_output_checks() {
+    let mut realm = Realm::default();
+    let span = Span::new(0, 0);
+    let callback = realm
+        .eval("let calls=0;const returned='x\\uD800\\u4E2D\\uDC00'.repeat(32);function replacement(){calls++;return returned}replacement")
+        .unwrap();
+    let Value::String(expected) = realm.eval("returned").unwrap() else {
+        panic!("replacement text");
+    };
+    for input in ["a", ""] {
+        let Value::String(result) = realm
+            .string_replace(
+                Value::String(JsString::from(input)),
+                Value::String(JsString::from(input)),
+                callback.clone(),
+                span,
+            )
+            .unwrap()
+        else {
+            panic!("replace result");
+        };
+        assert_eq!(result, expected);
+        assert_eq!(result.code_units().as_ptr(), expected.code_units().as_ptr());
+    }
+    realm.limits.max_string_units = Some(expected.len() - 1);
+    assert!(matches!(
+        realm.string_replace(
+            Value::String(JsString::from("a")),
+            Value::String(JsString::from("a")),
+            callback,
+            span,
+        ),
+        Err(Error::Limit { message, .. }) if message == "string length limit exceeded"
+    ));
+    realm.limits.max_string_units = None;
+    assert_eq!(realm.eval("calls"), Ok(Value::Number(3.0)));
+}
+
+#[test]
 fn splitting_without_matches_retains_source_storage_and_output_checks() {
     let mut realm = Realm::default();
     realm.eval("").unwrap();

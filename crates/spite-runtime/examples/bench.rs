@@ -20,6 +20,18 @@ struct Case {
 
 const CASES: &[Case] = &[
     Case {
+        name: "string_replace_whole",
+        source: "(()=>{const needle='a'.repeat(4096),text='x\\uD800\\u4E2D\\uDC00'.repeat(4096);let total=0;for(let i=0;i<16;i++){const out=needle.replace(needle,()=>text);if(out.charCodeAt(out.length-1)===0xDC00)total+=out.length}return total})()",
+        expected: 262144.0,
+        jobs: false,
+    },
+    Case {
+        name: "string_replace_prefix",
+        source: "(()=>{const needle='a'.repeat(4096),text='x\\uD800\\u4E2D\\uDC00'.repeat(4096);let total=0;for(let i=0;i<16;i++){const out=('b'+needle).replace(needle,()=>text);if(out.charCodeAt(out.length-1)===0xDC00)total+=out.length}return total})()",
+        expected: 262160.0,
+        jobs: false,
+    },
+    Case {
         name: "bigint_bitnot_one",
         source: "(()=>{const operand=-1n;let count=0;for(let i=0;i<2048;i++)if((~operand)===0n)count++;return count})()",
         expected: 2048.0,

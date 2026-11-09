@@ -19,8 +19,10 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all 92 program workloads |
+| parse_all | Parse and drop the ASTs for all 94 program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
+| string_replace_whole | Replace a complete 4,096-unit String sixteen times with callback-returned 16,384-unit BMP/lone-surrogate text, checking length and final unit |
+| string_replace_prefix | Repeat with an unmatched leading unit so the replacement is a proper substring |
 | bigint_bitnot_one | Complement -1n 2,048 times, checking canonical zero |
 | bigint_bitnot_two | Repeat with -2n as a nonzero-result control, checking one |
 | bigint_remainder_even | Divide signed even 4,097-bit values by ±2n across 2,048 quotient/remainder pairs, checking canonical zero |
@@ -127,6 +129,26 @@ their ordinary unlimited defaults.
 
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
+
+## Whole functional String replacement
+
+String.replace retains the callback's converted String when the match covers
+the entire input. Matched optimized Rust 1.99 executables each run five fresh
+Realms and sixteen replacements per Realm, with Test262 host setup, source
+decoding/parsing, evaluation, job draining, explicit collection and output included.
+These profiles compare 7a5dba3b3 with the candidate; they measure instructions
+and Rust deallocation calls, without a wall-time claim.
+
+| Profile | Instructions before/after | Rust frees before/after |
+| --- | --- | --- |
+| Complete match | 206,280,791 / 200,916,867 (−2.6003%) | 17,395 / 17,235 |
+| Leading unmatched unit | 207,152,577 / 207,151,361 (−0.0006%) | 17,565 / 17,565 |
+
+The target removes two temporary-buffer frees per replacement. All 576 semantic
+cases match before/after and Node with ordinary and forced collection; 384 also
+match an independent UTF-16 replacement model. All 24 public work thresholds
+are byte-identical. The string-replace-whole artifacts under /workspace/work
+retain matched executables, source/library hashes, raw profiles and oracle data.
 
 ## Returned BigInt zero storage
 
