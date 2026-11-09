@@ -529,6 +529,39 @@ fn own_keys_finishes_nested_array_like_gets_before_duplicate_detection() {
 fn own_keys_walks_all_target_descriptors_then_enforces_fixed_key_membership() {
     check(
         r#"
+    for(const effect of ['prevent','add-fixed']){
+        const rows=[],base={a:1,b:2},target=new Proxy(base,{
+            isExtensible(t){rows.push('ext');return Reflect.isExtensible(t)},
+            ownKeys(t){rows.push('keys');return Reflect.ownKeys(t)},
+            getOwnPropertyDescriptor(t,k){rows.push('desc:'+k);if(k==='a'){
+                if(effect==='add-fixed')Object.defineProperty(t,'c',{value:3});
+                Object.preventExtensions(t);
+            }return Reflect.getOwnPropertyDescriptor(t,k)}
+        });
+        // 10.5.11 retains the earlier extensibility result and target key list.
+        const keys=Reflect.ownKeys(new Proxy(target,{ownKeys(){return []}}));
+        assert(keys.length===0&&!Reflect.isExtensible(base));
+        assert(rows.join(',')==='ext,keys,desc:a,desc:b');
+        if(effect==='add-fixed')assert(Object.getOwnPropertyDescriptor(base,'c').configurable===false);
+    }
+    for(const includeDeleted of [false,true]){
+        const rows=[],base={a:1,b:2};Object.preventExtensions(base);
+        const target=new Proxy(base,{
+            getOwnPropertyDescriptor(t,k){rows.push(k);if(k==='a')delete t.b;return Reflect.getOwnPropertyDescriptor(t,k)}
+        }),proxy=new Proxy(target,{ownKeys(){return includeDeleted?['a','b']:['a']}});
+        if(includeDeleted)assert(Reflect.ownKeys(proxy).join(',')==='a,b');
+        else expectTypeError(()=>Reflect.ownKeys(proxy));
+        assert(!Object.hasOwn(base,'b')&&rows.join(',')==='a,b');
+    }
+    const base={a:1,b:2},target=new Proxy(base,{
+        getOwnPropertyDescriptor(t,k){if(k==='a')Object.defineProperty(t,'b',{configurable:false});return Reflect.getOwnPropertyDescriptor(t,k)}
+    });
+    expectTypeError(()=>Reflect.ownKeys(new Proxy(target,{ownKeys(){return ['a']}})));
+    true
+    "#,
+    );
+    check(
+        r#"
     let rows=[],base={a:1,b:2},target=new Proxy(base,{
         isExtensible(t){rows.push('ext');return Reflect.isExtensible(t);},
         ownKeys(t){rows.push('keys');return Reflect.ownKeys(t);},

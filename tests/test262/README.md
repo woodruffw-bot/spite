@@ -5,6 +5,15 @@ These 41772 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Proxy ownKeys snapshot audit
+
+All 400 supplemental cases match the published model and Node under ordinary
+and collected runs. They cover trap-list conversion/error precedence, duplicate
+Strings/Symbols, cached extensibility/key lists, live descriptor changes and
+foreign method result/error ownership. Five examples extend an existing group;
+all 31 Proxy groups and quality pass. Production, test-group counts, originals,
+helpers, modes and reviews are unchanged. The 23124dcb6 full gate is running.
+
 ## Direct builtin Object tag regression
 
 Builtin Object.prototype.toString spellings use direct ASCII construction after

@@ -61,6 +61,26 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80074 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Proxy ownKeys collection and invariant snapshots
+
+All 400 supplemental programs match Node and an independent edition-17
+10.5.11 model under ordinary and collected runs. Cases combine ten trap-list
+shapes, configurable/fixed properties, initial extensibility, five mutations
+during descriptor reads and parent/foreign Reflect.ownKeys methods. They check
+array-like collection before duplicate checks, invalid-key/late-getter error
+precedence, Symbol identity, complete descriptor walks and result prototypes.
+
+The earlier extensibility result and target key list remain captured while
+later descriptors are read live. Freezing or adding a fixed key during that
+walk does not replace the captured list; deleting a configurable key does not
+remove it from the captured list; making an existing key fixed affects its
+later descriptor classification. Five examples extend the existing invariant
+group. All 31 Proxy groups and quality pass. Production and test inventories
+are unchanged. The proxy-ownkeys-snapshots artifacts under /workspace/work
+retain predictions, raw Node/Runtime observations, source hashes and checks.
+
+The 23124dcb6 full gate is running on the builtin Object tag construction change.
+
 ## Direct builtin Object tag construction
 
 Object.prototype.toString now constructs its complete builtin ASCII spellings
