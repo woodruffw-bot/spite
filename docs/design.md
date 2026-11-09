@@ -1514,7 +1514,10 @@ language's separate equality algorithms.
 
 BigInt uses a sign and a normalized little-endian vector of 32-bit magnitude
 words. Zero has no words and no negative sign; native zero construction
-returns that empty representation directly. Start with straightforward carry,
+returns that empty representation directly. Result validation also releases any
+spare magnitude storage when an arithmetic operation returns zero; internal
+scratch normalization can retain capacity for reuse within a calculation.
+Start with straightforward carry,
 borrow, multiplication, and division algorithms. Bitwise operands reserve their
 complete two's-complement width once, copy the retained words and extend with
 zeroes before sign conversion. Width overflow and reservation failure return a

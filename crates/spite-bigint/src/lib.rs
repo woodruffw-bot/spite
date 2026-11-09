@@ -90,6 +90,8 @@ impl Budget {
             .is_some_and(|limit| value.bit_length() > limit)
         {
             Err(Error::Limit)
+        } else if value.is_zero() {
+            Ok(BigInt::default())
         } else {
             Ok(value)
         }
@@ -913,5 +915,25 @@ impl Ord for BigInt {
 impl PartialOrd for BigInt {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
+    }
+}
+
+#[cfg(test)]
+mod result_storage_tests {
+    use super::*;
+
+    #[test]
+    fn returned_zero_releases_general_bitwise_result_storage() {
+        let mut unlimited = Budget::with_limits(None, None);
+        let high = BigInt::from(1)
+            .shl(&BigInt::from(4096), &mut unlimited)
+            .unwrap();
+        let low = high.sub(&BigInt::from(1), &mut unlimited).unwrap();
+        let work = (high.bit_length().div_ceil(32) + 1) * 6;
+        let mut budget = Budget::new(0, work);
+        let zero = high.bitwise(&low, BitwiseOp::And, &mut budget).unwrap();
+        assert!(zero.is_zero());
+        assert_eq!(zero.words.capacity(), 0);
+        assert_eq!(budget.remaining_work(), Some(0));
     }
 }

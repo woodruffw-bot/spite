@@ -61,6 +61,29 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80074 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Returned BigInt zero storage
+
+Result validation releases spare magnitude storage when returning zero, while
+internal normalization retains reusable scratch capacity. A new native unit
+checks a general disjoint-mask AND result has zero capacity and the exact
+prepaid work debit. All 39 BigInt tests, 593 Runtime units, 2,445 non-RegExp
+integrations, 270 selected RegExp groups, 91 controls and quality pass, plus
+113 Core units and the Parser's 18 units/443 integrations. The existing Runtime
+benchmark passes all 94 rows; workload inventory remains 92 programs.
+
+All 3,912 semantic cases and 12,576 budget observations match before/after.
+The public-API [native storage example](../crates/spite-bigint/examples/zero_storage.rs)
+retains 512 results from million-bit operands. Peak Linux VmHWM falls from
+64,012 to 1,492 KiB for zero AND results; nonzero OR control readings are
+63,988/64,016 KiB. These native-component samples include input/process setup;
+they support no Runtime throughput or wall-time claim. The initial external
+time utility was unavailable, so the matched probe reads /proc directly.
+
+The 7e0b4be8c full gate passes 91/41,563/80,074 with zero other outcomes in
+1,358.543 seconds and matching saved hashes. All 17 hosted jobs pass for
+7e0b4be8c and 0a966bd32. The ecfa84003 full gate is running. Originals, helpers,
+modes and reviews are unchanged by this increment.
+
 ## BigInt complement of minus one
 
 Complementing -1n now returns canonical zero after the existing work debit and

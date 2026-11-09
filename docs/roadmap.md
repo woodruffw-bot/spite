@@ -723,6 +723,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Copy the checked quotient for unaccounted BigInt division by either sign of one, retaining canonical zero remainders and accounted per-word refusal behavior.
 - [x] Construct native BigInt zero directly in its empty representation, avoiding discarded magnitude storage while preserving conversion, arithmetic and quota behavior.
 - [x] Return canonical zero for BigInt complement of minus one after the existing work debit and result-magnitude check.
+- [x] Release spare BigInt magnitude storage when returning zero results, preserving internal scratch reuse, result-size limits and word-work accounting.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

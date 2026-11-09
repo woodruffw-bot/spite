@@ -128,6 +128,35 @@ their ordinary unlimited defaults.
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
 
+## Returned BigInt zero storage
+
+Result validation now releases spare magnitude storage when an operation returns
+zero. Internal normalization keeps scratch capacity available within arithmetic
+loops. The native example uses public BigInt APIs and retains 512 results from
+two 1,000,000-bit operands. AND produces zero; OR produces a nonzero control.
+
+```sh
+cargo build -p spite-bigint --profile conformance --example zero_storage --locked --offline
+target/conformance/examples/zero_storage 1000000 512 and
+target/conformance/examples/zero_storage 1000000 512 or
+```
+
+On Linux the example prints its own /proc VmHWM while the results are retained.
+Matched Rust 1.99 executables use identical probe source and optimized
+conformance libraries with debug/overflow checks. Baseline production is
+ecfa84003. One fresh process per mode/revision produced:
+
+| Native result mode | Peak RSS before (KiB) | Peak RSS after (KiB) |
+| --- | ---: | ---: |
+| AND, zero results | 64,012 | 1,492 |
+| OR, nonzero results | 63,988 | 64,016 |
+
+Peak RSS includes process setup and input construction. The deterministic unit
+also checks that the returned general-AND zero owns no magnitude capacity and
+retains its exact work debit. All 3,912 semantic cases and 12,576 budget
+observations match before/after. These are native-component memory measurements,
+with no Runtime throughput or wall-time claim.
+
 ## BigInt complement of minus one
 
 After the existing word-work charge, complementing -1n returns canonical zero

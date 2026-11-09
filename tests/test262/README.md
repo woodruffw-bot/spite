@@ -5,6 +5,20 @@ These 41772 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## BigInt returned-zero storage
+
+Returned zero results release spare magnitude storage without changing internal
+scratch reuse, values or work accounting. All 39 BigInt tests, 593 Runtime units,
+2,445 non-RegExp integrations, 270 selected RegExp groups, 91 controls and
+quality pass, plus 113 Core units and the Parser's 18 units/443 integrations.
+All 3,912 semantic cases and 12,576 budget observations match before/after.
+Originals and reviews are unchanged.
+
+The 7e0b4be8c full gate passes 91/41,563/80,074 with zero other outcomes in
+1,358.543 seconds and matching saved hashes. All 17 hosted jobs pass for
+7e0b4be8c and 0a966bd32. The ecfa84003 full gate is running; this increment's
+full-corpus and hosted receipts remain pending.
+
 ## BigInt complement regression
 
 The -1n complement returns canonical zero after unchanged work/result checks.
