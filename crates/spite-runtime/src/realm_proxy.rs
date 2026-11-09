@@ -646,7 +646,7 @@ impl Realm {
                 let property = self.object_work(span, |objects, budget| {
                     objects.get_own(&object, &key, budget)
                 })?;
-                if property.is_none() && self.missing_intrinsic_property(&object, &key) {
+                if property.is_none() && self.missing_intrinsic_property(&object, &key, span)? {
                     return Err(Self::unsupported(
                         span,
                         "intrinsic property descriptor is not implemented",
@@ -695,7 +695,7 @@ impl Realm {
                             .is_some();
                     Ok((has, terminal))
                 })?;
-                if has || self.missing_intrinsic_property(&object, &key) {
+                if has || self.missing_intrinsic_property(&object, &key, span)? {
                     ObjectReply::Boolean(true)
                 } else if terminal {
                     ObjectReply::Boolean(false)
@@ -732,7 +732,7 @@ impl Realm {
                     },
                     None if terminal => ObjectReply::Value(Value::Undefined),
                     None => {
-                        if self.missing_intrinsic_property(&object, &key) {
+                        if self.missing_intrinsic_property(&object, &key, span)? {
                             return Err(Self::unsupported(
                                 span,
                                 "intrinsic prototype property is not implemented",
@@ -786,7 +786,7 @@ impl Realm {
                     objects.get_own(&object, &key, budget)
                 })?;
                 if property.is_none() {
-                    if self.missing_intrinsic_property(&object, &key) {
+                    if self.missing_intrinsic_property(&object, &key, span)? {
                         return Err(Self::unsupported(
                             span,
                             "intrinsic property descriptor is not implemented",

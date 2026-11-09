@@ -175,7 +175,7 @@ impl Realm {
             if proxy {
                 return self.proxy_has_property(&handle, crate::realm_proxy::owned_key(key), span);
             }
-            if own || self.missing_intrinsic_property(&handle, key) {
+            if own || self.missing_intrinsic_property(&handle, key, span)? {
                 return Ok(true);
             }
             if numeric_absence {
@@ -440,7 +440,7 @@ impl Realm {
             }
             // Missing standard methods must not appear to be absent. Until
             // callable intrinsics are implemented, accessing one is a host gap.
-            if self.missing_intrinsic_property(&handle, key) {
+            if self.missing_intrinsic_property(&handle, key, span)? {
                 return Err(Self::unsupported(
                     span,
                     "intrinsic prototype property is not implemented",
@@ -918,7 +918,7 @@ impl Realm {
                 span,
             );
         };
-        if property.is_none() && self.missing_intrinsic_property(object, key) {
+        if property.is_none() && self.missing_intrinsic_property(object, key, span)? {
             return Err(Self::unsupported(
                 span,
                 "intrinsic property descriptor is not implemented",
@@ -934,7 +934,7 @@ impl Realm {
         span: Span,
     ) -> Result<(), Error> {
         let key = key.into();
-        if self.missing_intrinsic_property(object, key)
+        if self.missing_intrinsic_property(object, key, span)?
             && !self.object_work(span, |objects, budget| objects.has_own(object, key, budget))?
         {
             return Err(Self::unsupported(
@@ -946,18 +946,19 @@ impl Realm {
     }
 
     pub(crate) fn missing_intrinsic_property<'key>(
-        &self,
+        &mut self,
         object: &ObjectHandle,
         key: impl Into<PropertyKeyRef<'key>>,
-    ) -> bool {
+        span: Span,
+    ) -> Result<bool, Error> {
         let key = key.into();
         let Some(key) = key.as_string() else {
-            return false;
+            return Ok(false);
         };
-        if self.record.global_object.as_ref() == Some(object) && self.missing_global_property(key) {
-            return true;
+        if self.record.global_object.as_ref() == Some(object) {
+            return self.missing_global_property(key, span);
         }
-        false
+        Ok(false)
     }
 }
 
@@ -1002,6 +1003,47 @@ mod tests {
         ExceptionKind,
         object::{Budget, DescriptorKind, PropertyDescriptor},
     };
+
+    #[test]
+    fn host_global_key_work_is_prepaid_and_unlimited_reads_preserve_barriers() {
+        let key = JsString::from_code_units(vec![u16::from(b'a'); 4097]);
+        for max_steps in [None, Some(100_000)] {
+            let mut realm = Realm::new(crate::Limits {
+                max_steps,
+                ..crate::Limits::default()
+            });
+            realm.eval("globalThis.existing=7").unwrap();
+            realm.reserve_unsupported_global("unavailable");
+            realm.reserve_unsupported_global("existing");
+            let global = realm.eval("globalThis").unwrap();
+            let result = realm.read_property(&global, &key);
+            if max_steps.is_some() {
+                assert!(matches!(result, Err(Error::Limit { .. })));
+            } else {
+                assert_eq!(result, Ok(Value::Undefined));
+                let surrogate = JsString::from_code_units(vec![0xd800]);
+                assert_eq!(
+                    realm.read_property(&global, &surrogate),
+                    Ok(Value::Undefined)
+                );
+            }
+            assert_eq!(
+                realm.read_property(&global, &JsString::from("existing")),
+                Ok(Value::Number(7.0))
+            );
+            let large = JsString::from_code_units(vec![u16::from(b'a'); 65537]);
+            let lookup = realm.missing_global_property(&large, Span::new(0, 0));
+            if max_steps.is_some() {
+                assert!(matches!(lookup, Err(Error::Limit { .. })));
+            } else {
+                assert_eq!(lookup, Ok(false));
+            }
+            assert!(matches!(
+                realm.read_property(&global, &JsString::from("unavailable")),
+                Err(Error::Unsupported { .. })
+            ));
+        }
+    }
 
     #[test]
     fn inherited_accessors_receive_the_original_object_and_do_not_create_data_properties() {

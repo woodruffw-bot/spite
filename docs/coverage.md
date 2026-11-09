@@ -61,6 +61,34 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80074 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Host-global property-key work
+
+Configured unavailable host globals now prepay property-key decoding and indexed
+lookup before allocating a UTF-8 name copy. A new unit covers opted-in refusal,
+unlimited reads, lone surrogates, existing own properties and Unsupported barriers.
+All 588 Runtime units pass, including the cross-realm host-abort check with its
+unchanged 10,000-step allowance. The initial byte-weighted draft exhausted that
+test; using the established UTF-16 work-unit convention preserves its expectation.
+All 5,062 integrations, including all 2,617 RegExp groups, pass. Quality and all 90 runner controls also pass.
+
+In the default-unlimited before audit, all 256 global accessor/proxy programs
+match ordinary property semantics and Node's unwrapped globals. The initial
+contextified Node oracle differs in 192 proxy programs because it supplies a host
+exotic wrapper; both that failed comparison and the corrected oracle are saved.
+All 256 after programs also match both the ordinary expected operations and Node.
+No compatibility exception or default quota is introduced.
+
+A fixed probe parses one 1 MiB key and performs sixteen limited deletions. In one
+instrumented process per build, UTF-16-to-UTF-8 conversions fall from 32 to zero
+and frees from 3,060 to 3,028. Instruction references fall from 966,113,068 to
+93,674,305. Both builds return Limit on every deletion. These totals include
+initialization and parsing and do not claim wall-time or steady-state speed.
+
+The earlier JSON admission at clean 3f7807f7b passes all 90 runner controls and
+80,074 modes from 41,563 originals, with zero other outcomes in 1,276.302 seconds.
+Saved fixture/executable hashes match; all 17 hosted CI jobs also pass for that commit.
+All 17 CI jobs also pass for 7a84bd8be, 2b1963780 and 1db08c476.
+
 ## Bounded CLI source reads
 
 Opted-in source-byte limits now bound the file/stdin reader before it buffers an

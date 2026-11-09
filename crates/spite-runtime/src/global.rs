@@ -488,14 +488,30 @@ impl Realm {
         Ok(())
     }
 
-    pub(super) fn missing_global_property(&self, key: &JsString) -> bool {
+    pub(super) fn missing_global_property(
+        &mut self,
+        key: &JsString,
+        span: Span,
+    ) -> Result<bool, Error> {
         if self.record.unsupported_host_globals.is_empty() {
-            return false;
+            return Ok(false);
         }
+        // Prepay decoding and tree lookup before converting the key. Work units
+        // count UTF-16 input units, as for supported import-attribute lookups.
+        let levels = self.record.unsupported_host_globals.len().ilog2() as usize + 1;
+        let work = key
+            .len()
+            .checked_add(1)
+            .and_then(|units| units.checked_mul(levels + 1))
+            .ok_or_else(|| Error::Limit {
+                span,
+                message: "global host-name lookup work capacity exceeded".into(),
+            })?;
+        self.object_work(span, |_, budget| budget.charge(work))?;
         // Identifier names are UTF-8 scalar strings, while arbitrary property
         // names may contain lone surrogates; those never name configured host barriers.
-        String::from_utf16(key.code_units())
-            .is_ok_and(|name| self.record.unsupported_host_globals.contains(&name))
+        Ok(String::from_utf16(key.code_units())
+            .is_ok_and(|name| self.record.unsupported_host_globals.contains(&name)))
     }
 
     pub(super) fn check_global_property_operation<'key>(
@@ -508,7 +524,7 @@ impl Realm {
             return Ok(());
         };
         if self.record.global_object.as_ref() == Some(object)
-            && self.missing_global_property(key)
+            && self.missing_global_property(key, span)?
             && !self.object_work(span, |objects, budget| objects.has_own(object, key, budget))?
         {
             return Err(Self::unsupported(

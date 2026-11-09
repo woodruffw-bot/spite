@@ -25,6 +25,12 @@ core [Forbidden Extensions](https://262.ecma-international.org/17.0/#sec-forbidd
 restrictions. Calls through eval, dynamic constructors, bound functions and
 call/apply do not enable caller-chain inspection.
 
+Property-key checks for configured unavailable host globals prepay UTF-16 decoding
+and indexed name lookup before allocating a UTF-8 copy. Their work units follow
+the input-length and tree-height convention used for supported import attributes.
+An exhausted opt-in allowance remains a host Limit; unlimited evaluation retains
+the configured Unsupported barriers and ordinary properties that already exist.
+
 ### Published host policies
 
 The edition-17 normative optional clauses have explicit choices: the legacy

@@ -5,6 +5,22 @@ These 41772 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Host-global key-work regression
+
+The new accounting prepays UTF-16 decoding and host-name lookup. All 588 Runtime
+units and all 5,062 integrations pass, including all 2,617 RegExp groups and
+unchanged cross-realm error/budget assertions. Quality and all 90 runner controls also pass. All 256 default-unlimited before
+programs match ordinary semantics and Node without its contextification wrapper.
+The initial wrapper-dependent comparison is retained without regression credit.
+All 256 after programs also match the corrected oracle. In a fixed instrumented
+init/parse/16-refusal probe, UTF-8 conversions fall from 32 to zero and frees by
+32; both builds return Limit. No wall-time performance claim is made.
+
+The JSON admission at clean 3f7807f7b passes all 90 runner controls and 80,074 modes
+from 41,563 originals, with zero other outcomes in 1,276.302 seconds. Saved binary
+and fixture hashes match. All 17 of its CI jobs pass; 7a84bd8be, 2b1963780 and
+1db08c476 each have all 17 CI jobs successful.
+
 ## CLI bounded input regression
 
 The shared reader enforces opted-in source-byte limits while reading files and

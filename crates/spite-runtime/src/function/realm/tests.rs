@@ -80,10 +80,11 @@ fn foreign_errors_and_host_aborts_restore_the_owned_records() {
     ] {
         assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
     }
-    assert!(matches!(
-        realm.eval("var effects=0;try{foreign(2)}catch(e){effects=1}finally{effects=2}"),
-        Err(Error::Unsupported { .. })
-    ));
+    let aborted = realm.eval("var effects=0;try{foreign(2)}catch(e){effects=1}finally{effects=2}");
+    assert!(
+        matches!(aborted, Err(Error::Unsupported { .. })),
+        "{aborted:?}"
+    );
     assert_eq!(
         realm.eval("effects===0 && child.started===true"),
         Ok(Value::Boolean(true))
