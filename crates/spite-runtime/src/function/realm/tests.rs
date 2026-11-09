@@ -1524,6 +1524,50 @@ fn helper_body_errors_initial_return_and_reentry_preserve_their_distinct_realms(
 }
 
 #[test]
+fn object_tags_preserve_brand_snapshots_accessor_realms_and_primitive_boxing() {
+    let mut realm = Realm::default();
+    let (environment, function) = child_realm_fixture(&mut realm, "(class TagGetter {})");
+    expose_child(&mut realm, &environment, function);
+    // 20.1.3.6 computes the builtin tag before Get(@@toStringTag).
+    assert_eq!(realm.eval(r#"
+        const failures=[],tag=Symbol.toStringTag,badGetter=Proxy.revocable(foreign,{});
+        badGetter.revoke();
+        function expect(f,E,label){try{f();failures.push(label+':missing')}catch(e){if(!(e instanceof E))failures.push(label+':realm')}}
+        for(const owner of [globalThis,child])for(const [make,brand] of [[()=>[],'Array'],[()=>function(){},'Function'],[()=>new Date,'Object']]){
+            const show=owner.Object.prototype.toString;
+            let reads=0;
+            const during=Proxy.revocable(make(),{get(t,k,r){reads++;during.revoke();return undefined}});
+            if(show.call(during.proxy)!=='[object '+brand+']'||reads!==1)failures.push('brand-before-get');
+            reads=0;
+            const before=Proxy.revocable(make(),{get(){reads++;throw 'getter'}});before.revoke();
+            expect(()=>show.call(before.proxy),owner.TypeError,'revoked-before-get');
+            if(reads!==0)failures.push('early-get');
+            const direct=make();Object.defineProperty(direct,tag,{get:foreign});
+            expect(()=>show.call(direct),child.TypeError,'class-getter');
+            const target=make();Object.defineProperty(target,tag,{get:badGetter.proxy});
+            const forwarded=new Proxy(target,{get(t,k,r){return Reflect.get(t,k,r)}});
+            expect(()=>show.call(forwarded),TypeError,'trap-reflect-getter');
+        }
+        for(const owner of [globalThis,child])for(const [value,prototype] of [[false,owner.Boolean.prototype],[1,owner.Number.prototype],['x\uD800',owner.String.prototype],[7n,owner.BigInt.prototype],[Symbol(),owner.Symbol.prototype]]){
+            const seen=[];
+            Object.defineProperty(prototype,tag,{get:function(){'use strict';seen.push(this);if(typeof this!=='object'||Object.getPrototypeOf(this)!==prototype)failures.push('wrapper-realm');return 'Box'},configurable:true});
+            const show=owner.Object.prototype.toString;
+            if(show.call(value)!=='[object Box]'||show.call(value)!=='[object Box]'||seen.length!==2||seen[0]===seen[1])failures.push('fresh-wrapper');
+        }
+        for(const owner of [globalThis,child]){
+            Object.defineProperty(owner.Object.prototype,tag,{get(){throw 'nullish lookup'},configurable:true});
+            const show=owner.Object.prototype.toString;
+            if(show.call(null)!=='[object Null]'||show.call(undefined)!=='[object Undefined]')failures.push('nullish');
+        }
+        JSON.stringify(failures)
+    "#),Ok(Value::String("[]".into())));
+    assert_eq!(
+        realm.record.global_environment.as_ref(),
+        realm.scopes.first()
+    );
+}
+
+#[test]
 fn iterator_helper_context_retains_then_releases_its_realm_without_prototype_or_callback_edges() {
     let mut realm = Realm::default();
     let (environment, function) = child_realm_fixture(

@@ -61,6 +61,26 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80074 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Object branding and tag lookup across Realms
+
+All 1,024 supplemental Object.prototype.toString programs match Node and an
+independent model in ordinary and collected runs. Cases cover sixteen target
+kinds, eight tag/accessor modes, parent/foreign methods and four Proxy states.
+They check pre-lookup revocation, revocation during lookup, saved Array/Function
+fallback brands, ignored non-String conversions, raw UTF-16 tags, receiver
+identity and class/revoked accessor error Realms.
+
+A native unit also checks fresh primitive wrappers use the borrowed method's
+intrinsic prototypes and nullish receivers skip lookup. All 596 Runtime units
+and quality pass. Production and fixture inventories are unchanged. The
+object-tag-realms artifacts under /workspace/work retain the independent
+predictions, raw Node/Runtime observations, driver hashes and native checks.
+
+The e3078f8af full gate passes 91/41,563/80,074 with zero other outcomes in
+1,306.035 seconds and checked saved hashes. This covers the positive BigInt
+shift optimization. All 17 hosted jobs pass for the preceding Atomics audit
+5afc2260e; later hosted receipts remain pending.
+
 ## FlatMap nested closing and Realm ownership
 
 All 648 supplemental programs match the published Iterator Helper return,

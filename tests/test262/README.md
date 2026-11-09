@@ -5,6 +5,18 @@ These 41772 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Object branding and tag lookup audit
+
+All 1,024 supplemental programs match an independent model and Node under
+ordinary and collected runs, covering sixteen target kinds, eight tag/accessor
+modes, both method Realms and four Proxy states. A native unit also checks
+fresh wrapper prototypes and nullish lookup bypass. All 596 Runtime units and
+quality pass. Production, originals, helpers, modes and reviews are unchanged.
+
+The e3078f8af full gate passes 91/41,563/80,074 with zero other outcomes in
+1,306.035 seconds and checked saved hashes, including the BigInt shift change.
+All 17 hosted jobs pass for 5afc2260e; later hosted receipts remain pending.
+
 ## FlatMap closing Realm audit
 
 All 648 supplemental programs match the published nested-closing and generator-
