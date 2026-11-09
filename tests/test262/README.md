@@ -5,6 +5,13 @@ These 41772 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Binary16 boundary audit
+
+All 190,464 signed midpoint/adjacent inputs agree with Python and Node across
+Math.f16round, both DataView byte orders and Float16Array conversion. The 512
+programs produce 1,142,784 matching observations. This read-only audit changes
+neither production code nor original fixtures and adds no corpus pass credit.
+
 ## Published JSON-module originals
 
 All 90 runner controls and the quality gate pass after admission.

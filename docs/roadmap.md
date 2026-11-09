@@ -591,6 +591,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Review clause-13 expression/reference evaluation, clause-15 function/class instantiation and clause-16 Script/Module lifecycle and host boundaries.
 - [x] Review clause-19 globals and clause-20 Object/Function/Boolean/Symbol/Error construction, conversion order and reflection.
 - [x] Review clause-21 Number/BigInt methods, Math rounding and exact summation, and Date normalization, conversion order and host policies.
+- [x] Audit every signed binary16 rounding midpoint and adjacent binary64 value across Math.f16round, DataView byte orders and Float16Array conversion.
 - [x] Review clause-22 UTF-16 String operations, pinned Unicode transforms, pattern delegation and regress-backed RegExp protocols.
 - [x] Review clause-23 indexed factories, traversal, copying, sorting and byte codecs, and clause-24 ordered/weak collection protocols.
 - [x] Review clause-25 buffers/views, Atomics and JSON, and clause-26 kept-object and finalization lifetime protocols.

@@ -61,6 +61,17 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80074 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Exhaustive binary16 rounding boundaries
+
+A read-only audit checks all 31,744 nonnegative binary16 rounding midpoints,
+their immediately adjacent binary64 values and both signs: 190,464 inputs in
+512 programs. Math.f16round, DataView Float16 writes/reads in both byte orders,
+and Float16Array writes produce 1,142,784 observations, all agreeing with both
+Python's IEEE binary16 conversion and Node. This covers signed zero, subnormal
+and normal transitions, ties to even and finite overflow without double rounding.
+Native tests separately retain the exhaustive encoding round trips. No production
+change, fixture admission or additional conformance credit is implied.
+
 ## Published JSON-module originals
 
 All 90 runner controls and the quality gate pass after admission.
