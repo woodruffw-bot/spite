@@ -19,8 +19,10 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all 96 program workloads |
+| parse_all | Parse and drop the ASTs for all 98 program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
+| object_tag_builtin | Alternate Array, undefined and null receivers across 2,048 Object.prototype.toString calls, checking every spelling |
+| object_tag_custom | Repeat with Array receivers carrying an own String-valued Symbol.toStringTag |
 | bigint_shift_positive | Right-shift a positive 32,769-bit power of two by 16,384 bits across 2,048 operations, checking every result |
 | bigint_shift_negative | Repeat with the negative power as a rounding/scan control |
 | string_replace_whole | Replace a complete 4,096-unit String sixteen times with callback-returned 16,384-unit BMP/lone-surrogate text, checking length and final unit |
@@ -131,6 +133,27 @@ their ordinary unlimited defaults.
 
 These measurements guide profiling. They introduce no CI timing thresholds or
 execution allowances and do not replace conformance or lifetime tests.
+
+## Builtin Object tag construction
+
+Object.prototype.toString constructs complete builtin ASCII spellings directly
+through the existing JsString constructor. Custom String-valued tags retain
+their UTF-16 assembly. Both paths share the original output check and work
+debit. Matched optimized Rust 1.99 profiles use five fresh Realms and 2,048
+calls per Realm, including source decoding, Test262 host setup, parsing/evaluation,
+job draining, explicit collection and output.
+
+| Profile | Instructions before/after | Rust frees before/after |
+| --- | --- | --- |
+| Array/undefined/null builtin tags | 452,116,318 / 444,084,814 (−1.7764%) | 166,295 / 145,815 |
+| Own String-valued tag control | 453,395,801 / 453,520,202 (+0.0274%) | 156,210 / 156,210 |
+
+The target removes two temporary buffers per call. All 1,024 branding programs
+match the independent model and Node before/after, in ordinary and collected
+runs; all 30 public work thresholds are byte-identical. The object-tag-ascii
+artifacts under /workspace/work preserve matched binaries, source/library hashes,
+raw profiles, quota observations and oracle results. These are instruction and
+allocation counts, without a wall-time claim.
 
 ## Positive BigInt right shifts
 

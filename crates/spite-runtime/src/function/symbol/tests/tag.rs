@@ -122,4 +122,14 @@ fn tag_recursion_and_output_are_bounded_before_allocation() {
         realm.eval("Object.prototype.toString.call(o)"),
         Ok(Value::String(JsString::from("[object xxxx]")))
     );
+    realm.eval("let array=[]").unwrap();
+    assert!(matches!(
+        realm.eval("Object.prototype.toString.call(array)"),
+        Err(Error::Limit { message, .. }) if message == "Object tag string output limit exceeded"
+    ));
+    realm.limits.max_string_units = Some(14);
+    assert_eq!(
+        realm.eval("Object.prototype.toString.call(array)"),
+        Ok(Value::String(JsString::from("[object Array]")))
+    );
 }

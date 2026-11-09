@@ -61,6 +61,28 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80074 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Direct builtin Object tag construction
+
+Object.prototype.toString now constructs its complete builtin ASCII spellings
+through the existing JsString constructor. String-valued custom tags retain
+UTF-16 assembly; both paths share the same output check and work debit. The
+existing output-limit unit adds exact/one-short Array-tag checks. All 596
+Runtime units, 2,445 non-RegExp groups, 270 selected RegExp groups, 91 controls
+and quality pass. The benchmark smoke passes 100 rows across 98 programs.
+
+All 1,024 branding programs match the independent model and Node before/after
+in ordinary and collected runs. All 30 public work thresholds are identical.
+[Matched profiles](benchmarking.md#builtin-object-tag-construction) remove
+20,480 temporary-buffer frees and 1.7764% of instructions in the builtin target;
+the custom-tag control keeps its free count with +0.0274% instructions.
+These are scoped instruction/allocation results, without a wall-time claim.
+
+The preceding e3078f8af full gate passes 91/41,563/80,074 with zero other
+outcomes in 1,306.035 seconds and checked saved hashes; all 17 hosted jobs pass.
+All 17 hosted jobs also pass for the ef04abeb8 receipt commit. This increment's
+full/hosted receipts remain pending. Original fixtures, helpers, modes and
+reviews are unchanged.
+
 ## Object branding and tag lookup across Realms
 
 All 1,024 supplemental Object.prototype.toString programs match Node and an

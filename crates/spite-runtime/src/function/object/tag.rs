@@ -6,8 +6,8 @@ use spite_core::{JsString, Span, WellKnownSymbol};
 impl Realm {
     pub(crate) fn object_to_string(&mut self, value: Value, span: Span) -> Result<Value, Error> {
         match value {
-            Value::Undefined => return self.object_tag_string(&JsString::from("Undefined"), span),
-            Value::Null => return self.object_tag_string(&JsString::from("Null"), span),
+            Value::Undefined => return self.object_builtin_tag_string("[object Undefined]", span),
+            Value::Null => return self.object_builtin_tag_string("[object Null]", span),
             _ => {}
         }
         let Value::Object(object) = self.box_primitive(value, span)? else {
@@ -25,55 +25,77 @@ impl Realm {
                 .inspect(&object)
                 .expect("IsArray validated the local handle");
             if array {
-                "Array"
+                "[object Array]"
             } else if record.is_arguments() {
-                "Arguments"
+                "[object Arguments]"
             } else if record.is_callable() {
-                "Function"
+                "[object Function]"
             } else if record.is_error() {
-                "Error"
+                "[object Error]"
             } else if record.date_value().is_some() {
-                "Date"
+                "[object Date]"
             } else if record.regexp_data().is_some() {
-                "RegExp"
+                "[object RegExp]"
             } else if record.boolean_data().is_some() {
-                "Boolean"
+                "[object Boolean]"
             } else if record.number_data().is_some() {
-                "Number"
+                "[object Number]"
             } else if record.string_data().is_some() {
-                "String"
+                "[object String]"
             } else {
-                "Object"
+                "[object Object]"
             }
         };
         let tag = self.get_property(&object, &WellKnownSymbol::ToStringTag.symbol(), span)?;
         // No ToPrimitive or ToString is performed on non-string tags.
-        let tag = match tag {
-            Value::String(tag) => tag,
-            _ => JsString::from(builtin_tag),
-        };
-        self.object_tag_string(&tag, span)
+        match tag {
+            Value::String(tag) => self.object_tag_string(&tag, span),
+            _ => self.object_builtin_tag_string(builtin_tag, span),
+        }
     }
 
-    fn object_tag_string(&mut self, tag: &JsString, span: Span) -> Result<Value, Error> {
-        let limit = || Error::Limit {
-            span,
-            message: "Object tag string output limit exceeded".into(),
-        };
-        let length = tag.len().checked_add(9).ok_or_else(limit)?;
+    fn check_object_tag_length(&mut self, length: usize, span: Span) -> Result<(), Error> {
         if self
             .limits
             .max_string_units
             .is_some_and(|limit| length > limit)
         {
-            return Err(limit());
+            return Err(object_tag_limit(span));
         }
-        self.object_work(span, |_, budget| budget.charge(length))?;
+        self.object_work(span, |_, budget| budget.charge(length))
+    }
+
+    fn object_builtin_tag_string(
+        &mut self,
+        literal: &'static str,
+        span: Span,
+    ) -> Result<Value, Error> {
+        // Builtin spellings are ASCII; construct their complete UTF-16 String
+        // in one Arc allocation, after the ordinary output check and work.
+        self.check_object_tag_length(literal.len(), span)?;
+        Ok(Value::String(JsString::from(literal)))
+    }
+
+    fn object_tag_string(&mut self, tag: &JsString, span: Span) -> Result<Value, Error> {
+        let length = tag
+            .len()
+            .checked_add(9)
+            .ok_or_else(|| object_tag_limit(span))?;
+        self.check_object_tag_length(length, span)?;
         let mut units = Vec::new();
-        units.try_reserve_exact(length).map_err(|_| limit())?;
+        units
+            .try_reserve_exact(length)
+            .map_err(|_| object_tag_limit(span))?;
         units.extend("[object ".encode_utf16());
         units.extend_from_slice(tag.code_units());
         units.push(u16::from(b']'));
         Ok(Value::String(JsString::from_code_units(units)))
+    }
+}
+
+fn object_tag_limit(span: Span) -> Error {
+    Error::Limit {
+        span,
+        message: "Object tag string output limit exceeded".into(),
     }
 }

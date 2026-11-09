@@ -730,6 +730,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Skip discarded-bit scans for positive BigInt right shifts while retaining negative rounding, reversed shifts, result checks and exact word-work accounting.
 - [x] Audit flatMap nested closing across initial/yielded states and parent/foreign creation/return Realms, preserving error precedence, completed state and collection lifetimes.
 - [x] Audit Object.prototype.toString brand snapshots, Proxy revocation during tag lookup, accessor error ownership and primitive wrappers across borrowed method Realms.
+- [x] Construct complete builtin Object tag spellings directly as ASCII after shared output/work checks, preserving observable tag lookup and custom UTF-16 assembly.
 
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all

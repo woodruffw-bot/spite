@@ -5,6 +5,21 @@ These 41772 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Direct builtin Object tag regression
+
+Builtin Object.prototype.toString spellings use direct ASCII construction after
+the same output check and work debit; custom tags retain UTF-16 assembly.
+The existing limit unit adds exact/one-short Array-tag checks. All 596 Runtime
+units, 2,445 non-RegExp groups, 270 selected RegExp groups, 91 controls and
+quality pass; the benchmark smoke passes 100 rows/98 programs. All 1,024
+branding programs match the model and Node before/after in ordinary/collected
+runs; all 30 public work thresholds are identical. Originals and reviews are
+unchanged.
+
+The e3078f8af full gate passes 91/41,563/80,074 with zero other outcomes in
+1,306.035 seconds and checked saved hashes; all 17 hosted jobs pass. All 17
+also pass for ef04abeb8. This increment's full/hosted receipts remain pending.
+
 ## Object branding and tag lookup audit
 
 All 1,024 supplemental programs match an independent model and Node under

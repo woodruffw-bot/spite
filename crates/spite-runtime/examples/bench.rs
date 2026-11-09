@@ -20,6 +20,18 @@ struct Case {
 
 const CASES: &[Case] = &[
     Case {
+        name: "object_tag_builtin",
+        source: "(()=>{const values=[[],undefined,null],expected=['[object Array]','[object Undefined]','[object Null]'];const show=Object.prototype.toString;let matches=0;for(let i=0;i<2048;i++)if(show.call(values[i%3])===expected[i%3])matches++;return matches})()",
+        expected: 2048.0,
+        jobs: false,
+    },
+    Case {
+        name: "object_tag_custom",
+        source: "(()=>{const a=[];a[Symbol.toStringTag]='Array';const values=[a,a,a],expected=['[object Array]','[object Array]','[object Array]'];const show=Object.prototype.toString;let matches=0;for(let i=0;i<2048;i++)if(show.call(values[i%3])===expected[i%3])matches++;return matches})()",
+        expected: 2048.0,
+        jobs: false,
+    },
+    Case {
         name: "bigint_shift_positive",
         source: "(()=>{const operand=1n<<32768n,count=16384n,expected=1n<<16384n;let matches=0;for(let i=0;i<2048;i++)if((operand>>count)===expected)matches++;return matches})()",
         expected: 2048.0,
