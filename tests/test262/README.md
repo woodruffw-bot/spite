@@ -5,6 +5,14 @@ These 41772 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Exact summation audit
+
+All 4,096 Math.sumPrecise sequences (103,136 inputs in 256 programs) match exact
+rational single rounding and Node with --js-sum-precise. Coverage includes signed
+zero, cancellation, exponent extremes, overflow, infinities and NaNs. The audited
+950fd1424 Math implementation is unchanged at 3f6081fd6. This read-only check adds
+no original fixture, corpus credit or performance claim.
+
 ## Foreign global capability accounting
 
 Three raw runtime-TypeError negative probes previously passed after unavailable

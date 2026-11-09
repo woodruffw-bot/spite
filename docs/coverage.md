@@ -61,6 +61,18 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80074 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Exact summation bit audit
+
+A read-only Math.sumPrecise audit checks 4,096 sequences containing 103,136
+binary64 inputs in 256 programs. All 4,096 results agree with exact Python
+rational sums rounded once to binary64 and Node with --js-sum-precise. Cases
+include empty/signed-zero inputs, shuffled cancellations, same-exponent sums,
+the full exponent range, finite overflow, infinities and NaNs. NaN results compare
+by class; other results compare binary64 bits. The ordinary Node build leaves the
+method disabled, so the failed unflagged attempt is retained separately.
+The audited Runtime is 950fd1424; both Math source files are byte-identical at
+3f6081fd6. No production or fixture changes, pass credit or speed claim result.
+
 ## Foreign global host guards
 
 Unavailable globals now follow the target object's Realm through direct,
