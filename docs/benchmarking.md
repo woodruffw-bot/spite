@@ -19,8 +19,10 @@ and collection medians are computed independently.
 
 | Row | One operation |
 | --- | --- |
-| parse_all | Parse and drop the ASTs for all 70 program workloads |
+| parse_all | Parse and drop the ASTs for all 72 program workloads |
 | initialize_and_drop | Create a fresh Realm, initialize it by evaluating an empty preparsed Script, then destroy it |
+| array_join_single | Join a one-element Array containing a 16,384-unit BMP/lone-surrogate String sixteen times, checking length and final unit |
+| array_join_multiple | Repeat with two elements as a control |
 | template_no_substitutions | Call a dynamically compiled function returning a 16,384-unit template without substitutions sixteen times, checking lengths |
 | template_empty_substitution | Repeat with one empty String substitution as a control |
 | tagged_template_creation | Compile and call sixteen fresh Function bodies with a 4,096-unit tagged template, checking cooked and raw lengths |

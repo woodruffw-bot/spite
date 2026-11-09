@@ -64,6 +64,11 @@ impl Realm {
             if !matches!(element, Value::Undefined | Value::Null) {
                 let string = self.string(element, span)?;
                 self.object_work(span, |_, budget| budget.charge(string.len()))?;
+                if length == 1 {
+                    let value = Value::String(string);
+                    self.check_string(&value, span)?;
+                    return Ok(value);
+                }
                 self.append_string(&mut result, &string, span)?;
             }
         }

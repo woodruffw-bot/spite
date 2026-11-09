@@ -61,6 +61,33 @@ claim complete conformance or define an alternative language specification.
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
 | Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80060 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
+## Singleton Array.join storage reuse
+
+Array.join returns the converted singleton String after the same separator,
+element, work and output checks (23.1.3.18). Snapshot length still controls the
+operation when callbacks mutate generic, Array or Proxy receivers. All 577
+Runtime units, 2,445 non-RegExp integrations, 270 selected RegExp groups and the
+quality gate pass. All 405 callback/mutation/error programs plus 405 collection
+repeats match Node before and after. Four measured work allowances are identical;
+both benchmark smokes pass all 74 rows from 72 workloads.
+
+Five evaluations with sixteen joins each remove 160 Rust deallocations, matching
+two avoided buffers per singleton. Callgrind instructions change from 184,387,897
+to 179,031,202 (-2.905%); the multiple-element control changes by ten instructions
+with identical deallocation counts. Profiles include initialization, parsing,
+evaluation and collection, without a general wall-time claim.
+
+## Number formatting bit-pattern audit
+
+A read-only audit checks 16,384 values in 512 programs across String conversion,
+toString, toFixed, toExponential, toPrecision and JSON number serialization.
+All observations match Node except three shortest-format observations for one
+value: 923066642541612.25. Both outputs ending in .2 and .3 have sixteen digits,
+round trip to the same Number and are equally close; no shorter choice does.
+The normative Number::toString rule permits both. Closest/even selection appears
+in a recommended alternative in a note. Exact rational evidence preserves the
+raw mismatch; no formatter change or compatibility exception is added.
+
 ## Templates without substitutions
 
 The ordinary evaluator reuses the immutable cooked String after the same entry,

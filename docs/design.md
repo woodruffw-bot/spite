@@ -1790,6 +1790,9 @@ identity, descriptors and creation Realm while sharing primitive String storage.
 Untagged templates without substitutions return their immutable cooked String
 through the same checked helper (13.2.8.6), retaining the literal entry tick and
 work allowance. Async execution delegates these expressions to that evaluator.
+Array.prototype.join reuses the converted String for a non-nullish singleton
+after separator conversion, element access, work and output checks (23.1.3.18).
+The captured length still controls access when callbacks mutate the receiver.
 The parser/evaluator native-stack guards are current implementation constraints;
 removing them safely requires replacing recursive execution with explicit frames.
 References below to execution
