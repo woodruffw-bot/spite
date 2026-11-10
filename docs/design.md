@@ -4124,8 +4124,20 @@ an identifier named `await`, including inside an enclosing async function.
 Module code still reserves that identifier. Nested async/generator functions
 establish their own contexts. Computed field names retain the enclosing
 suspension context, which is restored after parsing each initializer. This
-interpretation matches Test262's staging `await-identifier-script.js` and Node;
-the literal grammar discrepancy remains recorded for conformance review.
+instance-initializer behavior matches Test262's staging `await-identifier-script.js`
+and Node. The same discrepancy is independently documented in upstream
+[issue 2437](https://github.com/tc39/ecma262/issues/2437) and
+[issue 3333](https://github.com/tc39/ecma262/issues/3333); the latter discusses
+resetting these flags as the consistent ordinary-function interpretation.
+
+Node's direct static-field `await` identifier behavior is not a stable reference:
+Node 24 rejects it, while Node 26 rejects a first static field but accepts it
+after an instance field, even one without an initializer. We apply the ordinary
+initializer interpretation consistently to instance/static and public/private
+fields. A 1,092-source matrix compares both parser frontends with Node 26;
+1,012 agree and the eighty direct static-identifier differences are recorded
+explicitly. The grammar discrepancy and reference-engine differences remain
+visible in the final conformance review, rather than being counted as agreement.
 
 CreateDataPropertyOrThrow defines an enumerable/writable/configurable own property
 without invoking inherited setters. Initializers run before descriptor rejection;

@@ -104,6 +104,16 @@ fn initializer_this_super_and_new_target_have_their_own_function_context() {
         "class B{get x(){return this.v;}}class D extends B{v=7;x=eval('super.x');t=eval('new.target');static t=eval('new.target');}let d=new D;d.x===7 && d.t===undefined && D.t===undefined",
     );
     check("function f(k){return class {[arguments[0]]=1;};}Object.hasOwn(new (f('x')),'x')");
+    // Ordinary initializer semantics apply even to the first static field.
+    // The published grammar issue and V8's ordering differences are recorded
+    // under Public class fields in docs/design.md.
+    check("var await=7;class C{static x=await;}C.x===7");
+    check(
+        "var await=()=>7,C;async function f(){C=class{static #x=await();static value(){return this.#x;}};}f();C.value()===7",
+    );
+    check(
+        "var await=7;class Outer{static{class C{static x=await;}this.value=C.x;}}Outer.value===7",
+    );
     check(
         "var await=7;function* f(){class C{x=await;static x=await;[yield 'key']=8;}yield 9;return C;}let g=f(),a=g.next(),b=g.next('chosen'),C=g.next().value;a.value==='key' && b.value===9 && C.x===7 && new C().x===7 && new C().chosen===8",
     );

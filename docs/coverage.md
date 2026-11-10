@@ -23,6 +23,16 @@ Only fifteen staging resource/native-stack stress originals remain pending;
 the other 1,325 applicable staging originals are retained. The enlarged complete
 gate still needs its frozen and hosted runs before final qualification.
 
+The follow-up class-context audit compares 1,092 sources across Script/Module,
+ordinary/async/generator/arrow/parameter/static-block contexts and all four field
+kinds, using both parser frontends. Node 26 agrees on 1,012; all eighty differences
+are its direct static-field `await` identifier restriction. Node 26 itself accepts
+that identifier after a preceding instance field, while Node 24 rejects it in
+either order. Three native cases now protect consistent first-static public,
+private and nested-static-block initialization. Upstream issues 2437 and 3333
+document the published grammar problem; [the design](design.md#public-class-fields)
+records the chosen ordinary-function interpretation and reference differences.
+
 ## Staging scope review
 
 Source review closes 68 staging scope entries: 53 disposal-facility originals,
