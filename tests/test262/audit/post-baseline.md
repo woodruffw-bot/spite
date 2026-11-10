@@ -2,7 +2,8 @@
 
 This review uses the [published es2026 source](https://github.com/tc39/ecma262/blob/0248456c758431e4bb8e5d26333ff1865123c9cd/spec.html),
 whose SHA-256 is
-`032ecc740356b38f6846338d8c44536291a134a6ce60e651f935befb239cfc1a`.
+`ce7bc30174061fd8d212270b81cf6511661180c1e174f6911d10ced0581527b0`.
+The [source identity](specification.json) also records its Git blob and byte count.
 The official annotated es2026 tag resolves to that revision. It does not use the
 living specification to decide which features are mandatory.
 

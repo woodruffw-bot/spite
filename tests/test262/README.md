@@ -5,6 +5,19 @@ These 41779 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Verified published source and completed enlarged gate
+
+The 682f56296 frozen gate passes 93/41,570/80,087 with zero other outcomes in
+1,108.202 seconds and matching fixture/binary hashes. It includes all four
+semantic corrections and seven new unchanged originals.
+
+CI now verifies the exact [published-source identity](audit/specification.json)
+by byte count, SHA-256 and Git blob. Fresh and original edition17 copies agree;
+an es2026-named local cache has one added history paragraph and identical
+normative clauses. Its annotated hash is no longer presented as the official
+source identity. Both positive verification paths pass, and the annotated copy
+is rejected. Corpus inventories are unchanged; staging qualification stays open.
+
 ## Empty Block evaluation and large-script admission
 
 Empty blocks now return an empty completion directly, without scope/cursor

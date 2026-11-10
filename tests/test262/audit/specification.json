@@ -1,0 +1,10 @@
+{
+  "edition": 17,
+  "tag": "es2026",
+  "revision": "0248456c758431e4bb8e5d26333ff1865123c9cd",
+  "path": "spec.html",
+  "git_blob": "22dc069f5aeda770c1db2e389cbaa252188f43bf",
+  "size": 2978793,
+  "sha256": "ce7bc30174061fd8d212270b81cf6511661180c1e174f6911d10ced0581527b0",
+  "source_url": "https://raw.githubusercontent.com/tc39/ecma262/0248456c758431e4bb8e5d26333ff1865123c9cd/spec.html"
+}

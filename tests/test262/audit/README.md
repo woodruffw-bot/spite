@@ -5,6 +5,13 @@ Test262 `test/` tree. It is independent of which originals currently pass.
 There are 41,570 retained originals and 12,027 explicit scope entries.
 This partition is not a conformance percentage.
 
+[specification.json](specification.json) identifies the exact published ECMA-262
+source by commit, Git blob, size and SHA-256. Run
+`python3 tools/check-specification.py /path/to/spec.html` to verify local bytes,
+or `python3 tools/check-specification.py --download` to fetch and verify the pin.
+CI runs the latter. Annotated copies are rejected even when their normative
+clauses happen to be identical.
+
 `upstream-commit.txt` is the exact Git commit object named by `../REVISION`.
 `upstream-tree.tsv` records each leaf's mode, Git object SHA-1 and upstream path
 under `test/` and `harness/`, plus the other root entries. The checker rebuilds

@@ -4,6 +4,27 @@ spite targets ECMAScript 2026, edition 17. This file records implementation
 status, host choices, regression evidence and known constraints. It does not
 claim complete conformance or define an alternative language specification.
 
+## Exact published-source identity and enlarged full gate
+
+The 682f56296 frozen gate passes all 93 controls and 80,087 modes from 41,570
+originals, with zero other outcomes in 1,108.202 seconds. Fixture and saved
+binary hashes match. It includes the shared-view, eval-binding, Unicode
+backreference and empty-block corrections and all seven newly retained originals.
+
+The official es2026 source is now pinned additionally by Git blob
+22dc069f5aeda770c1db2e389cbaa252188f43bf, 2,978,793 bytes and SHA-256
+ce7bc30174061fd8d212270b81cf6511661180c1e174f6911d10ced0581527b0.
+A fresh download matches the original edition17 cache. The es2026-named cache
+used for later audits contains one added history paragraph, with no normative
+changes; its former SHA-256 is not the official source identity. The complete
+diff is retained in ecma262-es2026-cache-differences.patch under /workspace/work.
+
+The [identity record](../tests/test262/audit/specification.json) and CI checker
+verify the exact source bytes by size, SHA-256 and Git blob. Local verification
+and a fresh pinned download pass; the annotated cache is correctly rejected.
+The feature-review source identity is corrected without changing its normative
+comparisons or any fixture bytes. Staging qualification remains open.
+
 ## Empty Block evaluation without scope allocation
 
 Published 14.2.2 returns an empty completion directly for `{}`. Both evaluators

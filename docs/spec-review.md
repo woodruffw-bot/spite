@@ -9,6 +9,9 @@ in coverage. Exact fixture inventories and test receipts belong in
 This clause review does not close the independent
 [whole-upstream qualification](../tests/test262/audit/README.md). Its unresolved
 scope entries must be reviewed before making a full-conformance claim.
+The exact [published source identity](../tests/test262/audit/specification.json)
+is verified by Git blob, SHA-256 and byte count in CI; an annotated local copy
+cannot substitute for it.
 
 | Clauses | Review | Evidence |
 | --- | --- | --- |
