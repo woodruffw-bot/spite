@@ -20,7 +20,8 @@ support files remain in the verified tree but are not test originals.
 
 | Disposition | Originals | Meaning |
 | --- | ---: | --- |
-| `baseline-review` | 5,984 | Core built-ins/language originals awaiting the independent published-baseline review, including tests of later proposals. Earlier exclusion labels do not close this review. |
+| `outside-edition17:<feature>` | 5,782 | Tests requiring facilities or changes absent from the published baseline; see the [feature review](post-baseline.md). |
+| `baseline-review` | 202 | Remaining core built-ins/language originals awaiting independent review of optional behavior, changed assertions, Unicode data and allocation assumptions. |
 | `staging-review` | 1,483 | Supplementary staging tests awaiting review of standard semantics, engine-specific helpers and host requirements. |
 | `harness-self-test` | 116 | Infrastructure validation, separately executed: all 232 original modes pass after the absent-$DONE correction. |
 | `optional-annex-b` | 1,086 | Annex B browser-compatibility tests; this non-browser host disables Annex B. |

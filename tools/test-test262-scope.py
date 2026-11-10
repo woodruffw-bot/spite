@@ -98,6 +98,15 @@ class ScopeTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, message):
                     check(self.root)
 
+    def test_only_reviewed_post_baseline_feature_names_are_accepted(self):
+        path = self.root / "audit/scope.tsv"
+        original = path.read_text()
+        self.write("audit/scope.tsv", original.replace("baseline-review", "outside-edition17:Temporal"))
+        self.assertEqual(check(self.root)[2]["outside-edition17:Temporal"], 1)
+        self.write("audit/scope.tsv", original.replace("baseline-review", "outside-edition17:unknown"))
+        with self.assertRaisesRegex(ValueError, "invalid scope"):
+            check(self.root)
+
 
 if __name__ == "__main__":
     unittest.main()

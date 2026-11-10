@@ -14,6 +14,13 @@ DISPOSITIONS = {
     "staging-review": "test/staging/",
     "baseline-review": ("test/built-ins/", "test/language/"),
 }
+POST_BASELINE_FEATURES = {
+    "Temporal", "ShadowRealm", "explicit-resource-management",
+    "source-phase-imports", "import-defer", "await-dictionary",
+    "joint-iteration", "iterator-chunking", "iterator-includes",
+    "Iterator.prototype.join", "immutable-arraybuffer", "error-stack-accessor",
+    "decorators", "import-text", "nonextensible-applies-to-private",
+}
 
 
 def object_id(kind, data):
@@ -109,7 +116,11 @@ def check(root):
         raise ValueError("runner contains a non-original upstream path")
     scoped = {}
     for disposition, path in rows(audit / "scope.tsv", 2):
-        if disposition not in DISPOSITIONS or not path.startswith(DISPOSITIONS[disposition]):
+        valid = disposition in DISPOSITIONS and path.startswith(DISPOSITIONS[disposition])
+        if disposition.startswith("outside-edition17:"):
+            feature = disposition.removeprefix("outside-edition17:")
+            valid = feature in POST_BASELINE_FEATURES and path.startswith(("test/built-ins/", "test/language/"))
+        if not valid:
             raise ValueError(f"invalid scope disposition: {disposition}: {path}")
         if path in scoped:
             raise ValueError(f"duplicate scope disposition: {path}")

@@ -5,6 +5,16 @@ These 41772 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Published-baseline feature review
+
+The [feature ledger](audit/post-baseline.md) now explains 5,782 unretained core
+originals against the published source, including Temporal and ShadowRealm.
+Their scope entries identify the required feature. The remaining 202 core
+originals and staging cases stay under review; staging has exposed a TypedArray
+extensibility discrepancy. Nine scope controls and the complete fixture/provenance
+check pass. No original, helper, execution mode or parse review changes in this
+checkpoint; the dcc30e012 full run is in progress.
+
 ## Verifiable complete upstream inventory
 
 The [complete-tree audit](audit/README.md) now connects every retained file to

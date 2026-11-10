@@ -4,6 +4,24 @@ spite targets ECMAScript 2026, edition 17. This file records implementation
 status, host choices, regression evidence and known constraints. It does not
 claim complete conformance or define an alternative language specification.
 
+## Published-baseline prerequisites of unretained core tests
+
+The independent [feature review](../tests/test262/audit/post-baseline.md)
+accounts for 5,782 unretained core originals requiring APIs, grammar or semantic
+changes absent from the published edition-17 source. Scope entries now name
+their reviewed feature. This includes 4,613 Temporal/Date integration originals
+and 64 ShadowRealm originals that the earlier candidate audit did not inventory.
+Neither a proposal label nor a missing esid alone establishes the disposition;
+the review checks the required facilities and published algorithms. Two private
+element tests require an extensibility rejection absent from PrivateFieldAdd.
+
+The remaining 202 core originals stay pending for Unicode, optional behavior,
+changed assertions and allocation review. Staging review also remains open and
+has already exposed a TypedArray extensibility discrepancy. All nine scope
+controls, the complete provenance/fixture check, formatting, strict workspace
+Clippy and policy pass. Retained sources/modes are unchanged; the dcc30e012 full
+run is still in progress.
+
 ## Complete upstream provenance and scope accounting
 
 CI now independently reconstructs the upstream Git trees and commit from the
