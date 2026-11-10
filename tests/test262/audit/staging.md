@@ -45,13 +45,18 @@ SpecialCasing inputs; the differences are the upper/lower mappings of
 0277/A7DD, 027C/A7E2, AB4B/AB6C and AB4C/AB6D. Bounded runner probes exercise
 the Date policy, RegExp literal equivalence and every changed case mapping.
 
-There are 1,331 pending staging originals. A fresh run of 1,310 applicable
+The fresh run of 1,310 applicable
 originals passes all 2,476 modes with default Runner settings, two ordinary
-workers and no external quotas, in 106.292 seconds. Admission is pending the
-active frozen gate; those preliminary results supply no retained-gate credit.
-Nine other originals have already
-been admitted unchanged, covering fixed shared views, deleted eval bindings,
-Unicode backreferences, empty blocks and class-field initializer contexts.
+workers and no external quotas, in 106.292 seconds. They are now admitted along
+with the five exactly reviewed Module negatives and the longer-running
+String.fromCodePoint original. All 1,316 added originals / 2,483 modes pass again
+using only retained sources and helpers, Runner defaults and no external quotas
+in 32.968 seconds. Six supporting modules and nine required harness helpers are
+retained unchanged as well.
+
+Together with the nine earlier semantic-bug originals, this retains 1,325
+applicable staging originals. Fifteen resource/native-stack originals remain
+pending. The enlarged full gate and final host-constraint review stay open.
 
 The initial sweep's 20-second process deadline was an investigation safeguard,
 not a language limit or an accepted exclusion. Longer runs retain Runner defaults

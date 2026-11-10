@@ -4,6 +4,25 @@ spite targets ECMAScript 2026, edition 17. This file records implementation
 status, host choices, regression evidence and known constraints. It does not
 claim complete conformance or define an alternative language specification.
 
+## Applicable staging admission
+
+The 6f28f9f01 frozen full gate passes all 93 controls and 80,091 modes from
+41,573 originals with zero other outcomes in 1,287.351 seconds. Saved fixture
+and binary hashes match. The independent staging review now admits another
+1,316 unchanged originals / 2,483 modes, six support modules and nine harness
+helpers: 42,889 originals / 82,574 modes, 43,104 fixtures and 37 helpers.
+
+The admitted cohort passes again using only retained files, default Runner
+settings, two ordinary workers and no external quotas: all 2,483 modes pass in
+32.968 seconds. Five Module negatives have exact independently reviewed Syntax
+diagnostics and also reject in Node. Metadata, all 93 runner controls, eleven
+scope controls, formatting, Clippy, dependency policy and exact specification
+verification pass. No candidate fragments replace whole originals.
+
+Only fifteen staging resource/native-stack stress originals remain pending;
+the other 1,325 applicable staging originals are retained. The enlarged complete
+gate still needs its frozen and hosted runs before final qualification.
+
 ## Staging scope review
 
 Source review closes 68 staging scope entries: 53 disposal-facility originals,
@@ -323,7 +342,7 @@ run is pending. All 17 hosted jobs pass for the preceding eb9da4aec revision.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained Source Text and JSON Synthetic Module records, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80091 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 82574 reviewed Test262 variants, thirty-seven pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
 ## Proxy ownKeys collection and invariant snapshots
 

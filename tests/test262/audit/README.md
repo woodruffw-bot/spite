@@ -2,7 +2,7 @@
 
 This audit covers all 53,597 non-`_FIXTURE` JavaScript originals in the pinned
 Test262 `test/` tree. It is independent of which originals currently pass.
-There are 41,573 retained originals and 12,024 explicit scope entries.
+There are 42,889 retained originals and 10,708 explicit scope entries.
 This partition is not a conformance percentage.
 
 [specification.json](specification.json) identifies the exact published ECMA-262
@@ -37,7 +37,7 @@ support files remain in the verified tree but are not test originals.
 | `implementation-defined-date-parse` | 1 | SpiderMonkey fallback formats outside Date Time String Format; this host returns NaN. |
 | `permitted-regexp-source` | 1 | An exact source spelling where EscapeRegExpPattern permits the equivalent deterministic representation used here. |
 | `unicode-case-version-difference` | 1 | A Unicode17 BMP casing table with eight independently verified Unicode18 changes. |
-| `staging-review` | 1,331 | Supplementary staging tests awaiting final qualification. Nine originals covering shared views, eval bindings, Unicode backreferences, empty blocks and field initializer contexts have been admitted unchanged. |
+| `staging-review` | 15 | Resource and native-stack stress originals awaiting final host-constraint review. The other 1,325 applicable staging originals have been admitted unchanged. |
 | `harness-self-test` | 116 | Infrastructure validation, separately executed: all 232 original modes pass after the absent-$DONE correction. |
 | `optional-annex-b` | 1,086 | Annex B browser-compatibility tests; this non-browser host disables Annex B. |
 | `outside-ecma262` | 3,365 | ECMA-402 internationalization tests, outside the ECMA-262 target. |

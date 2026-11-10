@@ -1,9 +1,23 @@
 # Test262 regression fixtures
 
-These 41782 unmodified test fixtures and twenty-eight harness files come from
+These 43104 unmodified test fixtures and thirty-seven harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Applicable staging admission
+
+The preceding 6f28f9f01 frozen gate passes 93 controls / 41,573 originals /
+80,091 modes with zero other outcomes and matching source/binary hashes.
+Another 1,316 unchanged originals add 2,483 modes, six support modules and nine
+helpers. The retained inventory is now 42,889 originals / 82,574 modes, 43,104
+fixtures and 37 harness files.
+
+All added modes pass using only retained files, Runner defaults, two ordinary
+workers and no external quotas in 32.968 seconds. The five Module negatives have
+exact reviewed Syntax diagnostics and independent Node rejection. All 93 runner
+controls, eleven scope controls and quality checks pass. Fifteen staging
+resource/native-stack originals remain under review, without passing credit.
 
 ## Reviewed staging prerequisites
 
