@@ -41566,3 +41566,5 @@ test/staging/built-ins/Object/preventExtensions/preventExtensions-variable-lengt
 test/staging/built-ins/Object/seal/seal-variable-length-typed-arrays.js	-	-	-
 test/staging/built-ins/Reflect/preventExtensions/preventExtensions-variable-length-typed-arrays.js	-	-	-
 test/staging/sm/regress/regress-643222.js	-	-	-
+test/staging/sm/RegExp/unicode-back-reference.js	-	-	-
+test/language/expressions/object/__proto__-permitted-dup.js	-	-	-

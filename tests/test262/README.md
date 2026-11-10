@@ -1,9 +1,27 @@
 # Test262 regression fixtures
 
-These 41776 unmodified test fixtures and twenty-eight harness files come from
+These 41778 unmodified test fixtures and twenty-eight harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Completed core exclusion review and two admissions
+
+The [core review](audit/core-review.md) accounts for the remaining 202 core
+originals. It corrects one optional-feature misclassification: the duplicate
+__proto__ method/accessor object literal is required core behavior. That original
+and the repaired Unicode backreference original now enter the suite unchanged,
+adding four modes. Counts become 41,778 fixtures, 41,569 originals / 80,085 modes,
+twenty-eight helpers and 93 runner controls. All 12,028 remaining upstream
+originals stay explicitly accounted for; staging review remains open.
+
+The new runner control executes the bounded policy probes and all ninety
+independent Unicode witnesses in both u/v modes. All 93 controls, ten scope
+controls and the complete byte/provenance inventory pass. The backreference
+change also passes all 113 Core units, 599 Runtime units and 5,062 integration
+groups, including all 2,617 RegExp groups; no tests are ignored or retired.
+The cfc17a9d0 frozen gate passes 92/41,567/80,081 with zero other outcomes in
+2,023.452 seconds and matching saved hashes. The enlarged full run is pending.
 
 ## Unicode backreference boundary correction
 

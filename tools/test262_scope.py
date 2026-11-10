@@ -13,6 +13,12 @@ DISPOSITIONS = {
     "harness-self-test": "test/harness/",
     "staging-review": "test/staging/",
     "baseline-review": ("test/built-ins/", "test/language/"),
+    "unicode-version-difference": ("test/built-ins/RegExp/", "test/language/literals/regexp/"),
+    "optional-legacy-helpers": ("test/built-ins/Object/prototype/", "test/language/expressions/class/", "test/language/statements/class/"),
+    "optional-annex-b-dependent": ("test/built-ins/", "test/language/"),
+    "optional-function-introspection": ("test/built-ins/Function/", "test/language/arguments-object/"),
+    "post-publication-assertion": ("test/built-ins/Iterator/prototype/take/", "test/built-ins/Iterator/prototype/drop/"),
+    "allocation-assumption": ("test/built-ins/ArrayBuffer/", "test/built-ins/SharedArrayBuffer/", "test/built-ins/TypedArrayConstructors/"),
 }
 POST_BASELINE_FEATURES = {
     "Temporal", "ShadowRealm", "explicit-resource-management",
@@ -130,4 +136,25 @@ def check(root):
         omitted = sorted(missing - set(scoped))[:3]
         extra = sorted(set(scoped) - missing)[:3]
         raise ValueError(f"scope must account for every unretained original: missing={omitted}, extra={extra}")
+    unicode_paths = {path for path, reason in scoped.items() if reason == "unicode-version-difference"}
+    # The two literal loops instead hard-code acceptance of join-control
+    # IdentityEscapes, contrary to Unicode18's ID_Continue membership.
+    literal_loops = {
+        "test/language/literals/regexp/S7.8.5_A1.4_T2.js",
+        "test/language/literals/regexp/S7.8.5_A2.4_T2.js",
+    }
+    witness_file = audit / "unicode-witnesses.tsv"
+    witnesses = set()
+    if witness_file.exists():
+        for path, prop, point, old, current in rows(witness_file, 5):
+            try:
+                valid_point = 0 <= int(point, 16) <= 0x10ffff
+            except ValueError:
+                valid_point = False
+            if (path in witnesses or not prop or not valid_point
+                    or {old, current} != {"true", "false"}):
+                raise ValueError(f"invalid or non-contradictory Unicode witness: {path}")
+            witnesses.add(path)
+    if witnesses != unicode_paths - literal_loops:
+        raise ValueError("Unicode witnesses must cover every version-dependent property original exactly")
     return len(originals), len(retained), Counter(scoped.values())

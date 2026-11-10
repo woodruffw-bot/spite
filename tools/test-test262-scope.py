@@ -16,7 +16,7 @@ class ScopeTests(unittest.TestCase):
         (self.root / "audit").mkdir()
         self.files = {
             "test/built-ins/retained.js": b"retained;\n",
-            "test/built-ins/pending.js": b"pending;\n",
+            "test/built-ins/RegExp/property-escapes/pending.js": b"pending;\n",
             "test/built-ins/helper_FIXTURE.js": b"helper;\n",
             "test/annexB/optional.js": b"optional;\n",
             "harness/assert.js": b"assert;\n",
@@ -43,7 +43,7 @@ class ScopeTests(unittest.TestCase):
             for path in self.files if not path.endswith(("pending.js", "optional.js"))
         ))
         self.write("runner.tsv", "test/built-ins/retained.js\t-\t-\t-\n")
-        self.write("audit/scope.tsv", "baseline-review\ttest/built-ins/pending.js\noptional-annex-b\ttest/annexB/optional.js\n")
+        self.write("audit/scope.tsv", "baseline-review\ttest/built-ins/RegExp/property-escapes/pending.js\noptional-annex-b\ttest/annexB/optional.js\n")
 
     def write(self, path, text):
         (self.root / path).write_text(text, encoding="utf-8")
@@ -81,8 +81,8 @@ class ScopeTests(unittest.TestCase):
             check(self.root)
 
     def test_retained_and_scoped_must_be_disjoint(self):
-        self.write("manifest.tsv", (self.root / "manifest.tsv").read_text() + "script-pass\tunused\ttest/built-ins/pending.js\n")
-        self.write("runner.tsv", (self.root / "runner.tsv").read_text() + "test/built-ins/pending.js\t-\t-\t-\n")
+        self.write("manifest.tsv", (self.root / "manifest.tsv").read_text() + "script-pass\tunused\ttest/built-ins/RegExp/property-escapes/pending.js\n")
+        self.write("runner.tsv", (self.root / "runner.tsv").read_text() + "test/built-ins/RegExp/property-escapes/pending.js\t-\t-\t-\n")
         with self.assertRaisesRegex(ValueError, "account for every unretained"):
             check(self.root)
 
@@ -105,6 +105,18 @@ class ScopeTests(unittest.TestCase):
         self.assertEqual(check(self.root)[2]["outside-edition17:Temporal"], 1)
         self.write("audit/scope.tsv", original.replace("baseline-review", "outside-edition17:unknown"))
         with self.assertRaisesRegex(ValueError, "invalid scope"):
+            check(self.root)
+
+    def test_unicode_dispositions_need_complete_contradictory_witnesses(self):
+        scope = (self.root / "audit/scope.tsv").read_text()
+        self.write("audit/scope.tsv", scope.replace("baseline-review", "unicode-version-difference"))
+        with self.assertRaisesRegex(ValueError, "Unicode witnesses must cover"):
+            check(self.root)
+        witness = "test/built-ins/RegExp/property-escapes/pending.js\tAlphabetic\t0558\tfalse\ttrue\n"
+        self.write("audit/unicode-witnesses.tsv", witness)
+        self.assertEqual(check(self.root)[2]["unicode-version-difference"], 1)
+        self.write("audit/unicode-witnesses.tsv", witness.replace("false", "true"))
+        with self.assertRaisesRegex(ValueError, "non-contradictory Unicode witness"):
             check(self.root)
 
 

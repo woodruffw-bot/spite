@@ -41803,3 +41803,5 @@ script-pass	00946609ad4a5219473f0909241854a00511b519ddb2dea5fd72d7383270622a	tes
 script-pass	2d8fc618984d374017cd6a40fcde65886ddd5eaa499b2a8509fa794792004941	test/staging/built-ins/Object/seal/seal-variable-length-typed-arrays.js
 script-pass	b12518725e6937f2342c07197002551a7322ec7d06ed5c8730446758725c97ea	test/staging/built-ins/Reflect/preventExtensions/preventExtensions-variable-length-typed-arrays.js
 script-pass	633d6196c39fa03731d07f5dad599067fca1c0e9bc422cd2fdc0a99c859b67e7	test/staging/sm/regress/regress-643222.js
+script-pass	0f5bcfd45b4ff6f1263caad98e25157bc442633a87a02e4e8426656e403ccfef	test/staging/sm/RegExp/unicode-back-reference.js
+script-pass	22d27f287beaf1fa64a9700f591be84c6c3d0af1a200f2d948abc6c7b06c9d94	test/language/expressions/object/__proto__-permitted-dup.js

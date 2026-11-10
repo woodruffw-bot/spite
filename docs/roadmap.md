@@ -746,7 +746,7 @@ host choices and legitimate optional exclusions documented.
 - [x] Recreate deleted eval bindings in their resolved declarative environment for non-strict writes and reject strict writes with ReferenceError.
 - [x] Require complete Unicode code points in forward and backward UTF-16 backreferences, preserving ordinary code-unit matching.
 - [x] Account for the complete pinned Test262 test tree and verify retained originals against its Git object identities.
-- [ ] Independently review all unretained core-language tests against the published baseline, including Unicode-version and host-capacity differences.
+- [x] Independently review all unretained core-language tests against the published baseline, including Unicode-version and host-capacity differences.
 - [ ] Review optional, host-specific and supplementary test inventories without treating their exclusion as implementation evidence.
 - [ ] Resolve mandatory semantic failures found by the expanded audit and rerun the complete applicable corpus on supported platforms.
 - [ ] Reconcile the specification review, intentional deviations and host constraints before making a conformance claim.

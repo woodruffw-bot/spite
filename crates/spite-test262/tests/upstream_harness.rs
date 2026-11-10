@@ -1,7 +1,7 @@
 //! Execute unchanged pinned harness code and verify success/failure paths.
 
 use spite_test262::{Outcome, Runner, Stage};
-use std::{fs, path::Path};
+use std::{fmt::Write as _, fs, path::Path};
 
 fn run(body: &str) -> Vec<Outcome> {
     run_with_includes(body, "compareArray.js")
@@ -20,6 +20,34 @@ fn run_with_includes(body: &str, includes: &str) -> Vec<Outcome> {
         .into_iter()
         .map(|case| case.outcome)
         .collect()
+}
+
+#[test]
+fn published_scope_probes_and_unicode_witnesses_match_the_configured_host() {
+    let probes = include_str!("../../../tests/test262/audit/published-policy-probes.js");
+    let mut body = probes.split_once("---*/").unwrap().1.to_owned();
+    let witnesses = include_str!("../../../tests/test262/audit/unicode-witnesses.tsv");
+    let mut count = 0;
+    for line in witnesses
+        .lines()
+        .filter(|line| !line.is_empty() && !line.starts_with('#'))
+    {
+        let fields: Vec<_> = line.split('\t').collect();
+        assert_eq!(fields.len(), 5);
+        let pattern = format!("^\\p{{{}}}$", fields[1]);
+        let point = u32::from_str_radix(fields[2], 16).unwrap();
+        let expected: bool = fields[4].parse().unwrap();
+        assert!(point <= 0x10ffff);
+        for flags in ["u", "v"] {
+            writeln!(body, "assert.sameValue(new RegExp({pattern:?},{flags:?}).test(String.fromCodePoint({point})),{expected});").unwrap();
+        }
+        count += 1;
+    }
+    assert_eq!(count, 90);
+    assert_eq!(
+        run_with_includes(&body, ""),
+        [Outcome::Passed, Outcome::Passed]
+    );
 }
 
 #[test]

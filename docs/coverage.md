@@ -4,6 +4,34 @@ spite targets ECMAScript 2026, edition 17. This file records implementation
 status, host choices, regression evidence and known constraints. It does not
 claim complete conformance or define an alternative language specification.
 
+## Core exclusion qualification and complete backreference regression gate
+
+The [core exclusion review](../tests/test262/audit/core-review.md) resolves the
+remaining 202 core originals. One earlier classification was incorrect:
+__proto__-permitted-dup uses required object-literal productions and passes both
+modes. It is now retained unchanged, alongside the repaired staging Unicode
+backreference original. The other 201 originals have explicit Unicode-version,
+optional-property, later-assertion or sparse-allocation explanations. No retained
+test is removed and no incompatible fragment receives passing credit.
+
+The Unicode review independently parses the original pinned UCD18 data and
+compares all ninety old property datasets' complete ranges. Each has a retained
+contradictory witness, and all 180 u/v backend checks match that reference. A new
+runner control also executes those witnesses and bounded published-policy
+probes in both Script modes. All 93 runner controls, ten scope controls and the
+complete fixture/Git provenance check pass.
+
+The backreference correction passes all 113 Core units, 599 Runtime units and
+5,062 Runtime integrations, including all 2,617 RegExp groups, with zero ignored
+tests. The integration run takes 1,601.980 seconds; the saved native binary/source
+proof identifies its build. Quality passes. Scope work changes no Runtime code.
+
+The cfc17a9d0 frozen run passes 92 controls and 80,081 modes from 41,567 originals
+with zero other outcomes in 2,023.452 seconds and matching saved hashes. That gate
+includes the shared-view and eval fixes. New inventories are 41,778 fixtures,
+41,569 originals / 80,085 modes and twenty-eight helpers; the enlarged full gate
+is pending. Staging scope entries become 1,478 and total scope entries 12,028.
+
 ## Unicode backreference boundaries
 
 The staging unicode-back-reference original exposed raw UTF-16 equality accepting
@@ -197,7 +225,7 @@ run is pending. All 17 hosted jobs pass for the preceding eb9da4aec revision.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained Source Text and JSON Synthetic Module records, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80081 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80085 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
 ## Proxy ownKeys collection and invariant snapshots
 
