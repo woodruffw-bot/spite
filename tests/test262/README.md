@@ -5,6 +5,14 @@ These 41782 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Reviewed staging prerequisites
+
+The [staging source review](audit/staging.md) closes 61 post-baseline proposal
+entries and seven browser IsHTMLDDA entries, with no passing credit. Every closed
+entry requires a source-specific explanation and matching upstream Git blob.
+The eleven scope controls pass, including omission, mismatch and tampering cases.
+There are 1,406 staging entries still pending; the retained corpus is unchanged.
+
 ## Field initializer context correction
 
 The unchanged staging Script `fields/await-identifier-script.js` now passes both

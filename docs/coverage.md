@@ -4,6 +4,22 @@ spite targets ECMAScript 2026, edition 17. This file records implementation
 status, host choices, regression evidence and known constraints. It does not
 claim complete conformance or define an alternative language specification.
 
+## Staging proposal and browser prerequisites
+
+Source review closes 68 staging scope entries: 53 disposal-facility originals,
+three Temporal originals, two auto-accessor originals, two source-phase import
+originals, one later private-element restriction and seven browser IsHTMLDDA
+originals. These account for every initial staging Unsupported result without
+counting any as a pass. The ordinary accessor-as-identifier original remains
+applicable despite its decorators metadata tag.
+
+The [staging review](../tests/test262/audit/staging.md) and pinned source ledger
+record each prerequisite. The checker requires exact agreement between closed
+staging decisions and source-specific explanations/Git blobs; eleven controls
+cover omissions, mismatches, tampering and duplicates. There are 1,406 pending
+staging entries. Fixture bytes and the retained 41,573/80,091 inventory are
+unchanged while the frozen full run continues.
+
 ## Class-field initializer suspension boundary
 
 Field initializers now establish an ordinary-function grammar context instead

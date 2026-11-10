@@ -19,6 +19,7 @@ class ScopeTests(unittest.TestCase):
             "test/built-ins/RegExp/property-escapes/pending.js": b"pending;\n",
             "test/built-ins/helper_FIXTURE.js": b"helper;\n",
             "test/annexB/optional.js": b"optional;\n",
+            "test/staging/pending.js": b"pending;\n",
             "harness/assert.js": b"assert;\n",
         }
         tree = {}
@@ -43,15 +44,15 @@ class ScopeTests(unittest.TestCase):
             for path in self.files if not path.endswith(("pending.js", "optional.js"))
         ))
         self.write("runner.tsv", "test/built-ins/retained.js\t-\t-\t-\n")
-        self.write("audit/scope.tsv", "baseline-review\ttest/built-ins/RegExp/property-escapes/pending.js\noptional-annex-b\ttest/annexB/optional.js\n")
+        self.write("audit/scope.tsv", "baseline-review\ttest/built-ins/RegExp/property-escapes/pending.js\noptional-annex-b\ttest/annexB/optional.js\nstaging-review\ttest/staging/pending.js\n")
 
     def write(self, path, text):
         (self.root / path).write_text(text, encoding="utf-8")
 
     def test_complete_inventory_distinguishes_originals_from_support(self):
         originals, retained, dispositions = check(self.root)
-        self.assertEqual((originals, retained), (3, 1))
-        self.assertEqual(dispositions, {"baseline-review": 1, "optional-annex-b": 1})
+        self.assertEqual((originals, retained), (4, 1))
+        self.assertEqual(dispositions, {"baseline-review": 1, "optional-annex-b": 1, "staging-review": 1})
 
     def test_commit_object_must_match_the_pin(self):
         self.write("REVISION", "0" * 40)
@@ -118,6 +119,20 @@ class ScopeTests(unittest.TestCase):
         self.write("audit/unicode-witnesses.tsv", witness.replace("false", "true"))
         with self.assertRaisesRegex(ValueError, "non-contradictory Unicode witness"):
             check(self.root)
+
+    def test_closed_staging_entries_require_exact_pinned_source_reviews(self):
+        scope = (self.root / "audit/scope.tsv").read_text()
+        self.write("audit/scope.tsv", scope.replace("staging-review", "outside-edition17:decorators"))
+        with self.assertRaisesRegex(ValueError, "require matching pinned source reviews"):
+            check(self.root)
+        oid = object_id("blob", self.files["test/staging/pending.js"])
+        review = f"outside-edition17:decorators\ttest/staging/pending.js\t{oid}\tRequires auto-accessor syntax.\n"
+        self.write("audit/staging-reviewed.tsv", review)
+        self.assertEqual(check(self.root)[2]["outside-edition17:decorators"], 1)
+        for invalid in [review.replace(oid, "0" * 40), review.replace("decorators", "Temporal"), review + review]:
+            self.write("audit/staging-reviewed.tsv", invalid)
+            with self.assertRaisesRegex(ValueError, "invalid or unpinned staging review"):
+                check(self.root)
 
 
 if __name__ == "__main__":

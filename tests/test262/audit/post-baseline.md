@@ -42,5 +42,7 @@ a missing edition-17 extensibility check.
 
 The conformance-post-baseline-review artifact under `/workspace/work` records
 every reviewed original's upstream blob, SHA-256, full metadata and assigned
-feature, plus source identity and facility/production checks. The remaining 202
-core scope entries and the staging inventory still require separate review.
+feature, plus source identity and facility/production checks. The other core
+entries are now resolved by the [core review](core-review.md). The separate
+[staging review](staging.md) identifies 61 more originals requiring these absent
+facilities; their source-specific pinned explanations are retained in its ledger.
