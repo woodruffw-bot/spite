@@ -5,6 +5,17 @@ These 41772 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Verifiable complete upstream inventory
+
+The [complete-tree audit](audit/README.md) now connects every retained file to
+the pinned upstream Git commit and accounts for all 12,034 unretained originals.
+CI reconstructs the tree/commit hashes and checks retained upstream blob
+identities as well as the local SHA-256 manifest. Its eight omission/tampering
+controls and the full fixture/provenance check pass, as do formatting, strict
+workspace Clippy and dependency policy. The 5,984 core and 1,483 staging review
+entries are unresolved qualification work. Corpus bytes, modes and reviews are
+unchanged; the dcc30e012 frozen full run is in progress.
+
 ## Complete-tree qualification and harness self-tests
 
 The pinned test tree contains 53,597 non-_FIXTURE JavaScript originals, of which

@@ -3,6 +3,8 @@
 import hashlib
 from pathlib import Path, PurePosixPath
 
+from test262_scope import check as check_scope
+
 root = Path(__file__).resolve().parent.parent / "tests/test262"
 revision = (root / "REVISION").read_text().strip()
 if len(revision) != 40 or any(c not in "0123456789abcdef" for c in revision):
@@ -77,3 +79,8 @@ if reviewed != expected:
 harness_count = sum(mode == "harness" for mode in modes.values())
 print(f"Verified {len(paths) - harness_count} Test262 fixtures and {harness_count} harness files from {revision}.")
 print(f"Verified {len(reviewed)} reviewed runner entries.")
+try:
+    original_count, retained_count, dispositions = check_scope(root)
+except (ValueError, OSError) as error:
+    raise SystemExit(str(error)) from error
+print(f"Verified pinned Git provenance and complete scope: {original_count} originals, {retained_count} retained, {sum(dispositions.values())} scoped.")

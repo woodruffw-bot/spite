@@ -4,6 +4,24 @@ spite targets ECMAScript 2026, edition 17. This file records implementation
 status, host choices, regression evidence and known constraints. It does not
 claim complete conformance or define an alternative language specification.
 
+## Complete upstream provenance and scope accounting
+
+CI now independently reconstructs the upstream Git trees and commit from the
+[complete inventory](../tests/test262/audit/README.md), checks the commit against
+REVISION, and checks every retained original, support file and harness helper
+against its upstream blob. This supplements the local SHA-256 manifest; changing
+both a fixture and its manifest hash cannot bypass the upstream-byte check.
+Eight omission/tampering controls and the full provenance/fixture check pass.
+Formatting, strict workspace Clippy and dependency policy also pass.
+
+Every one of the 12,034 unretained originals has an explicit scope entry:
+5,984 core built-ins/language tests awaiting independent baseline review,
+1,483 staging tests awaiting semantic/host review, 116 harness self-tests,
+1,086 optional Annex B tests and 3,365 ECMA-402 tests. Scope entries and retained
+originals partition all 53,597 upstream originals exactly. The review categories
+are unresolved work, not accepted exclusions. Corpus bytes, modes and reviews
+remain unchanged. The dcc30e012 frozen full run is still in progress.
+
 ## Qualification audit and absent completion helper
 
 The official annotated es2026 tag resolves to the existing specification pin,

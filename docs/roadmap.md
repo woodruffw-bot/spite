@@ -742,7 +742,7 @@ host choices and legitimate optional exclusions documented.
 ## Published-baseline qualification
 
 - [x] Permit own-property inspection of an intentionally absent Test262 completion helper while preserving Unsupported reads and calls.
-- [ ] Account for the complete pinned Test262 test tree and verify retained originals against its Git object identities.
+- [x] Account for the complete pinned Test262 test tree and verify retained originals against its Git object identities.
 - [ ] Independently review all unretained core-language tests against the published baseline, including Unicode-version and host-capacity differences.
 - [ ] Review optional, host-specific and supplementary test inventories without treating their exclusion as implementation evidence.
 - [ ] Resolve mandatory semantic failures found by the expanded audit and rerun the complete applicable corpus on supported platforms.

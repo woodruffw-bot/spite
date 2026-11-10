@@ -6,6 +6,9 @@ This ledger connects the published clause groups to their implementation and
 regression evidence. The completed review and final regression gate are recorded
 in coverage. Exact fixture inventories and test receipts belong in
 [coverage](coverage.md).
+This clause review does not close the independent
+[whole-upstream qualification](../tests/test262/audit/README.md). Its unresolved
+scope entries must be reviewed before making a full-conformance claim.
 
 | Clauses | Review | Evidence |
 | --- | --- | --- |

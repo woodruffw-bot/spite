@@ -1,0 +1,6 @@
+tree 91b2052adad1f066ae031e2ff3a1e9bd6d732886
+parent 020f5c8082edef4065a5d8806865867795535c0c
+author Jesse Alama <jesse@igalia.com> 1788342960 +0000
+committer Ms2ger <Ms2ger@gmail.com> 1790193358 +0200
+
+Test formatToParts when rounding to the next magnitude
