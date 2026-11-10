@@ -250,8 +250,9 @@ fn shared_views_ignore_arraylike_hooks_and_preserve_integer_indexed_integrity_ru
         Object.defineProperty(b,'length',{get(){hits++;throw 1}});
         Object.defineProperty(b,Symbol.iterator,{get(){hits++;throw 2}});
         let a=new Uint16Array(b),d=new DataView(b),fixed=new Uint8Array(b,0,1);
-        if(hits!==0||a.length!==4||d.byteLength!==8||Reflect.preventExtensions(a)||Reflect.preventExtensions(fixed))throw 3;
+        if(hits!==0||a.length!==4||d.byteLength!==8||Reflect.preventExtensions(a)||!Reflect.preventExtensions(fixed)||Object.isExtensible(fixed))throw 3;
         b.grow(16);if(a.length!==8||d.byteLength!==16)throw 4;
+        if(fixed.length!==1||Reflect.ownKeys(fixed).join(',')!=='0'||Reflect.defineProperty(fixed,'new',{value:1}))throw 6;
         let f=new Uint8Array(new SharedArrayBuffer(4));
         if(!Reflect.preventExtensions(f)||Object.isExtensible(f))throw 5;
         f[0]=9;let desc=Object.getOwnPropertyDescriptor(f,'0');

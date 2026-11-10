@@ -966,7 +966,7 @@ impl Objects {
         Ok(Root { handle })
     }
 
-    /// Prevents extensions, returning false when a TypedArray's buffer is resizable.
+    /// Prevents extensions, returning false when a TypedArray's indices can change.
     /// Rejection preserves extensibility and existing property attributes.
     pub fn prevent_extensions(&mut self, object: &Handle) -> Result<bool, Error> {
         let record = self.inspect(object)?;
@@ -978,8 +978,9 @@ impl Objects {
                 .inspect(data.buffer())?
                 .buffer_info()?
                 .ok_or(Error::WrongKind)?;
-            // 10.4.5.1 rejects even fixed-length views over resizable buffers.
-            if buffer.is_resizable() {
+            // IsTypedArrayFixedLength (10.4.5): fixed views over growable
+            // shared buffers cannot gain, lose or regain indexed properties.
+            if data.array_length().is_none() || (buffer.is_resizable() && !buffer.shared) {
                 return Ok(false);
             }
         }

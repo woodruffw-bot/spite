@@ -5,6 +5,22 @@ These 41772 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Fixed shared TypedArray extensibility correction
+
+Fixed-length views over growable SharedArrayBuffers now follow the published
+IsTypedArrayFixedLength algorithm and can become non-extensible. Auto-length
+views and views over resizable ordinary buffers remain rejected. All six
+unchanged modes from the three staging preventExtensions/seal originals pass
+with Runner defaults. A native matrix checks twenty backing/view states and
+stable indices after growth. All 598 Runtime units, 2,445 non-RegExp groups,
+270 selected RegExp groups, 92 controls and quality pass. Candidate sources
+remain separate until the preceding frozen corpus run finishes.
+
+The all-1,483 staging diagnostic sweep preserves every nonpassing outcome,
+including a small eval binding panic and a killed 64-GiB String process.
+Timeouts and host failures receive no credit. No originals or modes are admitted
+at this checkpoint.
+
 ## Published-baseline feature review
 
 The [feature ledger](audit/post-baseline.md) now explains 5,782 unretained core

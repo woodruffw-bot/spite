@@ -4,6 +4,33 @@ spite targets ECMAScript 2026, edition 17. This file records implementation
 status, host choices, regression evidence and known constraints. It does not
 claim complete conformance or define an alternative language specification.
 
+## Fixed-length shared TypedArray extensibility
+
+The independent staging sweep found that PreventExtensions rejected all views
+over growable shared buffers. Published IsTypedArrayFixedLength permits fixed
+views over those buffers: their set of integer indices cannot change. The
+Runtime now rejects auto-length views and ordinary resizable-buffer views while
+allowing fixed shared views. A previous native integration expectation repeated
+the same mistake and now checks successful prevention and stable indices after
+growth.
+
+All six original modes from the three staging Object.preventExtensions,
+Reflect.preventExtensions and zero-length Object.seal tests pass with the
+unchanged resizableArrayBufferUtils helper and Runner defaults. A new native
+20-state matrix covers both buffer kinds, fixed/growable backing, offsets and
+zero/nonzero/auto lengths. All 598 Runtime units, 2,445 non-RegExp groups,
+270 selected RegExp groups, 92 controls and quality pass. Source/mode admission
+waits for the preceding frozen run; these candidate results are recorded
+separately in the conformance-shared-fixed artifacts.
+
+The initial diagnostic sweep ran all 1,483 staging candidates and preserved
+every outcome: 2,534 passing modes, 148 failed, 61 Unsupported, three Limit and
+six unverified syntax outcomes; fourteen candidates hit the outer diagnostic
+timeout and two processes failed. These are investigation results, not corpus
+admissions. In particular, a 64-GiB String test was killed and a small eval
+binding test exposed a native panic; both remain explicit investigation items.
+No timeout, host failure or unsupported result receives passing credit.
+
 ## Published-baseline prerequisites of unretained core tests
 
 The independent [feature review](../tests/test262/audit/post-baseline.md)

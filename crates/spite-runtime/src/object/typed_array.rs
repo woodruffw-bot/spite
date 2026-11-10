@@ -620,6 +620,63 @@ mod tests {
     }
 
     #[test]
+    fn prevent_extensions_requires_a_stable_index_set_including_shared_views() {
+        for shared in [false, true] {
+            for maximum in [None, Some(8)] {
+                for offset in [0, 2] {
+                    for length in [Some(0), Some(2), None] {
+                        if length.is_none() && maximum.is_none() {
+                            continue;
+                        }
+                        let mut objects = Objects::with_limits(None, None);
+                        let prototype = objects.create(None).unwrap();
+                        let buffer = if shared {
+                            objects.create_shared_array_buffer(
+                                &prototype,
+                                4,
+                                maximum,
+                                &mut unlimited(),
+                            )
+                        } else {
+                            objects.create_array_buffer(&prototype, 4, maximum, &mut unlimited())
+                        }
+                        .unwrap();
+                        let view = objects
+                            .create_typed_array(
+                                &prototype,
+                                &buffer,
+                                ElementType::Uint8,
+                                offset,
+                                length,
+                            )
+                            .unwrap();
+                        let expected = length.is_some() && (maximum.is_none() || shared);
+                        let keys = objects.own_keys(&view, &mut unlimited()).unwrap();
+                        assert_eq!(
+                            objects.prevent_extensions(&view),
+                            Ok(expected),
+                            "{shared}/{maximum:?}/{offset}/{length:?}"
+                        );
+                        assert_eq!(objects.inspect(&view).unwrap().is_extensible(), !expected);
+                        if shared && maximum.is_some() {
+                            objects
+                                .inspect(&buffer)
+                                .unwrap()
+                                .shared_array_buffer_data()
+                                .unwrap()
+                                .grow(8)
+                                .unwrap();
+                            let grown_keys = objects.own_keys(&view, &mut unlimited()).unwrap();
+                            assert_eq!(keys == grown_keys, length.is_some());
+                            assert_eq!(objects.prevent_extensions(&view), Ok(expected));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
     fn live_witnesses_floor_auto_lengths_and_recover_fixed_slots_after_resize() {
         let (mut objects, prototype, buffer, fixed) =
             fixture(10, Some(20), ElementType::Uint16, 4, Some(3));

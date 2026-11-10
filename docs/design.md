@@ -4452,8 +4452,11 @@ DefineOwnProperty rejects invalid indices or incompatible
 descriptors before conversion, then commits against current bounds. Element
 descriptors report writable, enumerable, and configurable true, but valid elements
 cannot be deleted. Own keys contain current indices followed by ordinary strings
-and Symbols. PreventExtensions rejects views backed by resizable ordinary
-buffers; Object and Reflect preserve that Boolean result and integrity failures.
+and Symbols. PreventExtensions follows IsTypedArrayFixedLength: it rejects
+auto-length views and views backed by resizable ordinary buffers. Fixed-length
+views over growable shared buffers retain a stable set of indices and can become
+non-extensible. Object and Reflect preserve the Boolean result and integrity
+failures.
 
 Element access shares DataView's checked byte I/O and numeric codec. Uint8Clamped
 rounds ties to even. BigInt reads retain opted-in magnitude and work limits;
