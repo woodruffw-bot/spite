@@ -249,17 +249,29 @@ impl Parser {
             self.allow_super_property,
             self.allow_super_call,
             self.allow_arguments,
+            self.allow_await_identifier,
+            self.await_context,
+            self.yield_context,
         );
         self.allow_new_target = true;
         self.allow_super_property = true;
         self.allow_super_call = false;
         self.allow_arguments = false;
+        // ClassFieldDefinitionEvaluation creates an ordinary initializer
+        // function (15.7.10); only its computed name uses the enclosing
+        // suspension context. See docs/design.md for the grammar discrepancy.
+        self.allow_await_identifier = true;
+        self.await_context = AwaitContext::None;
+        self.yield_context = YieldContext::None;
         let result = self.expression_with_in(2, true);
         (
             self.allow_new_target,
             self.allow_super_property,
             self.allow_super_call,
             self.allow_arguments,
+            self.allow_await_identifier,
+            self.await_context,
+            self.yield_context,
         ) = previous;
         result
     }

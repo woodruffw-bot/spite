@@ -13,6 +13,12 @@ The exact [published source identity](../tests/test262/audit/specification.json)
 is verified by Git blob, SHA-256 and byte count in CI; an annotated local copy
 cannot substitute for it.
 
+Field initializer suspension contexts have a recorded
+[grammar/runtime discrepancy](design.md#public-class-fields): ordinary initializer
+function semantics, Test262 and Node agree on an isolated context while the
+published grammar forwards enclosing Yield/Await. This interpretation remains
+explicit in the final conformance review.
+
 | Clauses | Review | Evidence |
 | --- | --- | --- |
 | 1–5: scope, conformance, references, overview and notation | Reviewed | [Scope and architecture](design.md#scope); implementation separates language completions, unsupported features and host limits |

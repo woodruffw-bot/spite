@@ -1,6 +1,6 @@
 //! Public field evaluation and construction ordering (15.7.10/14, 7.3.32/33).
 
-use spite_runtime::{Error, Realm, Value};
+use spite_runtime::{Error, PromiseJobOutcome, Realm, Value};
 
 fn check(source: &str) {
     assert_eq!(
@@ -104,6 +104,36 @@ fn initializer_this_super_and_new_target_have_their_own_function_context() {
         "class B{get x(){return this.v;}}class D extends B{v=7;x=eval('super.x');t=eval('new.target');static t=eval('new.target');}let d=new D;d.x===7 && d.t===undefined && D.t===undefined",
     );
     check("function f(k){return class {[arguments[0]]=1;};}Object.hasOwn(new (f('x')),'x')");
+    check(
+        "var await=7;function* f(){class C{x=await;static x=await;[yield 'key']=8;}yield 9;return C;}let g=f(),a=g.next(),b=g.next('chosen'),C=g.next().value;a.value==='key' && b.value===9 && C.x===7 && new C().x===7 && new C().chosen===8",
+    );
+    for prefix in ["", "'use strict';"] {
+        let mut realm = Realm::default();
+        realm.eval(&format!(
+            "{prefix}var await=7;let completed=0,failed;async function build(){{class C{{x=await;#x=await;value(){{return this.#x;}}static x=await;[await Promise.resolve('key')]=8;arrow=()=>await;future=async()=>await 9;}}await 0;return C;}}build().then(C=>{{let c=new C;if(c.x===7 && c.value()===7 && C.x===7 && c.key===8 && c.arrow()===7)completed++;return c.future();}}).then(v=>{{if(v===9)completed++;}},e=>{{failed=e;}});"
+        )).unwrap();
+        loop {
+            match realm.run_next_promise_job().unwrap() {
+                PromiseJobOutcome::NoJob => break,
+                PromiseJobOutcome::Completed => {}
+                PromiseJobOutcome::Reported(error) => panic!("{error}"),
+            }
+        }
+        assert_eq!(
+            realm.eval("completed===2 && failed===undefined"),
+            Ok(Value::Boolean(true))
+        );
+    }
+    for source in [
+        "async function f(){class C{x=await 1;}}",
+        "async function f(){class C{static x=await 1;}return C.x;}",
+        "async function f(){class C{#x=await 1;}}",
+        "function* f(){class C{x=yield 1;}}",
+    ] {
+        check(&format!(
+            "let effects=0,caught=false;try{{eval('effects=1;{source}');}}catch(e){{caught=e instanceof SyntaxError;}}caught && effects===0"
+        ));
+    }
 }
 
 #[test]

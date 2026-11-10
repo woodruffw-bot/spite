@@ -4,6 +4,30 @@ spite targets ECMAScript 2026, edition 17. This file records implementation
 status, host choices, regression evidence and known constraints. It does not
 claim complete conformance or define an alternative language specification.
 
+## Class-field initializer suspension boundary
+
+Field initializers now establish an ordinary-function grammar context instead
+of inheriting Await/Yield from an enclosing async/generator function. This fixes
+the staging Script's `x = await` identifier read and rejects direct suspension
+expressions before execution; `static x = await 1` previously reached a native
+unreachable-code panic. Computed names still suspend in the enclosing context,
+and Module code still reserves `await` as an identifier.
+
+The [design interpretation](design.md#public-class-fields) records the conflict
+between the published FieldDefinition grammar and its ordinary-function runtime
+semantics. It is not silently treated as an unambiguous specification rule.
+All 21 Script/Module grammar probes agree with Node 26.13.0. The unchanged
+positive original passes both Script modes; two related Module originals pass
+with independently reviewed exact Syntax diagnostics. This adds three originals
+and four modes: 41,573 originals, 80,091 modes and 41,782 fixture files.
+
+Validation passes 18 Parser units and 444 integrations, 600 Runtime units,
+2,445 non-RegExp groups, 270 selected RegExp groups, all 93 runner controls,
+the quality gate, and the
+complete pinned fixture/scope checks. The original invalid positive reproducer
+now reports a Parse SyntaxError in both modes instead of terminating the process;
+it receives no conformance passing credit.
+
 ## Exact published-source identity and enlarged full gate
 
 The 682f56296 frozen gate passes all 93 controls and 80,087 modes from 41,570
@@ -271,7 +295,7 @@ run is pending. All 17 hosted jobs pass for the preceding eb9da4aec revision.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained Source Text and JSON Synthetic Module records, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80087 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80091 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
 ## Proxy ownKeys collection and invariant snapshots
 

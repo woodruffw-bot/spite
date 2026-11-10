@@ -11665,10 +11665,7 @@ staging-review	test/staging/sm/extensions/typedarray-copyWithin-arguments-detach
 staging-review	test/staging/sm/extensions/typedarray-set-detach.js
 staging-review	test/staging/sm/extensions/typedarray-subarray-of-subarray.js
 staging-review	test/staging/sm/extensions/weakmap.js
-staging-review	test/staging/sm/fields/await-identifier-module-1.js
-staging-review	test/staging/sm/fields/await-identifier-module-2.js
 staging-review	test/staging/sm/fields/await-identifier-module-3.js
-staging-review	test/staging/sm/fields/await-identifier-script.js
 staging-review	test/staging/sm/fields/bug1587574.js
 staging-review	test/staging/sm/fields/init-order.js
 staging-review	test/staging/sm/fields/numeric-fields.js

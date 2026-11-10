@@ -272,6 +272,7 @@ silently acquire substitute semantics. The coverage document must list gaps.
 - [x] Audit class definitions, computed names, strict scopes, superclass construction, return overrides and built-in subclassing.
 - [x] Add public instance/static fields with ordered computed names, initializer environments, data-property creation, and base/derived construction timing.
 - [x] Audit public/private class field initialization, member layout and termination, strict initializer restrictions and private-name visibility.
+- [x] Isolate field initializer suspension contexts from enclosing async/generator code while preserving suspension in computed names; record the published grammar discrepancy.
 - [x] Parse private fields/methods/accessors, private references and brand checks, with lexical class scope and early errors.
 - [x] Audit class member grammar, constructor restrictions, private-name scope/deletion, identifier spelling and heritage syntax.
 - [x] Audit class parameter patterns, default/rest binding, iterator closing and constructor arguments across declaration/expression forms.

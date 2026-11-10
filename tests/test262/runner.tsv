@@ -41569,3 +41569,6 @@ test/staging/sm/regress/regress-643222.js	-	-	-
 test/staging/sm/RegExp/unicode-back-reference.js	-	-	-
 test/language/expressions/object/__proto__-permitted-dup.js	-	-	-
 test/staging/sm/regress/regress-610026.js	-	-	-
+test/staging/sm/fields/await-identifier-script.js	-	-	-
+test/staging/sm/fields/await-identifier-module-1.js	277	278	expected an expression
+test/staging/sm/fields/await-identifier-module-2.js	275	280	await cannot be an identifier in Modules

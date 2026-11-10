@@ -1,9 +1,25 @@
 # Test262 regression fixtures
 
-These 41779 unmodified test fixtures and twenty-eight harness files come from
+These 41782 unmodified test fixtures and twenty-eight harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Field initializer context correction
+
+The unchanged staging Script `fields/await-identifier-script.js` now passes both
+modes, and its two Module negative companions pass with exact reviewed Syntax
+diagnostics. Script initializers can read the identifier `await` inside an async
+function; direct await/yield expressions cannot suspend the ordinary initializer
+function. Computed field names preserve the enclosing suspension context.
+The [design](../../docs/design.md#public-class-fields) explicitly records the
+published grammar/runtime discrepancy behind this interpretation.
+
+The corpus now retains 41,573 originals / 80,091 modes and 41,782 fixtures.
+All 21 supplemental grammar probes agree with Node 26.13.0. Parser 18/444,
+Runtime 600 units / 2,445 non-RegExp groups / 270 selected RegExp groups,
+all 93 runner controls, quality and complete provenance/scope checks pass. The former native-panic
+reproducer now produces a Parse SyntaxError, without passing credit.
 
 ## Verified published source and completed enlarged gate
 

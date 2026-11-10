@@ -4116,6 +4116,17 @@ arrows and computed method names while ordinary function/method bodies establish
 new boundaries. Super calls are forbidden in initializer context. Caller scopes,
 strictness, and variable environments restore after language and host failures.
 
+The published edition-17 FieldDefinition grammar forwards the enclosing Yield
+and Await parameters to Initializer, which conflicts with its ordinary-function
+creation in 15.7.10. We interpret the initializer as ordinary function code:
+direct yield/await expressions are rejected, and Script initializers may read
+an identifier named `await`, including inside an enclosing async function.
+Module code still reserves that identifier. Nested async/generator functions
+establish their own contexts. Computed field names retain the enclosing
+suspension context, which is restored after parsing each initializer. This
+interpretation matches Test262's staging `await-identifier-script.js` and Node;
+the literal grammar discrepancy remains recorded for conformance review.
+
 CreateDataPropertyOrThrow defines an enumerable/writable/configurable own property
 without invoking inherited setters. Initializers run before descriptor rejection;
 fields that precede an abrupt completion remain installed. Base fields initialize

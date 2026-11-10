@@ -41806,3 +41806,6 @@ script-pass	633d6196c39fa03731d07f5dad599067fca1c0e9bc422cd2fdc0a99c859b67e7	tes
 script-pass	0f5bcfd45b4ff6f1263caad98e25157bc442633a87a02e4e8426656e403ccfef	test/staging/sm/RegExp/unicode-back-reference.js
 script-pass	22d27f287beaf1fa64a9700f591be84c6c3d0af1a200f2d948abc6c7b06c9d94	test/language/expressions/object/__proto__-permitted-dup.js
 script-pass	3e51c518c8c55fd96d32070283ade31249973057e79cbe1f3aedaeadba83d73f	test/staging/sm/regress/regress-610026.js
+script-pass	4bf4a3af811fba9242365e221f9fff8446f78074e5b91f37027a87f7074404fe	test/staging/sm/fields/await-identifier-script.js
+parse-syntax-error	f1e499ee086e8aad54d60df9bdee33f7e5e272d18773c014bc611b696867e80d	test/staging/sm/fields/await-identifier-module-1.js
+parse-syntax-error	141a03470fbb0faeb21bb06f386d20618ff698145c5506a0096e5492d038a802	test/staging/sm/fields/await-identifier-module-2.js
