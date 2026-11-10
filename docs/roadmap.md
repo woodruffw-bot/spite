@@ -4,6 +4,8 @@ Track implementation of concrete specification behavior here. Each milestone
 lands in small commits with tests. Record test execution and fixture inventories
 in [coverage](coverage.md) and the [Test262 documentation](../tests/test262/README.md).
 No milestone implies full conformance until the final audit passes.
+The completed implementation reviews below are evidence for that audit, not a
+completed qualification of every applicable Test262 original.
 
 ## 0. Foundation
 
@@ -736,3 +738,12 @@ silently acquire substitute semantics. The coverage document must list gaps.
 Full conformance requires more than a passing subset or a test count. Every
 mandatory baseline feature must have implementation and test evidence, with all
 host choices and legitimate optional exclusions documented.
+
+## Published-baseline qualification
+
+- [x] Permit own-property inspection of an intentionally absent Test262 completion helper while preserving Unsupported reads and calls.
+- [ ] Account for the complete pinned Test262 test tree and verify retained originals against its Git object identities.
+- [ ] Independently review all unretained core-language tests against the published baseline, including Unicode-version and host-capacity differences.
+- [ ] Review optional, host-specific and supplementary test inventories without treating their exclusion as implementation evidence.
+- [ ] Resolve mandatory semantic failures found by the expanded audit and rerun the complete applicable corpus on supported platforms.
+- [ ] Reconcile the specification review, intentional deviations and host constraints before making a conformance claim.

@@ -918,7 +918,7 @@ impl Realm {
                 span,
             );
         };
-        if property.is_none() && self.missing_intrinsic_property(object, key, span)? {
+        if property.is_none() && self.missing_intrinsic_descriptor(object, key, span)? {
             return Err(Self::unsupported(
                 span,
                 "intrinsic property descriptor is not implemented",
@@ -956,6 +956,18 @@ impl Realm {
             return Ok(false);
         };
         self.missing_global_property(object, key, span)
+    }
+
+    pub(crate) fn missing_intrinsic_descriptor<'key>(
+        &mut self,
+        object: &ObjectHandle,
+        key: impl Into<PropertyKeyRef<'key>>,
+        span: Span,
+    ) -> Result<bool, Error> {
+        let Some(key) = key.into().as_string() else {
+            return Ok(false);
+        };
+        self.missing_global_descriptor(object, key, span)
     }
 }
 

@@ -322,7 +322,22 @@ impl Realm {
     /// name, and existing implemented globals retain their normal behavior.
     /// Ordinary realms reserve no extra host names.
     pub fn reserve_unsupported_global(&mut self, name: impl Into<String>) {
-        self.record.unsupported_host_globals.insert(name.into());
+        let name = name.into();
+        self.record.inspectable_host_absences.remove(&name);
+        self.record.unsupported_host_globals.insert(name);
+    }
+
+    /// Reserves an absent host global while permitting own-property inspection.
+    ///
+    /// An absent property's descriptor is undefined and own-property predicates
+    /// return false. Reading or using the missing global still reports Unsupported.
+    /// This supports optional host protocols such as Test262's `$DONE`, which is
+    /// intentionally absent outside asynchronous tests. Existing properties and
+    /// lexical shadows retain their ordinary behavior.
+    pub fn reserve_absent_host_global(&mut self, name: impl Into<String>) {
+        let name = name.into();
+        self.record.inspectable_host_absences.insert(name.clone());
+        self.record.unsupported_host_globals.insert(name);
     }
 
     /// Parses, validates, and evaluates a Script in this realm.

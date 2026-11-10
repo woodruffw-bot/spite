@@ -16,6 +16,7 @@ pub(crate) struct RealmRecord {
     pub intrinsics: Option<Intrinsics>,
     pub template_map: Vec<(Rc<[TemplateElement]>, ObjectHandle)>,
     pub unsupported_host_globals: BTreeSet<String>,
+    pub inspectable_host_absences: BTreeSet<String>,
     pub supported_import_attributes: BTreeSet<JsString>,
     pub time_zone: Option<TimeZone>,
 }
@@ -56,6 +57,7 @@ impl Realm {
                 })?;
         let child = RealmRecord {
             unsupported_host_globals: self.record.unsupported_host_globals.clone(),
+            inspectable_host_absences: self.record.inspectable_host_absences.clone(),
             supported_import_attributes: self.record.supported_import_attributes.clone(),
             time_zone: self.record.time_zone.clone(),
             ..RealmRecord::default()

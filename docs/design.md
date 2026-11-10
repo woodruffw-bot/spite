@@ -3701,6 +3701,13 @@ evaluation. Raw async variants supply their own print-completion messages withou
 injected harness files, preserving their source bytes and execution mode. A missing
 $DONE remains an Unsupported host boundary unless the source defines it. Metadata
 selects suspending or nonsuspending Test262 agents.
+Non-async variants intentionally omit $DONE. They use
+Realm::reserve_absent_host_global so own-property descriptors and predicates can
+observe that absence, as required by the original asyncHelpers self-tests.
+Reads, calls, typeof and other guarded property operations remain Unsupported;
+raw async variants retain the strict reservation. This policy follows the target
+global's Realm through foreign and Proxy descriptor operations. Ordinary Realms
+have no such reservations.
 All executed variants receive a private diagnostic print capture. Its constant
 host bootstrap is parsed separately from test-supplied source, then evaluated
 under the normal Realm limits; test, harness and imported source keep their

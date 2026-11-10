@@ -23,6 +23,35 @@ fn run_with_includes(body: &str, includes: &str) -> Vec<Outcome> {
 }
 
 #[test]
+fn non_async_helpers_can_check_completion_absence_without_enabling_missing_calls() {
+    assert_eq!(
+        run_with_includes(
+            "assert.sameValue(Object.hasOwn(globalThis,'$DONE'),false);assert.sameValue(Object.getOwnPropertyDescriptor(globalThis,'$DONE'),undefined);assert.throws(Test262Error,()=>asyncTest(()=>Promise.resolve()));",
+            "asyncHelpers.js"
+        ),
+        [Outcome::Passed, Outcome::Passed]
+    );
+    for body in [
+        "assert.throws(ReferenceError,()=>$DONE());",
+        "assert.throws(TypeError,()=>globalThis.$DONE());",
+        "const child=$262.createRealm().global;assert.throws(TypeError,()=>Reflect.get(child,'$DONE')());",
+    ] {
+        assert!(
+            run_with_includes(body, "asyncHelpers.js")
+                .iter()
+                .all(|outcome| matches!(
+                    outcome,
+                    Outcome::Unsupported {
+                        stage: Stage::Runtime,
+                        ..
+                    }
+                )),
+            "{body}"
+        );
+    }
+}
+
+#[test]
 fn original_property_helper_verifies_descriptors_restoration_and_callable_metadata() {
     assert_eq!(
         run_with_includes(

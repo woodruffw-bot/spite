@@ -304,7 +304,7 @@ impl Runner {
                 }
                 Some(print)
             } else {
-                realm.reserve_unsupported_global("$DONE");
+                realm.reserve_absent_host_global("$DONE");
                 None
             };
             let files = metadata.harness_files();

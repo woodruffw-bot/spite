@@ -646,7 +646,7 @@ impl Realm {
                 let property = self.object_work(span, |objects, budget| {
                     objects.get_own(&object, &key, budget)
                 })?;
-                if property.is_none() && self.missing_intrinsic_property(&object, &key, span)? {
+                if property.is_none() && self.missing_intrinsic_descriptor(&object, &key, span)? {
                     return Err(Self::unsupported(
                         span,
                         "intrinsic property descriptor is not implemented",

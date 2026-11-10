@@ -5,7 +5,7 @@ use crate::{
     object::{DataDescriptor, Property},
 };
 use spite_core::{JsString, Span};
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
 
 impl Realm {
     pub(super) fn initialize_realm(&mut self) -> Result<(), Error> {
@@ -502,12 +502,63 @@ impl Realm {
         key: &JsString,
         span: Span,
     ) -> Result<bool, Error> {
-        let count = self.host_global_names(object)?.map_or(0, BTreeSet::len);
+        self.missing_global_member(object, key, false, span)
+    }
+
+    pub(super) fn missing_global_descriptor(
+        &mut self,
+        object: &ObjectHandle,
+        key: &JsString,
+        span: Span,
+    ) -> Result<bool, Error> {
+        self.missing_global_member(object, key, true, span)
+    }
+
+    fn missing_global_member(
+        &mut self,
+        object: &ObjectHandle,
+        key: &JsString,
+        inspect_absence: bool,
+        span: Span,
+    ) -> Result<bool, Error> {
+        let count = self
+            .host_global_record(object)?
+            .map_or(0, |record| record.unsupported_host_globals.len());
         if count == 0 {
             return Ok(false);
         }
         // Prepay decoding and tree lookup before converting the key. Work units
         // count UTF-16 input units, as for supported import-attribute lookups.
+        self.host_name_lookup_work(key, count, span)?;
+        // Identifier names are UTF-8 scalar strings, while arbitrary property
+        // names may contain lone surrogates; those never name configured host barriers.
+        let Ok(name) = String::from_utf16(key.code_units()) else {
+            return Ok(false);
+        };
+        let record = self
+            .host_global_record(object)?
+            .expect("checked global owner");
+        if !record.unsupported_host_globals.contains(&name) {
+            return Ok(false);
+        }
+        let absences = record.inspectable_host_absences.len();
+        if !inspect_absence || absences == 0 {
+            return Ok(true);
+        }
+        self.host_name_lookup_work(key, absences, span)?;
+        Ok(!self
+            .host_global_record(object)?
+            .expect("checked global owner")
+            .inspectable_host_absences
+            .contains(&name))
+    }
+
+    fn host_name_lookup_work(
+        &mut self,
+        key: &JsString,
+        count: usize,
+        span: Span,
+    ) -> Result<(), Error> {
         let levels = count.ilog2() as usize + 1;
         let work = key
             .len()
@@ -517,21 +568,15 @@ impl Realm {
                 span,
                 message: "global host-name lookup work capacity exceeded".into(),
             })?;
-        self.object_work(span, |_, budget| budget.charge(work))?;
-        // Identifier names are UTF-8 scalar strings, while arbitrary property
-        // names may contain lone surrogates; those never name configured host barriers.
-        let Ok(name) = String::from_utf16(key.code_units()) else {
-            return Ok(false);
-        };
-        Ok(self
-            .host_global_names(object)?
-            .expect("checked global owner")
-            .contains(&name))
+        self.object_work(span, |_, budget| budget.charge(work))
     }
 
-    fn host_global_names(&self, object: &ObjectHandle) -> Result<Option<&BTreeSet<String>>, Error> {
+    fn host_global_record(
+        &self,
+        object: &ObjectHandle,
+    ) -> Result<Option<&crate::realm_record::RealmRecord>, Error> {
         if self.record.global_object.as_ref() == Some(object) {
-            return Ok(Some(&self.record.unsupported_host_globals));
+            return Ok(Some(&self.record));
         }
         let Some(owner) = self
             .objects
@@ -551,7 +596,7 @@ impl Realm {
         if record.global_object.as_ref() != Some(object) {
             return Err(Error::InvalidObject(crate::object::Error::WrongKind));
         }
-        Ok(Some(&record.unsupported_host_globals))
+        Ok(Some(record))
     }
 
     pub(super) fn check_global_property_operation<'key>(

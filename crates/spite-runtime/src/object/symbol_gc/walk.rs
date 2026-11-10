@@ -98,6 +98,7 @@ pub(super) fn symbols(
                     intrinsics: _,
                     template_map: _,
                     unsupported_host_globals: _,
+                    inspectable_host_absences: _,
                     supported_import_attributes: _,
                     time_zone: _,
                 } = realm.as_ref();

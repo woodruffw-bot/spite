@@ -5,6 +5,21 @@ These 41772 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Complete-tree qualification and harness self-tests
+
+The pinned test tree contains 53,597 non-_FIXTURE JavaScript originals, of which
+41,563 are retained and 12,034 require explicit scope accounting. Qualification
+of that entire inventory remains open; passing the retained subset establishes
+no whole-suite percentage or full-conformance claim.
+
+Separately, all 116 unchanged original harness self-tests pass 232 modes. Two
+previously reported Unsupported when asyncHelpers inspected the intentionally
+absent non-async $DONE property. The host now permits that own-property
+inspection while reads/calls remain guarded. All 92 runner controls, 597 Runtime
+units, 2,445 non-RegExp groups, 270 selected RegExp groups and quality pass.
+Originals, helpers, reviews and the 80,074-mode retained inventory are unchanged;
+the new full run is pending. All 17 hosted jobs pass for eb9da4aec.
+
 ## Proxy ownKeys snapshot audit
 
 All 400 supplemental cases match the published model and Node under ordinary

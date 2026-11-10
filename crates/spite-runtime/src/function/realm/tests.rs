@@ -29,6 +29,51 @@ fn expose_child(
 }
 
 #[test]
+fn inspectable_host_absence_follows_the_global_owner_without_enabling_missing_reads() {
+    let mut realm = Realm::default();
+    realm.reserve_absent_host_global("optionalHost");
+    realm.reserve_unsupported_global("strictHost");
+    let (environment, function) = child_realm_fixture(&mut realm, "function noop(){}noop");
+    expose_child(&mut realm, &environment, function);
+    assert_eq!(
+        realm.eval(
+            r#"
+        const targets=[globalThis,child,new Proxy(globalThis,{}),new Proxy(child,{})];
+        targets.every(target=>!Object.hasOwn(target,'optionalHost') &&
+            !Object.prototype.hasOwnProperty.call(target,'optionalHost') &&
+            !Object.prototype.propertyIsEnumerable.call(target,'optionalHost') &&
+            Object.getOwnPropertyDescriptor(target,'optionalHost')===undefined &&
+            Reflect.getOwnPropertyDescriptor(target,'optionalHost')===undefined)
+    "#
+        ),
+        Ok(Value::Boolean(true))
+    );
+    for source in [
+        "optionalHost",
+        "typeof optionalHost",
+        "globalThis.optionalHost",
+        "Reflect.get(child,'optionalHost')",
+        "new Proxy(child,{}).optionalHost",
+        "Object.getOwnPropertyDescriptor(child,'strictHost')",
+    ] {
+        assert!(
+            matches!(realm.eval(source), Err(Error::Unsupported { .. })),
+            "{source}"
+        );
+    }
+    realm.reserve_unsupported_global("optionalHost");
+    assert!(matches!(
+        realm.eval("Object.hasOwn(globalThis,'optionalHost')"),
+        Err(Error::Unsupported { .. })
+    ));
+    assert_eq!(
+        realm.eval("Object.hasOwn(child,'optionalHost')"),
+        Ok(Value::Boolean(false))
+    );
+    assert_eq!(realm.eval("function optionalHost(){return 7}Object.hasOwn(globalThis,'optionalHost')&&optionalHost()===7"), Ok(Value::Boolean(true)));
+}
+
+#[test]
 fn foreign_global_barriers_follow_the_target_realm_through_proxy_operations() {
     let mut realm = Realm::default();
     realm.reserve_unsupported_global("sharedHost");

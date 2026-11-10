@@ -4,6 +4,28 @@ spite targets ECMAScript 2026, edition 17. This file records implementation
 status, host choices, regression evidence and known constraints. It does not
 claim complete conformance or define an alternative language specification.
 
+## Qualification audit and absent completion helper
+
+The official annotated es2026 tag resolves to the existing specification pin,
+0248456c758431e4bb8e5d26333ff1865123c9cd. An independent inventory of the entire
+pinned Test262 tree finds 53,597 non-_FIXTURE JavaScript originals: 41,563 retained
+and 12,034 unretained. These counts establish the audit denominator, not a
+conformance percentage. The broader exclusion review remains open.
+
+All 116 original harness self-tests were run separately without rewritten bytes
+or additional allowances. Before the correction, 230 modes passed and two
+reported Unsupported because asyncHelpers checks that non-async variants have
+no own $DONE property. The runner now permits own-property inspection of that
+intentional absence while retaining Unsupported reads, calls and typeof. All
+232 modes pass afterward; they are infrastructure checks, not added language
+conformance credit. The saved conformance-harness-selftest artifacts retain
+before/after results, source hashes and build identities.
+
+All 597 Runtime units, 2,445 non-RegExp groups, 270 selected RegExp groups,
+92 runner controls and the quality gate pass. The retained corpus remains
+41,563 originals / 80,074 modes with unchanged bytes and reviews; its new full
+run is pending. All 17 hosted jobs pass for the preceding eb9da4aec revision.
+
 ## Available now
 
 | Area | Implemented behavior |
