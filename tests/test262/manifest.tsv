@@ -41805,3 +41805,4 @@ script-pass	b12518725e6937f2342c07197002551a7322ec7d06ed5c8730446758725c97ea	tes
 script-pass	633d6196c39fa03731d07f5dad599067fca1c0e9bc422cd2fdc0a99c859b67e7	test/staging/sm/regress/regress-643222.js
 script-pass	0f5bcfd45b4ff6f1263caad98e25157bc442633a87a02e4e8426656e403ccfef	test/staging/sm/RegExp/unicode-back-reference.js
 script-pass	22d27f287beaf1fa64a9700f591be84c6c3d0af1a200f2d948abc6c7b06c9d94	test/language/expressions/object/__proto__-permitted-dup.js
+script-pass	3e51c518c8c55fd96d32070283ade31249973057e79cbe1f3aedaeadba83d73f	test/staging/sm/regress/regress-610026.js

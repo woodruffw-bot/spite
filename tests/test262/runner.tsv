@@ -41568,3 +41568,4 @@ test/staging/built-ins/Reflect/preventExtensions/preventExtensions-variable-leng
 test/staging/sm/regress/regress-643222.js	-	-	-
 test/staging/sm/RegExp/unicode-back-reference.js	-	-	-
 test/language/expressions/object/__proto__-permitted-dup.js	-	-	-
+test/staging/sm/regress/regress-610026.js	-	-	-

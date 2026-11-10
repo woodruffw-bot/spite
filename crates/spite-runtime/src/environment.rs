@@ -198,6 +198,34 @@ mod tests {
     }
 
     #[test]
+    fn empty_blocks_preserve_completions_without_allocating_declarative_environments() {
+        for prefix in ["", "'use strict';"] {
+            let mut realm = Realm::new(Limits {
+                max_heap_entries: Some(crate::test_support::REALM_ENTRIES),
+                ..Limits::default()
+            });
+            let source = format!("{prefix}17;{}label:{{}}", "{}".repeat(4096));
+            assert_eq!(realm.eval(&source), Ok(Value::Number(17.0)));
+            assert!(matches!(realm.eval("{17;}"), Err(Error::Limit { .. })));
+        }
+        let mut reclaimed = Vec::new();
+        for statement in [";", "{}"] {
+            let mut realm = Realm::default();
+            realm.eval(&format!("var result;async function f(){{await 0;{statement}return 17}}f().then(value=>result=value)")).unwrap();
+            loop {
+                match realm.run_next_promise_job().unwrap() {
+                    crate::PromiseJobOutcome::NoJob => break,
+                    crate::PromiseJobOutcome::Completed => (),
+                    outcome => panic!("unexpected job result: {outcome:?}"),
+                }
+            }
+            assert_eq!(realm.eval("result"), Ok(Value::Number(17.0)));
+            reclaimed.push(realm.collect(usize::MAX).unwrap().reclaimed);
+        }
+        assert_eq!(reclaimed[0], reclaimed[1]);
+    }
+
+    #[test]
     fn per_iteration_copies_preserve_old_bindings_and_share_the_same_outer() {
         let mut realm = Realm::default();
         realm.eval("let outer = 9").unwrap();
@@ -391,7 +419,8 @@ mod tests {
         for _ in 0..2 {
             realm.eval("{ let transient = 1; }").unwrap();
         }
-        assert!(matches!(realm.eval("{}"), Err(Error::Limit { .. })));
+        // A nonempty Block requires an environment; the empty production does not.
+        assert!(matches!(realm.eval("{;}"), Err(Error::Limit { .. })));
         assert_eq!(
             realm.eval("typeof transient"),
             Ok(Value::String(JsString::from("undefined")))

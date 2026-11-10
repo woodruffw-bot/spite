@@ -1431,6 +1431,9 @@ parameters. Duplicate block functions and functions in bare statement/label
 positions do not receive Annex B exceptions. AST inventories expose direct
 functions separately from var bindings without descending into nested functions.
 Entering a block initializes its function bindings before executing statements.
+The empty Block production returns an empty completion directly (14.2.2),
+without a declarative environment. Both ordinary and resumable execution use
+that rule; only nonempty blocks create scope/disposal records.
 Script/function bodies instantiate only the last declaration of each function
 name. Global declaration conflicts are checked before creating bindings; global
 functions cannot replace undefined, NaN, or Infinity (16.1.7). Evaluating a function

@@ -86,6 +86,14 @@ impl Realm {
         data: &mut AsyncExecutionData,
         span: Span,
     ) -> Result<Step, Error> {
+        let location = data.statement.as_ref().expect("block source location");
+        if let StatementKind::Block(body) = &active_statement(&data.body, Some(location)).kind
+            && body.is_empty()
+        {
+            // 14.2.2's empty production needs neither a scope nor a cursor.
+            data.statement = None;
+            return Ok(Step::Complete(Completion::normal(None)));
+        }
         data.frames
             .try_reserve(1)
             .map_err(|_| allocation_error(span))?;

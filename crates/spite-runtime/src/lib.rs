@@ -889,6 +889,8 @@ impl Realm {
                 self.evaluate_var_bindings(bindings)?;
                 Ok(Completion::normal(None))
             }
+            // 14.2.2: an empty Block returns an empty completion directly.
+            StatementKind::Block(body) if body.is_empty() => Ok(Completion::normal(None)),
             StatementKind::Block(body) => {
                 self.push_scope(BTreeMap::new(), statement.span)?;
                 let environment = self.scopes.last().expect("block environment").clone();

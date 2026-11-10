@@ -4,6 +4,31 @@ spite targets ECMAScript 2026, edition 17. This file records implementation
 status, host choices, regression evidence and known constraints. It does not
 claim complete conformance or define an alternative language specification.
 
+## Empty Block evaluation without scope allocation
+
+Published 14.2.2 returns an empty completion directly for `{}`. Both evaluators
+previously created a declarative environment, and resumable execution also
+created a block cursor. They now follow the empty production directly; nonempty
+blocks retain their instantiation, disposal and quota behavior.
+
+A new native unit executes 4,096 empty blocks and a labelled empty block with
+no spare heap entries in both strictness modes, preserves the preceding value,
+and compares async post-Await collection with an empty statement. The existing
+allocation-quota controls use `{;}` to request an actual nonempty-block scope;
+their allocation, limit and collection assertions remain enforced. All 600
+Runtime units, 2,445 non-RegExp groups, 270 selected RegExp groups, 93 controls
+and quality pass. No default quota or additional Runner allowance is introduced.
+
+The unchanged staging regress-610026 source evaluates millions of empty blocks.
+Both original modes pass in 25.377 seconds with 2,274,016 KiB peak RSS. The outer
+diagnostic supervisor had a 5-GiB address-space ceiling and a 240-second deadline;
+neither was reached. Raw output and source/binary identities are preserved in
+the conformance-empty-block artifacts. The original is now retained unchanged.
+
+Inventories become 41,779 fixtures, 41,570 originals / 80,087 modes, twenty-eight
+helpers and 93 controls. Scope entries become 12,027, including 1,477 staging
+entries. The next frozen full gate remains pending.
+
 ## Core exclusion qualification and complete backreference regression gate
 
 The [core exclusion review](../tests/test262/audit/core-review.md) resolves the
@@ -225,7 +250,7 @@ run is pending. All 17 hosted jobs pass for the preceding eb9da4aec revision.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained Source Text and JSON Synthetic Module records, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80085 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80087 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
 ## Proxy ownKeys collection and invariant snapshots
 

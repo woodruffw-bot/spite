@@ -7,7 +7,8 @@ use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
 fn default_realms_accept_programs_beyond_the_former_resource_quotas() {
     let cases = [
         (
-            "function f(){for(var i=0;i<11000;i++){}return i;}f()===11000".to_owned(),
+            // A nonempty Block requires a new environment on every iteration.
+            "function f(){for(var i=0;i<11000;i++){;}return i;}f()===11000".to_owned(),
             Limits {
                 max_heap_entries: Some(10_000),
                 ..Limits::default()

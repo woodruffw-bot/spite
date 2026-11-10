@@ -745,6 +745,7 @@ host choices and legitimate optional exclusions documented.
 - [x] Follow IsTypedArrayFixedLength when preventing extensions of fixed-length views over growable shared buffers.
 - [x] Recreate deleted eval bindings in their resolved declarative environment for non-strict writes and reject strict writes with ReferenceError.
 - [x] Require complete Unicode code points in forward and backward UTF-16 backreferences, preserving ordinary code-unit matching.
+- [x] Evaluate empty blocks without declarative environments or async cursors while preserving empty completions and explicit quotas on nonempty blocks.
 - [x] Account for the complete pinned Test262 test tree and verify retained originals against its Git object identities.
 - [x] Independently review all unretained core-language tests against the published baseline, including Unicode-version and host-capacity differences.
 - [ ] Review optional, host-specific and supplementary test inventories without treating their exclusion as implementation evidence.

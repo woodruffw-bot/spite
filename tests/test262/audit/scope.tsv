@@ -11917,7 +11917,6 @@ staging-review	test/staging/sm/regress/regress-598176.js
 staging-review	test/staging/sm/regress/regress-600067.js
 staging-review	test/staging/sm/regress/regress-601399.js
 staging-review	test/staging/sm/regress/regress-602621.js
-staging-review	test/staging/sm/regress/regress-610026.js
 staging-review	test/staging/sm/regress/regress-617405-1.js
 staging-review	test/staging/sm/regress/regress-617405-2.js
 staging-review	test/staging/sm/regress/regress-618572.js

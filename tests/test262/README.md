@@ -1,9 +1,25 @@
 # Test262 regression fixtures
 
-These 41778 unmodified test fixtures and twenty-eight harness files come from
+These 41779 unmodified test fixtures and twenty-eight harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Empty Block evaluation and large-script admission
+
+Empty blocks now return an empty completion directly, without scope/cursor
+allocation, in ordinary and resumable execution. The native regression checks
+strictness, labels, completion values, async collection and execution without
+spare heap entries. Allocation-quota controls use nonempty blocks and retain
+their limit/collection checks. All 600 Runtime units, 2,445 non-RegExp groups,
+270 selected RegExp groups, 93 controls and quality pass.
+
+The unchanged regress-610026 original passes both modes in 25.377 seconds with
+Runner defaults, using 2,274,016 KiB peak RSS under an unreached outer 5-GiB/
+240-second diagnostic guard. It is now retained, adding two modes. Counts are
+41,779 fixtures, 41,570 originals / 80,087 modes and twenty-eight helpers;
+12,027 scope entries remain, including 1,477 staging entries. The enlarged full
+gate is pending.
 
 ## Completed core exclusion review and two admissions
 
