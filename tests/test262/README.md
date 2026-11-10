@@ -5,6 +5,20 @@ These 41776 unmodified test fixtures and twenty-eight harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Unicode backreference boundary correction
+
+The regress UTF-16 comparator now rejects backreferences that consume only half
+of a surrogate pair, in both directions. All 1,944 cases match an independent
+model and Node afterward, resolving eight earlier mismatches. The unchanged
+staging original passes both modes with Runner defaults; native examples extend
+an existing group. All 113 Core units, 599 Runtime units, five numbered-reference
+groups, 92 controls, nine scope controls and quality pass. The full 5,062-group
+Runtime integration run is in progress.
+
+The original remains a candidate while the cfc17a9d0 frozen full run is active;
+retained sources, helpers, reviews and modes are unchanged. All 17 hosted jobs
+pass for dcc30e012 and e028fb990.
+
 ## Deleted eval bindings and first staging admissions
 
 SetMutableBinding now follows the published missing-binding step: a non-strict

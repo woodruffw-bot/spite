@@ -19,6 +19,9 @@ Local changes:
 - Decode UnicodeSets `\b` class members as backspace.
 - Balance flat disjunction IR trees while preserving branch order, preventing
   native-stack overflow during recursive optimization and destruction.
+- Require Unicode code-point boundaries at both ends of UTF-16 backreferences,
+  including backward matching, so a lone captured surrogate cannot match half
+  of a valid input pair. UCS-2 matching retains code-unit behavior.
 
 Rust 1.88 is required for the upstream let-chain syntax. Runtime uses this
 adapter for all native matching. Backend representation limits remain explicit

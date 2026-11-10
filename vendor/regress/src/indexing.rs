@@ -890,6 +890,13 @@ impl<'a> Utf16Input<'a> {
     fn code_point_from_surrogates(high: u16, low: u16) -> u32 {
         (((high & 0x3ff) as u32) << 10 | (low & 0x3ff) as u32) + 0x1_0000
     }
+
+    fn is_code_point_boundary(&self, offset: usize) -> bool {
+        offset == 0
+            || offset == self.input.len()
+            || !Self::is_high_surrogate(self.input[offset - 1])
+            || !Self::is_low_surrogate(self.input[offset])
+    }
 }
 
 #[cfg(feature = "utf16")]
@@ -1102,10 +1109,14 @@ impl<'a> InputIndexer for Utf16Input<'a> {
             return false;
         };
 
-        let new_range = &self.input[self.pos_to_offset(start)..self.pos_to_offset(end)];
-        let old_range = &self.input[self.pos_to_offset(range.start)..self.pos_to_offset(range.end)];
-
-        new_range == old_range
+        let start = self.pos_to_offset(start);
+        let end = self.pos_to_offset(end);
+        // Unicode backreferences compare code points (BackreferenceMatcher),
+        // so equal code units must not consume half of a surrogate pair.
+        self.is_code_point_boundary(start)
+            && self.is_code_point_boundary(end)
+            && self.input[start..end]
+                == self.input[self.pos_to_offset(range.start)..self.pos_to_offset(range.end)]
     }
 
     fn match_bytes<const N: usize, Dir: Direction>(

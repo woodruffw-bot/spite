@@ -59,6 +59,21 @@ fn numbered_reference_result_snapshot() {
 #[test]
 fn native_results_keep_captures_indices_aliases_and_case_from_the_input() {
     check(
+        r#"
+        for(const flags of ['u','ui','v','vi']) {
+            for(const suffix of ['\uDC00','\uD834','A','']) {
+                const a=new RegExp('foo(.+)bar\\1',flags).exec('foo\uD834bar\uD834'+suffix);
+                if(suffix==='\uDC00' ? a!==null : a===null||a[1]!=='\uD834')throw 1;
+            }
+            if(new RegExp('(?<=\\1#(.+))$',flags).test('\uD834\uDC00#\uDC00'))throw 2;
+            if(!new RegExp('(?<=\\1#(.+))$',flags).test('\uD834\uDC00#\uD834\uDC00'))throw 3;
+            if(new RegExp('^(?<x>.+)#\\k<x>',flags).test('\uD834#\uD834\uDC00'))throw 4;
+        }
+        new RegExp('^(.+)#\\1').test('\uD834#\uD834\uDC00')&&
+            new RegExp('(?<=\\1#(.+))$').test('\uD834\uDC00#\uDC00')
+    "#,
+    );
+    check(
         r"let a=/(?<x>a)\1/di.exec('qAa');a[0]==='Aa'&&a[1]==='A'&&a.groups.x==='A'&&a.indices[0][0]===1&&a.indices[0][1]===3&&a.indices.groups.x===a.indices[1]&&a.indices[1][0]===1&&a.indices[1][1]===2",
     );
     check(

@@ -4,6 +4,30 @@ spite targets ECMAScript 2026, edition 17. This file records implementation
 status, host choices, regression evidence and known constraints. It does not
 claim complete conformance or define an alternative language specification.
 
+## Unicode backreference boundaries
+
+The staging unicode-back-reference original exposed raw UTF-16 equality accepting
+half of an input surrogate pair. The regress UTF-16 comparator now checks both
+range boundaries before accepting a backreference, including backward matching.
+The ordinary UCS-2 comparator and case-folded code-point comparison retain their
+existing behavior. The change adds a small boundary predicate to the backend.
+
+An independent code-point/code-unit model and Node agree on all 1,944 combinations
+of forward/backward, named/numbered, ordinary/u/v, case-sensitive/insensitive and
+lone/paired surrogate inputs. Before the correction, eight backend results
+disagree; afterward all 1,944 match. The unchanged original now passes both modes
+with Runner defaults. Cases extend an existing native group, including legacy
+controls that still allow code-unit matches. All five numbered-reference groups,
+113 Core units, 599 Runtime units, 92 runner controls, nine scope controls and
+quality pass. The complete 5,062-group Runtime integration run is in progress.
+The conformance-backref-boundaries artifacts retain models, before/after results,
+original bytes and executable/source hashes.
+
+Originals, helpers and modes remain unchanged while the cfc17a9d0 enlarged full
+run is active. The original backreference admission remains pending. All 17
+hosted jobs pass for dcc30e012 and e028fb990, including the complete upstream
+provenance/scope checker.
+
 ## Deleted eval binding writes and staging admissions
 
 The published SetMutableBinding algorithm explicitly handles a binding deleted

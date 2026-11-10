@@ -1450,6 +1450,10 @@ Adapter clones share the immutable compiled expression; each execution returns
 its whole range and source-order optional capture ranges. Undefined captures remain
 distinct from defined empty captures. Original Patterns are compiled directly,
 without source projections, capture-head rewriting or pattern-shape dispatch.
+UTF-16 backreferences require code-point boundaries at both ends of the compared
+input range, following BackreferenceMatcher. Equal code units cannot consume
+only a lead surrogate in forward matching or a trail surrogate in backward
+matching. Ordinary UCS-2 matching retains code-unit semantics.
 The pinned upstream revision, local patches and licenses live under
 `vendor/regress`; `SPITE-PATCHES.md` records the integration changes. Rust 1.99
 is the minimum supported compiler. The Windows Rust 1.88 debug linker reaches
