@@ -13,9 +13,9 @@ the verified upstream inventory and `scope.tsv`; none is counted as passing.
 | Disposition | Originals | Evidence |
 | --- | ---: | --- |
 | `unicode-version-difference` | 92 | Ninety exhaustive property datasets disagree with Unicode18; two literal loops require obsolete join-control IdentityEscapes. |
-| `optional-legacy-helpers` | 58 | Fifty-four legacy Object.prototype helper tests and four private-accessor tests call disabled normative optional lookup/definition helpers. |
+| `optional-legacy-helpers` | 74 | Fifty-four lookup/definition helper tests, four private-accessor tests using those helpers, fifteen __proto__ accessor tests and one TypedArray prototype check through that accessor require disabled normative optional Object.prototype facilities. |
 | `optional-function-introspection` | 23 | Non-strict `.caller` reads assume a caller-chain extension or an undefined fallback; this host retains the required Function.prototype poison accessors and supplies no own caller extension. |
-| `optional-annex-b-dependent` | 17 | Fifteen Object.prototype.__proto__ tests, one TypedArray prototype check through that accessor, and one String.split file requiring Annex B RegExp escapes. |
+| `optional-annex-b-dependent` | 1 | One String.split file requires Annex B RegExp escapes. |
 | `post-publication-assertion` | 6 | Iterator.take/drop assertions reject finite limits above 2**53-1; the published algorithms reject NaN/negative limits and retain larger mathematical counts. |
 | `allocation-assumption` | 5 | Dense-allocation assumptions contradict the host's sparse byte-block representation; the TypedArray object-length case also assumes allocation failure after ToLength clamps 2**53. |
 
@@ -42,9 +42,11 @@ SyntaxErrors. No fragment of an incompatible original is substituted for it.
 
 ## Optional properties and escape grammar
 
-The legacy Object.prototype lookup/definition helpers are explicitly normative
-optional in edition 17. The __proto__ accessor and extended RegExp IdentityEscape
-grammar belong to Annex B, which this non-browser host disables. The String.split
+The legacy Object.prototype lookup/definition helpers and __proto__ accessor
+are explicitly normative optional in edition 17 (20.1.3.8-9). The sixteen
+accessor-dependent originals were initially labelled Annex B; their scope
+category is corrected without changing their policy or passing credit.
+Extended RegExp IdentityEscape grammar belongs to disabled Annex B. The String.split
 original includes forms such as `/\XA0/` and incomplete `/\x/`; these are not
 valid under the core Pattern grammar. Required prototype initializers in object
 literals remain enabled, including the newly retained duplicate-method test.

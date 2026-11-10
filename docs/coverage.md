@@ -4,7 +4,7 @@ spite targets ECMAScript 2026, edition 17. This file records implementation
 status, host choices, regression evidence and known constraints. It does not
 claim complete conformance or define an alternative language specification.
 
-## Staging proposal and browser prerequisites
+## Staging scope review
 
 Source review closes 68 staging scope entries: 53 disposal-facility originals,
 three Temporal originals, two auto-accessor originals, two source-phase import
@@ -16,9 +16,21 @@ applicable despite its decorators metadata tag.
 The [staging review](../tests/test262/audit/staging.md) and pinned source ledger
 record each prerequisite. The checker requires exact agreement between closed
 staging decisions and source-specific explanations/Git blobs; eleven controls
-cover omissions, mismatches, tampering and duplicates. There are 1,406 pending
-staging entries. Fixture bytes and the retained 41,573/80,091 inventory are
-unchanged while the frozen full run continues.
+cover omissions, mismatches, tampering and duplicates. Another 75 entries have
+reviewed legacy prerequisites or published host/representation choices: 29
+Object.prototype helper originals, thirteen caller-reflection originals, thirty
+Annex B originals, one non-ISO Date fallback, one exact RegExp source spelling,
+and one Unicode17 casing table. Direct comparison of all 65,536 BMP mapping
+pairs with pinned UCD18 inputs finds eight changed mappings; bounded probes
+exercise all eight, the Date policy and RegExp literal equivalence.
+Sixteen existing core __proto__-dependent exclusions are also relabelled as
+normative optional helpers, correcting their earlier Annex B category without
+changing the host policy or counting a pass.
+
+There are 1,331 pending staging entries. A fresh two-worker run passes 1,310
+applicable originals / 2,476 modes under default Runner settings and no external
+quotas in 106.292 seconds. Their admission awaits the active frozen gate.
+Fixture bytes and the retained 41,573/80,091 inventory are unchanged meanwhile.
 
 ## Class-field initializer suspension boundary
 

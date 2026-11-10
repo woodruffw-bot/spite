@@ -11,7 +11,12 @@ The [staging source review](audit/staging.md) closes 61 post-baseline proposal
 entries and seven browser IsHTMLDDA entries, with no passing credit. Every closed
 entry requires a source-specific explanation and matching upstream Git blob.
 The eleven scope controls pass, including omission, mismatch and tampering cases.
-There are 1,406 staging entries still pending; the retained corpus is unchanged.
+Another 75 source reviews identify disabled legacy prerequisites, permitted Date
+fallback/RegExp representation choices, and eight Unicode18 changes in the
+original Unicode17 BMP casing table. Bounded policy probes cover the permitted
+choices and every changed mapping. There are 1,331 staging entries pending;
+1,310 applicable originals have freshly passed 2,476 modes with Runner defaults,
+awaiting admission after the active frozen gate. The retained corpus is unchanged.
 
 ## Field initializer context correction
 

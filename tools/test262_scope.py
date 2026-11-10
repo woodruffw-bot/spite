@@ -14,11 +14,14 @@ DISPOSITIONS = {
     "staging-review": "test/staging/",
     "baseline-review": ("test/built-ins/", "test/language/"),
     "unicode-version-difference": ("test/built-ins/RegExp/", "test/language/literals/regexp/"),
-    "optional-legacy-helpers": ("test/built-ins/Object/prototype/", "test/language/expressions/class/", "test/language/statements/class/"),
+    "optional-legacy-helpers": ("test/built-ins/Object/prototype/", "test/built-ins/TypedArrayConstructors/ctors/no-species.js", "test/language/expressions/class/", "test/language/statements/class/", "test/staging/"),
     "optional-annex-b-dependent": ("test/built-ins/", "test/language/", "test/staging/"),
-    "optional-function-introspection": ("test/built-ins/Function/", "test/language/arguments-object/"),
+    "optional-function-introspection": ("test/built-ins/Function/", "test/language/arguments-object/", "test/staging/"),
     "post-publication-assertion": ("test/built-ins/Iterator/prototype/take/", "test/built-ins/Iterator/prototype/drop/"),
     "allocation-assumption": ("test/built-ins/ArrayBuffer/", "test/built-ins/SharedArrayBuffer/", "test/built-ins/TypedArrayConstructors/"),
+    "implementation-defined-date-parse": "test/staging/sm/Date/",
+    "permitted-regexp-source": "test/staging/sm/RegExp/",
+    "unicode-case-version-difference": "test/staging/sm/String/string-upper-lower-mapping.js",
 }
 POST_BASELINE_FEATURES = {
     "Temporal", "ShadowRealm", "explicit-resource-management",

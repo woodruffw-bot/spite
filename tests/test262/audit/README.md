@@ -29,12 +29,15 @@ support files remain in the verified tree but are not test originals.
 | --- | ---: | --- |
 | `outside-edition17:<feature>` | 5,843 | Tests requiring facilities or changes absent from the published baseline; see the [feature review](post-baseline.md) and [staging review](staging.md). |
 | `unicode-version-difference` | 92 | Independently verified Unicode18 changes; ninety property originals have retained contradictory witnesses. |
-| `optional-legacy-helpers` | 58 | Disabled normative optional Object.prototype helpers, including their use inside four private-accessor originals. |
-| `optional-function-introspection` | 23 | Caller-chain extensions are disabled; required Function.prototype poison accessors remain enabled. |
-| `optional-annex-b-dependent` | 24 | Seventeen core originals requiring disabled Annex B accessors/RegExp escapes and seven staging originals requiring browser IsHTMLDDA. |
+| `optional-legacy-helpers` | 103 | Seventy-four core and twenty-nine staging originals require disabled normative optional Object.prototype accessor/helpers. |
+| `optional-function-introspection` | 36 | Caller-chain extensions are disabled; required Function.prototype poison accessors remain enabled. |
+| `optional-annex-b-dependent` | 38 | One core and thirty-seven staging originals require disabled Annex B features or browser IsHTMLDDA. |
 | `post-publication-assertion` | 6 | Later Iterator.take/drop finite-limit assertions contradict the published algorithms. |
 | `allocation-assumption` | 5 | Allocation-failure assumptions in originals whose logical sizes this sparse host can represent. |
-| `staging-review` | 1,406 | Supplementary staging tests awaiting semantic/host review. Nine originals covering shared views, eval bindings, Unicode backreferences, empty blocks and field initializer contexts have been admitted unchanged. |
+| `implementation-defined-date-parse` | 1 | SpiderMonkey fallback formats outside Date Time String Format; this host returns NaN. |
+| `permitted-regexp-source` | 1 | An exact source spelling where EscapeRegExpPattern permits the equivalent deterministic representation used here. |
+| `unicode-case-version-difference` | 1 | A Unicode17 BMP casing table with eight independently verified Unicode18 changes. |
+| `staging-review` | 1,331 | Supplementary staging tests awaiting final qualification. Nine originals covering shared views, eval bindings, Unicode backreferences, empty blocks and field initializer contexts have been admitted unchanged. |
 | `harness-self-test` | 116 | Infrastructure validation, separately executed: all 232 original modes pass after the absent-$DONE correction. |
 | `optional-annex-b` | 1,086 | Annex B browser-compatibility tests; this non-browser host disables Annex B. |
 | `outside-ecma262` | 3,365 | ECMA-402 internationalization tests, outside the ECMA-262 target. |

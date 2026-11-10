@@ -35,3 +35,18 @@ for(const cp of [0x200c,0x200d]) {
  assert.sameValue(new RegExp('^\\p{ID_Continue}$','u').test(String.fromCharCode(cp)),true);
  assert.throws(SyntaxError,()=>new RegExp('\\'+String.fromCharCode(cp)));
 }
+// Published Date.parse permits declining this non-standard fallback format.
+assert.sameValue(Date.parse('1997-03-08 1:1:1.01'),NaN);
+// EscapeRegExpPattern permits equivalent, deterministic source representations.
+for(const flags of ['', 'u']) {
+ const re=new RegExp('[/]',flags),source=re.source;
+ const literal=eval('/'+source+'/'+flags);
+ assert.sameValue(re.test('/'),true);assert.sameValue(literal.test('/'),true);
+ assert.sameValue(re.test('x'),false);assert.sameValue(literal.test('x'),false);
+ assert.sameValue(new RegExp('[/]',flags).source,source);
+}
+// All eight BMP mappings changed between the original Unicode17 table and UCD18.
+for(const [small,capital] of [[0x0277,0xA7DD],[0x027C,0xA7E2],[0xAB4B,0xAB6C],[0xAB4C,0xAB6D]]) {
+ assert.sameValue(String.fromCharCode(small).toUpperCase(),String.fromCharCode(capital));
+ assert.sameValue(String.fromCharCode(capital).toLowerCase(),String.fromCharCode(small));
+}

@@ -27,7 +27,29 @@ extensions; the published algorithms determine their scope.
 
 ## Remaining qualification
 
-There are 1,406 pending staging originals. Nine other originals have already
+Seventy-two more originals require disabled legacy facilities: twenty-nine use
+the normative optional Object.prototype accessor/helpers, thirteen use function
+caller/arguments reflection extensions, and thirty require Annex B facilities.
+The latter include block-function var synthesis, labelled/if function forms,
+for-in initializers, catch-var redeclarations, RegExp.compile/static accessors,
+non-Unicode RegExp escapes, String.substr and Date.setYear. Required literal
+prototype initializers and Function.prototype poison accessors stay enabled.
+
+Three other originals assume a narrower result than the published algorithms:
+the Date non-ISO fallback parser is implementation-specific (21.4.3.2), the exact
+RegExp source spelling can vary while preserving deterministic literal parsing
+and matcher behavior (EscapeRegExpPattern), and the generated Unicode17 casing
+table differs from current Unicode18 at eight BMP mappings. All 65,536 mapping
+pairs were independently compared with the original pinned UnicodeData and
+SpecialCasing inputs; the differences are the upper/lower mappings of
+0277/A7DD, 027C/A7E2, AB4B/AB6C and AB4C/AB6D. Bounded runner probes exercise
+the Date policy, RegExp literal equivalence and every changed case mapping.
+
+There are 1,331 pending staging originals. A fresh run of 1,310 applicable
+originals passes all 2,476 modes with default Runner settings, two ordinary
+workers and no external quotas, in 106.292 seconds. Admission is pending the
+active frozen gate; those preliminary results supply no retained-gate credit.
+Nine other originals have already
 been admitted unchanged, covering fixed shared views, deleted eval bindings,
 Unicode backreferences, empty blocks and class-field initializer contexts.
 
