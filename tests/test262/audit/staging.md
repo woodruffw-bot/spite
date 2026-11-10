@@ -93,5 +93,8 @@ JavaScript exception or negative-test pass. Collection remains an explicit idle
 host operation; long uninterrupted Scripts can retain large amounts of heap
 storage until that checkpoint. The final conformance statement must retain this
 constraint. CI requires pinned Limit receipts for every resource disposition and
-rejects omitted outcomes or passing credit. All scope entries are now reviewed;
-the enlarged frozen and hosted gates remain the next qualification steps.
+rejects omitted outcomes or passing credit. All scope entries are now reviewed.
+The enlarged 82,574-mode frozen gate passes with zero other outcomes, and all
+seventeen hosted jobs pass for the same implementation/corpus on Linux/Windows
+with stable Rust and Rust 1.99. The final confidence statement retains these
+resource constraints and the recorded specification interpretations.

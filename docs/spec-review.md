@@ -6,18 +6,60 @@ This ledger connects the published clause groups to their implementation and
 regression evidence. The completed review and final regression gate are recorded
 in coverage. Exact fixture inventories and test receipts belong in
 [coverage](coverage.md).
-This clause review does not close the independent
-[whole-upstream qualification](../tests/test262/audit/README.md). Its unresolved
-scope entries must be reviewed before making a full-conformance claim.
+The independent [whole-upstream qualification](../tests/test262/audit/README.md)
+is also complete: every pinned original has a reviewed disposition, with
+resource failures preserved separately from passing language tests.
 The exact [published source identity](../tests/test262/audit/specification.json)
 is verified by Git blob, SHA-256 and byte count in CI; an annotated local copy
 cannot substitute for it.
 
 Field initializer suspension contexts have a recorded
 [grammar/runtime discrepancy](design.md#public-class-fields): ordinary initializer
-function semantics, Test262 and Node agree on an isolated context while the
-published grammar forwards enclosing Yield/Await. This interpretation remains
-explicit in the final conformance review.
+function semantics support an isolated context, and the instance examples agree
+with Test262 and Node. The published grammar forwards enclosing Yield/Await;
+static-field reference differences and the interpretation remain explicit below.
+
+## Qualification of the reviewed target
+
+The target is published ECMA-262 edition 17 with Unicode18 and the documented
+[non-browser host policies](design.md#published-host-policies). The exact
+specification source is verified independently of annotated caches. The complete
+53,597-original Test262 inventory is partitioned into 42,889 retained originals
+and 10,708 explicitly reviewed scope entries, with no pending core/staging review.
+The [core](../tests/test262/audit/core-review.md),
+[post-baseline](../tests/test262/audit/post-baseline.md) and
+[staging](../tests/test262/audit/staging.md) reviews explain those decisions.
+
+All 82,574 retained modes pass the frozen gate and the full hosted matrix on
+Linux/Windows with stable Rust and Rust 1.99. The
+[tested implementation commit](https://github.com/woodruffw-bot/spite/commit/c7f9342d0970d888f69585a921c1c300ecdf62cd)
+has [17 successful CI jobs](https://github.com/woodruffw-bot/spite/actions/runs/42778723107).
+Subsequent qualification/test-only changes preserve its production sources and
+corpus bytes; the additional native initializer tests also pass on both platforms.
+The frozen fixture/binary identities and native test receipts are recorded in
+[coverage](coverage.md). Unsupported syntax, host failures and unverified negative
+diagnostics never receive passing credit.
+
+Two published-text inconsistencies have explicit interpretations. Unicode
+RegExp execution starting inside a surrogate pair uses the approved leading
+boundary, consistent with the matcher and captures
+([RegExp design](design.md#regular-expressions)). Class initializers use an
+ordinary-function suspension context, preserving the enclosing context only
+for computed names. Upstream issues 2437 and 3333 document that grammar/runtime
+conflict; the [class-field design](design.md#public-class-fields) records the
+choice and the eighty reference-engine differences found by the expanded audit.
+
+Native constraints remain material. Supported thread stacks are at least 2 MiB;
+the native call/construct guard is 32 levels. Collection occurs at explicit idle
+checkpoints, so long uninterrupted Scripts can retain substantial heap storage.
+The fifteen resource-stress originals have
+[29 pinned nonpassing Limit outcomes](../tests/test262/audit/resource-stress.json),
+including the original requiring a 128-GiB UTF-16 result. Their external diagnostic
+supervisor is distinct from Runtime defaults, which retain opt-in quotas.
+
+This evidence supports confidence in the reviewed implementation under those
+host policies, interpretations and native constraints. The resource outcomes
+remain nonpassing, and the upstream partition is not a conformance percentage.
 
 | Clauses | Review | Evidence |
 | --- | --- | --- |

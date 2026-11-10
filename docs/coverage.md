@@ -4,6 +4,33 @@ spite targets ECMAScript 2026, edition 17. This file records implementation
 status, host choices, regression evidence and known constraints. It does not
 claim complete conformance or define an alternative language specification.
 
+## Completed published-baseline qualification
+
+The c7f9342d0 frozen gate passes 93 controls / 42,889 originals / 82,574 modes
+with zero other outcomes in 1,110.917 seconds. Fixture SHA-256
+a8f2c5898747d8a86d809e0a304c4b2ddb9f16ca8437488c46ac97227cade7f3
+and saved binary SHA-256
+91eb3cb39f7f7ec962908cbc3bcad61ce5bc094a8441ef29522323ea2a3bfcad
+match before and after execution. The saved library is
+3ab7c97eb357490823e9b0683eabd23dc1cbced2a9ff5ac9add6a728282b9d15.
+Current production sources and retained corpus bytes are unchanged from that run.
+
+The same implementation/corpus passes all seventeen jobs in
+[hosted run 42778723107](https://github.com/woodruffw-bot/spite/actions/runs/42778723107),
+including all four complete Test262 jobs on Linux/Windows and stable/Rust 1.99.
+Later test-only initializer cases and qualification tooling have also passed
+their workspace/quality jobs; their redundant corpus jobs may still be running.
+The complete native inventory remains 600 Runtime units, 5,062 Runtime groups
+across 700 files, 18 Parser units / 444 groups, and 113 Core units. There are
+93 runner controls and twelve scope controls, with no pending scope entries.
+
+The [final review](spec-review.md#qualification-of-the-reviewed-target) reconciles
+these receipts with the exact published source, host choices, the two explicit
+specification interpretations and fifteen resource-stress originals. Its
+confidence statement retains all of those qualifications and no passing credit
+for the 29 native-limit outcomes. Raw frozen, hosted and source-equivalence
+receipts remain under `/workspace/work`.
+
 ## Completed scope review and resource receipts
 
 All 53,597 pinned upstream originals now have reviewed dispositions: 42,889

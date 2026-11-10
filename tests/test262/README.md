@@ -5,6 +5,21 @@ These 43104 unmodified test fixtures and thirty-seven harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Completed qualified regression gate
+
+All 42,889 retained originals / 82,574 modes pass the c7f9342d0 frozen gate with
+93 controls, zero other outcomes and matching fixture/binary identities in
+1,110.917 seconds. The same implementation/corpus passes all seventeen jobs in
+[hosted run 42778723107](https://github.com/woodruffw-bot/spite/actions/runs/42778723107),
+including complete Linux/Windows runs with stable Rust and Rust 1.99.
+
+The [final qualification](../../docs/spec-review.md#qualification-of-the-reviewed-target)
+records complete upstream review, host policies, native resource constraints and
+two explicit interpretations of published inconsistencies. Twelve scope controls
+and all 93 runner controls pass. The fifteen resource-stress originals retain
+29 nonpassing Limit outcomes and zero passing credit. There are no pending scope
+entries; current production sources and corpus bytes match the tested snapshot.
+
 ## Complete reviewed scope
 
 All 53,597 upstream originals have reviewed dispositions: 42,889 retained and

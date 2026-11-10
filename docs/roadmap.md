@@ -750,5 +750,10 @@ host choices and legitimate optional exclusions documented.
 - [x] Account for the complete pinned Test262 test tree and verify retained originals against its Git object identities.
 - [x] Independently review all unretained core-language tests against the published baseline, including Unicode-version and host-capacity differences.
 - [x] Review optional, host-specific and supplementary test inventories without treating their exclusion as implementation evidence.
-- [ ] Resolve mandatory semantic failures found by the expanded audit and rerun the complete applicable corpus on supported platforms.
-- [ ] Reconcile the specification review, intentional deviations and host constraints before making a conformance claim.
+- [x] Resolve mandatory semantic failures found by the expanded audit and rerun the complete applicable corpus on supported platforms.
+- [x] Reconcile the specification review, intentional deviations and host constraints before making a conformance claim.
+
+The [completed qualification](spec-review.md#qualification-of-the-reviewed-target)
+records the passing Linux/Windows matrix, complete upstream accounting, two
+published-specification interpretations and native resource constraints.
+Conformance confidence remains conditional on those documented qualifications.
