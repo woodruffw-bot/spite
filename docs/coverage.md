@@ -4,6 +4,35 @@ spite targets ECMAScript 2026, edition 17. This file records implementation
 status, host choices, regression evidence and known constraints. It does not
 claim complete conformance or define an alternative language specification.
 
+## Deleted eval binding writes and staging admissions
+
+The published SetMutableBinding algorithm explicitly handles a binding deleted
+after LHS resolution. The Runtime previously assumed that binding still existed
+and panicked on the unchanged staging regress-643222 original. It now recreates
+a mutable, deletable binding in the same environment for non-strict writes and
+throws ReferenceError for strict writes. Existing bindings retain initialization
+and mutability checks. The missing-binding branch adds no lookup/allocation to
+ordinary writes.
+
+A native unit checks the resolved environment, strict rejection and outer/global
+isolation. The existing eval integration group covers variable initializers,
+assignment, compound/nullish assignment and strict writes after helper deletion;
+destructuring separately resolves after its RHS and reaches the exposed outer
+binding. All sixteen eval groups and the original panic candidate pass.
+
+The four unchanged staging originals exposing this and the preceding shared-view
+bug are admitted, adding seven modes. Inventories become 41,776 fixtures,
+41,567 originals / 80,081 modes and twenty-eight helpers. Runtime unit inventory
+becomes 599; integration groups remain 5,062 across 700 files. Scope entries
+fall to 12,030, including 1,479 staging entries. All 599 Runtime units, 2,445
+non-RegExp groups, 270 selected RegExp groups, 92 runner controls, nine scope
+controls and quality pass. The enlarged full run is pending.
+
+The dcc30e012 frozen full gate passes 92 controls and 80,074 modes from 41,563
+originals with zero other outcomes in 1,430.785 seconds. Saved fixture and binary
+hashes match. It validates the absent-host-helper correction; the later semantic
+fixes have separate candidate receipts and require the next full gate.
+
 ## Fixed-length shared TypedArray extensibility
 
 The independent staging sweep found that PreventExtensions rejected all views
@@ -144,7 +173,7 @@ run is pending. All 17 hosted jobs pass for the preceding eb9da4aec revision.
 | Async functions | Declarations/expressions/arrows/methods, dynamic compilation, intrinsic metadata, fresh Promise-returning calls, parameter/body rejection, traced lexical contexts, supported await expressions/declarations, nested blocks and abrupt completion |
 | Module execution | Standalone Module environments, var/lexical/function instantiation, undefined this, strict direct eval, top-level Await and intrinsic evaluation Promises, synthetic default exports, retained Source Text and JSON Synthetic Module records, live namespace exotics, host-supplied graph loading and linking with live imports and cycles, fixed host import-attribute support, and per-record import.meta; synchronous and asynchronous dependency evaluation with ordered ancestors, cycle-root waiting and cached evaluation Promises |
 | Async generators | Function/method objects, hidden constructor/prototype graph, call-time setup, lazy instances, serialized next/return/throw, awaited yields/returns, protected completions, traced scopes and async yield delegation |
-| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80074 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
+| Tests | Algorithm and integration tests, AST and diagnostic snapshots, 80081 reviewed Test262 variants, twenty-eight pinned harness files, retained component checks for 13 identifier lexer and 6 statement parser fixtures |
 
 ## Proxy ownKeys collection and invariant snapshots
 

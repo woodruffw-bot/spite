@@ -1796,6 +1796,13 @@ of a stack index. Name lookup follows outer links with bounded work, preparing f
 closures that execute under a different caller. Per-iteration let environments
 copy bindings into a fresh identity with the same outer link (14.7.4.4).
 
+A declarative reference can outlive an eval-created binding deleted by the RHS.
+SetMutableBinding's missing-binding step (9.1.1.1.5) recreates a mutable,
+deletable binding in that same environment for non-strict writes; strict writes
+throw ReferenceError. It never redirects an already resolved write to an outer
+binding or the global object. Identifier variable initializers resolve before
+their RHS; destructuring resolves its targets afterward.
+
 When execution-work and heap-slot quotas are both disabled, a three-clause let
 loop may retain its first iteration record for subsequent iterations. This
 requires initialized Number-valued identifier bindings and a complete positive

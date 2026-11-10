@@ -1540,13 +1540,32 @@ impl Realm {
                 }
             }
             Reference::Lexical(handle, name) => {
-                let binding = self
+                let bindings = &mut self
                     .objects
                     .environment_mut(&handle)
                     .expect("resolved environment")
-                    .bindings
-                    .get_mut(name.as_ref())
-                    .expect("resolved binding exists");
+                    .bindings;
+                let Some(binding) = bindings.get_mut(name.as_ref()) else {
+                    // SetMutableBinding (9.1.1.1.5): an eval-created binding
+                    // can be deleted after resolving the assignment's LHS.
+                    if self.strict {
+                        return Err(Self::exception(
+                            ExceptionKind::ReferenceError,
+                            span,
+                            format!("{name} is not defined"),
+                        ));
+                    }
+                    bindings.insert(
+                        name.into_owned(),
+                        BindingState {
+                            value: Some(value),
+                            mutable: true,
+                            deletable: true,
+                            strict: false,
+                        },
+                    );
+                    return Ok(());
+                };
                 if binding.value.is_none() {
                     return Err(Self::exception(
                         ExceptionKind::ReferenceError,

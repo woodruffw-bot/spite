@@ -10554,9 +10554,6 @@ staging-review	test/staging/Temporal/removed-methods.js
 staging-review	test/staging/Temporal/v8/calendar-day-of-week.js
 staging-review	test/staging/Uint8Array/fromBase64/invalid-options.js
 staging-review	test/staging/built-ins/Array/prototype/flatMap/callback-with-side-effects.js
-staging-review	test/staging/built-ins/Object/preventExtensions/preventExtensions-variable-length-typed-arrays.js
-staging-review	test/staging/built-ins/Object/seal/seal-variable-length-typed-arrays.js
-staging-review	test/staging/built-ins/Reflect/preventExtensions/preventExtensions-variable-length-typed-arrays.js
 staging-review	test/staging/built-ins/RegExp/escape/surrogate-pair.js
 staging-review	test/staging/built-ins/RegExp/named-groups/duplicate-named-groups-replace.js
 staging-review	test/staging/built-ins/RegExp/named-groups/duplicate-named-groups-search.js
@@ -11939,7 +11936,6 @@ staging-review	test/staging/sm/regress/regress-634210-4.js
 staging-review	test/staging/sm/regress/regress-636364.js
 staging-review	test/staging/sm/regress/regress-640075.js
 staging-review	test/staging/sm/regress/regress-642247.js
-staging-review	test/staging/sm/regress/regress-643222.js
 staging-review	test/staging/sm/regress/regress-646820-1.js
 staging-review	test/staging/sm/regress/regress-646820-2.js
 staging-review	test/staging/sm/regress/regress-646820-3.js

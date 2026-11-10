@@ -2,7 +2,7 @@
 
 This audit covers all 53,597 non-`_FIXTURE` JavaScript originals in the pinned
 Test262 `test/` tree. It is independent of which originals currently pass.
-There are 41,563 retained originals and 12,034 explicit scope entries.
+There are 41,567 retained originals and 12,030 explicit scope entries.
 This partition is not a conformance percentage.
 
 `upstream-commit.txt` is the exact Git commit object named by `../REVISION`.
@@ -22,7 +22,7 @@ support files remain in the verified tree but are not test originals.
 | --- | ---: | --- |
 | `outside-edition17:<feature>` | 5,782 | Tests requiring facilities or changes absent from the published baseline; see the [feature review](post-baseline.md). |
 | `baseline-review` | 202 | Remaining core built-ins/language originals awaiting independent review of optional behavior, changed assertions, Unicode data and allocation assumptions. |
-| `staging-review` | 1,483 | Supplementary staging tests awaiting review of standard semantics, engine-specific helpers and host requirements. |
+| `staging-review` | 1,479 | Supplementary staging tests awaiting review of standard semantics, engine-specific helpers and host requirements. Four originals that exposed fixed shared-view extensibility and eval-binding bugs have been admitted unchanged. |
 | `harness-self-test` | 116 | Infrastructure validation, separately executed: all 232 original modes pass after the absent-$DONE correction. |
 | `optional-annex-b` | 1,086 | Annex B browser-compatibility tests; this non-browser host disables Annex B. |
 | `outside-ecma262` | 3,365 | ECMA-402 internationalization tests, outside the ECMA-262 target. |

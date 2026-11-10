@@ -152,6 +152,22 @@ fn unicode_property_errors_precede_eval_effects_and_valid_patterns_execute() {
 
 #[test]
 fn sloppy_declarations_enter_the_caller_variable_environment_and_are_deletable() {
+    for body in [
+        "var x=delete(x);x===true&&delete x",
+        "var x;x=(delete x,7);x===7&&delete x",
+        "var x=3;x+=(delete x,4);x===7&&delete x",
+        "var x=undefined;x??=(delete x,7);x===7&&delete x",
+        "var x=3;function remove(){return delete x;}function assign(){'use strict';x=remove();}var caught=false;try{assign()}catch(e){caught=e instanceof ReferenceError}caught&&x===19",
+    ] {
+        check(&format!(
+            "let x=19;function f(){{return eval({body:?})}}f()&&x===19&&!Object.hasOwn(globalThis,'x')"
+        ));
+    }
+    // Destructuring resolves the target after evaluating its RHS, so deletion
+    // deliberately exposes the outer binding instead of recreating the old one.
+    check(
+        "let x=19;function f(){return eval('var x;var [x]=(delete x,[7]);x===7&&!delete x')}f()&&x===7&&!Object.hasOwn(globalThis,'x')",
+    );
     check(
         "function f(){eval('var x=7;function g(){return x;}function g(){return x+1;}');return x===7 && g()===8 && delete x && delete g && typeof x==='undefined' && typeof g==='undefined';}f() && typeof x==='undefined' && typeof g==='undefined'",
     );

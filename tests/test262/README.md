@@ -1,9 +1,27 @@
 # Test262 regression fixtures
 
-These 41772 unmodified test fixtures and twenty-eight harness files come from
+These 41776 unmodified test fixtures and twenty-eight harness files come from
 [tc39/test262](https://github.com/tc39/test262) at the commit in `REVISION`.
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
+
+## Deleted eval bindings and first staging admissions
+
+SetMutableBinding now follows the published missing-binding step: a non-strict
+write recreates a deletable mutable binding in the already resolved environment;
+a strict write throws ReferenceError. This fixes the native panic in the exact
+regress-643222 original. Native tests also protect outer bindings, global
+property absence, compound/nullish assignment and destructuring's later lookup.
+
+That original and the three fixed shared-view preventExtensions/seal originals
+now enter the retained suite unchanged, adding seven modes. Counts become
+41,776 fixtures, 41,567 originals and 80,081 modes, with twenty-eight helpers and
+92 runner controls. Their former scope entries are removed; all 53,597 upstream
+originals remain accounted for. All 599 Runtime units, 2,445 non-RegExp groups,
+270 selected RegExp groups, 92 runner controls, nine scope controls and quality
+pass. The enlarged full run is pending. The preceding dcc30e012 frozen run passes
+all 80,074 modes with zero
+other outcomes in 1,430.785 seconds and matching saved fixture/binary hashes.
 
 ## Fixed shared TypedArray extensibility correction
 

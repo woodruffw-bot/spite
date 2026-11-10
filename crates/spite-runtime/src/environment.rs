@@ -142,6 +142,62 @@ mod tests {
     }
 
     #[test]
+    fn writes_recreate_deleted_bindings_in_the_resolved_environment_only_when_sloppy() {
+        for strict in [false, true] {
+            let mut realm = Realm::default();
+            realm.eval("let x=1").unwrap();
+            let span = Span::new(0, 0);
+            realm
+                .push_scope(
+                    BTreeMap::from([(
+                        "x".into(),
+                        BindingState {
+                            value: Some(Value::Number(3.0)),
+                            mutable: true,
+                            deletable: true,
+                            strict: false,
+                        },
+                    )]),
+                    span,
+                )
+                .unwrap();
+            let environment = realm.scopes.last().unwrap().clone();
+            let reference = realm.resolve("x", span).unwrap();
+            realm
+                .objects
+                .environment_mut(&environment)
+                .unwrap()
+                .bindings
+                .remove("x");
+            realm.strict = strict;
+            let result = realm.put(reference, Value::Number(7.0), span);
+            let bindings = &realm.objects.environment(&environment).unwrap().bindings;
+            if strict {
+                assert!(matches!(
+                    result,
+                    Err(Error::Exception {
+                        kind: crate::ExceptionKind::ReferenceError,
+                        ..
+                    })
+                ));
+                assert!(!bindings.contains_key("x"));
+            } else {
+                assert_eq!(result, Ok(()));
+                let binding = &bindings["x"];
+                assert_eq!(binding.value, Some(Value::Number(7.0)));
+                assert!(binding.mutable && binding.deletable && !binding.strict);
+            }
+            realm.scopes.pop();
+            realm.strict = false;
+            assert_eq!(realm.eval("x"), Ok(Value::Number(1.0)));
+            assert_eq!(
+                realm.eval("Object.hasOwn(globalThis,'x')"),
+                Ok(Value::Boolean(false))
+            );
+        }
+    }
+
+    #[test]
     fn per_iteration_copies_preserve_old_bindings_and_share_the_same_outer() {
         let mut realm = Realm::default();
         realm.eval("let outer = 9").unwrap();

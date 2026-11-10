@@ -41562,3 +41562,7 @@ test/language/import/import-attributes/json-value-number.js	-	-	-
 test/language/import/import-attributes/json-value-object.js	-	-	-
 test/language/import/import-attributes/json-value-string.js	-	-	-
 test/language/import/import-attributes/json-via-namespace.js	-	-	-
+test/staging/built-ins/Object/preventExtensions/preventExtensions-variable-length-typed-arrays.js	-	-	-
+test/staging/built-ins/Object/seal/seal-variable-length-typed-arrays.js	-	-	-
+test/staging/built-ins/Reflect/preventExtensions/preventExtensions-variable-length-typed-arrays.js	-	-	-
+test/staging/sm/regress/regress-643222.js	-	-	-
