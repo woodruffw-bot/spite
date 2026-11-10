@@ -4,6 +4,23 @@ spite targets ECMAScript 2026, edition 17. This file records implementation
 status, host choices, regression evidence and known constraints. It does not
 claim complete conformance or define an alternative language specification.
 
+## Completed scope review and resource receipts
+
+All 53,597 pinned upstream originals now have reviewed dispositions: 42,889
+retained originals and 10,708 scoped originals, with no pending core/staging
+entries. The [staging review](../tests/test262/audit/staging.md) distinguishes
+the last fifteen resource originals: two native-stack cases, twelve finite
+allocation-stress cases and the 128-GiB replacement-output case.
+
+Their [pinned receipts](../tests/test262/audit/resource-stress.json) preserve 29
+nonpassing Runtime Limits and zero passing credit. Stack cases reproduce without
+a memory ceiling; allocation cases use a recorded external 5-GiB diagnostic
+supervisor with Runner defaults. This supplies no universal algorithm bound or
+successful-execution claim. No Runtime quota defaults or original bytes changed.
+Twelve scope controls enforce matching source identities, complete receipts and
+rejection of passing outcomes/credit. Native capacity and explicit idle collection
+remain material qualifications of any eventual conformance statement.
+
 ## Applicable staging admission
 
 The 6f28f9f01 frozen full gate passes all 93 controls and 80,091 modes from

@@ -2,6 +2,7 @@
 """Ensure missing tests and rewritten upstream bytes cannot evade scope accounting."""
 
 from pathlib import Path
+import json
 import tempfile
 import unittest
 
@@ -133,6 +134,26 @@ class ScopeTests(unittest.TestCase):
             self.write("audit/staging-reviewed.tsv", invalid)
             with self.assertRaisesRegex(ValueError, "invalid or unpinned staging review"):
                 check(self.root)
+
+    def test_resource_receipts_cannot_omit_limits_or_claim_passing_credit(self):
+        path = "test/staging/pending.js"
+        scope = (self.root / "audit/scope.tsv").read_text()
+        self.write("audit/scope.tsv", scope.replace("staging-review", "native-resource-constraint"))
+        oid = object_id("blob", self.files[path])
+        self.write("audit/staging-reviewed.tsv", f"native-resource-constraint\t{path}\t{oid}\tNative allocation failure.\n")
+        with self.assertRaisesRegex(ValueError, "complete nonpassing receipts"):
+            check(self.root)
+        receipt = {
+            "revision": (self.root / "REVISION").read_text().strip(),
+            "results": [{"path": path, "git_blob": oid, "runner": "defaults",
+                         "outcomes": [{"mode": "Script", "category": "limit", "stage": "Runtime", "message": "native capacity"}]}],
+        }
+        self.write("audit/resource-stress.json", json.dumps(receipt))
+        self.assertEqual(check(self.root)[2]["native-resource-constraint"], 1)
+        receipt["results"][0]["outcomes"][0]["category"] = "passed"
+        self.write("audit/resource-stress.json", json.dumps(receipt))
+        with self.assertRaisesRegex(ValueError, "nonpassing Limit outcomes"):
+            check(self.root)
 
 
 if __name__ == "__main__":

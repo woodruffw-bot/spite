@@ -5,6 +5,16 @@ These 43104 unmodified test fixtures and thirty-seven harness files come from
 `manifest.tsv` records each upstream path, test mode, and SHA-256 digest.
 `LICENSE` is the upstream BSD license. Each fixture retains its copyright notice.
 
+## Complete reviewed scope
+
+All 53,597 upstream originals have reviewed dispositions: 42,889 retained and
+10,708 scoped. No core or staging entry is pending. The final fifteen staging
+resource originals have [pinned nonpassing receipts](audit/resource-stress.json):
+29 Runtime Limits and zero passing credit. Their native-stack and externally
+supervised allocation constraints are explicit in the [review](audit/staging.md).
+No Runtime quota defaults changed. Twelve scope controls reject omitted receipts,
+changed source identities and passing outcomes or credit for those cases.
+
 ## Applicable staging admission
 
 The preceding 6f28f9f01 frozen gate passes 93 controls / 41,573 originals /

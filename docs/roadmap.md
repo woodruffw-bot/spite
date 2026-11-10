@@ -749,6 +749,6 @@ host choices and legitimate optional exclusions documented.
 - [x] Evaluate empty blocks without declarative environments or async cursors while preserving empty completions and explicit quotas on nonempty blocks.
 - [x] Account for the complete pinned Test262 test tree and verify retained originals against its Git object identities.
 - [x] Independently review all unretained core-language tests against the published baseline, including Unicode-version and host-capacity differences.
-- [ ] Review optional, host-specific and supplementary test inventories without treating their exclusion as implementation evidence.
+- [x] Review optional, host-specific and supplementary test inventories without treating their exclusion as implementation evidence.
 - [ ] Resolve mandatory semantic failures found by the expanded audit and rerun the complete applicable corpus on supported platforms.
 - [ ] Reconcile the specification review, intentional deviations and host constraints before making a conformance claim.

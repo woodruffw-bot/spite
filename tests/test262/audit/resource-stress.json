@@ -1,0 +1,332 @@
+{
+  "revision": "7ab7fafa0003f73fc85c1b95d88094d33f7eb8bd",
+  "binary_sha256": "4c073e897593fe78744b83c8e6336278f63a580c26604b3dabb28784ed7bdd87",
+  "passing_credit": 0,
+  "note": "Native resource constraints, not semantic passes. No Runtime quota defaults were changed. Allocation outcomes depend on the external 5 GiB supervisor; call-nesting outcomes also reproduce without a memory ceiling. Initial unrestricted replace-math diagnostic host kill is retained under /workspace/work.",
+  "results": [
+    {
+      "path": "test/staging/sm/Array/toSpliced-dense.js",
+      "git_blob": "99c50d44a1d7a40affdd52a817560bd30361e3c5",
+      "sha256": "adcfcff31d63244b4ac6d2686963cce22008502fdf16c28c602888529fa2c52a",
+      "runner": "defaults",
+      "seconds": 29.694,
+      "external_supervisor": "5 GiB address-space and 240-second process deadline",
+      "outcomes": [
+        {
+          "mode": "Script",
+          "category": "limit",
+          "stage": "Runtime",
+          "message": "Limit at 2463..2644: heap storage capacity exceeded"
+        },
+        {
+          "mode": "StrictScript",
+          "category": "limit",
+          "stage": "Runtime",
+          "message": "Limit at 1745..1782: heap storage capacity exceeded"
+        }
+      ]
+    },
+    {
+      "path": "test/staging/sm/Date/dst-offset-caching-1-of-8.js",
+      "git_blob": "1115e8e5f63e55ab7c48d24ed0c6fa105abab164",
+      "sha256": "1aade89cbf92b7a397fb89854e161ce2bcc503bddd51ae2566084864ef04ea34",
+      "runner": "defaults",
+      "seconds": 64.087,
+      "external_supervisor": "5 GiB address-space and 240-second process deadline",
+      "outcomes": [
+        {
+          "mode": "Script",
+          "category": "limit",
+          "stage": "Runtime",
+          "message": "Limit at 3828..3857: heap storage capacity exceeded"
+        },
+        {
+          "mode": "StrictScript",
+          "category": "limit",
+          "stage": "Runtime",
+          "message": "Limit at 3828..3857: heap storage capacity exceeded"
+        }
+      ]
+    },
+    {
+      "path": "test/staging/sm/Date/dst-offset-caching-2-of-8.js",
+      "git_blob": "ae11da65109a39870595b4afc0f35e1bf35cc275",
+      "sha256": "2054829162634e9b8d585ef9009839d3e04db827e53b4362e6273d95fc682e4c",
+      "runner": "defaults",
+      "seconds": 76.469,
+      "external_supervisor": "5 GiB address-space and 240-second process deadline",
+      "outcomes": [
+        {
+          "mode": "Script",
+          "category": "limit",
+          "stage": "Runtime",
+          "message": "Limit at 3828..3857: heap storage capacity exceeded"
+        },
+        {
+          "mode": "StrictScript",
+          "category": "limit",
+          "stage": "Runtime",
+          "message": "Limit at 3828..3857: heap storage capacity exceeded"
+        }
+      ]
+    },
+    {
+      "path": "test/staging/sm/Date/dst-offset-caching-3-of-8.js",
+      "git_blob": "7c6dc3466eb4033ba5c008da752ea635995cb6ab",
+      "sha256": "554b9dbf15727d71e2c8691284ebc528765cd958e0f15ca93e0e356194e51c32",
+      "runner": "defaults",
+      "seconds": 40.69,
+      "external_supervisor": "5 GiB address-space and 240-second process deadline",
+      "outcomes": [
+        {
+          "mode": "Script",
+          "category": "limit",
+          "stage": "Runtime",
+          "message": "Limit at 3828..3857: heap storage capacity exceeded"
+        },
+        {
+          "mode": "StrictScript",
+          "category": "limit",
+          "stage": "Runtime",
+          "message": "Limit at 3828..3857: heap storage capacity exceeded"
+        }
+      ]
+    },
+    {
+      "path": "test/staging/sm/Date/dst-offset-caching-4-of-8.js",
+      "git_blob": "3904697c40c3698f06b5cae15efe210ffe6f2c55",
+      "sha256": "9d18cceff19d2a13229bd89cbf31b311722ebd3f97557019cdb34dbdbdde7b0b",
+      "runner": "defaults",
+      "seconds": 24.181,
+      "external_supervisor": "5 GiB address-space and 240-second process deadline",
+      "outcomes": [
+        {
+          "mode": "Script",
+          "category": "limit",
+          "stage": "Runtime",
+          "message": "Limit at 3828..3857: heap storage capacity exceeded"
+        },
+        {
+          "mode": "StrictScript",
+          "category": "limit",
+          "stage": "Runtime",
+          "message": "Limit at 3828..3857: heap storage capacity exceeded"
+        }
+      ]
+    },
+    {
+      "path": "test/staging/sm/Date/dst-offset-caching-5-of-8.js",
+      "git_blob": "ab6c5a46679afad4f4e30b7c90ec6a51f6016dd0",
+      "sha256": "650c8ee071febeb36534b0be42d67cf3fdea4ae91099fe02009e6c8ea4d5ae4b",
+      "runner": "defaults",
+      "seconds": 23.668,
+      "external_supervisor": "5 GiB address-space and 240-second process deadline",
+      "outcomes": [
+        {
+          "mode": "Script",
+          "category": "limit",
+          "stage": "Runtime",
+          "message": "Limit at 3828..3857: heap storage capacity exceeded"
+        },
+        {
+          "mode": "StrictScript",
+          "category": "limit",
+          "stage": "Runtime",
+          "message": "Limit at 3828..3857: heap storage capacity exceeded"
+        }
+      ]
+    },
+    {
+      "path": "test/staging/sm/Date/dst-offset-caching-6-of-8.js",
+      "git_blob": "fa1e2541033db9028d078831529b6c4c30518626",
+      "sha256": "346569351d93928a0f09dd37f97dd8c0a06447ba50ebe5bbaced6f503fcdc5eb",
+      "runner": "defaults",
+      "seconds": 27.988,
+      "external_supervisor": "5 GiB address-space and 240-second process deadline",
+      "outcomes": [
+        {
+          "mode": "Script",
+          "category": "limit",
+          "stage": "Runtime",
+          "message": "Limit at 3828..3857: heap storage capacity exceeded"
+        },
+        {
+          "mode": "StrictScript",
+          "category": "limit",
+          "stage": "Runtime",
+          "message": "Limit at 3828..3857: heap storage capacity exceeded"
+        }
+      ]
+    },
+    {
+      "path": "test/staging/sm/Date/dst-offset-caching-7-of-8.js",
+      "git_blob": "577b9e11d2da1fcc84efc36a415af6c6af70d66c",
+      "sha256": "09a5cd25fed3065c90c99f6b051a6e8aa3ae6082d0ddb4c2f0341ffdcea1c83d",
+      "runner": "defaults",
+      "seconds": 23.733,
+      "external_supervisor": "5 GiB address-space and 240-second process deadline",
+      "outcomes": [
+        {
+          "mode": "Script",
+          "category": "limit",
+          "stage": "Runtime",
+          "message": "Limit at 3828..3857: heap storage capacity exceeded"
+        },
+        {
+          "mode": "StrictScript",
+          "category": "limit",
+          "stage": "Runtime",
+          "message": "Limit at 3828..3857: heap storage capacity exceeded"
+        }
+      ]
+    },
+    {
+      "path": "test/staging/sm/Date/dst-offset-caching-8-of-8.js",
+      "git_blob": "b9ea2a26df117b4af3fdd14920ee770e1a3ac3d4",
+      "sha256": "3625c3fc7db833c88e6890ebbf089637dd838839a3074b7cbcd72d9ed42b868e",
+      "runner": "defaults",
+      "seconds": 24.296,
+      "external_supervisor": "5 GiB address-space and 240-second process deadline",
+      "outcomes": [
+        {
+          "mode": "Script",
+          "category": "limit",
+          "stage": "Runtime",
+          "message": "Limit at 3828..3857: heap storage capacity exceeded"
+        },
+        {
+          "mode": "StrictScript",
+          "category": "limit",
+          "stage": "Runtime",
+          "message": "Limit at 3828..3857: heap storage capacity exceeded"
+        }
+      ]
+    },
+    {
+      "path": "test/staging/sm/String/replace-math.js",
+      "git_blob": "22a8a90d6a322ecb6193f65c89566e5383dc418a",
+      "sha256": "ce5bbdc257ea82270607f81e2edf3ff5d703f911e87aba06a8827aa69d952229",
+      "runner": "defaults",
+      "seconds": 6.608,
+      "external_supervisor": "5 GiB address-space and 240-second process deadline",
+      "outcomes": [
+        {
+          "mode": "Script",
+          "category": "limit",
+          "stage": "Runtime",
+          "message": "Limit at 426..449: replacement output exceeds host or platform capacity"
+        },
+        {
+          "mode": "StrictScript",
+          "category": "limit",
+          "stage": "Runtime",
+          "message": "Limit at 440..463: replacement output exceeds host or platform capacity"
+        }
+      ]
+    },
+    {
+      "path": "test/staging/sm/TypedArray/element-setting-converts-using-ToNumber.js",
+      "git_blob": "f45b991438d11e4128f3050c6eec1c89aec3bf0e",
+      "sha256": "1bb75510e4f0f6adbc7c798cfb82c2a326b75793b4fb2602bdc536e341e3feca",
+      "runner": "defaults",
+      "seconds": 25.145,
+      "external_supervisor": "5 GiB address-space and 240-second process deadline",
+      "outcomes": [
+        {
+          "mode": "Script",
+          "category": "limit",
+          "stage": "Runtime",
+          "message": "Limit at 1784..1805: heap storage capacity exceeded"
+        },
+        {
+          "mode": "StrictScript",
+          "category": "limit",
+          "stage": "Runtime",
+          "message": "Limit at 1784..1805: heap storage capacity exceeded"
+        }
+      ]
+    },
+    {
+      "path": "test/staging/sm/TypedArray/set-same-buffer-different-source-target-types.js",
+      "git_blob": "c95e227abf01a7705f00a7d51da6e665ede3575c",
+      "sha256": "5e01f8a99df18421a30e767fd60cb6a13bebae51235fe65be13141aff816f0b6",
+      "runner": "defaults",
+      "seconds": 22.193,
+      "external_supervisor": "5 GiB address-space and 240-second process deadline",
+      "outcomes": [
+        {
+          "mode": "Script",
+          "category": "limit",
+          "stage": "Runtime",
+          "message": "Limit at 1745..1782: heap storage capacity exceeded"
+        },
+        {
+          "mode": "StrictScript",
+          "category": "limit",
+          "stage": "Runtime",
+          "message": "Limit at 1745..1782: heap storage capacity exceeded"
+        }
+      ]
+    },
+    {
+      "path": "test/staging/sm/TypedArray/sort_large_countingsort.js",
+      "git_blob": "0921714ea095ee2204bb09296c78ac193097906b",
+      "sha256": "b6a94834d0a3b009b875bec795ad18218853579c057bbcb546046cec8ee678c5",
+      "runner": "defaults",
+      "seconds": 23.879,
+      "external_supervisor": "5 GiB address-space and 240-second process deadline",
+      "outcomes": [
+        {
+          "mode": "Script",
+          "category": "limit",
+          "stage": "Runtime",
+          "message": "Limit at 1735..1809: heap storage capacity exceeded"
+        },
+        {
+          "mode": "StrictScript",
+          "category": "limit",
+          "stage": "Runtime",
+          "message": "Limit at 1735..1809: heap storage capacity exceeded"
+        }
+      ]
+    },
+    {
+      "path": "test/staging/sm/class/superPropChains.js",
+      "git_blob": "359d06c83567df0e12dd3322f5f5e6dc971b1e5a",
+      "sha256": "4ae4d22ae5c48c483c266b1a0ac5ee40a854446fdedc17bcc3e8b01b6a06a6a0",
+      "runner": "defaults",
+      "seconds": 0.023,
+      "external_supervisor": "240-second external deadline; no memory ceiling",
+      "outcomes": [
+        {
+          "mode": "Script",
+          "category": "limit",
+          "stage": "Runtime",
+          "message": "Limit at 1383..1390: call nesting limit exceeded"
+        },
+        {
+          "mode": "StrictScript",
+          "category": "limit",
+          "stage": "Runtime",
+          "message": "Limit at 1397..1404: call nesting limit exceeded"
+        }
+      ]
+    },
+    {
+      "path": "test/staging/sm/extensions/recursion.js",
+      "git_blob": "6d3dd737a3e0f87748a762c024ad0efe116dfbe1",
+      "sha256": "dfbfee4a73bc7e7162f44e1e2ee9950119fef052152388434b70ebad27a9fe03",
+      "runner": "defaults",
+      "seconds": 0.007,
+      "external_supervisor": "240-second external deadline; no memory ceiling",
+      "outcomes": [
+        {
+          "mode": "Script",
+          "category": "limit",
+          "stage": "Runtime",
+          "message": "Limit at 300..306: call nesting limit exceeded"
+        }
+      ]
+    }
+  ]
+}

@@ -55,12 +55,43 @@ in 32.968 seconds. Six supporting modules and nine required harness helpers are
 retained unchanged as well.
 
 Together with the nine earlier semantic-bug originals, this retains 1,325
-applicable staging originals. Fifteen resource/native-stack originals remain
-pending. The enlarged full gate and final host-constraint review stay open.
+applicable staging originals. The remaining fifteen resource/native-stack
+originals have the following explicit constraints and no passing credit.
 
 The initial sweep's 20-second process deadline was an investigation safeguard,
 not a language limit or an accepted exclusion. Longer runs retain Runner defaults
 and report native-capacity failures and external termination separately. Finite
-stress, native-stack constraints, implementation-defined expectations, remaining
-negative diagnostics and optional legacy prerequisites still require review.
-Passing a preliminary diagnostic run does not close the final applicable gate.
+stress results cannot be turned into conformance passes by accepting a timeout
+or substituting a smaller original. Passing a preliminary diagnostic run does
+not close the final applicable gate.
+
+## Native resource constraints
+
+[resource-stress.json](resource-stress.json) records all fifteen source identities
+and 29 nonpassing Runtime Limit outcomes, produced with default Runner settings.
+Two originals reach the existing 32-level native call/construct guard: the
+101-constructor super chain and intentional infinite recursion. They reproduce
+without an external memory ceiling; the supported native stack is 2 MiB.
+
+Twelve finite stress originals exhaust native heap capacity under an external
+5 GiB address-space supervisor: the exhaustive toSpliced matrix, eight exhaustive
+four-date cache-sequence parts, repeated TypedArray conversion loops, the
+65,536-element overlapping copy with 524,288 result assertions, and the
+262,144-element two-byte sort matrix. The allocator failures, rather than the
+initial 20-second diagnostic deadline, are the recorded outcomes.
+
+The remaining String.replace original requires 2**36 code units, or accepts OOM:
+the resulting UTF-16 payload alone is 128 GiB. The unrestricted initial diagnostic
+process was killed by the host. Under the same external supervisor both modes
+report native replacement-capacity Limits without terminating the process.
+
+These are capacity-qualified supplementary stress results, not successful
+language executions. The 5 GiB supervisor is an investigation constraint, not a
+Runtime default or a universal bound on these algorithms. No quota was added or
+increased, no original was shortened, and no host failure was converted into a
+JavaScript exception or negative-test pass. Collection remains an explicit idle
+host operation; long uninterrupted Scripts can retain large amounts of heap
+storage until that checkpoint. The final conformance statement must retain this
+constraint. CI requires pinned Limit receipts for every resource disposition and
+rejects omitted outcomes or passing credit. All scope entries are now reviewed;
+the enlarged frozen and hosted gates remain the next qualification steps.

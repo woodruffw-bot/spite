@@ -37,7 +37,7 @@ support files remain in the verified tree but are not test originals.
 | `implementation-defined-date-parse` | 1 | SpiderMonkey fallback formats outside Date Time String Format; this host returns NaN. |
 | `permitted-regexp-source` | 1 | An exact source spelling where EscapeRegExpPattern permits the equivalent deterministic representation used here. |
 | `unicode-case-version-difference` | 1 | A Unicode17 BMP casing table with eight independently verified Unicode18 changes. |
-| `staging-review` | 15 | Resource and native-stack stress originals awaiting final host-constraint review. The other 1,325 applicable staging originals have been admitted unchanged. |
+| `native-resource-constraint` | 15 | Thirteen allocation-stress and two native-stack originals have retained nonpassing receipts; no Runtime default quotas were added and no passing credit is claimed. |
 | `harness-self-test` | 116 | Infrastructure validation, separately executed: all 232 original modes pass after the absent-$DONE correction. |
 | `optional-annex-b` | 1,086 | Annex B browser-compatibility tests; this non-browser host disables Annex B. |
 | `outside-ecma262` | 3,365 | ECMA-402 internationalization tests, outside the ECMA-262 target. |
@@ -45,12 +45,16 @@ support files remain in the verified tree but are not test originals.
 The [core review](core-review.md) records these decisions and corrects one earlier
 object-literal exclusion; that unchanged original is now retained. Supplementary
 policy probes and all ninety Unicode witnesses execute in the runner controls.
-The staging-review category remains unresolved work, not an accepted exclusion. A scope
-entry proves accounting only; its semantic justification must be reviewed
-against the published specification and documented host policies. Passing the
-retained suite and the provenance checks does not close that qualification.
+All pinned scope entries have now been reviewed; none remains `baseline-review`
+or `staging-review`. A scope entry proves accounting only. The linked reviews
+justify each decision against the published specification and host policies.
+Passing the retained suite and provenance checks alone does not establish full
+conformance; the final report must retain the resource and specification qualifications.
 Closed staging decisions additionally require matching source-specific explanations
 and pinned Git blobs in `staging-reviewed.tsv`; feature metadata alone is insufficient.
+The [resource receipts](resource-stress.json) preserve all 29 nonpassing Limit
+outcomes. CI rejects missing receipts, changed source identities, passing outcomes
+or passing credit for those entries.
 
 Run `python3 tools/check-test262.py` for fixture, review and complete-tree checks,
 or `python3 tools/check-test262-scope.py` for the provenance/scope report alone.

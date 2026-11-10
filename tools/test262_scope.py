@@ -2,6 +2,7 @@
 
 from collections import Counter
 import hashlib
+import json
 from pathlib import PurePosixPath
 import re
 
@@ -22,6 +23,7 @@ DISPOSITIONS = {
     "implementation-defined-date-parse": "test/staging/sm/Date/",
     "permitted-regexp-source": "test/staging/sm/RegExp/",
     "unicode-case-version-difference": "test/staging/sm/String/string-upper-lower-mapping.js",
+    "native-resource-constraint": "test/staging/",
 }
 POST_BASELINE_FEATURES = {
     "Temporal", "ShadowRealm", "explicit-resource-management",
@@ -155,6 +157,28 @@ def check(root):
             staging_reviews[path] = reason
     if staging_reviews != reviewed_staging:
         raise ValueError("closed staging scope entries require matching pinned source reviews")
+    resource_paths = {path for path, reason in scoped.items() if reason == "native-resource-constraint"}
+    resources = {}
+    resource_file = audit / "resource-stress.json"
+    if resource_file.exists():
+        receipt = json.loads(resource_file.read_text())
+        if receipt.get("revision") != revision:
+            raise ValueError("resource receipt must name the pinned upstream revision")
+        if receipt.get("passing_credit", 0) != 0:
+            raise ValueError("resource receipts cannot claim passing credit")
+        for record in receipt["results"]:
+            path = record["path"]
+            outcomes = record["outcomes"]
+            if (path in resources or path not in resource_paths
+                    or entries.get(path) != ("100644", record["git_blob"])
+                    or record.get("runner") != "defaults" or not outcomes
+                    or len({x["mode"] for x in outcomes}) != len(outcomes)
+                    or any(x.get("category") != "limit" or x.get("stage") != "Runtime"
+                           or not x.get("message") for x in outcomes)):
+                raise ValueError(f"resource constraints require pinned nonpassing Limit outcomes: {path}")
+            resources[path] = record
+    if set(resources) != resource_paths:
+        raise ValueError("resource constraints require complete nonpassing receipts")
     unicode_paths = {path for path, reason in scoped.items() if reason == "unicode-version-difference"}
     # The two literal loops instead hard-code acceptance of join-control
     # IdentityEscapes, contrary to Unicode18's ID_Continue membership.
