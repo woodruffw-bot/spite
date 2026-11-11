@@ -46,7 +46,73 @@ fn default_records_distinguish_named_declarations_from_synthetic_bindings() {
         };
         records.push((source, local, node));
     }
-    insta::assert_debug_snapshot!(records);
+    insta::assert_debug_snapshot!(records, @r#"
+        [
+            (
+                "export default function named(){}",
+                Some(
+                    "named",
+                ),
+                "function",
+            ),
+            (
+                "export default function(){}",
+                None,
+                "function",
+            ),
+            (
+                "export default function* named(){}",
+                Some(
+                    "named",
+                ),
+                "function",
+            ),
+            (
+                "export default function*(){}",
+                None,
+                "function",
+            ),
+            (
+                "export default async function named(){}",
+                Some(
+                    "named",
+                ),
+                "function",
+            ),
+            (
+                "export default async function(){}",
+                None,
+                "function",
+            ),
+            (
+                "export default class Named{}",
+                Some(
+                    "Named",
+                ),
+                "class",
+            ),
+            (
+                "export default class{}",
+                None,
+                "class",
+            ),
+            (
+                "export default (function internal(){})",
+                None,
+                "expression",
+            ),
+            (
+                "export default (class Internal{})",
+                None,
+                "expression",
+            ),
+            (
+                "export default 42;",
+                None,
+                "expression",
+            ),
+        ]
+        "#);
 }
 
 #[test]

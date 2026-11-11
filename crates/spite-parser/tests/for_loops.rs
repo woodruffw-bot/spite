@@ -112,7 +112,42 @@ fn lexical_header_early_errors_snapshot() {
     ]
     .map(|source| parse_script(source).unwrap_err())
     .into();
-    insta::assert_debug_snapshot!(errors);
+    insta::assert_debug_snapshot!(errors, @r#"
+        [
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 12,
+                    end: 13,
+                },
+                message: "const requires an initializer",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 16,
+                    end: 17,
+                },
+                message: "duplicate lexical binding",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 23,
+                    end: 27,
+                },
+                message: "invalid binding in strict mode",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 15,
+                    end: 20,
+                },
+                message: "expected ;",
+            },
+        ]
+        "#);
 }
 
 #[test]

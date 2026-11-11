@@ -178,5 +178,17 @@ fn unicode_repeated_atom_inner_line_former_whole_programs_snapshot() {
         };
         writeln!(rows, "{source} {result:?}").unwrap();
     }
-    insta::assert_snapshot!(rows);
+    insta::assert_snapshot!(rows, @r#"
+        /(?:^a$)+/u.test('a') "true"
+        /(?:^a$)+/v.test('a') "true"
+        /(a$)+/u.test('a') "true"
+        /(?:(^a))+/u.test('a') "true"
+        /(?:^a)+/u.exec('a') "[\u0022a\u0022]"
+        /(^a)+/um.exec('aa') "[\u0022a\u0022,\u0022a\u0022]"
+        /(a$)+/um.exec('aa') "[\u0022a\u0022,\u0022a\u0022]"
+        /(^.$)+/iu.exec('a') "[\u0022a\u0022,\u0022a\u0022]"
+        /(?:^a$)+/u.exec('a') "[\u0022a\u0022]"
+        /(^[a]$)+/iu.exec('a') "[\u0022a\u0022,\u0022a\u0022]"
+        /(?:^a)+/v.exec('a') "[\u0022a\u0022]"
+        "#);
 }

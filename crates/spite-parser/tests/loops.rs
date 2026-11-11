@@ -120,7 +120,82 @@ fn nested_loops_obey_parser_depth_limits() {
 #[test]
 fn loop_control_syntax_snapshot() {
     let script = parse_script("while (true) { if (false) continue; break; }").unwrap();
-    insta::assert_debug_snapshot!(script);
+    insta::assert_debug_snapshot!(script, @r#"
+        Script {
+            statements: [
+                Statement {
+                    kind: While {
+                        test: Expr {
+                            depth: 1,
+                            kind: Literal(
+                                Boolean(
+                                    true,
+                                ),
+                            ),
+                            span: Span {
+                                start: 7,
+                                end: 11,
+                            },
+                        },
+                        body: Statement {
+                            kind: Block(
+                                [
+                                    Statement {
+                                        kind: If {
+                                            test: Expr {
+                                                depth: 1,
+                                                kind: Literal(
+                                                    Boolean(
+                                                        false,
+                                                    ),
+                                                ),
+                                                span: Span {
+                                                    start: 19,
+                                                    end: 24,
+                                                },
+                                            },
+                                            consequent: Statement {
+                                                kind: Continue(
+                                                    None,
+                                                ),
+                                                span: Span {
+                                                    start: 26,
+                                                    end: 35,
+                                                },
+                                            },
+                                            alternate: None,
+                                        },
+                                        span: Span {
+                                            start: 15,
+                                            end: 35,
+                                        },
+                                    },
+                                    Statement {
+                                        kind: Break(
+                                            None,
+                                        ),
+                                        span: Span {
+                                            start: 36,
+                                            end: 42,
+                                        },
+                                    },
+                                ],
+                            ),
+                            span: Span {
+                                start: 13,
+                                end: 44,
+                            },
+                        },
+                    },
+                    span: Span {
+                        start: 0,
+                        end: 44,
+                    },
+                },
+            ],
+            strict: false,
+        }
+        "#);
 }
 
 #[test]
@@ -133,7 +208,42 @@ fn loop_control_diagnostic_snapshot() {
     ]
     .map(|source| parse_script(source).unwrap_err())
     .into();
-    insta::assert_debug_snapshot!(errors);
+    insta::assert_debug_snapshot!(errors, @r#"
+        [
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 6,
+                },
+                message: "break requires an enclosing loop or switch",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 2,
+                    end: 11,
+                },
+                message: "continue requires an enclosing loop",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 11,
+                    end: 17,
+                },
+                message: "break requires an enclosing loop or switch",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 16,
+                    end: 25,
+                },
+                message: "continue requires an enclosing loop",
+            },
+        ]
+        "#);
 }
 
 #[test]

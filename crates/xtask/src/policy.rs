@@ -100,7 +100,7 @@ fn allowed(package: &str, dependency: &str, kind: Option<&str>) -> bool {
     match kind {
         None if package == "xtask" => matches!(dependency, "serde_json" | "toml" | "sha1" | "sha2"),
         None => matches!(dependency, "regex" | "regress" | "jiff" | "jiff-tzdb"),
-        Some("dev") => dependency == "insta",
+        Some("dev") => matches!(dependency, "insta" | "test-case"),
         Some(_) => false,
     }
 }
@@ -114,6 +114,8 @@ mod tests {
         assert!(allowed("xtask", "sha2", None));
         assert!(!allowed("spite-runtime", "sha2", None));
         assert!(allowed("spite-core", "insta", Some("dev")));
+        assert!(allowed("spite-runtime", "test-case", Some("dev")));
+        assert!(!allowed("spite-runtime", "test-case", None));
         assert!(!allowed("xtask", "sha2", Some("build")));
         assert!(!allowed("spite-runtime", "unapproved", None));
     }

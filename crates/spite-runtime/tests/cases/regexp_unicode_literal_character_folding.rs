@@ -71,7 +71,24 @@ fn unicode_literal_character_folding_unicode_18_widths_snapshot() {
             }
         }
     }
-    insta::assert_snapshot!(rows);
+    insta::assert_snapshot!(rows, @r#"
+        "\u00df" mode="u" input="\u00df" start=0 "{\u0022text\u0022:\u0022\u00df\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,1],\u0022lastIndex\u0022:1}"
+        "\u00df" mode="u" input="\u00df" start=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
+        "\u00df" mode="u" input="\ud837\udf95" start=0 "{\u0022text\u0022:\u0022\ud837\udf95\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,2],\u0022lastIndex\u0022:2}"
+        "\u00df" mode="u" input="\ud837\udf95" start=1 "{\u0022text\u0022:\u0022\ud837\udf95\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,2],\u0022lastIndex\u0022:2}"
+        "\u00df" mode="v" input="\u00df" start=0 "{\u0022text\u0022:\u0022\u00df\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,1],\u0022lastIndex\u0022:1}"
+        "\u00df" mode="v" input="\u00df" start=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
+        "\u00df" mode="v" input="\ud837\udf95" start=0 "{\u0022text\u0022:\u0022\ud837\udf95\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,2],\u0022lastIndex\u0022:2}"
+        "\u00df" mode="v" input="\ud837\udf95" start=1 "{\u0022text\u0022:\u0022\ud837\udf95\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,2],\u0022lastIndex\u0022:2}"
+        "\u005cu{1df95}" mode="u" input="\u00df" start=0 "{\u0022text\u0022:\u0022\u00df\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,1],\u0022lastIndex\u0022:1}"
+        "\u005cu{1df95}" mode="u" input="\u00df" start=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
+        "\u005cu{1df95}" mode="u" input="\ud837\udf95" start=0 "{\u0022text\u0022:\u0022\ud837\udf95\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,2],\u0022lastIndex\u0022:2}"
+        "\u005cu{1df95}" mode="u" input="\ud837\udf95" start=1 "{\u0022text\u0022:\u0022\ud837\udf95\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,2],\u0022lastIndex\u0022:2}"
+        "\u005cu{1df95}" mode="v" input="\u00df" start=0 "{\u0022text\u0022:\u0022\u00df\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,1],\u0022lastIndex\u0022:1}"
+        "\u005cu{1df95}" mode="v" input="\u00df" start=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
+        "\u005cu{1df95}" mode="v" input="\ud837\udf95" start=0 "{\u0022text\u0022:\u0022\ud837\udf95\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,2],\u0022lastIndex\u0022:2}"
+        "\u005cu{1df95}" mode="v" input="\ud837\udf95" start=1 "{\u0022text\u0022:\u0022\ud837\udf95\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,2],\u0022lastIndex\u0022:2}"
+        "#);
 }
 
 #[test]
@@ -181,5 +198,17 @@ fn original_unicode_literal_character_folding_complete_programs() {
         };
         writeln!(rows, "{:?} {result:?}", JsString::from(source)).unwrap();
     }
-    insta::assert_snapshot!(rows);
+    insta::assert_snapshot!(rows, @r#"
+        "/^a$/u.test('a')" "true"
+        "/^a$/v.test('a')" "true"
+        "/(^a)/u.test('a')" "true"
+        "/a/iu.exec('a')" "[\u0022a\u0022]"
+        "/^a/u.exec('a')" "[\u0022a\u0022]"
+        "/\u005cu{61}/iu.exec('a')" "[\u0022a\u0022]"
+        "/^a$/u.exec('a')" "[\u0022a\u0022]"
+        "/\u005cu{1f600}/iu.exec('\ud83d\ude00')" "[\u0022\ud83d\ude00\u0022]"
+        "/a/iv.exec('a')" "[\u0022a\u0022]"
+        "/^a/v.exec('a')" "[\u0022a\u0022]"
+        "/\u005cuD800/iu.exec('\u005cuD800')" "[\u0022\u005cud800\u0022]"
+        "#);
 }

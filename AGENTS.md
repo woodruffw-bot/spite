@@ -14,6 +14,8 @@
   metadata, configuration and source integrity checks. Engine crates must not
   depend on xtask or its tooling dependencies.
 - No other new direct dependencies or external build dependencies are approved.
+- Tests may use insta and test-case as dev-dependencies. Prefer inline snapshots;
+  reserve sidecar snapshots for output longer than 100 lines.
 - Keep member crates under crates/ and share dependency versions in Cargo.toml.
 - Implement ECMA-262 behavior. Do not add Node.js, browser, or syntax extensions.
 - Resolve the edition 17 RegExpBuiltinExec inconsistency for Unicode matches

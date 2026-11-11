@@ -195,7 +195,23 @@ fn original_unicode_class_complete_programs() {
         };
         writeln!(rows, "{:?} {result:?}", JsString::from(source)).unwrap();
     }
-    insta::assert_snapshot!(rows);
+    insta::assert_snapshot!(rows, @r#"
+        "/[\u005cu{1f600}]/u.test('a')" "false"
+        "/[\u005cu{1f600}]/v.exec('a')" "null"
+        "/[^a]/u.exec('b')" "[\u0022b\u0022]"
+        "/[\u005cuD800]/u.exec('\u005cuD800')" "[\u0022\u005cud800\u0022]"
+        "/[\u005cuD7FF-\u005cuE000]/u.exec('a')" "null"
+        "/[\u005cu{1f600}]/u.exec('a')" "null"
+        "/[\u005cu{10000}]/u.exec('a')" "null"
+        "/[\u005cu{D800}]/v.exec('\u005cuD800')" "[\u0022\u005cud800\u0022]"
+        "/[\u005cu{D7FF}-\u005cu{E000}]/u.exec('a')" "null"
+        "/[^\u005cu{61}]/u.exec('b')" "[\u0022b\u0022]"
+        "/[\u005cD]/u.exec('a')" "[\u0022a\u0022]"
+        "/[^a]/v.exec('b')" "[\u0022b\u0022]"
+        "/[\u005cu{1f600}]/v.exec('\ud83d\ude00')" "[\u0022\ud83d\ude00\u0022]"
+        "/[\u005cuD800]/v.exec('\u005cuD800')" "[\u0022\u005cud800\u0022]"
+        "/[\u005cuD7FF-\u005cuE000]/v.exec('a')" "null"
+        "#);
 }
 
 #[test]
@@ -211,5 +227,7 @@ fn original_unicode_class_direct_eval_completion() {
     insta::assert_snapshot!(format!(
         "{:?} result={result:?} marker={marker:?}",
         JsString::from(operation.as_str())
-    ));
+    ), @r#"
+        "try{eval(\u0022marker=1; /[\u005c\u005cu{1f600}]/v.test('a');\u0022);}catch{marker=2;}finally{marker=3;}" result=Boolean(false) marker=Number(3.0)
+        "#);
 }

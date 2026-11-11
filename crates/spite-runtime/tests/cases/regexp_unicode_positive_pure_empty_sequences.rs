@@ -122,5 +122,8 @@ fn unicode_positive_pure_empty_former_whole_programs_snapshot() {
         };
         writeln!(rows, "{source:?} {result:?}").unwrap();
     }
-    insta::assert_snapshot!(rows);
+    insta::assert_snapshot!(rows, @r#"
+        "/()+/u.test('')" "true"
+        "/()+/u.exec('a')" "[\u0022\u0022,\u0022\u0022]"
+        "#);
 }

@@ -13,6 +13,7 @@ spite-regexp.workspace = true
 
 [dev-dependencies]
 insta.workspace = true
+test-case.workspace = true
 
 [lints]
 workspace = true

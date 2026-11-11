@@ -11,7 +11,67 @@ fn super_properties_retain_names_and_reference_targets() {
         ..Default::default()
     };
     let script = parse_eval_utf16(&JsString::from("super.x = super[1];"), context).unwrap();
-    insta::assert_debug_snapshot!(script);
+    insta::assert_debug_snapshot!(script, @r#"
+        Script {
+            statements: [
+                Statement {
+                    kind: Expression(
+                        Expr {
+                            depth: 3,
+                            kind: Assign(
+                                Expr {
+                                    depth: 1,
+                                    kind: SuperProperty(
+                                        Literal(
+                                            String(
+                                                "x",
+                                            ),
+                                        ),
+                                    ),
+                                    span: Span {
+                                        start: 0,
+                                        end: 7,
+                                    },
+                                },
+                                Expr {
+                                    depth: 2,
+                                    kind: SuperProperty(
+                                        Computed(
+                                            Expr {
+                                                depth: 1,
+                                                kind: Literal(
+                                                    Number(
+                                                        1.0,
+                                                    ),
+                                                ),
+                                                span: Span {
+                                                    start: 16,
+                                                    end: 17,
+                                                },
+                                            },
+                                        ),
+                                    ),
+                                    span: Span {
+                                        start: 10,
+                                        end: 18,
+                                    },
+                                },
+                            ),
+                            span: Span {
+                                start: 0,
+                                end: 18,
+                            },
+                        },
+                    ),
+                    span: Span {
+                        start: 0,
+                        end: 19,
+                    },
+                },
+            ],
+            strict: false,
+        }
+        "#);
     for source in [
         "({m(k){return super[k in {}];}})",
         "({m(){return super.null + super.true + super.\\u0078;}})",
@@ -50,7 +110,98 @@ fn super_grammar_and_context_errors_are_syntax_errors() {
         error
     })
     .collect();
-    insta::assert_debug_snapshot!(errors);
+    insta::assert_debug_snapshot!(errors, @r#"
+        [
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 5,
+                },
+                message: "super property access outside a method",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 4,
+                    end: 9,
+                },
+                message: "super property access outside a method",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 20,
+                    end: 25,
+                },
+                message: "super property access outside a method",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 35,
+                    end: 40,
+                },
+                message: "super property access outside a method",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 6,
+                    end: 11,
+                },
+                message: "super call requires a derived constructor",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 6,
+                    end: 11,
+                },
+                message: "super call requires a derived constructor",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 6,
+                    end: 11,
+                },
+                message: "super call requires a derived constructor",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 12,
+                    end: 15,
+                },
+                message: "expected an identifier name after dot",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 13,
+                    end: 14,
+                },
+                message: "expected an expression",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 12,
+                    end: 13,
+                },
+                message: "super cannot access private properties",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 25,
+                    end: 31,
+                },
+                message: "reserved identifier in strict mode",
+            },
+        ]
+        "#);
 }
 
 #[test]

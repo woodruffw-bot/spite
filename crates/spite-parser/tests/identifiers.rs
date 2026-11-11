@@ -21,7 +21,67 @@ fn unicode_identifier_names_and_byte_spans() {
     };
     assert_eq!(reference.kind, ExprKind::Identifier("π".into()));
     assert_eq!(reference.span, Span::new(12, 14));
-    insta::assert_debug_snapshot!(script);
+    insta::assert_debug_snapshot!(script, @r#"
+        Script {
+            statements: [
+                Statement {
+                    kind: Lexical {
+                        mutable: true,
+                        bindings: [
+                            BindingElement {
+                                pattern: BindingPattern {
+                                    kind: Identifier(
+                                        "π",
+                                    ),
+                                    span: Span {
+                                        start: 4,
+                                        end: 6,
+                                    },
+                                },
+                                initializer: Some(
+                                    Expr {
+                                        depth: 1,
+                                        kind: Literal(
+                                            Number(
+                                                1.0,
+                                            ),
+                                        ),
+                                        span: Span {
+                                            start: 9,
+                                            end: 10,
+                                        },
+                                    },
+                                ),
+                            },
+                        ],
+                    },
+                    span: Span {
+                        start: 0,
+                        end: 11,
+                    },
+                },
+                Statement {
+                    kind: Expression(
+                        Expr {
+                            depth: 1,
+                            kind: Identifier(
+                                "π",
+                            ),
+                            span: Span {
+                                start: 12,
+                                end: 14,
+                            },
+                        },
+                    ),
+                    span: Span {
+                        start: 12,
+                        end: 15,
+                    },
+                },
+            ],
+            strict: false,
+        }
+        "#);
 }
 
 #[test]
@@ -121,7 +181,67 @@ fn identifier_escapes_decode_names_and_preserve_source_spans() {
         &source[reference.span.start..reference.span.end],
         r"\u{010400}"
     );
-    insta::assert_debug_snapshot!(script);
+    insta::assert_debug_snapshot!(script, @r#"
+        Script {
+            statements: [
+                Statement {
+                    kind: Lexical {
+                        mutable: true,
+                        bindings: [
+                            BindingElement {
+                                pattern: BindingPattern {
+                                    kind: Identifier(
+                                        "𐐀",
+                                    ),
+                                    span: Span {
+                                        start: 4,
+                                        end: 13,
+                                    },
+                                },
+                                initializer: Some(
+                                    Expr {
+                                        depth: 1,
+                                        kind: Literal(
+                                            Number(
+                                                1.0,
+                                            ),
+                                        ),
+                                        span: Span {
+                                            start: 16,
+                                            end: 17,
+                                        },
+                                    },
+                                ),
+                            },
+                        ],
+                    },
+                    span: Span {
+                        start: 0,
+                        end: 18,
+                    },
+                },
+                Statement {
+                    kind: Expression(
+                        Expr {
+                            depth: 1,
+                            kind: Identifier(
+                                "𐐀",
+                            ),
+                            span: Span {
+                                start: 19,
+                                end: 29,
+                            },
+                        },
+                    ),
+                    span: Span {
+                        start: 19,
+                        end: 30,
+                    },
+                },
+            ],
+            strict: false,
+        }
+        "#);
 }
 
 #[test]
@@ -189,7 +309,34 @@ fn invalid_escapes_are_syntax_errors() {
         .filter(|s| !s.trim().is_empty())
         .map(|s| parse_script(s.trim()).unwrap_err())
         .collect();
-    insta::assert_debug_snapshot!(errors);
+    insta::assert_debug_snapshot!(errors, @r#"
+        [
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 9,
+                },
+                message: "Unicode escape out of range",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 1,
+                    end: 7,
+                },
+                message: "invalid identifier part escape",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 6,
+                },
+                message: "invalid identifier start escape",
+            },
+        ]
+        "#);
 }
 
 #[test]

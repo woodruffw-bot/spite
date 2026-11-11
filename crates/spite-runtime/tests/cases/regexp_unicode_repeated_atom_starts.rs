@@ -14,7 +14,9 @@ fn unicode_repeated_atom_start_former_whole_program_snapshot() {
     else {
         panic!("{source}")
     };
-    insta::assert_snapshot!(format!("{source} {result:?}"));
+    insta::assert_snapshot!(format!("{source} {result:?}"), @r#"
+        /^a+/u.exec('a') "[\u0022a\u0022]"
+        "#);
 }
 
 #[test]

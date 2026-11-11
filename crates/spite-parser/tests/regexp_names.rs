@@ -140,7 +140,82 @@ fn malformed_names_and_missing_references_share_grammar_entry_diagnostics() {
     .into_iter()
     .map(|source| parse_script(source).unwrap_err())
     .collect();
-    insta::assert_debug_snapshot!(errors);
+    insta::assert_debug_snapshot!(errors, @r#"
+        [
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 8,
+                },
+                message: "empty regular expression group name",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 11,
+                },
+                message: "invalid regular expression group name identifier",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 9,
+                },
+                message: "regular expression group name requires a Unicode escape",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 7,
+                },
+                message: "invalid regular expression group name identifier",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 5,
+                },
+                message: "regular expression named backreference requires a group name",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 7,
+                },
+                message: "regular expression named backreference has no capture",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 17,
+                },
+                message: "regular expression capture names might both participate",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 14,
+                },
+                message: "regular expression named backreference has no capture",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 15,
+                    end: 31,
+                },
+                message: "regular expression capture names might both participate",
+            },
+        ]
+        "#);
 }
 
 #[test]

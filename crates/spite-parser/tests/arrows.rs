@@ -134,7 +134,42 @@ fn arrow_diagnostics_snapshot() {
     .into_iter()
     .map(|source| parse_script(source).unwrap_err())
     .collect();
-    insta::assert_debug_snapshot!(errors);
+    insta::assert_debug_snapshot!(errors, @r#"
+        [
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 3,
+                    end: 4,
+                },
+                message: "duplicate lexical binding",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 2,
+                    end: 4,
+                },
+                message: "line terminator before arrow",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 14,
+                    end: 18,
+                },
+                message: "invalid binding in strict mode",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 8,
+                    end: 9,
+                },
+                message: "expected )",
+            },
+        ]
+        "#);
 }
 
 #[test]

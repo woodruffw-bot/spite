@@ -1,25 +1,29 @@
 //! Tagged call/member precedence, cooked escape handling, and site identity.
 
-use spite_core::DiagnosticKind;
+use spite_core::{DiagnosticKind, Span};
 use spite_parser::ast::{ExprKind, StatementKind};
 use spite_parser::{MAX_DEPTH, parse_script};
 use std::rc::Rc;
+use test_case::test_case;
 
 #[test]
-fn syntax_and_diagnostic_snapshots() {
+fn tagged_template_syntax_snapshot() {
     insta::assert_debug_snapshot!(
         parse_script("obj.tag`a${x}b`(y).z; new tag`constructor`(1); tag`\\x${nested`v`}tail`;")
             .unwrap()
     );
-    for source in [
-        "tag`a`=1",
-        "tag`a`++",
-        "tag`${}`",
-        "a++`x`",
-        "'use strict'; tag`${arguments=1}`",
-    ] {
-        insta::assert_debug_snapshot!(parse_script(source).unwrap_err());
-    }
+}
+
+#[test_case("tag`a`=1", Span::new(0, 6), "invalid assignment target"; "assignment")]
+#[test_case("tag`a`++", Span::new(0, 6), "invalid update target"; "postfix_update")]
+#[test_case("tag`${}`", Span::new(6, 8), "expected an expression"; "missing_substitution")]
+#[test_case("a++`x`", Span::new(3, 6), "tagged template requires a left-hand-side expression"; "update_as_tag")]
+#[test_case("'use strict'; tag`${arguments=1}`", Span::new(20, 31), "invalid assignment in strict mode"; "strict_assignment_in_substitution")]
+fn invalid_tagged_template_syntax(source: &str, expected_span: Span, expected_message: &str) {
+    let diagnostic = parse_script(source).expect_err("invalid syntax must fail parsing");
+    assert_eq!(diagnostic.kind, DiagnosticKind::Syntax);
+    assert_eq!(diagnostic.span, expected_span);
+    assert_eq!(diagnostic.message, expected_message);
 }
 
 #[test]

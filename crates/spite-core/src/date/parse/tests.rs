@@ -34,7 +34,33 @@ fn date_time_forms_snapshot_defaults_expanded_years_midnight_and_zones() {
         let parsed = parse_date_time_string(&JsString::from(source)).unwrap();
         writeln!(report, "{source:?} => {parsed:?}").unwrap();
     }
-    insta::assert_snapshot!(report);
+    insta::assert_snapshot!(report, @r#"
+        "1970" => DateTimeString { year: 1970, month: 0, day: 1, hour: 0, minute: 0, second: 0, millisecond: 0, zone: Utc }
+        "1970-02" => DateTimeString { year: 1970, month: 1, day: 1, hour: 0, minute: 0, second: 0, millisecond: 0, zone: Utc }
+        "1970-02-03" => DateTimeString { year: 1970, month: 1, day: 3, hour: 0, minute: 0, second: 0, millisecond: 0, zone: Utc }
+        "0000" => DateTimeString { year: 0, month: 0, day: 1, hour: 0, minute: 0, second: 0, millisecond: 0, zone: Utc }
+        "+000000-01-01" => DateTimeString { year: 0, month: 0, day: 1, hour: 0, minute: 0, second: 0, millisecond: 0, zone: Utc }
+        "-000001-01-01" => DateTimeString { year: -1, month: 0, day: 1, hour: 0, minute: 0, second: 0, millisecond: 0, zone: Utc }
+        "+001970-01-01" => DateTimeString { year: 1970, month: 0, day: 1, hour: 0, minute: 0, second: 0, millisecond: 0, zone: Utc }
+        "-271821-04-20T00:00:00Z" => DateTimeString { year: -271821, month: 3, day: 20, hour: 0, minute: 0, second: 0, millisecond: 0, zone: Utc }
+        "+275760-09-13T00:00:00.000Z" => DateTimeString { year: 275760, month: 8, day: 13, hour: 0, minute: 0, second: 0, millisecond: 0, zone: Utc }
+        "+999999-12-31T23:59:59.999Z" => DateTimeString { year: 999999, month: 11, day: 31, hour: 23, minute: 59, second: 59, millisecond: 999, zone: Utc }
+        "1970T00:00" => DateTimeString { year: 1970, month: 0, day: 1, hour: 0, minute: 0, second: 0, millisecond: 0, zone: Local }
+        "1970-02T12:34" => DateTimeString { year: 1970, month: 1, day: 1, hour: 12, minute: 34, second: 0, millisecond: 0, zone: Local }
+        "1970-02-03T12:34" => DateTimeString { year: 1970, month: 1, day: 3, hour: 12, minute: 34, second: 0, millisecond: 0, zone: Local }
+        "1970-02-03T12:34:56" => DateTimeString { year: 1970, month: 1, day: 3, hour: 12, minute: 34, second: 56, millisecond: 0, zone: Local }
+        "1970-02-03T12:34:56.007" => DateTimeString { year: 1970, month: 1, day: 3, hour: 12, minute: 34, second: 56, millisecond: 7, zone: Local }
+        "1970-02-03T12:34Z" => DateTimeString { year: 1970, month: 1, day: 3, hour: 12, minute: 34, second: 0, millisecond: 0, zone: Utc }
+        "1970-02-03T12:34:56Z" => DateTimeString { year: 1970, month: 1, day: 3, hour: 12, minute: 34, second: 56, millisecond: 0, zone: Utc }
+        "1970-02-03T12:34:56.999Z" => DateTimeString { year: 1970, month: 1, day: 3, hour: 12, minute: 34, second: 56, millisecond: 999, zone: Utc }
+        "1995-02-04T24:00" => DateTimeString { year: 1995, month: 1, day: 4, hour: 24, minute: 0, second: 0, millisecond: 0, zone: Local }
+        "1995-02-04T24:00:00.000Z" => DateTimeString { year: 1995, month: 1, day: 4, hour: 24, minute: 0, second: 0, millisecond: 0, zone: Utc }
+        "1970-01-01T00:00+00:00" => DateTimeString { year: 1970, month: 0, day: 1, hour: 0, minute: 0, second: 0, millisecond: 0, zone: OffsetMinutes(0) }
+        "1970-01-01T00:00-00:00" => DateTimeString { year: 1970, month: 0, day: 1, hour: 0, minute: 0, second: 0, millisecond: 0, zone: OffsetMinutes(0) }
+        "1970-01-01T00:00+05:30" => DateTimeString { year: 1970, month: 0, day: 1, hour: 0, minute: 0, second: 0, millisecond: 0, zone: OffsetMinutes(330) }
+        "1970-01-01T00:00-23:59" => DateTimeString { year: 1970, month: 0, day: 1, hour: 0, minute: 0, second: 0, millisecond: 0, zone: OffsetMinutes(-1439) }
+        "2000-02-30" => DateTimeString { year: 2000, month: 1, day: 30, hour: 0, minute: 0, second: 0, millisecond: 0, zone: Utc }
+        "#);
 }
 
 #[test]
@@ -99,7 +125,61 @@ fn rejected_date_time_syntax_snapshot() {
         assert_eq!(parsed, None, "{source:?}");
         writeln!(report, "{source:?} => {parsed:?}").unwrap();
     }
-    insta::assert_snapshot!(report);
+    insta::assert_snapshot!(report, @r#"
+        "" => None
+        "197" => None
+        "19700" => None
+        "1970 " => None
+        " 1970" => None
+        "1970\n" => None
+        "+1970" => None
+        "-1970" => None
+        "+00000" => None
+        "+0000000" => None
+        "-000000" => None
+        "-000000-01-01" => None
+        "1970-1" => None
+        "1970-001" => None
+        "1970-00" => None
+        "1970-13" => None
+        "1970-01-1" => None
+        "1970-01-001" => None
+        "1970-01-00" => None
+        "1970-01-32" => None
+        "1970--01" => None
+        "1970-01-01-01" => None
+        "1970Z" => None
+        "1970-01-01+00:00" => None
+        "1970-01-01t00:00Z" => None
+        "1970-01-01T0:00" => None
+        "1970-01-01T00:0" => None
+        "1970-01-01T00:00:0" => None
+        "1970-01-01T25:00" => None
+        "1970-01-01T23:60" => None
+        "1970-01-01T23:59:60" => None
+        "1970-01-01T24:01" => None
+        "1970-01-01T24:00:01" => None
+        "1970-01-01T24:00:00.001" => None
+        "1970-01-01T00:00.000" => None
+        "1970-01-01T00:00:00." => None
+        "1970-01-01T00:00:00.1" => None
+        "1970-01-01T00:00:00.01" => None
+        "1970-01-01T00:00:00.0000" => None
+        "1970-01-01T00:00z" => None
+        "1970-01-01T00:00ZZ" => None
+        "1970-01-01T00:00Z+00:00" => None
+        "1970-01-01T00:00+0:00" => None
+        "1970-01-01T00:00+00:0" => None
+        "1970-01-01T00:00+0000" => None
+        "1970-01-01T00:00+24:00" => None
+        "1970-01-01T00:00-24:00" => None
+        "1970-01-01T00:00+00:60" => None
+        "1970-01-01T00:00+00:00:00" => None
+        "1970-01-01T00:00+00:00x" => None
+        "１９７０" => None
+        "1970-０１-01" => None
+        "1970-01-01T00:00\0" => None
+        "#);
 }
 
 #[test]

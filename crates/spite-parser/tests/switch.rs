@@ -19,7 +19,42 @@ fn switch_diagnostics_snapshot() {
     ]
     .map(|s| parse_script(s).unwrap_err())
     .into();
-    insta::assert_debug_snapshot!(errors);
+    insta::assert_debug_snapshot!(errors, @r#"
+        [
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 24,
+                    end: 31,
+                },
+                message: "duplicate default clause",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 17,
+                    end: 18,
+                },
+                message: "expected an expression",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 43,
+                    end: 44,
+                },
+                message: "duplicate lexical binding",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 22,
+                    end: 31,
+                },
+                message: "continue requires an enclosing loop",
+            },
+        ]
+        "#);
 }
 
 #[test]

@@ -19,7 +19,93 @@ fn await_operand_precedence_and_spans_are_retained() {
         &"async function f(){return await x * 2}"[left.span.start..left.span.end],
         "await x"
     );
-    insta::assert_debug_snapshot!(script);
+    insta::assert_debug_snapshot!(script, @r#"
+        Script {
+            statements: [
+                Statement {
+                    kind: Function(
+                        Function {
+                            kind: Async,
+                            name: Some(
+                                FunctionName {
+                                    name: "f",
+                                    span: Span {
+                                        start: 15,
+                                        end: 16,
+                                    },
+                                },
+                            ),
+                            parameters: [],
+                            body: FunctionBody {
+                                statements: [
+                                    Statement {
+                                        kind: Return(
+                                            Some(
+                                                Expr {
+                                                    depth: 3,
+                                                    kind: Binary(
+                                                        Multiply,
+                                                        Expr {
+                                                            depth: 2,
+                                                            kind: Await(
+                                                                Expr {
+                                                                    depth: 1,
+                                                                    kind: Identifier(
+                                                                        "x",
+                                                                    ),
+                                                                    span: Span {
+                                                                        start: 32,
+                                                                        end: 33,
+                                                                    },
+                                                                },
+                                                            ),
+                                                            span: Span {
+                                                                start: 26,
+                                                                end: 33,
+                                                            },
+                                                        },
+                                                        Expr {
+                                                            depth: 1,
+                                                            kind: Literal(
+                                                                Number(
+                                                                    2.0,
+                                                                ),
+                                                            ),
+                                                            span: Span {
+                                                                start: 36,
+                                                                end: 37,
+                                                            },
+                                                        },
+                                                    ),
+                                                    span: Span {
+                                                        start: 26,
+                                                        end: 37,
+                                                    },
+                                                },
+                                            ),
+                                        ),
+                                        span: Span {
+                                            start: 19,
+                                            end: 37,
+                                        },
+                                    },
+                                ],
+                                strict: false,
+                            },
+                            source: FunctionSource(
+                                "async function f(){return await x * 2}",
+                            ),
+                        },
+                    ),
+                    span: Span {
+                        start: 0,
+                        end: 38,
+                    },
+                },
+            ],
+            strict: false,
+        }
+        "#);
 }
 
 #[test]

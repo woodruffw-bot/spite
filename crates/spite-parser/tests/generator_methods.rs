@@ -59,7 +59,30 @@ fn object_class_static_and_private_methods_retain_generator_kind_and_exact_sourc
             .iter()
             .all(|entry| entry.0 == FunctionKind::Generator)
     );
-    insta::assert_debug_snapshot!(summaries);
+    insta::assert_debug_snapshot!(summaries, @r#"
+        [
+            (
+                Generator,
+                "*g(x){yield x}",
+                false,
+            ),
+            (
+                Generator,
+                "*['h'](){yield* tail}",
+                true,
+            ),
+            (
+                Generator,
+                "*#g(){yield 1}",
+                false,
+            ),
+            (
+                Generator,
+                "*h(){yield 2}",
+                false,
+            ),
+        ]
+        "#);
 }
 
 #[test]

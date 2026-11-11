@@ -192,7 +192,56 @@ mod tests {
                 .unwrap();
             }
         }
-        insta::assert_snapshot!(snapshot);
+        insta::assert_snapshot!(snapshot, @r#"
+            captures=0 template="" => <empty>
+            captures=0 template="plain" => text("plain")
+            captures=0 template="$$$&$`$'" => text("$") | match | prefix | suffix
+            captures=0 template="$0|$00|$01|$1|$03|$3|$04|$4|$09|$9|$10|$11|$99|$100" => text("$0") | text("|") | text("$00") | text("|") | text("$0") | text("1|") | text("$1") | text("|") | text("$0") | text("3|") | text("$3") | text("|") | text("$0") | text("4|") | text("$4") | text("|") | text("$0") | text("9|") | text("$9") | text("|") | text("$1") | text("0|") | text("$1") | text("1|") | text("$9") | text("9|") | text("$1") | text("00")
+            captures=0 template="$001$011$999" => text("$00") | text("1") | text("$0") | text("11") | text("$9") | text("99")
+            captures=0 template="$1x$10" => text("$1") | text("x") | text("$1") | text("0")
+            captures=0 template="$z$" => text("$") | text("z") | text("$")
+            captures=0 template="$$1$$01" => text("$") | text("1") | text("$") | text("01")
+            captures=1 template="" => <empty>
+            captures=1 template="plain" => text("plain")
+            captures=1 template="$$$&$`$'" => text("$") | match | prefix | suffix
+            captures=1 template="$0|$00|$01|$1|$03|$3|$04|$4|$09|$9|$10|$11|$99|$100" => text("$0") | text("|") | text("$00") | text("|") | capture[1] | text("|") | capture[1] | text("|") | text("$0") | text("3|") | text("$3") | text("|") | text("$0") | text("4|") | text("$4") | text("|") | text("$0") | text("9|") | text("$9") | text("|") | capture[1] | text("0|") | capture[1] | text("1|") | text("$9") | text("9|") | capture[1] | text("00")
+            captures=1 template="$001$011$999" => text("$00") | text("1") | capture[1] | text("1") | text("$9") | text("99")
+            captures=1 template="$1x$10" => capture[1] | text("x") | capture[1] | text("0")
+            captures=1 template="$z$" => text("$") | text("z") | text("$")
+            captures=1 template="$$1$$01" => text("$") | text("1") | text("$") | text("01")
+            captures=3 template="" => <empty>
+            captures=3 template="plain" => text("plain")
+            captures=3 template="$$$&$`$'" => text("$") | match | prefix | suffix
+            captures=3 template="$0|$00|$01|$1|$03|$3|$04|$4|$09|$9|$10|$11|$99|$100" => text("$0") | text("|") | text("$00") | text("|") | capture[1] | text("|") | capture[1] | text("|") | capture[3] | text("|") | capture[3] | text("|") | text("$0") | text("4|") | text("$4") | text("|") | text("$0") | text("9|") | text("$9") | text("|") | capture[1] | text("0|") | capture[1] | text("1|") | text("$9") | text("9|") | capture[1] | text("00")
+            captures=3 template="$001$011$999" => text("$00") | text("1") | capture[1] | text("1") | text("$9") | text("99")
+            captures=3 template="$1x$10" => capture[1] | text("x") | capture[1] | text("0")
+            captures=3 template="$z$" => text("$") | text("z") | text("$")
+            captures=3 template="$$1$$01" => text("$") | text("1") | text("$") | text("01")
+            captures=9 template="" => <empty>
+            captures=9 template="plain" => text("plain")
+            captures=9 template="$$$&$`$'" => text("$") | match | prefix | suffix
+            captures=9 template="$0|$00|$01|$1|$03|$3|$04|$4|$09|$9|$10|$11|$99|$100" => text("$0") | text("|") | text("$00") | text("|") | capture[1] | text("|") | capture[1] | text("|") | capture[3] | text("|") | capture[3] | text("|") | capture[4] | text("|") | capture[4] | text("|") | capture[9] | text("|") | capture[9] | text("|") | capture[1] | text("0|") | capture[1] | text("1|") | capture[9] | text("9|") | capture[1] | text("00")
+            captures=9 template="$001$011$999" => text("$00") | text("1") | capture[1] | text("1") | capture[9] | text("99")
+            captures=9 template="$1x$10" => capture[1] | text("x") | capture[1] | text("0")
+            captures=9 template="$z$" => text("$") | text("z") | text("$")
+            captures=9 template="$$1$$01" => text("$") | text("1") | text("$") | text("01")
+            captures=10 template="" => <empty>
+            captures=10 template="plain" => text("plain")
+            captures=10 template="$$$&$`$'" => text("$") | match | prefix | suffix
+            captures=10 template="$0|$00|$01|$1|$03|$3|$04|$4|$09|$9|$10|$11|$99|$100" => text("$0") | text("|") | text("$00") | text("|") | capture[1] | text("|") | capture[1] | text("|") | capture[3] | text("|") | capture[3] | text("|") | capture[4] | text("|") | capture[4] | text("|") | capture[9] | text("|") | capture[9] | text("|") | capture[10] | text("|") | capture[1] | text("1|") | capture[9] | text("9|") | capture[10] | text("0")
+            captures=10 template="$001$011$999" => text("$00") | text("1") | capture[1] | text("1") | capture[9] | text("99")
+            captures=10 template="$1x$10" => capture[1] | text("x") | capture[10]
+            captures=10 template="$z$" => text("$") | text("z") | text("$")
+            captures=10 template="$$1$$01" => text("$") | text("1") | text("$") | text("01")
+            captures=99 template="" => <empty>
+            captures=99 template="plain" => text("plain")
+            captures=99 template="$$$&$`$'" => text("$") | match | prefix | suffix
+            captures=99 template="$0|$00|$01|$1|$03|$3|$04|$4|$09|$9|$10|$11|$99|$100" => text("$0") | text("|") | text("$00") | text("|") | capture[1] | text("|") | capture[1] | text("|") | capture[3] | text("|") | capture[3] | text("|") | capture[4] | text("|") | capture[4] | text("|") | capture[9] | text("|") | capture[9] | text("|") | capture[10] | text("|") | capture[11] | text("|") | capture[99] | text("|") | capture[10] | text("0")
+            captures=99 template="$001$011$999" => text("$00") | text("1") | capture[1] | text("1") | capture[99] | text("9")
+            captures=99 template="$1x$10" => capture[1] | text("x") | capture[10]
+            captures=99 template="$z$" => text("$") | text("z") | text("$")
+            captures=99 template="$$1$$01" => text("$") | text("1") | text("$") | text("01")
+            "#);
     }
 
     #[test]
@@ -226,7 +275,30 @@ mod tests {
                 .unwrap();
             }
         }
-        insta::assert_snapshot!(snapshot);
+        insta::assert_snapshot!(snapshot, @r#"
+            named=false template="$<foo>" => text("$<") | text("foo>")
+            named=false template="$<>" => text("$<") | text(">")
+            named=false template="$<foo" => text("$<") | text("foo")
+            named=false template="$<a$&>" => text("$<") | text("a") | match | text(">")
+            named=false template="$<$<x>>" => text("$<") | text("$<") | text("x>>")
+            named=false template="$$<foo>$&" => text("$") | text("<foo>") | match
+            named=false template="$<foo>$<foo>" => text("$<") | text("foo>") | text("$<") | text("foo>")
+            named=false template="$<bad$<bad" => text("$<") | text("bad") | text("$<") | text("bad")
+            named=false template="$<$1>" => text("$<") | capture[1] | text(">")
+            named=false template="$<\ud801\udc00>" => text("$<") | text("\ud801\udc00>")
+            named=false template="\ud800$<\udc00>" => text("\ud800") | text("$<") | text("\udc00>")
+            named=true template="$<foo>" => named("foo")
+            named=true template="$<>" => named("")
+            named=true template="$<foo" => text("$<") | text("foo")
+            named=true template="$<a$&>" => named("a$&")
+            named=true template="$<$<x>>" => named("$<x") | text(">")
+            named=true template="$$<foo>$&" => text("$") | text("<foo>") | match
+            named=true template="$<foo>$<foo>" => named("foo") | named("foo")
+            named=true template="$<bad$<bad" => text("$<") | text("bad") | text("$<") | text("bad")
+            named=true template="$<$1>" => named("$1")
+            named=true template="$<\ud801\udc00>" => named("\ud801\udc00")
+            named=true template="\ud800$<\udc00>" => text("\ud800") | named("\udc00")
+            "#);
     }
 
     #[test]

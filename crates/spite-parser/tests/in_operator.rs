@@ -20,7 +20,97 @@ fn in_is_left_associative_at_relational_precedence() {
     );
     assert!(matches!(&steps[0].right.kind, ExprKind::Identifier(name) if name == "a"));
     assert!(matches!(&steps[1].right.kind, ExprKind::Identifier(name) if name == "b"));
-    insta::assert_debug_snapshot!(script);
+    insta::assert_debug_snapshot!(script, @r#"
+        Script {
+            statements: [
+                Statement {
+                    kind: Expression(
+                        Expr {
+                            depth: 2,
+                            kind: BinaryChain {
+                                head: Expr {
+                                    depth: 1,
+                                    kind: Literal(
+                                        String(
+                                            "x",
+                                        ),
+                                    ),
+                                    span: Span {
+                                        start: 0,
+                                        end: 3,
+                                    },
+                                },
+                                steps: [
+                                    BinaryStep {
+                                        op: In,
+                                        right: Expr {
+                                            depth: 1,
+                                            kind: Identifier(
+                                                "a",
+                                            ),
+                                            span: Span {
+                                                start: 7,
+                                                end: 8,
+                                            },
+                                        },
+                                        span: Span {
+                                            start: 0,
+                                            end: 8,
+                                        },
+                                    },
+                                    BinaryStep {
+                                        op: In,
+                                        right: Expr {
+                                            depth: 1,
+                                            kind: Identifier(
+                                                "b",
+                                            ),
+                                            span: Span {
+                                                start: 12,
+                                                end: 13,
+                                            },
+                                        },
+                                        span: Span {
+                                            start: 0,
+                                            end: 13,
+                                        },
+                                    },
+                                    BinaryStep {
+                                        op: StrictEqual,
+                                        right: Expr {
+                                            depth: 1,
+                                            kind: Literal(
+                                                Boolean(
+                                                    true,
+                                                ),
+                                            ),
+                                            span: Span {
+                                                start: 18,
+                                                end: 22,
+                                            },
+                                        },
+                                        span: Span {
+                                            start: 0,
+                                            end: 22,
+                                        },
+                                    },
+                                ],
+                            },
+                            span: Span {
+                                start: 0,
+                                end: 22,
+                            },
+                        },
+                    ),
+                    span: Span {
+                        start: 0,
+                        end: 22,
+                    },
+                },
+            ],
+            strict: false,
+        }
+        "#);
 }
 
 #[test]

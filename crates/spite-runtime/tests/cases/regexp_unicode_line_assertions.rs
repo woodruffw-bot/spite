@@ -155,5 +155,7 @@ fn unicode_line_assertion_former_whole_program_snapshot() {
     let Value::String(result) = realm.eval(&format!("JSON.stringify({source})")).unwrap() else {
         panic!("{source}")
     };
-    insta::assert_snapshot!(format!("{:?} {result:?}", JsString::from(source)));
+    insta::assert_snapshot!(format!("{:?} {result:?}", JsString::from(source)), @r#"
+        "/^$/.exec('')+/(?:^$)/u.exec('')" "\u0022\u0022"
+        "#);
 }

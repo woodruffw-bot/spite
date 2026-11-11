@@ -6,13 +6,112 @@ use spite_parser::{MAX_DEPTH, parse_script};
 
 #[test]
 fn lexical_binding_pattern_syntax_snapshot() {
-    insta::assert_debug_snapshot!(parse_script("let {x:[y=1],...rest} = source;").unwrap());
+    insta::assert_debug_snapshot!(parse_script("let {x:[y=1],...rest} = source;").unwrap(), @r#"
+        Script {
+            statements: [
+                Statement {
+                    kind: Lexical {
+                        mutable: true,
+                        bindings: [
+                            BindingElement {
+                                pattern: BindingPattern {
+                                    kind: Object {
+                                        properties: [
+                                            BindingProperty {
+                                                key: Literal(
+                                                    String(
+                                                        "x",
+                                                    ),
+                                                ),
+                                                element: BindingElement {
+                                                    pattern: BindingPattern {
+                                                        kind: Array {
+                                                            elements: [
+                                                                Some(
+                                                                    BindingElement {
+                                                                        pattern: BindingPattern {
+                                                                            kind: Identifier(
+                                                                                "y",
+                                                                            ),
+                                                                            span: Span {
+                                                                                start: 8,
+                                                                                end: 9,
+                                                                            },
+                                                                        },
+                                                                        initializer: Some(
+                                                                            Expr {
+                                                                                depth: 1,
+                                                                                kind: Literal(
+                                                                                    Number(
+                                                                                        1.0,
+                                                                                    ),
+                                                                                ),
+                                                                                span: Span {
+                                                                                    start: 10,
+                                                                                    end: 11,
+                                                                                },
+                                                                            },
+                                                                        ),
+                                                                    },
+                                                                ),
+                                                            ],
+                                                            rest: None,
+                                                        },
+                                                        span: Span {
+                                                            start: 7,
+                                                            end: 12,
+                                                        },
+                                                    },
+                                                    initializer: None,
+                                                },
+                                            },
+                                        ],
+                                        rest: Some(
+                                            BindingPattern {
+                                                kind: Identifier(
+                                                    "rest",
+                                                ),
+                                                span: Span {
+                                                    start: 16,
+                                                    end: 20,
+                                                },
+                                            },
+                                        ),
+                                    },
+                                    span: Span {
+                                        start: 4,
+                                        end: 21,
+                                    },
+                                },
+                                initializer: Some(
+                                    Expr {
+                                        depth: 1,
+                                        kind: Identifier(
+                                            "source",
+                                        ),
+                                        span: Span {
+                                            start: 24,
+                                            end: 30,
+                                        },
+                                    },
+                                ),
+                            },
+                        ],
+                    },
+                    span: Span {
+                        start: 0,
+                        end: 31,
+                    },
+                },
+            ],
+            strict: false,
+        }
+        "#);
 }
 
 #[test]
 fn lexical_binding_pattern_diagnostics_snapshot() {
-    insta::assert_debug_snapshot!(
-        [
+    insta::assert_debug_snapshot!([
             "let {x:let} = {};",
             "let [x,{a:x}] = [];",
             "const {} ;",
@@ -21,8 +120,66 @@ fn lexical_binding_pattern_diagnostics_snapshot() {
             "for(let [x] of []) {with({})var x;}",
             "'use strict';let {[delete name]:x}={};",
         ]
-        .map(|source| parse_script(source).unwrap_err())
-    );
+        .map(|source| parse_script(source).unwrap_err()), @r#"
+        [
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 7,
+                    end: 10,
+                },
+                message: "invalid binding identifier",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 10,
+                    end: 11,
+                },
+                message: "duplicate lexical binding",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 9,
+                    end: 10,
+                },
+                message: "binding pattern requires an initializer",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 25,
+                    end: 26,
+                },
+                message: "var declaration conflicts with lexical binding",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 19,
+                    end: 20,
+                },
+                message: "lexical declaration conflicts with parameter",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 32,
+                    end: 33,
+                },
+                message: "var declaration conflicts with lexical for binding",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 26,
+                    end: 30,
+                },
+                message: "cannot delete an identifier in strict mode",
+            },
+        ]
+        "#);
 }
 
 #[test]

@@ -61,7 +61,98 @@ fn top_level_eval_goals_keep_control_and_constructor_early_errors() {
             diagnostic
         })
         .collect();
-    insta::assert_debug_snapshot!(diagnostics);
+    insta::assert_debug_snapshot!(diagnostics, @r#"
+        [
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 6,
+                },
+                message: "return outside a function body",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 6,
+                },
+                message: "break requires an enclosing loop or switch",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 9,
+                },
+                message: "continue requires an enclosing loop",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 10,
+                },
+                message: "new.target requires an enclosing non-arrow function",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 4,
+                    end: 14,
+                },
+                message: "new.target requires an enclosing non-arrow function",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 5,
+                },
+                message: "super property access outside a method",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 5,
+                },
+                message: "super call requires a derived constructor",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 10,
+                    end: 11,
+                },
+                message: "var declaration conflicts with lexical binding",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 13,
+                    end: 23,
+                },
+                message: "with statements are not allowed in strict mode",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 17,
+                    end: 21,
+                },
+                message: "invalid binding in strict mode",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 3,
+                },
+                message: "unexpected character",
+            },
+        ]
+        "#);
     assert!(parse_script_utf16(&JsString::from("class C{#field;}")).is_ok());
     assert!(parse_script_utf16(&JsString::from("function* gap(){}")).is_ok());
     assert!(parse_script_utf16(&JsString::from("async function* gap(){}")).is_ok());

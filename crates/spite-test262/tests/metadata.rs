@@ -152,7 +152,21 @@ fn descriptive_blocks_cannot_inject_execution_metadata() {
     assert!(meta.negative.is_none());
     assert_eq!(meta.features, ["BigInt", "numeric-separator-literal"]);
     assert_eq!(meta.locales, ["en-US", "ar"]);
-    insta::assert_debug_snapshot!(meta);
+    insta::assert_debug_snapshot!(meta, @r#"
+        Metadata {
+            flags: {},
+            includes: [],
+            features: [
+                "BigInt",
+                "numeric-separator-literal",
+            ],
+            locales: [
+                "en-US",
+                "ar",
+            ],
+            negative: None,
+        }
+        "#);
 }
 
 #[test]

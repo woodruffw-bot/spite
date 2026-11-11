@@ -25,7 +25,10 @@ fn unicode_han_script_former_whole_programs_snapshot() {
         assert_eq!(result, JsString::from("[\"𠮷\"]"));
         writeln!(rows, "{source:?} {result:?}").unwrap();
     }
-    insta::assert_snapshot!(rows);
+    insta::assert_snapshot!(rows, @r#"
+        "/\\p{Script=Han}/v.exec('𠮷')" "[\u0022\ud842\udfb7\u0022]"
+        "/[\\p{Script=Han}]/v.exec('𠮷')" "[\u0022\ud842\udfb7\u0022]"
+        "#);
 }
 
 #[test]

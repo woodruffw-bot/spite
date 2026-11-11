@@ -172,5 +172,8 @@ fn unicode_character_word_boundary_former_whole_program_snapshot() {
         };
         writeln!(rows, "{:?} {result:?}", JsString::from(source)).unwrap();
     }
-    insta::assert_snapshot!(rows);
+    insta::assert_snapshot!(rows, @r#"
+        "/\u005cbA\u005cb/u.exec('A')" "[\u0022A\u0022]"
+        "/\u005cba\u005cb/u.test('a')" "true"
+        "#);
 }

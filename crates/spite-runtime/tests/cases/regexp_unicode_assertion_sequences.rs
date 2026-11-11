@@ -182,5 +182,11 @@ fn unicode_assertion_sequence_former_whole_programs_snapshot() {
         };
         writeln!(rows, "{:?} {result:?}", JsString::from(source)).unwrap();
     }
-    insta::assert_snapshot!(rows);
+    insta::assert_snapshot!(rows, @r#"
+        "/^^/u.test('A')" "true"
+        "/$$/u.test('A')" "true"
+        "/$^/u.test('A')" "false"
+        "/\u005cb\u005cb/u.test('A')" "true"
+        "/\u005cb\u005cB/u.test('A')" "false"
+        "#);
 }

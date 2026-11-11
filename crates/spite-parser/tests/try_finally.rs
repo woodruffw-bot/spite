@@ -21,7 +21,58 @@ fn try_finally_diagnostics_snapshot() {
     ]
     .map(|s| parse_script(s).unwrap_err())
     .into();
-    insta::assert_debug_snapshot!(errors);
+    insta::assert_debug_snapshot!(errors, @r#"
+        [
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 4,
+                    end: 5,
+                },
+                message: "expected {",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 6,
+                    end: 6,
+                },
+                message: "expected catch or finally",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 15,
+                    end: 16,
+                },
+                message: "expected {",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 17,
+                    end: 23,
+                },
+                message: "break requires an enclosing loop or switch",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 28,
+                    end: 29,
+                },
+                message: "duplicate lexical binding",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 17,
+                    end: 18,
+                },
+                message: "duplicate catch binding",
+            },
+        ]
+        "#);
 }
 
 #[test]

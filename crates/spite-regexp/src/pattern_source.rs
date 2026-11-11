@@ -77,7 +77,19 @@ mod tests {
             );
             writeln!(table, "{value:?} -> {:?}", source(&value)).unwrap();
         }
-        insta::assert_snapshot!(table);
+        insta::assert_snapshot!(table, @r#"
+            "" -> "(?:)"
+            "(?:)" -> "(?:)"
+            "^a(b|c)+[d-f]$" -> "^a(b|c)+[d-f]$"
+            "(\u005cd)\u005cw\u005cs\u005cu{1f4a9}\u005c1" -> "(\u005cd)\u005cw\u005cs\u005cu{1f4a9}\u005c1"
+            "[/]" -> "[\u005c/]"
+            "[\u005cq{a\u005c/b}]" -> "[\u005cq{a\u005c/b}]"
+            "\u0000\u0009\u000b\u000c\u0085\u00a0\u180e\u200b\ufeff" -> "\u0000\u0009\u000b\u000c\u0085\u00a0\u180e\u200b\ufeff"
+            "\ud800" -> "\ud800"
+            "\udc00" -> "\udc00"
+            "\ud800\udc00" -> "\ud800\udc00"
+            "\udc00\ud800A\ud800\udc00\udfff" -> "\udc00\ud800A\ud800\udc00\udfff"
+            "#);
     }
 
     #[test]
@@ -98,6 +110,42 @@ mod tests {
                 writeln!(table, "{value:?} -> {encoded:?}").unwrap();
             }
         }
-        insta::assert_snapshot!(table);
+        insta::assert_snapshot!(table, @r#"
+            "/" -> "\u005c/"
+            "\u005c/" -> "\u005c/"
+            "\u005c\u005c/" -> "\u005c\u005c\u005c/"
+            "\u005c\u005c\u005c/" -> "\u005c\u005c\u005c/"
+            "\u005c\u005c\u005c\u005c/" -> "\u005c\u005c\u005c\u005c\u005c/"
+            "\u005c\u005c\u005c\u005c\u005c/" -> "\u005c\u005c\u005c\u005c\u005c/"
+            "\u005c\u005c\u005c\u005c\u005c\u005c/" -> "\u005c\u005c\u005c\u005c\u005c\u005c\u005c/"
+            "\u000a" -> "\u005cn"
+            "\u005c\u000a" -> "\u005cn"
+            "\u005c\u005c\u000a" -> "\u005c\u005c\u005cn"
+            "\u005c\u005c\u005c\u000a" -> "\u005c\u005c\u005cn"
+            "\u005c\u005c\u005c\u005c\u000a" -> "\u005c\u005c\u005c\u005c\u005cn"
+            "\u005c\u005c\u005c\u005c\u005c\u000a" -> "\u005c\u005c\u005c\u005c\u005cn"
+            "\u005c\u005c\u005c\u005c\u005c\u005c\u000a" -> "\u005c\u005c\u005c\u005c\u005c\u005c\u005cn"
+            "\u000d" -> "\u005cr"
+            "\u005c\u000d" -> "\u005cr"
+            "\u005c\u005c\u000d" -> "\u005c\u005c\u005cr"
+            "\u005c\u005c\u005c\u000d" -> "\u005c\u005c\u005cr"
+            "\u005c\u005c\u005c\u005c\u000d" -> "\u005c\u005c\u005c\u005c\u005cr"
+            "\u005c\u005c\u005c\u005c\u005c\u000d" -> "\u005c\u005c\u005c\u005c\u005cr"
+            "\u005c\u005c\u005c\u005c\u005c\u005c\u000d" -> "\u005c\u005c\u005c\u005c\u005c\u005c\u005cr"
+            "\u2028" -> "\u005cu2028"
+            "\u005c\u2028" -> "\u005cu2028"
+            "\u005c\u005c\u2028" -> "\u005c\u005c\u005cu2028"
+            "\u005c\u005c\u005c\u2028" -> "\u005c\u005c\u005cu2028"
+            "\u005c\u005c\u005c\u005c\u2028" -> "\u005c\u005c\u005c\u005c\u005cu2028"
+            "\u005c\u005c\u005c\u005c\u005c\u2028" -> "\u005c\u005c\u005c\u005c\u005cu2028"
+            "\u005c\u005c\u005c\u005c\u005c\u005c\u2028" -> "\u005c\u005c\u005c\u005c\u005c\u005c\u005cu2028"
+            "\u2029" -> "\u005cu2029"
+            "\u005c\u2029" -> "\u005cu2029"
+            "\u005c\u005c\u2029" -> "\u005c\u005c\u005cu2029"
+            "\u005c\u005c\u005c\u2029" -> "\u005c\u005c\u005cu2029"
+            "\u005c\u005c\u005c\u005c\u2029" -> "\u005c\u005c\u005c\u005c\u005cu2029"
+            "\u005c\u005c\u005c\u005c\u005c\u2029" -> "\u005c\u005c\u005c\u005c\u005cu2029"
+            "\u005c\u005c\u005c\u005c\u005c\u005c\u2029" -> "\u005c\u005c\u005c\u005c\u005c\u005c\u005cu2029"
+            "#);
     }
 }

@@ -26,7 +26,66 @@ fn diagnostic_snapshot() {
         .iter()
         .map(|source| parse_script(source).unwrap_err())
         .collect();
-    insta::assert_debug_snapshot!(errors);
+    insta::assert_debug_snapshot!(errors, @r#"
+        [
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 7,
+                    end: 8,
+                },
+                message: "const requires an initializer",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 11,
+                    end: 12,
+                },
+                message: "duplicate lexical binding",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 6,
+                    end: 7,
+                },
+                message: "line terminator after throw",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 11,
+                    end: 11,
+                },
+                message: "parentheses required when mixing ?? with && or ||",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 6,
+                    end: 7,
+                },
+                message: "unparenthesized unary expression before exponentiation",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 10,
+                },
+                message: "Unicode escape out of range",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 2,
+                },
+                message: "unterminated comment",
+            },
+        ]
+        "#);
 }
 
 #[test]

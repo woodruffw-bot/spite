@@ -76,7 +76,34 @@ fn catch_conflicts_reject_nested_vars_without_the_optional_browser_exception() {
     ]
     .map(|s| parse_script(s).unwrap_err())
     .into();
-    insta::assert_debug_snapshot!(errors);
+    insta::assert_debug_snapshot!(errors, @r#"
+        [
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 23,
+                    end: 24,
+                },
+                message: "catch parameter conflicts with lexical declaration",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 25,
+                    end: 26,
+                },
+                message: "catch parameter conflicts with var declaration",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 28,
+                    end: 32,
+                },
+                message: "invalid binding in strict mode",
+            },
+        ]
+        "#);
 }
 
 #[test]

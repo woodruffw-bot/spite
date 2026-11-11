@@ -21,7 +21,50 @@ fn labelled_diagnostics_snapshot() {
     ]
     .map(|s| parse_script(s).unwrap_err())
     .into();
-    insta::assert_debug_snapshot!(errors);
+    insta::assert_debug_snapshot!(errors, @r#"
+        [
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 5,
+                    end: 6,
+                },
+                message: "duplicate label",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 20,
+                    end: 27,
+                },
+                message: "undefined label",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 28,
+                    end: 29,
+                },
+                message: "continue target is not an iteration label",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 14,
+                    end: 19,
+                },
+                message: "reserved label in strict mode",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 3,
+                    end: 11,
+                },
+                message: "labelled functions are not allowed",
+            },
+        ]
+        "#);
 }
 
 #[test]

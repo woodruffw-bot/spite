@@ -5,6 +5,7 @@ mod fixtures;
 mod integrity;
 mod policy;
 mod scope;
+mod snapshots;
 mod specification;
 mod test_modules;
 

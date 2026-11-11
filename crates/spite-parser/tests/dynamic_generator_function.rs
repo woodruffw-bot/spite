@@ -26,7 +26,13 @@ fn generator_dynamic_source_retains_kind_standard_name_and_yield_syntax() {
         function.kind,
         function.source.to_js_string(),
         function.body.is_strict()
-    ));
+    ), @r#"
+        (
+            Generator,
+            "function* anonymous(x=1,...tail\u000a) {\u000ayield x;yield* tail\u000a}",
+            false,
+        )
+        "#);
 }
 
 #[test]

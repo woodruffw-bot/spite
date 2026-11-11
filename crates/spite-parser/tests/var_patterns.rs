@@ -5,13 +5,111 @@ use spite_parser::{MAX_DEPTH, parse_script};
 
 #[test]
 fn var_binding_pattern_syntax_snapshot() {
-    insta::assert_debug_snapshot!(parse_script("var {a:[x=1],...rest}=source;").unwrap());
+    insta::assert_debug_snapshot!(parse_script("var {a:[x=1],...rest}=source;").unwrap(), @r#"
+        Script {
+            statements: [
+                Statement {
+                    kind: Var(
+                        [
+                            BindingElement {
+                                pattern: BindingPattern {
+                                    kind: Object {
+                                        properties: [
+                                            BindingProperty {
+                                                key: Literal(
+                                                    String(
+                                                        "a",
+                                                    ),
+                                                ),
+                                                element: BindingElement {
+                                                    pattern: BindingPattern {
+                                                        kind: Array {
+                                                            elements: [
+                                                                Some(
+                                                                    BindingElement {
+                                                                        pattern: BindingPattern {
+                                                                            kind: Identifier(
+                                                                                "x",
+                                                                            ),
+                                                                            span: Span {
+                                                                                start: 8,
+                                                                                end: 9,
+                                                                            },
+                                                                        },
+                                                                        initializer: Some(
+                                                                            Expr {
+                                                                                depth: 1,
+                                                                                kind: Literal(
+                                                                                    Number(
+                                                                                        1.0,
+                                                                                    ),
+                                                                                ),
+                                                                                span: Span {
+                                                                                    start: 10,
+                                                                                    end: 11,
+                                                                                },
+                                                                            },
+                                                                        ),
+                                                                    },
+                                                                ),
+                                                            ],
+                                                            rest: None,
+                                                        },
+                                                        span: Span {
+                                                            start: 7,
+                                                            end: 12,
+                                                        },
+                                                    },
+                                                    initializer: None,
+                                                },
+                                            },
+                                        ],
+                                        rest: Some(
+                                            BindingPattern {
+                                                kind: Identifier(
+                                                    "rest",
+                                                ),
+                                                span: Span {
+                                                    start: 16,
+                                                    end: 20,
+                                                },
+                                            },
+                                        ),
+                                    },
+                                    span: Span {
+                                        start: 4,
+                                        end: 21,
+                                    },
+                                },
+                                initializer: Some(
+                                    Expr {
+                                        depth: 1,
+                                        kind: Identifier(
+                                            "source",
+                                        ),
+                                        span: Span {
+                                            start: 22,
+                                            end: 28,
+                                        },
+                                    },
+                                ),
+                            },
+                        ],
+                    ),
+                    span: Span {
+                        start: 0,
+                        end: 29,
+                    },
+                },
+            ],
+            strict: false,
+        }
+        "#);
 }
 
 #[test]
 fn var_binding_pattern_diagnostics_snapshot() {
-    insta::assert_debug_snapshot!(
-        [
+    insta::assert_debug_snapshot!([
             "var [x];",
             "let x;var {a:x}={};",
             "try{}catch([x]){var {x}={};}",
@@ -19,8 +117,58 @@ fn var_binding_pattern_diagnostics_snapshot() {
             "for(var [x]=[] in {}) ;",
             "for(var [x,...rest,] of []) ;",
         ]
-        .map(|source| parse_script(source).unwrap_err())
-    );
+        .map(|source| parse_script(source).unwrap_err()), @r#"
+        [
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 7,
+                    end: 8,
+                },
+                message: "binding pattern requires an initializer",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 13,
+                    end: 14,
+                },
+                message: "var declaration conflicts with lexical binding",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 21,
+                    end: 22,
+                },
+                message: "catch parameter conflicts with var declaration",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 20,
+                    end: 24,
+                },
+                message: "invalid binding in strict mode",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 12,
+                    end: 14,
+                },
+                message: "for-in requires one binding without an initializer",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 18,
+                    end: 19,
+                },
+                message: "expected ]",
+            },
+        ]
+        "#);
 }
 
 #[test]

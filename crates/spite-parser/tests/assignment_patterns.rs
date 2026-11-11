@@ -13,8 +13,7 @@ fn assignment_pattern_syntax_snapshot() {
 
 #[test]
 fn assignment_pattern_diagnostics_snapshot() {
-    insta::assert_debug_snapshot!(
-        [
+    insta::assert_debug_snapshot!([
             "[...x,]=source",
             "({...{x}}=source)",
             "[x+y]=source",
@@ -23,8 +22,66 @@ fn assignment_pattern_diagnostics_snapshot() {
             "({x=1})",
             "for([x]=[] of source) ;",
         ]
-        .map(|source| parse_script(source).unwrap_err())
-    );
+        .map(|source| parse_script(source).unwrap_err()), @r#"
+        [
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 5,
+                    end: 6,
+                },
+                message: "expected ]",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 5,
+                    end: 8,
+                },
+                message: "object assignment rest requires a reference",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 1,
+                    end: 4,
+                },
+                message: "invalid destructuring assignment target",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 17,
+                    end: 26,
+                },
+                message: "invalid assignment in strict mode",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 5,
+                },
+                message: "invalid assignment target",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 3,
+                    end: 4,
+                },
+                message: "initialized shorthand is not allowed in an object literal",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 4,
+                    end: 10,
+                },
+                message: "invalid for-of assignment target",
+            },
+        ]
+        "#);
 }
 
 #[test]

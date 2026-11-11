@@ -138,5 +138,9 @@ fn original_unicode_character_folding_complete_programs() {
         };
         writeln!(rows, "{:?} {result:?}", JsString::from(source)).unwrap();
     }
-    insta::assert_snapshot!(rows);
+    insta::assert_snapshot!(rows, @r#"
+        "/^.$/iu.exec('a')" "[\u0022a\u0022]"
+        "/./iu.exec('a')" "[\u0022a\u0022]"
+        "/\u005cW/iv.exec('a')" "null"
+        "#);
 }

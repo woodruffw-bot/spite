@@ -5,7 +5,37 @@ use spite_parser::parse_script;
 
 #[test]
 fn debugger_syntax_snapshot() {
-    insta::assert_debug_snapshot!(parse_script("debugger; { debugger }").unwrap());
+    insta::assert_debug_snapshot!(parse_script("debugger; { debugger }").unwrap(), @r#"
+        Script {
+            statements: [
+                Statement {
+                    kind: Debugger,
+                    span: Span {
+                        start: 0,
+                        end: 9,
+                    },
+                },
+                Statement {
+                    kind: Block(
+                        [
+                            Statement {
+                                kind: Debugger,
+                                span: Span {
+                                    start: 12,
+                                    end: 20,
+                                },
+                            },
+                        ],
+                    ),
+                    span: Span {
+                        start: 10,
+                        end: 22,
+                    },
+                },
+            ],
+            strict: false,
+        }
+        "#);
 }
 
 #[test]

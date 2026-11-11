@@ -8,8 +8,26 @@ fn syntax_and_diagnostics_snapshots() {
     insta::assert_debug_snapshot!(parse_script(
         "function f(a=1,...rest){return rest;} let g=(x,...xs)=>xs; ({m(...values){return values;}})"
     ).unwrap());
-    insta::assert_debug_snapshot!(parse_script("(...rest,)=>rest").unwrap_err());
-    insta::assert_debug_snapshot!(parse_script("function f(...rest){'use strict';}").unwrap_err());
+    insta::assert_debug_snapshot!(parse_script("(...rest,)=>rest").unwrap_err(), @r#"
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 8,
+                end: 9,
+            },
+            message: "expected )",
+        }
+        "#);
+    insta::assert_debug_snapshot!(parse_script("function f(...rest){'use strict';}").unwrap_err(), @r#"
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 0,
+                end: 34,
+            },
+            message: "use strict directive with non-simple parameters",
+        }
+        "#);
 }
 
 #[test]

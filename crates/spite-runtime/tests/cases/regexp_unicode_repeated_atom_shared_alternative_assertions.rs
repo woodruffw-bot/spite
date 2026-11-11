@@ -151,5 +151,7 @@ fn unicode_repeated_atom_shared_alternative_assertions_former_whole_program_snap
         };
         writeln!(rows, "{source} {result:?}").unwrap();
     }
-    insta::assert_snapshot!(rows);
+    insta::assert_snapshot!(rows, @r#"
+        /(\b(a|b))+/v.exec('a') "[\u0022a\u0022,\u0022a\u0022,\u0022a\u0022]"
+        "#);
 }

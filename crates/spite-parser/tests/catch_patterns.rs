@@ -23,7 +23,58 @@ fn catch_binding_pattern_diagnostics_snapshot() {
     ]
     .map(|source| parse_script(source).unwrap_err())
     .into();
-    insta::assert_debug_snapshot!(errors);
+    insta::assert_debug_snapshot!(errors, @r#"
+        [
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 22,
+                    end: 23,
+                },
+                message: "duplicate catch binding",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 35,
+                    end: 36,
+                },
+                message: "catch parameter conflicts with var declaration",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 32,
+                    end: 36,
+                },
+                message: "invalid binding in strict mode",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 22,
+                    end: 23,
+                },
+                message: "expected ]",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 18,
+                    end: 19,
+                },
+                message: "expected binding identifier",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 15,
+                    end: 16,
+                },
+                message: "expected binding identifier",
+            },
+        ]
+        "#);
 }
 
 #[test]

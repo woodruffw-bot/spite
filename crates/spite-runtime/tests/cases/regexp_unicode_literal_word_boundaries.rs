@@ -175,5 +175,8 @@ fn unicode_literal_word_boundary_former_whole_programs_snapshot() {
         assert_eq!(result, JsString::from(expected));
         writeln!(rows, "{:?} {result:?}", JsString::from(source)).unwrap();
     }
-    insta::assert_snapshot!(rows);
+    insta::assert_snapshot!(rows, @r#"
+        "/\u005cb(A)\u005cb/u.exec('A')" "[\u0022A\u0022,\u0022A\u0022]"
+        "/\u005cbAB\u005cb/v.exec('AB')" "[\u0022AB\u0022]"
+        "#);
 }

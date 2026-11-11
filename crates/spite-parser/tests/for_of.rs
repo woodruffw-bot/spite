@@ -8,8 +8,26 @@ fn syntax_and_diagnostics_snapshots() {
     insta::assert_debug_snapshot!(parse_script(
         "for(x of source) x; for(var v of values) ; a:b:for(let y of iterable) continue a; for(const z of 'ab') {z;}"
     ).unwrap());
-    insta::assert_debug_snapshot!(parse_script("for(let x=1 of []) ;").unwrap_err());
-    insta::assert_debug_snapshot!(parse_script("'use strict';for(eval of []) ;").unwrap_err());
+    insta::assert_debug_snapshot!(parse_script("for(let x=1 of []) ;").unwrap_err(), @r#"
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 10,
+                end: 11,
+            },
+            message: "for-of requires one binding without an initializer",
+        }
+        "#);
+    insta::assert_debug_snapshot!(parse_script("'use strict';for(eval of []) ;").unwrap_err(), @r#"
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 17,
+                end: 21,
+            },
+            message: "invalid assignment in strict mode",
+        }
+        "#);
 }
 
 #[test]

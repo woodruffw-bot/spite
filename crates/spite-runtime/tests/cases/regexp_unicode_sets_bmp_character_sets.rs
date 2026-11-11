@@ -162,5 +162,8 @@ fn unicode_sets_bmp_character_former_complete_programs() {
         panic!("expected JSON")
     };
     writeln!(rows, "{script:?} {result:?}").unwrap();
-    insta::assert_snapshot!("original_unicode_sets_bmp_character_programs", rows);
+    insta::assert_snapshot!(rows, @r#"
+        "/[a]/v.exec('a')" "{\u0022matches\u0022:[\u0022a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022a\u0022}"
+        "var marker=0;try{eval(\"marker=1; /[a-z]/v.test('a');\");}catch{marker=2;}finally{marker=3;}JSON.stringify({marker})" "{\u0022marker\u0022:3}"
+        "#);
 }

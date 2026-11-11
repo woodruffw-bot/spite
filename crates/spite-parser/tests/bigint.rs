@@ -88,5 +88,48 @@ fn bigint_operators_and_diagnostics_snapshot() {
     let errors: Vec<_> = ["00n", "1.0n", "1e0n", "0_1n", "1nπ"]
         .map(|s| parse_script(s).unwrap_err())
         .into();
-    insta::assert_debug_snapshot!("bigint_diagnostics", errors);
+    insta::assert_debug_snapshot!(errors, @r#"
+        [
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 3,
+                },
+                message: "invalid BigInt literal",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 4,
+                },
+                message: "invalid BigInt literal",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 4,
+                },
+                message: "invalid BigInt literal",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 2,
+                },
+                message: "separator cannot follow a leading zero",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 4,
+                },
+                message: "invalid character after numeric literal",
+            },
+        ]
+        "#);
 }

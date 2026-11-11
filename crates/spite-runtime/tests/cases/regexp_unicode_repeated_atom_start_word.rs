@@ -179,5 +179,10 @@ fn unicode_repeated_atom_start_word_former_whole_programs_snapshot() {
         };
         writeln!(rows, "{source} {result:?}").unwrap();
     }
-    insta::assert_snapshot!(rows);
+    insta::assert_snapshot!(rows, @r#"
+        /\ba+$/u.exec('a') "[\u0022a\u0022]"
+        /\ba+$/um.exec('a') "[\u0022a\u0022]"
+        /^\ba+/u.exec('a') "[\u0022a\u0022]"
+        /\ba+/u.exec('a') "[\u0022a\u0022]"
+        "#);
 }

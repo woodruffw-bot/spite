@@ -54,7 +54,98 @@ fn field_initializers_reset_suspension_context_but_computed_names_keep_it() {
         (source, error)
     })
     .collect();
-    insta::assert_debug_snapshot!(errors);
+    insta::assert_debug_snapshot!(errors, @r#"
+        [
+            (
+                "async function f(){return class{x=await 1;};}",
+                Diagnostic {
+                    kind: Syntax,
+                    span: Span {
+                        start: 40,
+                        end: 41,
+                    },
+                    message: "expected class field terminator",
+                },
+            ),
+            (
+                "async function f(){return class{static x=await 1;};}",
+                Diagnostic {
+                    kind: Syntax,
+                    span: Span {
+                        start: 47,
+                        end: 48,
+                    },
+                    message: "expected class field terminator",
+                },
+            ),
+            (
+                "async function f(){return class{#x=await 1;};}",
+                Diagnostic {
+                    kind: Syntax,
+                    span: Span {
+                        start: 41,
+                        end: 42,
+                    },
+                    message: "expected class field terminator",
+                },
+            ),
+            (
+                "async function f(){return class{x=()=>await 1;};}",
+                Diagnostic {
+                    kind: Syntax,
+                    span: Span {
+                        start: 44,
+                        end: 45,
+                    },
+                    message: "expected class field terminator",
+                },
+            ),
+            (
+                "function* f(){return class{x=yield 1;};}",
+                Diagnostic {
+                    kind: Syntax,
+                    span: Span {
+                        start: 35,
+                        end: 36,
+                    },
+                    message: "expected class field terminator",
+                },
+            ),
+            (
+                "function* f(){return class{static #x=yield 1;};}",
+                Diagnostic {
+                    kind: Syntax,
+                    span: Span {
+                        start: 43,
+                        end: 44,
+                    },
+                    message: "expected class field terminator",
+                },
+            ),
+            (
+                "async function* f(){return class{x=yield await 1;};}",
+                Diagnostic {
+                    kind: Syntax,
+                    span: Span {
+                        start: 41,
+                        end: 46,
+                    },
+                    message: "expected class field terminator",
+                },
+            ),
+            (
+                "async function f(){return class{[await]=1;};}",
+                Diagnostic {
+                    kind: Syntax,
+                    span: Span {
+                        start: 38,
+                        end: 39,
+                    },
+                    message: "expected an expression",
+                },
+            ),
+        ]
+        "#);
     for source in [
         "class C{x=await;}",
         "async function f(){return class{static x=await;};}",

@@ -13,8 +13,7 @@ fn parameter_pattern_syntax_snapshot() {
 
 #[test]
 fn parameter_pattern_diagnostics_snapshot() {
-    insta::assert_debug_snapshot!(
-        [
+    insta::assert_debug_snapshot!([
             "function f([x],{a:x}){}",
             "([x])=>{'use strict';}",
             "function f({a:[x]}){let x;}",
@@ -22,8 +21,58 @@ fn parameter_pattern_diagnostics_snapshot() {
             "function f(...{x}={}){}",
             "'use strict';function f({a:eval}){}",
         ]
-        .map(|source| parse_script(source).unwrap_err())
-    );
+        .map(|source| parse_script(source).unwrap_err()), @r#"
+        [
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 18,
+                    end: 19,
+                },
+                message: "duplicate lexical binding",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 22,
+                },
+                message: "use strict directive with non-simple parameters",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 24,
+                    end: 25,
+                },
+                message: "lexical declaration conflicts with parameter",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 17,
+                    end: 18,
+                },
+                message: "expected )",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 17,
+                    end: 18,
+                },
+                message: "expected )",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 27,
+                    end: 31,
+                },
+                message: "invalid binding in strict mode",
+            },
+        ]
+        "#);
 }
 
 #[test]

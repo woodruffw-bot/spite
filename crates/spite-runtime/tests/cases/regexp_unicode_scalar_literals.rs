@@ -177,5 +177,15 @@ fn unicode_scalar_literal_original_complete_programs_and_ordered_calls() {
         };
         writeln!(rows, "{script:?} {result:?}").unwrap();
     }
-    insta::assert_snapshot!("original_scalar_unicode_programs", rows);
+    insta::assert_snapshot!(rows, @r#"
+        "/(\\u{1f600})/u.test('a')" "false"
+        "/\\u{1f600}/u.exec('a')" "null"
+        "/\\u{1f600}/v.exec('a')" "null"
+        "/(?<x>\\u{1f600})/u.test('a')" "false"
+        "/(?:\\u{1f600})/u.test('a')" "false"
+        "/(?:\\u{1f600})/v.test('a')" "false"
+        "/\\u{10000}/u.exec('a')" "null"
+        "let r=new RegExp('\\\\u{1f600}','u'),t='';r.lastIndex={valueOf(){t+='i';return 0;}};let a=r.exec({toString(){t+='s';return 'a';}});JSON.stringify({match:a,trace:t,indexKind:typeof r.lastIndex})" "{\u0022match\u0022:null,\u0022trace\u0022:\u0022si\u0022,\u0022indexKind\u0022:\u0022object\u0022}"
+        "let r=new RegExp('\\\\u{1f600}','v'),t='';r.lastIndex={valueOf(){t+='i';return 0;}};let a=r.exec({toString(){t+='s';return 'a';}});JSON.stringify({match:a,trace:t,indexKind:typeof r.lastIndex})" "{\u0022match\u0022:null,\u0022trace\u0022:\u0022si\u0022,\u0022indexKind\u0022:\u0022object\u0022}"
+        "#);
 }

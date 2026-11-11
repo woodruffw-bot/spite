@@ -177,5 +177,12 @@ fn unicode_repeated_atom_end_former_whole_programs_snapshot() {
         };
         writeln!(rows, "{source} {result:?}").unwrap();
     }
-    insta::assert_snapshot!(rows);
+    insta::assert_snapshot!(rows, @r#"
+        /^a+$/u.test('a') "true"
+        /^(.+)$/v.exec('a') "[\u0022a\u0022,\u0022a\u0022]"
+        /^\D+$/v.exec('ab') "[\u0022ab\u0022]"
+        /^[a]+$/u.exec('a') "[\u0022a\u0022]"
+        /^a+$/u.exec('a') "[\u0022a\u0022]"
+        /a+$/u.exec('a') "[\u0022a\u0022]"
+        "#);
 }

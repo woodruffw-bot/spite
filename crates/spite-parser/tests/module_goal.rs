@@ -25,7 +25,73 @@ fn module_ast_retains_import_meta_top_level_await_and_source_spans() {
         panic!("expression")
     };
     assert!(matches!(expression.kind, ExprKind::Await(_)));
-    insta::assert_debug_snapshot!(module);
+    insta::assert_debug_snapshot!(module, @r#"
+        Module {
+            statements: [
+                Statement {
+                    kind: Lexical {
+                        mutable: false,
+                        bindings: [
+                            BindingElement {
+                                pattern: BindingPattern {
+                                    kind: Identifier(
+                                        "meta",
+                                    ),
+                                    span: Span {
+                                        start: 6,
+                                        end: 10,
+                                    },
+                                },
+                                initializer: Some(
+                                    Expr {
+                                        depth: 1,
+                                        kind: ImportMeta,
+                                        span: Span {
+                                            start: 11,
+                                            end: 22,
+                                        },
+                                    },
+                                ),
+                            },
+                        ],
+                    },
+                    span: Span {
+                        start: 0,
+                        end: 23,
+                    },
+                },
+                Statement {
+                    kind: Expression(
+                        Expr {
+                            depth: 2,
+                            kind: Await(
+                                Expr {
+                                    depth: 1,
+                                    kind: Identifier(
+                                        "meta",
+                                    ),
+                                    span: Span {
+                                        start: 29,
+                                        end: 33,
+                                    },
+                                },
+                            ),
+                            span: Span {
+                                start: 23,
+                                end: 33,
+                            },
+                        },
+                    ),
+                    span: Span {
+                        start: 23,
+                        end: 33,
+                    },
+                },
+            ],
+            imports: [],
+            exports: [],
+        }
+        "#);
 }
 
 #[test]

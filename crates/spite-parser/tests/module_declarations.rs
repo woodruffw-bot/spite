@@ -34,7 +34,62 @@ fn declaration_exports_retain_all_destructured_names_and_declaration_ranges() {
             .collect::<Vec<_>>(),
         ["b", "c", "d", "e"].map(JsString::from)
     );
-    insta::assert_debug_snapshot!(records);
+    insta::assert_debug_snapshot!(records, @r#"
+        [
+            (
+                [
+                    (
+                        "b",
+                        "b",
+                    ),
+                    (
+                        "c",
+                        "c",
+                    ),
+                    (
+                        "d",
+                        "d",
+                    ),
+                    (
+                        "e",
+                        "e",
+                    ),
+                ],
+                "export var {a:b,c}=source,[d,...e]=source;",
+            ),
+            (
+                [
+                    (
+                        "f",
+                        "f",
+                    ),
+                    (
+                        "h",
+                        "h",
+                    ),
+                ],
+                "export const [f,{g:h}]=source;",
+            ),
+            (
+                [
+                    (
+                        "gen",
+                        "gen",
+                    ),
+                ],
+                "export function* gen(){}",
+            ),
+            (
+                [
+                    (
+                        "C",
+                        "C",
+                    ),
+                ],
+                "export class C{}",
+            ),
+        ]
+        "#);
 }
 
 #[test]

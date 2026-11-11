@@ -174,5 +174,13 @@ fn unicode_repeated_atom_word_boundary_former_whole_programs_snapshot() {
         };
         writeln!(rows, "{source} {result:?}").unwrap();
     }
-    insta::assert_snapshot!(rows);
+    insta::assert_snapshot!(rows, @r#"
+        /\b(A)+\b/u.exec('A') "[\u0022A\u0022,\u0022A\u0022]"
+        /\bA+\b/u.exec('AA') "[\u0022AA\u0022]"
+        /\bA+\b/u.exec('A') "[\u0022A\u0022]"
+        /\b[A]+\b/u.exec('AA') "[\u0022AA\u0022]"
+        /\b(a)+\b/u.test('a') "true"
+        /\b(a)+\b/u.exec('a') "[\u0022a\u0022,\u0022a\u0022]"
+        /\ba+\b/u.test('a') "true"
+        "#);
 }

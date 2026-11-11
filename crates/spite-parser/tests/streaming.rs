@@ -51,7 +51,58 @@ fn lexical_diagnostics_survive_cover_and_computed_name_lookahead() {
             .iter()
             .all(|error| error.kind == DiagnosticKind::Syntax)
     );
-    insta::assert_debug_snapshot!(errors);
+    insta::assert_debug_snapshot!(errors, @r#"
+        [
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 11,
+                    end: 21,
+                },
+                message: "Unicode escape out of range",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 5,
+                    end: 15,
+                },
+                message: "Unicode escape out of range",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 5,
+                    end: 15,
+                },
+                message: "Unicode escape out of range",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 15,
+                    end: 25,
+                },
+                message: "Unicode escape out of range",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 24,
+                    end: 34,
+                },
+                message: "Unicode escape out of range",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 11,
+                    end: 13,
+                },
+                message: "unterminated comment",
+            },
+        ]
+        "#);
 }
 
 #[test]

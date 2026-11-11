@@ -4,6 +4,7 @@ use crate::Result;
 use crate::fixtures;
 use crate::invalid;
 use crate::policy;
+use crate::snapshots;
 use crate::specification;
 use crate::test_modules;
 use std::env;
@@ -41,12 +42,14 @@ pub(crate) fn run(root: &Path, args: Vec<String>) -> Result<()> {
             policy::check(root)?;
             fixtures::check(&root.join("tests/test262"))?;
             test_modules::update(root, true)?;
+            snapshots::check(root)?;
             specification::check(root, None)?;
             generate(root, "all", &["--check".to_owned()])
         }
         "verify" if args.len() == 1 => {
             policy::check(root)?;
             test_modules::update(root, true)?;
+            snapshots::check(root)?;
             fixtures::check(&root.join("tests/test262"))
         }
         "verify-spec" if args.len() <= 2 => specification::check(root, args.get(1).map(Path::new)),

@@ -166,5 +166,9 @@ fn original_unicode_class_assertion_complete_programs() {
         };
         writeln!(rows, "{:?} {result:?}", JsString::from(source)).unwrap();
     }
-    insta::assert_snapshot!(rows);
+    insta::assert_snapshot!(rows, @r#"
+        "/^[a]$/u.test('a')" "true"
+        "/^[a]$/v.test('a')" "true"
+        "/^[a]$/v.exec('a')" "[\u0022a\u0022]"
+        "#);
 }

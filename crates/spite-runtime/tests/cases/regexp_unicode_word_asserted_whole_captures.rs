@@ -128,5 +128,10 @@ fn unicode_word_asserted_whole_captures_former_whole_programs_snapshot() {
         };
         writeln!(rows, "{source} {result:?}").unwrap();
     }
-    insta::assert_snapshot!(rows);
+    insta::assert_snapshot!(rows, @r#"
+        /(\b)\b/u.test('A') "true"
+        /\b([A])\b/u.exec('A') "[\u0022A\u0022,\u0022A\u0022]"
+        /\B((^(?:.)|a)+)\B$/vms.exec('\n') "[\u0022\u005cn\u0022,\u0022\u005cn\u0022,\u0022\u005cn\u0022]"
+        /\B(?<whole>(^(?:.)|a)+)\B$/vms.exec('\n') "[\u0022\u005cn\u0022,\u0022\u005cn\u0022,\u0022\u005cn\u0022]"
+        "#);
 }

@@ -156,5 +156,7 @@ fn original_unicode_hex_property_complete_program() {
     else {
         panic!("{source}")
     };
-    insta::assert_snapshot!(format!("{:?} {result:?}", JsString::from(source)));
+    insta::assert_snapshot!(format!("{:?} {result:?}", JsString::from(source)), @r#"
+        "/\u005cp{Hex_Digit}/u.exec('A')" "[\u0022A\u0022]"
+        "#);
 }

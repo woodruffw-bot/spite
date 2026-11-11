@@ -54,6 +54,21 @@ cargo xtask generate test-modules
 Keep runtime fixture helpers under `cases/fixtures/`, so they are not treated as
 test modules.
 
+### Readable test cases
+
+Use named `#[test_case(...; "case_name")]` cases when inputs share the same
+setup and assertions. Keep distinct behaviors in separate tests so a failure
+identifies the operation and condition being checked.
+
+Write embedded JavaScript as formatted, multiline source. Use descriptive names
+and keep setup, the operation, and its observable results easy to distinguish.
+Keep compact source only when its exact spelling, whitespace, or offsets are
+part of the behavior under test.
+
+Use insta for structured output, syntax trees, and diagnostics that benefit from
+a reviewed diff. Prefer inline snapshots of at most 100 lines. Use sidecar files
+only when the output exceeds 100 lines. Assert simple scalar results directly.
+
 ### Parser snapshots
 
 Parser syntax and diagnostic snapshots use insta. To update a focused set in a

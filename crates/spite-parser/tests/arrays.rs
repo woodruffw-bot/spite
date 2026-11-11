@@ -91,7 +91,16 @@ fn malformed_elements_and_nested_strict_violations_are_syntax_errors() {
             "{source}"
         );
     }
-    insta::assert_debug_snapshot!(parse_script("[1 2]").unwrap_err());
+    insta::assert_debug_snapshot!(parse_script("[1 2]").unwrap_err(), @r#"
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 3,
+                end: 4,
+            },
+            message: "expected ]",
+        }
+        "#);
 }
 
 #[test]
@@ -99,7 +108,44 @@ fn spread_and_assignment_patterns_parse() {
     for source in ["[x]=a", "([]=a)"] {
         assert!(parse_script(source).is_ok(), "{source}");
     }
-    insta::assert_debug_snapshot!(parse_script("[...x]").unwrap());
+    insta::assert_debug_snapshot!(parse_script("[...x]").unwrap(), @r#"
+        Script {
+            statements: [
+                Statement {
+                    kind: Expression(
+                        Expr {
+                            depth: 2,
+                            kind: Array(
+                                [
+                                    Spread(
+                                        Expr {
+                                            depth: 1,
+                                            kind: Identifier(
+                                                "x",
+                                            ),
+                                            span: Span {
+                                                start: 4,
+                                                end: 5,
+                                            },
+                                        },
+                                    ),
+                                ],
+                            ),
+                            span: Span {
+                                start: 0,
+                                end: 6,
+                            },
+                        },
+                    ),
+                    span: Span {
+                        start: 0,
+                        end: 6,
+                    },
+                },
+            ],
+            strict: false,
+        }
+        "#);
 }
 
 #[test]
@@ -115,7 +161,16 @@ fn spread_elements_preserve_assignment_grammar_and_separators() {
         assert!(parse_script(source).is_ok(), "{source}");
     }
     insta::assert_debug_snapshot!(parse_script("[, ...items, ...make(), (a,b), ...x=y,]").unwrap());
-    insta::assert_debug_snapshot!(parse_script("[...,]").unwrap_err());
+    insta::assert_debug_snapshot!(parse_script("[...,]").unwrap_err(), @r#"
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 4,
+                end: 5,
+            },
+            message: "expected an expression",
+        }
+        "#);
 }
 
 #[test]

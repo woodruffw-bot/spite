@@ -155,5 +155,14 @@ fn unicode_braced_bmp_former_complete_programs_and_ordered_calls() {
         };
         writeln!(rows, "{script:?} {result:?}").unwrap();
     }
-    insta::assert_snapshot!("original_braced_unicode_programs", rows);
+    insta::assert_snapshot!(rows, @r#"
+        "/(?:\\u{61})/u.test('a')" "true"
+        "/(?:\\u{61})/v.test('a')" "true"
+        "/(?<x>\\u{61})/u.test('a')" "true"
+        "/(\\u{61})/u.test('a')" "true"
+        "/\\u{61}/u.exec('a')" "{\u0022matches\u0022:[\u0022a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022a\u0022}"
+        "/\\u{61}/v.exec('a')" "{\u0022matches\u0022:[\u0022a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022a\u0022}"
+        "let r=new RegExp('\\\\u{61}','u'),t='';r.lastIndex={valueOf(){t+='i';return 0;}};let a=r.exec({toString(){t+='s';return 'a';}});JSON.stringify({matches:[...a],index:a.index,input:a.input,trace:t,indexKind:typeof r.lastIndex})" "{\u0022matches\u0022:[\u0022a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022a\u0022,\u0022trace\u0022:\u0022si\u0022,\u0022indexKind\u0022:\u0022object\u0022}"
+        "let r=new RegExp('\\\\u{61}','v'),t='';r.lastIndex={valueOf(){t+='i';return 0;}};let a=r.exec({toString(){t+='s';return 'a';}});JSON.stringify({matches:[...a],index:a.index,input:a.input,trace:t,indexKind:typeof r.lastIndex})" "{\u0022matches\u0022:[\u0022a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022a\u0022,\u0022trace\u0022:\u0022si\u0022,\u0022indexKind\u0022:\u0022object\u0022}"
+        "#);
 }

@@ -6,8 +6,26 @@ use spite_parser::{MAX_DEPTH, parse_script, parse_script_utf16};
 #[test]
 fn syntax_and_diagnostics_snapshots() {
     insta::assert_debug_snapshot!(parse_script("for(obj[key()] in source) ; for(var x in (a,b)) x; a:for(let y in object) continue a; for(const z in null) {z;}").unwrap());
-    insta::assert_debug_snapshot!(parse_script("for(let x=1 in {}) ;").unwrap_err());
-    insta::assert_debug_snapshot!(parse_script("'use strict';for(var x=1 in {}) ;").unwrap_err());
+    insta::assert_debug_snapshot!(parse_script("for(let x=1 in {}) ;").unwrap_err(), @r#"
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 10,
+                end: 11,
+            },
+            message: "for-in requires one binding without an initializer",
+        }
+        "#);
+    insta::assert_debug_snapshot!(parse_script("'use strict';for(var x=1 in {}) ;").unwrap_err(), @r#"
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 23,
+                end: 24,
+            },
+            message: "for-in var initializer is forbidden in strict mode",
+        }
+        "#);
 }
 
 #[test]

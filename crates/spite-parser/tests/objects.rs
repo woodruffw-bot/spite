@@ -19,7 +19,16 @@ fn spread_property_syntax_and_diagnostics_snapshot() {
         parse_script("({first:1,...source,[key]:2,...other=source, get x(){return 3;},...null,})")
             .unwrap()
     );
-    insta::assert_debug_snapshot!(parse_script("({...:1})").unwrap_err());
+    insta::assert_debug_snapshot!(parse_script("({...:1})").unwrap_err(), @r#"
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 5,
+                end: 6,
+            },
+            message: "expected an expression",
+        }
+        "#);
     for source in [
         "({...x})",
         "({...x,...y,})",
@@ -117,9 +126,16 @@ fn duplicate_prototype_setters_are_early_errors_only_for_colon_literal_names() {
             "duplicate prototype setter in object literal"
         );
     }
-    insta::assert_debug_snapshot!(
-        parse_script("({__proto__: null, '__proto__': null})").unwrap_err()
-    );
+    insta::assert_debug_snapshot!(parse_script("({__proto__: null, '__proto__': null})").unwrap_err(), @r#"
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 19,
+                end: 30,
+            },
+            message: "duplicate prototype setter in object literal",
+        }
+        "#);
 }
 
 #[test]

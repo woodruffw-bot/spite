@@ -70,7 +70,43 @@ fn standard_utc_strings_cover_names_year_widths_and_range_boundaries() {
     for time in [i64::MIN, -MAX_TIME_VALUE - 1, MAX_TIME_VALUE + 1, i64::MAX] {
         assert_eq!(format_utc_date_string(time), None);
     }
-    insta::assert_snapshot!(report);
+    insta::assert_snapshot!(report, @r#"
+        1970-01-01T00:00:00.000Z => Thu, 01 Jan 1970 00:00:00 GMT
+        1969-12-31T23:59:59.999Z => Wed, 31 Dec 1969 23:59:59 GMT
+        0000-01-01 => Sat, 01 Jan 0000 00:00:00 GMT
+        0001-01-01 => Mon, 01 Jan 0001 00:00:00 GMT
+        0099-01-01 => Thu, 01 Jan 0099 00:00:00 GMT
+        9999-01-01 => Fri, 01 Jan 9999 00:00:00 GMT
+        +010000-01-01 => Sat, 01 Jan 10000 00:00:00 GMT
+        +100000-01-01 => Sat, 01 Jan 100000 00:00:00 GMT
+        -000001-01-01 => Fri, 01 Jan -0001 00:00:00 GMT
+        -000012-01-01 => Fri, 01 Jan -0012 00:00:00 GMT
+        -000123-01-01 => Mon, 01 Jan -0123 00:00:00 GMT
+        -001234-01-01 => Sat, 01 Jan -1234 00:00:00 GMT
+        -012345-01-01 => Fri, 01 Jan -12345 00:00:00 GMT
+        -123456-01-01 => Wed, 01 Jan -123456 00:00:00 GMT
+        -271821-04-20 => Tue, 20 Apr -271821 00:00:00 GMT
+        +275760-09-13 => Sat, 13 Sep 275760 00:00:00 GMT
+        Mon, 01 Jan 2024 12:34:56 GMT
+        Thu, 01 Feb 2024 12:34:56 GMT
+        Fri, 01 Mar 2024 12:34:56 GMT
+        Mon, 01 Apr 2024 12:34:56 GMT
+        Wed, 01 May 2024 12:34:56 GMT
+        Sat, 01 Jun 2024 12:34:56 GMT
+        Mon, 01 Jul 2024 12:34:56 GMT
+        Thu, 01 Aug 2024 12:34:56 GMT
+        Sun, 01 Sep 2024 12:34:56 GMT
+        Tue, 01 Oct 2024 12:34:56 GMT
+        Fri, 01 Nov 2024 12:34:56 GMT
+        Sun, 01 Dec 2024 12:34:56 GMT
+        Thu, 01 Jan 1970 00:00:00 GMT
+        Fri, 02 Jan 1970 00:00:00 GMT
+        Sat, 03 Jan 1970 00:00:00 GMT
+        Sun, 04 Jan 1970 00:00:00 GMT
+        Mon, 05 Jan 1970 00:00:00 GMT
+        Tue, 06 Jan 1970 00:00:00 GMT
+        Wed, 07 Jan 1970 00:00:00 GMT
+        "#);
 }
 
 #[test]
@@ -456,7 +492,24 @@ fn canonical_iso_format_snapshot() {
     ] {
         writeln!(report, "{time} => {:?}", format_iso_date_time(time)).unwrap();
     }
-    insta::assert_snapshot!(report);
+    insta::assert_snapshot!(report, @r#"
+        -8640000000000000 => Some("-271821-04-20T00:00:00.000Z")
+        -8639999999999999 => Some("-271821-04-20T00:00:00.001Z")
+        -62198755200000 => Some("-000001-01-01T00:00:00.000Z")
+        -62167219200000 => Some("0000-01-01T00:00:00.000Z")
+        -1 => Some("1969-12-31T23:59:59.999Z")
+        0 => Some("1970-01-01T00:00:00.000Z")
+        1 => Some("1970-01-01T00:00:00.001Z")
+        951782400000 => Some("2000-02-29T00:00:00.000Z")
+        253402300799999 => Some("9999-12-31T23:59:59.999Z")
+        253402300800000 => Some("+010000-01-01T00:00:00.000Z")
+        8639999999999999 => Some("+275760-09-12T23:59:59.999Z")
+        8640000000000000 => Some("+275760-09-13T00:00:00.000Z")
+        -8640000000000001 => None
+        8640000000000001 => None
+        -9223372036854775808 => None
+        9223372036854775807 => None
+        "#);
 }
 
 #[test]

@@ -151,7 +151,66 @@ fn flat_class_grammar_errors_share_exact_diagnostics() {
     .into_iter()
     .map(|source| parse_script(source).unwrap_err())
     .collect();
-    insta::assert_debug_snapshot!(errors);
+    insta::assert_debug_snapshot!(errors, @r#"
+        [
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 8,
+                },
+                message: "regular expression Unicode class range is reversed",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 9,
+                },
+                message: "regular expression Unicode class range requires character endpoints",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 7,
+                },
+                message: "unescaped regular expression Unicode class syntax character",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 7,
+                },
+                message: "reserved double punctuation in regular expression Unicode class",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 10,
+                },
+                message: "negated regular expression class may contain strings",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 11,
+                },
+                message: "invalid regular expression identity escape",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 7,
+                },
+                message: "regular expression class string disjunction requires braces",
+            },
+        ]
+        "#);
 }
 
 #[test]
@@ -230,7 +289,66 @@ fn nested_classes_and_set_operators_obey_operand_and_range_grammar() {
     .into_iter()
     .map(|source| parse_script(source).unwrap_err())
     .collect();
-    insta::assert_debug_snapshot!(errors);
+    insta::assert_debug_snapshot!(errors, @r#"
+        [
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 8,
+                },
+                message: "regular expression Unicode class operator requires an operand",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 10,
+                },
+                message: "invalid regular expression Unicode class intersection",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 12,
+                },
+                message: "regular expression Unicode class cannot mix unions, ranges and set operators",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 11,
+                },
+                message: "regular expression Unicode class cannot mix unions, ranges and set operators",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 10,
+                },
+                message: "regular expression Unicode class range requires character endpoints",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 17,
+                },
+                message: "negated regular expression class may contain strings",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 10,
+                },
+                message: "regular expression Unicode class cannot mix unions, ranges and set operators",
+            },
+        ]
+        "#);
 }
 
 #[test]

@@ -175,5 +175,13 @@ fn original_unicode_class_property_complete_programs() {
         };
         writeln!(rows, "{:?} {result:?}", JsString::from(source)).unwrap();
     }
-    insta::assert_snapshot!(rows);
+    insta::assert_snapshot!(rows, @r#"
+        "/([\u005cp{ASCII}])/iu.exec('a')" "[\u0022a\u0022,\u0022a\u0022]"
+        "/[\u005cp{ASCII}]/u.exec('A')" "[\u0022A\u0022]"
+        "/[\u005cp{ASCII}]/u.exec('a')" "[\u0022a\u0022]"
+        "/^[\u005cp{ASCII}]$/u.exec('a')" "[\u0022a\u0022]"
+        "/[\u005cp{ASCII}]/iv.exec('a')" "[\u0022a\u0022]"
+        "/[\u005cp{ASCII}]/u.exec('a')" "[\u0022a\u0022]"
+        "/[\u005cp{ASCII}]/v.exec('a')" "[\u0022a\u0022]"
+        "#);
 }

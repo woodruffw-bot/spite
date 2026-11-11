@@ -964,7 +964,9 @@ fn bigint_invalid_integer_string_diagnostic() {
         .unwrap();
     assert_eq!(output.status.code(), Some(1));
     assert!(output.stdout.is_empty());
-    insta::assert_snapshot!(String::from_utf8(output.stderr).unwrap());
+    insta::assert_snapshot!(String::from_utf8(output.stderr).unwrap(), @r#"
+        SyntaxError at 0..13: String is not a valid BigInt integer
+        "#);
 }
 
 #[test]
@@ -1000,7 +1002,9 @@ fn malformed_host_zone_is_uncatchable_and_utc_invalid_branches_do_not_load_it() 
     std::fs::remove_file(path).unwrap();
     assert_eq!(failed.status.code(), Some(1));
     assert!(failed.stdout.is_empty());
-    insta::assert_snapshot!(String::from_utf8(failed.stderr).unwrap());
+    insta::assert_snapshot!(String::from_utf8(failed.stderr).unwrap(), @r#"
+        Host at 6..28: invalid TZif offset data
+        "#);
     assert!(independent.status.success());
     assert_eq!(
         String::from_utf8(independent.stdout).unwrap().trim(),

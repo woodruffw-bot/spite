@@ -254,7 +254,82 @@ fn property_grammar_errors_share_exact_diagnostics_across_source_entry_points() 
     .into_iter()
     .map(|source| parse_script(source).unwrap_err())
     .collect();
-    insta::assert_debug_snapshot!(errors);
+    insta::assert_debug_snapshot!(errors, @r#"
+        [
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 5,
+                },
+                message: "regular expression Unicode property requires braces",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 7,
+                },
+                message: "expected regular expression Unicode property identifier",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 13,
+                },
+                message: "invalid regular expression Unicode property expression",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 12,
+                },
+                message: "invalid regular expression Unicode property name",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 21,
+                },
+                message: "unknown regular expression Unicode property name",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 16,
+                },
+                message: "unknown regular expression Unicode property value",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 13,
+                },
+                message: "unknown regular expression Unicode property",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 16,
+                },
+                message: "regular expression string property cannot be negated",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 21,
+                },
+                message: "negated regular expression class may contain strings",
+            },
+        ]
+        "#);
 }
 
 #[test]

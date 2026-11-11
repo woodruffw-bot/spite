@@ -177,7 +177,58 @@ fn malformed_core_patterns_have_shared_syntax_diagnostics() {
     .into_iter()
     .map(|source| parse_script(source).unwrap_err())
     .collect();
-    insta::assert_debug_snapshot!(errors);
+    insta::assert_debug_snapshot!(errors, @r#"
+        [
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 3,
+                },
+                message: "unterminated regular expression group",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 8,
+                },
+                message: "regular expression quantifier bounds are reversed",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 8,
+                },
+                message: "regular expression backreference exceeds the capture count",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 10,
+                },
+                message: "invalid regular expression modifier groups",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 6,
+                },
+                message: "invalid regular expression identity escape",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 8,
+                },
+                message: "regular expression quantifier requires an atom",
+            },
+        ]
+        "#);
 }
 
 #[test]
@@ -370,7 +421,74 @@ fn class_range_errors_share_exact_diagnostics_across_grammar_goals() {
     .into_iter()
     .map(|source| parse_script(source).unwrap_err())
     .collect();
-    insta::assert_debug_snapshot!(errors);
+    insta::assert_debug_snapshot!(errors, @r#"
+        [
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 7,
+                },
+                message: "regular expression class range is reversed",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 9,
+                },
+                message: "regular expression class range requires character endpoints",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 8,
+                },
+                message: "regular expression class range requires character endpoints",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 10,
+                },
+                message: "regular expression class range is reversed",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 7,
+                },
+                message: "invalid regular expression identity escape",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 6,
+                },
+                message: "invalid regular expression identity escape",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 7,
+                },
+                message: "invalid regular expression identity escape",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 15,
+                    end: 23,
+                },
+                message: "regular expression class range is reversed",
+            },
+        ]
+        "#);
 }
 
 #[test]

@@ -13,7 +13,16 @@ fn spread_call_and_constructor_arguments_snapshot() {
     insta::assert_debug_snapshot!(
         parse_script("obj.f(1,...items,...make(), x=y,);new F(...(a,b),...items,)").unwrap()
     );
-    insta::assert_debug_snapshot!(parse_script("f(...,)").unwrap_err());
+    insta::assert_debug_snapshot!(parse_script("f(...,)").unwrap_err(), @r#"
+        Diagnostic {
+            kind: Syntax,
+            span: Span {
+                start: 5,
+                end: 6,
+            },
+            message: "expected an expression",
+        }
+        "#);
 }
 
 #[test]

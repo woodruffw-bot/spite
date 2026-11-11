@@ -8,7 +8,91 @@ fn nested_values_duplicate_names_and_utf16_source_ranges() {
     let source = JsString::from(
         r#" {"😀":[true,false,null,-0,1.25e+2,"\uD800"],"__proto__":1,"__proto__":2} "#,
     );
-    insta::assert_debug_snapshot!(parse_json(&source).unwrap());
+    insta::assert_debug_snapshot!(parse_json(&source).unwrap(), @r#"
+        JsonDocument {
+            nodes: [
+                JsonNode {
+                    source: 8..12,
+                    kind: Boolean(
+                        true,
+                    ),
+                },
+                JsonNode {
+                    source: 13..18,
+                    kind: Boolean(
+                        false,
+                    ),
+                },
+                JsonNode {
+                    source: 19..23,
+                    kind: Null,
+                },
+                JsonNode {
+                    source: 24..26,
+                    kind: Number(
+                        -0.0,
+                    ),
+                },
+                JsonNode {
+                    source: 27..34,
+                    kind: Number(
+                        125.0,
+                    ),
+                },
+                JsonNode {
+                    source: 35..43,
+                    kind: String(
+                        "\ud800",
+                    ),
+                },
+                JsonNode {
+                    source: 7..44,
+                    kind: Array(
+                        [
+                            0,
+                            1,
+                            2,
+                            3,
+                            4,
+                            5,
+                        ],
+                    ),
+                },
+                JsonNode {
+                    source: 57..58,
+                    kind: Number(
+                        1.0,
+                    ),
+                },
+                JsonNode {
+                    source: 71..72,
+                    kind: Number(
+                        2.0,
+                    ),
+                },
+                JsonNode {
+                    source: 1..73,
+                    kind: Object(
+                        [
+                            (
+                                "\ud83d\ude00",
+                                6,
+                            ),
+                            (
+                                "__proto__",
+                                7,
+                            ),
+                            (
+                                "__proto__",
+                                8,
+                            ),
+                        ],
+                    ),
+                },
+            ],
+            root: 9,
+        }
+        "#);
 }
 
 #[test]

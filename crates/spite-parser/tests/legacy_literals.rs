@@ -151,7 +151,34 @@ fn strict_directives_retroactively_reject_legacy_escapes() {
     ]
     .map(|s| parse_script(s).unwrap_err())
     .into();
-    insta::assert_debug_snapshot!(errors);
+    insta::assert_debug_snapshot!(errors, @r#"
+        [
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 4,
+                },
+                message: "legacy numeric literals and escapes are forbidden in strict code",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 14,
+                    end: 17,
+                },
+                message: "legacy numeric literals and escapes are forbidden in strict code",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 14,
+                    end: 18,
+                },
+                message: "legacy numeric literals and escapes are forbidden in strict code",
+            },
+        ]
+        "#);
 }
 
 #[test]

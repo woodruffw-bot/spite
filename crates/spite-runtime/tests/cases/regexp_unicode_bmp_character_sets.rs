@@ -141,5 +141,8 @@ fn unicode_bmp_character_former_complete_programs() {
         };
         writeln!(rows, "{source:?} {result:?}").unwrap();
     }
-    insta::assert_snapshot!("original_bmp_character_programs", rows);
+    insta::assert_snapshot!(rows, @r#"
+        "/[a]/u.exec('a')" "{\u0022matches\u0022:[\u0022a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022a\u0022}"
+        "/[a]/u.test('a')" "true"
+        "#);
 }

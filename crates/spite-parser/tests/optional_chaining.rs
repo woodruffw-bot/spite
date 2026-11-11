@@ -1,22 +1,26 @@
 //! Optional-chain grouping, references, and early errors (13.3.10).
 
-use spite_core::DiagnosticKind;
+use spite_core::{DiagnosticKind, Span};
 use spite_parser::parse_script;
+use test_case::test_case;
 
 #[test]
-fn syntax_and_diagnostic_snapshots() {
+fn optional_chain_syntax_snapshot() {
     insta::assert_debug_snapshot!(parse_script("obj?.a[key]?.(x,...ys).b; (obj?.a)(x); delete obj?.[key]; new (obj?.Ctor)(x); true?.30:false;").unwrap());
-    for source in [
-        "a?.b=1",
-        "a?.b++",
-        "--a?.b",
-        "new a?.b()",
-        "a?.`x`",
-        "a?.b\n`x`",
-        "'use strict'; a?.[eval=1]",
-    ] {
-        insta::assert_debug_snapshot!(parse_script(source).unwrap_err());
-    }
+}
+
+#[test_case("a?.b=1", Span::new(0, 4), "invalid assignment target"; "assignment")]
+#[test_case("a?.b++", Span::new(0, 4), "invalid update target"; "postfix_update")]
+#[test_case("--a?.b", Span::new(2, 6), "invalid update target"; "prefix_update")]
+#[test_case("new a?.b()", Span::new(4, 8), "optional chain is not a constructor expression"; "constructor")]
+#[test_case("a?.`x`", Span::new(3, 6), "optional chains cannot be tagged templates"; "tagged_template")]
+#[test_case("a?.b\n`x`", Span::new(5, 8), "optional chains cannot be tagged templates"; "tagged_template_after_newline")]
+#[test_case("'use strict'; a?.[eval=1]", Span::new(18, 24), "invalid assignment in strict mode"; "strict_assignment_in_computed_key")]
+fn invalid_optional_chain_syntax(source: &str, expected_span: Span, expected_message: &str) {
+    let diagnostic = parse_script(source).expect_err("invalid syntax must fail parsing");
+    assert_eq!(diagnostic.kind, DiagnosticKind::Syntax);
+    assert_eq!(diagnostic.span, expected_span);
+    assert_eq!(diagnostic.message, expected_message);
 }
 
 #[test]

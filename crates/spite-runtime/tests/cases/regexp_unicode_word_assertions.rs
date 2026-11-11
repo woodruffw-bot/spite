@@ -163,5 +163,7 @@ fn unicode_word_assertion_former_whole_program_snapshot() {
     let Value::String(result) = realm.eval(&format!("JSON.stringify({source})")).unwrap() else {
         panic!("{source}")
     };
-    insta::assert_snapshot!(format!("{:?} {result:?}", JsString::from(source)));
+    insta::assert_snapshot!(format!("{:?} {result:?}", JsString::from(source)), @r#"
+        "/\u005cb/iu.exec('a')" "[\u0022\u0022]"
+        "#);
 }

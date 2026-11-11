@@ -164,5 +164,11 @@ fn original_unicode_dot_escape_complete_programs() {
         };
         writeln!(rows, "{:?} {result:?}", JsString::from(source)).unwrap();
     }
-    insta::assert_snapshot!(rows);
+    insta::assert_snapshot!(rows, @r#"
+        "/./v.test('a')" "true"
+        "/\u005cD/u.exec('a')" "[\u0022a\u0022]"
+        "/./u.exec('a')" "[\u0022a\u0022]"
+        "/\u005cD/v.exec('a')" "[\u0022a\u0022]"
+        "/./v.exec('a')" "[\u0022a\u0022]"
+        "#);
 }

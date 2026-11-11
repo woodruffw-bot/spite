@@ -114,7 +114,82 @@ fn forbidden_statement_continuations_are_syntax_errors_in_every_source_goal() {
             );
         }
     }
-    insta::assert_debug_snapshot!(errors);
+    insta::assert_debug_snapshot!(errors, @r#"
+        [
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 8,
+                    end: 9,
+                },
+                message: "expected a semicolon or line terminator",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 8,
+                    end: 9,
+                },
+                message: "expected a semicolon or line terminator",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 8,
+                    end: 9,
+                },
+                message: "expected a semicolon or line terminator",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 8,
+                    end: 10,
+                },
+                message: "expected a semicolon or line terminator",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 18,
+                    end: 19,
+                },
+                message: "expected a semicolon or line terminator",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 21,
+                    end: 22,
+                },
+                message: "expected a semicolon or line terminator",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 30,
+                    end: 31,
+                },
+                message: "expected a semicolon or line terminator",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 5,
+                    end: 6,
+                },
+                message: "expected a semicolon or line terminator",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 5,
+                    end: 6,
+                },
+                message: "expected a semicolon or line terminator",
+            },
+        ]
+        "#);
     for source in ["import 'source'(0)", "export {}[0]"] {
         assert_eq!(
             parse_module(source).unwrap_err().kind,

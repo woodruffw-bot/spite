@@ -20,7 +20,77 @@ fn async_dynamic_source_retains_kind_standard_name_and_independent_strictness() 
             .body
             .is_strict()
     );
-    insta::assert_debug_snapshot!(function);
+    insta::assert_debug_snapshot!(function, @r#"
+        Function {
+            kind: Async,
+            name: Some(
+                FunctionName {
+                    name: "anonymous",
+                    span: Span {
+                        start: 15,
+                        end: 24,
+                    },
+                },
+            ),
+            parameters: [
+                Ordinary(
+                    BindingElement {
+                        pattern: BindingPattern {
+                            kind: Identifier(
+                                "x",
+                            ),
+                            span: Span {
+                                start: 25,
+                                end: 26,
+                            },
+                        },
+                        initializer: Some(
+                            Expr {
+                                depth: 1,
+                                kind: Literal(
+                                    Number(
+                                        1.0,
+                                    ),
+                                ),
+                                span: Span {
+                                    start: 27,
+                                    end: 28,
+                                },
+                            },
+                        ),
+                    },
+                ),
+            ],
+            body: FunctionBody {
+                statements: [
+                    Statement {
+                        kind: Return(
+                            Some(
+                                Expr {
+                                    depth: 1,
+                                    kind: Identifier(
+                                        "x",
+                                    ),
+                                    span: Span {
+                                        start: 40,
+                                        end: 41,
+                                    },
+                                },
+                            ),
+                        ),
+                        span: Span {
+                            start: 33,
+                            end: 41,
+                        },
+                    },
+                ],
+                strict: false,
+            },
+            source: FunctionSource(
+                "async function anonymous(x=1\n) {\nreturn x\n}",
+            ),
+        }
+        "#);
 }
 
 #[test]

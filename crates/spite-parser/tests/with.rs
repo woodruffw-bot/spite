@@ -5,7 +5,92 @@ use spite_parser::parse_script;
 
 #[test]
 fn with_syntax_snapshot() {
-    insta::assert_debug_snapshot!(parse_script("with (object) { var x = value; x; }").unwrap());
+    insta::assert_debug_snapshot!(parse_script("with (object) { var x = value; x; }").unwrap(), @r#"
+        Script {
+            statements: [
+                Statement {
+                    kind: With {
+                        object: Expr {
+                            depth: 1,
+                            kind: Identifier(
+                                "object",
+                            ),
+                            span: Span {
+                                start: 6,
+                                end: 12,
+                            },
+                        },
+                        body: Statement {
+                            kind: Block(
+                                [
+                                    Statement {
+                                        kind: Var(
+                                            [
+                                                BindingElement {
+                                                    pattern: BindingPattern {
+                                                        kind: Identifier(
+                                                            "x",
+                                                        ),
+                                                        span: Span {
+                                                            start: 20,
+                                                            end: 21,
+                                                        },
+                                                    },
+                                                    initializer: Some(
+                                                        Expr {
+                                                            depth: 1,
+                                                            kind: Identifier(
+                                                                "value",
+                                                            ),
+                                                            span: Span {
+                                                                start: 24,
+                                                                end: 29,
+                                                            },
+                                                        },
+                                                    ),
+                                                },
+                                            ],
+                                        ),
+                                        span: Span {
+                                            start: 16,
+                                            end: 30,
+                                        },
+                                    },
+                                    Statement {
+                                        kind: Expression(
+                                            Expr {
+                                                depth: 1,
+                                                kind: Identifier(
+                                                    "x",
+                                                ),
+                                                span: Span {
+                                                    start: 31,
+                                                    end: 32,
+                                                },
+                                            },
+                                        ),
+                                        span: Span {
+                                            start: 31,
+                                            end: 33,
+                                        },
+                                    },
+                                ],
+                            ),
+                            span: Span {
+                                start: 14,
+                                end: 35,
+                            },
+                        },
+                    },
+                    span: Span {
+                        start: 0,
+                        end: 35,
+                    },
+                },
+            ],
+            strict: false,
+        }
+        "#);
 }
 
 #[test]
@@ -21,7 +106,66 @@ fn strict_and_malformed_with_diagnostics_snapshot() {
     ]
     .map(|source| parse_script(source).unwrap_err())
     .into();
-    insta::assert_debug_snapshot!(errors);
+    insta::assert_debug_snapshot!(errors, @r#"
+        [
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 14,
+                    end: 25,
+                },
+                message: "with statements are not allowed in strict mode",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 29,
+                    end: 41,
+                },
+                message: "with statements are not allowed in strict mode",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 6,
+                    end: 7,
+                },
+                message: "expected an expression",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 14,
+                    end: 15,
+                },
+                message: "expected a semicolon or line terminator",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 10,
+                    end: 18,
+                },
+                message: "function declaration requires a statement list",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 10,
+                    end: 15,
+                },
+                message: "declaration requires a statement list",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 10,
+                    end: 15,
+                },
+                message: "declaration requires a statement list",
+            },
+        ]
+        "#);
 }
 
 #[test]

@@ -948,7 +948,29 @@ fn outcome_snapshot_keeps_non_passing_categories_visible() {
         negative("runtime", "ReferenceError", "$DONE"),
         negative("parse", "SyntaxError", "@"),
     ];
-    insta::assert_debug_snapshot!(outcomes);
+    insta::assert_debug_snapshot!(outcomes, @r#"
+        [
+            Passed,
+            Failed {
+                stage: Runtime,
+                message: "uncaught throw: 1",
+            },
+            Unsupported {
+                stage: Runtime,
+                message: "Unsupported at 75..80: $DONE is not implemented",
+            },
+            UnverifiedSyntax(
+                Diagnostic {
+                    kind: Syntax,
+                    span: Span {
+                        start: 70,
+                        end: 71,
+                    },
+                    message: "unexpected character",
+                },
+            ),
+        ]
+        "#);
 }
 
 #[test]

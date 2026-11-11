@@ -290,5 +290,7 @@ fn original_array_comparisons_preserve_same_value_semantics() {
             .unwrap();
     }
     let message = realm.eval("let message;try{assert.compareArray([1],[2],'deliberate mismatch');}catch(e){message=e.toString();}message").unwrap();
-    insta::assert_snapshot!("array_comparison_mismatch", message);
+    insta::assert_snapshot!(message, @r#"
+        "Test262Error: Actual [1] and expected [2] should have the same contents. deliberate mismatch"
+        "#);
 }

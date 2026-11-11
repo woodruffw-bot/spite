@@ -174,7 +174,50 @@ fn goal_rescans_keep_property_diagnostics_across_cover_and_template_contexts() {
             error
         })
         .collect();
-    insta::assert_debug_snapshot!(errors);
+    insta::assert_debug_snapshot!(errors, @r#"
+        [
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 5,
+                    end: 21,
+                },
+                message: "unknown regular expression Unicode property",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 5,
+                    end: 18,
+                },
+                message: "unknown regular expression Unicode property",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 16,
+                    end: 30,
+                },
+                message: "unknown regular expression Unicode property",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 15,
+                    end: 29,
+                },
+                message: "unknown regular expression Unicode property",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 5,
+                    end: 20,
+                },
+                message: "unknown regular expression Unicode property value",
+            },
+        ]
+        "#);
 }
 
 #[test]
@@ -196,7 +239,58 @@ fn malformed_literal_boundary_diagnostics_snapshot() {
             .iter()
             .all(|error| error.kind == DiagnosticKind::Syntax)
     );
-    insta::assert_debug_snapshot!(errors);
+    insta::assert_debug_snapshot!(errors, @r#"
+        [
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 1,
+                },
+                message: "unterminated regular expression literal",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 3,
+                },
+                message: "unterminated regular expression escape",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 4,
+                },
+                message: "unterminated regular expression literal",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 3,
+                },
+                message: "line terminator in regular expression literal",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 6,
+                },
+                message: "line terminator in regular expression literal",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 8,
+                    end: 11,
+                },
+                message: "line terminator in regular expression literal",
+            },
+        ]
+        "#);
 }
 
 #[test]

@@ -146,5 +146,7 @@ fn original_unicode_single_atom_anchor_complete_program() {
     else {
         panic!("{source}")
     };
-    insta::assert_snapshot!(format!("{:?} {result:?}", JsString::from(source)));
+    insta::assert_snapshot!(format!("{:?} {result:?}", JsString::from(source)), @r#"
+        "/^./u.exec('a')" "[\u0022a\u0022]"
+        "#);
 }

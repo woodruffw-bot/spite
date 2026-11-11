@@ -120,7 +120,58 @@ fn invalid_code_points_and_separate_goals_report_exact_syntax_ranges() {
             error
         })
         .collect();
-    insta::assert_debug_snapshot!(diagnostics);
+    insta::assert_debug_snapshot!(diagnostics, @r#"
+        [
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 3,
+                },
+                message: "unexpected character",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 1,
+                    end: 4,
+                },
+                message: "unexpected character",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 8,
+                    end: 11,
+                },
+                message: "unexpected character",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 9,
+                    end: 12,
+                },
+                message: "unexpected character",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 29,
+                    end: 32,
+                },
+                message: "legacy numeric literals and escapes are forbidden in strict code",
+            },
+            Diagnostic {
+                kind: Syntax,
+                span: Span {
+                    start: 0,
+                    end: 5,
+                },
+                message: "unterminated comment",
+            },
+        ]
+        "#);
 }
 
 #[test]

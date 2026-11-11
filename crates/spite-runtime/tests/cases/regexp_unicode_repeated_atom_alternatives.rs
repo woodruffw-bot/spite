@@ -159,5 +159,12 @@ fn unicode_repeated_atom_alternatives_former_whole_programs_snapshot() {
         };
         writeln!(rows, "{source} {result:?}").unwrap();
     }
-    insta::assert_snapshot!(rows);
+    insta::assert_snapshot!(rows, @r#"
+        /(a|b)+/u.test('ab') "true"
+        /(a|b)+/v.test('ab') "true"
+        /(a|b)+/v.exec('aa') "[\u0022aa\u0022,\u0022a\u0022]"
+        /(a|b)+/v.exec('a') "[\u0022a\u0022,\u0022a\u0022]"
+        /(\ba|b)+/v.exec('a') "[\u0022a\u0022,\u0022a\u0022]"
+        /((a|b))+/u.test('ab') "true"
+        "#);
 }

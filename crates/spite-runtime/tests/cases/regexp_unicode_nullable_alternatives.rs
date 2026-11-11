@@ -162,5 +162,8 @@ fn unicode_nullable_alternative_former_whole_programs_snapshot() {
     assert_true(
         r"let m=new RegExp('(a|)*','v').exec('aa');m[0]==='aa'&&m[1]==='a'&&m.index===0&&m.input==='aa'",
     );
-    insta::assert_snapshot!(rows);
+    insta::assert_snapshot!(rows, @r#"
+        "new RegExp('(a|)*','u').exec('aa')" "[\u0022aa\u0022,\u0022a\u0022]"
+        "new RegExp('(a|)*','v').exec('aa')" "[\u0022aa\u0022,\u0022a\u0022]"
+        "#);
 }
