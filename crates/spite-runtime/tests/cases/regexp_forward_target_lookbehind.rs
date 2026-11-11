@@ -68,19 +68,36 @@ fn forward_target_lookbehind_result_snapshot() {
 fn nested_future_names_empty_slots_outside_imports_and_matching_directions_keep_exact_ranges() {
     assert_true(r"/(?<=((\3a)(b)){2})c/.exec('ababc')===null");
     assert_true(
-        r"let a=/(?<=(?<y>\k<x>(?<x>a)){2})b/d.exec('aaaab');a.index===4&&a.groups.y==='aa'&&a.groups.x==='a'&&a.indices.groups.x===a.indices[2]&&a.indices.groups.x[0]===1&&a.indices.groups.y[0]===0",
+        r#"
+            let a = /(?<=(?<y>\k<x>(?<x>a)){2})b/d.exec('aaaab');
+            a.index === 4 && a.groups.y === 'aa' && a.groups.x === 'a' && a.indices.groups.x === a.indices[
+                2] && a.indices.groups.x[0] === 1 && a.indices.groups.y[0] === 0
+        "#,
     );
     assert_true(
-        r"let a=/(?<=(?<z>\k<y>(?<y>\k<x>(?<x>a))){2})b/d.exec('aaaaaaaab');a.groups.z==='aaaa'&&a.groups.y==='aa'&&a.groups.x==='a'&&a.indices.groups.y[0]===2&&a.indices.groups.x[0]===3",
+        r#"
+            let a = /(?<=(?<z>\k<y>(?<y>\k<x>(?<x>a))){2})b/d.exec('aaaaaaaab');
+            a.groups.z === 'aaaa' && a.groups.y === 'aa' && a.groups.x === 'a' && a.indices.groups.y[0] ===
+                2 && a.indices.groups.x[0] === 3
+        "#,
     );
     assert_true(
         r"let a=/(?<=(\2a()){2})b/d.exec('aab');a[1]==='a'&&a[2]===''&&a.indices[2][0]===1&&a.indices[2][1]===1",
     );
     assert_true(
-        r"let a=/(?<!(?<y>\k<x>(?<x>a)){2}q)b/d.exec('aaaaxb');a.index===5&&a.groups.x===undefined&&a.groups.y===undefined&&a.indices.groups.x===undefined&&Object.hasOwn(a.groups,'y')",
+        r#"
+            let a = /(?<!(?<y>\k<x>(?<x>a)){2}q)b/d.exec('aaaaxb');
+            a.index === 5 && a.groups.x === undefined && a.groups.y === undefined && a.indices.groups.x ===
+                undefined && Object.hasOwn(a.groups, 'y')
+        "#,
     );
     assert_true(
-        r"let a=/(?<=((a)\1){2}(?=(\4(b)){2}))b/d.exec('aabbb'),b=/(?=(\2(a)){2})a/d.exec('aa');a.indices[3][0]===3&&a.indices[4][0]===3&&b.indices[1][0]===1&&b.indices[2][0]===1",
+        r#"
+            let a = /(?<=((a)\1){2}(?=(\4(b)){2}))b/d.exec('aabbb'),
+                b = /(?=(\2(a)){2})a/d.exec('aa');
+            a.indices[3][0] === 3 && a.indices[4][0] === 3 && b.indices[1][0] === 1 && b.indices[2][0] ===
+                1
+        "#,
     );
     assert_true(
         r"let a=/(b)(?<=(\3(a)){2}\1)c/d.exec('aaaabc');a.index===4&&a[1]==='b'&&a[2]==='aa'&&a.indices[3][0]===1",
@@ -89,16 +106,36 @@ fn nested_future_names_empty_slots_outside_imports_and_matching_directions_keep_
 #[test]
 fn consumers_sticky_global_zero_counts_and_callbacks_preserve_right_capture_positions() {
     assert_true(
-        r"let r=/(?<=(\2(a)){2})b/dy;r.lastIndex=4;let a=r.exec('aaaab');a.index===4&&r.lastIndex===5&&r.exec('aaaab')===null&&r.lastIndex===0",
+        r#"
+            let r = /(?<=(\2(a)){2})b/dy;
+            r.lastIndex = 4;
+            let a = r.exec('aaaab');
+            a.index === 4 && r.lastIndex === 5 && r.exec('aaaab') === null && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/(?<=(\2(a)){2})b/dg,a=[...'aaaab aaaab'.matchAll(r)];a.length===2&&a[1].index===10&&a[1].indices[2][0]===7&&r.lastIndex===0",
+        r#"
+            let r = /(?<=(\2(a)){2})b/dg,
+                a = [...'aaaab aaaab'.matchAll(r)];
+            a.length === 2 && a[1].index === 10 && a[1].indices[2][0] === 7 && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/(?<=(\2(a)){0})/dg,a=[...'ab'.matchAll(r)];a.length===3&&a[2].index===2&&a[2][1]===undefined&&a[2].indices[2]===undefined",
+        r#"
+            let r = /(?<=(\2(a)){0})/dg,
+                a = [...'ab'.matchAll(r)];
+            a.length === 3 && a[2].index === 2 && a[2][1] === undefined && a[2].indices[2] === undefined
+        "#,
     );
     assert_true(
-        r"let seen=[];let s='aaaab aaaab'.replace(/(?<=(\2(a)){2})b/g,(m,x,y,i)=>{seen.push(x,y,i);return '_'});s==='aaaa_ aaaa_'&&seen.join('|')==='aa|a|4|aa|a|10'",
+        r#"
+            let seen = [];
+            let s = 'aaaab aaaab'.replace(/(?<=(\2(a)){2})b/g, (m, x, y, i) => {
+                seen.push(x, y, i);
+                return '_'
+            });
+            s === 'aaaa_ aaaa_' && seen.join('|') === 'aa|a|4|aa|a|10'
+        "#,
     );
     assert_true(
         r"'aaaab'.replace(/(?<=(?<y>\k<x>(?<x>a)){2})b/,'<$<y>>')==='aaaa<aa>'&&'aaaab'.search(/(?<=(\2(a)){2})b/)===4&&'aaaab'.split(/(?<=(\2(a)){2})b/).join('|')==='aaaa|aa|a|'",

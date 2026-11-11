@@ -70,34 +70,66 @@ fn nested_outside_lookbehind_result_snapshot() {
 #[test]
 fn nested_names_backward_dependencies_negative_rollback_and_surrogates_keep_precise_ranges() {
     assert_true(
-        r"let a=/(?<x>a)(?<=a(?<=(?<y>(?<z>b)\k<x>){2}))c/d.exec('babac');a.groups.x==='a'&&a.groups.y==='ba'&&a.groups.z==='b'&&a.indices.groups.z===a.indices[3]&&a.indices[1][0]===3&&a.indices[2][0]===0",
+        r#"
+            let a = /(?<x>a)(?<=a(?<=(?<y>(?<z>b)\k<x>){2}))c/d.exec('babac');
+            a.groups.x === 'a' && a.groups.y === 'ba' && a.groups.z === 'b' && a.indices.groups.z === a
+                .indices[3] && a.indices[1][0] === 3 && a.indices[2][0] === 0
+        "#,
     );
     assert_true(
-        r"let a=/(?<x>a)(?<=a(?<=(?<y>\k<z>(?<z>b)\k<x>){2}))c/d.exec('bbabbac');a.groups.y==='bba'&&a.indices.groups.z[0]===1",
+        r#"
+            let a = /(?<x>a)(?<=a(?<=(?<y>\k<z>(?<z>b)\k<x>){2}))c/d.exec('bbabbac');
+            a.groups.y === 'bba' && a.indices.groups.z[0] === 1
+        "#,
     );
     assert_true(
-        r"let a=/(a)(?<=a(?!q)(?<!((b)\1){2}q))c/d.exec('babac');a[1]==='a'&&a[2]===undefined&&a[3]===undefined&&a.indices[2]===undefined",
+        r#"
+            let a = /(a)(?<=a(?!q)(?<!((b)\1){2}q))c/d.exec('babac');
+            a[1] === 'a' && a[2] === undefined && a[3] === undefined && a.indices[2] === undefined
+        "#,
     );
     assert_true(
         r"let a=/(a)(?<=a(?<=((b)\1){0}))c/d.exec('ac');a[1]==='a'&&a[2]===undefined&&a[3]===undefined",
     );
     assert_true(
-        r"let a=/([\uD800])(?<=[\uD800](?<=(([\uDC00])\1){2}))c/d.exec('\uDC00\uD800\uDC00\uD800c');a.index===3&&a.indices[2][0]===0&&a.indices[3][0]===0",
+        r#"
+            let a = /([\uD800])(?<=[\uD800](?<=(([\uDC00])\1){2}))c/d.exec('\uDC00\uD800\uDC00\uD800c');
+            a.index === 3 && a.indices[2][0] === 0 && a.indices[3][0] === 0
+        "#,
     );
 }
 #[test]
 fn consumers_sticky_global_empty_advance_and_callbacks_preserve_backward_child_positions() {
     assert_true(
-        r"let r=/(a)(?<=a(?<=((b)\1){2}))c/dy;r.lastIndex=3;let a=r.exec('babac');a.index===3&&r.lastIndex===5&&r.exec('babac')===null&&r.lastIndex===0",
+        r#"
+            let r = /(a)(?<=a(?<=((b)\1){2}))c/dy;
+            r.lastIndex = 3;
+            let a = r.exec('babac');
+            a.index === 3 && r.lastIndex === 5 && r.exec('babac') === null && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/(a)(?<=a(?<=((b)\1){2}))c/dg,a=[...'babac babac'.matchAll(r)];a.length===2&&a[1].index===9&&a[1].indices[2][0]===6&&r.lastIndex===0",
+        r#"
+            let r = /(a)(?<=a(?<=((b)\1){2}))c/dg,
+                a = [...'babac babac'.matchAll(r)];
+            a.length === 2 && a[1].index === 9 && a[1].indices[2][0] === 6 && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let a=[...'babac'.matchAll(/(?<=(a))(?<=a(?<=((b)\1){2}))/dg)];a.length===1&&a[0].index===4&&a[0][0]===''&&a[0].indices[2][0]===0",
+        r#"
+            let a = [...'babac'.matchAll(/(?<=(a))(?<=a(?<=((b)\1){2}))/dg)];
+            a.length === 1 && a[0].index === 4 && a[0][0] === '' && a[0].indices[2][0] === 0
+        "#,
     );
     assert_true(
-        r"let seen=[];let s='babac babac'.replace(/(a)(?<=a(?<=((b)\1){2}))c/g,(m,x,y,z,i)=>{seen.push(x,y,z,i);return '_'});s==='bab_ bab_'&&seen.join('|')==='a|ba|b|3|a|ba|b|9'",
+        r#"
+            let seen = [];
+            let s = 'babac babac'.replace(/(a)(?<=a(?<=((b)\1){2}))c/g, (m, x, y, z, i) => {
+                seen.push(x, y, z, i);
+                return '_'
+            });
+            s === 'bab_ bab_' && seen.join('|') === 'a|ba|b|3|a|ba|b|9'
+        "#,
     );
     assert_true(
         r"'babac'.search(/(a)(?<=a(?<=((b)\1){2}))c/)===3&&'babac'.split(/(a)(?<=a(?<=((b)\1){2}))c/).join('|')==='bab|a|ba|b|'",

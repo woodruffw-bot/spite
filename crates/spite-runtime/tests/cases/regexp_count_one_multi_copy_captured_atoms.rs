@@ -97,13 +97,30 @@ fn full_spans_boundary_aliases_and_original_program_keep_values() {
 #[test]
 fn consumers_sticky_callbacks_and_full_capture_ranges_agree() {
     assert_true(
-        r"let r=/(a)(\1\1){1}/dy;r.lastIndex=1;let a=r.exec('caaa');a[2]==='aa'&&a.indices[2][0]===2&&r.lastIndex===4&&r.exec('caaa')===null&&r.lastIndex===0",
+        r#"
+            let r = /(a)(\1\1){1}/dy;
+            r.lastIndex = 1;
+            let a = r.exec('caaa');
+            a[2] === 'aa' && a.indices[2][0] === 2 && r.lastIndex === 4 && r.exec('caaa') === null && r
+                .lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/(a)(\1\1){1}/dg,a=[...'aaa aaa'.matchAll(r)];a.length===2&&a[1].index===4&&a[1].indices[2][1]===7&&r.lastIndex===0",
+        r#"
+            let r = /(a)(\1\1){1}/dg,
+                a = [...'aaa aaa'.matchAll(r)];
+            a.length === 2 && a[1].index === 4 && a[1].indices[2][1] === 7 && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let seen=[];let s='aaa aaa'.replace(/(a)(\1\1){1}/g,(m,x,y,i)=>{seen.push(x,y,i);return '_'});s==='_ _'&&seen.join('|')==='a|aa|0|a|aa|4'",
+        r#"
+            let seen = [];
+            let s = 'aaa aaa'.replace(/(a)(\1\1){1}/g, (m, x, y, i) => {
+                seen.push(x, y, i);
+                return '_'
+            });
+            s === '_ _' && seen.join('|') === 'a|aa|0|a|aa|4'
+        "#,
     );
     assert_true(
         r"'caaa'.search(/(a)(\1\1){1}/)===1&&'aaa'.split(/(a)(\1\1){1}/).join('|')==='|a|aa|'",

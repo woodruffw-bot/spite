@@ -74,19 +74,32 @@ fn count_one_partial_multi_copy_captured_atoms_result_snapshot() {
 #[test]
 fn partial_ranges_names_indices_original_programs_and_negative_rollback_are_exact() {
     assert_true(
-        "let a=/(?<=a(?=(?<x>b)(?<y>\\k<x>(?<z>\\k<x>)){1}))b/d.exec('abbb');a.groups.x==='b'&&a.groups.y==='bb'&&a.groups.z==='b'&&a.indices.groups.z===a.indices[3]&&a.indices[3][0]===3&&a.indices[3][1]===4",
+        r#"
+            let a = /(?<=a(?=(?<x>b)(?<y>\k<x>(?<z>\k<x>)){1}))b/d.exec('abbb');
+            a.groups.x === 'b' && a.groups.y === 'bb' && a.groups.z === 'b' && a.indices.groups.z === a
+                .indices[3] && a.indices[3][0] === 3 && a.indices[3][1] === 4
+        "#,
     );
     assert_true(
-        "let a=/(?<=(?<x>\\k<z>(?<y>\\k<z>)){1}(?<z>a))b/d.exec('aaab');a.groups.x==='aa'&&a.groups.y==='a'&&a.indices[2][0]===1&&a.indices[3][0]===2",
+        r#"
+            let a = /(?<=(?<x>\k<z>(?<y>\k<z>)){1}(?<z>a))b/d.exec('aaab');
+            a.groups.x === 'aa' && a.groups.y === 'a' && a.indices[2][0] === 1 && a.indices[3][0] === 2
+        "#,
     );
     assert_true(
-        "let a=/(?<=a(?=(b)(\\1()\\1){1}))b/d.exec('abbb');a[2]==='bb'&&a[3]===''&&a.indices[3][0]===3&&a.indices[3][1]===3",
+        r#"
+            let a = /(?<=a(?=(b)(\1()\1){1}))b/d.exec('abbb');
+            a[2] === 'bb' && a[3] === '' && a.indices[3][0] === 3 && a.indices[3][1] === 3
+        "#,
     );
     assert_true(
         "let a=/(?<=a(?!(b)(\\1(\\1)){1}))b/d.exec('ab');a[1]===undefined&&a[2]===undefined&&a.indices[3]===undefined",
     );
     assert_true(
-        "let a=/(?<=a(?=([\\uD800])(\\1(\\1)){1}))[\\uD800]/d.exec('a\\uD800\\uD800\\uD800');a.index===1&&a[2].length===2&&a[3].charCodeAt(0)===55296&&a.indices[3][0]===3",
+        r#"
+            let a = /(?<=a(?=([\uD800])(\1(\1)){1}))[\uD800]/d.exec('a\uD800\uD800\uD800');
+            a.index === 1 && a[2].length === 2 && a[3].charCodeAt(0) === 55296 && a.indices[3][0] === 3
+        "#,
     );
     assert!(matches!(
         Realm::default().eval(r"/(?<=a(?=(b)(?:(\1)\1){1}))b/.exec('abbb')"),
@@ -101,13 +114,31 @@ fn partial_ranges_names_indices_original_programs_and_negative_rollback_are_exac
 #[test]
 fn consumers_sticky_global_callbacks_and_required_empty_paths_keep_partial_captures() {
     assert_true(
-        "let r=/(?<=a(?=(b)(\\1(\\1)){1}))b/dy;r.lastIndex=1;let a=r.exec('abbb');a[3]==='b'&&a.indices[3][0]===3&&r.lastIndex===2&&r.exec('abbb')===null&&r.lastIndex===0",
+        r#"
+            let r = /(?<=a(?=(b)(\1(\1)){1}))b/dy;
+            r.lastIndex = 1;
+            let a = r.exec('abbb');
+            a[3] === 'b' && a.indices[3][0] === 3 && r.lastIndex === 2 && r.exec('abbb') === null && r
+                .lastIndex === 0
+        "#,
     );
     assert_true(
-        "let r=/(?<=a(?=(b)(\\1(\\1)){1}))b/dg,a=[...'abbb abbb'.matchAll(r)];a.length===2&&a[0].index===1&&a[1].index===6&&a[1].indices[3][0]===8&&r.lastIndex===0",
+        r#"
+            let r = /(?<=a(?=(b)(\1(\1)){1}))b/dg,
+                a = [...'abbb abbb'.matchAll(r)];
+            a.length === 2 && a[0].index === 1 && a[1].index === 6 && a[1].indices[3][0] === 8 && r
+                .lastIndex === 0
+        "#,
     );
     assert_true(
-        "let seen=[];let s='abbb abbb'.replace(/(?<=a(?=(b)(\\1(\\1)){1}))b/g,(m,x,y,z,i)=>{seen.push(x,y,z,i);return '_'});s==='a_bb a_bb'&&seen.join('|')==='b|bb|b|1|b|bb|b|6'",
+        r#"
+            let seen = [];
+            let s = 'abbb abbb'.replace(/(?<=a(?=(b)(\1(\1)){1}))b/g, (m, x, y, z, i) => {
+                seen.push(x, y, z, i);
+                return '_'
+            });
+            s === 'a_bb a_bb' && seen.join('|') === 'b|bb|b|1|b|bb|b|6'
+        "#,
     );
     assert_true(
         "'abbb'.search(/(?<=a(?=(b)(\\1(\\1)){1}))b/)===1&&'abbb'.split(/(?<=a(?=(b)(\\1(\\1)){1}))b/).join('|')==='a|b|bb|b|bb'",

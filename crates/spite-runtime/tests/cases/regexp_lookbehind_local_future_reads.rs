@@ -67,34 +67,70 @@ fn lookbehind_local_future_reads_result_snapshot() {
 #[test]
 fn names_aliases_backward_ranges_outside_imports_and_negative_rollback() {
     assert_true(
-        r"let a=/(?<=(?<y>(?<x>a)\k<x>){2})b/d.exec('aab');a.index===2&&a.groups.x==='a'&&a.groups.y==='a'&&a.indices.groups.x===a.indices[2]&&a.indices.groups.y[0]===0&&a.indices.groups.x[1]===1",
+        r#"
+            let a = /(?<=(?<y>(?<x>a)\k<x>){2})b/d.exec('aab');
+            a.index === 2 && a.groups.x === 'a' && a.groups.y === 'a' && a.indices.groups.x === a.indices[
+                2] && a.indices.groups.y[0] === 0 && a.indices.groups.x[1] === 1
+        "#,
     );
     assert_true(
-        r"let a=/(?<=(?<y>(?<x>a)(?<z>b)\k<x>\k<z>){2})c/d.exec('ababc');a.groups.y==='ab'&&a.indices.groups.x[0]===0&&a.indices.groups.z[0]===1&&a.indices.groups.z===a.indices[3]",
+        r#"
+            let a = /(?<=(?<y>(?<x>a)(?<z>b)\k<x>\k<z>){2})c/d.exec('ababc');
+            a.groups.y === 'ab' && a.indices.groups.x[0] === 0 && a.indices.groups.z[0] === 1 && a.indices
+                .groups.z === a.indices[3]
+        "#,
     );
     assert_true(
-        r"let a=/(?<!(?<y>(?<x>a)\k<x>){2}q)b/d.exec('aaxb');a.index===3&&a.groups.x===undefined&&a.groups.y===undefined&&a.indices.groups.x===undefined&&Object.hasOwn(a.groups,'x')",
+        r#"
+            let a = /(?<!(?<y>(?<x>a)\k<x>){2}q)b/d.exec('aaxb');
+            a.index === 3 && a.groups.x === undefined && a.groups.y === undefined && a.indices.groups.x ===
+                undefined && Object.hasOwn(a.groups, 'x')
+        "#,
     );
     assert_true(
         r"let a=/(b)(?<=((a)\3){2}\1)c/d.exec('aabc');a.index===2&&a[1]==='b'&&a[2]==='a'&&a.indices[2][0]===0",
     );
     assert_true(
-        r"let a=/(?<=((a)\2){2}(?=(b)))b/d.exec('aab'),b=/(?=(((a)\3){2}))a/d.exec('aaaab');a.indices[3][0]===2&&b[1]==='aaaa'&&b.indices[2][0]===2&&b.indices[3][1]===3",
+        r#"
+            let a = /(?<=((a)\2){2}(?=(b)))b/d.exec('aab'),
+                b = /(?=(((a)\3){2}))a/d.exec('aaaab');
+            a.indices[3][0] === 2 && b[1] === 'aaaa' && b.indices[2][0] === 2 && b.indices[3][1] === 3
+        "#,
     );
 }
 #[test]
 fn sticky_global_empty_advancement_and_callbacks_keep_cleared_local_effects() {
     assert_true(
-        r"let r=/(?<=((a)\2){2})b/dy;r.lastIndex=2;let a=r.exec('aab');a.index===2&&r.lastIndex===3&&r.exec('aab')===null&&r.lastIndex===0",
+        r#"
+            let r = /(?<=((a)\2){2})b/dy;
+            r.lastIndex = 2;
+            let a = r.exec('aab');
+            a.index === 2 && r.lastIndex === 3 && r.exec('aab') === null && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/(?<=((a)\2){2})b/dg,a=[...'aab aab'.matchAll(r)];a.length===2&&a[1].index===6&&a[1].indices[2][0]===4&&r.lastIndex===0",
+        r#"
+            let r = /(?<=((a)\2){2})b/dg,
+                a = [...'aab aab'.matchAll(r)];
+            a.length === 2 && a[1].index === 6 && a[1].indices[2][0] === 4 && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/(?<=((a)\2){0})/dg,a=[...'ab'.matchAll(r)];a.length===3&&a[2].index===2&&a[2][1]===undefined&&a[2].indices[2]===undefined",
+        r#"
+            let r = /(?<=((a)\2){0})/dg,
+                a = [...'ab'.matchAll(r)];
+            a.length === 3 && a[2].index === 2 && a[2][1] === undefined && a[2].indices[2] === undefined
+        "#,
     );
     assert_true(
-        r"let seen=[];let s='aab aab'.replace(/(?<=((a)\2){2})b/g,(m,x,y,i)=>{seen.push(x,y,i);return '_'});s==='aa_ aa_'&&seen.join('|')==='a|a|2|a|a|6'",
+        r#"
+            let seen = [];
+            let s = 'aab aab'.replace(/(?<=((a)\2){2})b/g, (m, x, y, i) => {
+                seen.push(x, y, i);
+                return '_'
+            });
+            s === 'aa_ aa_' && seen.join('|') === 'a|a|2|a|a|6'
+        "#,
     );
     assert_true(
         r"'aab'.replace(/(?<=(?<y>(?<x>a)\k<x>){2})b/,'<$<y>>')==='aa<a>'&&'aab'.search(/(?<=((a)\2){2})b/)===2&&'aab'.split(/(?<=((a)\2){2})b/).join('|')==='aa|a|a|'",

@@ -73,13 +73,25 @@ fn original_gap_capture_effects_names_and_both_directions_keep_exact_ranges() {
         Ok(Value::Object(_))
     ));
     assert_true(
-        r"let a=/(?<=a(?=(b)(\1){1}))b/d.exec('abb');a.index===1&&a[1]==='b'&&a[2]==='b'&&a.indices[1][0]===1&&a.indices[2][0]===2",
+        r#"
+            let a = /(?<=a(?=(b)(\1){1}))b/d.exec('abb');
+            a.index === 1 && a[1] === 'b' && a[2] === 'b' && a.indices[1][0] === 1 && a.indices[2][0] === 2
+        "#,
     );
     assert_true(
-        r"let a=/(?<=(?<x>a)(?<y>\k<x>){1})b/d.exec('ab');a.groups.x==='a'&&a.groups.y===''&&a.indices.groups.y===a.indices[2]&&a.indices[2][0]===1",
+        r#"
+            let a = /(?<=(?<x>a)(?<y>\k<x>){1})b/d.exec('ab');
+            a.groups.x === 'a' && a.groups.y === '' && a.indices.groups.y === a.indices[2] && a.indices[2][
+                0
+            ] === 1
+        "#,
     );
     assert_true(
-        r"let a=/(?<=(?<x>\k<y>){1}(?<y>a))b/d.exec('aab');a.index===2&&a.groups.x==='a'&&a.groups.y==='a'&&a.indices.groups.x[0]===0&&a.indices.groups.y[0]===1",
+        r#"
+            let a = /(?<=(?<x>\k<y>){1}(?<y>a))b/d.exec('aab');
+            a.index === 2 && a.groups.x === 'a' && a.groups.y === 'a' && a.indices.groups.x[0] === 0 && a
+                .indices.groups.y[0] === 1
+        "#,
     );
     assert_true(r"let a=/(?<=(\1){1}a)b/d.exec('ab');a[1]===''&&a.indices[1][0]===0");
     assert_true(
@@ -95,16 +107,33 @@ fn original_gap_capture_effects_names_and_both_directions_keep_exact_ranges() {
 #[test]
 fn consumers_empty_global_sticky_advancement_and_callbacks_preserve_child_slots() {
     assert_true(
-        r"let r=/(?<=(a)(\1){1})b/dy;r.lastIndex=1;let a=r.exec('ab');a[2]===''&&r.lastIndex===2&&r.exec('ab')===null&&r.lastIndex===0",
+        r#"
+            let r = /(?<=(a)(\1){1})b/dy;
+            r.lastIndex = 1;
+            let a = r.exec('ab');
+            a[2] === '' && r.lastIndex === 2 && r.exec('ab') === null && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/(?<=(a)(\1){1})b/dg,a=[...'ab ab'.matchAll(r)];a.length===2&&a[0].index===1&&a[1].index===4&&a[1].indices[2][0]===4&&r.lastIndex===0",
+        r#"
+            let r = /(?<=(a)(\1){1})b/dg,
+                a = [...'ab ab'.matchAll(r)];
+            a.length === 2 && a[0].index === 1 && a[1].index === 4 && a[1].indices[2][0] === 4 && r
+                .lastIndex === 0
+        "#,
     );
     assert_true(
         r"let a=[...'aaa'.matchAll(/(?=(a)(\1){1})/dg)];a.length===2&&a[0][2]==='a'&&a[1].indices[2][0]===2",
     );
     assert_true(
-        r"let seen=[];let s='ab ab'.replace(/(?<=(a)(\1){1})b/g,(m,x,y,i)=>{seen.push(x,y,i);return '_'});s==='a_ a_'&&seen.join('|')==='a||1|a||4'",
+        r#"
+            let seen = [];
+            let s = 'ab ab'.replace(/(?<=(a)(\1){1})b/g, (m, x, y, i) => {
+                seen.push(x, y, i);
+                return '_'
+            });
+            s === 'a_ a_' && seen.join('|') === 'a||1|a||4'
+        "#,
     );
     assert_true(
         r"'ab'.search(/(?<=(a)(\1){1})b/)===1&&'ab'.split(/(?<=(a)(\1){1})b/).join('|')==='a|a||'",

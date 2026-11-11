@@ -36,48 +36,126 @@ fn exact_counts_keep_mandatory_source_priority_and_final_empty_captures() {
 fn exact_decoded_counts_keep_supplementary_trimming_and_original_capture_ranges() {
     for class in [r"[\q{😀}]", r"[\q{😀|😀x}&&\p{Any}]"] {
         assert_true(&format!(
-            "let r=/(?<whole>(?<each>({class}|)){{2}}?)/dvgy;r.lastIndex=2;let a=r.exec('A😀😀😀x'),b=r.exec('A😀😀😀x');a.index===1 && a[0]==='😀😀' && a.groups.each==='😀' && a.indices[2][0]===3 && a.indices[3][1]===5 && b.index===5 && b[0]==='😀' && b.groups.each==='' && b.indices[2][0]===7 && b.indices[3][1]===7 && r.lastIndex===7"
+            r#"
+                let r = /(?<whole>(?<each>({class}|)){{2}}?)/dvgy;
+                r.lastIndex = 2;
+                let a = r.exec('A😀😀😀x'),
+                    b = r.exec('A😀😀😀x');
+                a.index === 1 && a[0] === '😀😀' && a.groups.each === '😀' && a.indices[2][0] === 3 && a
+                    .indices[3][1] === 5 && b.index === 5 && b[0] === '😀' && b.groups.each === '' && b
+                    .indices[2][0] === 7 && b.indices[3][1] === 7 && r.lastIndex === 7
+            "#
         ));
         assert_true(&format!(
-            "let a=/(?<each>{class}|){{3}}?$/dv.exec('😀😀😀😀'),b=/(?<each>|{class}){{3}}$/dv.exec('😀😀😀😀');a.index===2 && a[0]==='😀😀😀' && a.groups.each==='😀' && a.indices[1][0]===6 && a.indices[1][1]===8 && b.index===2 && b[0]==='😀😀😀' && b.groups.each==='😀' && b.indices[1][0]===6"
+            r#"
+                let a = /(?<each>{class}|){{3}}?$/dv.exec('😀😀😀😀'),
+                    b = /(?<each>|{class}){{3}}$/dv.exec('😀😀😀😀');
+                a.index === 2 && a[0] === '😀😀😀' && a.groups.each === '😀' && a.indices[1][0] === 6 && a
+                    .indices[1][1] === 8 && b.index === 2 && b[0] === '😀😀😀' && b.groups.each === '😀' && b
+                    .indices[1][0] === 6
+            "#
         ));
         assert_true(&format!(
-            "let a=/(?<each>{class}|){{3}}$/dv.exec('😀'),b=/(?<each>|{class}){{3}}$/dv.exec('😀');a[0]==='😀' && a.groups.each==='' && a.indices[1][0]===2 && a.indices[1][1]===2 && b[0]==='😀' && b.groups.each==='😀' && b.indices[1][0]===0 && b.indices[1][1]===2"
+            r#"
+                let a = /(?<each>{class}|){{3}}$/dv.exec('😀'),
+                    b = /(?<each>|{class}){{3}}$/dv.exec('😀');
+                a[0] === '😀' && a.groups.each === '' && a.indices[1][0] === 2 && a.indices[1][1] === 2 && b[
+                    0] === '😀' && b.groups.each === '😀' && b.indices[1][0] === 0 && b.indices[1][1] === 2
+            "#
         ));
     }
     for class in [r"[\q{\u{10428}}]", r"[\q{\u{10428}|ab}&&\p{Any}]"] {
         assert_true(&format!(
-            "let a=/(?<each>({class}|)){{3,03}}/div.exec('𐐀𐐨'),b=/(?<each>(|{class})){{3}}?$/div.exec('𐐀𐐨');a[0]==='𐐀𐐨' && a.groups.each==='' && a.indices[1][0]===4 && a.indices[2][1]===4 && b[0]==='𐐀𐐨' && b.groups.each==='𐐨' && b.indices[1][0]===2 && b.indices[2][1]===4"
+            r#"
+                let a = /(?<each>({class}|)){{3,03}}/div.exec('𐐀𐐨'),
+                    b = /(?<each>(|{class})){{3}}?$/div.exec('𐐀𐐨');
+                a[0] === '𐐀𐐨' && a.groups.each === '' && a.indices[1][0] === 4 && a.indices[2][1] === 4 && b[
+                        0] === '𐐀𐐨' && b.groups.each === '𐐨' && b.indices[1][0] === 2 && b.indices[2][1] ===
+                    4
+            "#
         ));
     }
     assert_true(
-        r"let m=/(?<whole>(?<\u{1D49C}>[\q{a|ab}&&a]|){3})/dv.exec('aaX');m.groups.whole==='aa' && m.groups['𝒜']==='' && m.indices.groups['𝒜'][0]===2 && m.indices.groups['𝒜'][1]===2",
+        r#"
+            let m = /(?<whole>(?<\u{1D49C}>[\q{a|ab}&&a]|){3})/dv.exec('aaX');
+            m.groups.whole === 'aa' && m.groups['𝒜'] === '' && m.indices.groups['𝒜'][0] === 2 && m
+                .indices.groups['𝒜'][1] === 2
+        "#,
     );
     assert_true(
-        r"let m=/(?<each>([\q{\uD800a|\uD800}&&\p{Any}]|)){3}/dv.exec('\uD800\uD800a');m[0].length===2 && m[0].charCodeAt(0)===0xd800 && m.groups.each==='' && m.indices[1][0]===2 && m.indices[2][1]===2 && /(?<each>[\q{\u{D800}\u{DC00}|ab}&&\p{Any}]|){3}/v.exec('𐀀').groups.each===''",
+        r#"
+            let m = /(?<each>([\q{\uD800a|\uD800}&&\p{Any}]|)){3}/dv.exec('\uD800\uD800a');
+            m[0].length === 2 && m[0].charCodeAt(0) === 0xd800 && m.groups.each === '' && m.indices[1][
+                0] === 2 && m.indices[2][1] === 2 && /(?<each>[\q{\u{D800}\u{DC00}|ab}&&\p{Any}]|){3}/v
+                .exec('𐀀').groups.each === ''
+        "#,
     );
 }
 
 #[test]
 fn consumers_replacements_clones_and_collection_preserve_exact_count_results() {
     assert_true(
-        r"let r=/(?<each>[\q{a|b|ab}&&\p{Any}]|){3}/dvg,s=/(?<each>|[\q{a|b|ab}&&\p{Any}]){3}/dvg,a=[...'abXba'.matchAll(r)],b=[...'abXba'.matchAll(s)];a.length===4 && a.map(m=>m[0]).join('|')==='ab||ba|' && a.every(m=>m.groups.each==='') && a[0].indices[1][0]===2 && a[2].indices[1][0]===5 && b.length===6 && b.every(m=>m[0]==='' && m.groups.each==='') && b.map(m=>m.index).join(',')==='0,1,2,3,4,5' && r.lastIndex===0 && s.lastIndex===0 && 'abXba'.replace(r,'<$1:$<each>>')==='<:><:>X<:><:>' && 'abXba'.replace(s,'<$1:$<each>>')==='<:>a<:>b<:>X<:>b<:>a<:>' && 'abXba'.split(/(?<each>|[\q{a|b|ab}&&\p{Any}]){3}/v).join('|')==='a||b||X||b||a'",
+        r#"
+            let r = /(?<each>[\q{a|b|ab}&&\p{Any}]|){3}/dvg,
+                s = /(?<each>|[\q{a|b|ab}&&\p{Any}]){3}/dvg,
+                a = [...'abXba'.matchAll(r)],
+                b = [...'abXba'.matchAll(s)];
+            a.length === 4 && a.map(m => m[0]).join('|') === 'ab||ba|' && a.every(m => m.groups.each ===
+                    '') && a[0].indices[1][0] === 2 && a[2].indices[1][0] === 5 && b.length === 6 && b
+                .every(m => m[0] === '' && m.groups.each === '') && b.map(m => m.index).join(',') ===
+                '0,1,2,3,4,5' && r.lastIndex === 0 && s.lastIndex === 0 && 'abXba'.replace(r,
+                    '<$1:$<each>>') === '<:><:>X<:><:>' && 'abXba'.replace(s, '<$1:$<each>>') ===
+                '<:>a<:>b<:>X<:>b<:>a<:>' && 'abXba'.split(/(?<each>|[\q{a|b|ab}&&\p{Any}]){3}/v).join(
+                '|') === 'a||b||X||b||a'
+        "#,
     );
     assert_true(
-        r"let seen=[],result='abX'.replace(/(?<each>[\q{a|b|ab}&&\p{Any}]|){3}/vg,(m,each,at,input,groups)=>{seen.push([m,each,at,groups.each]);return '#'});result==='##X#' && seen.length===3 && seen[0][0]==='ab' && seen[0][1]==='' && seen[0][2]===0 && seen[0][3]==='' && seen[1][0]==='' && seen[1][2]===2 && seen[2][2]===3",
+        r#"
+            let seen = [],
+                result = 'abX'.replace(/(?<each>[\q{a|b|ab}&&\p{Any}]|){3}/vg, (m, each, at, input,
+                    groups) => {
+                        seen.push([m, each, at, groups.each]);
+                        return '#'
+                    });
+            result === '##X#' && seen.length === 3 && seen[0][0] === 'ab' && seen[0][1] === '' && seen[0][
+                    2] === 0 && seen[0][3] === '' && seen[1][0] === '' && seen[1][2] === 2 && seen[2][
+                2] === 3
+        "#,
     );
     assert_true(
-        r"let r=/(?<each>|[\q{a|b|ab}&&\p{Any}]){3}/vg;r.lastIndex=9;'Xab'.search(r)===0 && r.lastIndex===9 && 'abXba'.match(r).join('|')==='|||||' && r.lastIndex===0",
+        r#"
+            let r = /(?<each>|[\q{a|b|ab}&&\p{Any}]){3}/vg;
+            r.lastIndex = 9;
+            'Xab'.search(r) === 0 && r.lastIndex === 9 && 'abXba'.match(r).join('|') === '|||||' && r
+                .lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/(?<each>[\q{a|b|ab}&&\p{Any}]|){3}/iv;r.lastIndex=7;let c=new RegExp(r,'dvy'),m=c.exec('ABB');c.source===r.source && c.flags==='dvy' && m[0]==='' && m.groups.each==='' && c.lastIndex===0 && r.exec('ABB').groups.each==='B' && r.lastIndex===7",
+        r#"
+            let r = /(?<each>[\q{a|b|ab}&&\p{Any}]|){3}/iv;
+            r.lastIndex = 7;
+            let c = new RegExp(r, 'dvy'),
+                m = c.exec('ABB');
+            c.source === r.source && c.flags === 'dvy' && m[0] === '' && m.groups.each === '' && c
+                .lastIndex === 0 && r.exec('ABB').groups.each === 'B' && r.lastIndex === 7
+        "#,
     );
     let mut realm = Realm::default();
     realm
         .eval(r"var r=/(?<each>([\q{a|b}]|)){3}/dvg;r.lastIndex=1")
         .unwrap();
     realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval(r"let a=r.exec('zabbb!'),b=r.exec('zabbb!');a[0]==='abb' && a.groups.each==='b' && a.indices[1][0]===3 && b[0]==='b' && b.groups.each==='' && b.indices[1][0]===5 && b.indices[2][1]===5 && r.lastIndex===5"), Ok(Value::Boolean(true)));
+    assert_eq!(
+        realm.eval(
+            r#"
+                let a = r.exec('zabbb!'),
+                    b = r.exec('zabbb!');
+                a[0] === 'abb' && a.groups.each === 'b' && a.indices[1][0] === 3 && b[0] === 'b' && b.groups
+                    .each === '' && b.indices[1][0] === 5 && b.indices[2][1] === 5 && r.lastIndex === 5
+            "#
+        ),
+        Ok(Value::Boolean(true))
+    );
 }
 
 #[test]

@@ -72,7 +72,11 @@ fn nullable_choice_loops_result_snapshot() {
 #[test]
 fn empty_attempts_restore_names_indices_nested_body_and_atomic_assertion_effects() {
     assert_true(
-        r"let a=/(?<x>a|)*/d.exec('aa');a[0]==='aa'&&a.groups.x==='a'&&a.indices.groups.x===a.indices[1]&&a.indices[1][0]===1",
+        r#"
+            let a = /(?<x>a|)*/d.exec('aa');
+            a[0] === 'aa' && a.groups.x === 'a' && a.indices.groups.x === a.indices[1] && a.indices[1][
+                0] === 1
+        "#,
     );
     assert_true(
         r"let a=/(?<x>a|)*/d.exec('');a[0]===''&&a.groups.x===undefined&&a.indices.groups.x===undefined",
@@ -97,13 +101,36 @@ fn empty_attempts_restore_names_indices_nested_body_and_atomic_assertion_effects
 #[test]
 fn consumers_global_sticky_empty_advancement_and_callbacks_keep_restored_slots() {
     assert_true(
-        r"let r=/(a|)*b/dy;r.lastIndex=1;let a=r.exec('xaab');a.index===1&&a[1]==='a'&&a.indices[1][0]===2&&r.lastIndex===4&&r.exec('xaab')===null&&r.lastIndex===0",
+        r#"
+            let r = /(a|)*b/dy;
+            r.lastIndex = 1;
+            let a = r.exec('xaab');
+            a.index === 1 && a[1] === 'a' && a.indices[1][0] === 2 && r.lastIndex === 4 && r.exec(
+                'xaab') === null && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/(a|)*/dg,a=[...'aa b'.matchAll(r)];a.length===4&&a[0][0]==='aa'&&a[1].index===2&&a[1][1]===undefined&&a[3].index===4&&r.lastIndex===0",
+        r#"
+            let r = /(a|)*/dg,
+                a = [...'aa b'.matchAll(r)];
+            a.length === 4 && a[0][0] === 'aa' && a[1].index === 2 && a[1][1] === undefined && a[3]
+                .index === 4 && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let rows=[],s='aa b'.replace(/(a|)*/g,(m,x,i)=>{rows.push([m,x,i]);return '#'});s==='## #b#'&&JSON.stringify(rows)===JSON.stringify([['aa','a',0],['',undefined,2],['',undefined,3],['',undefined,4]])",
+        r#"
+            let rows = [],
+                s = 'aa b'.replace(/(a|)*/g, (m, x, i) => {
+                    rows.push([m, x, i]);
+                    return '#'
+                });
+            s === '## #b#' && JSON.stringify(rows) === JSON.stringify([
+                ['aa', 'a', 0],
+                ['', undefined, 2],
+                ['', undefined, 3],
+                ['', undefined, 4]
+            ])
+        "#,
     );
     assert_true(r"let a='aab'.split(/(a|)*b/);a.length===3&&a[0]===''&&a[1]==='a'&&a[2]===''");
     assert_true(
@@ -114,7 +141,19 @@ fn consumers_global_sticky_empty_advancement_and_callbacks_keep_restored_slots()
 #[test]
 fn nullable_composition_preserves_ordered_coercions_and_normal_eval_completion() {
     assert_true(
-        "let it='x'.matchAll('(?:(?:(?:(?:a(a|bc)){2}){2})|)*'),flag=0,a;try{a=it.next()}catch{flag=1}finally{flag=2}a.value[0]===''&&!a.done&&flag===2&&it.next().value.index===1&&it.next().done",
+        r#"
+            let it = 'x'.matchAll('(?:(?:(?:(?:a(a|bc)){2}){2})|)*'),
+                flag = 0,
+                a;
+            try {
+                a = it.next()
+            } catch {
+                flag = 1
+            } finally {
+                flag = 2
+            }
+            a.value[0] === '' && !a.done && flag === 2 && it.next().value.index === 1 && it.next().done
+        "#,
     );
     for pattern in [
         "(?:(?:(?:(?:a(a|bc)){2}){2})|)*",
@@ -124,17 +163,66 @@ fn nullable_composition_preserves_ordered_coercions_and_normal_eval_completion()
         "(?:(?:((?:(?:ab+c+){2}){2}){2})|)*",
     ] {
         assert_true(&format!(
-            "let r=new RegExp('{pattern}'),t='';r.lastIndex={{valueOf(){{t+='i';return 0}}}};let a=r.exec({{toString(){{t+='s';return 'a'}}}});t==='si'&&a[0]===''&&typeof r.lastIndex==='object'"
+            r#"
+                let r = new RegExp('{pattern}'),
+                    t = '';
+                r.lastIndex = {{
+                    valueOf() {{
+                        t += 'i';
+                        return 0
+                    }}
+                }};
+                let a = r.exec({{
+                    toString() {{
+                        t += 's';
+                        return 'a'
+                    }}
+                }});
+                t === 'si' && a[0] === '' && typeof r.lastIndex === 'object'
+            "#
         ));
     }
     assert_true(
-        "let marker=0,result;try{result=eval('marker=1; /(?:(?:((?:(?:.a*b*){2}){2}){2})|)*/g.test(0);')}catch{marker=2}finally{marker=3}result===true&&marker===3",
+        r#"
+            let marker = 0,
+                result;
+            try {
+                result = eval('marker=1; /(?:(?:((?:(?:.a*b*){2}){2}){2})|)*/g.test(0);')
+            } catch {
+                marker = 2
+            } finally {
+                marker = 3
+            }
+            result === true && marker === 3
+        "#,
     );
     assert_true(
-        "let marker=0,result;try{result=eval('marker=1; /(?:(?:((?:(?:[a-z]a+b+){2}){2}){2})|)*/.test(0);')}catch{marker=2}finally{marker=3}result===true&&marker===3",
+        r#"
+            let marker = 0,
+                result;
+            try {
+                result = eval('marker=1; /(?:(?:((?:(?:[a-z]a+b+){2}){2}){2})|)*/.test(0);')
+            } catch {
+                marker = 2
+            } finally {
+                marker = 3
+            }
+            result === true && marker === 3
+        "#,
     );
     assert_true(
-        r"let marker=0,result;try{result=eval('marker=1; /(?:(?:(?:(?<a>a)|(?<a>b)(?:\\k<a>)+){2})|)*/.test(0);')}catch{marker=2}finally{marker=3}result===true&&marker===3",
+        r#"
+            let marker = 0,
+                result;
+            try {
+                result = eval('marker=1; /(?:(?:(?:(?<a>a)|(?<a>b)(?:\\k<a>)+){2})|)*/.test(0);')
+            } catch {
+                marker = 2
+            } finally {
+                marker = 3
+            }
+            result === true && marker === 3
+        "#,
     );
 }
 

@@ -6,26 +6,32 @@ use crate::common::assert_true;
 fn arbitrary_validated_bodies_keep_every_capture_and_name_undefined() {
     assert_true(
         r#"
-        var bodies = [
-            '(?<root>(?=(?<ahead>a))(?<=(?<behind>b))\\k<ahead>|(?<tail>c))',
-            '(?<root>(?<x>a+?)(?:b|c){2,3}\\k<x>)',
-            '(?<root>(?i:(?<x>a))(?-i:b)[\\p{Script=Greek}])',
-            '(?<root>[\\p{RGI_Emoji}](?<x>[\\q{ab|cd}&&\\q{cd|ef}]))',
-            '(?<root>[[a-z]--[b]](?<x>[\\q{\\(\\)|ab}]))'
-        ], ok = true;
-        for (var i=0;i<bodies.length;i++) {
-            for (var count of ['{0}','{0,0}','{0000}?','{000,000}?']) {
-                var flags = i>=3 ? 'dgvi' : 'dguim', r = new RegExp(bodies[i]+count,flags);
-                r.lastIndex=2;
-                var m=r.exec('a😀b');
-                ok=ok&&m.index===1&&m[0]===''&&r.lastIndex===1&&m.indices[0][0]===1&&m.indices[0][1]===1;
-                for(var n=1;n<m.length;n++) ok=ok&&m[n]===undefined&&m.indices[n]===undefined;
-                for(var name of Object.keys(m.groups)) ok=ok&&Object.hasOwn(m.indices.groups,name)&&m.groups[name]===undefined&&m.indices.groups[name]===undefined;
-                ok=ok&&Object.getPrototypeOf(m.groups)===null&&Object.getPrototypeOf(m.indices.groups)===null;
+            var bodies = [
+                    '(?<root>(?=(?<ahead>a))(?<=(?<behind>b))\\k<ahead>|(?<tail>c))',
+                    '(?<root>(?<x>a+?)(?:b|c){2,3}\\k<x>)',
+                    '(?<root>(?i:(?<x>a))(?-i:b)[\\p{Script=Greek}])',
+                    '(?<root>[\\p{RGI_Emoji}](?<x>[\\q{ab|cd}&&\\q{cd|ef}]))',
+                    '(?<root>[[a-z]--[b]](?<x>[\\q{\\(\\)|ab}]))'
+                ],
+                ok = true;
+            for (var i = 0; i < bodies.length; i++) {
+                for (var count of ['{0}', '{0,0}', '{0000}?', '{000,000}?']) {
+                    var flags = i >= 3 ? 'dgvi' : 'dguim',
+                        r = new RegExp(bodies[i] + count, flags);
+                    r.lastIndex = 2;
+                    var m = r.exec('a😀b');
+                    ok = ok && m.index === 1 && m[0] === '' && r.lastIndex === 1 && m.indices[0][0] ===
+                        1 && m.indices[0][1] === 1;
+                    for (var n = 1; n < m.length; n++) ok = ok && m[n] === undefined && m.indices[n] ===
+                        undefined;
+                    for (var name of Object.keys(m.groups)) ok = ok && Object.hasOwn(m.indices.groups,
+                        name) && m.groups[name] === undefined && m.indices.groups[name] === undefined;
+                    ok = ok && Object.getPrototypeOf(m.groups) === null && Object.getPrototypeOf(m.indices
+                        .groups) === null;
+                }
             }
-        }
-        ok
-    "#,
+            ok
+        "#,
     );
 }
 
@@ -33,20 +39,35 @@ fn arbitrary_validated_bodies_keep_every_capture_and_name_undefined() {
 fn modes_lastindex_and_string_consumers_use_the_empty_match() {
     assert_true(
         r#"
-        var ok=true, body='(?<root>(?=(?<x>a))b|(?<=c)d){0}';
-        for(var mode of ['','u','v']) for(var sticky of ['','y']) {
-            var r=new RegExp(body,'dg'+mode+sticky), input='A😀!';
-            for(var start=0;start<=input.length+1;start++) {
-                r.lastIndex=start; var m=r.exec(input), point=mode!==''&&start===2?1:start;
-                ok=ok&&(start>input.length ? m===null&&r.lastIndex===0 : m.index===point&&m[0]===''&&m[1]===undefined&&m[2]===undefined&&r.lastIndex===point);
-            }
-        }
-        var r=new RegExp(body,'dgu'), matches=Array.from('a😀'.matchAll(r));
-        ok=ok&&matches.length===3&&matches[0].index===0&&matches[1].index===1&&matches[2].index===3;
-        var seen=[];var replaced='ab'.replace(r,function(m,root,x,p,input,groups){seen.push(p);return m===''&&root===undefined&&x===undefined&&input==='ab'&&groups.root===undefined?'!':'?'});
-        ok=ok&&replaced==='!a!b!'&&seen.join(',')==='0,1,2'&&'ab'.search(r)===0&&'ab'.split(r).join(',')==='a,,,b';
-        ok
-    "#,
+            var ok = true,
+                body = '(?<root>(?=(?<x>a))b|(?<=c)d){0}';
+            for (var mode of ['', 'u', 'v'])
+                for (var sticky of ['', 'y']) {
+                    var r = new RegExp(body, 'dg' + mode + sticky),
+                        input = 'A😀!';
+                    for (var start = 0; start <= input.length + 1; start++) {
+                        r.lastIndex = start;
+                        var m = r.exec(input),
+                            point = mode !== '' && start === 2 ? 1 : start;
+                        ok = ok && (start > input.length ? m === null && r.lastIndex === 0 : m.index ===
+                            point && m[0] === '' && m[1] === undefined && m[2] === undefined && r
+                            .lastIndex === point);
+                    }
+                }
+            var r = new RegExp(body, 'dgu'),
+                matches = Array.from('a😀'.matchAll(r));
+            ok = ok && matches.length === 3 && matches[0].index === 0 && matches[1].index === 1 && matches[
+                2].index === 3;
+            var seen = [];
+            var replaced = 'ab'.replace(r, function(m, root, x, p, input, groups) {
+                seen.push(p);
+                return m === '' && root === undefined && x === undefined && input === 'ab' &&
+                    groups.root === undefined ? '!' : '?'
+            });
+            ok = ok && replaced === '!a!b!' && seen.join(',') === '0,1,2' && 'ab'.search(r) === 0 && 'ab'
+                .split(r).join(',') === 'a,,,b';
+            ok
+        "#,
     );
 }
 
@@ -76,11 +97,14 @@ fn full_syntax_validation_precedes_erasure() {
 fn escaped_and_duplicate_names_keep_undefined_aliases() {
     assert_true(
         r#"
-        var r=new RegExp('(?:(?<x>a)|(?<x>b)(?<\\u0079>c)\\k<y>){0}','dgu'),m=r.exec('x');
-        m.length===4&&m[1]===undefined&&m[2]===undefined&&m[3]===undefined&&
-        Object.keys(m.groups).join(',')==='x,y'&&m.groups.x===undefined&&m.groups.y===undefined&&
-        Object.keys(m.indices.groups).join(',')==='x,y'&&m.indices.groups.x===undefined&&m.indices.groups.y===undefined
-    "#,
+            var r = new RegExp('(?:(?<x>a)|(?<x>b)(?<\\u0079>c)\\k<y>){0}', 'dgu'),
+                m = r.exec('x');
+            m.length === 4 && m[1] === undefined && m[2] === undefined && m[3] === undefined &&
+                Object.keys(m.groups).join(',') === 'x,y' && m.groups.x === undefined && m.groups.y ===
+                undefined &&
+                Object.keys(m.indices.groups).join(',') === 'x,y' && m.indices.groups.x === undefined && m
+                .indices.groups.y === undefined
+        "#,
     );
 }
 
@@ -113,13 +137,26 @@ fn mandatory_enclosing_captures_select_empty_spans_and_inner_names_stay_undefine
 fn enclosing_empty_captures_flow_through_matchall_replace_search_and_split() {
     assert_true(
         r#"
-        var pattern='(?<outside>(?<root>(?=(?<x>a))b){0})',r=new RegExp(pattern,'dgu');
-        var ms=Array.from('a😀'.matchAll(r)),ok=ms.length===3&&ms.map(m=>m.index).join(',')==='0,1,3';
-        for(var m of ms)ok=ok&&m.length===4&&m[1]===''&&m[2]===undefined&&m[3]===undefined&&m.groups.outside===''&&m.indices.groups.outside===m.indices[1];
-        var calls=[];var value='ab'.replace(r,function(m,outside,root,x,at,input,groups){calls.push(at);return m===''&&outside===''&&root===undefined&&x===undefined&&input==='ab'&&groups.outside===''&&groups.root===undefined?'!':'?'});
-        ok=ok&&value==='!a!b!'&&calls.join(',')==='0,1,2'&&'ab'.search(r)===0&&'ab'.split(r).join(',')==='a,,,,b';
-        var copy=new RegExp(r);copy.lastIndex=1;var m=copy.exec('ab');
-        ok&&m.index===1&&copy.lastIndex===1&&m.groups.outside===''&&m.groups.root===undefined&&m.indices.groups.outside===m.indices[1]
-    "#,
+            var pattern = '(?<outside>(?<root>(?=(?<x>a))b){0})',
+                r = new RegExp(pattern, 'dgu');
+            var ms = Array.from('a😀'.matchAll(r)),
+                ok = ms.length === 3 && ms.map(m => m.index).join(',') === '0,1,3';
+            for (var m of ms) ok = ok && m.length === 4 && m[1] === '' && m[2] === undefined && m[3] ===
+                undefined && m.groups.outside === '' && m.indices.groups.outside === m.indices[1];
+            var calls = [];
+            var value = 'ab'.replace(r, function(m, outside, root, x, at, input, groups) {
+                calls.push(at);
+                return m === '' && outside === '' && root === undefined && x === undefined &&
+                    input === 'ab' && groups.outside === '' && groups.root === undefined ? '!' :
+                    '?'
+            });
+            ok = ok && value === '!a!b!' && calls.join(',') === '0,1,2' && 'ab'.search(r) === 0 && 'ab'
+                .split(r).join(',') === 'a,,,,b';
+            var copy = new RegExp(r);
+            copy.lastIndex = 1;
+            var m = copy.exec('ab');
+            ok && m.index === 1 && copy.lastIndex === 1 && m.groups.outside === '' && m.groups.root ===
+                undefined && m.indices.groups.outside === m.indices[1]
+        "#,
     );
 }

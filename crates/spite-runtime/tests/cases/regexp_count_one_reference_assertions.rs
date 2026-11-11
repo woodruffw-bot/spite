@@ -73,10 +73,16 @@ fn count_one_reference_assertions_result_snapshot() {
 #[test]
 fn named_ranges_input_copies_dependent_targets_and_negative_rollback_are_exact() {
     assert_true(
-        r"let a=/(?<=a(?=(?<x>b)\k<x>{1}))b/d.exec('abb');a.groups.x==='b'&&a.indices.groups.x===a.indices[1]&&a.indices[1][0]===1",
+        r#"
+            let a = /(?<=a(?=(?<x>b)\k<x>{1}))b/d.exec('abb');
+            a.groups.x === 'b' && a.indices.groups.x === a.indices[1] && a.indices[1][0] === 1
+        "#,
     );
     assert_true(
-        r"let a=/(?<=(\k<x>{1})(?<x>b))c/d.exec('bbc');a[1]==='b'&&a.groups.x==='b'&&a.indices[1][0]===0&&a.indices.groups.x[0]===1",
+        r#"
+            let a = /(?<=(\k<x>{1})(?<x>b))c/d.exec('bbc');
+            a[1] === 'b' && a.groups.x === 'b' && a.indices[1][0] === 0 && a.indices.groups.x[0] === 1
+        "#,
     );
     assert_true(
         r"let a=/(a)(?<=\1{1}\1{1})b/d.exec('aab');a.index===1&&a[0]==='ab'&&a.indices[1][0]===1",
@@ -91,16 +97,32 @@ fn named_ranges_input_copies_dependent_targets_and_negative_rollback_are_exact()
 #[test]
 fn consumers_keep_sticky_global_empty_advancement_and_callback_positions() {
     assert_true(
-        r"let r=/(?<=a(?=(b)\1{1}))b/dy;r.lastIndex=1;let a=r.exec('abb');a[1]==='b'&&r.lastIndex===2&&r.exec('abb')===null&&r.lastIndex===0",
+        r#"
+            let r = /(?<=a(?=(b)\1{1}))b/dy;
+            r.lastIndex = 1;
+            let a = r.exec('abb');
+            a[1] === 'b' && r.lastIndex === 2 && r.exec('abb') === null && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/(?<=a(?=(b)\1{1}))b/dg,a=[...'abb abb'.matchAll(r)];a.length===2&&a[1].index===5&&a[1].indices[1][0]===5&&r.lastIndex===0",
+        r#"
+            let r = /(?<=a(?=(b)\1{1}))b/dg,
+                a = [...'abb abb'.matchAll(r)];
+            a.length === 2 && a[1].index === 5 && a[1].indices[1][0] === 5 && r.lastIndex === 0
+        "#,
     );
     assert_true(
         r"let a=[...'abb'.matchAll(/(?<=a(?=(b)\1{1}))/dg)];a.length===1&&a[0].index===1&&a[0][0]===''",
     );
     assert_true(
-        r"let seen=[];let s='abb abb'.replace(/(?<=a(?=(b)\1{1}))b/g,(m,x,i)=>{seen.push(x,i);return '_'});s==='a_b a_b'&&seen.join('|')==='b|1|b|5'",
+        r#"
+            let seen = [];
+            let s = 'abb abb'.replace(/(?<=a(?=(b)\1{1}))b/g, (m, x, i) => {
+                seen.push(x, i);
+                return '_'
+            });
+            s === 'a_b a_b' && seen.join('|') === 'b|1|b|5'
+        "#,
     );
     assert_true(
         r"'abb'.search(/(?<=a(?=(b)\1{1}))b/)===1&&'abb'.split(/(?<=a(?=(b)\1{1}))b/).join('|')==='a|b|b'",

@@ -149,13 +149,31 @@ fn final_iteration_ranges_names_indices_original_programs_and_rollback_are_exact
 #[test]
 fn consumers_sticky_global_callbacks_and_required_empty_paths_keep_last_effects() {
     assert_true(
-        "let r=/(?<=a(?=(b)(\\1(\\1)){2}))b/dy;r.lastIndex=1;let a=r.exec('abbbbb');a[3]==='b'&&a.indices[3][0]===5&&r.lastIndex===2&&r.exec('abbbbb')===null&&r.lastIndex===0",
+        r#"
+            let r = /(?<=a(?=(b)(\1(\1)){2}))b/dy;
+            r.lastIndex = 1;
+            let a = r.exec('abbbbb');
+            a[3] === 'b' && a.indices[3][0] === 5 && r.lastIndex === 2 && r.exec('abbbbb') === null && r
+                .lastIndex === 0
+        "#,
     );
     assert_true(
-        "let r=/(?<=a(?=(b)(\\1(\\1)){2}))b/dg,a=[...'abbbbb abbbbb'.matchAll(r)];a.length===2&&a[0].index===1&&a[1].index===8&&a[1].indices[3][0]===12&&r.lastIndex===0",
+        r#"
+            let r = /(?<=a(?=(b)(\1(\1)){2}))b/dg,
+                a = [...'abbbbb abbbbb'.matchAll(r)];
+            a.length === 2 && a[0].index === 1 && a[1].index === 8 && a[1].indices[3][0] === 12 && r
+                .lastIndex === 0
+        "#,
     );
     assert_true(
-        "let seen=[];let s='abbbbb abbbbb'.replace(/(?<=a(?=(b)(\\1(\\1)){2}))b/g,(m,x,y,z,i)=>{seen.push(x,y,z,i);return '_'});s==='a_bbbb a_bbbb'&&seen.join('|')==='b|bb|b|1|b|bb|b|8'",
+        r#"
+            let seen = [];
+            let s = 'abbbbb abbbbb'.replace(/(?<=a(?=(b)(\1(\1)){2}))b/g, (m, x, y, z, i) => {
+                seen.push(x, y, z, i);
+                return '_'
+            });
+            s === 'a_bbbb a_bbbb' && seen.join('|') === 'b|bb|b|1|b|bb|b|8'
+        "#,
     );
     assert_true(
         "'abbbbb'.search(/(?<=a(?=(b)(\\1(\\1)){2}))b/)===1&&'abbbbb'.split(/(?<=a(?=(b)(\\1(\\1)){2}))b/).join('|')==='a|b|bb|b|bbbb'",

@@ -9,41 +9,71 @@ use crate::common::assert_true;
 fn erased_classes_match_native_empty_patterns_across_modes_flags_and_boundaries() {
     assert_true(
         r#"
-        var cases=[
-            ['[\\p{RGI_Emoji}]','v'],
-            ['[[\\q{ab}]&&\\p{RGI_Emoji}]','v'],
-            ['[\\q{ab|cd}--\\p{RGI_Emoji}]','v'],
-            ['[\\p{RGI_Emoji}\\q{|ab}]','v'],
-            ['[\\q{\\[\\]|a}]','v'],
-            ['[\\p{Script=Greek}]','u'],
-            ['[()\\]]','u'],
-            ['[[]','']
-        ],ok=true;
-        for(var pair of cases)for(var count of ['{0}','{0,0}','{0000}?','{000,000}?'])for(var extras of ['d','dg','dy','dgy','dgi','dgim','dgms','dgisy']) {
-            var pattern=pair[0]+count,r=new RegExp(pattern,extras+pair[1]),control=new RegExp('',extras+pair[1]);
-            for(var input of ['','ab','A😀!','\ud800x\udc00','ſa','a\r\nb'])for(var start=0;start<=input.length+1;start++) {
-                r.lastIndex=start;control.lastIndex=start;var m=r.exec(input),n=control.exec(input);
-                ok=ok&&r.source===pattern&&r.flags===control.flags&&r.lastIndex===control.lastIndex;
-                if(m===null||n===null)ok=ok&&m===n;
-                else ok=ok&&m.length===1&&m.indices.length===1&&m[0]===''&&m.index===n.index&&m.input===input&&Object.hasOwn(m,'groups')&&Object.hasOwn(m.indices,'groups')&&m.groups===undefined&&m.indices.groups===undefined&&JSON.stringify(m.indices)===JSON.stringify(n.indices);
-            }
-        }
-        ok
-    "#,
+            var cases = [
+                    ['[\\p{RGI_Emoji}]', 'v'],
+                    ['[[\\q{ab}]&&\\p{RGI_Emoji}]', 'v'],
+                    ['[\\q{ab|cd}--\\p{RGI_Emoji}]', 'v'],
+                    ['[\\p{RGI_Emoji}\\q{|ab}]', 'v'],
+                    ['[\\q{\\[\\]|a}]', 'v'],
+                    ['[\\p{Script=Greek}]', 'u'],
+                    ['[()\\]]', 'u'],
+                    ['[[]', '']
+                ],
+                ok = true;
+            for (var pair of cases)
+                for (var count of ['{0}', '{0,0}', '{0000}?', '{000,000}?'])
+                    for (var extras of ['d', 'dg', 'dy', 'dgy', 'dgi', 'dgim', 'dgms', 'dgisy']) {
+                        var pattern = pair[0] + count,
+                            r = new RegExp(pattern, extras + pair[1]),
+                            control = new RegExp('', extras + pair[1]);
+                        for (var input of ['', 'ab', 'A😀!', '\ud800x\udc00', 'ſa', 'a\r\nb'])
+                            for (var start = 0; start <= input.length + 1; start++) {
+                                r.lastIndex = start;
+                                control.lastIndex = start;
+                                var m = r.exec(input),
+                                    n = control.exec(input);
+                                ok = ok && r.source === pattern && r.flags === control.flags && r
+                                    .lastIndex === control.lastIndex;
+                                if (m === null || n === null) ok = ok && m === n;
+                                else ok = ok && m.length === 1 && m.indices.length === 1 && m[0] === '' &&
+                                    m.index === n.index && m.input === input && Object.hasOwn(m,
+                                    'groups') && Object.hasOwn(m.indices, 'groups') && m.groups ===
+                                    undefined && m.indices.groups === undefined && JSON.stringify(m
+                                        .indices) === JSON.stringify(n.indices);
+                            }
+                    }
+            ok
+        "#,
     );
 }
 
 #[test]
 fn erased_class_string_consumers_and_clones_retain_empty_match_metadata() {
     let mut realm = Realm::default();
-    assert_eq!(realm.eval(r#"
-        var r=/[\p{RGI_Emoji}]{0}/dgv,ms=Array.from('a😀'.matchAll(r)),ok=ms.length===3&&ms.map(m=>m.index).join(',')==='0,1,3';
-        for(var m of ms)ok=ok&&m.length===1&&m[0]===''&&m.groups===undefined&&m.indices.groups===undefined;
-        var calls=[];var result='ab'.replace(r,function(m,at,input){calls.push(at);return arguments.length===3&&m===''&&input==='ab'?'!':'?'});
-        ok=ok&&result==='!a!b!'&&calls.join(',')==='0,1,2'&&'ab'.search(r)===0&&'ab'.split(r).join(',')==='a,b'&&'ab'.match(r).length===3;
-        var copy=new RegExp(r);copy.lastIndex=1;var m=copy.exec('ab');
-        ok&&m.index===1&&m.length===1&&copy.source===r.source&&copy.flags==='dgv'&&copy.lastIndex===1
-    "#),Ok(Value::Boolean(true)));
+    assert_eq!(
+        realm.eval(
+            r#"
+                var r = /[\p{RGI_Emoji}]{0}/dgv,
+                    ms = Array.from('a😀'.matchAll(r)),
+                    ok = ms.length === 3 && ms.map(m => m.index).join(',') === '0,1,3';
+                for (var m of ms) ok = ok && m.length === 1 && m[0] === '' && m.groups === undefined && m
+                    .indices.groups === undefined;
+                var calls = [];
+                var result = 'ab'.replace(r, function(m, at, input) {
+                    calls.push(at);
+                    return arguments.length === 3 && m === '' && input === 'ab' ? '!' : '?'
+                });
+                ok = ok && result === '!a!b!' && calls.join(',') === '0,1,2' && 'ab'.search(r) === 0 && 'ab'
+                    .split(r).join(',') === 'a,b' && 'ab'.match(r).length === 3;
+                var copy = new RegExp(r);
+                copy.lastIndex = 1;
+                var m = copy.exec('ab');
+                ok && m.index === 1 && m.length === 1 && copy.source === r.source && copy.flags === 'dgv' &&
+                    copy.lastIndex === 1
+            "#
+        ),
+        Ok(Value::Boolean(true))
+    );
     realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval("copy.lastIndex=0;copy.exec('x').length===1&&copy.source===r.source"),
@@ -81,32 +111,72 @@ fn composition_results_match_reference() {
 fn enclosing_class_captures_keep_named_aliases_and_normalized_empty_ranges() {
     assert_true(
         r#"
-        var cases=[['[\\p{RGI_Emoji}]','v'],['[[\\q{ab}]&&\\p{RGI_Emoji}]','v'],['[()\\]]','u'],['[[]','']],ok=true;
-        for(var pair of cases)for(var count of ['{0}','{000,000}?'])for(var frame of [['(?<outside>',')',1],['(?<outside>(?:(?<second>',')))',2],['(?:',')',0]]){
-            var pattern=frame[0]+pair[0]+count+frame[1],r=new RegExp(pattern,'dgy'+pair[1]),point=pair[1]===''?2:1;
-            r.lastIndex=2;var m=r.exec('A😀!');
-            ok=ok&&r.source===pattern&&m.index===point&&m[0]===''&&r.lastIndex===point&&m.length===frame[2]+1;
-            for(var i=1;i<m.length;i++)ok=ok&&m[i]===''&&m.indices[i][0]===point&&m.indices[i][1]===point;
-            if(frame[2]===0)ok=ok&&m.groups===undefined&&m.indices.groups===undefined;
-            else ok=ok&&Object.getPrototypeOf(m.groups)===null&&Object.getPrototypeOf(m.indices.groups)===null&&m.groups.outside===''&&m.indices.groups.outside===m.indices[1];
-            if(frame[2]>1)ok=ok&&m.groups.second===''&&m.indices.groups.second===m.indices[2];
-        }
-        var m=/(?<__proto__>(?<\u{1D49C}>[\p{RGI_Emoji}]{0}))/dv.exec('x');
-        ok&&Object.getPrototypeOf(m.groups)===null&&Object.hasOwn(m.groups,'__proto__')&&m.groups.__proto__===''&&m.groups['𝒜']===''&&m.indices.groups.__proto__===m.indices[1]&&m.indices.groups['𝒜']===m.indices[2]
-    "#,
+            var cases = [
+                    ['[\\p{RGI_Emoji}]', 'v'],
+                    ['[[\\q{ab}]&&\\p{RGI_Emoji}]', 'v'],
+                    ['[()\\]]', 'u'],
+                    ['[[]', '']
+                ],
+                ok = true;
+            for (var pair of cases)
+                for (var count of ['{0}', '{000,000}?'])
+                    for (var frame of [
+                            ['(?<outside>', ')', 1],
+                            ['(?<outside>(?:(?<second>', ')))', 2],
+                            ['(?:', ')', 0]
+                        ]) {
+                        var pattern = frame[0] + pair[0] + count + frame[1],
+                            r = new RegExp(pattern, 'dgy' + pair[1]),
+                            point = pair[1] === '' ? 2 : 1;
+                        r.lastIndex = 2;
+                        var m = r.exec('A😀!');
+                        ok = ok && r.source === pattern && m.index === point && m[0] === '' && r
+                            .lastIndex === point && m.length === frame[2] + 1;
+                        for (var i = 1; i < m.length; i++) ok = ok && m[i] === '' && m.indices[i][0] ===
+                            point && m.indices[i][1] === point;
+                        if (frame[2] === 0) ok = ok && m.groups === undefined && m.indices.groups ===
+                            undefined;
+                        else ok = ok && Object.getPrototypeOf(m.groups) === null && Object.getPrototypeOf(m
+                                .indices.groups) === null && m.groups.outside === '' && m.indices.groups
+                            .outside === m.indices[1];
+                        if (frame[2] > 1) ok = ok && m.groups.second === '' && m.indices.groups.second ===
+                            m.indices[2];
+                    }
+            var m = /(?<__proto__>(?<\u{1D49C}>[\p{RGI_Emoji}]{0}))/dv.exec('x');
+            ok && Object.getPrototypeOf(m.groups) === null && Object.hasOwn(m.groups, '__proto__') && m
+                .groups.__proto__ === '' && m.groups['𝒜'] === '' && m.indices.groups.__proto__ === m
+                .indices[1] && m.indices.groups['𝒜'] === m.indices[2]
+        "#,
     );
 }
 
 #[test]
 fn enclosing_class_string_consumers_clones_and_collection_preserve_defined_slots() {
     let mut realm = Realm::default();
-    assert_eq!(realm.eval(r#"
-        var r=/(?<outside>[\p{RGI_Emoji}]{0})/dgv,ms=Array.from('a😀'.matchAll(r)),ok=ms.length===3&&ms.map(m=>m.index).join(',')==='0,1,3';
-        for(var m of ms)ok=ok&&m.length===2&&m[1]===''&&m.groups.outside===''&&m.indices.groups.outside===m.indices[1];
-        var calls=[];var value='ab'.replace(r,function(m,outside,at,input,groups){calls.push(at);return arguments.length===5&&m===''&&outside===''&&input==='ab'&&groups.outside===''?'!':'?'});
-        ok=ok&&value==='!a!b!'&&calls.join(',')==='0,1,2'&&'ab'.split(r).join(',')==='a,,b'&&'ab'.search(r)===0;
-        var copy=new RegExp(r);copy.lastIndex=1;var m=copy.exec('ab');ok&&copy.source===r.source&&m.index===1&&m[1]===''&&copy.lastIndex===1
-    "#),Ok(Value::Boolean(true)));
+    assert_eq!(
+        realm.eval(
+            r#"
+                var r = /(?<outside>[\p{RGI_Emoji}]{0})/dgv,
+                    ms = Array.from('a😀'.matchAll(r)),
+                    ok = ms.length === 3 && ms.map(m => m.index).join(',') === '0,1,3';
+                for (var m of ms) ok = ok && m.length === 2 && m[1] === '' && m.groups.outside === '' && m
+                    .indices.groups.outside === m.indices[1];
+                var calls = [];
+                var value = 'ab'.replace(r, function(m, outside, at, input, groups) {
+                    calls.push(at);
+                    return arguments.length === 5 && m === '' && outside === '' && input === 'ab' &&
+                        groups.outside === '' ? '!' : '?'
+                });
+                ok = ok && value === '!a!b!' && calls.join(',') === '0,1,2' && 'ab'.split(r).join(',') ===
+                    'a,,b' && 'ab'.search(r) === 0;
+                var copy = new RegExp(r);
+                copy.lastIndex = 1;
+                var m = copy.exec('ab');
+                ok && copy.source === r.source && m.index === 1 && m[1] === '' && copy.lastIndex === 1
+            "#
+        ),
+        Ok(Value::Boolean(true))
+    );
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("copy.lastIndex=0;var m=copy.exec('x');m.groups.outside===''&&m.indices.groups.outside===m.indices[1]"),Ok(Value::Boolean(true)));
 }
@@ -115,33 +185,64 @@ fn enclosing_class_string_consumers_clones_and_collection_preserve_defined_slots
 fn zero_count_unicode_property_escapes_keep_the_same_empty_results_as_classes() {
     assert_true(
         r#"
-        var properties=['Basic_Emoji','Emoji_Keycap_Sequence','RGI_Emoji_Modifier_Sequence','RGI_Emoji_Flag_Sequence','RGI_Emoji_Tag_Sequence','RGI_Emoji_ZWJ_Sequence','RGI_Emoji'],cases=properties.map(p=>['\\p{'+p+'}','v']);
-        cases.push(['\\P{ASCII}','u'],['\\p{Script=Greek}','u'],['\\p{General_Category=Lu}','v']);
-        var ok=true;
-        for(var pair of cases)for(var count of ['{0}','{0,0}','{0000}?','{000,000}?'])for(var extras of ['d','dg','dy','dgy','dgi','dgim','dgms','dgisy']){
-            var pattern=pair[0]+count,r=new RegExp(pattern,extras+pair[1]),control=new RegExp('['+pair[0]+']'+count,extras+pair[1]);
-            for(var input of ['','ab','A😀!','\ud800x\udc00','ſa','a\r\nb'])for(var start=0;start<=input.length+1;start++){
-                r.lastIndex=start;control.lastIndex=start;var m=r.exec(input),n=control.exec(input);
-                ok=ok&&r.source===pattern&&r.flags===control.flags&&r.lastIndex===control.lastIndex;
-                if(m===null||n===null)ok=ok&&m===n;
-                else ok=ok&&m.length===1&&m[0]===''&&m.index===n.index&&m.groups===undefined&&m.indices.groups===undefined&&JSON.stringify(m.indices)===JSON.stringify(n.indices);
-            }
-        }
-        ok
-    "#,
+            var properties = ['Basic_Emoji', 'Emoji_Keycap_Sequence', 'RGI_Emoji_Modifier_Sequence',
+                    'RGI_Emoji_Flag_Sequence', 'RGI_Emoji_Tag_Sequence', 'RGI_Emoji_ZWJ_Sequence',
+                    'RGI_Emoji'
+                ],
+                cases = properties.map(p => ['\\p{' + p + '}', 'v']);
+            cases.push(['\\P{ASCII}', 'u'], ['\\p{Script=Greek}', 'u'], ['\\p{General_Category=Lu}', 'v']);
+            var ok = true;
+            for (var pair of cases)
+                for (var count of ['{0}', '{0,0}', '{0000}?', '{000,000}?'])
+                    for (var extras of ['d', 'dg', 'dy', 'dgy', 'dgi', 'dgim', 'dgms', 'dgisy']) {
+                        var pattern = pair[0] + count,
+                            r = new RegExp(pattern, extras + pair[1]),
+                            control = new RegExp('[' + pair[0] + ']' + count, extras + pair[1]);
+                        for (var input of ['', 'ab', 'A😀!', '\ud800x\udc00', 'ſa', 'a\r\nb'])
+                            for (var start = 0; start <= input.length + 1; start++) {
+                                r.lastIndex = start;
+                                control.lastIndex = start;
+                                var m = r.exec(input),
+                                    n = control.exec(input);
+                                ok = ok && r.source === pattern && r.flags === control.flags && r
+                                    .lastIndex === control.lastIndex;
+                                if (m === null || n === null) ok = ok && m === n;
+                                else ok = ok && m.length === 1 && m[0] === '' && m.index === n.index && m
+                                    .groups === undefined && m.indices.groups === undefined && JSON
+                                    .stringify(m.indices) === JSON.stringify(n.indices);
+                            }
+                    }
+            ok
+        "#,
     );
 }
 
 #[test]
 fn property_zero_string_consumers_and_clones_keep_capture_free_metadata() {
     let mut realm = Realm::default();
-    assert_eq!(realm.eval(r#"
-        var r=/\p{RGI_Emoji}{0}/dgv,ms=Array.from('a😀'.matchAll(r)),ok=ms.length===3&&ms.map(m=>m.index).join(',')==='0,1,3';
-        for(var m of ms)ok=ok&&m.length===1&&m[0]===''&&m.groups===undefined&&m.indices.groups===undefined;
-        var calls=[];var value='ab'.replace(r,function(m,at,input){calls.push(at);return arguments.length===3&&m===''&&input==='ab'?'!':'?'});
-        ok=ok&&value==='!a!b!'&&calls.join(',')==='0,1,2'&&'ab'.split(r).join(',')==='a,b'&&'ab'.search(r)===0;
-        var copy=new RegExp(r);copy.lastIndex=1;var m=copy.exec('ab');ok&&m.index===1&&copy.source===r.source&&m.length===1&&copy.lastIndex===1
-    "#),Ok(Value::Boolean(true)));
+    assert_eq!(
+        realm.eval(
+            r#"
+                var r = /\p{RGI_Emoji}{0}/dgv,
+                    ms = Array.from('a😀'.matchAll(r)),
+                    ok = ms.length === 3 && ms.map(m => m.index).join(',') === '0,1,3';
+                for (var m of ms) ok = ok && m.length === 1 && m[0] === '' && m.groups === undefined && m
+                    .indices.groups === undefined;
+                var calls = [];
+                var value = 'ab'.replace(r, function(m, at, input) {
+                    calls.push(at);
+                    return arguments.length === 3 && m === '' && input === 'ab' ? '!' : '?'
+                });
+                ok = ok && value === '!a!b!' && calls.join(',') === '0,1,2' && 'ab'.split(r).join(',') ===
+                    'a,b' && 'ab'.search(r) === 0;
+                var copy = new RegExp(r);
+                copy.lastIndex = 1;
+                var m = copy.exec('ab');
+                ok && m.index === 1 && copy.source === r.source && m.length === 1 && copy.lastIndex === 1
+            "#
+        ),
+        Ok(Value::Boolean(true))
+    );
     realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval("copy.lastIndex=0;copy.exec('x').length===1"),
@@ -171,31 +272,69 @@ fn property_early_errors_precede_erasure_and_nonzero_or_surrounding_terms_stay_p
 fn enclosing_property_captures_keep_named_aliases_and_normalized_ranges() {
     assert_true(
         r#"
-        var cases=[['\\p{RGI_Emoji}','v'],['\\p{RGI_Emoji_Tag_Sequence}','v'],['\\P{ASCII}','u'],['\\p{Script=Greek}','u']],ok=true;
-        for(var pair of cases)for(var count of ['{0}','{000,000}?'])for(var frame of [['(?<outside>',')',1],['(?<outside>(?:(?<second>',')))',2],['(?:',')',0]]){
-            var pattern=frame[0]+pair[0]+count+frame[1],r=new RegExp(pattern,'dgy'+pair[1]);r.lastIndex=2;var m=r.exec('A😀!');
-            ok=ok&&r.source===pattern&&m.index===1&&m[0]===''&&m.length===frame[2]+1&&r.lastIndex===1;
-            for(var i=1;i<m.length;i++)ok=ok&&m[i]===''&&m.indices[i][0]===1&&m.indices[i][1]===1;
-            if(frame[2]===0)ok=ok&&m.groups===undefined&&m.indices.groups===undefined;
-            else ok=ok&&Object.getPrototypeOf(m.groups)===null&&Object.getPrototypeOf(m.indices.groups)===null&&m.groups.outside===''&&m.indices.groups.outside===m.indices[1];
-            if(frame[2]>1)ok=ok&&m.groups.second===''&&m.indices.groups.second===m.indices[2];
-        }
-        var m=/(?<\u{1D49C}>\p{RGI_Emoji}{0})/dv.exec('x');
-        ok&&m.groups['𝒜']===''&&m.indices.groups['𝒜']===m.indices[1]
-    "#,
+            var cases = [
+                    ['\\p{RGI_Emoji}', 'v'],
+                    ['\\p{RGI_Emoji_Tag_Sequence}', 'v'],
+                    ['\\P{ASCII}', 'u'],
+                    ['\\p{Script=Greek}', 'u']
+                ],
+                ok = true;
+            for (var pair of cases)
+                for (var count of ['{0}', '{000,000}?'])
+                    for (var frame of [
+                            ['(?<outside>', ')', 1],
+                            ['(?<outside>(?:(?<second>', ')))', 2],
+                            ['(?:', ')', 0]
+                        ]) {
+                        var pattern = frame[0] + pair[0] + count + frame[1],
+                            r = new RegExp(pattern, 'dgy' + pair[1]);
+                        r.lastIndex = 2;
+                        var m = r.exec('A😀!');
+                        ok = ok && r.source === pattern && m.index === 1 && m[0] === '' && m.length ===
+                            frame[2] + 1 && r.lastIndex === 1;
+                        for (var i = 1; i < m.length; i++) ok = ok && m[i] === '' && m.indices[i][0] ===
+                            1 && m.indices[i][1] === 1;
+                        if (frame[2] === 0) ok = ok && m.groups === undefined && m.indices.groups ===
+                            undefined;
+                        else ok = ok && Object.getPrototypeOf(m.groups) === null && Object.getPrototypeOf(m
+                                .indices.groups) === null && m.groups.outside === '' && m.indices.groups
+                            .outside === m.indices[1];
+                        if (frame[2] > 1) ok = ok && m.groups.second === '' && m.indices.groups.second ===
+                            m.indices[2];
+                    }
+            var m = /(?<\u{1D49C}>\p{RGI_Emoji}{0})/dv.exec('x');
+            ok && m.groups['𝒜'] === '' && m.indices.groups['𝒜'] === m.indices[1]
+        "#,
     );
 }
 
 #[test]
 fn enclosing_property_string_consumers_and_clones_retain_defined_empty_captures() {
     let mut realm = Realm::default();
-    assert_eq!(realm.eval(r#"
-        var r=/(?<outside>\p{RGI_Emoji}{0})/dgv,ms=Array.from('a😀'.matchAll(r)),ok=ms.length===3&&ms.map(m=>m.index).join(',')==='0,1,3';
-        for(var m of ms)ok=ok&&m.length===2&&m[1]===''&&m.groups.outside===''&&m.indices.groups.outside===m.indices[1];
-        var calls=[];var value='ab'.replace(r,function(m,outside,at,input,groups){calls.push(at);return arguments.length===5&&m===''&&outside===''&&input==='ab'&&groups.outside===''?'!':'?'});
-        ok=ok&&value==='!a!b!'&&calls.join(',')==='0,1,2'&&'ab'.split(r).join(',')==='a,,b'&&'ab'.search(r)===0;
-        var copy=new RegExp(r);copy.lastIndex=1;var m=copy.exec('ab');ok&&m.index===1&&m[1]===''&&copy.source===r.source&&copy.lastIndex===1
-    "#),Ok(Value::Boolean(true)));
+    assert_eq!(
+        realm.eval(
+            r#"
+                var r = /(?<outside>\p{RGI_Emoji}{0})/dgv,
+                    ms = Array.from('a😀'.matchAll(r)),
+                    ok = ms.length === 3 && ms.map(m => m.index).join(',') === '0,1,3';
+                for (var m of ms) ok = ok && m.length === 2 && m[1] === '' && m.groups.outside === '' && m
+                    .indices.groups.outside === m.indices[1];
+                var calls = [];
+                var value = 'ab'.replace(r, function(m, outside, at, input, groups) {
+                    calls.push(at);
+                    return arguments.length === 5 && m === '' && outside === '' && input === 'ab' &&
+                        groups.outside === '' ? '!' : '?'
+                });
+                ok = ok && value === '!a!b!' && calls.join(',') === '0,1,2' && 'ab'.split(r).join(',') ===
+                    'a,,b' && 'ab'.search(r) === 0;
+                var copy = new RegExp(r);
+                copy.lastIndex = 1;
+                var m = copy.exec('ab');
+                ok && m.index === 1 && m[1] === '' && copy.source === r.source && copy.lastIndex === 1
+            "#
+        ),
+        Ok(Value::Boolean(true))
+    );
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("copy.lastIndex=0;var m=copy.exec('x');m.groups.outside===''&&m.indices.groups.outside===m.indices[1]"),Ok(Value::Boolean(true)));
 }

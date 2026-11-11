@@ -131,16 +131,40 @@ fn pure_zero_choices_keep_source_order_names_and_restore_partial_failed_arms() {
 #[test]
 fn pure_zero_choices_consumers_empty_advancement_sticky_and_callbacks_preserve_slots() {
     assert_true(
-        r"let r=/(?:(?<x>)|(?<x>)){2}a/dg,a=[...'qa a'.matchAll(r)];a.length===2&&a[1].index===3&&a[1].groups.x===''&&a[1].indices.groups.x[0]===3&&r.lastIndex===0",
+        r#"
+            let r = /(?:(?<x>)|(?<x>)){2}a/dg,
+                a = [...'qa a'.matchAll(r)];
+            a.length === 2 && a[1].index === 3 && a[1].groups.x === '' && a[1].indices.groups.x[0] === 3 &&
+                r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/(?:()|()){2}a/dy;r.lastIndex=1;let a=r.exec('qa');a[1]===''&&a[2]===undefined&&r.lastIndex===2&&r.exec('qa')===null&&r.lastIndex===0",
+        r#"
+            let r = /(?:()|()){2}a/dy;
+            r.lastIndex = 1;
+            let a = r.exec('qa');
+            a[1] === '' && a[2] === undefined && r.lastIndex === 2 && r.exec('qa') === null && r
+                .lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/(?:()|())+/dg,a=[...'ab'.matchAll(r)];a.length===3&&a[2].index===2&&a[2][1]===''&&a[2][2]===undefined&&a[2].indices[1][0]===2&&r.lastIndex===0",
+        r#"
+            let r = /(?:()|())+/dg,
+                a = [...'ab'.matchAll(r)];
+            a.length === 3 && a[2].index === 2 && a[2][1] === '' && a[2][2] === undefined && a[2].indices[
+                1][0] === 2 && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let seen=[];let s='qa a'.replace(/(?:(?<x>)|(?<x>)){2}a/g,(m,c,d,i,s,g)=>{seen.push(c,d,i,g.x);return '_'});s==='q_ _'&&seen.length===8&&seen[0]===''&&seen[1]===undefined&&seen[2]===1&&seen[3]===''&&seen[6]===3",
+        r#"
+            let seen = [];
+            let s = 'qa a'.replace(/(?:(?<x>)|(?<x>)){2}a/g, (m, c, d, i, s, g) => {
+                seen.push(c, d, i, g.x);
+                return '_'
+            });
+            s === 'q_ _' && seen.length === 8 && seen[0] === '' && seen[1] === undefined && seen[2] ===
+                1 && seen[3] === '' && seen[6] === 3
+        "#,
     );
     assert_true(
         r"'qa a'.replace(/(?:(?<x>)|(?<x>)){2}a/g,'<$<x>>')==='q<> <>'&&'qa'.search(/(?:()|()){2}a/)===1&&'qa a'.split(/(?:()|()){2}a/).join('|')==='q||| |||'",

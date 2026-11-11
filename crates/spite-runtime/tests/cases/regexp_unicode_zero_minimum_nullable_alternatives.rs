@@ -80,13 +80,26 @@ fn unicode_zero_minimum_nullable_alternative_counts_and_undefined_slots() {
 #[test]
 fn unicode_zero_minimum_nullable_alternative_names_surrogates_and_scopes() {
     assert_true(
-        r"let m=/(?<whole>(?<__proto__>a|(?:)){0})/dv.exec('aaa');m.groups.whole===''&&m.groups.__proto__===undefined&&m.indices.groups.__proto__===undefined",
+        r#"
+            let m = /(?<whole>(?<__proto__>a|(?:)){0})/dv.exec('aaa');
+            m.groups.whole === '' && m.groups.__proto__ === undefined && m.indices.groups.__proto__ ===
+                undefined
+        "#,
     );
     assert_true(
-        r"let r=/(?<whole>(?<last>😀|(?:(?:))){0,2})/dvy;r.lastIndex=1;let m=r.exec('😀😀😀');m.index===0&&m[0]==='😀😀'&&m.groups.last==='😀'&&m.indices.groups.last[0]===2&&m.indices.groups.last[1]===4&&r.lastIndex===4",
+        r#"
+            let r = /(?<whole>(?<last>😀|(?:(?:))){0,2})/dvy;
+            r.lastIndex = 1;
+            let m = r.exec('😀😀😀');
+            m.index === 0 && m[0] === '😀😀' && m.groups.last === '😀' && m.indices.groups.last[0] === 2 &&
+                m.indices.groups.last[1] === 4 && r.lastIndex === 4
+        "#,
     );
     assert_true(
-        r"let m=/((?:)|\uD800){0,3}/du.exec('\uD800x');m[0]==='\uD800'&&m[1]==='\uD800'&&/(\uD83D|){0,3}/u.exec('😀')[1]===undefined",
+        r#"
+            let m = /((?:)|\uD800){0,3}/du.exec('\uD800x');
+            m[0] === '\uD800' && m[1] === '\uD800' && /(\uD83D|){0,3}/u.exec('😀')[1] === undefined
+        "#,
     );
     assert_true(r"let m=/((?:)|[ſK]){0,2}/div.exec('SKSK');m[0]==='SK'&&m[1]==='K'");
     assert_true(
@@ -102,14 +115,46 @@ fn unicode_zero_minimum_nullable_alternative_consumers_and_coercions() {
     );
     assert_true(r"'aaa'.replace(/(a|){0,2}/vg,'<$1>')==='<a><a><>'&&'ba'.search(/(a|){0,2}/u)===0");
     assert_true(
-        r"let a=[...'aa'.matchAll(/(?<x>(?:)|a){0,3}?/dvg)];a.length===3&&a[1].index===1&&a[1].groups.x===undefined&&a[1].indices.groups.x===undefined",
+        r#"
+            let a = [...'aa'.matchAll(/(?<x>(?:)|a){0,3}?/dvg)];
+            a.length === 3 && a[1].index === 1 && a[1].groups.x === undefined && a[1].indices.groups.x ===
+                undefined
+        "#,
     );
     assert_true(r"let a='aa'.split(/(a|){0,2}/u);a.length===3&&a[0]===''&&a[1]==='a'&&a[2]===''");
     assert_true(
-        r"let log='',r=/(a|){0,2}/vgy;r.lastIndex={valueOf(){log+='i';return 0}};let m=r.exec({toString(){log+='s';return 'aaa'}});log==='si'&&m[0]==='aa'&&r.lastIndex===2",
+        r#"
+            let log = '',
+                r = /(a|){0,2}/vgy;
+            r.lastIndex = {
+                valueOf() {
+                    log += 'i';
+                    return 0
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    log += 's';
+                    return 'aaa'
+                }
+            });
+            log === 'si' && m[0] === 'aa' && r.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let r=/(a|){0}/ug;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            let r = /(a|){0}/ug;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
 }
 

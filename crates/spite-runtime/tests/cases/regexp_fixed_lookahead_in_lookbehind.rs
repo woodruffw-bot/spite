@@ -115,13 +115,25 @@ fn fixed_lookahead_in_lookbehind_result_snapshot() {
 #[test]
 fn parent_named_ranges_optional_slots_atomic_negative_and_full_input_context() {
     assert_true(
-        r"let a=/(?<=(?=ab)(?<x>a))b/d.exec('qab');a.groups.x==='a'&&a.indices.groups.x===a.indices[1]&&a.indices[1][0]===1&&a.indices[1][1]===2&&a.index===2",
+        r#"
+            let a = /(?<=(?=ab)(?<x>a))b/d.exec('qab');
+            a.groups.x === 'a' && a.indices.groups.x === a.indices[1] && a.indices[1][0] === 1 && a
+                .indices[1][1] === 2 && a.index === 2
+        "#,
     );
     assert_true(
-        r"let a=/(?<=((?=b)){2})b/d.exec('qb'),b=/(?<=((?=b))*)b/d.exec('qb');a[1]===''&&a.indices[1][0]===1&&b[1]===undefined&&b.indices[1]===undefined",
+        r#"
+            let a = /(?<=((?=b)){2})b/d.exec('qb'),
+                b = /(?<=((?=b))*)b/d.exec('qb');
+            a[1] === '' && a.indices[1][0] === 1 && b[1] === undefined && b.indices[1] === undefined
+        "#,
     );
     assert_true(
-        r"let a=/(?<=a(?=b.)|a(?!b.))b/d.exec('ab');a.index===1&&a[0]==='b'&&/(?<!a(?=b))b/.exec('ab')===null&&/(?<!a(?!b))b/.exec('ab').index===1",
+        r#"
+            let a = /(?<=a(?=b.)|a(?!b.))b/d.exec('ab');
+            a.index === 1 && a[0] === 'b' && /(?<!a(?=b))b/.exec('ab') === null && /(?<!a(?!b))b/.exec(
+                'ab').index === 1
+        "#,
     );
     assert_true(
         r"/(?<=a(?=b$))b/m.exec('ab\nq').index===1&&/(?<=a(?=b.))b/s.exec('ab\n').index===1&&/(?<=a(?=b.))b/.exec('ab\n')===null",
@@ -131,16 +143,37 @@ fn parent_named_ranges_optional_slots_atomic_negative_and_full_input_context() {
 #[test]
 fn shared_consumers_sticky_global_empty_advancement_and_callback_ranges() {
     assert_true(
-        r"let r=/(?<=(?=ab)(a))b/dg,a=[...'qab ab'.matchAll(r)];a.length===2&&a[1].index===5&&a[1].indices[1][0]===4&&r.lastIndex===0",
+        r#"
+            let r = /(?<=(?=ab)(a))b/dg,
+                a = [...'qab ab'.matchAll(r)];
+            a.length === 2 && a[1].index === 5 && a[1].indices[1][0] === 4 && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/(?<=a(?=b))b/dy;r.lastIndex=2;let a=r.exec('qab');a.index===2&&r.lastIndex===3&&r.exec('qab')===null&&r.lastIndex===0",
+        r#"
+            let r = /(?<=a(?=b))b/dy;
+            r.lastIndex = 2;
+            let a = r.exec('qab');
+            a.index === 2 && r.lastIndex === 3 && r.exec('qab') === null && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/(?<=((?=b)){2})/dg,a=[...'bb'.matchAll(r)];a.length===2&&a[1].index===1&&a[1][1]===''&&a[1].indices[1][0]===1&&r.lastIndex===0",
+        r#"
+            let r = /(?<=((?=b)){2})/dg,
+                a = [...'bb'.matchAll(r)];
+            a.length === 2 && a[1].index === 1 && a[1][1] === '' && a[1].indices[1][0] === 1 && r
+                .lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let seen=[];let s='qab ab'.replace(/(?<=(?=ab)(a))b/g,(m,c,i)=>{seen.push(c,i);return '_'});s==='qa_ a_'&&seen.join('|')==='a|2|a|5'",
+        r#"
+            let seen = [];
+            let s = 'qab ab'.replace(/(?<=(?=ab)(a))b/g, (m, c, i) => {
+                seen.push(c, i);
+                return '_'
+            });
+            s === 'qa_ a_' && seen.join('|') === 'a|2|a|5'
+        "#,
     );
     assert_true(
         r"'qab'.search(/(?<=a(?=b))b/)===2&&'ab ab'.split(/(?<=a(?=b))b/).join('|')==='a| a|'&&'qab'.replace(/(?<=(?=ab)(?<x>a))b/,'<$<x>>')==='qa<a>'",

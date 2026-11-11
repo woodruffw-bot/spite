@@ -107,16 +107,38 @@ fn fixed_lookbehind_keeps_outside_ranges_named_aliases_and_source_order_retries(
 #[test]
 fn fixed_lookbehind_consumers_global_sticky_empty_advancement_and_callback_arguments() {
     assert_true(
-        r"let r=/(?<=a)(?<x>b)/dg,a=[...'abqab'.matchAll(r)];a.length===2&&a[0].index===1&&a[1].index===4&&a[0].groups.x==='b'&&a[1].indices.groups.x[0]===4&&r.lastIndex===0",
+        r#"
+            let r = /(?<=a)(?<x>b)/dg,
+                a = [...'abqab'.matchAll(r)];
+            a.length === 2 && a[0].index === 1 && a[1].index === 4 && a[0].groups.x === 'b' && a[1].indices
+                .groups.x[0] === 4 && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/(?<=a)b/dy;r.lastIndex=1;let a=r.exec('ab');a.index===1&&r.lastIndex===2&&r.exec('ab')===null&&r.lastIndex===0",
+        r#"
+            let r = /(?<=a)b/dy;
+            r.lastIndex = 1;
+            let a = r.exec('ab');
+            a.index === 1 && r.lastIndex === 2 && r.exec('ab') === null && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/(?<=a)/dg,a=[...'aa'.matchAll(r)];a.length===2&&a[0][0]===''&&a[0].index===1&&a[1].index===2&&r.lastIndex===0",
+        r#"
+            let r = /(?<=a)/dg,
+                a = [...'aa'.matchAll(r)];
+            a.length === 2 && a[0][0] === '' && a[0].index === 1 && a[1].index === 2 && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let seen=[];let s='abqab'.replace(/(?<=a)(?<x>b)/g,(m,c,i,s,g)=>{seen.push(m,c,i,s,g.x);return '_'});s==='a_qa_'&&seen.length===10&&seen[0]==='b'&&seen[1]==='b'&&seen[2]===1&&seen[4]==='b'&&seen[7]===4",
+        r#"
+            let seen = [];
+            let s = 'abqab'.replace(/(?<=a)(?<x>b)/g, (m, c, i, s, g) => {
+                seen.push(m, c, i, s, g.x);
+                return '_'
+            });
+            s === 'a_qa_' && seen.length === 10 && seen[0] === 'b' && seen[1] === 'b' && seen[2] === 1 &&
+                seen[4] === 'b' && seen[7] === 4
+        "#,
     );
     assert_true(
         r"'abqab'.replace(/(?<=a)(?<x>b)/g,'<$<x>>')==='a<b>qa<b>'&&'abqab'.search(/(?<=a)b/)===1&&'abqab'.split(/(?<=a)b/).join('|')==='a|qa|'",

@@ -88,44 +88,102 @@ fn fixed_lookbehind_capture_result_snapshot() {
 #[test]
 fn fixed_lookbehind_captures_keep_before_match_ranges_negative_slots_and_outer_alias_retries() {
     assert_true(
-        r"let a=/(?<=(?<x>a))b\k<x>/d.exec('aba');a[0]==='ba'&&a.index===1&&a.groups.x==='a'&&a.indices.groups.x===a.indices[1]&&a.indices[1][0]===0&&a.indices[1][1]===1&&a.indices[0][0]===1",
+        r#"
+            let a = /(?<=(?<x>a))b\k<x>/d.exec('aba');
+            a[0] === 'ba' && a.index === 1 && a.groups.x === 'a' && a.indices.groups.x === a.indices[1] &&
+                a.indices[1][0] === 0 && a.indices[1][1] === 1 && a.indices[0][0] === 1
+        "#,
     );
     assert_true(
-        r"let a=/(?:(?<=(?<x>a))bc|(?<=(?<x>a))b)/d.exec('ab');a[0]==='b'&&a[1]===undefined&&a[2]==='a'&&a.indices[1]===undefined&&a.indices.groups.x===a.indices[2]",
+        r#"
+            let a = /(?:(?<=(?<x>a))bc|(?<=(?<x>a))b)/d.exec('ab');
+            a[0] === 'b' && a[1] === undefined && a[2] === 'a' && a.indices[1] === undefined && a.indices
+                .groups.x === a.indices[2]
+        "#,
     );
     assert_true(
-        r"let a=/(?<=(?<x>a)(?<!(?<y>b)))b/d.exec('ab');a.groups.x==='a'&&a.groups.y===undefined&&a.indices.groups.x===a.indices[1]&&a.indices.groups.y===undefined",
+        r#"
+            let a = /(?<=(?<x>a)(?<!(?<y>b)))b/d.exec('ab');
+            a.groups.x === 'a' && a.groups.y === undefined && a.indices.groups.x === a.indices[1] && a
+                .indices.groups.y === undefined
+        "#,
     );
     assert_true(
-        r"let a=/(?<!((a)b))c/d.exec('aac');a[1]===undefined&&a[2]===undefined&&a.indices[1]===undefined&&a.indices[2]===undefined",
+        r#"
+            let a = /(?<!((a)b))c/d.exec('aac');
+            a[1] === undefined && a[2] === undefined && a.indices[1] === undefined && a.indices[2] ===
+                undefined
+        "#,
     );
     assert_true(
-        r"let a=/(?<=(?<x>aa)(?<!((?<y>a)b)))c/d.exec('aac');a.groups.x==='aa'&&a.groups.y===undefined&&a[2]===undefined&&a[3]===undefined&&a.indices.groups.x===a.indices[1]&&a.indices.groups.x[0]===0&&a.indices.groups.x[1]===2&&a.indices.groups.y===undefined",
+        r#"
+            let a = /(?<=(?<x>aa)(?<!((?<y>a)b)))c/d.exec('aac');
+            a.groups.x === 'aa' && a.groups.y === undefined && a[2] === undefined && a[3] === undefined &&
+                a.indices.groups.x === a.indices[1] && a.indices.groups.x[0] === 0 && a.indices.groups.x[
+                1] === 2 && a.indices.groups.y === undefined
+        "#,
     );
     assert_true(
-        r"let a=/((?<=(a))){2}b\1\2/d.exec('aba'),b=/((?<=(a)))*b\1\2/d.exec('aba');a[0]==='ba'&&a[1]===''&&a[2]==='a'&&a.indices[1][0]===1&&a.indices[2][0]===0&&b[1]===undefined&&b[2]===undefined",
+        r#"
+            let a = /((?<=(a))){2}b\1\2/d.exec('aba'),
+                b = /((?<=(a)))*b\1\2/d.exec('aba');
+            a[0] === 'ba' && a[1] === '' && a[2] === 'a' && a.indices[1][0] === 1 && a.indices[2][0] ===
+                0 && b[1] === undefined && b[2] === undefined
+        "#,
     );
     assert_true(
-        r"let a=/(?:(?<=(?<x>a))b|c)+d/d.exec('abcd');a[0]==='bcd'&&a.groups.x===undefined&&a.indices.groups.x===undefined",
+        r#"
+            let a = /(?:(?<=(?<x>a))b|c)+d/d.exec('abcd');
+            a[0] === 'bcd' && a.groups.x === undefined && a.indices.groups.x === undefined
+        "#,
     );
     assert_true(
-        r"let a=/(?=(?<x>a(?<=(?<y>a))b))\k<x>\k<y>/d.exec('aba');a[0]==='aba'&&a.groups.x==='ab'&&a.groups.y==='a'&&a.indices.groups.x[1]===2&&a.indices.groups.y[0]===0",
+        r#"
+            let a = /(?=(?<x>a(?<=(?<y>a))b))\k<x>\k<y>/d.exec('aba');
+            a[0] === 'aba' && a.groups.x === 'ab' && a.groups.y === 'a' && a.indices.groups.x[1] === 2 && a
+                .indices.groups.y[0] === 0
+        "#,
     );
 }
 
 #[test]
 fn fixed_lookbehind_captures_consumers_global_sticky_empty_matches_and_callback_arguments() {
     assert_true(
-        r"let r=/(?<=(?<x>a))b/dg,a=[...'abqab'.matchAll(r)];a.length===2&&a[0].index===1&&a[0].groups.x==='a'&&a[0].indices.groups.x[0]===0&&a[1].index===4&&a[1].indices.groups.x[0]===3&&r.lastIndex===0",
+        r#"
+            let r = /(?<=(?<x>a))b/dg,
+                a = [...'abqab'.matchAll(r)];
+            a.length === 2 && a[0].index === 1 && a[0].groups.x === 'a' && a[0].indices.groups.x[0] ===
+                0 && a[1].index === 4 && a[1].indices.groups.x[0] === 3 && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/(?<=(?<x>a))b/dy;r.lastIndex=1;let a=r.exec('ab');a.index===1&&a.indices.groups.x[0]===0&&r.lastIndex===2&&r.exec('ab')===null&&r.lastIndex===0",
+        r#"
+            let r = /(?<=(?<x>a))b/dy;
+            r.lastIndex = 1;
+            let a = r.exec('ab');
+            a.index === 1 && a.indices.groups.x[0] === 0 && r.lastIndex === 2 && r.exec('ab') === null && r
+                .lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/(?<=(?<x>a))/dg,a=[...'aa'.matchAll(r)];a.length===2&&a[0][0]===''&&a[0].index===1&&a[0].groups.x==='a'&&a[0].indices.groups.x[0]===0&&a[1].index===2&&a[1].indices.groups.x[0]===1&&r.lastIndex===0",
+        r#"
+            let r = /(?<=(?<x>a))/dg,
+                a = [...'aa'.matchAll(r)];
+            a.length === 2 && a[0][0] === '' && a[0].index === 1 && a[0].groups.x === 'a' && a[0].indices
+                .groups.x[0] === 0 && a[1].index === 2 && a[1].indices.groups.x[0] === 1 && r.lastIndex ===
+                0
+        "#,
     );
     assert_true(
-        r"let seen=[];let s='abqab'.replace(/(?<=(?<x>a))b/g,(m,c,i,s,g)=>{seen.push(m,c,i,s,g.x);return '_'});s==='a_qa_'&&seen.length===10&&seen[0]==='b'&&seen[1]==='a'&&seen[2]===1&&seen[4]==='a'&&seen[7]===4",
+        r#"
+            let seen = [];
+            let s = 'abqab'.replace(/(?<=(?<x>a))b/g, (m, c, i, s, g) => {
+                seen.push(m, c, i, s, g.x);
+                return '_'
+            });
+            s === 'a_qa_' && seen.length === 10 && seen[0] === 'b' && seen[1] === 'a' && seen[2] === 1 &&
+                seen[4] === 'a' && seen[7] === 4
+        "#,
     );
     assert_true(
         r"'abqab'.replace(/(?<=(?<x>a))b/g,'<$<x>>')==='a<a>qa<a>'&&'abqab'.search(/(?<=(a))b/)===1&&'abqab'.split(/(?<=(a))b/).join('|')==='a|a|qa|a|'",

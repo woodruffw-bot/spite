@@ -11,7 +11,16 @@ fn zero_iterations_keep_inner_captures_undefined_and_enclosing_captures_defined(
         for branch in [format!("{class}|"), format!("|{class}")] {
             for q in ["{0}", "{00,00}?", "{0,3}", "{0,3}?", "{0,}", "{000,}?"] {
                 assert_true(&format!(
-                    "let r=/(?<whole>(?<each>(?<deep>{branch})){q})/dvgy;r.lastIndex=1;let m=r.exec('😀');m.index===0 && m[0]==='' && m[1]==='' && m[2]===undefined && m[3]===undefined && m.groups.whole==='' && Object.keys(m.groups).join('|')==='whole|each|deep' && m.groups.each===undefined && m.groups.deep===undefined && m.indices[1][0]===0 && m.indices[1][1]===0 && m.indices[2]===undefined && m.indices.groups.each===undefined && Object.hasOwn(m.indices.groups,'deep') && r.lastIndex===0"
+                    r#"
+                        let r = /(?<whole>(?<each>(?<deep>{branch})){q})/dvgy;
+                        r.lastIndex = 1;
+                        let m = r.exec('😀');
+                        m.index === 0 && m[0] === '' && m[1] === '' && m[2] === undefined && m[3] === undefined && m
+                            .groups.whole === '' && Object.keys(m.groups).join('|') === 'whole|each|deep' && m.groups
+                            .each === undefined && m.groups.deep === undefined && m.indices[1][0] === 0 && m.indices[1]
+                            [1] === 0 && m.indices[2] === undefined && m.indices.groups.each === undefined && Object
+                            .hasOwn(m.indices.groups, 'deep') && r.lastIndex === 0
+                    "#
                 ));
             }
         }
@@ -20,7 +29,20 @@ fn zero_iterations_keep_inner_captures_undefined_and_enclosing_captures_defined(
         r"let r=/(?<each>[\q{a|ab}&&a]|){0}/dvgy;r.lastIndex=9;r.exec('😀')===null && r.lastIndex===0",
     );
     assert_true(
-        r"let r=/(?<each>|[\q{a|b}]){0}/dvy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀')}catch(e){caught=e instanceof TypeError}caught && r.lastIndex===1",
+        r#"
+            let r = /(?<each>|[\q{a|b}]){0}/dvy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 
@@ -29,16 +51,31 @@ fn bounded_and_open_greedy_lazy_counts_reject_optional_empty_iterations_in_eithe
     for class in [r"[\q{a|b}]", r"[\q{a|b|ab}&&\p{Any}]"] {
         for branch in [format!("{class}|"), format!("|{class}")] {
             assert_true(&format!(
-                "let m=/(?<each>{branch}){{00,0002}}/dv.exec('abbb!');m[0]==='ab' && m[1]==='b' && m.groups.each==='b' && m.indices[1][0]===1 && m.indices[1][1]===2"
+                r#"
+                    let m = /(?<each>{branch}){{00,0002}}/dv.exec('abbb!');
+                    m[0] === 'ab' && m[1] === 'b' && m.groups.each === 'b' && m.indices[1][0] === 1 && m.indices[1]
+                        [1] === 2
+                "#
             ));
             assert_true(&format!(
                 "let m=/(?<each>{branch}){{0,3}}?/dv.exec('abbb!');m[0]==='' && m[1]===undefined && m.indices[1]===undefined"
             ));
             assert_true(&format!(
-                "let r=/(?<each>{branch}){{0,2}}/dvg,a=r.exec('abbb'),b=r.exec('abbb'),c=r.exec('abbb');a[0]==='ab' && b[0]==='bb' && b.groups.each==='b' && b.indices[1][0]===3 && c.index===4 && c[0]==='' && c.groups.each===undefined && r.lastIndex===4"
+                r#"
+                    let r = /(?<each>{branch}){{0,2}}/dvg,
+                        a = r.exec('abbb'),
+                        b = r.exec('abbb'),
+                        c = r.exec('abbb');
+                    a[0] === 'ab' && b[0] === 'bb' && b.groups.each === 'b' && b.indices[1][0] === 3 && c.index ===
+                        4 && c[0] === '' && c.groups.each === undefined && r.lastIndex === 4
+                "#
             ));
             assert_true(&format!(
-                "let m=/(?<whole>^\\b(?<each>{branch}){{0,3}}?\\b$)/dimv.exec('!\\r\\nABB\\u2028!');m.index===3 && m.groups.whole==='ABB' && m.groups.each==='B' && m.indices[2][0]===5 && m.indices[2][1]===6"
+                r#"
+                    let m = /(?<whole>^\b(?<each>{branch}){{0,3}}?\b$)/dimv.exec('!\r\nABB\u2028!');
+                    m.index === 3 && m.groups.whole === 'ABB' && m.groups.each === 'B' && m.indices[2][0] === 5 &&
+                        m.indices[2][1] === 6
+                "#
             ));
         }
     }
@@ -47,34 +84,83 @@ fn bounded_and_open_greedy_lazy_counts_reject_optional_empty_iterations_in_eithe
 #[test]
 fn bounded_nullable_captures_preserve_supplementary_folding_and_original_code_unit_ranges() {
     assert_true(
-        r"let r=/(?<whole>(?<each>(|[\q{😀|😀x}&&\p{Any}])){0,2})/dvgy;r.lastIndex=2;let m=r.exec('A😀😀😀x'),n=r.exec('A😀😀😀x');m.index===1 && m[0]==='😀😀' && m.groups.each==='😀' && m.indices[2][0]===3 && m.indices[3][1]===5 && n.index===5 && n[0]==='😀' && n.indices[2][0]===5 && n.indices[2][1]===7 && r.lastIndex===7",
+        r#"
+            let r = /(?<whole>(?<each>(|[\q{😀|😀x}&&\p{Any}])){0,2})/dvgy;
+            r.lastIndex = 2;
+            let m = r.exec('A😀😀😀x'),
+                n = r.exec('A😀😀😀x');
+            m.index === 1 && m[0] === '😀😀' && m.groups.each === '😀' && m.indices[2][0] === 3 && m
+                .indices[3][1] === 5 && n.index === 5 && n[0] === '😀' && n.indices[2][0] === 5 && n
+                .indices[2][1] === 7 && r.lastIndex === 7
+        "#,
     );
     for class in [r"[\q{\u{10428}}]", r"[\q{\u{10428}|ab}&&\p{Any}]"] {
         assert_true(&format!(
-            "let m=/(?<each>({class}|)){{0,2}}/div.exec('𐐨𐐀');m[0]==='𐐨𐐀' && m[1]==='𐐀' && m[2]==='𐐀' && m.groups.each==='𐐀' && m.indices[1][0]===2 && m.indices[2][1]===4"
+            r#"
+                let m = /(?<each>({class}|)){{0,2}}/div.exec('𐐨𐐀');
+                m[0] === '𐐨𐐀' && m[1] === '𐐀' && m[2] === '𐐀' && m.groups.each === '𐐀' && m.indices[1][
+                    0] === 2 && m.indices[2][1] === 4
+            "#
         ));
     }
     assert_true(
-        r"let m=/(?<each>([\q{\uD800a|\uD800}&&\p{Any}]|)){0,}/dv.exec('\uD800\uD800a');m[0].length===2 && m.groups.each.charCodeAt(0)===0xd800 && m.indices[1][0]===1 && m.indices[2][1]===2 && /(?<each>[\q{\u{D800}\u{DC00}|ab}&&\p{Any}]|){0,}/v.exec('𐀀').groups.each===undefined",
+        r#"
+            let m = /(?<each>([\q{\uD800a|\uD800}&&\p{Any}]|)){0,}/dv.exec('\uD800\uD800a');
+            m[0].length === 2 && m.groups.each.charCodeAt(0) === 0xd800 && m.indices[1][0] === 1 && m
+                .indices[2][1] === 2 && /(?<each>[\q{\u{D800}\u{DC00}|ab}&&\p{Any}]|){0,}/v.exec('𐀀')
+                .groups.each === undefined
+        "#,
     );
     assert_true(
-        r"let a=/(?<each>[\q{ab|}&&a]|){0,}/dv.exec('ab');a[0]==='' && a.groups.each===undefined && a.indices.groups.each===undefined",
+        r#"
+            let a = /(?<each>[\q{ab|}&&a]|){0,}/dv.exec('ab');
+            a[0] === '' && a.groups.each === undefined && a.indices.groups.each === undefined
+        "#,
     );
 }
 
 #[test]
 fn string_consumers_replacements_clones_and_collection_keep_undefined_empty_match_captures() {
     assert_true(
-        r"let r=/(?<each>[\q{a|b|ab}&&\p{Any}]|){0,3}/dvg,a=[...'abXba'.matchAll(r)];a.length===4 && a[0][0]==='ab' && a[0].groups.each==='b' && a[1].index===2 && a[1].groups.each===undefined && a[1].indices[1]===undefined && a[2][0]==='ba' && a[2].groups.each==='a' && a[3].index===5 && a[3].groups.each===undefined && r.lastIndex===0 && 'abXba'.replace(r,'<$1:$<each>>')==='<b:b><:>X<a:a><:>' && 'abXba'.split(/(?<each>[\q{a|b|ab}&&\p{Any}]|){0,3}/v).join('|')==='|b|X|a|'",
+        r#"
+            let r = /(?<each>[\q{a|b|ab}&&\p{Any}]|){0,3}/dvg,
+                a = [...'abXba'.matchAll(r)];
+            a.length === 4 && a[0][0] === 'ab' && a[0].groups.each === 'b' && a[1].index === 2 && a[1]
+                .groups.each === undefined && a[1].indices[1] === undefined && a[2][0] === 'ba' && a[2]
+                .groups.each === 'a' && a[3].index === 5 && a[3].groups.each === undefined && r
+                .lastIndex === 0 && 'abXba'.replace(r, '<$1:$<each>>') === '<b:b><:>X<a:a><:>' && 'abXba'
+                .split(/(?<each>[\q{a|b|ab}&&\p{Any}]|){0,3}/v).join('|') === '|b|X|a|'
+        "#,
     );
     assert_true(
-        r"let a=[];'😀'.replace(/(?<each>[\q{a|b}]|){0}/vg,(m,each,at,input,groups)=>{a.push([each,at,groups.each]);return '#'});let b='😀a'.split(/(?<each>[\q{a|ab}&&a]|){0}/v);a.length===2 && a[0][0]===undefined && a[1][1]===2 && a[1][2]===undefined && b.length===3 && b[0]==='😀' && b[1]===undefined && b[2]==='a'",
+        r#"
+            let a = [];
+            '😀'.replace(/(?<each>[\q{a|b}]|){0}/vg, (m, each, at, input, groups) => {
+                a.push([each, at, groups.each]);
+                return '#'
+            });
+            let b = '😀a'.split(/(?<each>[\q{a|ab}&&a]|){0}/v);
+            a.length === 2 && a[0][0] === undefined && a[1][1] === 2 && a[1][2] === undefined && b
+                .length === 3 && b[0] === '😀' && b[1] === undefined && b[2] === 'a'
+        "#,
     );
     assert_true(
-        r"let r=/(?<each>[\q{a|b|ab}&&\p{Any}]|){0,}/vg;r.lastIndex=9;'Xab'.search(r)===0 && r.lastIndex===9 && 'abXba'.match(r).join('|')==='ab||ba|' && r.lastIndex===0",
+        r#"
+            let r = /(?<each>[\q{a|b|ab}&&\p{Any}]|){0,}/vg;
+            r.lastIndex = 9;
+            'Xab'.search(r) === 0 && r.lastIndex === 9 && 'abXba'.match(r).join('|') === 'ab||ba|' && r
+                .lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/(?<each>[\q{a|b|ab}&&\p{Any}]|){0,3}/iv;r.lastIndex=7;let c=new RegExp(r,'dvy'),m=c.exec('ABB');m[0]==='' && m.groups.each===undefined && c.lastIndex===0 && r.exec('ABB').groups.each==='B' && r.lastIndex===7",
+        r#"
+            let r = /(?<each>[\q{a|b|ab}&&\p{Any}]|){0,3}/iv;
+            r.lastIndex = 7;
+            let c = new RegExp(r, 'dvy'),
+                m = c.exec('ABB');
+            m[0] === '' && m.groups.each === undefined && c.lastIndex === 0 && r.exec('ABB').groups
+                .each === 'B' && r.lastIndex === 7
+        "#,
     );
     let mut realm = Realm::default();
     realm

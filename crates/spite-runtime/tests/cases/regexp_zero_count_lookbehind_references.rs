@@ -115,35 +115,83 @@ fn zero_count_lookbehind_reference_result_snapshot() {
 #[test]
 fn zero_count_lookbehind_bodies_keep_outside_names_and_undefined_owned_aliases() {
     assert_true(
-        r"let a=/(?<x>a)(?<=(\k<x>){0})b\k<x>/d.exec('aba');a[0]==='aba'&&a[1]==='a'&&a[2]===undefined&&a.groups.x==='a'&&a.indices.groups.x===a.indices[1]&&a.indices[1][0]===0&&a.indices[1][1]===1&&a.indices[2]===undefined",
+        r#"
+            let a = /(?<x>a)(?<=(\k<x>){0})b\k<x>/d.exec('aba');
+            a[0] === 'aba' && a[1] === 'a' && a[2] === undefined && a.groups.x === 'a' && a.indices.groups
+                .x === a.indices[1] && a.indices[1][0] === 0 && a.indices[1][1] === 1 && a.indices[2] ===
+                undefined
+        "#,
     );
     assert_true(
-        r"let a=/(?<=((?<x>a)(?<y>\k<x>)\k<y>){0})b/d.exec('qb');a.index===1&&a[1]===undefined&&a.groups.x===undefined&&a.groups.y===undefined&&a.indices.groups.x===undefined&&a.indices.groups.y===undefined",
+        r#"
+            let a = /(?<=((?<x>a)(?<y>\k<x>)\k<y>){0})b/d.exec('qb');
+            a.index === 1 && a[1] === undefined && a.groups.x === undefined && a.groups.y === undefined &&
+                a.indices.groups.x === undefined && a.indices.groups.y === undefined
+        "#,
     );
     assert_true(
-        r"let a=/(?<=((\k<x>)a){0})b(?<x>)/d.exec('qb');a.index===1&&a[1]===undefined&&a[2]===undefined&&a.groups.x===''&&a.indices.groups.x===a.indices[3]&&a.indices[3][0]===2",
+        r#"
+            let a = /(?<=((\k<x>)a){0})b(?<x>)/d.exec('qb');
+            a.index === 1 && a[1] === undefined && a[2] === undefined && a.groups.x === '' && a.indices
+                .groups.x === a.indices[3] && a.indices[3][0] === 2
+        "#,
     );
     assert_true(
-        r"let a=/(?<=(?:(?<x>a)\k<x>){0}|(?<x>))b\k<x>/d.exec('qb'),b=/(?<=(?:(?<x>a)\k<x>){0}q|(?<x>r))b\k<x>/d.exec('rbr');a.groups.x===undefined&&a.indices.groups.x===undefined&&b[0]==='br'&&b[1]===undefined&&b.groups.x==='r'&&b.indices.groups.x===b.indices[2]&&b.indices[2][0]===0&&b.indices[2][1]===1",
+        r#"
+            let a = /(?<=(?:(?<x>a)\k<x>){0}|(?<x>))b\k<x>/d.exec('qb'),
+                b = /(?<=(?:(?<x>a)\k<x>){0}q|(?<x>r))b\k<x>/d.exec('rbr');
+            a.groups.x === undefined && a.indices.groups.x === undefined && b[0] === 'br' && b[1] ===
+                undefined && b.groups.x === 'r' && b.indices.groups.x === b.indices[2] && b.indices[2][
+                0] === 0 && b.indices[2][1] === 1
+        "#,
     );
     assert_true(
-        r"let a=/(?<=((a)\2){0}q)b/d.exec('qb'),b=/(?<!((a)\2){0}q)b/d.exec('xb');a.index===1&&a[1]===undefined&&a[2]===undefined&&b.index===1&&b.indices[2]===undefined&&!/(?<!((a)\2){0})b/.test('b')",
+        r#"
+            let a = /(?<=((a)\2){0}q)b/d.exec('qb'),
+                b = /(?<!((a)\2){0}q)b/d.exec('xb');
+            a.index === 1 && a[1] === undefined && a[2] === undefined && b.index === 1 && b.indices[2] ===
+                undefined && !/(?<!((a)\2){0})b/.test('b')
+        "#,
     );
 }
 
 #[test]
 fn zero_count_lookbehind_reference_consumers_keep_last_index_empty_advancement_and_callbacks() {
     assert_true(
-        r"let r=/(?<=((?<x>a)\k<x>){0})b/dg,a=[...'qb b'.matchAll(r)];a.length===2&&a[1].index===3&&a[1].groups.x===undefined&&a[1].indices.groups.x===undefined&&r.lastIndex===0",
+        r#"
+            let r = /(?<=((?<x>a)\k<x>){0})b/dg,
+                a = [...'qb b'.matchAll(r)];
+            a.length === 2 && a[1].index === 3 && a[1].groups.x === undefined && a[1].indices.groups.x ===
+                undefined && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/(?<=((a)\2){0})b/dy;r.lastIndex=1;let a=r.exec('qb');a[1]===undefined&&a[2]===undefined&&a.index===1&&r.lastIndex===2&&r.exec('qb')===null&&r.lastIndex===0",
+        r#"
+            let r = /(?<=((a)\2){0})b/dy;
+            r.lastIndex = 1;
+            let a = r.exec('qb');
+            a[1] === undefined && a[2] === undefined && a.index === 1 && r.lastIndex === 2 && r.exec(
+                'qb') === null && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/(?<=((a)\2){0})/dg,a=[...'ab'.matchAll(r)];a.length===3&&a[2].index===2&&a[2][1]===undefined&&a[2].indices[2]===undefined&&r.lastIndex===0",
+        r#"
+            let r = /(?<=((a)\2){0})/dg,
+                a = [...'ab'.matchAll(r)];
+            a.length === 3 && a[2].index === 2 && a[2][1] === undefined && a[2].indices[2] === undefined &&
+                r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let seen=[];let s='qb b'.replace(/(?<=((?<x>a)\k<x>){0})b/g,(m,c,d,i,s,g)=>{seen.push(c,d,i,g.x);return '_'});s==='q_ _'&&seen.length===8&&seen[0]===undefined&&seen[1]===undefined&&seen[2]===1&&seen[3]===undefined&&seen[6]===3",
+        r#"
+            let seen = [];
+            let s = 'qb b'.replace(/(?<=((?<x>a)\k<x>){0})b/g, (m, c, d, i, s, g) => {
+                seen.push(c, d, i, g.x);
+                return '_'
+            });
+            s === 'q_ _' && seen.length === 8 && seen[0] === undefined && seen[1] === undefined && seen[
+                2] === 1 && seen[3] === undefined && seen[6] === 3
+        "#,
     );
     assert_true(
         r"'qb b'.replace(/(?<=((?<x>a)\k<x>){0})b/g,'<$<x>>')==='q<> <>'&&'qb'.search(/(?<=((a)\2){0})b/)===1&&'qb b'.split(/(?<=((a)\2){0})b/).join('|')==='q||| |||'",

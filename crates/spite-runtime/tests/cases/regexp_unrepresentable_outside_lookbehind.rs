@@ -46,46 +46,121 @@ fn unrepresentable_outside_lookbehind_result_snapshot() {
 #[test]
 fn empty_required_exact_lazy_bounded_and_unbounded_counts_keep_capture_identity() {
     assert_true(
-        r"let h='9'.repeat(3),upper='1'+'0'.repeat(4),ok=true;for(let bounds of ['{'+h+'}','{'+h+'}?','{'+h+',}','{'+h+',}?','{'+h+','+upper+'}']){let r=new RegExp('(?<x>)(?<=(?<y>\\k<x>)'+bounds+')b','d'),a=r.exec('qb');ok=ok&&a.index===1&&a.groups.y===''&&a.indices.groups.y===a.indices[2]&&a.indices[2][0]===1&&a.indices[2][1]===1;}ok",
+        r#"
+            let h = '9'.repeat(3),
+                upper = '1' + '0'.repeat(4),
+                ok = true;
+            for (let bounds of ['{' + h + '}', '{' + h + '}?', '{' + h + ',}', '{' + h + ',}?', '{' + h +
+                    ',' + upper + '}'
+                ]) {
+                let r = new RegExp('(?<x>)(?<=(?<y>\\k<x>)' + bounds + ')b', 'd'),
+                    a = r.exec('qb');
+                ok = ok && a.index === 1 && a.groups.y === '' && a.indices.groups.y === a.indices[2] && a
+                    .indices[2][0] === 1 && a.indices[2][1] === 1;
+            }
+            ok
+        "#,
     );
     assert_true(
-        r"let h='9'.repeat(3),a=new RegExp('()(?<=(\\1){'+h+'}a)b','d').exec('ab');a.index===1&&a.indices[1][0]===1&&a.indices[2][0]===0&&a.indices[2][1]===0",
+        r#"
+            let h = '9'.repeat(3),
+                a = new RegExp('()(?<=(\\1){' + h + '}a)b', 'd').exec('ab');
+            a.index === 1 && a.indices[1][0] === 1 && a.indices[2][0] === 0 && a.indices[2][1] === 0
+        "#,
     );
     assert_true(
-        r"let h='9'.repeat(3),a=new RegExp('(a(?<=\\1{'+h+'}))b','d').exec('ab'),b=new RegExp('(?<=\\1{'+h+'})(a)','d').exec('qa');a[1]==='a'&&a.index===0&&b[1]==='a'&&b.index===1",
+        r#"
+            let h = '9'.repeat(3),
+                a = new RegExp('(a(?<=\\1{' + h + '}))b', 'd').exec('ab'),
+                b = new RegExp('(?<=\\1{' + h + '})(a)', 'd').exec('qa');
+            a[1] === 'a' && a.index === 0 && b[1] === 'a' && b.index === 1
+        "#,
     );
     assert_true(
-        r"let h='9'.repeat(3),r=new RegExp('()()(?<=(\\1\\2\\b){'+h+'})b','d'),a=r.exec(' b');a.index===1&&a[3]===''&&a.indices[3][0]===1&&new RegExp('()(?<=(\\1\\B){'+h+'})b').exec(' b')===null",
+        r#"
+            let h = '9'.repeat(3),
+                r = new RegExp('()()(?<=(\\1\\2\\b){' + h + '})b', 'd'),
+                a = r.exec(' b');
+            a.index === 1 && a[3] === '' && a.indices[3][0] === 1 && new RegExp('()(?<=(\\1\\B){' + h +
+                '})b').exec(' b') === null
+        "#,
     );
 }
 
 #[test]
 fn nonempty_unavailable_widths_and_completed_negative_effects_restore_owned_captures() {
     assert_true(
-        r"let h='9'.repeat(3),ok=true;for(let body of ['(\\1)','(\\1a)','(ab)']){let tail=body==='(ab)'?'\\1':'',p='(a)(?<='+body+'{'+h+'}'+tail+')b',n='(a)(?<!'+body+'{'+h+'}'+tail+')b',a=new RegExp(n,'d').exec('ab');ok=ok&&new RegExp(p).exec('ab')===null&&a[1]==='a'&&a[2]===undefined&&a.indices[2]===undefined;}ok",
+        r#"
+            let h = '9'.repeat(3),
+                ok = true;
+            for (let body of ['(\\1)', '(\\1a)', '(ab)']) {
+                let tail = body === '(ab)' ? '\\1' : '',
+                    p = '(a)(?<=' + body + '{' + h + '}' + tail + ')b',
+                    n = '(a)(?<!' + body + '{' + h + '}' + tail + ')b',
+                    a = new RegExp(n, 'd').exec('ab');
+                ok = ok && new RegExp(p).exec('ab') === null && a[1] === 'a' && a[2] === undefined && a
+                    .indices[2] === undefined;
+            }
+            ok
+        "#,
     );
     assert_true(
-        r"let h='9'.repeat(3),a=new RegExp('(?<x>)(?<!(?<y>\\k<x>){'+h+'}q)b','d').exec('xb');a.index===1&&a.groups.x===''&&a.groups.y===undefined&&a.indices.groups.y===undefined&&Object.hasOwn(a.groups,'y')",
+        r#"
+            let h = '9'.repeat(3),
+                a = new RegExp('(?<x>)(?<!(?<y>\\k<x>){' + h + '}q)b', 'd').exec('xb');
+            a.index === 1 && a.groups.x === '' && a.groups.y === undefined && a.indices.groups.y ===
+                undefined && Object.hasOwn(a.groups, 'y')
+        "#,
     );
 }
 
 #[test]
 fn global_sticky_empty_advancement_and_callbacks_preserve_positions() {
     assert_true(
-        r"let h='9'.repeat(3),r=new RegExp('()(?<=(\\1){'+h+'})b','dy');r.lastIndex=1;let a=r.exec('qb');a.index===1&&a[2]===''&&r.lastIndex===2&&r.exec('qb')===null&&r.lastIndex===0",
+        r#"
+            let h = '9'.repeat(3),
+                r = new RegExp('()(?<=(\\1){' + h + '})b', 'dy');
+            r.lastIndex = 1;
+            let a = r.exec('qb');
+            a.index === 1 && a[2] === '' && r.lastIndex === 2 && r.exec('qb') === null && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let h='9'.repeat(3),r=new RegExp('()(?<=(\\1){'+h+'})','dg'),a=[...'ab'.matchAll(r)];a.length===3&&a[2].index===2&&a[2].indices[2][0]===2&&r.lastIndex===0",
+        r#"
+            let h = '9'.repeat(3),
+                r = new RegExp('()(?<=(\\1){' + h + '})', 'dg'),
+                a = [...'ab'.matchAll(r)];
+            a.length === 3 && a[2].index === 2 && a[2].indices[2][0] === 2 && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let h='9'.repeat(3),r=new RegExp('()(?<=(\\1){'+h+'})b','g'),seen=[];let text='qb qb'.replace(r,(m,x,y,i)=>{seen.push(x,y,i);return '_'});text==='q_ q_'&&seen.join('|')==='||1|||4'",
+        r#"
+            let h = '9'.repeat(3),
+                r = new RegExp('()(?<=(\\1){' + h + '})b', 'g'),
+                seen = [];
+            let text = 'qb qb'.replace(r, (m, x, y, i) => {
+                seen.push(x, y, i);
+                return '_'
+            });
+            text === 'q_ q_' && seen.join('|') === '||1|||4'
+        "#,
     );
 }
 
 #[test]
 fn invalid_decimal_bounds_still_throw_and_opted_in_work_aborts_bypass_handlers() {
     assert_true(
-        r"let h='9'.repeat(3),bad='1'+'0'.repeat(3),ok=false;try{new RegExp('()(?<=\\1{'+bad+','+h+'})b')}catch(e){ok=e instanceof SyntaxError}ok",
+        r#"
+            let h = '9'.repeat(3),
+                bad = '1' + '0'.repeat(3),
+                ok = false;
+            try {
+                new RegExp('()(?<=\\1{' + bad + ',' + h + '})b')
+            } catch (e) {
+                ok = e instanceof SyntaxError
+            }
+            ok
+        "#,
     );
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),

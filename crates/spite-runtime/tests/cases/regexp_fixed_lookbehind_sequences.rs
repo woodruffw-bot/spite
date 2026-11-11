@@ -92,19 +92,36 @@ fn fixed_lookbehind_sequence_result_snapshot() {
 #[test]
 fn sequence_lookbehind_captures_negative_restore_and_outer_retry_preserve_ranges() {
     assert_true(
-        r"let a=/(?<=(?<x>(?:ab){2}))\k<x>/d.exec('abababab');a[0]==='abab'&&a.index===4&&a.groups.x==='abab'&&a.indices.groups.x===a.indices[1]&&a.indices[1][0]===0&&a.indices[1][1]===4",
+        r#"
+            let a = /(?<=(?<x>(?:ab){2}))\k<x>/d.exec('abababab');
+            a[0] === 'abab' && a.index === 4 && a.groups.x === 'abab' && a.indices.groups.x === a.indices[
+                1] && a.indices[1][0] === 0 && a.indices[1][1] === 4
+        "#,
     );
     assert_true(
         r"let a=/(?<!((?:ab){2})q)c/d.exec('ababrc');a.index===5&&a[1]===undefined&&a.indices[1]===undefined",
     );
     assert_true(
-        r"let a=/(?<=((?:ab){2})(?<!(?<y>ba)))c/d.exec('ababc');a[1]==='abab'&&a.groups.y===undefined&&a.indices[1][0]===0&&a.indices[1][1]===4&&a.indices.groups.y===undefined",
+        r#"
+            let a = /(?<=((?:ab){2})(?<!(?<y>ba)))c/d.exec('ababc');
+            a[1] === 'abab' && a.groups.y === undefined && a.indices[1][0] === 0 && a.indices[1][1] ===
+                4 && a.indices.groups.y === undefined
+        "#,
     );
     assert_true(
-        r"let a=/(?:(?<=(?<x>(?:ab){2}))q|(?<=(?<x>(?:ab){2}))c)\k<x>/d.exec('ababcabab');a[0]==='cabab'&&a.index===4&&a[1]===undefined&&a[2]==='abab'&&a.indices[1]===undefined&&a.indices.groups.x===a.indices[2]",
+        r#"
+            let a = /(?:(?<=(?<x>(?:ab){2}))q|(?<=(?<x>(?:ab){2}))c)\k<x>/d.exec('ababcabab');
+            a[0] === 'cabab' && a.index === 4 && a[1] === undefined && a[2] === 'abab' && a.indices[1] ===
+                undefined && a.indices.groups.x === a.indices[2]
+        "#,
     );
     assert_true(
-        r"let a=/((?<=(?:ab){2})){2}c\1/d.exec('ababc'),b=/((?<=(?:ab){2}))*c\1/d.exec('ababc');a[1]===''&&a.indices[1][0]===4&&a.indices[1][1]===4&&b[1]===undefined&&b.indices[1]===undefined",
+        r#"
+            let a = /((?<=(?:ab){2})){2}c\1/d.exec('ababc'),
+                b = /((?<=(?:ab){2}))*c\1/d.exec('ababc');
+            a[1] === '' && a.indices[1][0] === 4 && a.indices[1][1] === 4 && b[1] === undefined && b
+                .indices[1] === undefined
+        "#,
     );
     assert_true(
         r"let a=/(?<=((?:ab){0}))c/d.exec('c');a.index===0&&a[1]===''&&a.indices[1][0]===0&&a.indices[1][1]===0",
@@ -114,16 +131,38 @@ fn sequence_lookbehind_captures_negative_restore_and_outer_retry_preserve_ranges
 #[test]
 fn sequence_lookbehind_consumers_global_sticky_and_callbacks_keep_input_positions() {
     assert_true(
-        r"let r=/(?<=(?<x>(?:ab){2}))c/dg,a=[...'ababcqababc'.matchAll(r)];a.length===2&&a[0].index===4&&a[1].index===10&&a[1].groups.x==='abab'&&a[1].indices.groups.x[0]===6&&r.lastIndex===0",
+        r#"
+            let r = /(?<=(?<x>(?:ab){2}))c/dg,
+                a = [...'ababcqababc'.matchAll(r)];
+            a.length === 2 && a[0].index === 4 && a[1].index === 10 && a[1].groups.x === 'abab' && a[1]
+                .indices.groups.x[0] === 6 && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/(?<=(?:ab){2})c/dy;r.lastIndex=4;let a=r.exec('ababc');a.index===4&&r.lastIndex===5&&r.exec('ababc')===null&&r.lastIndex===0",
+        r#"
+            let r = /(?<=(?:ab){2})c/dy;
+            r.lastIndex = 4;
+            let a = r.exec('ababc');
+            a.index === 4 && r.lastIndex === 5 && r.exec('ababc') === null && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/(?<=(?:ab){2})/dg,a=[...'ababab'.matchAll(r)];a.length===2&&a[0].index===4&&a[1].index===6&&r.lastIndex===0",
+        r#"
+            let r = /(?<=(?:ab){2})/dg,
+                a = [...'ababab'.matchAll(r)];
+            a.length === 2 && a[0].index === 4 && a[1].index === 6 && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let seen=[];let s='ababcqababc'.replace(/(?<=(?<x>(?:ab){2}))c/g,(m,c,i,s,g)=>{seen.push(m,c,i,s,g.x);return '_'});s==='abab_qabab_'&&seen.length===10&&seen[0]==='c'&&seen[1]==='abab'&&seen[2]===4&&seen[4]==='abab'&&seen[7]===10",
+        r#"
+            let seen = [];
+            let s = 'ababcqababc'.replace(/(?<=(?<x>(?:ab){2}))c/g, (m, c, i, s, g) => {
+                seen.push(m, c, i, s, g.x);
+                return '_'
+            });
+            s === 'abab_qabab_' && seen.length === 10 && seen[0] === 'c' && seen[1] === 'abab' && seen[
+                2] === 4 && seen[4] === 'abab' && seen[7] === 10
+        "#,
     );
     assert_true(
         r"'ababcqababc'.replace(/(?<=(?<x>(?:ab){2}))c/g,'<$<x>>')==='abab<abab>qabab<abab>'&&'ababcqababc'.search(/(?<=(?:ab){2})c/)===4&&'ababcqababc'.split(/(?<=(?:ab){2})c/).join('|')==='abab|qabab|'",

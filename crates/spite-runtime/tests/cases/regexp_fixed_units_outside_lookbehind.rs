@@ -111,37 +111,81 @@ fn fixed_units_outside_lookbehind_result_snapshot() {
 #[test]
 fn names_aliases_backward_offsets_and_boundary_captures() {
     assert_true(
-        r"let a=/(?<x>b)(?<=(?<y>ab){2}\k<x>)c/d.exec('ababbc');a.index===4&&a.groups.x==='b'&&a.groups.y==='ab'&&a.indices.groups.y===a.indices[2]&&a.indices[2][0]===0&&a.indices[2][1]===2",
+        r#"
+            let a = /(?<x>b)(?<=(?<y>ab){2}\k<x>)c/d.exec('ababbc');
+            a.index === 4 && a.groups.x === 'b' && a.groups.y === 'ab' && a.indices.groups.y === a.indices[
+                2] && a.indices[2][0] === 0 && a.indices[2][1] === 2
+        "#,
     );
     assert_true(
-        r"let a=/(?<x>b)(?<=\k<x>(?<y>ab){2})c/d.exec('bababc');a.index===4&&a.groups.y==='ab'&&a.indices.groups.y[0]===1&&a.indices.groups.y[1]===3",
+        r#"
+            let a = /(?<x>b)(?<=\k<x>(?<y>ab){2})c/d.exec('bababc');
+            a.index === 4 && a.groups.y === 'ab' && a.indices.groups.y[0] === 1 && a.indices.groups.y[
+                1] === 3
+        "#,
     );
     assert_true(
-        r"let a=/(?<x>a)(?<!(?<y>a){2}\k<x>q)b/d.exec('aaab');a.groups.x==='a'&&a.groups.y===undefined&&a.indices.groups.y===undefined&&Object.hasOwn(a.groups,'y')",
+        r#"
+            let a = /(?<x>a)(?<!(?<y>a){2}\k<x>q)b/d.exec('aaab');
+            a.groups.x === 'a' && a.groups.y === undefined && a.indices.groups.y === undefined && Object
+                .hasOwn(a.groups, 'y')
+        "#,
     );
     assert_true(
-        r"let a=/(?<x>a)(?<=a{2}\k<x>(?=(?<y>b)))b/d.exec('aaab');a.index===2&&a.indices.groups.y[0]===3&&a.groups.y==='b'",
+        r#"
+            let a = /(?<x>a)(?<=a{2}\k<x>(?=(?<y>b)))b/d.exec('aaab');
+            a.index === 2 && a.indices.groups.y[0] === 3 && a.groups.y === 'b'
+        "#,
     );
     assert_true(
-        r"let a=/(?<x>a)(?<=\k<x>(?<y>\B){2})b/d.exec('ab');a.groups.y===''&&a.indices.groups.y[0]===1&&a.indices.groups.y[1]===1",
+        r#"
+            let a = /(?<x>a)(?<=\k<x>(?<y>\B){2})b/d.exec('ab');
+            a.groups.y === '' && a.indices.groups.y[0] === 1 && a.indices.groups.y[1] === 1
+        "#,
     );
     assert_true(
-        r"let a=/(?:(?<x>a)|(?<x>b))(?<=[ab]{2}\k<x>)c/d.exec('abbc');a.index===2&&a.groups.x==='b'&&a[1]===undefined&&a[2]==='b'&&a.indices.groups.x===a.indices[2]",
+        r#"
+            let a = /(?:(?<x>a)|(?<x>b))(?<=[ab]{2}\k<x>)c/d.exec('abbc');
+            a.index === 2 && a.groups.x === 'b' && a[1] === undefined && a[2] === 'b' && a.indices.groups
+                .x === a.indices[2]
+        "#,
     );
 }
 #[test]
 fn consumers_callbacks_sticky_global_and_empty_advancement() {
     assert_true(
-        r"let r=/(a)(?<=(a){2}\1)b/dg,a=[...'aaab aaab'.matchAll(r)];a.length===2&&a[1].index===7&&a[1][2]==='a'&&a[1].indices[2][0]===5&&r.lastIndex===0",
+        r#"
+            let r = /(a)(?<=(a){2}\1)b/dg,
+                a = [...'aaab aaab'.matchAll(r)];
+            a.length === 2 && a[1].index === 7 && a[1][2] === 'a' && a[1].indices[2][0] === 5 && r
+                .lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/(a)(?<=a{2}\1)b/dy;r.lastIndex=2;let a=r.exec('aaab');a.index===2&&r.lastIndex===4&&r.exec('aaab')===null&&r.lastIndex===0",
+        r#"
+            let r = /(a)(?<=a{2}\1)b/dy;
+            r.lastIndex = 2;
+            let a = r.exec('aaab');
+            a.index === 2 && r.lastIndex === 4 && r.exec('aaab') === null && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/()(?<=(){2}\1)/dg,a=[...'ab'.matchAll(r)];a.length===3&&a[2].index===2&&a[2][2]===''&&a[2].indices[2][0]===2&&r.lastIndex===0",
+        r#"
+            let r = /()(?<=(){2}\1)/dg,
+                a = [...'ab'.matchAll(r)];
+            a.length === 3 && a[2].index === 2 && a[2][2] === '' && a[2].indices[2][0] === 2 && r
+                .lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let seen=[];let s='aaab aaab'.replace(/(a)(?<=(a){2}\1)b/g,(m,c,d,i)=>{seen.push(c,d,i);return '_'});s==='aa_ aa_'&&seen.join('|')==='a|a|2|a|a|7'",
+        r#"
+            let seen = [];
+            let s = 'aaab aaab'.replace(/(a)(?<=(a){2}\1)b/g, (m, c, d, i) => {
+                seen.push(c, d, i);
+                return '_'
+            });
+            s === 'aa_ aa_' && seen.join('|') === 'a|a|2|a|a|7'
+        "#,
     );
     assert_true(
         r"'aaab'.replace(/(?<x>a)(?<=(?<y>a){2}\k<x>)b/,'<$<y>>')==='aa<a>'&&'aaab'.search(/(a)(?<=a{2}\1)b/)===2&&'aaab'.split(/(a)(?<=a{2}\1)b/).join('|')==='aa|a|'",

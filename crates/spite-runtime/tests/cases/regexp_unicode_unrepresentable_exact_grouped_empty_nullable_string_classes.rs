@@ -50,24 +50,57 @@ fn exact_overflowing_capture_ranges_preserve_unicode_boundaries_names_and_outsid
     let huge = "9".repeat(3);
     for class in [r"[\q{😀}]", r"[\q{😀|😀x}&&\p{Any}]"] {
         assert_true(&format!(
-            "let r=/(?<whole>(?<each>({class}|(?:(?:)))){{{huge}}}?)/dvgy;r.lastIndex=2;let a=r.exec('A😀😀x'),b=r.exec('A😀😀x'),c=/(?<each>(?:(?:))|{class}){{000{huge},0{huge}}}$/dv.exec('😀😀');a.index===1 && a[0]==='😀😀' && a.groups.whole==='😀😀' && a.groups.each==='' && a.indices[2][0]===5 && a.indices[3][1]===5 && b.index===5 && b[0]==='' && b.groups.each==='' && r.lastIndex===5 && c.index===0 && c[0]==='😀😀' && c.groups.each==='😀' && c.indices[1][0]===2 && c.indices[1][1]===4"
+            r#"
+                let r = /(?<whole>(?<each>({class}|(?:(?:)))){{{huge}}}?)/dvgy;
+                r.lastIndex = 2;
+                let a = r.exec('A😀😀x'),
+                    b = r.exec('A😀😀x'),
+                    c = /(?<each>(?:(?:))|{class}){{000{huge},0{huge}}}$/dv.exec('😀😀');
+                a.index === 1 && a[0] === '😀😀' && a.groups.whole === '😀😀' && a.groups.each === '' && a
+                    .indices[2][0] === 5 && a.indices[3][1] === 5 && b.index === 5 && b[0] === '' && b.groups
+                    .each === '' && r.lastIndex === 5 && c.index === 0 && c[0] === '😀😀' && c.groups.each ===
+                    '😀' && c.indices[1][0] === 2 && c.indices[1][1] === 4
+            "#
         ));
     }
     for class in [r"[\q{\u{10428}}]", r"[\q{\u{10428}|ab}&&\p{Any}]"] {
         assert_true(&format!(
-            "let a=/(?<each>{class}|(?:(?:))){{{huge}}}?/div.exec('𐐀𐐨'),b=/(?<each>(?:(?:))|{class}){{{huge}}}$/div.exec('𐐀𐐨');a[0]==='𐐀𐐨' && a.groups.each==='' && a.indices[1][0]===4 && a.indices[1][1]===4 && b[0]==='𐐀𐐨' && b.groups.each==='𐐨' && b.indices[1][0]===2 && b.indices[1][1]===4"
+            r#"
+                let a = /(?<each>{class}|(?:(?:))){{{huge}}}?/div.exec('𐐀𐐨'),
+                    b = /(?<each>(?:(?:))|{class}){{{huge}}}$/div.exec('𐐀𐐨');
+                a[0] === '𐐀𐐨' && a.groups.each === '' && a.indices[1][0] === 4 && a.indices[1][1] === 4 && b[
+                        0] === '𐐀𐐨' && b.groups.each === '𐐨' && b.indices[1][0] === 2 && b.indices[1][1] ===
+                    4
+            "#
         ));
     }
     for class in [r"[\q{a|b}]", r"[\q{a|b|ab}&&\p{Any}]"] {
         assert_true(&format!(
-            "let a=/(?<whole>^\\b(?<each>{class}|(?:(?:))){{{huge}}}?\\b$)/dimv.exec('!\\r\\nAB\\u2028!'),b=/(?<whole>^\\b(?<each>(?:(?:))|{class}){{{huge}}}\\b$)/dimv.exec('!\\r\\nAB\\u2028!');a.index===3 && a.groups.whole==='AB' && a.groups.each==='' && a.indices[2][0]===5 && b.index===3 && b.groups.whole==='AB' && b.groups.each==='B' && b.indices[2][0]===4 && b.indices[2][1]===5"
+            r#"
+                let a = /(?<whole>^\b(?<each>{class}|(?:(?:))){{{huge}}}?\b$)/dimv.exec(
+                        '!\r\nAB\u2028!'),
+                    b = /(?<whole>^\b(?<each>(?:(?:))|{class}){{{huge}}}\b$)/dimv.exec(
+                        '!\r\nAB\u2028!');
+                a.index === 3 && a.groups.whole === 'AB' && a.groups.each === '' && a.indices[2][0] === 5 && b
+                    .index === 3 && b.groups.whole === 'AB' && b.groups.each === 'B' && b.indices[2][0] ===
+                    4 && b.indices[2][1] === 5
+            "#
         ));
     }
     assert_true(&format!(
-        "let m=/(?<whole>(?<\\u{{1D49C}}>[\\q{{a|ab}}&&a]|(?:(?:))){{{huge}}})/dv.exec('aaX');m.groups.whole==='aa' && m.groups['𝒜']==='' && m.indices.groups['𝒜'][0]===2 && m.indices.groups['𝒜'][1]===2"
+        r#"
+            let m = /(?<whole>(?<\u{{1D49C}}>[\q{{a|ab}}&&a]|(?:(?:))){{{huge}}})/dv.exec('aaX');
+            m.groups.whole === 'aa' && m.groups['𝒜'] === '' && m.indices.groups['𝒜'][0] === 2 && m
+                .indices.groups['𝒜'][1] === 2
+        "#
     ));
     assert_true(&format!(
-        "let m=/(?<each>[\\q{{\\uD800a|\\uD800}}&&\\p{{Any}}]|(?:(?:))){{{huge}}}/dv.exec('\\uD800\\uD800a');m[0].length===2 && m[0].charCodeAt(0)===0xd800 && m.groups.each==='' && m.indices[1][0]===2 && m.indices[1][1]===2"
+        r#"
+            let m = /(?<each>[\q{{\uD800a|\uD800}}&&\p{{Any}}]|(?:(?:))){{{huge}}}/dv.exec(
+                '\uD800\uD800a');
+            m[0].length === 2 && m[0].charCodeAt(0) === 0xd800 && m.groups.each === '' && m.indices[1][
+                0] === 2 && m.indices[1][1] === 2
+        "#
     ));
 }
 
@@ -75,16 +108,51 @@ fn exact_overflowing_capture_ranges_preserve_unicode_boundaries_names_and_outsid
 fn consumers_replacements_clones_and_collection_retain_overflowing_exact_capture_values() {
     let huge = "9".repeat(3);
     assert_true(&format!(
-        "let r=/(?<each>[\\q{{a|b|ab}}&&\\p{{Any}}]|(?:(?:))){{{huge}}}/dvg,s=/(?<each>(?:(?:))|[\\q{{a|b|ab}}&&\\p{{Any}}]){{{huge}}}/dvg,a=[...'abXba'.matchAll(r)],b=[...'abXba'.matchAll(s)];a.length===4 && a.map(m=>m[0]).join('|')==='ab||ba|' && a.every(m=>m.groups.each==='') && a[0].indices[1][0]===2 && a[2].indices[1][0]===5 && b.length===6 && b.every(m=>m[0]==='' && m.groups.each==='') && b.map(m=>m.index).join(',')==='0,1,2,3,4,5' && r.lastIndex===0 && s.lastIndex===0 && 'abXba'.replace(r,'<$1:$<each>>')==='<:><:>X<:><:>' && 'abXba'.replace(s,'<$1:$<each>>')==='<:>a<:>b<:>X<:>b<:>a<:>'"
+        r#"
+            let r = /(?<each>[\q{{a|b|ab}}&&\p{{Any}}]|(?:(?:))){{{huge}}}/dvg,
+                s = /(?<each>(?:(?:))|[\q{{a|b|ab}}&&\p{{Any}}]){{{huge}}}/dvg,
+                a = [...'abXba'.matchAll(r)],
+                b = [...'abXba'.matchAll(s)];
+            a.length === 4 && a.map(m => m[0]).join('|') === 'ab||ba|' && a.every(m => m.groups.each ===
+                    '') && a[0].indices[1][0] === 2 && a[2].indices[1][0] === 5 && b.length === 6 && b
+                .every(m => m[0] === '' && m.groups.each === '') && b.map(m => m.index).join(',') ===
+                '0,1,2,3,4,5' && r.lastIndex === 0 && s.lastIndex === 0 && 'abXba'.replace(r,
+                    '<$1:$<each>>') === '<:><:>X<:><:>' && 'abXba'.replace(s, '<$1:$<each>>') ===
+                '<:>a<:>b<:>X<:>b<:>a<:>'
+        "#
     ));
     assert_true(&format!(
-        "let seen=[],result='abX'.replace(/(?<each>[\\q{{a|b|ab}}&&\\p{{Any}}]|(?:(?:))){{{huge}}}/vg,(m,each,at,input,groups)=>{{seen.push([m,each,at,groups.each]);return '#'}});result==='##X#' && seen.length===3 && seen[0][0]==='ab' && seen[0][1]==='' && seen[0][3]==='' && seen[1][2]===2 && seen[2][2]===3 && 'abXba'.split(/(?<each>(?:(?:))|[\\q{{a|b}}]){{{huge}}}/v).join('|')==='a||b||X||b||a'"
+        r#"
+            let seen = [],
+                result = 'abX'.replace(/(?<each>[\q{{a|b|ab}}&&\p{{Any}}]|(?:(?:))){{{huge}}}/vg, (m,
+                    each, at, input, groups) => {{
+                    seen.push([m, each, at, groups.each]);
+                    return '#'
+                }});
+            result === '##X#' && seen.length === 3 && seen[0][0] === 'ab' && seen[0][1] === '' && seen[0][
+                3] === '' && seen[1][2] === 2 && seen[2][2] === 3 && 'abXba'.split(
+                /(?<each>(?:(?:))|[\q{{a|b}}]){{{huge}}}/v).join('|') === 'a||b||X||b||a'
+        "#
     ));
     assert_true(&format!(
-        "let r=/(?<each>(?:(?:))|[\\q{{a|b}}]){{{huge}}}/vg;r.lastIndex=9;'Xab'.search(r)===0 && r.lastIndex===9 && 'abXba'.match(r).join('|')==='|||||' && r.lastIndex===0"
+        r#"
+            let r = /(?<each>(?:(?:))|[\q{{a|b}}]){{{huge}}}/vg;
+            r.lastIndex = 9;
+            'Xab'.search(r) === 0 && r.lastIndex === 9 && 'abXba'.match(r).join('|') === '|||||' && r
+                .lastIndex === 0
+        "#
     ));
     assert_true(&format!(
-        "let r=/(?<each>[\\q{{a|b|ab}}&&\\p{{Any}}]|(?:(?:))){{{huge}}}/iv;r.lastIndex=7;let c=new RegExp(r,'dvy'),m=c.exec('ABB'),n=r.exec('ABB');c.source===r.source && c.flags==='dvy' && m[0]==='' && m.groups.each==='' && c.lastIndex===0 && n[0]==='ABB' && n.groups.each==='' && n.index===0 && r.lastIndex===7"
+        r#"
+            let r = /(?<each>[\q{{a|b|ab}}&&\p{{Any}}]|(?:(?:))){{{huge}}}/iv;
+            r.lastIndex = 7;
+            let c = new RegExp(r, 'dvy'),
+                m = c.exec('ABB'),
+                n = r.exec('ABB');
+            c.source === r.source && c.flags === 'dvy' && m[0] === '' && m.groups.each === '' && c
+                .lastIndex === 0 && n[0] === 'ABB' && n.groups.each === '' && n.index === 0 && r
+                .lastIndex === 7
+        "#
     ));
     let mut realm = Realm::default();
     realm
@@ -93,7 +161,11 @@ fn consumers_replacements_clones_and_collection_retain_overflowing_exact_capture
         ))
         .unwrap();
     realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval(r"let m=r.exec('zabb!');m[0]==='abb' && m.groups.each==='' && m.indices[1][0]===4 && m.indices[2][1]===4 && r.lastIndex===4"), Ok(Value::Boolean(true)));
+    assert_eq!(realm.eval(r#"
+        let m = r.exec('zabb!');
+        m[0] === 'abb' && m.groups.each === '' && m.indices[1][0] === 4 && m.indices[2][1] === 4 && r
+            .lastIndex === 4
+    "#), Ok(Value::Boolean(true)));
 }
 
 #[test]

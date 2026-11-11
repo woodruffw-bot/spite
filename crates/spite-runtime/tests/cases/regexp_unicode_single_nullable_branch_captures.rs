@@ -63,17 +63,28 @@ fn single_branch_capture_layouts_keep_lexical_slots_and_conditional_participatio
                     let end = if empty_first { 1 } else { 2 };
                     assert_true(&format!(
                         r#"
-                    var r=new RegExp({pattern:?},'dvgy');r.lastIndex=1;var m=r.exec('aaa'),keys=Object.keys(m.groups),ok=true;
-                    var character='{character_names}'.split(','),empty='{empty_names}'.split(','),never='{never}'.split(',');
-                    for(var name of keys){{
-                        var slot=keys.indexOf(name)+1,expected=name==='whole'?{whole:?}:!{empty_first}&&character.indexOf(name)!==-1?'a':{empty_first}&&empty.indexOf(name)!==-1?'':undefined;
-                        if(never.indexOf(name)!==-1)expected=undefined;
-                        ok=ok&&m[slot]===expected&&m.groups[name]===expected&&Object.hasOwn(m.indices.groups,name)&&m.indices.groups[name]===m.indices[slot];
-                        if(expected===undefined)ok=ok&&m.indices[slot]===undefined;
-                        else ok=ok&&m.indices[slot][0]===1&&m.indices[slot][1]===(expected===''?1:{end});
-                    }}
-                    ok&&m[0]==={whole:?}&&m.index===1&&m.length===keys.length+1&&r.lastIndex==={end}&&r.source==={pattern:?}
-                "#
+                            var r = new RegExp({pattern:?}, 'dvgy');
+                            r.lastIndex = 1;
+                            var m = r.exec('aaa'),
+                                keys = Object.keys(m.groups),
+                                ok = true;
+                            var character = '{character_names}'.split(','),
+                                empty = '{empty_names}'.split(','),
+                                never = '{never}'.split(',');
+                            for (var name of keys) {{
+                                var slot = keys.indexOf(name) + 1,
+                                    expected = name === 'whole' ? {whole:?} : !{empty_first} && character.indexOf(
+                                    name) !== -1 ? 'a' : {empty_first} && empty.indexOf(name) !== -1 ? '' : undefined;
+                                if (never.indexOf(name) !== -1) expected = undefined;
+                                ok = ok && m[slot] === expected && m.groups[name] === expected && Object.hasOwn(m.indices
+                                    .groups, name) && m.indices.groups[name] === m.indices[slot];
+                                if (expected === undefined) ok = ok && m.indices[slot] === undefined;
+                                else ok = ok && m.indices[slot][0] === 1 && m.indices[slot][1] === (expected === '' ? 1 :
+                                    {end});
+                            }}
+                            ok && m[0] === {whole:?} && m.index === 1 && m.length === keys.length + 1 && r
+                                .lastIndex === {end} && r.source === {pattern:?}
+                        "#
                     ));
                 }
             }
@@ -90,51 +101,129 @@ fn single_branch_capture_layouts_keep_lexical_slots_and_conditional_participatio
 #[test]
 fn single_branch_capture_values_keep_original_utf16_folding_gates_and_first_success() {
     assert_true(
-        r"var r=/(?:(?<part>[\q{😀}])|(?<empty>))/dvgy;r.lastIndex=1;var m=r.exec('😀😀!');m[0]==='😀'&&m.index===0&&m.groups.part==='😀'&&m.groups.empty===undefined&&m.indices.groups.part[0]===0&&m.indices.groups.part[1]===2&&r.lastIndex===2",
+        r#"
+            var r = /(?:(?<part>[\q{😀}])|(?<empty>))/dvgy;
+            r.lastIndex = 1;
+            var m = r.exec('😀😀!');
+            m[0] === '😀' && m.index === 0 && m.groups.part === '😀' && m.groups.empty === undefined && m
+                .indices.groups.part[0] === 0 && m.indices.groups.part[1] === 2 && r.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"var r=/(?:(?<empty>)|(?<part>[\q{😀}]))/dvgy;r.lastIndex=1;var m=r.exec('😀😀!');m[0]===''&&m.index===0&&m.groups.part===undefined&&m.groups.empty===''&&m.indices.groups.empty[0]===0&&r.lastIndex===0",
+        r#"
+            var r = /(?:(?<empty>)|(?<part>[\q{😀}]))/dvgy;
+            r.lastIndex = 1;
+            var m = r.exec('😀😀!');
+            m[0] === '' && m.index === 0 && m.groups.part === undefined && m.groups.empty === '' && m
+                .indices.groups.empty[0] === 0 && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"var r=/(?:(?<\u{1D49C}>[\q{s|k}])|(?<empty>))/dvgi;var m=r.exec('ſK'),n=r.exec('ſK');m.groups.𝒜==='ſ'&&m.groups.empty===undefined&&n.groups.𝒜==='K'&&n.indices.groups.𝒜[0]===1&&r.source.indexOf('1D49C')!==-1",
+        r#"
+            var r = /(?:(?<\u{1D49C}>[\q{s|k}])|(?<empty>))/dvgi;
+            var m = r.exec('ſK'),
+                n = r.exec('ſK');
+            m.groups.𝒜 === 'ſ' && m.groups.empty === undefined && n.groups.𝒜 === 'K' && n.indices.groups
+                .𝒜[0] === 1 && r.source.indexOf('1D49C') !== -1
+        "#,
     );
     assert_true(
-        r"var m=/(?:(?<part>[^\q{ab}&&a])|(?<empty>))/dv.exec('\ud800');m.groups.part==='\ud800'&&m.groups.empty===undefined&&m.indices.groups.part[1]===1",
+        r#"
+            var m = /(?:(?<part>[^\q{ab}&&a])|(?<empty>))/dv.exec('\ud800');
+            m.groups.part === '\ud800' && m.groups.empty === undefined && m.indices.groups.part[1] === 1
+        "#,
     );
     for branch in [
         r"(?<part>[\q{a}])|(?<empty>)",
         r"(?<empty>)|(?<part>[\q{a}])",
     ] {
         assert_true(&format!(
-            r"var m=/^\b(?:{branch})\b$/dvm.exec('!\r\na\u2028!');m[0]==='a'&&m.index===3&&m.groups.part==='a'&&m.groups.empty===undefined&&m.indices.groups.part[0]===3&&m.indices.groups.part[1]===4"
+            r#"
+                var m = /^\b(?:{branch})\b$/dvm.exec('!\r\na\u2028!');
+                m[0] === 'a' && m.index === 3 && m.groups.part === 'a' && m.groups.empty === undefined && m
+                    .indices.groups.part[0] === 3 && m.indices.groups.part[1] === 4
+            "#
         ));
     }
     assert_true(
-        r"var m=/\b(?:(?<part>[\q{a}])|(?<empty>))\b/dv.exec(' aa');m[0]===''&&m.index===1&&m.groups.part===undefined&&m.groups.empty===''&&m.indices.groups.empty[0]===1",
+        r#"
+            var m = /\b(?:(?<part>[\q{a}])|(?<empty>))\b/dv.exec(' aa');
+            m[0] === '' && m.index === 1 && m.groups.part === undefined && m.groups.empty === '' && m
+                .indices.groups.empty[0] === 1
+        "#,
     );
     assert_true(
-        r"var r=/(?:(?<empty>)|(?<part>[\q{a}]))/vg;Object.defineProperty(r,'lastIndex',{writable:false});var caught=false;try{r.exec('a')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            var r = /(?:(?<empty>)|(?<part>[\q{a}]))/vg;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            var caught = false;
+            try {
+                r.exec('a')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
 }
 
 #[test]
 fn single_branch_captures_survive_consumers_callbacks_clones_and_collection() {
     assert_true(
-        r"var r=/(?:(?<part>[\q{a}])|(?<empty>(?<first>)|(?<later>)))/dvg;var all=Array.from('aa!'.matchAll(r));all.length===4&&all.map(m=>m[0]).join('|')==='a|a||'&&all[0].groups.part==='a'&&all[0].groups.empty===undefined&&all[2].groups.part===undefined&&all[2].groups.empty===''&&all[2].groups.first===''&&all.every(m=>m.groups.later===undefined)&&r.lastIndex===0",
+        r#"
+            var r = /(?:(?<part>[\q{a}])|(?<empty>(?<first>)|(?<later>)))/dvg;
+            var all = Array.from('aa!'.matchAll(r));
+            all.length === 4 && all.map(m => m[0]).join('|') === 'a|a||' && all[0].groups.part === 'a' &&
+                all[0].groups.empty === undefined && all[2].groups.part === undefined && all[2].groups
+                .empty === '' && all[2].groups.first === '' && all.every(m => m.groups.later ===
+                undefined) && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"var all=Array.from('😀a'.matchAll(/(?:(?<empty>)|(?<part>[\q{😀}]))/dvg));all.length===3&&all.map(m=>m.index).join(',')==='0,2,3'&&all.every(m=>m[0]===''&&m.groups.empty===''&&m.groups.part===undefined)",
+        r#"
+            var all = Array.from('😀a'.matchAll(/(?:(?<empty>)|(?<part>[\q{😀}]))/dvg));
+            all.length === 3 && all.map(m => m.index).join(',') === '0,2,3' && all.every(m => m[0] ===
+                '' && m.groups.empty === '' && m.groups.part === undefined)
+        "#,
     );
     assert_true(
-        r"var calls=0;var out='aa!'.replace(/(?:(?<part>[\q{a}])|(?<empty>(?<first>)|(?<later>)))/vg,function(whole,part,empty,first,later,offset,input,groups){calls++;return arguments.length===8&&groups.later===undefined&&input==='aa!'&&(whole==='a'?part==='a'&&empty===undefined&&first===undefined:part===undefined&&empty===''&&first==='')?'#':'bad'});out==='###!#'&&calls===4",
+        r#"
+            var calls = 0;
+            var out = 'aa!'.replace(/(?:(?<part>[\q{a}])|(?<empty>(?<first>)|(?<later>)))/vg, function(
+                whole, part, empty, first, later, offset, input, groups) {
+                calls++;
+                return arguments.length === 8 && groups.later === undefined && input === 'aa!' && (
+                        whole === 'a' ? part === 'a' && empty === undefined && first ===
+                        undefined : part === undefined && empty === '' && first === '') ? '#' :
+                    'bad'
+            });
+            out === '###!#' && calls === 4
+        "#,
     );
     assert_true(
-        r"var r=/(?:(?<part>[\q{a}])|(?<empty>))/vg;r.lastIndex=9;var parts='ab'.split(r);'baa'.search(r)===0&&r.lastIndex===9&&parts.length===4&&parts[0]===''&&parts[1]==='a'&&parts[2]===undefined&&parts[3]==='b'&&'aa!'.match(r).join('|')==='a|a||'&&'aa!'.replace(r,'<$<part>:$<empty>>')==='<a:><a:><:>!<:>'",
+        r#"
+            var r = /(?:(?<part>[\q{a}])|(?<empty>))/vg;
+            r.lastIndex = 9;
+            var parts = 'ab'.split(r);
+            'baa'.search(r) === 0 && r.lastIndex === 9 && parts.length === 4 && parts[0] === '' && parts[
+                1] === 'a' && parts[2] === undefined && parts[3] === 'b' && 'aa!'.match(r).join('|') ===
+                'a|a||' && 'aa!'.replace(r, '<$<part>:$<empty>>') === '<a:><a:><:>!<:>'
+        "#,
     );
     let mut realm = Realm::default();
     realm.eval(r"var r=/(?:(?<part>[\q{a}])|(?<empty>))/dvg;var clone=new RegExp(r);var m=r.exec('aaa')").unwrap();
     realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("m.groups.part==='a'&&m.groups.empty===undefined&&m.indices.groups.part[1]===1&&clone.exec('aa').groups.part==='a'&&r.lastIndex===1"),Ok(Value::Boolean(true)));
+    assert_eq!(
+        realm.eval(
+            r#"
+                m.groups.part === 'a' && m.groups.empty === undefined && m.indices.groups.part[1] === 1 &&
+                    clone.exec('aa').groups.part === 'a' && r.lastIndex === 1
+            "#
+        ),
+        Ok(Value::Boolean(true))
+    );
 }
 
 #[test]
