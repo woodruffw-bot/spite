@@ -30,11 +30,11 @@ cannot claim passing credit.
 For fixture, review and complete-tree checks:
 
 ```sh
-python3 tools/check-test262.py
-python3 tools/test-test262-scope.py
+cargo xtask verify
+cargo test -p xtask
 ```
 
 Verify a local published specification copy with
-`python3 tools/check-specification.py /path/to/spec.html`, or fetch its exact pin
-with `python3 tools/check-specification.py --download`. Annotated copies do not
+`cargo xtask verify-spec /path/to/spec.html`, or fetch its exact pin
+with `cargo xtask verify-spec`. Annotated copies do not
 substitute for the pinned source.

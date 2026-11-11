@@ -2,7 +2,7 @@
 
 `crates/spite-core/src/unicode_data.rs` contains ID_Start and ID_Continue ranges
 from Unicode 18.0.0. The source URL and SHA-256 are recorded in that file and in
-`tools/generate-unicode.py`. The Unicode license is included here.
+`cargo xtask generate unicode`. The Unicode license is included here.
 
 ECMA-262 edition 17 refers to the latest Unicode standard in sections 2, 3, and
 12.7. Unicode 18.0.0 is the current final UCD release used by this implementation.
@@ -12,7 +12,7 @@ or String transforms.
 `crates/spite-core/src/case_data.rs` contains full lower/uppercase mappings and
 Cased/Case_Ignorable ranges used for contextual final sigma, plus simple/common
 case folding for RegExp. Its generator,
-`tools/generate-case-mappings.py`, pins UnicodeData.txt, SpecialCasing.txt,
+`cargo xtask generate case-mappings`, pins UnicodeData.txt, SpecialCasing.txt,
 DerivedCoreProperties.txt and CaseFolding.txt by SHA-256. It incorporates all
 unconditional special mappings and verifies that Final_Sigma is the only
 language-insensitive condition.
@@ -27,7 +27,7 @@ and its SHA-256 is
 
 `crates/spite-core/src/normalization_data.rs` contains decomposition mappings,
 combining classes, and canonical compositions after full composition exclusions.
-`tools/generate-normalization.py` pins UnicodeData.txt and
+`cargo xtask generate normalization` pins UnicodeData.txt and
 DerivedNormalizationProps.txt and validates the decomposition graph before emitting
 tables. Hangul decomposition and composition use UAX #15's algorithm.
 The complete unchanged Unicode 18 NormalizationTest.txt is retained at
@@ -44,7 +44,7 @@ library and is not part of a Rust build.
 
 `crates/spite-parser/src/regexp/property_data.rs` contains exact Unicode 18
 general-category and script value aliases for RegExp property early errors.
-`tools/generate-regexp-properties.py` pins PropertyAliases.txt and
+`cargo xtask generate regexp-properties` pins PropertyAliases.txt and
 PropertyValueAliases.txt by SHA-256 and verifies the edition-17 binary property
 whitelist against them. Script_Extensions shares Script's value aliases. The
 whitelist excludes other UCD properties and aliases, including WSpace. Seven
@@ -52,14 +52,14 @@ edition-17 string properties are allowed only in UnicodeSetsMode. These tables
 validate syntax; matching is implemented separately for the admitted property sets.
 
 ```sh
-python3 tools/generate-unicode.py --check
-python3 tools/generate-unicode.py /path/to/DerivedCoreProperties.txt --check
-python3 tools/generate-case-mappings.py --check
-python3 tools/generate-case-mappings.py /path/to/ucd-directory --check
-python3 tools/generate-normalization.py --check
-python3 tools/generate-normalization.py /path/to/ucd-directory --check
-python3 tools/generate-regexp-properties.py --check
-python3 tools/generate-regexp-properties.py /path/to/ucd-directory --check
+cargo xtask generate unicode --check
+cargo xtask generate unicode /path/to/DerivedCoreProperties.txt --check
+cargo xtask generate case-mappings --check
+cargo xtask generate case-mappings /path/to/ucd-directory --check
+cargo xtask generate normalization --check
+cargo xtask generate normalization /path/to/ucd-directory --check
+cargo xtask generate regexp-properties --check
+cargo xtask generate regexp-properties /path/to/ucd-directory --check
 ```
 
 Omit `--check` to regenerate. The first form downloads the pinned source. The

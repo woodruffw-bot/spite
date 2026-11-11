@@ -56,4 +56,4 @@ Mixed reserved punctuation remains valid in UnicodeSets; only identical
 neighbors form reserved double punctuators. Fixed-hex surrogate escape pairing
 restores the complete input position when the second escape does not pair.
 Legacy expansion exclusions are regenerated and checked by
-`tools/generate-case-mappings.py` alongside the Core casing tables.
+`cargo xtask generate case-mappings` alongside the Core casing tables.

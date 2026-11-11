@@ -90,7 +90,7 @@ impl CorpusReport {
 /// Executed rows, including runtime negatives, use `-` for all three review fields.
 /// Runtime negatives match their original metadata's exception type and phase.
 /// `REVISION` declares the pin;
-/// run `tools/check-test262.py` to verify fixture bytes against the digest manifest.
+/// run `cargo xtask verify` to verify fixture bytes against the digest manifest.
 /// Invalid manifests and I/O failures abort the corpus rather than skipping files.
 pub fn run_corpus(root: &Path) -> io::Result<CorpusReport> {
     let (revision, manifest) = read_manifest(root)?;

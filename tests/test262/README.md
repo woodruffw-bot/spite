@@ -8,7 +8,7 @@ manifests select executable originals, support modules and harness helpers;
 ## Running the corpus
 
 ```sh
-cargo test -p spite-test262 --profile conformance --test corpus --locked pinned_corpus_runs_all_reviewed_variants -- --exact
+cargo xtask test262
 ```
 
 The conformance profile optimizes exhaustive tests while retaining debug and

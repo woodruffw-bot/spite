@@ -45,7 +45,7 @@ def main():
         for source, expected in sorted(rows.items())
     )
     output += "];\n"
-    root = Path(__file__).resolve().parent.parent
+    root = Path(__file__).resolve().parents[3]
     destination = root / "crates/spite-runtime/tests/common/regexp_oracle_data.rs"
     destination.write_text(output, encoding="utf-8")
     print(f"Generated {len(rows)} static native expectations.")

@@ -63,18 +63,20 @@ JavaScript and JSON dependencies, so oversized streams need not reach EOF.
 Run the workspace tests, documentation tests, and complete reviewed Test262 corpus:
 
 ```sh
-python3 tools/run-cargo-workspace-tests.py --toolchain stable
-cargo +stable test --workspace --doc --locked
-cargo +stable test -p spite-test262 --profile conformance --test corpus --locked pinned_corpus_runs_all_reviewed_variants -- --exact
+cargo test --workspace --locked
+cargo xtask check
+cargo xtask test262
 ```
 
-The workspace runner executes Cargo's test invocations with their original
-arguments and environment, leaving the full corpus to the separate command.
-Core test builds optimize the exhaustive Unicode checks. Debug assertions and
-overflow checks remain enabled; interpreter and integration test builds retain
-their normal unoptimized profile. Test builds retain line and function debug
-information while omitting full variable and type details to reduce linking costs.
-Link-time optimization is disabled for test builds.
+`cargo test --workspace` runs native tests and documentation examples. The full
+Test262 corpus is an explicit target, run separately through `cargo xtask test262`.
+Both test profiles keep debug assertions and overflow checks enabled; exhaustive
+Unicode checks and the interpreter use optimization to keep execution practical.
+
+`cargo xtask check` checks formatting, Clippy, dependency policy, fixture provenance,
+and generated data. It requires Python 3 and network access for pinned source
+verification. `cargo xtask verify` checks local inventories and provenance offline.
+See [data generation](crates/xtask/codegen/README.md) for maintenance commands.
 
 The complete Test262 gate explicitly uses three corpus workers. Every reviewed
 variant runs, and reports retain manifest order. Each evaluated variant uses a
@@ -84,8 +86,9 @@ disabled. The library's `run_corpus` API and the CLI use serial execution.
 Runtime integration cases live under `crates/spite-runtime/tests/cases` and share
 one harness. For example, run a subset with
 `cargo test -p spite-runtime --test integration regexp_unicode_devanagari_script`.
-Add each new case file to the harness module list; CI checks for omitted or
-duplicate files. Keep fixture helpers under `cases/fixtures`.
+After adding a case file, run `cargo xtask generate test-modules`; CI checks that
+the generated module lists include every case. Keep fixture helpers under
+`cases/fixtures`.
 
 Manual parser, initialization, evaluation and collection measurements are
 available through the dependency-free [benchmark example](docs/benchmarking.md).

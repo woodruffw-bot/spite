@@ -20,6 +20,10 @@ spite-heap = { path = "crates/spite-heap" }
 spite-parser = { path = "crates/spite-parser" }
 spite-runtime = { path = "crates/spite-runtime" }
 insta = { version = "1.43", default-features = false }
+serde_json = "1.0"
+sha1 = "0.10"
+sha2 = "0.10"
+toml = "0.9"
 
 [workspace.lints.rust]
 unsafe_code = "forbid"
@@ -39,7 +43,11 @@ overflow-checks = true
 [profile.test.package.spite-core]
 opt-level = 1
 
-# Matching moved from Core to regress; keep its existing test optimization level.
+# Optimize exhaustive interpreter tests while retaining debug and overflow checks.
+[profile.test.package.spite-runtime]
+opt-level = 1
+
+# Matching also needs optimization for exhaustive Unicode cases.
 [profile.test.package.regress]
 opt-level = 1
 
