@@ -1,68 +1,93 @@
-# Test262 fixtures
+# Test262 corpus
 
-The files under `upstream/` are unchanged originals from the revision in
-[REVISION](REVISION). The upstream license is in [LICENSE](LICENSE). Local
-manifests select executable originals, support modules and harness helpers;
-[audit records](audit/README.md) account for the rest of the pinned inventory.
+This directory contains the upstream tests selected for spite's ECMAScript 2026
+target, plus records explaining the selection. Files under `upstream/` are
+unchanged from the revision in [REVISION](REVISION), under the upstream
+[license](LICENSE).
 
-## Running the corpus
+An **original** is an upstream test, rather than a harness helper or support
+fixture. Selected originals run through the conformance target. Every other
+original in the pinned revision has a reason recorded in
+[audit/scope.tsv](audit/scope.tsv).
+
+## Run the tests
+
+From the repository root:
 
 ```sh
 cargo xtask test262
 ```
 
-The conformance profile optimizes exhaustive tests while retaining debug and
-overflow checks. Corpus workers use fresh Realms and ordinary native stacks.
-Runtime quotas retain their defaults. The library and CLI also support serial
-execution; parallel reports preserve manifest order and the same outcomes.
+This runs the complete selected corpus in an optimized profile with debug
+assertions and overflow checks enabled. Each variant gets a fresh realm with
+runtime quotas disabled. The gate uses three workers; results retain manifest
+order.
 
-The runner interprets each original's frontmatter. Script strictness, raw source,
-Module mode, asynchronous completion, includes and negative-test phase are not
-inferred from file names or feature tags. It loads the upstream assertion harness
-and explicitly installs Test262 host facilities.
+For a serial run with a report for each variant:
 
-## Outcomes
+```sh
+cargo run -p spite-test262 --profile conformance --locked -- tests/test262
+```
 
-Only successful executions and verified expected exceptions pass. The report
-keeps these nonpassing categories distinct:
+The runner reads each original's frontmatter to select script strictness, raw or
+module mode, asynchronous completion, harness includes, and negative-test phase.
+File names and feature tags do not determine how a test executes.
 
-- Unexpected JavaScript results or exceptions.
-- Unsupported features and unavailable host facilities.
-- Opted-in or native capacity limits.
-- Unverified negative diagnostics.
-- Metadata and harness/setup failures.
+## Understand results
 
-A parse-negative test needs a reviewed Syntax diagnostic with the exact source
-span and message. Unsupported syntax cannot stand in for SyntaxError. Runtime
-and resolution negatives retain their declared phase and error constructor.
-Missing or repeated async completion fails; host failures cannot satisfy a
-JavaScript negative test.
+A test passes when execution succeeds as specified or produces its verified
+expected exception. The runner keeps other outcomes distinct:
 
-## Manifests and provenance
+| Outcome | Meaning |
+| --- | --- |
+| `failed` | An unexpected result or JavaScript exception |
+| `unsupported` | Missing language functionality or a required host facility |
+| `limit` | An explicit quota or native capacity was reached |
+| `unverified` | A parse failure does not match an exact reviewed syntax diagnostic |
+| `setup-failure` | Harness loading or evaluation failed independently of the test |
+| `metadata-invalid`, `metadata-unsupported`, `metadata-limit` | Frontmatter could not be processed; reported separately from execution |
 
-`manifest.tsv` records a fixture kind, SHA-256 and upstream-relative path.
-`runner.tsv` records each selected original and either its exact reviewed parse
-diagnostic or dashes for an executed test. `audit/upstream-tree.tsv` and
-`audit/upstream-commit.txt` reproduce the pinned Git identities independently of
-the local SHA-256 manifest. Original bytes, support modules and harness files
-are checked before changes are accepted.
+A parse-negative test must match the reviewed syntax diagnostic's span and
+message. Unsupported syntax cannot substitute for a `SyntaxError`. Runtime and
+resolution negatives must fail in the declared phase with the expected exception
+constructor. Async tests must call `$DONE` exactly once.
 
-A new admission must include its required unchanged support/harness files and
-remove its old scope entry. Do not shorten an original, change its metadata,
-increase default quotas or convert a host failure into a pass. Supplementary
-local tests can isolate behavior, but receive no credit as whole originals.
+Host failures and limits cannot satisfy a negative JavaScript test. Excluded
+originals are not passes; see [compatibility](../../docs/compatibility.md) for the
+host choices, specification interpretations, and native constraints.
 
-## Scope
+## Manifests
 
-The [scope manifest](audit/scope.tsv) and [source reviews](audit/README.md) cover
-optional browser behavior, later proposals, version-dependent data, host choices
-and resource constraints. Feature metadata alone is not a scope decision: an
-original tagged with a proposal can still test ordinary baseline syntax.
+| File | Contents |
+| --- | --- |
+| [manifest.tsv](manifest.tsv) | Fixture kind, SHA-256, and upstream-relative path for each retained file |
+| [runner.tsv](runner.tsv) | Selected originals and their reviewed parse diagnostics; executed entries use dashes |
+| [audit/](audit/README.md) | Upstream Git identities, excluded originals, source reviews, and supporting evidence |
 
-Policy probes and Unicode witnesses test the selected published algorithms
-independently of incompatible originals. Resource-stress records retain their
-nonpassing outcomes and external diagnostic conditions. A scope partition is
-not a conformance percentage.
+The integrity checker verifies retained bytes against both the local manifest
+and upstream Git blobs. It also requires the runner and scope records to account
+for every original in the pinned revision. Support modules and harness files are
+verified, but do not count as executable originals.
 
-See [compatibility](../../docs/compatibility.md) for host choices, implementation
-constraints, and specification interpretations.
+```sh
+cargo xtask verify
+```
+
+This command uses local records and needs no network access.
+
+## Admit or update an original
+
+1. Compare the source's actual requirements with the published edition and host
+   choices. A proposal tag alone is not a reason to exclude a baseline test.
+2. Retain the original bytes and all required upstream harness and support files.
+3. Add manifest and runner entries. For a parse-negative test, review its exact
+   diagnostic; for other tests, preserve the declared execution modes and phase.
+4. Remove the old scope entry and update any associated source review or witness.
+5. Run `cargo xtask verify` and `cargo xtask test262`.
+
+Do not shorten originals, change their metadata, or increase default quotas to
+make them pass. Smaller local regressions can isolate behavior, but do not
+replace execution of the original.
+
+The [audit guide](audit/README.md) explains the evidence required for Unicode
+differences, staging decisions, and native resource constraints.

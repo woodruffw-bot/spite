@@ -1,39 +1,45 @@
-# Facilities absent from edition 17
+# Facilities outside ECMAScript 2026
 
-This review uses the [published es2026 source](https://github.com/tc39/ecma262/blob/0248456c758431e4bb8e5d26333ff1865123c9cd/spec.html),
-whose SHA-256 is
-`ce7bc30174061fd8d212270b81cf6511661180c1e174f6911d10ced0581527b0`.
-The [source identity](specification.json) also records its Git blob and byte count.
-The official annotated es2026 tag resolves to that revision. It does not use the
-living specification to decide which features are mandatory.
+These comparisons use the exact published ECMA-262 edition recorded in
+[specification.json](specification.json). They concern requirements absent from
+that edition, including later changes to an existing algorithm.
 
-Scope entries identify APIs, productions or semantic changes absent from the
-published baseline. A metadata `esid` can refer to an existing clause even when
-the tested behavior belongs to a later proposal. Review the source prerequisites
-rather than excluding tests solely by their feature tags.
+A metadata `esid` can name an existing clause while the tested behavior comes
+from a later proposal. Review source requirements rather than relying on the
+clause name or feature tag.
 
-| Scope feature | Published-baseline comparison |
+## Syntax and module loading
+
+| Scope feature | Difference from the published edition |
 | --- | --- |
-| `Temporal` | No Temporal global, constructor/prototype API, or Date.prototype.toTemporalInstant. The TemporalDecimalFraction grammar used for UTC offsets is not the Temporal API. |
-| `ShadowRealm` | No ShadowRealm global or associated evaluation/importValue methods. |
-| `explicit-resource-management` | No UsingDeclaration/await-using production, DisposableStack/AsyncDisposableStack API, disposal symbols or SuppressedError API. Existing implementation extensions supply no edition-17 credit. |
-| `source-phase-imports` | The published ImportDeclaration and ImportCall productions have no source phase; ModuleRequest and loading algorithms have no source-phase module-source objects. |
-| `import-defer` | No deferred import productions, deferred namespace internal methods or defer import option. Existing module namespace/evaluation clauses do not specify these added modes. |
-| `await-dictionary` | No Promise.allKeyed/allSettledKeyed APIs or their dictionary-based aggregation algorithms. |
-| `joint-iteration` | No Iterator.zip/zipKeyed APIs, zip iterator prototype or longest/strict iteration modes. |
-| `iterator-chunking` | No Iterator.prototype.chunks/windows methods or their grouped-yield semantics. |
-| `iterator-includes` | No Iterator.prototype.includes method. |
-| `Iterator.prototype.join` | No Iterator.prototype.join method. |
-| `immutable-arraybuffer` | No immutable backing slot, immutable accessor or sliceToImmutable/transferToImmutable methods; existing view/atomic methods do not have the added immutable-buffer branches. Includes five tests also requiring byte-module imports. |
-| `error-stack-accessor` | No standard Error.prototype.stack getter/setter or associated cross-Realm receiver and descriptor requirements. |
-| `decorators` | No decorator productions or auto-accessor class element grammar. |
-| `import-text` | No text-module record creation/loading contract; the host's supported module attribute types remain an explicit choice. |
-| `nonextensible-applies-to-private` | These originals require TypeError when adding private fields/methods/accessors to non-extensible objects. Published PrivateFieldAdd and PrivateMethodOrAccessorAdd do not test [[Extensible]]; their distinct-private-name installations succeed. |
+| `decorators` | No decorator or auto-accessor class-element grammar |
+| `explicit-resource-management` | No using/await-using declarations, disposal symbols, DisposableStack, AsyncDisposableStack, or SuppressedError |
+| `source-phase-imports` | No source-phase import syntax, module-source objects, or source-phase loading algorithms |
+| `import-defer` | No deferred import syntax, deferred namespace methods, or defer import option |
+| `import-text` | No text-module creation/loading contract; supported module attribute types remain a host choice |
 
-The import checks use the complete published [import grammar](https://262.ecma-international.org/17.0/#sec-imports)
-and [dynamic import evaluation](https://262.ecma-international.org/17.0/#sec-import-call-runtime-semantics-evaluation),
-not merely new method names. The private-element comparison uses
-[PrivateFieldAdd](https://262.ecma-international.org/17.0/#sec-privatefieldadd)
-and [PrivateMethodOrAccessorAdd](https://262.ecma-international.org/17.0/#sec-privatemethodoraccessoradd).
-The two private-element tests assert a different algorithm, rather than uncovering
-a missing edition-17 extensibility check.
+The import comparisons cover the full published
+[import grammar](https://262.ecma-international.org/17.0/#sec-imports) and
+[dynamic import evaluation](https://262.ecma-international.org/17.0/#sec-import-call-runtime-semantics-evaluation),
+including their module records and loading algorithms.
+
+## APIs and algorithm changes
+
+| Scope feature | Difference from the published edition |
+| --- | --- |
+| `Temporal` | No Temporal API or `Date.prototype.toTemporalInstant`; the similarly named offset grammar does not introduce that API |
+| `ShadowRealm` | No ShadowRealm constructor, evaluation, or `importValue` |
+| `await-dictionary` | No `Promise.allKeyed` or `Promise.allSettledKeyed` |
+| `joint-iteration` | No `Iterator.zip`, `Iterator.zipKeyed`, or zip iterator modes |
+| `iterator-chunking` | No `Iterator.prototype.chunks` or `windows` |
+| `iterator-includes` | No `Iterator.prototype.includes` |
+| `Iterator.prototype.join` | No `Iterator.prototype.join` |
+| `immutable-arraybuffer` | No immutable backing slot, accessor, `sliceToImmutable`, or `transferToImmutable` |
+| `error-stack-accessor` | No standard `Error.prototype.stack` getter/setter or their receiver and descriptor requirements |
+| `nonextensible-applies-to-private` | Published private-element installation does not reject an object solely because it is non-extensible |
+
+The private-element comparison follows
+[PrivateFieldAdd](https://262.ecma-international.org/17.0/#sec-privatefieldadd) and
+[PrivateMethodOrAccessorAdd](https://262.ecma-international.org/17.0/#sec-privatemethodoraccessoradd).
+Neither checks `[[Extensible]]`; installing a distinct private name succeeds.
+Tests requiring a `TypeError` for non-extensibility assert a different algorithm.

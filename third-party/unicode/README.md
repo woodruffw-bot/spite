@@ -1,76 +1,74 @@
-# Unicode identifier, case, normalization, and RegExp property data
+# Unicode data
 
-`crates/spite-unicode/src/unicode_data.rs` contains ID_Start and ID_Continue ranges
-from Unicode 18.0.0. The source URL and SHA-256 are recorded in that file and in
-`cargo xtask generate unicode`. The Unicode license is included here.
+spite uses Unicode 18.0.0 for identifiers, case conversion, normalization, and
+RegExp properties. ECMA-262 requires the latest Unicode standard. The data
+version is pinned independently of Rust, so a compiler update does not change
+language behavior.
 
-ECMA-262 edition 17 refers to the latest Unicode standard in sections 2, 3, and
-12.7. Unicode 18.0.0 is the current final UCD release used by this implementation.
-The version is explicit so Rust toolchain updates cannot change identifier syntax
-or String transforms.
+The data is distributed under the [Unicode License v3](LICENSE).
 
-`crates/spite-unicode/src/case_data.rs` contains full lower/uppercase mappings and
-Cased/Case_Ignorable ranges used for contextual final sigma, plus simple/common
-case folding for RegExp. Its generator,
-`cargo xtask generate case-mappings`, pins UnicodeData.txt, SpecialCasing.txt,
-DerivedCoreProperties.txt and CaseFolding.txt by SHA-256. It incorporates all
-unconditional special mappings and verifies that Final_Sigma is the only
-language-insensitive condition.
-Language-specific tailoring is excluded from default conversion. The locale
-methods use this host's fixed locale-neutral fallback.
-RegExp Canonicalize uses C/S records from CaseFolding.txt with u/v ignore-case.
-Its full and Turkic records are excluded. Ordinary ignore-case instead uses the
-existing full uppercase mappings with single-unit and ASCII-boundary checks.
-The CaseFolding.txt source is https://www.unicode.org/Public/18.0.0/ucd/CaseFolding.txt
-and its SHA-256 is
-`a004797658a457bec4dc11683e39f69249ea3b595b752dbea6721c4c9f587b0d`.
+## Generated tables
 
-`crates/spite-unicode/src/normalization_data.rs` contains decomposition mappings,
-combining classes, and canonical compositions after full composition exclusions.
-`cargo xtask generate normalization` pins UnicodeData.txt and
-DerivedNormalizationProps.txt and validates the decomposition graph before emitting
-tables. Hangul decomposition and composition use UAX #15's algorithm.
-The complete unchanged Unicode 18 NormalizationTest.txt is retained at
-`crates/spite-runtime/tests/fixtures/NormalizationTest-18.0.0.txt` under the included
-Unicode license. Its source is
-https://www.unicode.org/Public/18.0.0/ucd/NormalizationTest.txt and its SHA-256 is
-`25a50d816764b04abfb4a646d3eb2b2a803284c3873d9a06757b94fe4513dde3`.
-The generator verifies those bytes; native tests check all specified column
-invariants and scalar identity outside the Part 1 inventory.
+| Data | Sources | Consumer |
+| --- | --- | --- |
+| Identifier start/continue ranges | DerivedCoreProperties.txt | [unicode_data.rs](../../crates/spite-unicode/src/unicode_data.rs) |
+| Case mappings and folding | UnicodeData.txt, SpecialCasing.txt, DerivedCoreProperties.txt, CaseFolding.txt | [case_data.rs](../../crates/spite-unicode/src/case_data.rs) |
+| Normalization | UnicodeData.txt, DerivedNormalizationProps.txt | [normalization_data.rs](../../crates/spite-unicode/src/normalization_data.rs) |
+| RegExp property aliases | PropertyAliases.txt, PropertyValueAliases.txt | [property_data.rs](../../crates/spite-regexp/src/pattern/property_data.rs) |
 
-The generator merges adjacent ranges without changing membership. It verifies the
-source digest before reading properties. Regeneration requires Python's standard
-library and is not part of a Rust build.
+Source URLs and SHA-256 identities are kept in the generators and generated-file
+headers. RegExp matching uses regress's tables; its source inventory is
+[UNICODE-SOURCES.json](../../vendor/regress/UNICODE-SOURCES.json), with integration
+details in [SPITE-PATCHES.md](../../vendor/regress/SPITE-PATCHES.md).
 
-`crates/spite-regexp/src/pattern/property_data.rs` contains exact Unicode 18
-general-category and script value aliases for RegExp property early errors.
-`cargo xtask generate regexp-properties` pins PropertyAliases.txt and
-PropertyValueAliases.txt by SHA-256 and verifies the edition-17 binary property
-whitelist against them. Script_Extensions shares Script's value aliases. The
-whitelist excludes other UCD properties and aliases, including WSpace. Seven
-edition-17 string properties are allowed only in UnicodeSetsMode. These tables
-validate syntax; matching is implemented separately for the admitted property sets.
+### Case conversion
+
+Default casing includes unconditional special mappings and contextual final
+sigma. Language-specific tailoring is excluded. Unicode RegExp ignore-case uses
+common/simple folding; full and Turkic folding records are excluded. Ordinary
+RegExp ignore-case instead applies the specified uppercase and ASCII-boundary
+rules.
+
+### Normalization
+
+Tables contain decompositions, combining classes, and canonical compositions
+after full composition exclusions. Hangul decomposition and composition use the
+algorithm from UAX #15.
+
+The complete, unchanged
+[NormalizationTest.txt](../../crates/spite-runtime/tests/fixtures/NormalizationTest-18.0.0.txt)
+is checked against its pinned source during generation. Native tests exercise its
+column invariants and scalar identity outside its Part 1 inventory.
+
+### RegExp properties
+
+Alias tables validate the exact spellings allowed by the published edition,
+including its binary-property whitelist. Script_Extensions uses Script's value
+aliases. Properties of strings are admitted only in UnicodeSetsMode. Syntax
+validation is independent of the matching backend's property tables.
+
+Unchanged [UCD reference files](../../crates/spite-core/src/testdata/README.md)
+let runtime tests derive Script and Script_Extensions expectations independently
+of generated matcher data.
+
+## Check or regenerate
+
+Run commands from the repository root. Generation requires Python 3; ordinary
+Cargo builds and tests use checked-in data.
 
 ```sh
 cargo xtask generate unicode --check
-cargo xtask generate unicode /path/to/DerivedCoreProperties.txt --check
 cargo xtask generate case-mappings --check
-cargo xtask generate case-mappings /path/to/ucd-directory --check
 cargo xtask generate normalization --check
-cargo xtask generate normalization /path/to/ucd-directory --check
 cargo xtask generate regexp-properties --check
-cargo xtask generate regexp-properties /path/to/ucd-directory --check
 ```
 
-Omit `--check` to regenerate. The first form downloads the pinned source. The
-second uses a local copy. CI verifies the checked-in output against the pinned
-source. Updating Unicode requires an explicit version, source digest, generated
-table, and test update.
+Omit `--check` to write generated output. With no source argument, the generators
+download their checksum-pinned inputs. To use local data, pass a
+DerivedCoreProperties.txt path to `unicode`, or a UCD directory to the other
+generators. Each generator accepts `--help`.
 
-RegExp matching now uses the pinned regress backend under `vendor/regress`.
-Its Unicode data provenance and local integration changes are recorded in
-`vendor/regress/SPITE-PATCHES.md`. The former specialized Script matcher tables
-and their generator were removed with the custom matching engine. Unchanged
-Unicode 18 reference files under `crates/spite-core/src/testdata/` remain available
-for backend data verification; parser property-alias generation above remains
-independent of the matching backend.
+A Unicode update must change the explicit version and source pins, regenerate
+affected tables and fixtures, update the backend data, and review tests whose
+expectations depend on changed memberships. See the
+[generator guide](../../crates/xtask/codegen/README.md) for commands.

@@ -1,47 +1,55 @@
 # Staging scope decisions
 
-Staging originals are reviewed against the exact published baseline,
-independently of their outcomes. [staging-reviewed.tsv](staging-reviewed.tsv)
-records a source-specific explanation and upstream Git identity for every
-closed, unretained entry.
+The upstream staging directory contains both baseline tests and tests for later
+proposals. Each original is reviewed against the published edition.
+[staging-reviewed.tsv](staging-reviewed.tsv) records the source-specific reason
+and upstream Git identity for each decided exclusion.
 
-## Prerequisites
+## Required facilities
 
-Some sources require facilities absent from the baseline: disposal syntax/APIs,
-Temporal, auto-accessor class elements, source-phase imports or nonextensibility
-restrictions on installing private fields. The [post-baseline review](post-baseline.md)
-explains those differences. Ordinary identifiers named `accessor` still use
-baseline grammar despite their proposal metadata tag.
+Some originals need disposal syntax or APIs, Temporal, auto-accessor class
+elements, source-phase imports, or later restrictions on private-element
+installation. The [later-proposal review](post-baseline.md) describes those
+differences.
 
-Other sources require disabled Object.prototype helpers, caller-chain extensions
-or Annex B features such as browser IsHTMLDDA, block-function var synthesis,
-legacy RegExp methods/escapes, String.substr or Date.setYear. Required literal
-prototype initializers and function poison accessors remain enabled.
+A tag is not sufficient evidence. For example, an ordinary identifier named
+`accessor` can use baseline grammar even when its metadata names the decorators
+proposal.
 
-## Permitted choices and data versions
+Other originals need disabled optional behavior: Object prototype helpers,
+caller-chain reflection, or Annex B features such as IsHTMLDDA, block-function
+var synthesis, legacy RegExp methods and escapes, `String.prototype.substr`, or
+`Date.prototype.setYear`. Required literal prototype initializers and function
+poison accessors remain enabled.
 
-Non-ISO Date.parse fallback formats are implementation-specific. This host can
-return NaN for SpiderMonkey-specific forms. EscapeRegExpPattern permits equivalent,
-deterministic source spellings that preserve literal parsing and matcher behavior.
-Some generated Unicode casing expectations use an older data version. Policy
-probes and Unicode witnesses check the selected current behavior independently.
+## Host choices and data versions
+
+Some expectations assume choices this host does not make:
+
+- Non-ISO `Date.parse` formats are implementation-specific. SpiderMonkey-specific
+  forms can return `NaN` here.
+- `EscapeRegExpPattern` permits equivalent source spellings, provided they
+  preserve literal parsing and matching behavior.
+- Generated casing expectations can use an older Unicode version.
+
+Policy probes and Unicode witnesses check the selected behavior independently
+of those originals. The [compatibility guide](../../../docs/compatibility.md)
+documents the host's defaults.
 
 ## Native resource constraints
 
-[resource-stress.json](resource-stress.json) records unchanged sources that reach
-native limits. They receive no passing credit. The native call/construct guard
-covers deep explicit constructor chains and intentional infinite recursion on
-supported native stacks.
+[resource-stress.json](resource-stress.json) records unchanged originals that
+reach native limits, including deep constructor chains and intentional infinite
+recursion. Other cases stress allocation through array copies, typed-array
+conversion, repeated Date operations, large sorts, or very large replacement
+strings.
 
-Exhaustive allocation stress includes array-copy matrices, repeated Date/cache
-sequences, TypedArray conversions, overlap copies and large numeric sorts with
-repeated assertions. Another source asks for a 2**36-code-unit replacement result.
-Their allocation diagnostics use an external address-space ceiling, recorded
-separately from Runtime defaults. The ceiling is an investigation condition,
-not a universal algorithm bound.
+Allocation diagnostics can use an external address-space ceiling, recorded
+separately from runtime defaults. That ceiling is a condition of the
+investigation, not a universal bound on the algorithm.
 
-Collection occurs at explicit idle checkpoints. Long uninterrupted Scripts can
-retain substantial storage until that point. A timeout, allocator failure or
-host termination cannot be converted into a JavaScript exception or a passing
-negative test. Do not shorten originals or increase default quotas to satisfy
-these stress cases; supplementary tests receive separate coverage.
+Collection currently occurs only at explicit idle checkpoints. An uninterrupted
+script can retain substantial memory before such a checkpoint. These cases
+remain nonpassing: a timeout, allocation failure, or host termination cannot
+become a JavaScript exception or a passing negative test. Smaller local tests can
+isolate the operations without replacing the upstream originals.

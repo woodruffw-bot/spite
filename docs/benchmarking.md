@@ -1,26 +1,35 @@
 # Benchmarking
 
-Run the benchmark example with an optimized build that retains debug assertions
-and overflow checks:
+The runtime's [benchmark example](../crates/spite-runtime/examples/bench.rs)
+measures parsing, realm initialization, evaluation, and garbage collection.
+Run it with an optimized profile that retains debug assertions and overflow
+checks:
 
 ```sh
 cargo run -p spite-runtime --profile conformance --example bench --locked -- 7 10 > bench.csv
 ```
 
-The optional positive arguments select samples and iterations per sample.
-Record the compiler, profile, machine and revision with results. Compare changes
-on the same machine/toolchain and repeat runs to assess variation. Keep raw
-measurements outside the repository; they are not project documentation.
+The optional positive arguments select the number of samples and iterations per
+sample. Output is CSV; durations are microseconds, reported as medians of sample
+averages.
 
-Output is CSV. Evaluation and collection durations are reported separately in
-microseconds, using medians of sample averages. Program cases reuse an initialized
-Realm and preparsed Script, warm up before sampling, and validate results outside
-the timed evaluation. Parse and initialization cases include destruction costs.
+## What is measured
 
-After each evaluation, the host clears kept objects and explicitly collects.
-Collection time matters when comparing complete host turns, even though it is
-excluded from evaluation time. Quotas retain their ordinary defaults.
+Program cases reuse a realm and preparsed script, warm up before sampling, and
+validate results outside the timed evaluation. After each evaluation, the host
+clears kept objects and explicitly collects garbage. Evaluation and collection
+times are separate, so include both when comparing a complete host turn.
+Runtime resource quotas are disabled.
 
-Use profiling to justify optimizations. Benchmarks have no CI timing thresholds
-and do not replace semantic, error-order or lifetime tests. The case definitions
-and measured operations are documented in the benchmark example itself.
+Parsing and initialization measurements include destruction costs. The example's
+case definitions document the source programs and expected results.
+
+## Compare changes
+
+Use the same machine and toolchain, repeat runs to assess variation, and record
+the compiler, profile, machine, and revision alongside results. Keep raw
+measurements outside the repository.
+
+Use profiling to identify the operation behind a timing change. Benchmarks have
+no CI timing thresholds and do not replace semantic, error-order, or lifetime
+tests.
