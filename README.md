@@ -3,12 +3,10 @@
 A JavaScript parser and interpreter written in safe Rust.
 
 spite targets [ECMAScript 2026](https://262.ecma-international.org/17.0/).
-The [published-specification and complete upstream reviews](docs/spec-review.md#qualification-of-the-reviewed-target)
-are complete. All 82,574 retained Test262 modes pass on Linux and Windows with
-stable Rust and Rust 1.99. Confidence is qualified by the documented native
-resource constraints and two interpretations of published specification inconsistencies.
-Node.js compatibility, browser APIs and ECMA-402 are outside the target. Existing
-later-proposal facilities are extensions and supply no edition-17 conformance credit.
+The [specification review](docs/spec-review.md) explains the published baseline,
+host choices and known interpretations. Native resource constraints are described
+in [coverage](docs/coverage.md). Node.js compatibility, browser APIs and ECMA-402
+are outside the target. Later-proposal facilities supply no baseline conformance credit.
 
 Production crates use std and workspace crates, regress for RegExp matching, and
 jiff/jiff-tzdb for time zones. Workspace lints forbid unsafe code. insta is used

@@ -1,8 +1,11 @@
 # Development
 
 - Follow docs/design.md and keep docs/roadmap.md accurate.
-- Keep roadmap entries focused on concrete specification implementation. Record
-  test execution and fixture inventories in docs/coverage.md and tests/test262/README.md.
+- Keep documentation focused on current APIs, design, test commands and constraints.
+  Keep fixture identities in machine-readable manifests. Do not add run logs,
+  benchmark results, commit narratives or personal workspace paths to docs.
+- Follow Google's Rust style guide and conventional Cargo layout. Prefer focused
+  crates, leaf modules, explicit imports and direct, readable control flow.
 - Use safe Rust. Every crate inherits the workspace lints.
 - Production dependencies must be workspace crates, except regex, regress, jiff,
   and jiff-tzdb when needed.
