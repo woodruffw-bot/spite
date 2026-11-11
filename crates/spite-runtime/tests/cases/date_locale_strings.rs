@@ -24,7 +24,32 @@ fn fallback_methods_use_the_local_calendar_and_ignore_reserved_arguments() {
     ] {
         for (method, base) in METHODS {
             let mut r = realm(TimeZone::bundled(zone).unwrap());
-            assert_eq!(r.eval(&format!("let touched=0,d=new Date(-1830383032001),poison={{get length(){{throw 7;}},get timeZone(){{throw 8;}},get localeMatcher(){{throw 9;}},[Symbol.toPrimitive](){{throw 10;}}}};let actual=d.{method}(poison,poison,touched++);actual===d.{base}() && touched===1")),Ok(Value::Boolean(true)),"{zone} {method}");
+            assert_eq!(
+                r.eval(&format!(
+                    r#"
+                        let touched = 0,
+                            d = new Date(-1830383032001),
+                            poison = {{
+                                get length() {{
+                                    throw 7;
+                                }},
+                                get timeZone() {{
+                                    throw 8;
+                                }},
+                                get localeMatcher() {{
+                                    throw 9;
+                                }},
+                                [Symbol.toPrimitive]() {{
+                                    throw 10;
+                                }}
+                            }};
+                        let actual = d.{method}(poison, poison, touched++);
+                        actual === d.{base}() && touched === 1
+                    "#
+                )),
+                Ok(Value::Boolean(true)),
+                "{zone} {method}"
+            );
             assert_eq!(r.eval(&format!("d.{base}=function(){{throw 7;}};typeof Date.prototype.{method}.call(d,Symbol(),1n)==='string'")),Ok(Value::Boolean(true)));
         }
     }
@@ -57,7 +82,18 @@ fn receiver_branding_frozen_slots_and_invalid_dates_follow_the_fallback_contract
                 "{method}: {receiver}"
             );
         }
-        assert_eq!(realm(TimeZone::utc()).eval(&format!("let d=new Date(0);Object.setPrototypeOf(d,null);Object.freeze(d);typeof Date.prototype.{method}.call(d)==='string' && Object.isFrozen(d) && Date.prototype.getTime.call(d)===0")),Ok(Value::Boolean(true)));
+        assert_eq!(
+            realm(TimeZone::utc()).eval(&format!(
+                r#"
+                    let d = new Date(0);
+                    Object.setPrototypeOf(d, null);
+                    Object.freeze(d);
+                    typeof Date.prototype.{method}.call(d) === 'string' && Object.isFrozen(d) && Date
+                        .prototype.getTime.call(d) === 0
+                "#
+            )),
+            Ok(Value::Boolean(true))
+        );
         assert_eq!(
             realm(TimeZone::utc()).eval(&format!(
                 "new Date(NaN).{method}(Symbol(),1n)==='Invalid Date'"

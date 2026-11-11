@@ -63,22 +63,110 @@ fn numeric_construction_coerces_all_seven_fields_in_order_before_prototype_looku
         .collect::<Vec<_>>()
         .join(",");
     assert_true(&format!(
-        "let trace='',count=0;let d=new Date({args},count++,{{valueOf(){{throw 7;}}}});trace==='0123456' && count===1 && Number.isNaN(d.getTime())"
+        r#"
+            let trace = '',
+                count = 0;
+            let d = new Date({args}, count++, {{
+                valueOf() {{
+                    throw 7;
+                }}
+            }});
+            trace === '0123456' && count === 1 && Number.isNaN(d.getTime())
+        "#
     ));
     assert_true(
-        "let p={},trace='';function C(){}let x={valueOf(){trace+='y';return NaN;}},y={valueOf(){trace+='m';C.prototype=p;return 0;}};let d=Reflect.construct(Date,[x,y],C);trace==='ym' && Object.getPrototypeOf(d)===p && Number.isNaN(Date.prototype.getTime.call(d))",
+        r#"
+            let p = {},
+                trace = '';
+
+            function C() {}
+            let x = {
+                    valueOf() {
+                        trace += 'y';
+                        return NaN;
+                    }
+                },
+                y = {
+                    valueOf() {
+                        trace += 'm';
+                        C.prototype = p;
+                        return 0;
+                    }
+                };
+            let d = Reflect.construct(Date, [x, y], C);
+            trace === 'ym' && Object.getPrototypeOf(d) === p && Number.isNaN(Date.prototype.getTime.call(
+                d))
+        "#,
     );
     assert_true(
-        "function C(){}C.prototype=3;let d=Reflect.construct(Date,[NaN,0],C);Object.getPrototypeOf(d)===Date.prototype && Number.isNaN(d.getTime())",
+        r#"
+            function C() {}
+            C.prototype = 3;
+            let d = Reflect.construct(Date, [NaN, 0], C);
+            Object.getPrototypeOf(d) === Date.prototype && Number.isNaN(d.getTime())
+        "#,
     );
     assert_true(
-        "let trace='',p={},C=(function(){}).bind(null);Object.defineProperty(C,'prototype',{get(){trace+='p';return p;}});let d=Reflect.construct(Date,[{valueOf(){trace+='y';return NaN;}},{valueOf(){trace+='m';return 0;}}],C);trace==='ymp' && Object.getPrototypeOf(d)===p && Number.isNaN(Date.prototype.getTime.call(d))",
+        r#"
+            let trace = '',
+                p = {},
+                C = (function() {}).bind(null);
+            Object.defineProperty(C, 'prototype', {
+                get() {
+                    trace += 'p';
+                    return p;
+                }
+            });
+            let d = Reflect.construct(Date, [{
+                valueOf() {
+                    trace += 'y';
+                    return NaN;
+                }
+            }, {
+                valueOf() {
+                    trace += 'm';
+                    return 0;
+                }
+            }], C);
+            trace === 'ymp' && Object.getPrototypeOf(d) === p && Number.isNaN(Date.prototype.getTime.call(
+                d))
+        "#,
     );
     assert_true(
-        "let trace='',caught=false,C=(function(){}).bind(null);Object.defineProperty(C,'prototype',{get(){trace+='p';throw 9;}});try{Reflect.construct(Date,[{valueOf(){trace+='y';return NaN;}},0],C);}catch(e){caught=e===9;}caught && trace==='yp'",
+        r#"
+            let trace = '',
+                caught = false,
+                C = (function() {}).bind(null);
+            Object.defineProperty(C, 'prototype', {
+                get() {
+                    trace += 'p';
+                    throw 9;
+                }
+            });
+            try {
+                Reflect.construct(Date, [{
+                    valueOf() {
+                        trace += 'y';
+                        return NaN;
+                    }
+                }, 0], C);
+            } catch (e) {
+                caught = e === 9;
+            }
+            caught && trace === 'yp'
+        "#,
     );
     assert_true(
-        "class D extends Date{#x=7;read(){return this.#x;}}let d=new D(NaN,0);d instanceof D && d instanceof Date && d.read()===7 && Number.isNaN(d.getTime())",
+        r#"
+            class D extends Date {
+                #x = 7;
+                read() {
+                    return this.#x;
+                }
+            }
+            let d = new D(NaN, 0);
+            d instanceof D && d instanceof Date && d.read() === 7 && Number.isNaN(d.getTime())
+        "#,
     );
 }
 
@@ -140,7 +228,12 @@ fn local_getters_return_nan_for_invalid_dates_and_check_their_own_slot() {
             );
         }
         assert_true(&format!(
-            "let d=new Date(NaN);Object.setPrototypeOf(d,null);Object.freeze(d);Number.isNaN(Date.prototype.{method}.call(d))"
+            r#"
+                let d = new Date(NaN);
+                Object.setPrototypeOf(d, null);
+                Object.freeze(d);
+                Number.isNaN(Date.prototype.{method}.call(d))
+            "#
         ));
     }
 }
@@ -155,7 +248,16 @@ fn invalid_local_setters_convert_present_fields_and_preserve_hook_revival() {
             .collect::<Vec<_>>().join(",");
         let expected = (0..arity).map(|i| i.to_string()).collect::<String>();
         assert_true(&format!(
-            "let trace='',count=0,d=new Date(NaN);Number.isNaN(d.{method}({args},count++,{{valueOf(){{throw 7;}}}})) && trace==='{expected}' && d.getTime()==={} && count===1",
+            r#"
+                let trace = '',
+                    count = 0,
+                    d = new Date(NaN);
+                Number.isNaN(d.{method}({args}, count++, {{
+                    valueOf() {{
+                        throw 7;
+                    }}
+                }})) && trace === '{expected}' && d.getTime() === {} && count === 1
+            "#,
             arity + 6
         ));
         for failure in 0..arity {
@@ -174,7 +276,17 @@ fn invalid_local_setters_convert_present_fields_and_preserve_hook_revival() {
                 .join(",");
             let expected = (0..=failure).map(|i| i.to_string()).collect::<String>();
             assert_true(&format!(
-                "let trace='',caught=false,d=new Date(NaN);try{{d.{method}({args});}}catch(e){{caught=e===7;}}caught && trace==='{expected}' && d.getTime()===77"
+                r#"
+                    let trace = '',
+                        caught = false,
+                        d = new Date(NaN);
+                    try {{
+                        d.{method}({args});
+                    }} catch (e) {{
+                        caught = e === 7;
+                    }}
+                    caught && trace === '{expected}' && d.getTime() === 77
+                "#
             ));
         }
         for value in ["1n", "Symbol()"] {
@@ -203,7 +315,13 @@ fn invalid_local_setters_convert_present_fields_and_preserve_hook_revival() {
             ));
         }
         assert_true(&format!(
-            "let d=new Date(NaN);Object.setPrototypeOf(d,null);Object.freeze(d);Number.isNaN(Date.prototype.{method}.call(d,1)) && Number.isNaN(Date.prototype.getTime.call(d))"
+            r#"
+                let d = new Date(NaN);
+                Object.setPrototypeOf(d, null);
+                Object.freeze(d);
+                Number.isNaN(Date.prototype.{method}.call(d, 1)) && Number.isNaN(Date.prototype.getTime
+                    .call(d))
+            "#
         ));
     }
 }

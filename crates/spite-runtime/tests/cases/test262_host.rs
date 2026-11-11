@@ -18,40 +18,40 @@ fn forwarded_call_errors_use_the_forwarding_realm_until_the_callee_enters_its_ow
     check(
         &mut realm,
         r#"
-        // 10.5.12, 20.2.3.1/3, 28.1.1: a revoked Proxy has no callee context.
-        // 10.2.1: class-call rejection occurs after entering the class's Realm.
-        const globals=[globalThis,$262.createRealm().global];
-        function rejectsIn(invoke,target,expected){
-            try{invoke(target)}catch(e){return Object.getPrototypeOf(e)===expected.TypeError.prototype}
-            return false;
-        }
-        let correct=true;
-        for(const G of globals){
-            const forwards=[
-                t=>G.Reflect.apply(t,null,[]),
-                t=>Reflect.apply(G.Function.prototype.apply,t,[null,[]]),
-                t=>Reflect.apply(G.Function.prototype.call,t,[null]),
-                G.Function('t',"'use strict';return t()"),
-                G.Function("'use strict';return (t)=>t()")()
-            ];
-            for(const target of [undefined,{},1]){
-                for(const forward of forwards)correct=rejectsIn(forward,target,G)&&correct;
+            // 10.5.12, 20.2.3.1/3, 28.1.1: a revoked Proxy has no callee context.
+            // 10.2.1: class-call rejection occurs after entering the class's Realm.
+            const globals=[globalThis,$262.createRealm().global];
+            function rejectsIn(invoke,target,expected){
+                try{invoke(target)}catch(e){return Object.getPrototypeOf(e)===expected.TypeError.prototype}
+                return false;
             }
-            for(const origin of globals){
-                for(const kind of ['direct','bound','proxy']){
-                    const pair=origin.Proxy.revocable(origin.Function(''),{});
-                    const target=kind==='bound'?pair.proxy.bind(null):
-                        kind==='proxy'?new origin.Proxy(pair.proxy,{}):pair.proxy;
-                    pair.revoke();
+            let correct=true;
+            for(const G of globals){
+                const forwards=[
+                    t=>G.Reflect.apply(t,null,[]),
+                    t=>Reflect.apply(G.Function.prototype.apply,t,[null,[]]),
+                    t=>Reflect.apply(G.Function.prototype.call,t,[null]),
+                    G.Function('t',"'use strict';return t()"),
+                    G.Function("'use strict';return (t)=>t()")()
+                ];
+                for(const target of [undefined,{},1]){
                     for(const forward of forwards)correct=rejectsIn(forward,target,G)&&correct;
                 }
-                const C=origin.Function('return class C{}')();
-                for(const target of [C,C.bind(null)]){
-                    for(const forward of forwards)correct=rejectsIn(forward,target,origin)&&correct;
+                for(const origin of globals){
+                    for(const kind of ['direct','bound','proxy']){
+                        const pair=origin.Proxy.revocable(origin.Function(''),{});
+                        const target=kind==='bound'?pair.proxy.bind(null):
+                            kind==='proxy'?new origin.Proxy(pair.proxy,{}):pair.proxy;
+                        pair.revoke();
+                        for(const forward of forwards)correct=rejectsIn(forward,target,G)&&correct;
+                    }
+                    const C=origin.Function('return class C{}')();
+                    for(const target of [C,C.bind(null)]){
+                        for(const forward of forwards)correct=rejectsIn(forward,target,origin)&&correct;
+                    }
                 }
             }
-        }
-        correct
+            correct
         "#,
     );
 }
@@ -62,45 +62,73 @@ fn proxy_errors_distinguish_operation_realms_from_foreign_trap_realms() {
     check(
         &mut realm,
         r#"
-        // 10.5: invariant and revocation errors belong to the operation's
-        // Realm; an abrupt trap call keeps the trap body's exception identity.
-        const globals=[globalThis,$262.createRealm().global];
-        const returns={getPrototypeOf:'0',setPrototypeOf:'true',isExtensible:'true',
-            preventExtensions:'true',getOwnPropertyDescriptor:'0',defineProperty:'true',
-            has:'false',get:'0',set:'true',deleteProperty:'true',ownKeys:"['x','x']",
-            apply:'0',construct:'0'};
-        let correct=true;
-        for(const G of globals)for(const R of globals)for(const T of globals){
-            for(const op of Object.keys(returns)){
-                for(const mode of ['invariant','throw','revoked','revoked_trap']){
-                    const target=op==='apply'||op==='construct'?G.Function(''):new G.Object();
-                    Object.defineProperty(target,'x',{value:1,writable:false,configurable:false});
-                    if(['setPrototypeOf','isExtensible','defineProperty'].includes(op))Object.preventExtensions(target);
-                    let trap=T.Function(mode==='throw'?'return null.x':'return '+returns[op]);
-                    if(mode==='revoked_trap'){
-                        const pair=T.Proxy.revocable(trap,{});trap=pair.proxy.bind(null);pair.revoke();
+            // 10.5: invariant and revocation errors belong to the operation's
+            // Realm; an abrupt trap call keeps the trap body's exception identity.
+            const globals = [globalThis, $262.createRealm().global];
+            const returns = {
+                getPrototypeOf: '0',
+                setPrototypeOf: 'true',
+                isExtensible: 'true',
+                preventExtensions: 'true',
+                getOwnPropertyDescriptor: '0',
+                defineProperty: 'true',
+                has: 'false',
+                get: '0',
+                set: 'true',
+                deleteProperty: 'true',
+                ownKeys: "['x','x']",
+                apply: '0',
+                construct: '0'
+            };
+            let correct = true;
+            for (const G of globals)
+                for (const R of globals)
+                    for (const T of globals) {
+                        for (const op of Object.keys(returns)) {
+                            for (const mode of ['invariant', 'throw', 'revoked', 'revoked_trap']) {
+                                const target = op === 'apply' || op === 'construct' ? G.Function('') :
+                                    new G.Object();
+                                Object.defineProperty(target, 'x', {
+                                    value: 1,
+                                    writable: false,
+                                    configurable: false
+                                });
+                                if (['setPrototypeOf', 'isExtensible', 'defineProperty'].includes(op))
+                                    Object.preventExtensions(target);
+                                let trap = T.Function(mode === 'throw' ? 'return null.x' : 'return ' +
+                                    returns[op]);
+                                if (mode === 'revoked_trap') {
+                                    const pair = T.Proxy.revocable(trap, {});
+                                    trap = pair.proxy.bind(null);
+                                    pair.revoke();
+                                }
+                                const pair = G.Proxy.revocable(target, {
+                                    [op]: trap
+                                });
+                                if (mode === 'revoked') pair.revoke();
+                                const args = [pair.proxy];
+                                if (op === 'setPrototypeOf') args.push(null);
+                                if (['getOwnPropertyDescriptor', 'has', 'get', 'set', 'deleteProperty']
+                                    .includes(op)) args.push('x');
+                                if (op === 'set') args.push(2);
+                                if (op === 'defineProperty') args.push('newKey', {
+                                    value: 2
+                                });
+                                if (op === 'apply') args.push(null, []);
+                                if (op === 'construct') args.push([]);
+                                const returnsNormally = mode === 'invariant' && op === 'apply';
+                                try {
+                                    const result = R.Reflect[op](...args);
+                                    correct = returnsNormally && result === 0 && correct;
+                                } catch (e) {
+                                    const expected = mode === 'throw' ? T : R;
+                                    correct = !returnsNormally && Object.getPrototypeOf(e) === expected
+                                        .TypeError.prototype && correct;
+                                }
+                            }
+                        }
                     }
-                    const pair=G.Proxy.revocable(target,{[op]:trap});
-                    if(mode==='revoked')pair.revoke();
-                    const args=[pair.proxy];
-                    if(op==='setPrototypeOf')args.push(null);
-                    if(['getOwnPropertyDescriptor','has','get','set','deleteProperty'].includes(op))args.push('x');
-                    if(op==='set')args.push(2);
-                    if(op==='defineProperty')args.push('newKey',{value:2});
-                    if(op==='apply')args.push(null,[]);
-                    if(op==='construct')args.push([]);
-                    const returnsNormally=mode==='invariant'&&op==='apply';
-                    try{
-                        const result=R.Reflect[op](...args);
-                        correct=returnsNormally&&result===0&&correct;
-                    }catch(e){
-                        const expected=mode==='throw'?T:R;
-                        correct=!returnsNormally&&Object.getPrototypeOf(e)===expected.TypeError.prototype&&correct;
-                    }
-                }
-            }
-        }
-        correct&&Object.getPrototypeOf({})===Object.prototype
+            correct && Object.getPrototypeOf({}) === Object.prototype
         "#,
     );
 }
@@ -128,13 +156,34 @@ fn detachment_invalidates_fixed_and_tracking_views_without_copying_or_public_tra
     check(
         &mut realm,
         r#"
-        let b=new ArrayBuffer(16,{maxByteLength:32}),tracking=new Uint8Array(b),fixed=new Uint8Array(b,0,8),view=new DataView(b);
-        tracking[0]=7;let calls=0;
-        b.transfer=()=>{calls++;throw 1};b.constructor={[Symbol.species](){calls++;throw 2}};
-        let returned=$262.detachArrayBuffer(b),typed=false;
-        try{view.getInt8(0)}catch(e){typed=e instanceof TypeError}
-        returned===undefined&&b.detached&&b.byteLength===0&&tracking.length===0&&fixed.length===0&&tracking[0]===undefined&&typed&&calls===0
-    "#,
+            let b = new ArrayBuffer(16, {
+                    maxByteLength: 32
+                }),
+                tracking = new Uint8Array(b),
+                fixed = new Uint8Array(b, 0, 8),
+                view = new DataView(b);
+            tracking[0] = 7;
+            let calls = 0;
+            b.transfer = () => {
+                calls++;
+                throw 1
+            };
+            b.constructor = {
+                [Symbol.species]() {
+                    calls++;
+                    throw 2
+                }
+            };
+            let returned = $262.detachArrayBuffer(b),
+                typed = false;
+            try {
+                view.getInt8(0)
+            } catch (e) {
+                typed = e instanceof TypeError
+            }
+            returned === undefined && b.detached && b.byteLength === 0 && tracking.length === 0 && fixed
+                .length === 0 && tracking[0] === undefined && typed && calls === 0
+        "#,
     );
 }
 
@@ -144,14 +193,38 @@ fn buffer_brands_and_detach_keys_are_checked_without_coercion_or_traps() {
     check(
         &mut realm,
         r#"
-        let calls=0,errors=0,b=new ArrayBuffer(8),key={[Symbol.toPrimitive](){calls++;return undefined}};
-        let proxy=new Proxy(b,{get(){calls++;throw 1}});
-        for(const value of [undefined,null,1,{},proxy,new SharedArrayBuffer(8),new Uint8Array(b)]){
-            try{$262.detachArrayBuffer(value,key)}catch(e){if(e instanceof TypeError)errors++}
-        }
-        for(const value of [null,0,'',key]){try{$262.detachArrayBuffer(b,value)}catch(e){if(e instanceof TypeError)errors++}}
-        calls===0&&errors===11&&!b.detached
-    "#,
+            let calls = 0,
+                errors = 0,
+                b = new ArrayBuffer(8),
+                key = {
+                    [Symbol.toPrimitive]() {
+                        calls++;
+                        return undefined
+                    }
+                };
+            let proxy = new Proxy(b, {
+                get() {
+                    calls++;
+                    throw 1
+                }
+            });
+            for (const value of [undefined, null, 1, {}, proxy, new SharedArrayBuffer(8), new Uint8Array(
+                    b)]) {
+                try {
+                    $262.detachArrayBuffer(value, key)
+                } catch (e) {
+                    if (e instanceof TypeError) errors++
+                }
+            }
+            for (const value of [null, 0, '', key]) {
+                try {
+                    $262.detachArrayBuffer(b, value)
+                } catch (e) {
+                    if (e instanceof TypeError) errors++
+                }
+            }
+            calls === 0 && errors === 11 && !b.detached
+        "#,
     );
 }
 
@@ -161,11 +234,11 @@ fn repeated_detachment_ignores_this_and_extra_arguments_but_checks_keys_each_tim
     check(
         &mut realm,
         r#"
-        let b=new ArrayBuffer(8),detach=$262.detachArrayBuffer,calls=0,typed=false;
-        let first=detach.call(7,b,undefined,{valueOf(){calls++;throw 1}}),second=detach(b);
-        try{detach(b,0)}catch(e){typed=e instanceof TypeError}
-        first===undefined&&second===undefined&&b.detached&&typed&&calls===0
-    "#,
+            let b=new ArrayBuffer(8),detach=$262.detachArrayBuffer,calls=0,typed=false;
+            let first=detach.call(7,b,undefined,{valueOf(){calls++;throw 1}}),second=detach(b);
+            try{detach(b,0)}catch(e){typed=e instanceof TypeError}
+            first===undefined&&second===undefined&&b.detached&&typed&&calls===0
+        "#,
     );
 }
 
@@ -227,14 +300,24 @@ fn scripts_use_the_global_environment_and_restore_strict_callers_and_local_bindi
     check(
         &mut realm,
         r#"
-        var count=1;
-        function f(){'use strict';let count=99;
-            let result=$262.evalScript('var count=7;let added=11;function readAdded(){return added};globalThis.scriptThis=this;count+added');
-            let strict=false;try{unresolvableAfterScript=1}catch(e){strict=e instanceof ReferenceError}
-            return count===99&&result===18&&this===undefined&&strict;
-        }
-        f()&&count===7&&added===11&&readAdded()===11&&scriptThis===globalThis
-    "#,
+            var count = 1;
+
+            function f() {
+                'use strict';
+                let count = 99;
+                let result = $262.evalScript(
+                    'var count=7;let added=11;function readAdded(){return added};globalThis.scriptThis=this;count+added'
+                    );
+                let strict = false;
+                try {
+                    unresolvableAfterScript = 1
+                } catch (e) {
+                    strict = e instanceof ReferenceError
+                }
+                return count === 99 && result === 18 && this === undefined && strict;
+            }
+            f() && count === 7 && added === 11 && readAdded() === 11 && scriptThis === globalThis
+        "#,
     );
 }
 
@@ -244,16 +327,16 @@ fn script_parse_and_runtime_errors_are_catchable_without_inheriting_eval_privile
     check(
         &mut realm,
         r#"
-        let marker={},same=false,errors=0;globalThis.eval=()=>{throw 'public eval'};
-        try{$262.evalScript('throw marker')}catch(e){same=e===marker}
-        for(const code of ['return 1','new.target','super.x','this.#x']){
-            try{$262.evalScript(code)}catch(e){if(e instanceof SyntaxError)errors++}
-        }
-        $262.evalScript('let retained=7');
-        try{$262.evalScript('let retained=8')}catch(e){if(e instanceof SyntaxError)errors++}
-        function strictCaller(){'use strict';return $262.evalScript('with({value:3}){value}')}
-        same&&errors===5&&retained===7&&strictCaller()===3&&$262.evalScript('({value:4})').value===4
-    "#,
+            let marker={},same=false,errors=0;globalThis.eval=()=>{throw 'public eval'};
+            try{$262.evalScript('throw marker')}catch(e){same=e===marker}
+            for(const code of ['return 1','new.target','super.x','this.#x']){
+                try{$262.evalScript(code)}catch(e){if(e instanceof SyntaxError)errors++}
+            }
+            $262.evalScript('let retained=7');
+            try{$262.evalScript('let retained=8')}catch(e){if(e instanceof SyntaxError)errors++}
+            function strictCaller(){'use strict';return $262.evalScript('with({value:3}){value}')}
+            same&&errors===5&&retained===7&&strictCaller()===3&&$262.evalScript('({value:4})').value===4
+        "#,
     );
 }
 
@@ -316,10 +399,14 @@ fn nested_scripts_and_modules_preserve_their_distinct_import_referrers() {
 fn jobs_created_by_global_scripts_keep_their_context_after_caller_restoration() {
     let mut realm = host();
     realm.eval(r#"
-        let results=[];
-        async function caller(){let local=7;
-            $262.evalScript('async function scriptJob(){await 0;return [this===globalThis,typeof local]}scriptJob().then(v=>results.push(v.join(",")))');
-            await 0;results.push(local);
+        let results = [];
+        async function caller() {
+            let local = 7;
+            $262.evalScript(
+                'async function scriptJob(){await 0;return [this===globalThis,typeof local]}scriptJob().then(v=>results.push(v.join(",")))'
+                );
+            await 0;
+            results.push(local);
         }
         caller();
     "#).unwrap();
@@ -340,7 +427,24 @@ fn jobs_created_by_global_scripts_keep_their_context_after_caller_restoration() 
 fn script_host_failures_restore_context_and_bypass_caller_cleanup() {
     let mut realm = host();
     realm.eval("let caught=0,finalized=0,disposed=0;var entered=0;let resource={[Symbol.dispose](){disposed++}}").unwrap();
-    let error=realm.eval("function f(){using r=resource;let entered=99;try{$262.evalScript('entered++;$262.IsHTMLDDA')}catch(e){caught++}finally{finalized++}}f()").unwrap_err();
+    let error = realm
+        .eval(
+            r#"
+                function f() {
+                    using r = resource;
+                    let entered = 99;
+                    try {
+                        $262.evalScript('entered++;$262.IsHTMLDDA')
+                    } catch (e) {
+                        caught++
+                    } finally {
+                        finalized++
+                    }
+                }
+                f()
+            "#,
+        )
+        .unwrap_err();
     assert!(matches!(error, Error::Unsupported { .. }), "{error}");
     check(
         &mut realm,
@@ -358,7 +462,23 @@ fn nested_script_calls_share_the_current_work_allowance() {
     realm
         .eval("let entered=false,caught=0,finalized=0")
         .unwrap();
-    let error=realm.eval("function f(){entered=true;try{for(let i=0;i<1000;i++)$262.evalScript('0')}catch(e){caught++}finally{finalized++}}f()").unwrap_err();
+    let error = realm
+        .eval(
+            r#"
+                function f() {
+                    entered = true;
+                    try {
+                        for (let i = 0; i < 1000; i++) $262.evalScript('0')
+                    } catch (e) {
+                        caught++
+                    } finally {
+                        finalized++
+                    }
+                }
+                f()
+            "#,
+        )
+        .unwrap_err();
     assert!(matches!(error, Error::Limit { .. }), "{error}");
     check(&mut realm, "entered&&caught===0&&finalized===0");
 }
@@ -392,11 +512,21 @@ fn isolated_workers_report_lossless_strings_and_run_gc_and_promise_jobs() {
         .eval("let parentOnly=11;Object.prototype.parentMarker=99")
         .unwrap();
     let source = r#"
-        $262.agent.report(typeof parentOnly+'|'+typeof Object.prototype.parentMarker+'|'+($262.global===globalThis));
+        $262.agent.report(typeof parentOnly + '|' + typeof Object.prototype.parentMarker + '|' + ($262
+            .global === globalThis));
         $262.agent.report('');
         $262.agent.report('\uD800');
-        $262.agent.report({toString(){$262.agent.report('inner');return 'outer'}});
-        (async function(){await $262.gc();$262.agent.report('jobs');$262.agent.leaving()})();
+        $262.agent.report({
+            toString() {
+                $262.agent.report('inner');
+                return 'outer'
+            }
+        });
+        (async function() {
+            await $262.gc();
+            $262.agent.report('jobs');
+            $262.agent.leaving()
+        })();
     "#;
     assert_eq!(
         realm.eval(&format!("$262.agent.start({source:?})")),
@@ -438,7 +568,17 @@ fn worker_retirement_stops_program_loops_sleeps_and_infinite_waits() {
     realm.finish_test262_agents().unwrap();
     check(
         &mut realm,
-        "let now=$262.agent.monotonicNow(),calls=0;$262.agent.sleep({valueOf(){calls++;return 0}});calls===1&&$262.agent.monotonicNow()>=now",
+        r#"
+            let now = $262.agent.monotonicNow(),
+                calls = 0;
+            $262.agent.sleep({
+                valueOf() {
+                    calls++;
+                    return 0
+                }
+            });
+            calls === 1 && $262.agent.monotonicNow() >= now
+        "#,
     );
 }
 
@@ -503,7 +643,18 @@ fn broadcast_retrieval_acknowledges_before_callbacks_and_preserves_repeated_deli
     realm
         .eval("let buffer=new SharedArrayBuffer(4),a=new Int32Array(buffer)")
         .unwrap();
-    let source = "$262.agent.receiveBroadcast(function(first,x){$262.agent.report('first:'+x);$262.agent.receiveBroadcast(function(second,y){if(first===second)throw 1;new Int32Array(second)[0]=37;if(new Int32Array(first)[0]!==37)throw 2;$262.agent.report('second:'+y);$262.agent.leaving()})})";
+    let source = r#"
+        $262.agent.receiveBroadcast(function(first, x) {
+            $262.agent.report('first:' + x);
+            $262.agent.receiveBroadcast(function(second, y) {
+                if (first === second) throw 1;
+                new Int32Array(second)[0] = 37;
+                if (new Int32Array(first)[0] !== 37) throw 2;
+                $262.agent.report('second:' + y);
+                $262.agent.leaving()
+            })
+        })
+    "#;
     realm
         .eval(&format!("$262.agent.start({source:?})"))
         .unwrap();
@@ -521,11 +672,47 @@ fn broadcast_validation_precedes_value_hooks_and_rejects_proxy_brands() {
     let mut realm = host();
     check(
         &mut realm,
-        "let buffer=new SharedArrayBuffer(8),calls=0,traps=0,caught=0;for(const invalid of [{},new ArrayBuffer(8),SharedArrayBuffer.prototype,new Proxy(buffer,{get(){traps++;throw 1}})]){try{$262.agent.broadcast(invalid,{valueOf(){calls++;return 0}})}catch(e){if(e instanceof TypeError)caught++}}caught===4&&calls===0&&traps===0",
+        r#"
+            let buffer = new SharedArrayBuffer(8),
+                calls = 0,
+                traps = 0,
+                caught = 0;
+            for (const invalid of [{}, new ArrayBuffer(8), SharedArrayBuffer.prototype, new Proxy(buffer, {
+                    get() {
+                        traps++;
+                        throw 1
+                    }
+                })]) {
+                try {
+                    $262.agent.broadcast(invalid, {
+                        valueOf() {
+                            calls++;
+                            return 0
+                        }
+                    })
+                } catch (e) {
+                    if (e instanceof TypeError) caught++
+                }
+            }
+            caught === 4 && calls === 0 && traps === 0
+        "#,
     );
     check(
         &mut realm,
-        "let reason={},same=false;try{$262.agent.broadcast(buffer,{valueOf(){throw reason}})}catch(e){same=e===reason}same&&$262.agent.broadcast(buffer)===undefined",
+        r#"
+            let reason = {},
+                same = false;
+            try {
+                $262.agent.broadcast(buffer, {
+                    valueOf() {
+                        throw reason
+                    }
+                })
+            } catch (e) {
+                same = e === reason
+            }
+            same && $262.agent.broadcast(buffer) === undefined
+        "#,
     );
     realm.finish_test262_agents().unwrap();
 }
@@ -536,7 +723,17 @@ fn broadcast_workers_keep_gc_roots_and_resume_foreign_async_notifications() {
     realm
         .eval("let buffer=new SharedArrayBuffer(8),a=new Int32Array(buffer)")
         .unwrap();
-    let source = "$262.agent.receiveBroadcast(async function(buffer){let a=new Int32Array(buffer),wait=Atomics.waitAsync(a,0,0);$262.agent.report('waiting');await $262.gc();let value=await wait.value;$262.agent.report(value);$262.agent.leaving()})";
+    let source = r#"
+        $262.agent.receiveBroadcast(async function(buffer) {
+            let a = new Int32Array(buffer),
+                wait = Atomics.waitAsync(a, 0, 0);
+            $262.agent.report('waiting');
+            await $262.gc();
+            let value = await wait.value;
+            $262.agent.report(value);
+            $262.agent.leaving()
+        })
+    "#;
     realm
         .eval(&format!("$262.agent.start({source:?})"))
         .unwrap();
@@ -587,22 +784,33 @@ fn child_creation_restores_strict_callers_and_distinct_module_script_referrers()
     check(
         &mut realm,
         r#"
-        function strictCaller(){'use strict';let secret=42;let r=$262.createRealm();
-            r.evalScript('var childOnly=7');let caught=false;
-            try{newUndeclaredName=1;}catch(e){caught=e instanceof ReferenceError;}
-            return caught && eval('secret')===42 && r.evalScript('childOnly')===7 &&
-                $262.evalScript('typeof secret')==='undefined' && Object.getPrototypeOf((()=>[])())===Array.prototype;}
-        strictCaller() && typeof childOnly==='undefined' && !Object.hasOwn(globalThis,'newUndeclaredName')
-    "#,
+            function strictCaller() {
+                'use strict';
+                let secret = 42;
+                let r = $262.createRealm();
+                r.evalScript('var childOnly=7');
+                let caught = false;
+                try {
+                    newUndeclaredName = 1;
+                } catch (e) {
+                    caught = e instanceof ReferenceError;
+                }
+                return caught && eval('secret') === 42 && r.evalScript('childOnly') === 7 &&
+                    $262.evalScript('typeof secret') === 'undefined' && Object.getPrototypeOf((() => [])
+                ()) === Array.prototype;
+            }
+            strictCaller() && typeof childOnly === 'undefined' && !Object.hasOwn(globalThis,
+                'newUndeclaredName')
+        "#,
     );
     realm.enable_module_imports();
     let module = realm
         .create_module(
             r#"
-        globalThis.moduleChild=$262.createRealm();
-        globalThis.moduleLoader=Function("return import('module')");
-        globalThis.childScriptLoader=moduleChild.evalScript("Function(\"return import('child')\")");
-    "#,
+                globalThis.moduleChild=$262.createRealm();
+                globalThis.moduleLoader=Function("return import('module')");
+                globalThis.childScriptLoader=moduleChild.evalScript("Function(\"return import('child')\")");
+            "#,
         )
         .unwrap();
     realm.evaluate_module_record(&module).unwrap();
@@ -624,19 +832,23 @@ fn child_creation_restores_strict_callers_and_distinct_module_script_referrers()
 fn child_functions_keep_private_intrinsics_and_templates_until_their_last_root_is_dropped() {
     let mut realm = host();
     realm.eval(r#"
-        var r=$262.createRealm(),weak=new WeakRef(r.global);
-        var inspect=r.evalScript("function tag(x){return x;}var keep=function(){return tag`held`;};keep();var inspect=Object.getOwnPropertyDescriptor;Object.setPrototypeOf(inspect,null);delete Object.getOwnPropertyDescriptor;delete Object.prototype.constructor;delete globalThis.Object;inspect");
-        var keep=r.evalScript('keep');r=undefined;
+        var r = $262.createRealm(),
+            weak = new WeakRef(r.global);
+        var inspect = r.evalScript(
+            "function tag(x){return x;}var keep=function(){return tag`held`;};keep();var inspect=Object.getOwnPropertyDescriptor;Object.setPrototypeOf(inspect,null);delete Object.getOwnPropertyDescriptor;delete Object.prototype.constructor;delete globalThis.Object;inspect"
+            );
+        var keep = r.evalScript('keep');
+        r = undefined;
     "#).unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
     check(
         &mut realm,
         r#"
-        (()=>{let d=inspect({x:7},'x'),a=keep(),b=keep(),g=weak.deref();
-            return g!==undefined && d.value===7 && Object.getPrototypeOf(d)===Object.getPrototypeOf(g) &&
-                a===b && Object.isFrozen(a) && Object.getPrototypeOf(a)===g.Array.prototype;})()
-    "#,
+            (()=>{let d=inspect({x:7},'x'),a=keep(),b=keep(),g=weak.deref();
+                return g!==undefined && d.value===7 && Object.getPrototypeOf(d)===Object.getPrototypeOf(g) &&
+                    a===b && Object.isFrozen(a) && Object.getPrototypeOf(a)===g.Array.prototype;})()
+        "#,
     );
     realm.eval("inspect=undefined;keep=undefined;").unwrap();
     realm.clear_kept_objects().unwrap();
@@ -650,15 +862,32 @@ fn child_realms_share_agent_symbols_atomic_backings_and_promise_jobs() {
     check(
         &mut realm,
         r#"
-        var r=$262.createRealm(),buffer=new SharedArrayBuffer(4,{maxByteLength:8}),view=new Int32Array(buffer),values=[];
-        r.global.buffer=buffer;r.evalScript('var view=new Int32Array(buffer);Atomics.store(view,0,7)');
-        let before=Atomics.add(view,0,2);buffer.grow(8);
-        var then=r.evalScript('var seen=false;function then(resolve){seen=Object.getPrototypeOf(resolve)===Function.prototype;resolve(13);}then');
-        Promise.resolve({then}).then(x=>values.push(x));
-        var madeInJob;Promise.resolve().then(()=>{madeInJob=$262.createRealm();return madeInJob.evalScript('globalThis');}).then(g=>values.push(g===madeInJob.global));
-        before===7 && r.evalScript('Atomics.load(view,0)')===9 && r.evalScript('view.length')===2 &&
-        Symbol.for('shared-key')===r.global.Symbol.for('shared-key') && Symbol('unique')!==r.global.Symbol('unique')
-    "#,
+            var r = $262.createRealm(),
+                buffer = new SharedArrayBuffer(4, {
+                    maxByteLength: 8
+                }),
+                view = new Int32Array(buffer),
+                values = [];
+            r.global.buffer = buffer;
+            r.evalScript('var view=new Int32Array(buffer);Atomics.store(view,0,7)');
+            let before = Atomics.add(view, 0, 2);
+            buffer.grow(8);
+            var then = r.evalScript(
+                'var seen=false;function then(resolve){seen=Object.getPrototypeOf(resolve)===Function.prototype;resolve(13);}then'
+                );
+            Promise.resolve({
+                then
+            }).then(x => values.push(x));
+            var madeInJob;
+            Promise.resolve().then(() => {
+                madeInJob = $262.createRealm();
+                return madeInJob.evalScript('globalThis');
+            }).then(g => values.push(g === madeInJob.global));
+            before === 7 && r.evalScript('Atomics.load(view,0)') === 9 && r.evalScript('view.length') ===
+                2 &&
+                Symbol.for('shared-key') === r.global.Symbol.for('shared-key') && Symbol('unique') !== r
+                .global.Symbol('unique')
+        "#,
     );
     drain_host_jobs(&mut realm);
     check(
@@ -721,7 +950,11 @@ fn child_bootstrap_keeps_the_two_mebibyte_guard_at_deep_source_calls() {
 #[test]
 fn suspending_workers_create_child_realms_on_the_same_agent() {
     let mut realm = host();
-    realm.eval(r#"$262.agent.start("let child=$262.createRealm();child.evalScript(\"$262.agent.report('child')\");$262.agent.leaving();");"#).unwrap();
+    realm.eval(r#"
+        $262.agent.start(
+            "let child=$262.createRealm();child.evalScript(\"$262.agent.report('child')\");$262.agent.leaving();"
+            );
+    "#).unwrap();
     assert_eq!(
         next_agent_report(&mut realm).unwrap(),
         spite_core::JsString::from("child")

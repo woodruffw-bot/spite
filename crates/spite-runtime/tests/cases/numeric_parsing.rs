@@ -138,7 +138,30 @@ fn parseint_accumulates_exact_integers_before_binary64_rounding() {
 #[test]
 fn input_string_conversion_precedes_radix_conversion_and_preserves_abrupt_results() {
     let mut realm = Realm::default();
-    assert_eq!(realm.eval("let order=''; let s={toString:()=>{order+='s';return '11';},valueOf:()=>{throw 1;}};let r={valueOf:()=>{order+='r';return 2;}};parseInt(s,r)===3 && order==='sr'"),Ok(Value::Boolean(true)));
+    assert_eq!(
+        realm.eval(
+            r#"
+                let order = '';
+                let s = {
+                    toString: () => {
+                        order += 's';
+                        return '11';
+                    },
+                    valueOf: () => {
+                        throw 1;
+                    }
+                };
+                let r = {
+                    valueOf: () => {
+                        order += 'r';
+                        return 2;
+                    }
+                };
+                parseInt(s, r) === 3 && order === 'sr'
+            "#
+        ),
+        Ok(Value::Boolean(true))
+    );
     assert_eq!(
         realm.eval("order='';parseFloat(s)===11 && order==='s'"),
         Ok(Value::Boolean(true))

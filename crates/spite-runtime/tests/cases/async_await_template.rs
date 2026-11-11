@@ -25,12 +25,46 @@ fn collect(realm: &mut Realm) {
 #[test]
 fn template_converts_each_substitution_before_evaluating_the_next_one() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let events=[],result,one={[Symbol.toPrimitive](hint){events.push('one:'+hint);return 'one'}},two={[Symbol.toPrimitive](hint){events.push('two:'+hint);return 'two'}};
-        function first(){events.push('first');return one}function second(){events.push('second');return two}function third(){events.push('third');return 3}
-        async function f(){return`A${first()}B${await second()}C${third()}D`}
-        f().then(value=>{result=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let events = [],
+                    result, one = {
+                        [Symbol.toPrimitive](hint) {
+                            events.push('one:' + hint);
+                            return 'one'
+                        }
+                    },
+                    two = {
+                        [Symbol.toPrimitive](hint) {
+                            events.push('two:' + hint);
+                            return 'two'
+                        }
+                    };
+
+                function first() {
+                    events.push('first');
+                    return one
+                }
+
+                function second() {
+                    events.push('second');
+                    return two
+                }
+
+                function third() {
+                    events.push('third');
+                    return 3
+                }
+                async function f() {
+                    return `A${first()}B${await second()}C${third()}D`
+                }
+                f().then(value => {
+                    result = value
+                });
+            "#,
+        )
+        .unwrap();
     check(
         &mut realm,
         "events.join(',')==='first,one:string,second'&&result===undefined",
@@ -54,20 +88,61 @@ fn templates_support_nested_and_repeated_awaits_with_bigint_nullish_and_lossless
     drain(&mut realm);
     check(
         &mut realm,
-        "first==='xinner1ynullzundefined|1'&&second.length===4&&second.charCodeAt(0)===55296&&second.charCodeAt(1)===120&&second.charCodeAt(2)===57343&&second.charCodeAt(3)===49",
+        r#"
+            first === 'xinner1ynullzundefined|1' && second.length === 4 && second.charCodeAt(0) ===
+                55296 && second.charCodeAt(1) === 120 && second.charCodeAt(2) === 57343 && second
+                .charCodeAt(3) === 49
+        "#,
     );
 }
 
 #[test]
 fn rejected_or_throwing_substitutions_skip_later_evaluation_and_symbol_conversion_throws() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let results=[],later=0,reason={},bad={[Symbol.toPrimitive](){throw reason}};
-        async function f(){try{return`${await Symbol('x')}${later++}`}catch(error){return error instanceof TypeError}}
-        async function g(){try{return`${await bad}${later++}`}catch(error){return error===reason}}
-        async function h(){try{return`${await Promise.reject(reason)}${later++}`}catch(error){return error===reason}}
-        f().then(value=>{results.push(value)});g().then(value=>{results.push(value)});h().then(value=>{results.push(value)});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let results = [],
+                    later = 0,
+                    reason = {},
+                    bad = {
+                        [Symbol.toPrimitive]() {
+                            throw reason
+                        }
+                    };
+                async function f() {
+                    try {
+                        return `${await Symbol('x')}${later++}`
+                    } catch (error) {
+                        return error instanceof TypeError
+                    }
+                }
+                async function g() {
+                    try {
+                        return `${await bad}${later++}`
+                    } catch (error) {
+                        return error === reason
+                    }
+                }
+                async function h() {
+                    try {
+                        return `${await Promise.reject(reason)}${later++}`
+                    } catch (error) {
+                        return error === reason
+                    }
+                }
+                f().then(value => {
+                    results.push(value)
+                });
+                g().then(value => {
+                    results.push(value)
+                });
+                h().then(value => {
+                    results.push(value)
+                });
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     check(
         &mut realm,
@@ -78,11 +153,27 @@ fn rejected_or_throwing_substitutions_skip_later_evaluation_and_symbol_conversio
 #[test]
 fn templates_preserve_private_eval_this_arguments_and_dynamic_async_function_contexts() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let first,second;class C{#x=10;async f(a){return`${eval('this.#x')}:${await a}:${arguments.length}`}}
-        let Constructor=(async()=>{}).constructor,dynamic=Constructor('a','return `${await a}:${arguments.length}`');
-        new C().f(7).then(value=>{first=value});dynamic(8).then(value=>{second=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let first, second;
+                class C {
+                    #x = 10;
+                    async f(a) {
+                        return `${eval('this.#x')}:${await a}:${arguments.length}`
+                    }
+                }
+                let Constructor = (async () => {}).constructor,
+                    dynamic = Constructor('a', 'return `${await a}:${arguments.length}`');
+                new C().f(7).then(value => {
+                    first = value
+                });
+                dynamic(8).then(value => {
+                    second = value
+                });
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     check(&mut realm, "first==='10:7:1'&&second==='8:1'");
 }
@@ -90,12 +181,32 @@ fn templates_preserve_private_eval_this_arguments_and_dynamic_async_function_con
 #[test]
 fn converted_template_values_release_objects_while_later_substitutions_are_pending() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let release,gate=new Promise(resolve=>{release=resolve}),weak,result;
-        function make(){const value={[Symbol.toPrimitive](){return 'left'}};weak=new WeakRef(value);return value}
-        async function f(){return`${await make()}${await gate}`}
-        f().then(value=>{result=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let release, gate = new Promise(resolve => {
+                        release = resolve
+                    }),
+                    weak, result;
+
+                function make() {
+                    const value = {
+                        [Symbol.toPrimitive]() {
+                            return 'left'
+                        }
+                    };
+                    weak = new WeakRef(value);
+                    return value
+                }
+                async function f() {
+                    return `${await make()}${await gate}`
+                }
+                f().then(value => {
+                    result = value
+                });
+            "#,
+        )
+        .unwrap();
     collect(&mut realm);
     check(&mut realm, "weak.deref()!==undefined&&result===undefined");
     drain(&mut realm);

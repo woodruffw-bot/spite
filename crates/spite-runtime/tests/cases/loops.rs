@@ -209,11 +209,32 @@ fn if_applies_update_empty_to_abrupt_completions() {
 #[test]
 fn nested_loops_consume_only_their_own_unlabelled_control() {
     result(
-        "let i = 0; let count = 0; while (i < 3) { i = i + 1; do { break; } while (missing); count = count + 1; } count",
+        r#"
+            let i = 0;
+            let count = 0;
+            while (i < 3) {
+                i = i + 1;
+                do {
+                    break;
+                } while (missing);
+                count = count + 1;
+            }
+            count
+        "#,
         Value::Number(3.0),
     );
     result(
-        "let i = 0; let count = 0; while (i < 3) { i = i + 1; let j = 0; while ((j = j + 1) < 3) continue; count = count + j; } count",
+        r#"
+            let i = 0;
+            let count = 0;
+            while (i < 3) {
+                i = i + 1;
+                let j = 0;
+                while ((j = j + 1) < 3) continue;
+                count = count + j;
+            }
+            count
+        "#,
         Value::Number(9.0),
     );
 }

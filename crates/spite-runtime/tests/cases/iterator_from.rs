@@ -22,18 +22,62 @@ fn type_error(source: &str) {
 #[test]
 fn iterable_and_direct_inputs_preserve_intrinsic_instances_and_wrap_other_iterators() {
     assert_true(
-        "let i=[1,2].values();Iterator.from(i)===i && Array.from(Iterator.from([1,2])).join(',')==='1,2' && Array.from(Iterator.from('a\u{1f600}')).length===2 && Array.from(Iterator.from(new String('ab'))).join(',')==='a,b'",
+        r#"
+            let i = [1, 2].values();
+            Iterator.from(i) === i && Array.from(Iterator.from([1, 2])).join(',') === '1,2' && Array.from(
+                Iterator.from('a😀')).length === 2 && Array.from(Iterator.from(new String('ab'))).join(
+                ',') === 'a,b'
+        "#,
     );
     for method in ["undefined", "null"] {
         assert_true(&format!(
-            "let n=0,i={{[Symbol.iterator]:{method},next(){{return {{value:n++,done:n>3}};}}}},w=Iterator.from(i);w!==i && w instanceof Iterator && w[Symbol.iterator]()===w && Array.from(w).join(',')==='0,1,2' && Object.getPrototypeOf(Object.getPrototypeOf(w))===Iterator.prototype"
+            r#"
+                let n = 0,
+                    i = {{
+                        [Symbol.iterator]: {method},
+                        next() {{
+                            return {{
+                                value: n++,
+                                done: n > 3
+                            }};
+                        }}
+                    }},
+                    w = Iterator.from(i);
+                w !== i && w instanceof Iterator && w[Symbol.iterator]() === w && Array.from(w).join(',') ===
+                    '0,1,2' && Object.getPrototypeOf(Object.getPrototypeOf(w)) === Iterator.prototype
+            "#
         ));
     }
     assert_true(
-        "let reads=0,i=Object.create(Iterator.prototype);Object.defineProperty(i,'next',{get:()=>{reads++;return 7;}});Iterator.from(i)===i && reads===1",
+        r#"
+            let reads = 0,
+                i = Object.create(Iterator.prototype);
+            Object.defineProperty(i, 'next', {
+                get: () => {
+                    reads++;
+                    return 7;
+                }
+            });
+            Iterator.from(i) === i && reads === 1
+        "#,
     );
     assert_true(
-        "let I=Iterator,from=I.from,i=[].values();Object.defineProperty(I,Symbol.hasInstance,{get:()=>{throw 7;}});globalThis.Iterator=null;from.call({toString:()=>{throw 8;}},i)===i",
+        r#"
+            let I = Iterator,
+                from = I.from,
+                i = [].values();
+            Object.defineProperty(I, Symbol.hasInstance, {
+                get: () => {
+                    throw 7;
+                }
+            });
+            globalThis.Iterator = null;
+            from.call({
+                toString: () => {
+                    throw 8;
+                }
+            }, i) === i
+        "#,
     );
 }
 
@@ -41,14 +85,61 @@ fn iterable_and_direct_inputs_preserve_intrinsic_instances_and_wrap_other_iterat
 fn primitive_rejection_precedes_hooks_and_string_hooks_keep_original_receivers() {
     for primitive in ["undefined", "null", "true", "1", "1n", "Symbol()"] {
         type_error(&format!(
-            "Object.defineProperty(Number.prototype,Symbol.iterator,{{get:()=>{{throw 7;}}}});Object.defineProperty(Boolean.prototype,Symbol.iterator,{{get:()=>{{throw 8;}}}});Object.defineProperty(BigInt.prototype,Symbol.iterator,{{get:()=>{{throw 9;}}}});Object.defineProperty(Symbol.prototype,Symbol.iterator,{{get:()=>{{throw 10;}}}});Iterator.from({primitive})"
+            r#"
+                Object.defineProperty(Number.prototype, Symbol.iterator, {{
+                    get: () => {{
+                        throw 7;
+                    }}
+                }});
+                Object.defineProperty(Boolean.prototype, Symbol.iterator, {{
+                    get: () => {{
+                        throw 8;
+                    }}
+                }});
+                Object.defineProperty(BigInt.prototype, Symbol.iterator, {{
+                    get: () => {{
+                        throw 9;
+                    }}
+                }});
+                Object.defineProperty(Symbol.prototype, Symbol.iterator, {{
+                    get: () => {{
+                        throw 10;
+                    }}
+                }});
+                Iterator.from({primitive})
+            "#
         ));
     }
     assert_true(
-        "let original=String.prototype[Symbol.iterator],receiver;Object.defineProperty(String.prototype,Symbol.iterator,{get:function(){'use strict';receiver=this;return original;}});Iterator.from('abc');receiver==='abc'",
+        r#"
+            let original = String.prototype[Symbol.iterator],
+                receiver;
+            Object.defineProperty(String.prototype, Symbol.iterator, {
+                get: function() {
+                    'use strict';
+                    receiver = this;
+                    return original;
+                }
+            });
+            Iterator.from('abc');
+            receiver === 'abc'
+        "#,
     );
     assert_true(
-        "let receiver,i={next:()=>({done:true})};String.prototype[Symbol.iterator]=function(){'use strict';receiver=this;return i;};let w=Iterator.from('abc');receiver==='abc' && w!==i && w instanceof Iterator",
+        r#"
+            let receiver, i = {
+                next: () => ({
+                    done: true
+                })
+            };
+            String.prototype[Symbol.iterator] = function() {
+                'use strict';
+                receiver = this;
+                return i;
+            };
+            let w = Iterator.from('abc');
+            receiver === 'abc' && w !== i && w instanceof Iterator
+        "#,
     );
     type_error("String.prototype[Symbol.iterator]=null;Iterator.from('abc')");
     type_error("Iterator.from({[Symbol.iterator]:0,next:()=>({done:true})})");
@@ -58,7 +149,55 @@ fn primitive_rejection_precedes_hooks_and_string_hooks_keep_original_receivers()
 #[test]
 fn acquisition_order_and_cached_next_do_not_read_return_or_coerce_arguments() {
     assert_true(
-        "let log='',receiver,count,reads=0,i={};Object.defineProperty(i,'next',{configurable:true,get:()=>{reads++;log+='n';return function(){'use strict';receiver=this;count=arguments.length;return 7;};}});Object.defineProperty(i,'return',{get:()=>{throw 8;}});let source={};Object.defineProperty(source,Symbol.iterator,{get:()=>{log+='g';return function(){'use strict';log+='c';return this===source?i:null;};}});let w=Iterator.from(source,{valueOf:()=>{throw 9;}});Object.defineProperty(i,'next',{value:()=>{throw 10;}});w.next({valueOf:()=>{throw 11;}})===7 && w.next()===7 && reads===1 && receiver===i && count===0 && log==='gcn'",
+        r#"
+            let log = '',
+                receiver, count, reads = 0,
+                i = {};
+            Object.defineProperty(i, 'next', {
+                configurable: true,
+                get: () => {
+                    reads++;
+                    log += 'n';
+                    return function() {
+                        'use strict';
+                        receiver = this;
+                        count = arguments.length;
+                        return 7;
+                    };
+                }
+            });
+            Object.defineProperty(i, 'return', {
+                get: () => {
+                    throw 8;
+                }
+            });
+            let source = {};
+            Object.defineProperty(source, Symbol.iterator, {
+                get: () => {
+                    log += 'g';
+                    return function() {
+                        'use strict';
+                        log += 'c';
+                        return this === source ? i : null;
+                    };
+                }
+            });
+            let w = Iterator.from(source, {
+                valueOf: () => {
+                    throw 9;
+                }
+            });
+            Object.defineProperty(i, 'next', {
+                value: () => {
+                    throw 10;
+                }
+            });
+            w.next({
+                valueOf: () => {
+                    throw 11;
+                }
+            }) === 7 && w.next() === 7 && reads === 1 && receiver === i && count === 0 && log === 'gcn'
+        "#,
     );
     assert_eq!(
         Realm::default()
@@ -72,7 +211,23 @@ fn acquisition_order_and_cached_next_do_not_read_return_or_coerce_arguments() {
 #[test]
 fn next_forwards_results_without_validation_or_completion_tracking() {
     assert_true(
-        "let result={};Object.defineProperty(result,'done',{get:()=>{throw 7;}});Object.defineProperty(result,'value',{get:()=>{throw 8;}});let w=Iterator.from({next:()=>result});w.next()===result",
+        r#"
+            let result = {};
+            Object.defineProperty(result, 'done', {
+                get: () => {
+                    throw 7;
+                }
+            });
+            Object.defineProperty(result, 'value', {
+                get: () => {
+                    throw 8;
+                }
+            });
+            let w = Iterator.from({
+                next: () => result
+            });
+            w.next() === result
+        "#,
     );
     for result in ["undefined", "null", "7", "'x'"] {
         assert_true(&format!(
@@ -80,31 +235,116 @@ fn next_forwards_results_without_validation_or_completion_tracking() {
         ));
     }
     assert_true(
-        "let calls=0,w=Iterator.from({next:()=>({done:calls++===0,value:calls})});w.next().done && !w.next().done && calls===2",
+        r#"
+            let calls = 0,
+                w = Iterator.from({
+                    next: () => ({
+                        done: calls++ === 0,
+                        value: calls
+                    })
+                });
+            w.next().done && !w.next().done && calls === 2
+        "#,
     );
     assert_true(
-        "let calls=0,w,i={next(){calls++;return calls===1?w.next():{value:calls,done:false};}};w=Iterator.from(i);w.next().value===2 && calls===2",
+        r#"
+            let calls = 0,
+                w, i = {
+                    next() {
+                        calls++;
+                        return calls === 1 ? w.next() : {
+                            value: calls,
+                            done: false
+                        };
+                    }
+                };
+            w = Iterator.from(i);
+            w.next().value === 2 && calls === 2
+        "#,
     );
     assert_true(
-        "let calls=0,w=Iterator.from({next(){calls++;if(calls===1)throw 7;return {value:8,done:false};}}),caught=false;try{w.next();}catch(e){caught=e===7;}caught && w.next().value===8 && calls===2",
+        r#"
+            let calls = 0,
+                w = Iterator.from({
+                    next() {
+                        calls++;
+                        if (calls === 1) throw 7;
+                        return {
+                            value: 8,
+                            done: false
+                        };
+                    }
+                }),
+                caught = false;
+            try {
+                w.next();
+            } catch (e) {
+                caught = e === 7;
+            }
+            caught && w.next().value === 8 && calls === 2
+        "#,
     );
 }
 
 #[test]
 fn return_is_looked_up_on_each_call_and_forwards_without_argument_or_result_checks() {
     assert_true(
-        "let reads=0,receiver,count,i={next:()=>7};Object.defineProperty(i,'return',{get:()=>{reads++;return function(){'use strict';receiver=this;count=arguments.length;return reads;};}});let w=Iterator.from(i);reads===0 && w.return(99)===1 && w.return()===2 && reads===2 && receiver===i && count===0 && w.next()===7",
+        r#"
+            let reads = 0,
+                receiver, count, i = {
+                    next: () => 7
+                };
+            Object.defineProperty(i, 'return', {
+                get: () => {
+                    reads++;
+                    return function() {
+                        'use strict';
+                        receiver = this;
+                        count = arguments.length;
+                        return reads;
+                    };
+                }
+            });
+            let w = Iterator.from(i);
+            reads === 0 && w.return(99) === 1 && w.return() === 2 && reads === 2 && receiver === i &&
+                count === 0 && w.next() === 7
+        "#,
     );
     for absent in ["undefined", "null"] {
         assert_true(&format!(
-            "let w=Iterator.from({{return:{absent}}}),a=w.return(99),b=w.return();a!==b && a.value===undefined && a.done && Object.getPrototypeOf(a)===Object.prototype && Reflect.ownKeys(a).join(',')==='value,done'"
+            r#"
+                let w = Iterator.from({{
+                        return: {absent}
+                    }}),
+                    a = w.return(99),
+                    b = w.return();
+                a !== b && a.value === undefined && a.done && Object.getPrototypeOf(a) === Object.prototype &&
+                    Reflect.ownKeys(a).join(',') === 'value,done'
+            "#
         ));
     }
     type_error("Iterator.from({return:7}).return()");
     assert_eq!(Realm::default().eval("let i={};Object.defineProperty(i,'return',{get:()=>{throw 7;}});Iterator.from(i).return()"), Err(Error::Thrown(Value::Number(7.0))));
     assert_true("let i={},w=Iterator.from(i);w.return().done && (i.return=()=>99,w.return()===99)");
     assert_true(
-        "let calls=0,w=Iterator.from({next:()=>7,return(){calls++;if(calls===1)throw 8;return 9;}}),caught=false;try{w.return();}catch(e){caught=e===8;}caught && w.return()===9 && w.next()===7 && calls===2",
+        r#"
+            let calls = 0,
+                w = Iterator.from({
+                    next: () => 7,
+                    return () {
+                        calls++;
+                        if (calls === 1) throw 8;
+                        return 9;
+                    }
+                }),
+                caught = false;
+            try {
+                w.return();
+            } catch (e) {
+                caught = e === 8;
+            }
+            caught && w.return() === 9 && w.next() === 7 && calls === 2
+        "#,
     );
 }
 

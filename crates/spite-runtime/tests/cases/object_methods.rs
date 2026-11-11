@@ -13,27 +13,86 @@ fn methods_bind_receivers_and_capture_outer_environments_without_a_self_binding(
         "function outer(x){return {m(){return ()=>x+this.y;},y:2};}let o=outer(7),f=o.m();f()===9",
     );
     assert_true(
-        "let o={m(){return this;},strict(){'use strict';return this;}};o.m.call(null)===globalThis && typeof o.m.call(7)==='object' && o.strict.call(undefined)===undefined && o.strict.call(7)===7",
+        r#"
+            let o = {
+                m() {
+                    return this;
+                },
+                strict() {
+                    'use strict';
+                    return this;
+                }
+            };
+            o.m.call(null) === globalThis && typeof o.m.call(7) === 'object' && o.strict.call(
+                undefined) === undefined && o.strict.call(7) === 7
+        "#,
     );
 }
 
 #[test]
 fn methods_and_accessors_have_standard_descriptors_names_and_lengths() {
     assert_true(
-        "let o={m(a,b=1){},get x(){return 7;},set x(v){}},m=Object.getOwnPropertyDescriptor(o,'m'),x=Object.getOwnPropertyDescriptor(o,'x');m.writable && m.enumerable && m.configurable && m.value.name==='m' && m.value.length===1 && x.enumerable && x.configurable && x.get.name==='get x' && x.get.length===0 && x.set.name==='set x' && x.set.length===1 && !Object.hasOwn(m.value,'prototype') && !Object.hasOwn(x.get,'prototype') && !Object.hasOwn(x.set,'prototype')",
+        r#"
+            let o = {
+                    m(a, b = 1) {},
+                    get x() {
+                        return 7;
+                    },
+                    set x(v) {}
+                },
+                m = Object.getOwnPropertyDescriptor(o, 'm'),
+                x = Object.getOwnPropertyDescriptor(o, 'x');
+            m.writable && m.enumerable && m.configurable && m.value.name === 'm' && m.value.length === 1 &&
+                x.enumerable && x.configurable && x.get.name === 'get x' && x.get.length === 0 && x.set
+                .name === 'set x' && x.set.length === 1 && !Object.hasOwn(m.value, 'prototype') && !Object
+                .hasOwn(x.get, 'prototype') && !Object.hasOwn(x.set, 'prototype')
+        "#,
     );
     assert_true(
-        "let o={set x(v=1){},0x10n(){},true(){},['\\uD800'](){}},d=Object.getOwnPropertyDescriptor(o,'x');d.set.length===0 && o[16].name==='16' && o.true.name==='true' && o['\\uD800'].name==='\\uD800' && Object.getOwnPropertyNames(o[16]).join(',')==='length,name'",
+        r#"
+            let o = {
+                    set x(v = 1) {},
+                    0x10n() {},
+                    true() {},
+                    ['\uD800']() {}
+                },
+                d = Object.getOwnPropertyDescriptor(o, 'x');
+            d.set.length === 0 && o[16].name === '16' && o.true.name === 'true' && o['\uD800'].name ===
+                '\uD800' && Object.getOwnPropertyNames(o[16]).join(',') === 'length,name'
+        "#,
     );
     assert_true(
-        "let o={m(){}},d=Object.getOwnPropertyDescriptor(o.m,'name'),l=Object.getOwnPropertyDescriptor(o.m,'length');!d.writable && !d.enumerable && d.configurable && !l.writable && !l.enumerable && l.configurable",
+        r#"
+            let o = {
+                    m() {}
+                },
+                d = Object.getOwnPropertyDescriptor(o.m, 'name'),
+                l = Object.getOwnPropertyDescriptor(o.m, 'length');
+            !d.writable && !d.enumerable && d.configurable && !l.writable && !l.enumerable && l
+                .configurable
+        "#,
     );
 }
 
 #[test]
 fn symbol_method_names_distinguish_absent_empty_and_raw_descriptions() {
     assert_true(
-        "let absent=Symbol(),empty=Symbol(''),raw=Symbol('\\uD800'),o={[absent](){},[empty](){},get [raw](){return 7;},set [raw](v){}};let d=Object.getOwnPropertyDescriptor(o,raw);o[absent].name==='' && o[empty].name==='[]' && d.get.name==='get [\\uD800]' && d.set.name==='set [\\uD800]'",
+        r#"
+            let absent = Symbol(),
+                empty = Symbol(''),
+                raw = Symbol('\uD800'),
+                o = {
+                    [absent]() {},
+                    [empty]() {},
+                    get [raw]() {
+                        return 7;
+                    },
+                    set [raw](v) {}
+                };
+            let d = Object.getOwnPropertyDescriptor(o, raw);
+            o[absent].name === '' && o[empty].name === '[]' && d.get.name === 'get [\uD800]' && d.set
+                .name === 'set [\uD800]'
+        "#,
     );
     assert_true(
         "let s=Symbol(),o={get [s](){}};Object.getOwnPropertyDescriptor(o,s).get.name==='get '",
@@ -43,10 +102,46 @@ fn symbol_method_names_distinguish_absent_empty_and_raw_descriptions() {
 #[test]
 fn computed_names_convert_once_before_later_properties_without_running_bodies() {
     assert_true(
-        "let log='',key={[Symbol.toPrimitive](hint){log+=hint;return 'x';}},o={[key](){log+='body';},get [(log+='g','value')](){log+='get';return 7;},next:(log+='n',1)};log==='stringgn' && o.x.name==='x' && (o.value===7) && log==='stringgnget'",
+        r#"
+            let log = '',
+                key = {
+                    [Symbol.toPrimitive](hint) {
+                        log += hint;
+                        return 'x';
+                    }
+                },
+                o = {
+                    [key]() {
+                        log += 'body';
+                    },
+                    get [(log += 'g', 'value')]() {
+                        log += 'get';
+                        return 7;
+                    },
+                    next: (log += 'n', 1)
+                };
+            log === 'stringgn' && o.x.name === 'x' && (o.value === 7) && log === 'stringgnget'
+        "#,
     );
     assert_true(
-        "let log='',caught=false;try{({[{toString(){log+='k';throw 7;}}](){},after:(log+='a',1)});}catch(e){caught=e===7;}caught && log==='k'",
+        r#"
+            let log = '',
+                caught = false;
+            try {
+                ({
+                    [{
+                        toString() {
+                            log += 'k';
+                            throw 7;
+                        }
+                    }]() {},
+                    after: (log += 'a', 1)
+                });
+            } catch (e) {
+                caught = e === 7;
+            }
+            caught && log === 'k'
+        "#,
     );
 }
 
@@ -68,10 +163,45 @@ fn accessor_pairs_merge_and_data_redefinitions_replace_them_in_source_order() {
 #[test]
 fn accessor_calls_use_the_original_receiver_and_propagate_abrupt_completion() {
     assert_true(
-        "let parent={get x(){return this.v;},set x(value){this.v=value;return 99;}},child=Object.create(parent);child.x=7;child.x===7 && parent.v===undefined && !Object.hasOwn(child,'x')",
+        r#"
+            let parent = {
+                    get x() {
+                        return this.v;
+                    },
+                    set x(value) {
+                        this.v = value;
+                        return 99;
+                    }
+                },
+                child = Object.create(parent);
+            child.x = 7;
+            child.x === 7 && parent.v === undefined && !Object.hasOwn(child, 'x')
+        "#,
     );
     assert_true(
-        "let o={get x(){throw 7;},set x(v){throw v;}},a=false,b=false;try{o.x;}catch(e){a=e===7;}try{o.x=8;}catch(e){b=e===8;}a && b",
+        r#"
+            let o = {
+                    get x() {
+                        throw 7;
+                    },
+                    set x(v) {
+                        throw v;
+                    }
+                },
+                a = false,
+                b = false;
+            try {
+                o.x;
+            } catch (e) {
+                a = e === 7;
+            }
+            try {
+                o.x = 8;
+            } catch (e) {
+                b = e === 8;
+            }
+            a && b
+        "#,
     );
     assert_true("let o={get x(){return 7;}};o.x=8;o.x===7");
     assert!(matches!(
@@ -90,7 +220,20 @@ fn proto_methods_and_accessors_are_ordinary_properties_and_definitions_bypass_se
         "let proto={},o={__proto__:proto,__proto__(){return 7;}};Object.getPrototypeOf(o)===proto && o.__proto__()===7",
     );
     assert_true(
-        "let proto={},o={__proto__:proto,get __proto__(){return 7;},set __proto__(v){this.v=v;}};o.__proto__=8;Object.getPrototypeOf(o)===proto && o.__proto__===7 && o.v===8",
+        r#"
+            let proto = {},
+                o = {
+                    __proto__: proto,
+                    get __proto__() {
+                        return 7;
+                    },
+                    set __proto__(v) {
+                        this.v = v;
+                    }
+                };
+            o.__proto__ = 8;
+            Object.getPrototypeOf(o) === proto && o.__proto__ === 7 && o.v === 8
+        "#,
     );
     assert_true("let parent={set x(v){throw 7;}},o={__proto__:parent,x(){return 8;}};o.x()===8");
 }
@@ -103,7 +246,22 @@ fn methods_and_accessors_remain_nonconstructible_even_after_public_prototype_cha
         "Object.getOwnPropertyDescriptor({set x(v){}},'x').set",
     ] {
         assert_true(&format!(
-            "let fn={expression},count=0,caught=false;Object.defineProperty(fn,'prototype',{{get(){{throw 7;}}}});try{{new fn(count++);}}catch(e){{caught=e instanceof TypeError;}}caught && count===1"
+            r#"
+                let fn = {expression},
+                    count = 0,
+                    caught = false;
+                Object.defineProperty(fn, 'prototype', {{
+                    get() {{
+                        throw 7;
+                    }}
+                }});
+                try {{
+                    new fn(count++);
+                }} catch (e) {{
+                    caught = e instanceof TypeError;
+                }}
+                caught && count === 1
+            "#
         ));
         assert!(matches!(
             Realm::default().eval(&format!(
@@ -120,10 +278,36 @@ fn methods_and_accessors_remain_nonconstructible_even_after_public_prototype_cha
 #[test]
 fn method_arguments_and_new_target_have_ordinary_non_arrow_scope() {
     assert_true(
-        "let o={m(a){a=7;return arguments[0]===7 && arguments.callee===this.m && new.target===undefined;},strict(a){'use strict';a=7;return arguments[0]===1;}};o.m(1) && o.strict(1)",
+        r#"
+            let o = {
+                m(a) {
+                    a = 7;
+                    return arguments[0] === 7 && arguments.callee === this.m && new.target ===
+                        undefined;
+                },
+                strict(a) {
+                    'use strict';
+                    a = 7;
+                    return arguments[0] === 1;
+                }
+            };
+            o.m(1) && o.strict(1)
+        "#,
     );
     assert_true(
-        "let o={m(a=()=>arguments[0],b=()=>new.target){return a()===undefined && b()===undefined;},set x(v){v=7;this.observed=arguments[0];}};o.x=1;o.observed===7 && o.m()",
+        r#"
+            let o = {
+                m(a = () => arguments[0], b = () => new.target) {
+                    return a() === undefined && b() === undefined;
+                },
+                set x(v) {
+                    v = 7;
+                    this.observed = arguments[0];
+                }
+            };
+            o.x = 1;
+            o.observed === 7 && o.m()
+        "#,
     );
     assert_true(
         "function Outer(){return {get x(){return ()=>new.target;}};}let o=new Outer;o.x()===undefined",
@@ -140,10 +324,33 @@ fn function_to_string_preserves_exact_method_definition_source() {
 #[test]
 fn enumerable_getters_observe_live_keys_after_snapshot() {
     assert_true(
-        "let o={a:'A',get b(){delete this.c;this.d='D';return 'B';},c:'C'},r=Object.entries(o);r.length===2 && r[0][0]==='a' && r[1][0]==='b' && r[1][1]==='B' && o.d==='D'",
+        r#"
+            let o = {
+                    a: 'A',
+                    get b() {
+                        delete this.c;
+                        this.d = 'D';
+                        return 'B';
+                    },
+                    c: 'C'
+                },
+                r = Object.entries(o);
+            r.length === 2 && r[0][0] === 'a' && r[1][0] === 'b' && r[1][1] === 'B' && o.d === 'D'
+        "#,
     );
     assert_true(
-        "let o={get a(){Object.defineProperty(this,'b',{enumerable:false});return 1;},b:2};Object.values(o).join(',')==='1'",
+        r#"
+            let o = {
+                get a() {
+                    Object.defineProperty(this, 'b', {
+                        enumerable: false
+                    });
+                    return 1;
+                },
+                b: 2
+            };
+            Object.values(o).join(',') === '1'
+        "#,
     );
 }
 

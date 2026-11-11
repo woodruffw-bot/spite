@@ -7,7 +7,12 @@ use crate::common::assert_true;
 #[test]
 fn default_and_explicit_constructors_use_base_return_and_prototype_rules() {
     assert_true(
-        "class C{} let x=new C; x instanceof C && Object.getPrototypeOf(x)===C.prototype && x.constructor===C && C.length===0 && C.name==='C'",
+        r#"
+            class C {}
+            let x = new C;
+            x instanceof C && Object.getPrototypeOf(x) === C.prototype && x.constructor === C && C
+                .length === 0 && C.name === 'C'
+        "#,
     );
     assert_true("class C{constructor(x,y=2){this.x=x+y;}} let x=new C(3);x.x===5 && C.length===1");
     for value in ["undefined", "null", "3", "'x'", "true", "Symbol()", "3n"] {
@@ -17,7 +22,19 @@ fn default_and_explicit_constructors_use_base_return_and_prototype_rules() {
     }
     assert_true("let o={};class C{constructor(){return o;}}new C()===o");
     assert_true(
-        "class C{constructor(x=new.target){this.target=x;}} function N(){}let p={};N.prototype=p;let x=Reflect.construct(C,[],N);Object.getPrototypeOf(x)===p && x.target===N",
+        r#"
+            class C {
+                constructor(x = new.target) {
+                    this.target = x;
+                }
+            }
+
+            function N() {}
+            let p = {};
+            N.prototype = p;
+            let x = Reflect.construct(C, [], N);
+            Object.getPrototypeOf(x) === p && x.target === N
+        "#,
     );
     assert_true(
         "class C{}function N(){}N.prototype=7;Object.getPrototypeOf(Reflect.construct(C,[],N))===Object.prototype",
@@ -27,13 +44,65 @@ fn default_and_explicit_constructors_use_base_return_and_prototype_rules() {
 #[test]
 fn class_calls_evaluate_arguments_and_apply_lists_before_throwing() {
     assert_true(
-        "let log='',caught=false;class C{constructor(){log+='body';}}try{C(log+='arg');}catch(e){caught=e instanceof TypeError;}caught && log==='arg'",
+        r#"
+            let log = '',
+                caught = false;
+            class C {
+                constructor() {
+                    log += 'body';
+                }
+            }
+            try {
+                C(log += 'arg');
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && log === 'arg'
+        "#,
     );
     assert_true(
-        "let log='',caught=false;class C{}let a={get length(){log+='L';return 2;},get 0(){log+='0';return 1;},get 1(){log+='1';return 2;}};try{Reflect.apply(C,null,a);}catch(e){caught=e instanceof TypeError;}caught && log==='L01'",
+        r#"
+            let log = '',
+                caught = false;
+            class C {}
+            let a = {
+                get length() {
+                    log += 'L';
+                    return 2;
+                },
+                get 0() {
+                    log += '0';
+                    return 1;
+                },
+                get 1() {
+                    log += '1';
+                    return 2;
+                }
+            };
+            try {
+                Reflect.apply(C, null, a);
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && log === 'L01'
+        "#,
     );
     assert_true(
-        "class C{constructor(x){this.x=x;}}let B=C.bind(null,7),caught=false;try{B();}catch(e){caught=e instanceof TypeError;}caught && new B().x===7 && new B instanceof C",
+        r#"
+            class C {
+                constructor(x) {
+                    this.x = x;
+                }
+            }
+            let B = C.bind(null, 7),
+                caught = false;
+            try {
+                B();
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && new B().x === 7 && new B instanceof C
+        "#,
     );
     assert_true(
         "let caught=false;class C{}try{C((function(){throw 7;})());}catch(e){caught=e===7;}caught",
@@ -56,26 +125,116 @@ fn constructor_and_method_descriptors_are_non_enumerable_and_exact() {
 #[test]
 fn all_class_code_is_strict_without_requiring_a_use_strict_directive() {
     assert_true(
-        "class C{m(){return this;}static s(){return this;}}C.prototype.m.call(undefined)===undefined && C.prototype.m.call(7)===7 && C.s.call(null)===null",
+        r#"
+            class C {
+                m() {
+                    return this;
+                }
+                static s() {
+                    return this;
+                }
+            }
+            C.prototype.m.call(undefined) === undefined && C.prototype.m.call(7) === 7 && C.s.call(
+                null) === null
+        "#,
     );
     assert_true(
-        "class C{constructor(x){arguments[0]=8;this.x=x;}m(x){x=9;return arguments[0];}n(x=1){return x;}}let c=new C(7);c.x===7 && c.m(2)===2 && c.n()===1",
+        r#"
+            class C {
+                constructor(x) {
+                    arguments[0] = 8;
+                    this.x = x;
+                }
+                m(x) {
+                    x = 9;
+                    return arguments[0];
+                }
+                n(x = 1) {
+                    return x;
+                }
+            }
+            let c = new C(7);
+            c.x === 7 && c.m(2) === 2 && c.n() === 1
+        "#,
     );
     assert_true(
-        "let caught=false;class C{m(){undeclared=1;}}try{new C().m();}catch(e){caught=e instanceof ReferenceError;}caught && typeof undeclared==='undefined'",
+        r#"
+            let caught = false;
+            class C {
+                m() {
+                    undeclared = 1;
+                }
+            }
+            try {
+                new C().m();
+            } catch (e) {
+                caught = e instanceof ReferenceError;
+            }
+            caught && typeof undeclared === 'undefined'
+        "#,
     );
     assert_true(
-        "let caught=false;class C{m(){return function(){return this;};}}new C().m()()===undefined && (tryStrict(),caught);function tryStrict(){try{C.prototype.m.caller;}catch(e){caught=e instanceof TypeError;}}",
+        r#"
+            let caught = false;
+            class C {
+                m() {
+                    return function() {
+                        return this;
+                    };
+                }
+            }
+            new C().m()() === undefined && (tryStrict(), caught);
+
+            function tryStrict() {
+                try {
+                    C.prototype.m.caller;
+                } catch (e) {
+                    caught = e instanceof TypeError;
+                }
+            }
+        "#,
     );
 }
 
 #[test]
 fn declaration_bindings_are_mutable_but_captured_class_names_are_immutable() {
     assert_true(
-        "class C{m(){return C;}static self(){return C;}change(){C=7;}}let original=C,x=new C,caught=false;C=8;try{x.change();}catch(e){caught=e instanceof TypeError;}caught && C===8 && x.m()===original && original.self()===original && !Object.hasOwn(globalThis,'C')",
+        r#"
+            class C {
+                m() {
+                    return C;
+                }
+                static self() {
+                    return C;
+                }
+                change() {
+                    C = 7;
+                }
+            }
+            let original = C,
+                x = new C,
+                caught = false;
+            C = 8;
+            try {
+                x.change();
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && C === 8 && x.m() === original && original.self() === original && !Object.hasOwn(
+                globalThis, 'C')
+        "#,
     );
     assert_true(
-        "let C=class Internal{m(){return Internal;}};let x=new C;C=7;x.m()!==7 && typeof Internal==='undefined' && x.m().name==='Internal'",
+        r#"
+            let C = class Internal {
+                m() {
+                    return Internal;
+                }
+            };
+            let x = new C;
+            C = 7;
+            x.m() !== 7 && typeof Internal === 'undefined' && x.m().name === 'Internal'
+        "#,
     );
     assert_true("let C=class{m(){return C;}};let x=new C;C=7;x.m()===7");
     assert_true("let C=1;{class C{}C=2;}C===1");
@@ -91,7 +250,23 @@ fn computed_names_see_tdz_until_all_methods_have_been_defined() {
         "let captured;class C{[(captured=()=>C,'x')](){}static y(){return C;}}captured()===C && C.y()===C",
     );
     assert_true(
-        "let captured,caught=false;try{class C{[(captured=()=>C,'x')](){}[captured()](){} }}catch(e){caught=e instanceof ReferenceError;}caught && (function(){try{captured();}catch(e){return e instanceof ReferenceError;}})()",
+        r#"
+            let captured, caught = false;
+            try {
+                class C {
+                    [(captured = () => C, 'x')]() {} [captured()]() {}
+                }
+            } catch (e) {
+                caught = e instanceof ReferenceError;
+            }
+            caught && (function() {
+                try {
+                    captured();
+                } catch (e) {
+                    return e instanceof ReferenceError;
+                }
+            })()
+        "#,
     );
     let mut realm = Realm::default();
     realm
@@ -109,13 +284,45 @@ fn computed_names_see_tdz_until_all_methods_have_been_defined() {
 #[test]
 fn inferred_names_are_set_before_static_methods_can_overwrite_them() {
     assert_true(
-        "let C=class{};let o={key:class{}};let A;A=class{};C.name==='C' && o.key.name==='key' && A.name==='A' && (class{}).name===''",
+        r#"
+            let C = class {};
+            let o = {
+                key: class {}
+            };
+            let A;
+            A = class {};
+            C.name === 'C' && o.key.name === 'key' && A.name === 'A' && (class {}).name === ''
+        "#,
     );
     assert_true(
-        "let C=class{static name(){return 7;}};let o={key:class{static name(){return 8;}}};C.name()===7 && o.key.name()===8",
+        r#"
+            let C = class {
+                static name() {
+                    return 7;
+                }
+            };
+            let o = {
+                key: class {
+                    static name() {
+                        return 8;
+                    }
+                }
+            };
+            C.name() === 7 && o.key.name() === 8
+        "#,
     );
     assert_true(
-        "let [C=class{}]=[];let {x:D=class{}}={};function f(A=class{}){return A.name;}C.name==='C' && D.name==='D' && f()==='A'",
+        r#"
+            let [C = class {}] = [];
+            let {
+                x: D = class {}
+            } = {};
+
+            function f(A = class {}) {
+                return A.name;
+            }
+            C.name === 'C' && D.name === 'D' && f() === 'A'
+        "#,
     );
     assert_true("let s=Symbol('S'),o={[s]:class{}};o[s].name==='[S]'");
     assert_true("let C=class Explicit{};C.name==='Explicit'");
@@ -124,13 +331,50 @@ fn inferred_names_are_set_before_static_methods_can_overwrite_them() {
 #[test]
 fn computed_names_are_ordered_and_do_not_create_a_class_this_binding() {
     assert_true(
-        "let log='',key={toString(){log+='K';return 'x';}};class C{[(log+='A',key)](){}static [(log+='B','y')](){}[(log+='C','z')](){}}log==='AKBC' && C.prototype.x.name==='x' && C.y.name==='y'",
+        r#"
+            let log = '',
+                key = {
+                    toString() {
+                        log += 'K';
+                        return 'x';
+                    }
+                };
+            class C {
+                [(log += 'A', key)]() {}
+                static[(log += 'B', 'y')]() {} [(log += 'C', 'z')]() {}
+            }
+            log === 'AKBC' && C.prototype.x.name === 'x' && C.y.name === 'y'
+        "#,
     );
     assert_true(
-        "function f(){return class{[this.x](){}[new.target?'new':'call'](){}};}let C=f.call({x:'m'}),D=new f;Object.hasOwn(C.prototype,'m') && Object.hasOwn(C.prototype,'call') && Object.hasOwn(D.prototype,'new')",
+        r#"
+            function f() {
+                return class {
+                    [this.x]() {} [new.target ? 'new' : 'call']() {}
+                };
+            }
+            let C = f.call({
+                    x: 'm'
+                }),
+                D = new f;
+            Object.hasOwn(C.prototype, 'm') && Object.hasOwn(C.prototype, 'call') && Object.hasOwn(D
+                .prototype, 'new')
+        "#,
     );
     assert_true(
-        "let h={m(){return class{[super.x](){} };}};Object.setPrototypeOf(h,{x:'m'});Object.hasOwn(h.m().prototype,'m')",
+        r#"
+            let h = {
+                m() {
+                    return class {
+                        [super.x]() {}
+                    };
+                }
+            };
+            Object.setPrototypeOf(h, {
+                x: 'm'
+            });
+            Object.hasOwn(h.m().prototype, 'm')
+        "#,
     );
     assert_true(
         "let caught=false;try{class C{static ['prototype'](){}}}catch(e){caught=e instanceof TypeError;}caught",
@@ -140,10 +384,46 @@ fn computed_names_are_ordered_and_do_not_create_a_class_this_binding() {
 #[test]
 fn class_super_uses_constructor_and_method_home_objects() {
     assert_true(
-        "class C{constructor(){this.x=super.x;}m(){return super.x+this.x; }static m(){return super.x+this.x;}}Object.setPrototypeOf(C.prototype,{x:2});Object.setPrototypeOf(C,{x:3});C.x=10;let c=new C; c.x===2 && c.m()===4 && C.m()===13 && C.prototype.m.call({x:20})===22",
+        r#"
+            class C {
+                constructor() {
+                    this.x = super.x;
+                }
+                m() {
+                    return super.x + this.x;
+                }
+                static m() {
+                    return super.x + this.x;
+                }
+            }
+            Object.setPrototypeOf(C.prototype, {
+                x: 2
+            });
+            Object.setPrototypeOf(C, {
+                x: 3
+            });
+            C.x = 10;
+            let c = new C;
+            c.x === 2 && c.m() === 4 && C.m() === 13 && C.prototype.m.call({
+                x: 20
+            }) === 22
+        "#,
     );
     assert_true(
-        "class C{constructor(x=super.x){this.x=x;}m(){return eval('()=>super.x+this.x');}}Object.setPrototypeOf(C.prototype,{x:7});new C().m()()===14",
+        r#"
+            class C {
+                constructor(x = super.x) {
+                    this.x = x;
+                }
+                m() {
+                    return eval('()=>super.x+this.x');
+                }
+            }
+            Object.setPrototypeOf(C.prototype, {
+                x: 7
+            });
+            new C().m()() === 14
+        "#,
     );
     assert_true(
         "class C{m(){return new.target; }static s(){return new.target;}}new C().m()===undefined && C.s()===undefined",
@@ -153,10 +433,40 @@ fn class_super_uses_constructor_and_method_home_objects() {
 #[test]
 fn accessors_merge_and_method_keys_preserve_symbols_and_utf16() {
     assert_true(
-        "class C{get x(){return this.v;}set x(v){this.v=v;}get x(){return this.v+1;}}let c=new C;c.x=7;c.x===8 && Object.keys(c).join(',')==='v'",
+        r#"
+            class C {
+                get x() {
+                    return this.v;
+                }
+                set x(v) {
+                    this.v = v;
+                }
+                get x() {
+                    return this.v + 1;
+                }
+            }
+            let c = new C;
+            c.x = 7;
+            c.x === 8 && Object.keys(c).join(',') === 'v'
+        "#,
     );
     assert_true(
-        "let s=Symbol('S');class C{[s](){return 7;}['\\uD800'](){return 8;}0x10n(){return 9;}}let c=new C;c[s]()===7 && c[s].name==='[S]' && c['\\uD800']()===8 && c['\\uD800'].name==='\\uD800' && c[16]()===9 && c[16].name==='16'",
+        r#"
+            let s = Symbol('S');
+            class C {
+                [s]() {
+                    return 7;
+                } ['\uD800']() {
+                    return 8;
+                }
+                0x10n() {
+                    return 9;
+                }
+            }
+            let c = new C;
+            c[s]() === 7 && c[s].name === '[S]' && c['\uD800']() === 8 && c['\uD800'].name === '\uD800' &&
+                c[16]() === 9 && c[16].name === '16'
+        "#,
     );
     assert_true("class C{get x(){throw 7;}x(){return 8;}}new C().x()===8");
 }

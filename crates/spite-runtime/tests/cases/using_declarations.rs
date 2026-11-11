@@ -22,14 +22,14 @@ fn ordinary_using_identifiers_accept_word_operators_and_loop_headers() {
     check(
         &mut Realm::default(),
         r#"
-        for(const prefix of ['', '"use strict";']){
-            if(eval(prefix+"let using='key';using in {key:1}")!==true)throw 1;
-            if(eval(prefix+'let using={};using instanceof Object')!==true)throw 2;
-        }
-        let using,keys=[],turns=0;
-        for(using in {a:1,b:2})keys.push(using);
-        for(using instanceof Object;turns<1;turns++){using={};}
-        keys.join(',')==='a,b'&&turns===1&&using instanceof Object
+            for(const prefix of ['', '"use strict";']){
+                if(eval(prefix+"let using='key';using in {key:1}")!==true)throw 1;
+                if(eval(prefix+'let using={};using instanceof Object')!==true)throw 2;
+            }
+            let using,keys=[],turns=0;
+            for(using in {a:1,b:2})keys.push(using);
+            for(using instanceof Object;turns<1;turns++){using={};}
+            keys.join(',')==='a,b'&&turns===1&&using instanceof Object
         "#,
     );
 }
@@ -40,20 +40,23 @@ fn await_using_identifiers_resume_before_word_operators() {
     check(
         &mut realm,
         r#"
-        let state={};
-        async function membership(using){return await using in {key:1}}
-        async function instance(using){return await using instanceof Object}
-        membership(Promise.resolve('key')).then(v=>state.member=v,e=>state.error=e);
-        membership({then(resolve){resolve('absent')}}).then(v=>state.absent=v,e=>state.error=e);
-        instance(Promise.resolve({})).then(v=>state.object=v,e=>state.error=e);
-        instance(Promise.resolve(1)).then(v=>state.primitive=v,e=>state.error=e);
-        Object.keys(state).length===0
+            let state={};
+            async function membership(using){return await using in {key:1}}
+            async function instance(using){return await using instanceof Object}
+            membership(Promise.resolve('key')).then(v=>state.member=v,e=>state.error=e);
+            membership({then(resolve){resolve('absent')}}).then(v=>state.absent=v,e=>state.error=e);
+            instance(Promise.resolve({})).then(v=>state.object=v,e=>state.error=e);
+            instance(Promise.resolve(1)).then(v=>state.primitive=v,e=>state.error=e);
+            Object.keys(state).length===0
         "#,
     );
     drain(&mut realm);
     check(
         &mut realm,
-        "state.member===true&&state.absent===false&&state.object===true&&state.primitive===false&&!Object.hasOwn(state,'error')",
+        r#"
+            state.member === true && state.absent === false && state.object === true && state.primitive ===
+                false && !Object.hasOwn(state, 'error')
+        "#,
     );
 }
 
@@ -62,19 +65,47 @@ fn block_bindings_cache_disposers_and_preserve_receivers_and_reverse_order() {
     check(
         &mut Realm::default(),
         r#"
-        let log=[],gets=0,read;
-        let first={
-            get[Symbol.dispose](){
-                gets++;
-                return function(){'use strict';if(this!==first||arguments.length!==0)throw 1;log.push('first');return{get then(){throw 2}}};
+            let log = [],
+                gets = 0,
+                read;
+            let first = {
+                get [Symbol.dispose]() {
+                    gets++;
+                    return function() {
+                        'use strict';
+                        if (this !== first || arguments.length !== 0) throw 1;
+                        log.push('first');
+                        return {
+                            get then() {
+                                throw 2
+                            }
+                        }
+                    };
+                }
+            };
+            {
+                using a = first, b = {
+                    [Symbol.dispose]() {
+                        if (read() !== first) throw 3;
+                        log.push('second')
+                    }
+                };
+                read = () => a;
+                Object.defineProperty(first, Symbol.dispose, {
+                    value() {
+                        throw 4
+                    }
+                });
+                let caught = false;
+                try {
+                    a = null
+                } catch (e) {
+                    caught = e instanceof TypeError
+                }
+                if (!caught) throw 5;
             }
-        };
-        {using a=first,b={[Symbol.dispose](){if(read()!==first)throw 3;log.push('second')}};
-            read=()=>a;Object.defineProperty(first,Symbol.dispose,{value(){throw 4}});
-            let caught=false;try{a=null}catch(e){caught=e instanceof TypeError}if(!caught)throw 5;
-        }
-        gets===1&&read()===first&&log.join(',')==='second,first'
-    "#,
+            gets === 1 && read() === first && log.join(',') === 'second,first'
+        "#,
     );
 }
 
@@ -84,12 +115,12 @@ fn resource_cleanup_preserves_return_values_break_continue_and_normal_values() {
     check(
         &mut realm,
         r#"
-        let log=[];function f(){using a={[Symbol.dispose](){log.push('return');return 99}};return 7}
-        if(f()!==7)throw 1;
-        for(let i=0;i<3;i++){using r={[Symbol.dispose](){log.push(i)}};if(i===0)continue;if(i===1)break;}
-        outer:{using r={[Symbol.dispose](){log.push('label')}};break outer;}
-        log.join(',')==='return,0,1,label'
-    "#,
+            let log=[];function f(){using a={[Symbol.dispose](){log.push('return');return 99}};return 7}
+            if(f()!==7)throw 1;
+            for(let i=0;i<3;i++){using r={[Symbol.dispose](){log.push(i)}};if(i===0)continue;if(i===1)break;}
+            outer:{using r={[Symbol.dispose](){log.push('label')}};break outer;}
+            log.join(',')==='return,0,1,label'
+        "#,
     );
     assert_eq!(
         realm.eval("1;{using r={[Symbol.dispose](){return 99}};}"),
@@ -102,11 +133,33 @@ fn body_and_cleanup_errors_form_intrinsic_suppression_chains() {
     check(
         &mut Realm::default(),
         r#"
-        let original={},a={},b={},caught,Saved=SuppressedError;
-        SuppressedError=function(){throw 9};
-        try{{using first={[Symbol.dispose](){throw a}},second={[Symbol.dispose](){throw b}};throw original}}catch(e){caught=e}
-        Object.getPrototypeOf(caught)===Saved.prototype&&caught.error===a&&caught.suppressed.error===b&&caught.suppressed.suppressed===original&&Error.isError(caught)&&Object.getOwnPropertyNames(caught).join(',')==='error,suppressed'
-    "#,
+            let original = {},
+                a = {},
+                b = {},
+                caught, Saved = SuppressedError;
+            SuppressedError = function() {
+                throw 9
+            };
+            try {
+                {
+                    using first = {
+                        [Symbol.dispose]() {
+                            throw a
+                        }
+                    }, second = {
+                        [Symbol.dispose]() {
+                            throw b
+                        }
+                    };
+                    throw original
+                }
+            } catch (e) {
+                caught = e
+            }
+            Object.getPrototypeOf(caught) === Saved.prototype && caught.error === a && caught.suppressed
+                .error === b && caught.suppressed.suppressed === original && Error.isError(caught) &&
+                Object.getOwnPropertyNames(caught).join(',') === 'error,suppressed'
+        "#,
     );
 }
 
@@ -115,11 +168,32 @@ fn initializer_and_lookup_failures_dispose_prior_resources_before_binding_initia
     check(
         &mut Realm::default(),
         r#"
-        let log=[],read,caught;
-        try{{using first={[Symbol.dispose](){log.push('disposed')}},x={get[Symbol.dispose](){read=()=>x;return x}};}}catch(e){caught=e}
-        let tdz=false;try{read()}catch(e){tdz=e instanceof ReferenceError}
-        caught instanceof ReferenceError&&tdz&&log.join(',')==='disposed'
-    "#,
+            let log = [],
+                read, caught;
+            try {
+                {
+                    using first = {
+                        [Symbol.dispose]() {
+                            log.push('disposed')
+                        }
+                    }, x = {
+                        get [Symbol.dispose]() {
+                            read = () => x;
+                            return x
+                        }
+                    };
+                }
+            } catch (e) {
+                caught = e
+            }
+            let tdz = false;
+            try {
+                read()
+            } catch (e) {
+                tdz = e instanceof ReferenceError
+            }
+            caught instanceof ReferenceError && tdz && log.join(',') === 'disposed'
+        "#,
     );
 }
 
@@ -128,22 +202,44 @@ fn three_clause_headers_keep_resources_until_the_whole_loop_exits() {
     check(
         &mut Realm::default(),
         r#"
-        let log=[],i=0,read;
-        for(using r={[Symbol.dispose](){log.push('dispose '+i)}};i<2;i++){read=()=>r;log.push('body '+i)}
-        let marker={},failed=[];try{for(using a={[Symbol.dispose](){failed.push(1)}},b=(()=>{throw marker})();false;){}}catch(e){if(e!==marker)throw e}
-        typeof read()==='object'&&log.join(',')==='body 0,body 1,dispose 2'&&failed.join(',')==='1'
-    "#,
+            let log = [],
+                i = 0,
+                read;
+            for (using r = {
+                    [Symbol.dispose]() {
+                        log.push('dispose ' + i)
+                    }
+                }; i < 2; i++) {
+                read = () => r;
+                log.push('body ' + i)
+            }
+            let marker = {},
+                failed = [];
+            try {
+                for (using a = {
+                        [Symbol.dispose]() {
+                            failed.push(1)
+                        }
+                    }, b = (() => {
+                        throw marker
+                    })(); false;) {}
+            } catch (e) {
+                if (e !== marker) throw e
+            }
+            typeof read() === 'object' && log.join(',') === 'body 0,body 1,dispose 2' && failed.join(
+                ',') === '1'
+        "#,
     );
     check(
         &mut Realm::default(),
         r#"
-        let log=[],j=0,resource=tag=>({[Symbol.dispose](){log.push(tag)}});
-        outer:for(using top=resource('top');j<2;j++){
-            using body=resource('body '+j);
-            for(using item of[resource('inner '+j)]){log.push('run '+j);continue outer;}
-        }
-        log.join(',')==='run 0,inner 0,body 0,run 1,inner 1,body 1,top'
-    "#,
+            let log=[],j=0,resource=tag=>({[Symbol.dispose](){log.push(tag)}});
+            outer:for(using top=resource('top');j<2;j++){
+                using body=resource('body '+j);
+                for(using item of[resource('inner '+j)]){log.push('run '+j);continue outer;}
+            }
+            log.join(',')==='run 0,inner 0,body 0,run 1,inner 1,body 1,top'
+        "#,
     );
 }
 
@@ -152,17 +248,41 @@ fn for_of_resources_dispose_per_iteration_before_next_and_iterator_close() {
     check(
         &mut Realm::default(),
         r#"
-        let log=[],i=0,reads=[],iterable={
-            [Symbol.iterator](){
-                return{
-                    next(){log.push('next');let n=i++;return{done:n===3,value:{n,[Symbol.dispose](){log.push('dispose '+this.n)}}}},
-                    return(){log.push('close');return{}}
+            let log = [],
+                i = 0,
+                reads = [],
+                iterable = {
+                    [Symbol.iterator]() {
+                        return {
+                            next() {
+                                log.push('next');
+                                let n = i++;
+                                return {
+                                    done: n === 3,
+                                    value: {
+                                        n,
+                                        [Symbol.dispose]() {
+                                            log.push('dispose ' + this.n)
+                                        }
+                                    }
+                                }
+                            },
+                            return () {
+                                log.push('close');
+                                return {}
+                            }
+                        };
+                    }
                 };
+            for (using r of iterable) {
+                reads.push(() => r.n);
+                log.push('body ' + r.n);
+                if (r.n === 0) continue;
+                break;
             }
-        };
-        for(using r of iterable){reads.push(()=>r.n);log.push('body '+r.n);if(r.n===0)continue;break;}
-        reads[0]()===0&&reads[1]()===1&&log.join(',')==='next,body 0,dispose 0,next,body 1,dispose 1,close'
-    "#,
+            reads[0]() === 0 && reads[1]() === 1 && log.join(',') ===
+                'next,body 0,dispose 0,next,body 1,dispose 1,close'
+        "#,
     );
 }
 
@@ -171,12 +291,47 @@ fn for_of_rhs_has_a_tdz_and_disposal_failures_close_without_replacing_throws() {
     check(
         &mut Realm::default(),
         r#"
-        let x=[],tdz=false;try{for(using x of x){}}catch(e){tdz=e instanceof ReferenceError}
-        let body={},cleanup={},close={},caught,closed=0;
-        let iterable={[Symbol.iterator](){return{next(){return{done:false,value:{[Symbol.dispose](){throw cleanup}}}},return(){closed++;throw close}}}};
-        try{for(using r of iterable){throw body}}catch(e){caught=e}
-        tdz&&closed===1&&caught instanceof SuppressedError&&caught.error===cleanup&&caught.suppressed===body
-    "#,
+            let x = [],
+                tdz = false;
+            try {
+                for (using x of x) {}
+            } catch (e) {
+                tdz = e instanceof ReferenceError
+            }
+            let body = {},
+                cleanup = {},
+                close = {},
+                caught, closed = 0;
+            let iterable = {
+                [Symbol.iterator]() {
+                    return {
+                        next() {
+                            return {
+                                done: false,
+                                value: {
+                                    [Symbol.dispose]() {
+                                        throw cleanup
+                                    }
+                                }
+                            }
+                        },
+                        return () {
+                            closed++;
+                            throw close
+                        }
+                    }
+                }
+            };
+            try {
+                for (using r of iterable) {
+                    throw body
+                }
+            } catch (e) {
+                caught = e
+            }
+            tdz && closed === 1 && caught instanceof SuppressedError && caught.error === cleanup && caught
+                .suppressed === body
+        "#,
     );
 }
 
@@ -186,13 +341,13 @@ fn functions_methods_static_blocks_eval_and_async_returns_close_their_own_scopes
     realm
         .eval(
             r#"
-        let log=[],done=false;function r(tag){return{[Symbol.dispose](){log.push(tag)}}}
-        function f(){using value=r('function');return 7}if(f()!==7)throw 1;
-        let a=()=>{using value=r('arrow')};a();
-        class C{static{using value=r('static')}m(){using value=r('method')}}new C().m();
-        eval("{using value=r('eval');}");
-        async function g(){using value=r('async');return 9}g().then(v=>{done=v===9});
-    "#,
+                let log=[],done=false;function r(tag){return{[Symbol.dispose](){log.push(tag)}}}
+                function f(){using value=r('function');return 7}if(f()!==7)throw 1;
+                let a=()=>{using value=r('arrow')};a();
+                class C{static{using value=r('static')}m(){using value=r('method')}}new C().m();
+                eval("{using value=r('eval');}");
+                async function g(){using value=r('async');return 9}g().then(v=>{done=v===9});
+            "#,
         )
         .unwrap();
     check(
@@ -208,14 +363,29 @@ fn nullish_inputs_primitives_and_named_function_initializers_follow_using_rules(
     check(
         &mut Realm::default(),
         r#"
-        let caught=0,log=[];
-        {using a=null,b=undefined;}
-        for(const value of[0,false,'',1n,Symbol()]){try{{using r=value;}}catch(e){if(e instanceof TypeError)caught++}}
-        Function.prototype[Symbol.dispose]=function(){log.push(this.name)};
-        {using arrow=()=>{},fn=function(){},cls=class{};}
-        delete Function.prototype[Symbol.dispose];
-        caught===5&&log.join(',')==='cls,fn,arrow'
-    "#,
+            let caught = 0,
+                log = [];
+            {
+                using a = null, b = undefined;
+            }
+            for (const value of [0, false, '', 1n, Symbol()]) {
+                try {
+                    {
+                        using r = value;
+                    }
+                } catch (e) {
+                    if (e instanceof TypeError) caught++
+                }
+            }
+            Function.prototype[Symbol.dispose] = function() {
+                log.push(this.name)
+            };
+            {
+                using arrow = () => {}, fn = function() {}, cls = class {};
+            }
+            delete Function.prototype[Symbol.dispose];
+            caught === 5 && log.join(',') === 'cls,fn,arrow'
+        "#,
     );
 }
 
@@ -224,9 +394,33 @@ fn finalizers_follow_inner_disposal_and_stacks_share_the_disposal_protocol() {
     check(
         &mut Realm::default(),
         r#"
-        let log=[];function f(){try{using s=new DisposableStack;s.defer(()=>{log.push('stack')});{using r={[Symbol.dispose](){log.push('inner')}};return 3}}finally{using r={[Symbol.dispose](){log.push('final resource')}};log.push('finally')}}
-        f()===3&&log.join(',')==='inner,stack,finally,final resource'
-    "#,
+            let log = [];
+
+            function f() {
+                try {
+                    using s = new DisposableStack;
+                    s.defer(() => {
+                        log.push('stack')
+                    });
+                    {
+                        using r = {
+                            [Symbol.dispose]() {
+                                log.push('inner')
+                            }
+                        };
+                        return 3
+                    }
+                } finally {
+                    using r = {
+                        [Symbol.dispose]() {
+                            log.push('final resource')
+                        }
+                    };
+                    log.push('finally')
+                }
+            }
+            f() === 3 && log.join(',') === 'inner,stack,finally,final resource'
+        "#,
     );
 }
 
@@ -234,7 +428,25 @@ fn finalizers_follow_inner_disposal_and_stacks_share_the_disposal_protocol() {
 fn host_aborts_skip_disposal_but_release_cached_methods_from_escaped_environments() {
     let mut realm = Realm::with_unavailable_host();
     realm.eval("let state={value:{[Symbol.dispose](){throw 1}}},flag=0;state.weak=new WeakRef(state.value[Symbol.dispose])").unwrap();
-    assert!(matches!(realm.eval("try{{using r=state.value;state.read=()=>r;r[Symbol.dispose]=null;spiteUnavailableHost()}}catch(e){flag=1}finally{flag=2}"),Err(Error::Unsupported{..})));
+    assert!(matches!(
+        realm.eval(
+            r#"
+                try {
+                    {
+                        using r = state.value;
+                        state.read = () => r;
+                        r[Symbol.dispose] = null;
+                        spiteUnavailableHost()
+                    }
+                } catch (e) {
+                    flag = 1
+                } finally {
+                    flag = 2
+                }
+            "#
+        ),
+        Err(Error::Unsupported { .. })
+    ));
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
     check(

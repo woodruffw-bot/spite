@@ -49,10 +49,21 @@ fn constructor_and_prototype_graph_has_standard_identity_and_descriptors() {
 #[test]
 fn branding_and_newtarget_validation_use_real_constructor_metadata() {
     assert_true(
-        "function f(){}let arrow=()=>0,bound=f.bind(null);f instanceof Function && arrow instanceof Function && bound instanceof Function && Function instanceof Function && !(Function.prototype instanceof Function) && !(Math instanceof Function)",
+        r#"
+            function f() {}
+            let arrow = () => 0,
+                bound = f.bind(null);
+            f instanceof Function && arrow instanceof Function && bound instanceof Function &&
+                Function instanceof Function && !(Function.prototype instanceof Function) && !(
+                    Math instanceof Function)
+        "#,
     );
     assert_true(
-        "let o=Reflect.construct(Object,[],Function);typeof o==='object' && Object.getPrototypeOf(o)===Function.prototype && o instanceof Function",
+        r#"
+            let o = Reflect.construct(Object, [], Function);
+            typeof o === 'object' && Object.getPrototypeOf(o) === Function.prototype &&
+                o instanceof Function
+        "#,
     );
     assert_true(
         "let caught=false;try{Reflect.construct(Function,[],()=>0);}catch(e){caught=e instanceof TypeError;}caught",
@@ -68,19 +79,48 @@ fn branding_and_newtarget_validation_use_real_constructor_metadata() {
 #[test]
 fn complete_own_reflection_and_integrity_operations_do_not_invoke_accessors() {
     assert_true(
-        "let keys=Reflect.ownKeys(Function.prototype);Object.getOwnPropertyNames(Function).join(',')==='length,name,prototype' && keys.length===10 && keys[9]===Symbol.hasInstance && Object.keys(Function.prototype).length===0 && Object.keys(Object.assign({},Function.prototype)).length===0",
+        r#"
+            let keys = Reflect.ownKeys(Function.prototype);
+            Object.getOwnPropertyNames(Function).join(',') === 'length,name,prototype' && keys.length ===
+                10 && keys[9] === Symbol.hasInstance && Object.keys(Function.prototype).length === 0 &&
+                Object.keys(Object.assign({}, Function.prototype)).length === 0
+        "#,
     );
     assert_true(
-        "let count=0;for(let k in Function.prototype)count++;count===0 && Object.getOwnPropertyDescriptor(Function.prototype,'caller').get===Object.getOwnPropertyDescriptor(Function.prototype,'arguments').get",
+        r#"
+            let count = 0;
+            for (let k in Function.prototype) count++;
+            count === 0 && Object.getOwnPropertyDescriptor(Function.prototype, 'caller').get === Object
+                .getOwnPropertyDescriptor(Function.prototype, 'arguments').get
+        "#,
     );
     assert_true(
-        "Object.freeze(Function);Object.freeze(Function.prototype);Object.isFrozen(Function) && Object.isFrozen(Function.prototype) && Function.prototype.constructor===Function && Function.prototype()===undefined",
+        r#"
+            Object.freeze(Function);
+            Object.freeze(Function.prototype);
+            Object.isFrozen(Function) && Object.isFrozen(Function.prototype) && Function.prototype
+                .constructor === Function && Function.prototype() === undefined
+        "#,
     );
     assert_true(
-        "let caught=false;Object.freeze(Function.prototype);try{Function.caller;}catch(e){caught=e instanceof TypeError;}caught",
+        r#"
+            let caught = false;
+            Object.freeze(Function.prototype);
+            try {
+                Function.caller;
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught
+        "#,
     );
     assert_true(
-        "let p=Function.prototype;delete p.constructor;!Object.hasOwn(p,'constructor') && p.constructor===Object && Reflect.set(p,'constructor',Function) && p.constructor===Function",
+        r#"
+            let p = Function.prototype;
+            delete p.constructor;
+            !Object.hasOwn(p, 'constructor') && p.constructor === Object && Reflect.set(p, 'constructor',
+                Function) && p.constructor === Function
+        "#,
     );
 }
 
@@ -118,6 +158,9 @@ fn intrinsic_constructor_and_prototype_survive_deleted_public_links() {
         )
         .unwrap();
     assert_eq!(realm.collect(usize::MAX).unwrap().live, REALM_ENTRIES);
-    assert_eq!(realm.eval("F.prototype===p && Object.getPrototypeOf(F)===p && F instanceof F && p()===undefined && typeof Function==='undefined'"),Ok(Value::Boolean(true)));
+    assert_eq!(realm.eval(r#"
+        F.prototype === p && Object.getPrototypeOf(F) === p && F instanceof F && p() === undefined &&
+            typeof Function === 'undefined'
+    "#),Ok(Value::Boolean(true)));
     assert_eq!(realm.eval("F('return 7')()"), Ok(Value::Number(7.0)));
 }

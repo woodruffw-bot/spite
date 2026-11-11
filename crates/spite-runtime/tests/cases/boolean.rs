@@ -27,7 +27,20 @@ fn calls_use_truthiness_without_coercing_objects() {
     }
     assert_true("Boolean() === false && Boolean.call(null, true) === true");
     assert_true(
-        "let touched=false; let o={valueOf:()=>{touched=true;throw 1;},toString:()=>{touched=true;throw 2;}}; Boolean(o) && new Boolean(o).valueOf() && !touched",
+        r#"
+            let touched = false;
+            let o = {
+                valueOf: () => {
+                    touched = true;
+                    throw 1;
+                },
+                toString: () => {
+                    touched = true;
+                    throw 2;
+                }
+            };
+            Boolean(o) && new Boolean(o).valueOf() && !touched
+        "#,
     );
     assert_true("let n=0; Boolean(false,n=1) === false && n===1");
 }
@@ -100,7 +113,12 @@ fn methods_require_a_boolean_primitive_or_own_internal_slot() {
 #[test]
 fn wrapper_coercion_obeys_ordinary_conversion_and_object_truthiness() {
     assert_true(
-        "let f=new Boolean(false),t=new Boolean(true); !!f && f==false && f!==false && +f===0 && +t===1 && f+2===2 && t+2===3 && `${f}`==='false'",
+        r#"
+            let f = new Boolean(false),
+                t = new Boolean(true);
+            !!f && f == false && f !== false && +f === 0 && +t === 1 && f + 2 === 2 && t + 2 === 3 &&
+                `${f}` === 'false'
+        "#,
     );
     assert_true("let o=new Boolean(false); o.valueOf=()=>7; +o===7 && `${o}`==='false'");
     assert_true("let o=new Boolean(true); o.valueOf=()=>({}); o.toString=()=> '8'; +o===8");
@@ -109,22 +127,47 @@ fn wrapper_coercion_obeys_ordinary_conversion_and_object_truthiness() {
 #[test]
 fn non_strict_receivers_box_fresh_values_while_strict_receivers_stay_primitive() {
     assert_true(
-        "function box(){return this;} let a=box.call(true),b=box.apply(true); typeof a==='object' && a instanceof Boolean && a.valueOf()===true && a!==b",
+        r#"
+            function box() {
+                return this;
+            }
+            let a = box.call(true),
+                b = box.apply(true);
+            typeof a === 'object' && a instanceof Boolean && a.valueOf() === true && a !== b
+        "#,
     );
     assert_true(
         "function strict(){'use strict';return this;} strict.call(true)===true && strict.apply(false)===false",
     );
     assert_true(
-        "function capture(){return ()=>this;} let f=capture.call(false), a=f(); a===f() && a instanceof Boolean && a.valueOf()===false",
+        r#"
+            function capture() {
+                return () => this;
+            }
+            let f = capture.call(false),
+                a = f();
+            a === f() && a instanceof Boolean && a.valueOf() === false
+        "#,
     );
     assert_true(
-        "Boolean.prototype.receiver=function(){return this;}; let a=true.receiver(); a instanceof Boolean && a.valueOf()===true",
+        r#"
+            Boolean.prototype.receiver = function() {
+                return this;
+            };
+            let a = true.receiver();
+            a instanceof Boolean && a.valueOf() === true
+        "#,
     );
     assert_true(
         "Boolean.prototype.receiver=function(){'use strict';return this;}; true.receiver()===true",
     );
     assert_true(
-        "let valueOf=({}).valueOf, a=valueOf.call(false),b=valueOf.call(false); a!==b && a.valueOf()===false && a instanceof Boolean && valueOf.call(a)===a",
+        r#"
+            let valueOf = ({}).valueOf,
+                a = valueOf.call(false),
+                b = valueOf.call(false);
+            a !== b && a.valueOf() === false && a instanceof Boolean && valueOf.call(a) === a
+        "#,
     );
 }
 
@@ -229,7 +272,12 @@ fn constructor_metadata_and_descriptors_are_standard() {
 #[test]
 fn deleting_or_replacing_the_global_does_not_change_intrinsic_boxing() {
     assert_true(
-        "let B=Boolean; delete globalThis.Boolean; typeof Boolean==='undefined' && true.constructor===B && ({}).valueOf.call(false) instanceof B",
+        r#"
+            let B = Boolean;
+            delete globalThis.Boolean;
+            typeof Boolean === 'undefined' && true.constructor === B && ({}).valueOf.call(
+                false) instanceof B
+        "#,
     );
     assert_true(
         "let B=Boolean; Boolean=7; true.constructor===B && ({}).valueOf.call(true) instanceof B",

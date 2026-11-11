@@ -23,18 +23,18 @@ fn disabled_annex_b_initializers_are_catchable_syntax_errors_in_eval() {
 fn dynamic_function_families_reject_disabled_for_in_initializers_during_compilation() {
     assert_true(
         r#"
-        let touched=0,caught=0;
-        const source='for(var forInLeaked=(touched=1) in {key:1}){}';
-        const constructors=[Function,Object.getPrototypeOf(function*(){}).constructor,
-            Object.getPrototypeOf(async function(){}).constructor,
-            Object.getPrototypeOf(async function*(){}).constructor];
-        for(const C of constructors){
-            for(const compile of [()=>C(source),()=>Reflect.construct(C,[source])]){
-                try{compile();throw 1;}
-                catch(error){if(!(error instanceof SyntaxError))throw error;caught++;}
+            let touched=0,caught=0;
+            const source='for(var forInLeaked=(touched=1) in {key:1}){}';
+            const constructors=[Function,Object.getPrototypeOf(function*(){}).constructor,
+                Object.getPrototypeOf(async function(){}).constructor,
+                Object.getPrototypeOf(async function*(){}).constructor];
+            for(const C of constructors){
+                for(const compile of [()=>C(source),()=>Reflect.construct(C,[source])]){
+                    try{compile();throw 1;}
+                    catch(error){if(!(error instanceof SyntaxError))throw error;caught++;}
+                }
             }
-        }
-        caught===8&&touched===0&&typeof forInLeaked==='undefined'
+            caught===8&&touched===0&&typeof forInLeaked==='undefined'
         "#,
     );
 }
@@ -42,10 +42,41 @@ fn dynamic_function_families_reject_disabled_for_in_initializers_during_compilat
 #[test]
 fn own_and_inherited_strings_are_ordered_and_symbols_are_skipped() {
     assert_true(
-        "let proto={9:1,p:2},obj={2:3,1:4,z:5,a:6,[Symbol()]:7};Object.setPrototypeOf(obj,proto);let keys=[];for(let k in obj)keys.push(k);keys.join(',')==='1,2,z,a,9,p'",
+        r#"
+            let proto = {
+                    9: 1,
+                    p: 2
+                },
+                obj = {
+                    2: 3,
+                    1: 4,
+                    z: 5,
+                    a: 6,
+                    [Symbol()]: 7
+                };
+            Object.setPrototypeOf(obj, proto);
+            let keys = [];
+            for (let k in obj) keys.push(k);
+            keys.join(',') === '1,2,z,a,9,p'
+        "#,
     );
     assert_true(
-        "let obj={get a(){throw 7;},set b(v){throw 8;},get [Symbol.iterator](){throw 9;}};let keys=[];for(let k in obj)keys.push(k);keys.join(',')==='a,b'",
+        r#"
+            let obj = {
+                get a() {
+                    throw 7;
+                },
+                set b(v) {
+                    throw 8;
+                },
+                get [Symbol.iterator]() {
+                    throw 9;
+                }
+            };
+            let keys = [];
+            for (let k in obj) keys.push(k);
+            keys.join(',') === 'a,b'
+        "#,
     );
     assert_true(
         "let obj=Object.create(null);obj.x=1;let keys=[];for(let k in obj)keys.push(k);keys.join(',')==='x'",
@@ -55,52 +86,228 @@ fn own_and_inherited_strings_are_ordered_and_symbols_are_skipped() {
 #[test]
 fn nonenumerable_own_keys_suppress_inherited_names_without_reads() {
     assert_true(
-        "let proto={x:1,y:2},obj=Object.create(proto);Object.defineProperty(obj,'x',{get(){throw 7;}});let keys=[];for(let k in obj)keys.push(k);keys.join(',')==='y'",
+        r#"
+            let proto = {
+                    x: 1,
+                    y: 2
+                },
+                obj = Object.create(proto);
+            Object.defineProperty(obj, 'x', {
+                get() {
+                    throw 7;
+                }
+            });
+            let keys = [];
+            for (let k in obj) keys.push(k);
+            keys.join(',') === 'y'
+        "#,
     );
     assert_true(
-        "let base={x:1},proto=Object.create(base),obj=Object.create(proto);Object.defineProperty(proto,'x',{value:2});let keys=[];for(let k in obj)keys.push(k);keys.length===0",
+        r#"
+            let base = {
+                    x: 1
+                },
+                proto = Object.create(base),
+                obj = Object.create(proto);
+            Object.defineProperty(proto, 'x', {
+                value: 2
+            });
+            let keys = [];
+            for (let k in obj) keys.push(k);
+            keys.length === 0
+        "#,
     );
     assert_true(
-        "let proto={x:1},obj={x:2};Object.setPrototypeOf(obj,proto);let keys=[];for(let k in obj){keys.push(k);delete obj.x;}keys.join(',')==='x'",
+        r#"
+            let proto = {
+                    x: 1
+                },
+                obj = {
+                    x: 2
+                };
+            Object.setPrototypeOf(obj, proto);
+            let keys = [];
+            for (let k in obj) {
+                keys.push(k);
+                delete obj.x;
+            }
+            keys.join(',') === 'x'
+        "#,
     );
 }
 
 #[test]
 fn deletions_and_enumerability_changes_are_live_between_bodies() {
     assert_true(
-        "let proto={b:7,c:8},obj={a:1,b:2};Object.setPrototypeOf(obj,proto);let keys=[];for(let k in obj){keys.push(k);if(k==='a')delete obj.b;}keys.join(',')==='a,b,c'",
+        r#"
+            let proto = {
+                    b: 7,
+                    c: 8
+                },
+                obj = {
+                    a: 1,
+                    b: 2
+                };
+            Object.setPrototypeOf(obj, proto);
+            let keys = [];
+            for (let k in obj) {
+                keys.push(k);
+                if (k === 'a') delete obj.b;
+            }
+            keys.join(',') === 'a,b,c'
+        "#,
     );
     assert_true(
-        "let proto={b:7},obj={a:1,b:2};Object.setPrototypeOf(obj,proto);let keys=[];for(let k in obj){keys.push(k);if(k==='a')Object.defineProperty(obj,'b',{enumerable:false});}keys.join(',')==='a'",
+        r#"
+            let proto = {
+                    b: 7
+                },
+                obj = {
+                    a: 1,
+                    b: 2
+                };
+            Object.setPrototypeOf(obj, proto);
+            let keys = [];
+            for (let k in obj) {
+                keys.push(k);
+                if (k === 'a') Object.defineProperty(obj, 'b', {
+                    enumerable: false
+                });
+            }
+            keys.join(',') === 'a'
+        "#,
     );
     assert_true(
-        "let obj={a:1};Object.defineProperty(obj,'b',{value:2,configurable:true});let keys=[];for(let k in obj){keys.push(k);if(k==='a')Object.defineProperty(obj,'b',{enumerable:true});}keys.join(',')==='a,b'",
+        r#"
+            let obj = {
+                a: 1
+            };
+            Object.defineProperty(obj, 'b', {
+                value: 2,
+                configurable: true
+            });
+            let keys = [];
+            for (let k in obj) {
+                keys.push(k);
+                if (k === 'a') Object.defineProperty(obj, 'b', {
+                    enumerable: true
+                });
+            }
+            keys.join(',') === 'a,b'
+        "#,
     );
     assert_true(
-        "let obj={a:1,b:2,c:3},keys=[];for(let k in obj){keys.push(k);if(k==='a'){delete obj.b;obj.newKey=4;}}keys.join(',')==='a,c'",
+        r#"
+            let obj = {
+                    a: 1,
+                    b: 2,
+                    c: 3
+                },
+                keys = [];
+            for (let k in obj) {
+                keys.push(k);
+                if (k === 'a') {
+                    delete obj.b;
+                    obj.newKey = 4;
+                }
+            }
+            keys.join(',') === 'a,c'
+        "#,
     );
 }
 
 #[test]
 fn prototype_keys_are_snapshotted_when_the_prototype_is_reached() {
     assert_true(
-        "let proto={p:1},obj={a:2};Object.setPrototypeOf(obj,proto);let keys=[];for(let k in obj){keys.push(k);if(k==='a'){delete proto.p;proto.q=3;}}keys.join(',')==='a,q'",
+        r#"
+            let proto = {
+                    p: 1
+                },
+                obj = {
+                    a: 2
+                };
+            Object.setPrototypeOf(obj, proto);
+            let keys = [];
+            for (let k in obj) {
+                keys.push(k);
+                if (k === 'a') {
+                    delete proto.p;
+                    proto.q = 3;
+                }
+            }
+            keys.join(',') === 'a,q'
+        "#,
     );
     assert_true(
-        "let old={p:1},next={q:2},obj={a:3};Object.setPrototypeOf(obj,old);let keys=[];for(let k in obj){keys.push(k);if(k==='a')Object.setPrototypeOf(obj,next);}keys.join(',')==='a,q'",
+        r#"
+            let old = {
+                    p: 1
+                },
+                next = {
+                    q: 2
+                },
+                obj = {
+                    a: 3
+                };
+            Object.setPrototypeOf(obj, old);
+            let keys = [];
+            for (let k in obj) {
+                keys.push(k);
+                if (k === 'a') Object.setPrototypeOf(obj, next);
+            }
+            keys.join(',') === 'a,q'
+        "#,
     );
     assert_true(
-        "let obj={a:1},proto={p:2};Object.setPrototypeOf(obj,proto);let keys=[];for(let k in obj){keys.push(k);if(k==='a')Object.setPrototypeOf(obj,null);}keys.join(',')==='a'",
+        r#"
+            let obj = {
+                    a: 1
+                },
+                proto = {
+                    p: 2
+                };
+            Object.setPrototypeOf(obj, proto);
+            let keys = [];
+            for (let k in obj) {
+                keys.push(k);
+                if (k === 'a') Object.setPrototypeOf(obj, null);
+            }
+            keys.join(',') === 'a'
+        "#,
     );
 }
 
 #[test]
 fn nullish_inputs_skip_and_other_primitives_box_without_coercion() {
     assert_true(
-        "let calls=0;for(let k in null)calls++;for(let k in undefined)calls++;for(let k in 7)calls++;for(let k in true)calls++;for(let k in 7n)calls++;for(let k in Symbol())calls++;calls===0",
+        r#"
+            let calls = 0;
+            for (let k in null) calls++;
+            for (let k in undefined) calls++;
+            for (let k in 7) calls++;
+            for (let k in true) calls++;
+            for (let k in 7n) calls++;
+            for (let k in Symbol()) calls++;
+            calls === 0
+        "#,
     );
     assert_true(
-        "let calls=0,obj={[Symbol.toPrimitive](){calls++;throw 7;},valueOf(){calls++;throw 8;}};let keys=[];for(let k in obj)keys.push(k);keys.join(',')==='valueOf' && calls===0",
+        r#"
+            let calls = 0,
+                obj = {
+                    [Symbol.toPrimitive]() {
+                        calls++;
+                        throw 7;
+                    },
+                    valueOf() {
+                        calls++;
+                        throw 8;
+                    }
+                };
+            let keys = [];
+            for (let k in obj) keys.push(k);
+            keys.join(',') === 'valueOf' && calls === 0
+        "#,
     );
     assert_true(
         "Number.prototype.x=1;let keys=[];for(let k in 7)keys.push(k);keys.join(',')==='x'",
@@ -123,39 +330,151 @@ fn arrays_include_only_present_indices_and_enumerable_custom_properties() {
 fn assignments_vars_and_lexical_bindings_have_the_required_scope() {
     assert_true("var let;for(let in {a:1}){};let==='a'");
     assert_true(
-        "let obj={a:1,b:2},target={},calls=0;function key(){calls++;return 'x';}for(target[key()] in obj){};target.x==='b' && calls===2",
+        r#"
+            let obj = {
+                    a: 1,
+                    b: 2
+                },
+                target = {},
+                calls = 0;
+
+            function key() {
+                calls++;
+                return 'x';
+            }
+            for (target[key()] in obj) {};
+            target.x === 'b' && calls === 2
+        "#,
     );
     assert_true(
         "let before=x;for(var x in {a:1,b:2}){};before===undefined && x==='b' && globalThis.x==='b'",
     );
     assert_true(
-        "let x={a:1},caught=false;try{for(let x in x){};}catch(e){caught=e instanceof ReferenceError;}caught && x.a===1",
+        r#"
+            let x = {
+                    a: 1
+                },
+                caught = false;
+            try {
+                for (let x in x) {};
+            } catch (e) {
+                caught = e instanceof ReferenceError;
+            }
+            caught && x.a === 1
+        "#,
     );
     assert_true(
-        "let x='outer',closures=[];for(let x in {a:1,b:2}){closures.push(()=>x);x+='!';}x==='outer' && closures[0]()==='a!' && closures[1]()==='b!'",
+        r#"
+            let x = 'outer',
+                closures = [];
+            for (let x in {
+                    a: 1,
+                    b: 2
+                }) {
+                closures.push(() => x);
+                x += '!';
+            }
+            x === 'outer' && closures[0]() === 'a!' && closures[1]() === 'b!'
+        "#,
     );
     assert_true(
-        "let closures=[];for(const x in {a:1,b:2})closures.push(()=>x);closures[0]()==='a' && closures[1]()==='b' && typeof x==='undefined'",
+        r#"
+            let closures = [];
+            for (const x in {
+                    a: 1,
+                    b: 2
+                }) closures.push(() => x);
+            closures[0]() === 'a' && closures[1]() === 'b' && typeof x === 'undefined'
+        "#,
     );
     assert_true(
-        "let rhs,caught=false;for(let x in (rhs=()=>x,{})){};try{rhs();}catch(e){caught=e instanceof ReferenceError;}caught",
+        r#"
+            let rhs, caught = false;
+            for (let x in (rhs = () => x, {})) {};
+            try {
+                rhs();
+            } catch (e) {
+                caught = e instanceof ReferenceError;
+            }
+            caught
+        "#,
     );
 }
 
 #[test]
 fn control_transfers_and_body_throws_do_not_call_user_iterator_hooks() {
     assert_true(
-        "let obj={a:1,b:2,get [Symbol.iterator](){throw 7;},return(){throw 8;}};let keys=[];for(let k in obj){keys.push(k);if(k==='a')continue;break;}keys.join(',')==='a,b'",
+        r#"
+            let obj = {
+                a: 1,
+                b: 2,
+                get [Symbol.iterator]() {
+                    throw 7;
+                },
+                return () {
+                    throw 8;
+                }
+            };
+            let keys = [];
+            for (let k in obj) {
+                keys.push(k);
+                if (k === 'a') continue;
+                break;
+            }
+            keys.join(',') === 'a,b'
+        "#,
     );
     assert_true("let obj={a:1,b:2};function f(){for(let k in obj)return k;}f()==='a'");
     assert_true(
-        "let marker={},caught=false,x='outer';try{for(let x in {a:1})throw marker;}catch(e){caught=e===marker;}caught && x==='outer'",
+        r#"
+            let marker = {},
+                caught = false,
+                x = 'outer';
+            try {
+                for (let x in {
+                        a: 1
+                    }) throw marker;
+            } catch (e) {
+                caught = e === marker;
+            }
+            caught && x === 'outer'
+        "#,
     );
     assert_true(
-        "let keys=[];outer:for(let x in {a:1,b:2}){for(let y in {c:3}){keys.push(x+y);continue outer;}}keys.join(',')==='ac,bc'",
+        r#"
+            let keys = [];
+            outer: for (let x in {
+                    a: 1,
+                    b: 2
+                }) {
+                for (let y in {
+                        c: 3
+                    }) {
+                    keys.push(x + y);
+                    continue outer;
+                }
+            }
+            keys.join(',') === 'ac,bc'
+        "#,
     );
     assert_true(
-        "let obj={a:1},target={set x(v){throw 7;}},caught=false;try{for(target.x in obj)throw 8;}catch(e){caught=e===7;}caught",
+        r#"
+            let obj = {
+                    a: 1
+                },
+                target = {
+                    set x(v) {
+                        throw 7;
+                    }
+                },
+                caught = false;
+            try {
+                for (target.x in obj) throw 8;
+            } catch (e) {
+                caught = e === 7;
+            }
+            caught
+        "#,
     );
 }
 

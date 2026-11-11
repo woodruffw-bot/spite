@@ -7,14 +7,30 @@ use crate::common::assert_true;
 #[test]
 fn yielded_undefined_is_dense_while_literal_elisions_remain_holes() {
     assert_true(
-        "let a=[,...[,2],,...[],4,];a.length===5 && !Object.hasOwn(a,'0') && Object.hasOwn(a,'1') && a[1]===undefined && a[2]===2 && !Object.hasOwn(a,'3') && a[4]===4",
+        r#"
+            let a = [, ...[, 2], , ...[], 4, ];
+            a.length === 5 && !Object.hasOwn(a, '0') && Object.hasOwn(a, '1') && a[1] === undefined && a[
+                2] === 2 && !Object.hasOwn(a, '3') && a[4] === 4
+        "#,
     );
     assert_true("let a=[...[]];a.length===0 && Object.keys(a).length===0");
     assert_true(
-        "let a=[...'A\\uD834\\uDF06\\uD800B'];a.length===4 && a[1].length===2 && a[2]==='\\uD800' && a.join('')==='A\\uD834\\uDF06\\uD800B'",
+        r#"
+            let a = [...'A\uD834\uDF06\uD800B'];
+            a.length === 4 && a[1].length === 2 && a[2] === '\uD800' && a.join('') ===
+                'A\uD834\uDF06\uD800B'
+        "#,
     );
     assert_true(
-        "let source=Object.create({1:7});source.length=3;source[Symbol.iterator]=Array.prototype.values;let a=[...source];a.length===3 && a[0]===undefined && a[1]===7 && Object.keys(a).length===3",
+        r#"
+            let source = Object.create({
+                1: 7
+            });
+            source.length = 3;
+            source[Symbol.iterator] = Array.prototype.values;
+            let a = [...source];
+            a.length === 3 && a[0] === undefined && a[1] === 7 && Object.keys(a).length === 3
+        "#,
     );
 }
 
@@ -34,10 +50,53 @@ fn spread_is_exhausted_before_the_next_source_element_evaluates() {
 #[test]
 fn next_is_cached_and_receivers_are_preserved() {
     assert_true(
-        "let gets=0,count=0,iterator={get next(){gets++;return function(){if(this!==iterator || arguments.length!==0)throw 8;return {done:++count===3,value:count};};}},source={[Symbol.iterator](){if(this!==source || arguments.length!==0)throw 9;return iterator;}};let a=[...source];gets===1 && count===3 && a.join(',')==='1,2'",
+        r#"
+            let gets = 0,
+                count = 0,
+                iterator = {
+                    get next() {
+                        gets++;
+                        return function() {
+                            if (this !== iterator || arguments.length !== 0) throw 8;
+                            return {
+                                done: ++count === 3,
+                                value: count
+                            };
+                        };
+                    }
+                },
+                source = {
+                    [Symbol.iterator]() {
+                        if (this !== source || arguments.length !== 0) throw 9;
+                        return iterator;
+                    }
+                };
+            let a = [...source];
+            gets === 1 && count === 3 && a.join(',') === '1,2'
+        "#,
     );
     assert_true(
-        "Object.defineProperty(Number.prototype,Symbol.iterator,{value:function(){'use strict';let done=false,value=this;return {next(){let prior=done;done=true;return {done:prior,value};}};}});let a=[...7];a.length===1 && a[0]===7",
+        r#"
+            Object.defineProperty(Number.prototype, Symbol.iterator, {
+                value: function() {
+                    'use strict';
+                    let done = false,
+                        value = this;
+                    return {
+                        next() {
+                            let prior = done;
+                            done = true;
+                            return {
+                                done: prior,
+                                value
+                            };
+                        }
+                    };
+                }
+            });
+            let a = [...7];
+            a.length === 1 && a[0] === 7
+        "#,
     );
 }
 
@@ -73,11 +132,52 @@ fn abrupt_iterator_steps_do_not_close_or_evaluate_later_elements() {
         "return {get value(){throw 7;}};",
     ] {
         assert_true(&format!(
-            "let closed=0,later=0,source={{[Symbol.iterator](){{return {{next(){{{body}}},return(){{closed++;return {{}};}}}};}}}};let caught=false;try{{[...source,++later];}}catch(e){{caught=true;}}caught && closed===0 && later===0"
+            r#"
+                let closed = 0,
+                    later = 0,
+                    source = {{
+                        [Symbol.iterator]() {{
+                            return {{
+                                next() {{
+                                    {body}
+                                }},
+                                return () {{
+                                    closed++;
+                                    return {{}};
+                                }}
+                            }};
+                        }}
+                    }};
+                let caught = false;
+                try {{
+                    [...source, ++later];
+                }} catch (e) {{
+                    caught = true;
+                }}
+                caught && closed === 0 && later === 0
+            "#
         ));
     }
     assert_true(
-        "let gets=0,a=[...{[Symbol.iterator](){return {next(){return {done:true,get value(){gets++;throw 7;}};}};}}];a.length===0 && gets===0",
+        r#"
+            let gets = 0,
+                a = [...{
+                    [Symbol.iterator]() {
+                        return {
+                            next() {
+                                return {
+                                    done: true,
+                                    get value() {
+                                        gets++;
+                                        throw 7;
+                                    }
+                                };
+                            }
+                        };
+                    }
+                }];
+            a.length === 0 && gets === 0
+        "#,
     );
     assert_true(
         "let caught=false;try{[...{get [Symbol.iterator](){throw 7;}}];}catch(e){caught=e===7;}caught",
@@ -87,10 +187,35 @@ fn abrupt_iterator_steps_do_not_close_or_evaluate_later_elements() {
 #[test]
 fn output_uses_intrinsic_arrays_data_definitions_and_no_name_inference() {
     assert_true(
-        "let source=[1],gets=0,setter=0;Object.defineProperty(source,'constructor',{get(){gets++;throw 7;}});Object.defineProperty(Array.prototype,'0',{set(v){setter++;},configurable:true});let a=[...source,()=>{},function(){}];a[0]===1 && a[1].name==='' && a[2].name==='' && Object.getPrototypeOf(a)===Array.prototype && gets===0 && setter===0",
+        r#"
+            let source = [1],
+                gets = 0,
+                setter = 0;
+            Object.defineProperty(source, 'constructor', {
+                get() {
+                    gets++;
+                    throw 7;
+                }
+            });
+            Object.defineProperty(Array.prototype, '0', {
+                set(v) {
+                    setter++;
+                },
+                configurable: true
+            });
+            let a = [...source, () => {}, function() {}];
+            a[0] === 1 && a[1].name === '' && a[2].name === '' && Object.getPrototypeOf(a) === Array
+                .prototype && gets === 0 && setter === 0
+        "#,
     );
     assert_true(
-        "let source=Object.freeze([1,2]);let a=[...source];a!==source && a.join(',')==='1,2' && Object.getOwnPropertyDescriptor(a,'0').writable && Object.getOwnPropertyDescriptor(a,'0').enumerable && Object.getOwnPropertyDescriptor(a,'0').configurable",
+        r#"
+            let source = Object.freeze([1, 2]);
+            let a = [...source];
+            a !== source && a.join(',') === '1,2' && Object.getOwnPropertyDescriptor(a, '0').writable &&
+                Object.getOwnPropertyDescriptor(a, '0').enumerable && Object.getOwnPropertyDescriptor(a,
+                    '0').configurable
+        "#,
     );
 }
 

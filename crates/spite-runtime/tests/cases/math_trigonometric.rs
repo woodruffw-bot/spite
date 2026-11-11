@@ -29,14 +29,23 @@ fn required_zero_nan_and_infinity_results_are_exact() {
         ));
     }
     assert_true(
-        "Math.sinh(Infinity)===Infinity && Math.sinh(-Infinity)===-Infinity && Math.cosh(Infinity)===Infinity && Math.cosh(-Infinity)===Infinity && Math.tanh(Infinity)===1 && Math.tanh(-Infinity)===-1",
+        r#"
+            Math.sinh(Infinity) === Infinity && Math.sinh(-Infinity) === -Infinity && Math.cosh(
+                Infinity) === Infinity && Math.cosh(-Infinity) === Infinity && Math.tanh(Infinity) === 1 &&
+                Math.tanh(-Infinity) === -1
+        "#,
     );
 }
 
 #[test]
 fn finite_approximations_cover_symmetry_extreme_and_subnormal_inputs() {
     assert_true(
-        "Math.abs(Math.sin(Math.PI/6)-0.5)<1e-15 && Math.abs(Math.cos(Math.PI/3)-0.5)<1e-15 && Math.abs(Math.tan(Math.PI/4)-1)<1e-15 && Math.abs(Math.sinh(1)-1.1752011936438014)<1e-15 && Math.abs(Math.cosh(1)-1.5430806348152437)<1e-15 && Math.abs(Math.tanh(1)-0.7615941559557649)<1e-15",
+        r#"
+            Math.abs(Math.sin(Math.PI / 6) - 0.5) < 1e-15 && Math.abs(Math.cos(Math.PI / 3) - 0.5) <
+                1e-15 && Math.abs(Math.tan(Math.PI / 4) - 1) < 1e-15 && Math.abs(Math.sinh(1) -
+                    1.1752011936438014) < 1e-15 && Math.abs(Math.cosh(1) - 1.5430806348152437) < 1e-15 &&
+                Math.abs(Math.tanh(1) - 0.7615941559557649) < 1e-15
+        "#,
     );
     for method in ["sin", "tan", "sinh", "tanh"] {
         assert_true(&format!(
@@ -49,7 +58,13 @@ fn finite_approximations_cover_symmetry_extreme_and_subnormal_inputs() {
         ));
     }
     assert_true(
-        "Number.isFinite(Math.sin(Number.MAX_VALUE)) && Math.abs(Math.sin(Number.MAX_VALUE))<=1 && Number.isFinite(Math.cos(-Number.MAX_VALUE)) && Math.abs(Math.cos(-Number.MAX_VALUE))<=1 && Number.isFinite(Math.tan(Number.MAX_VALUE)) && Math.sinh(Number.MAX_VALUE)===Infinity && Math.sinh(-Number.MAX_VALUE)===-Infinity && Math.cosh(-Number.MAX_VALUE)===Infinity && Math.tanh(Number.MAX_VALUE)===1 && Math.tanh(-Number.MAX_VALUE)===-1",
+        r#"
+            Number.isFinite(Math.sin(Number.MAX_VALUE)) && Math.abs(Math.sin(Number.MAX_VALUE)) <= 1 &&
+                Number.isFinite(Math.cos(-Number.MAX_VALUE)) && Math.abs(Math.cos(-Number.MAX_VALUE)) <=
+                1 && Number.isFinite(Math.tan(Number.MAX_VALUE)) && Math.sinh(Number.MAX_VALUE) ===
+                Infinity && Math.sinh(-Number.MAX_VALUE) === -Infinity && Math.cosh(-Number.MAX_VALUE) ===
+                Infinity && Math.tanh(Number.MAX_VALUE) === 1 && Math.tanh(-Number.MAX_VALUE) === -1
+        "#,
     );
 }
 
@@ -58,7 +73,25 @@ fn conversion_is_once_with_number_hint_and_no_receiver_or_extra_coercion() {
     for method in METHODS {
         let result = usize::from(["cos", "cosh"].contains(&method));
         assert_true(&format!(
-            "let calls=0,o={{[Symbol.toPrimitive](hint){{if(hint!=='number')throw 7;calls++;return -0;}},valueOf(){{throw 8;}}}};Object.is(Math.{method}.call(Symbol(),o,{{valueOf(){{throw 9;}}}}),{expected}) && calls===1 && Math.{method}('0')==={result} && Math.{method}(null)==={result}",
+            r#"
+                let calls = 0,
+                    o = {{
+                        [Symbol.toPrimitive](hint) {{
+                            if (hint !== 'number') throw 7;
+                            calls++;
+                            return -0;
+                        }},
+                        valueOf() {{
+                            throw 8;
+                        }}
+                    }};
+                Object.is(Math.{method}.call(Symbol(), o, {{
+                        valueOf() {{
+                            throw 9;
+                        }}
+                    }}), {expected}) && calls === 1 && Math.{method}('0') === {result} && Math
+                    .{method}(null) === {result}
+            "#,
             expected = if result == 1 { "1" } else { "-0" },
         ));
         assert_true(&format!(
@@ -92,7 +125,14 @@ fn host_gaps_during_conversion_skip_javascript_handlers() {
 fn standard_function_descriptors_and_non_constructibility_are_preserved() {
     for method in METHODS {
         assert_true(&format!(
-            "let d=Object.getOwnPropertyDescriptor(Math,'{method}'),n=Object.getOwnPropertyDescriptor(d.value,'name'),l=Object.getOwnPropertyDescriptor(d.value,'length');d.writable && !d.enumerable && d.configurable && n.value==='{method}' && !n.writable && !n.enumerable && n.configurable && l.value===1 && !l.writable && !l.enumerable && l.configurable && !Object.hasOwn(d.value,'prototype')"
+            r#"
+                let d = Object.getOwnPropertyDescriptor(Math, '{method}'),
+                    n = Object.getOwnPropertyDescriptor(d.value, 'name'),
+                    l = Object.getOwnPropertyDescriptor(d.value, 'length');
+                d.writable && !d.enumerable && d.configurable && n.value === '{method}' && !n.writable &&
+                    !n.enumerable && n.configurable && l.value === 1 && !l.writable && !l.enumerable && l
+                    .configurable && !Object.hasOwn(d.value, 'prototype')
+            "#
         ));
         assert_true(&format!(
             "let caught=false;try{{new Math.{method}();}}catch(e){{caught=e instanceof TypeError;}}caught"
@@ -103,7 +143,28 @@ fn standard_function_descriptors_and_non_constructibility_are_preserved() {
 #[test]
 fn intrinsic_roots_retain_functions_after_deleting_public_properties() {
     let mut realm = Realm::default();
-    realm.eval("let sin=Math.sin,cos=Math.cos,tan=Math.tan,sinh=Math.sinh,cosh=Math.cosh,tanh=Math.tanh;delete Math.sin;delete Math.cos;delete Math.tan;delete Math.sinh;delete Math.cosh;delete Math.tanh;delete globalThis.Math;").unwrap();
+    realm
+        .eval(
+            r#"
+                let sin = Math.sin,
+                    cos = Math.cos,
+                    tan = Math.tan,
+                    sinh = Math.sinh,
+                    cosh = Math.cosh,
+                    tanh = Math.tanh;
+                delete Math.sin;
+                delete Math.cos;
+                delete Math.tan;
+                delete Math.sinh;
+                delete Math.cosh;
+                delete Math.tanh;
+                delete globalThis.Math;
+            "#,
+        )
+        .unwrap();
     assert_eq!(realm.collect(usize::MAX).unwrap().live, REALM_ENTRIES);
-    assert_eq!(realm.eval("sin(0)===0 && cos(0)===1 && tan(0)===0 && sinh(0)===0 && cosh(0)===1 && tanh(0)===0 && typeof Math==='undefined'"),Ok(Value::Boolean(true)));
+    assert_eq!(realm.eval(r#"
+        sin(0) === 0 && cos(0) === 1 && tan(0) === 0 && sinh(0) === 0 && cosh(0) === 1 && tanh(0) ===
+            0 && typeof Math === 'undefined'
+    "#),Ok(Value::Boolean(true)));
 }

@@ -28,7 +28,10 @@ fn search_positions_distinguish_forward_and_backward_nan_defaults() {
         ));
     }
     assert_true(
-        "'abcabc'.indexOf('ab')===0 && 'abcabc'.lastIndexOf('ab')===3 && 'aba'.lastIndexOf('ba',1)===1 && 'aba'.lastIndexOf('aba',0)===0",
+        r#"
+            'abcabc'.indexOf('ab') === 0 && 'abcabc'.lastIndexOf('ab') === 3 && 'aba'.lastIndexOf('ba',
+                1) === 1 && 'aba'.lastIndexOf('aba', 0) === 0
+        "#,
     );
     assert_true(
         "'undefinedundefined'.indexOf()===0 && 'undefinedundefined'.lastIndexOf()===9 && 'null'.indexOf(null)===0",
@@ -54,14 +57,20 @@ fn empty_needles_and_impossible_matches_have_exact_boundary_results() {
         assert_true(&format!("Object.is(''.{name}('',-0),0)"));
     }
     assert_true(
-        "'abc'.indexOf('',NaN)===0 && 'abc'.lastIndexOf('',NaN)===3 && 'abc'.indexOf('',undefined)===0 && 'abc'.lastIndexOf('',undefined)===3",
+        r#"
+            'abc'.indexOf('', NaN) === 0 && 'abc'.lastIndexOf('', NaN) === 3 && 'abc'.indexOf('',
+                undefined) === 0 && 'abc'.lastIndexOf('', undefined) === 3
+        "#,
     );
 }
 
 #[test]
 fn searches_compare_code_units_including_surrogate_halves() {
     assert_true(
-        "'💩x💩'.indexOf('💩')===0 && '💩x💩'.lastIndexOf('💩')===3 && '💩x💩'.indexOf('\\uDCA9')===1 && '💩x💩'.lastIndexOf('\\uDCA9')===4",
+        r#"
+            '💩x💩'.indexOf('💩') === 0 && '💩x💩'.lastIndexOf('💩') === 3 && '💩x💩'.indexOf('\uDCA9') ===
+                1 && '💩x💩'.lastIndexOf('\uDCA9') === 4
+        "#,
     );
     assert_true(
         "'\\uD800x\\uD800'.indexOf('\\uD800')===0 && '\\uD800x\\uD800'.lastIndexOf('\\uD800')===2 && 'é'.indexOf('é')===-1",
@@ -75,7 +84,34 @@ fn searches_compare_code_units_including_surrogate_halves() {
 fn receiver_and_search_use_string_hint_before_position_conversion() {
     for name in ["indexOf", "lastIndexOf"] {
         assert_true(&format!(
-            "let log='';let r={{toString:()=>{{log+='r';return 'abc';}}}},s={{toString:()=>{{log+='s';return 'b';}},valueOf:()=>{{throw 1;}}}},p={{valueOf:()=>{{log+='p';return 1;}},toString:()=>{{throw 2;}}}};String.prototype.{name}.call(r,s,p)===1 && log==='rsp'"
+            r#"
+                let log = '';
+                let r = {{
+                        toString: () => {{
+                            log += 'r';
+                            return 'abc';
+                        }}
+                    }},
+                    s = {{
+                        toString: () => {{
+                            log += 's';
+                            return 'b';
+                        }},
+                        valueOf: () => {{
+                            throw 1;
+                        }}
+                    }},
+                    p = {{
+                        valueOf: () => {{
+                            log += 'p';
+                            return 1;
+                        }},
+                        toString: () => {{
+                            throw 2;
+                        }}
+                    }};
+                String.prototype.{name}.call(r, s, p) === 1 && log === 'rsp'
+            "#
         ));
         assert_true(&format!(
             "String.prototype.{name}.call(123n,2)===1 && new String('abc').{name}('b')===1 && String.prototype.{name}.call(true,'r')===1"
@@ -85,7 +121,26 @@ fn receiver_and_search_use_string_hint_before_position_conversion() {
             Realm::default().eval(&format!("''.{name}('longer',{{valueOf:()=>{{throw 8;}}}})")),
             Err(Error::Thrown(Value::Number(8.0)))
         );
-        assert_eq!(Realm::default().eval(&format!("String.prototype.{name}.call({{toString:()=>{{throw 6;}}}},{{toString:()=>{{throw 7;}}}},{{valueOf:()=>{{throw 8;}}}})")),Err(Error::Thrown(Value::Number(6.0))));
+        assert_eq!(
+            Realm::default().eval(&format!(
+                r#"
+                    String.prototype.{name}.call({{
+                        toString: () => {{
+                            throw 6;
+                        }}
+                    }}, {{
+                        toString: () => {{
+                            throw 7;
+                        }}
+                    }}, {{
+                        valueOf: () => {{
+                            throw 8;
+                        }}
+                    }})
+                "#
+            )),
+            Err(Error::Thrown(Value::Number(6.0)))
+        );
         assert_eq!(
             Realm::default().eval(&format!(
                 "''.{name}({{toString:()=>{{throw 7;}}}},{{valueOf:()=>{{throw 8;}}}})"
@@ -117,7 +172,11 @@ fn search_methods_reject_nullish_receivers_and_preserve_standard_metadata() {
             ));
         }
         assert_true(&format!(
-            "let d=Object.getOwnPropertyDescriptor(String.prototype,'{name}');d.writable && !d.enumerable && d.configurable && d.value.name==='{name}' && d.value.length===1 && !Object.hasOwn(d.value,'prototype')"
+            r#"
+                let d = Object.getOwnPropertyDescriptor(String.prototype, '{name}');
+                d.writable && !d.enumerable && d.configurable && d.value.name === '{name}' && d.value
+                    .length === 1 && !Object.hasOwn(d.value, 'prototype')
+            "#
         ));
         assert!(matches!(
             Realm::default().eval(&format!("new String.prototype.{name}()")),

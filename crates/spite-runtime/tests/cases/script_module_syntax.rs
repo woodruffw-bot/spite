@@ -76,7 +76,24 @@ fn invalid_statement_continuations_throw_before_eval_or_function_body_effects() 
     ] {
         let body = format!("effects=1;{source}");
         let script = format!(
-            "let effects=0,caught=0,finalized=0;const compilers=[s=>eval(s),s=>(0,eval)(s),Function,(async function(){{}}).constructor,(function*(){{}}).constructor,(async function*(){{}}).constructor];for(const compile of compilers){{try{{compile({body:?})}}catch(error){{if(error instanceof SyntaxError)caught++}}finally{{finalized++}}}}effects===0&&caught===6&&finalized===6"
+            r#"
+                let effects = 0,
+                    caught = 0,
+                    finalized = 0;
+                const compilers = [s => eval(s), s => (0, eval)(s), Function, (async function() {{}})
+                    .constructor, (function*() {{}}).constructor, (async function*() {{}}).constructor
+                ];
+                for (const compile of compilers) {{
+                    try {{
+                        compile({body:?})
+                    }} catch (error) {{
+                        if (error instanceof SyntaxError) caught++
+                    }} finally {{
+                        finalized++
+                    }}
+                }}
+                effects === 0 && caught === 6 && finalized === 6
+            "#
         );
         assert_eq!(
             Realm::default().eval(&script),

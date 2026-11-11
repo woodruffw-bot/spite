@@ -1,5 +1,7 @@
 //! Shared Runtime integration test helpers.
 
+use spite_runtime::{Realm, Value};
+
 mod realm_entries;
 pub use realm_entries::REALM_ENTRIES;
 
@@ -13,6 +15,27 @@ pub fn assert_true(source: &str) {
         Ok(spite_runtime::Value::Boolean(true)),
         "{source}"
     );
+}
+
+/// Checks an expression using SameValue, including NaN and the sign of zero.
+#[track_caller]
+pub fn assert_value(realm: &mut Realm, source: &str, expected: Value) {
+    let actual = realm
+        .eval(source)
+        .unwrap_or_else(|error| panic!("{source}\nevaluation failed: {error:?}"));
+    assert!(
+        actual.same_value(&expected),
+        "{source}\nexpected: {expected:?}\nactual: {actual:?}"
+    );
+}
+
+/// Returns a string result for snapshots of structured JavaScript output.
+#[track_caller]
+pub fn eval_string(realm: &mut Realm, source: &str) -> String {
+    match realm.eval(source) {
+        Ok(Value::String(value)) => value.to_utf8().expect("snapshot text must be valid UTF-8"),
+        result => panic!("{source}\nexpected a string result, got {result:?}"),
+    }
 }
 
 /// Host-abort controls must remain independent of partially implemented globals.

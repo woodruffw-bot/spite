@@ -17,7 +17,26 @@ fn exception(source: &str, expected: ExceptionKind) {
 #[test]
 fn construction_requires_new_and_uses_to_index_without_wrapping() {
     assert_true(
-        "let calls=0,caught=false;try{ArrayBuffer({valueOf(){calls++;return 3;}},{get maxByteLength(){calls++;return 4;}});}catch(e){caught=e instanceof TypeError;}caught && calls===0",
+        r#"
+            let calls = 0,
+                caught = false;
+            try {
+                ArrayBuffer({
+                    valueOf() {
+                        calls++;
+                        return 3;
+                    }
+                }, {
+                    get maxByteLength() {
+                        calls++;
+                        return 4;
+                    }
+                });
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && calls === 0
+        "#,
     );
     for (input, length) in [
         ("undefined", 0),
@@ -31,14 +50,29 @@ fn construction_requires_new_and_uses_to_index_without_wrapping() {
         ("'4'", 4),
     ] {
         assert_true(&format!(
-            "let b=new ArrayBuffer({input});b.byteLength==={length} && b.maxByteLength==={length} && !b.resizable && !b.detached && Object.is(b.byteLength,{length})"
+            r#"
+                let b = new ArrayBuffer({input});
+                b.byteLength === {length} && b.maxByteLength === {length} && !b.resizable && !b
+                    .detached && Object.is(b.byteLength, {length})
+            "#
         ));
     }
     assert_true(
         "new ArrayBuffer().byteLength===0 && new (ArrayBuffer.bind(null,3))().byteLength===3",
     );
     assert_true(
-        "let calls=0,hint;let b=new ArrayBuffer({[Symbol.toPrimitive](h){calls++;hint=h;return 3;}});calls===1 && hint==='number' && b.byteLength===3",
+        r#"
+            let calls = 0,
+                hint;
+            let b = new ArrayBuffer({
+                [Symbol.toPrimitive](h) {
+                    calls++;
+                    hint = h;
+                    return 3;
+                }
+            });
+            calls === 1 && hint === 'number' && b.byteLength === 3
+        "#,
     );
     for input in ["-1", "-Infinity", "Infinity", "9007199254740992"] {
         exception(
@@ -58,11 +92,38 @@ fn construction_requires_new_and_uses_to_index_without_wrapping() {
 fn maximum_option_ignores_primitives_and_observes_only_the_named_property() {
     for options in ["undefined", "null", "false", "3", "'x'", "1n", "Symbol()"] {
         assert_true(&format!(
-            "Object.defineProperty(Object.prototype,'maxByteLength',{{get(){{throw 7;}},configurable:true}});let b=new ArrayBuffer(2,{options});b.byteLength===2 && b.maxByteLength===2 && !b.resizable"
+            r#"
+                Object.defineProperty(Object.prototype, 'maxByteLength', {{
+                    get() {{
+                        throw 7;
+                    }},
+                    configurable: true
+                }});
+                let b = new ArrayBuffer(2, {options});
+                b.byteLength === 2 && b.maxByteLength === 2 && !b.resizable
+            "#
         ));
     }
     assert_true(
-        "let calls=0;let options=Object.create({get maxByteLength(){calls++;return {valueOf(){calls++;return 5.9;}};}});options.valueOf=()=>{throw 7;};let b=new ArrayBuffer(2,options);calls===2 && b.byteLength===2 && b.maxByteLength===5 && b.resizable",
+        r#"
+            let calls = 0;
+            let options = Object.create({
+                get maxByteLength() {
+                    calls++;
+                    return {
+                        valueOf() {
+                            calls++;
+                            return 5.9;
+                        }
+                    };
+                }
+            });
+            options.valueOf = () => {
+                throw 7;
+            };
+            let b = new ArrayBuffer(2, options);
+            calls === 2 && b.byteLength === 2 && b.maxByteLength === 5 && b.resizable
+        "#,
     );
     assert_true(
         "let b=new ArrayBuffer(2,{maxByteLength:undefined});!b.resizable && b.maxByteLength===2",
@@ -85,28 +146,192 @@ fn maximum_option_ignores_primitives_and_observes_only_the_named_property() {
 #[test]
 fn constructor_orders_conversions_range_checks_and_newtarget_prototype_lookup() {
     assert_true(
-        "let log='',p={};function C(){}let N=C.bind(null);Object.defineProperty(N,'prototype',{get(){log+='p';return p;}});let b=Reflect.construct(ArrayBuffer,[{valueOf(){log+='l';return 2;}},{get maxByteLength(){log+='o';return {valueOf(){log+='m';return 5;}};}}],N);log==='lomp' && Object.getPrototypeOf(b)===p && Object.getOwnPropertyDescriptor(ArrayBuffer.prototype,'byteLength').get.call(b)===2",
+        r#"
+            let log = '',
+                p = {};
+
+            function C() {}
+            let N = C.bind(null);
+            Object.defineProperty(N, 'prototype', {
+                get() {
+                    log += 'p';
+                    return p;
+                }
+            });
+            let b = Reflect.construct(ArrayBuffer, [{
+                valueOf() {
+                    log += 'l';
+                    return 2;
+                }
+            }, {
+                get maxByteLength() {
+                    log += 'o';
+                    return {
+                        valueOf() {
+                            log += 'm';
+                            return 5;
+                        }
+                    };
+                }
+            }], N);
+            log === 'lomp' && Object.getPrototypeOf(b) === p && Object.getOwnPropertyDescriptor(ArrayBuffer
+                .prototype, 'byteLength').get.call(b) === 2
+        "#,
     );
     assert_true(
-        "let log='',caught=false;function C(){}let N=C.bind(null);Object.defineProperty(N,'prototype',{get(){log+='p';throw 7;}});try{Reflect.construct(ArrayBuffer,[{valueOf(){log+='l';return 3;}},{get maxByteLength(){log+='o';return {valueOf(){log+='m';return 2;}};}}],N);}catch(e){caught=e instanceof RangeError;}caught && log==='lom'",
+        r#"
+            let log = '',
+                caught = false;
+
+            function C() {}
+            let N = C.bind(null);
+            Object.defineProperty(N, 'prototype', {
+                get() {
+                    log += 'p';
+                    throw 7;
+                }
+            });
+            try {
+                Reflect.construct(ArrayBuffer, [{
+                    valueOf() {
+                        log += 'l';
+                        return 3;
+                    }
+                }, {
+                    get maxByteLength() {
+                        log += 'o';
+                        return {
+                            valueOf() {
+                                log += 'm';
+                                return 2;
+                            }
+                        };
+                    }
+                }], N);
+            } catch (e) {
+                caught = e instanceof RangeError;
+            }
+            caught && log === 'lom'
+        "#,
     );
     assert_true(
-        "let log='',p={};function C(){}let b=Reflect.construct(ArrayBuffer,[{valueOf(){log+='l';return 2;}},{get maxByteLength(){log+='o';C.prototype=p;return 5;}}],C);log==='lo' && Object.getPrototypeOf(b)===p",
+        r#"
+            let log = '',
+                p = {};
+
+            function C() {}
+            let b = Reflect.construct(ArrayBuffer, [{
+                valueOf() {
+                    log += 'l';
+                    return 2;
+                }
+            }, {
+                get maxByteLength() {
+                    log += 'o';
+                    C.prototype = p;
+                    return 5;
+                }
+            }], C);
+            log === 'lo' && Object.getPrototypeOf(b) === p
+        "#,
     );
     assert_true(
-        "function C(){}C.prototype=7;let b=Reflect.construct(ArrayBuffer,[2],C);Object.getPrototypeOf(b)===ArrayBuffer.prototype && b.byteLength===2",
+        r#"
+            function C() {}
+            C.prototype = 7;
+            let b = Reflect.construct(ArrayBuffer, [2], C);
+            Object.getPrototypeOf(b) === ArrayBuffer.prototype && b.byteLength === 2
+        "#,
     );
     assert_true(
-        "let calls=0,caught=false;try{new ArrayBuffer({valueOf(){throw 7;}},{get maxByteLength(){calls++;return 2;}});}catch(e){caught=e===7;}caught && calls===0",
+        r#"
+            let calls = 0,
+                caught = false;
+            try {
+                new ArrayBuffer({
+                    valueOf() {
+                        throw 7;
+                    }
+                }, {
+                    get maxByteLength() {
+                        calls++;
+                        return 2;
+                    }
+                });
+            } catch (e) {
+                caught = e === 7;
+            }
+            caught && calls === 0
+        "#,
     );
     assert_true(
-        "let log='',caught=false;function C(){}let N=C.bind(null);Object.defineProperty(N,'prototype',{get(){log+='p';throw 9;}});try{Reflect.construct(ArrayBuffer,[1,{get maxByteLength(){log+='m';throw 7;}}],N);}catch(e){caught=e===7;}caught && log==='m'",
+        r#"
+            let log = '',
+                caught = false;
+
+            function C() {}
+            let N = C.bind(null);
+            Object.defineProperty(N, 'prototype', {
+                get() {
+                    log += 'p';
+                    throw 9;
+                }
+            });
+            try {
+                Reflect.construct(ArrayBuffer, [1, {
+                    get maxByteLength() {
+                        log += 'm';
+                        throw 7;
+                    }
+                }], N);
+            } catch (e) {
+                caught = e === 7;
+            }
+            caught && log === 'm'
+        "#,
     );
     assert_true(
-        "let log='',caught=false;function C(){}let N=C.bind(null);Object.defineProperty(N,'prototype',{get(){log+='p';throw 9;}});try{Reflect.construct(ArrayBuffer,[1,{maxByteLength:{valueOf(){log+='m';throw 7;}}}],N);}catch(e){caught=e===7;}caught && log==='m'",
+        r#"
+            let log = '',
+                caught = false;
+
+            function C() {}
+            let N = C.bind(null);
+            Object.defineProperty(N, 'prototype', {
+                get() {
+                    log += 'p';
+                    throw 9;
+                }
+            });
+            try {
+                Reflect.construct(ArrayBuffer, [1, {
+                    maxByteLength: {
+                        valueOf() {
+                            log += 'm';
+                            throw 7;
+                        }
+                    }
+                }], N);
+            } catch (e) {
+                caught = e === 7;
+            }
+            caught && log === 'm'
+        "#,
     );
     assert_true(
-        "class B extends ArrayBuffer{#n=this.byteLength;read(){return this.#n;}}let b=new B(3,{maxByteLength:7});b instanceof B && b instanceof ArrayBuffer && b.read()===3 && b.resizable && b.maxByteLength===7",
+        r#"
+            class B extends ArrayBuffer {
+                #n = this.byteLength;
+                read() {
+                    return this.#n;
+                }
+            }
+            let b = new B(3, {
+                maxByteLength: 7
+            });
+            b instanceof B && b instanceof ArrayBuffer && b.read() === 3 && b.resizable && b
+                .maxByteLength === 7
+        "#,
     );
 }
 
@@ -192,7 +417,21 @@ fn getters_and_methods_require_own_internal_slots_before_converting_arguments() 
         }
         for name in ["resize", "slice", "transfer", "transferToFixedLength"] {
             assert_true(&format!(
-                "let hits=0,caught=false;try{{ArrayBuffer.prototype.{name}.call({receiver},{{valueOf(){{hits++;throw 7;}}}});}}catch(e){{caught=e instanceof TypeError;}}caught && hits===0"
+                r#"
+                    let hits = 0,
+                        caught = false;
+                    try {{
+                        ArrayBuffer.prototype.{name}.call({receiver}, {{
+                            valueOf() {{
+                                hits++;
+                                throw 7;
+                            }}
+                        }});
+                    }} catch (e) {{
+                        caught = e instanceof TypeError;
+                    }}
+                    caught && hits === 0
+                "#
             ));
         }
     }
@@ -201,7 +440,11 @@ fn getters_and_methods_require_own_internal_slots_before_converting_arguments() 
 #[test]
 fn is_view_uses_slots_without_observing_arguments_or_its_receiver() {
     assert_true(
-        "let d=Object.getOwnPropertyDescriptor(ArrayBuffer,'isView');d.value.name==='isView' && d.value.length===1 && d.writable && !d.enumerable && d.configurable && !Object.hasOwn(d.value,'prototype')",
+        r#"
+            let d = Object.getOwnPropertyDescriptor(ArrayBuffer, 'isView');
+            d.value.name === 'isView' && d.value.length === 1 && d.writable && !d.enumerable && d
+                .configurable && !Object.hasOwn(d.value, 'prototype')
+        "#,
     );
     for value in [
         "undefined",
@@ -225,14 +468,45 @@ fn is_view_uses_slots_without_observing_arguments_or_its_receiver() {
 #[test]
 fn resize_updates_length_preserves_maximum_and_returns_undefined() {
     assert_true(
-        "let b=new ArrayBuffer(3,{maxByteLength:7});b.resize(5)===undefined && b.byteLength===5 && b.maxByteLength===7 && b.resizable && !b.detached && b.resize(1.9)===undefined && b.byteLength===1 && b.resize()===undefined && Object.is(b.byteLength,0) && b.maxByteLength===7 && b.resize(7)===undefined && b.byteLength===7",
+        r#"
+            let b = new ArrayBuffer(3, {
+                maxByteLength: 7
+            });
+            b.resize(5) === undefined && b.byteLength === 5 && b.maxByteLength === 7 && b.resizable && !b
+                .detached && b.resize(1.9) === undefined && b.byteLength === 1 && b.resize() ===
+                undefined && Object.is(b.byteLength, 0) && b.maxByteLength === 7 && b.resize(7) ===
+                undefined && b.byteLength === 7
+        "#,
     );
     assert_true(
-        "let hits=0,b=new ArrayBuffer(1,{maxByteLength:4});b.resize({valueOf(){hits++;return 3;}});hits===1 && b.byteLength===3",
+        r#"
+            let hits = 0,
+                b = new ArrayBuffer(1, {
+                    maxByteLength: 4
+                });
+            b.resize({
+                valueOf() {
+                    hits++;
+                    return 3;
+                }
+            });
+            hits === 1 && b.byteLength === 3
+        "#,
     );
     for value in ["-1", "Infinity", "9007199254740992", "8"] {
         assert_true(&format!(
-            "let b=new ArrayBuffer(3,{{maxByteLength:7}}),caught=false;try{{b.resize({value});}}catch(e){{caught=e instanceof RangeError;}}caught && b.byteLength===3 && b.maxByteLength===7 && !b.detached"
+            r#"
+                let b = new ArrayBuffer(3, {{
+                        maxByteLength: 7
+                    }}),
+                    caught = false;
+                try {{
+                    b.resize({value});
+                }} catch (e) {{
+                    caught = e instanceof RangeError;
+                }}
+                caught && b.byteLength === 3 && b.maxByteLength === 7 && !b.detached
+            "#
         ));
     }
     for value in ["1n", "Symbol()"] {
@@ -246,29 +520,129 @@ fn resize_updates_length_preserves_maximum_and_returns_undefined() {
 #[test]
 fn resize_brands_before_conversion_but_checks_detachment_after_conversion() {
     assert_true(
-        "let b=new ArrayBuffer(2),hits=0,caught=false;try{b.resize({valueOf(){hits++;throw 7;}});}catch(e){caught=e instanceof TypeError;}caught && hits===0 && b.byteLength===2",
+        r#"
+            let b = new ArrayBuffer(2),
+                hits = 0,
+                caught = false;
+            try {
+                b.resize({
+                    valueOf() {
+                        hits++;
+                        throw 7;
+                    }
+                });
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && hits === 0 && b.byteLength === 2
+        "#,
     );
     assert_true(
-        "let b=new ArrayBuffer(2,{maxByteLength:4});b.transfer();let hits=0,caught=false;try{b.resize({valueOf(){hits++;throw 7;}});}catch(e){caught=e===7;}caught && hits===1 && b.detached && b.resizable",
+        r#"
+            let b = new ArrayBuffer(2, {
+                maxByteLength: 4
+            });
+            b.transfer();
+            let hits = 0,
+                caught = false;
+            try {
+                b.resize({
+                    valueOf() {
+                        hits++;
+                        throw 7;
+                    }
+                });
+            } catch (e) {
+                caught = e === 7;
+            }
+            caught && hits === 1 && b.detached && b.resizable
+        "#,
     );
     assert_true(
-        "let b=new ArrayBuffer(2,{maxByteLength:4});b.transfer();let caught=false;try{b.resize(-1);}catch(e){caught=e instanceof RangeError;}caught && b.detached",
+        r#"
+            let b = new ArrayBuffer(2, {
+                maxByteLength: 4
+            });
+            b.transfer();
+            let caught = false;
+            try {
+                b.resize(-1);
+            } catch (e) {
+                caught = e instanceof RangeError;
+            }
+            caught && b.detached
+        "#,
     );
     assert_true(
-        "let b=new ArrayBuffer(2,{maxByteLength:4});b.transfer();let caught=false;try{b.resize(5);}catch(e){caught=e instanceof TypeError;}caught && b.detached",
+        r#"
+            let b = new ArrayBuffer(2, {
+                maxByteLength: 4
+            });
+            b.transfer();
+            let caught = false;
+            try {
+                b.resize(5);
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && b.detached
+        "#,
     );
 }
 
 #[test]
 fn resize_reentrancy_uses_live_state_and_preserves_conversion_effects_on_failure() {
     assert_true(
-        "let b=new ArrayBuffer(3,{maxByteLength:7});b.resize({valueOf(){b.resize(1);return 5;}});b.byteLength===5 && b.maxByteLength===7",
+        r#"
+            let b = new ArrayBuffer(3, {
+                maxByteLength: 7
+            });
+            b.resize({
+                valueOf() {
+                    b.resize(1);
+                    return 5;
+                }
+            });
+            b.byteLength === 5 && b.maxByteLength === 7
+        "#,
     );
     assert_true(
-        "let b=new ArrayBuffer(3,{maxByteLength:7}),moved,caught=false;try{b.resize({valueOf(){moved=b.transfer(2);return 5;}});}catch(e){caught=e instanceof TypeError;}caught && b.detached && moved.byteLength===2 && moved.resizable && moved.maxByteLength===7",
+        r#"
+            let b = new ArrayBuffer(3, {
+                    maxByteLength: 7
+                }),
+                moved, caught = false;
+            try {
+                b.resize({
+                    valueOf() {
+                        moved = b.transfer(2);
+                        return 5;
+                    }
+                });
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && b.detached && moved.byteLength === 2 && moved.resizable && moved.maxByteLength === 7
+        "#,
     );
     assert_true(
-        "let b=new ArrayBuffer(3,{maxByteLength:7}),caught=false;try{b.resize({valueOf(){b.resize(5);return -1;}});}catch(e){caught=e instanceof RangeError;}caught && b.byteLength===5 && !b.detached",
+        r#"
+            let b = new ArrayBuffer(3, {
+                    maxByteLength: 7
+                }),
+                caught = false;
+            try {
+                b.resize({
+                    valueOf() {
+                        b.resize(5);
+                        return -1;
+                    }
+                });
+            } catch (e) {
+                caught = e instanceof RangeError;
+            }
+            caught && b.byteLength === 5 && !b.detached
+        "#,
     );
 }
 
@@ -291,11 +665,34 @@ fn slice_ranges_use_the_original_length_and_create_fixed_fresh_buffers() {
         ("2,NaN", 0),
     ] {
         assert_true(&format!(
-            "let a=new ArrayBuffer(5,{{maxByteLength:9}}),b=a.slice({args});b!==a && b.byteLength==={length} && b.maxByteLength==={length} && !b.resizable && !b.detached && a.byteLength===5"
+            r#"
+                let a = new ArrayBuffer(5, {{
+                        maxByteLength: 9
+                    }}),
+                    b = a.slice({args});
+                b !== a && b.byteLength === {length} && b.maxByteLength === {length} && !b
+                    .resizable && !b.detached && a.byteLength === 5
+            "#
         ));
     }
     assert_true(
-        "let a=new ArrayBuffer(5,{maxByteLength:9});let b=a.slice({valueOf(){a.resize(1);return 2;}},{valueOf(){a.resize(7);return 99;}});b.byteLength===3 && a.byteLength===7",
+        r#"
+            let a = new ArrayBuffer(5, {
+                maxByteLength: 9
+            });
+            let b = a.slice({
+                valueOf() {
+                    a.resize(1);
+                    return 2;
+                }
+            }, {
+                valueOf() {
+                    a.resize(7);
+                    return 99;
+                }
+            });
+            b.byteLength === 3 && a.byteLength === 7
+        "#,
     );
     for args in ["1n", "Symbol()", "0,1n", "0,Symbol()"] {
         exception(
@@ -308,16 +705,108 @@ fn slice_ranges_use_the_original_length_and_create_fixed_fresh_buffers() {
 #[test]
 fn slice_orders_range_conversion_species_lookup_and_construction() {
     assert_true(
-        "let log='',n,argc,target,a=new ArrayBuffer(5);function C(x){log+='C';n=x;argc=arguments.length;target=new.target;return new ArrayBuffer(x+1,{maxByteLength:x+3});}Object.defineProperty(a,'constructor',{get(){log+='c';return {get [Symbol.species](){log+='p';return C;}};}});let b=a.slice({valueOf(){log+='s';return 1;}},{valueOf(){log+='e';return 4;}});log==='secpC' && n===3 && argc===1 && target===C && b.byteLength===4 && b.maxByteLength===6 && b.resizable",
+        r#"
+            let log = '',
+                n, argc, target, a = new ArrayBuffer(5);
+
+            function C(x) {
+                log += 'C';
+                n = x;
+                argc = arguments.length;
+                target = new.target;
+                return new ArrayBuffer(x + 1, {
+                    maxByteLength: x + 3
+                });
+            }
+            Object.defineProperty(a, 'constructor', {
+                get() {
+                    log += 'c';
+                    return {
+                        get [Symbol.species]() {
+                            log += 'p';
+                            return C;
+                        }
+                    };
+                }
+            });
+            let b = a.slice({
+                valueOf() {
+                    log += 's';
+                    return 1;
+                }
+            }, {
+                valueOf() {
+                    log += 'e';
+                    return 4;
+                }
+            });
+            log === 'secpC' && n === 3 && argc === 1 && target === C && b.byteLength === 4 && b
+                .maxByteLength === 6 && b.resizable
+        "#,
     );
     assert_true(
-        "let a=new ArrayBuffer(0),hits=0,n;function C(x){hits++;n=x;return new ArrayBuffer(0);}a.constructor={[Symbol.species]:C};let b=a.slice();hits===1 && Object.is(n,0) && b!==a && b.byteLength===0",
+        r#"
+            let a = new ArrayBuffer(0),
+                hits = 0,
+                n;
+
+            function C(x) {
+                hits++;
+                n = x;
+                return new ArrayBuffer(0);
+            }
+            a.constructor = {
+                [Symbol.species]: C
+            };
+            let b = a.slice();
+            hits === 1 && Object.is(n, 0) && b !== a && b.byteLength === 0
+        "#,
     );
     assert_true(
-        "let a=new ArrayBuffer(3),hits=0,caught=false;Object.defineProperty(a,'constructor',{get(){hits++;throw 7;}});try{a.slice({valueOf(){throw 8;}});}catch(e){caught=e===8;}caught && hits===0",
+        r#"
+            let a = new ArrayBuffer(3),
+                hits = 0,
+                caught = false;
+            Object.defineProperty(a, 'constructor', {
+                get() {
+                    hits++;
+                    throw 7;
+                }
+            });
+            try {
+                a.slice({
+                    valueOf() {
+                        throw 8;
+                    }
+                });
+            } catch (e) {
+                caught = e === 8;
+            }
+            caught && hits === 0
+        "#,
     );
     assert_true(
-        "let a=new ArrayBuffer(3),hits=0,caught=false;Object.defineProperty(a,'constructor',{get(){hits++;throw 7;}});try{a.slice(0,{valueOf(){throw 8;}});}catch(e){caught=e===8;}caught && hits===0",
+        r#"
+            let a = new ArrayBuffer(3),
+                hits = 0,
+                caught = false;
+            Object.defineProperty(a, 'constructor', {
+                get() {
+                    hits++;
+                    throw 7;
+                }
+            });
+            try {
+                a.slice(0, {
+                    valueOf() {
+                        throw 8;
+                    }
+                });
+            } catch (e) {
+                caught = e === 8;
+            }
+            caught && hits === 0
+        "#,
     );
 }
 
@@ -330,14 +819,49 @@ fn slice_species_fallback_uses_intrinsics_and_subclasses_receive_the_count() {
         "{[Symbol.species]:null}",
     ] {
         assert_true(&format!(
-            "let A=ArrayBuffer,a=new A(3),p=A.prototype;a.constructor={constructor};ArrayBuffer=function(){{throw 7;}};let b=a.slice(1);Object.getPrototypeOf(b)===p && b.byteLength===2 && !b.resizable"
+            r#"
+                let A = ArrayBuffer,
+                    a = new A(3),
+                    p = A.prototype;
+                a.constructor = {constructor};
+                ArrayBuffer = function() {{
+                    throw 7;
+                }};
+                let b = a.slice(1);
+                Object.getPrototypeOf(b) === p && b.byteLength === 2 && !b.resizable
+            "#
         ));
     }
     assert_true(
-        "let argc,target;class B extends ArrayBuffer{#n=this.byteLength;constructor(n){super(n);argc=arguments.length;target=new.target;}read(){return this.#n;}}let a=new B(5),b=a.slice(1,-1);b!==a && b instanceof B && b.read()===3 && b.byteLength===3 && argc===1 && target===B",
+        r#"
+            let argc, target;
+            class B extends ArrayBuffer {
+                #n = this.byteLength;
+                constructor(n) {
+                    super(n);
+                    argc = arguments.length;
+                    target = new.target;
+                }
+                read() {
+                    return this.#n;
+                }
+            }
+            let a = new B(5),
+                b = a.slice(1, -1);
+            b !== a && b instanceof B && b.read() === 3 && b.byteLength === 3 && argc === 1 && target === B
+        "#,
     );
     assert_true(
-        "class B extends ArrayBuffer{static get [Symbol.species](){return null;}}let a=new B(3),b=a.slice();!(b instanceof B) && Object.getPrototypeOf(b)===ArrayBuffer.prototype && b.byteLength===3",
+        r#"
+            class B extends ArrayBuffer {
+                static get[Symbol.species]() {
+                    return null;
+                }
+            }
+            let a = new B(3),
+                b = a.slice();
+            !(b instanceof B) && Object.getPrototypeOf(b) === ArrayBuffer.prototype && b.byteLength === 3
+        "#,
     );
     for constructor in [
         "null",
@@ -346,7 +870,17 @@ fn slice_species_fallback_uses_intrinsics_and_subclasses_receive_the_count() {
         "{[Symbol.species]:()=>new ArrayBuffer(3)}",
     ] {
         assert_true(&format!(
-            "let a=new ArrayBuffer(3),caught=false;a.constructor={constructor};try{{a.slice();}}catch(e){{caught=e instanceof TypeError;}}caught && !a.detached && a.byteLength===3"
+            r#"
+                let a = new ArrayBuffer(3),
+                    caught = false;
+                a.constructor = {constructor};
+                try {{
+                    a.slice();
+                }} catch (e) {{
+                    caught = e instanceof TypeError;
+                }}
+                caught && !a.detached && a.byteLength === 3
+            "#
         ));
     }
 }
@@ -362,30 +896,178 @@ fn slice_rejects_unbranded_detached_original_and_short_species_results() {
         "(()=>{let b=new ArrayBuffer(5);b.transfer();return b;})()",
     ] {
         assert_true(&format!(
-            "let a=new ArrayBuffer(3),calls=0,caught=false;function C(){{calls++;return {result};}}a.constructor={{[Symbol.species]:C}};try{{a.slice();}}catch(e){{caught=e instanceof TypeError;}}caught && calls===1 && a.byteLength===3 && !a.detached"
+            r#"
+                let a = new ArrayBuffer(3),
+                    calls = 0,
+                    caught = false;
+
+                function C() {{
+                    calls++;
+                    return {result};
+                }}
+                a.constructor = {{
+                    [Symbol.species]: C
+                }};
+                try {{
+                    a.slice();
+                }} catch (e) {{
+                    caught = e instanceof TypeError;
+                }}
+                caught && calls === 1 && a.byteLength === 3 && !a.detached
+            "#
         ));
     }
     assert_true(
-        "let a=new ArrayBuffer(0),caught=false;function C(){return a;}a.constructor={[Symbol.species]:C};try{a.slice();}catch(e){caught=e instanceof TypeError;}caught",
+        r#"
+            let a = new ArrayBuffer(0),
+                caught = false;
+
+            function C() {
+                return a;
+            }
+            a.constructor = {
+                [Symbol.species]: C
+            };
+            try {
+                a.slice();
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught
+        "#,
     );
 }
 
 #[test]
 fn slice_detachment_checks_preserve_conversion_and_species_effect_order() {
     assert_true(
-        "let a=new ArrayBuffer(3),hits=0,caught=false;a.transfer();Object.defineProperty(a,'constructor',{get(){hits++;throw 7;}});try{a.slice({valueOf(){hits++;throw 8;}});}catch(e){caught=e instanceof TypeError;}caught && hits===0",
+        r#"
+            let a = new ArrayBuffer(3),
+                hits = 0,
+                caught = false;
+            a.transfer();
+            Object.defineProperty(a, 'constructor', {
+                get() {
+                    hits++;
+                    throw 7;
+                }
+            });
+            try {
+                a.slice({
+                    valueOf() {
+                        hits++;
+                        throw 8;
+                    }
+                });
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && hits === 0
+        "#,
     );
     assert_true(
-        "let a=new ArrayBuffer(3),log='',caught=false;function C(n){log+='C'+n;return new ArrayBuffer(n);}Object.defineProperty(a,'constructor',{get(){log+='c';return {get [Symbol.species](){log+='p';return C;}};}});try{a.slice({valueOf(){log+='s';a.transfer();return 1;}},{valueOf(){log+='e';return 3;}});}catch(e){caught=e instanceof TypeError;}caught && a.detached && log==='secpC2'",
+        r#"
+            let a = new ArrayBuffer(3),
+                log = '',
+                caught = false;
+
+            function C(n) {
+                log += 'C' + n;
+                return new ArrayBuffer(n);
+            }
+            Object.defineProperty(a, 'constructor', {
+                get() {
+                    log += 'c';
+                    return {
+                        get [Symbol.species]() {
+                            log += 'p';
+                            return C;
+                        }
+                    };
+                }
+            });
+            try {
+                a.slice({
+                    valueOf() {
+                        log += 's';
+                        a.transfer();
+                        return 1;
+                    }
+                }, {
+                    valueOf() {
+                        log += 'e';
+                        return 3;
+                    }
+                });
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && a.detached && log === 'secpC2'
+        "#,
     );
     assert_true(
-        "let a=new ArrayBuffer(3),caught=false;function C(){throw 9;}a.constructor={[Symbol.species]:C};try{a.slice({valueOf(){a.transfer();return 0;}});}catch(e){caught=e===9;}caught && a.detached",
+        r#"
+            let a = new ArrayBuffer(3),
+                caught = false;
+
+            function C() {
+                throw 9;
+            }
+            a.constructor = {
+                [Symbol.species]: C
+            };
+            try {
+                a.slice({
+                    valueOf() {
+                        a.transfer();
+                        return 0;
+                    }
+                });
+            } catch (e) {
+                caught = e === 9;
+            }
+            caught && a.detached
+        "#,
     );
     assert_true(
-        "let a=new ArrayBuffer(3),result,caught=false;function C(n){a.transfer();result=new ArrayBuffer(n);return result;}a.constructor={[Symbol.species]:C};try{a.slice();}catch(e){caught=e instanceof TypeError;}caught && a.detached && result.byteLength===3 && !result.detached",
+        r#"
+            let a = new ArrayBuffer(3),
+                result, caught = false;
+
+            function C(n) {
+                a.transfer();
+                result = new ArrayBuffer(n);
+                return result;
+            }
+            a.constructor = {
+                [Symbol.species]: C
+            };
+            try {
+                a.slice();
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && a.detached && result.byteLength === 3 && !result.detached
+        "#,
     );
     assert_true(
-        "let a=new ArrayBuffer(5,{maxByteLength:9}),n;function C(x){n=x;a.resize(1);return new ArrayBuffer(x);}a.constructor={[Symbol.species]:C};let b=a.slice(2,4);n===2 && b.byteLength===2 && a.byteLength===1",
+        r#"
+            let a = new ArrayBuffer(5, {
+                    maxByteLength: 9
+                }),
+                n;
+
+            function C(x) {
+                n = x;
+                a.resize(1);
+                return new ArrayBuffer(x);
+            }
+            a.constructor = {
+                [Symbol.species]: C
+            };
+            let b = a.slice(2, 4);
+            n === 2 && b.byteLength === 2 && a.byteLength === 1
+        "#,
     );
 }
 
@@ -400,17 +1082,37 @@ fn transfer_preserves_resizability_while_fixed_transfer_discards_the_maximum() {
                 _ => 0,
             };
             assert_true(&format!(
-                "let a=new ArrayBuffer(3),b=a.{method}({args});b!==a && b.byteLength==={length} && b.maxByteLength==={length} && !b.resizable && !b.detached && Object.is(a.byteLength,0) && Object.is(a.maxByteLength,0) && a.detached && !a.resizable"
+                r#"
+                    let a = new ArrayBuffer(3),
+                        b = a.{method}({args});
+                    b !== a && b.byteLength === {length} && b.maxByteLength === {length} && !b
+                        .resizable && !b.detached && Object.is(a.byteLength, 0) && Object.is(a.maxByteLength, 0) &&
+                        a.detached && !a.resizable
+                "#
             ));
             let resizable = method == "transfer";
             let maximum = if resizable { 7 } else { length };
             assert_true(&format!(
-                "let a=new ArrayBuffer(3,{{maxByteLength:7}}),b=a.{method}({args});b.byteLength==={length} && b.maxByteLength==={maximum} && b.resizable==={resizable} && !b.detached && a.byteLength===0 && a.maxByteLength===0 && a.resizable && a.detached"
+                r#"
+                    let a = new ArrayBuffer(3, {{
+                            maxByteLength: 7
+                        }}),
+                        b = a.{method}({args});
+                    b.byteLength === {length} && b.maxByteLength === {maximum} && b.resizable ===
+                        {resizable} && !b.detached && a.byteLength === 0 && a.maxByteLength === 0 && a
+                        .resizable && a.detached
+                "#
             ));
         }
     }
     assert_true(
-        "let a=new ArrayBuffer(2,{maxByteLength:3}),b=a.transferToFixedLength(5);a.detached && b.byteLength===5 && b.maxByteLength===5 && !b.resizable",
+        r#"
+            let a = new ArrayBuffer(2, {
+                    maxByteLength: 3
+                }),
+                b = a.transferToFixedLength(5);
+            a.detached && b.byteLength === 5 && b.maxByteLength === 5 && !b.resizable
+        "#,
     );
     assert_true(
         "let a=new ArrayBuffer(2),b=a.transfer(5);a.detached && b.byteLength===5 && !b.resizable",
@@ -421,7 +1123,31 @@ fn transfer_preserves_resizability_while_fixed_transfer_discards_the_maximum() {
 fn transfer_uses_intrinsics_without_constructor_or_species_lookup() {
     for method in ["transfer", "transferToFixedLength"] {
         assert_true(&format!(
-            "let A=ArrayBuffer,p=A.prototype;class B extends A{{}}let a=new B(3),hits=0;Object.defineProperty(a,'constructor',{{get(){{hits++;throw 7;}}}});Object.defineProperty(A,Symbol.species,{{get(){{hits++;throw 8;}}}});ArrayBuffer=function(){{throw 9;}};let b=a.{method}(2);hits===0 && a.detached && Object.getPrototypeOf(b)===p && !(b instanceof B) && b.byteLength===2"
+            r#"
+                let A = ArrayBuffer,
+                    p = A.prototype;
+                class B extends A {{}}
+                let a = new B(3),
+                    hits = 0;
+                Object.defineProperty(a, 'constructor', {{
+                    get() {{
+                        hits++;
+                        throw 7;
+                    }}
+                }});
+                Object.defineProperty(A, Symbol.species, {{
+                    get() {{
+                        hits++;
+                        throw 8;
+                    }}
+                }});
+                ArrayBuffer = function() {{
+                    throw 9;
+                }};
+                let b = a.{method}(2);
+                hits === 0 && a.detached && Object.getPrototypeOf(b) === p && !(b instanceof B) && b
+                    .byteLength === 2
+            "#
         ));
     }
 }
@@ -430,24 +1156,78 @@ fn transfer_uses_intrinsics_without_constructor_or_species_lookup() {
 fn transfer_converts_once_and_keeps_sources_attached_when_conversion_or_range_fails() {
     for method in ["transfer", "transferToFixedLength"] {
         assert_true(&format!(
-            "let a=new ArrayBuffer(3),calls=0,hint;let b=a.{method}({{[Symbol.toPrimitive](h){{calls++;hint=h;return 2;}}}});calls===1 && hint==='number' && a.detached && b.byteLength===2"
+            r#"
+                let a = new ArrayBuffer(3),
+                    calls = 0,
+                    hint;
+                let b = a.{method}({{
+                    [Symbol.toPrimitive](h) {{
+                        calls++;
+                        hint = h;
+                        return 2;
+                    }}
+                }});
+                calls === 1 && hint === 'number' && a.detached && b.byteLength === 2
+            "#
         ));
         for value in ["-1", "Infinity", "9007199254740992"] {
             assert_true(&format!(
-                "let a=new ArrayBuffer(3),caught=false;try{{a.{method}({value});}}catch(e){{caught=e instanceof RangeError;}}caught && !a.detached && a.byteLength===3"
+                r#"
+                    let a = new ArrayBuffer(3),
+                        caught = false;
+                    try {{
+                        a.{method}({value});
+                    }} catch (e) {{
+                        caught = e instanceof RangeError;
+                    }}
+                    caught && !a.detached && a.byteLength === 3
+                "#
             ));
         }
         assert_true(&format!(
-            "let a=new ArrayBuffer(3),caught=false;try{{a.{method}({{valueOf(){{throw 7;}}}});}}catch(e){{caught=e===7;}}caught && !a.detached && a.byteLength===3"
+            r#"
+                let a = new ArrayBuffer(3),
+                    caught = false;
+                try {{
+                    a.{method}({{
+                        valueOf() {{
+                            throw 7;
+                        }}
+                    }});
+                }} catch (e) {{
+                    caught = e === 7;
+                }}
+                caught && !a.detached && a.byteLength === 3
+            "#
         ));
         for value in ["1n", "Symbol()"] {
             assert_true(&format!(
-                "let a=new ArrayBuffer(3),caught=false;try{{a.{method}({value});}}catch(e){{caught=e instanceof TypeError;}}caught && !a.detached && a.byteLength===3"
+                r#"
+                    let a = new ArrayBuffer(3),
+                        caught = false;
+                    try {{
+                        a.{method}({value});
+                    }} catch (e) {{
+                        caught = e instanceof TypeError;
+                    }}
+                    caught && !a.detached && a.byteLength === 3
+                "#
             ));
         }
     }
     assert_true(
-        "let a=new ArrayBuffer(3,{maxByteLength:4}),caught=false;try{a.transfer(5);}catch(e){caught=e instanceof RangeError;}caught && !a.detached && a.byteLength===3 && a.maxByteLength===4",
+        r#"
+            let a = new ArrayBuffer(3, {
+                    maxByteLength: 4
+                }),
+                caught = false;
+            try {
+                a.transfer(5);
+            } catch (e) {
+                caught = e instanceof RangeError;
+            }
+            caught && !a.detached && a.byteLength === 3 && a.maxByteLength === 4
+        "#,
     );
 }
 
@@ -455,19 +1235,88 @@ fn transfer_converts_once_and_keeps_sources_attached_when_conversion_or_range_fa
 fn transfer_checks_detachment_after_supplied_length_conversion() {
     for method in ["transfer", "transferToFixedLength"] {
         assert_true(&format!(
-            "let a=new ArrayBuffer(3);a.transfer();let calls=0,caught=false;try{{a.{method}({{valueOf(){{calls++;throw 7;}}}});}}catch(e){{caught=e===7;}}caught && calls===1 && a.detached"
+            r#"
+                let a = new ArrayBuffer(3);
+                a.transfer();
+                let calls = 0,
+                    caught = false;
+                try {{
+                    a.{method}({{
+                        valueOf() {{
+                            calls++;
+                            throw 7;
+                        }}
+                    }});
+                }} catch (e) {{
+                    caught = e === 7;
+                }}
+                caught && calls === 1 && a.detached
+            "#
         ));
         assert_true(&format!(
-            "let a=new ArrayBuffer(3);a.transfer();let caught=false;try{{a.{method}(-1);}}catch(e){{caught=e instanceof RangeError;}}caught"
+            r#"
+                let a = new ArrayBuffer(3);
+                a.transfer();
+                let caught = false;
+                try {{
+                    a.{method}(-1);
+                }} catch (e) {{
+                    caught = e instanceof RangeError;
+                }}
+                caught
+            "#
         ));
         assert_true(&format!(
-            "let a=new ArrayBuffer(3);a.transfer();let calls=0,caught=false;try{{a.{method}({{valueOf(){{calls++;return 2;}}}});}}catch(e){{caught=e instanceof TypeError;}}caught && calls===1"
+            r#"
+                let a = new ArrayBuffer(3);
+                a.transfer();
+                let calls = 0,
+                    caught = false;
+                try {{
+                    a.{method}({{
+                        valueOf() {{
+                            calls++;
+                            return 2;
+                        }}
+                    }});
+                }} catch (e) {{
+                    caught = e instanceof TypeError;
+                }}
+                caught && calls === 1
+            "#
         ));
         assert_true(&format!(
-            "let a=new ArrayBuffer(3,{{maxByteLength:7}}),moved,caught=false;try{{a.{method}({{valueOf(){{moved=a.transfer(1);return 2;}}}});}}catch(e){{caught=e instanceof TypeError;}}caught && a.detached && moved.byteLength===1 && !moved.detached"
+            r#"
+                let a = new ArrayBuffer(3, {{
+                        maxByteLength: 7
+                    }}),
+                    moved, caught = false;
+                try {{
+                    a.{method}({{
+                        valueOf() {{
+                            moved = a.transfer(1);
+                            return 2;
+                        }}
+                    }});
+                }} catch (e) {{
+                    caught = e instanceof TypeError;
+                }}
+                caught && a.detached && moved.byteLength === 1 && !moved.detached
+            "#
         ));
         assert_true(&format!(
-            "let a=new ArrayBuffer(3,{{maxByteLength:7}}),b=a.{method}({{valueOf(){{a.resize(5);return 4;}}}});a.detached && b.byteLength===4"
+            r#"
+                let a = new ArrayBuffer(3, {{
+                        maxByteLength: 7
+                    }}),
+                    b = a.{method}({{
+                        valueOf() {{
+                            a.resize(5);
+                            return 4;
+                        }}
+                    }});
+                a.detached && b.byteLength === 4
+            "#
         ));
     }
 }
@@ -477,13 +1326,36 @@ fn branded_instances_methods_and_subclass_edges_survive_collection() {
     let mut realm = Realm::default();
     realm
         .eval(
-            "let b,read,resize,transfer,p;(()=>{let captured={value:7};class B extends ArrayBuffer{#x=captured;read(){return this.#x.value;}}b=new B(3,{maxByteLength:9});p=B.prototype;read=b.read;resize=b.resize;transfer=b.transfer;})();",
+            r#"
+                let b, read, resize, transfer, p;
+                (() => {
+                    let captured = {
+                        value: 7
+                    };
+                    class B extends ArrayBuffer {
+                        #x = captured;
+                        read() {
+                            return this.#x.value;
+                        }
+                    }
+                    b = new B(3, {
+                        maxByteLength: 9
+                    });
+                    p = B.prototype;
+                    read = b.read;
+                    resize = b.resize;
+                    transfer = b.transfer;
+                })();
+            "#,
         )
         .unwrap();
     realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval(
-            "read.call(b)===7 && Object.getPrototypeOf(b)===p && resize.call(b,5)===undefined && b.byteLength===5 && b.maxByteLength===9 && !b.detached",
+            r#"
+                read.call(b) === 7 && Object.getPrototypeOf(b) === p && resize.call(b, 5) === undefined && b
+                    .byteLength === 5 && b.maxByteLength === 9 && !b.detached
+            "#,
         ),
         Ok(Value::Boolean(true))
     );
@@ -491,7 +1363,10 @@ fn branded_instances_methods_and_subclass_edges_survive_collection() {
     realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval(
-            "b.detached && b.resizable && read.call(b)===7 && moved.byteLength===2 && moved.maxByteLength===9 && moved.resizable && !moved.detached",
+            r#"
+                b.detached && b.resizable && read.call(b) === 7 && moved.byteLength === 2 && moved
+                    .maxByteLength === 9 && moved.resizable && !moved.detached
+            "#,
         ),
         Ok(Value::Boolean(true))
     );

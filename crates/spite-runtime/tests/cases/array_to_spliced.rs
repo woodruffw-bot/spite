@@ -25,7 +25,11 @@ fn omission_and_undefined_have_distinct_deletion_ranges() {
         ("Infinity,1,7", "1,2,3,7"),
     ] {
         assert_true(&format!(
-            "let a=[1,2,3],b=a.toSpliced({args});a!==b && Array.isArray(b) && b.join()==='{expected}' && a.join()==='1,2,3'"
+            r#"
+                let a = [1, 2, 3],
+                    b = a.toSpliced({args});
+                a !== b && Array.isArray(b) && b.join() === '{expected}' && a.join() === '1,2,3'
+            "#
         ));
     }
     assert_true("[].toSpliced(0,0,7)[0]===7 && [].toSpliced().length===0");
@@ -35,24 +39,94 @@ fn omission_and_undefined_have_distinct_deletion_ranges() {
 #[test]
 fn copies_are_dense_intrinsic_arrays_and_bypass_inherited_setters() {
     assert_true(
-        "let a=[,,,],b=a.toSpliced(1,1);b.length===2 && Object.hasOwn(b,'0') && Object.hasOwn(b,'1') && b[0]===undefined",
+        r#"
+            let a = [, , , ],
+                b = a.toSpliced(1, 1);
+            b.length === 2 && Object.hasOwn(b, '0') && Object.hasOwn(b, '1') && b[0] === undefined
+        "#,
     );
     assert_true("Array.prototype[2]=9;[,,,].toSpliced(1,1)[1]===9");
     assert_true(
-        "let a=Object.freeze([1,2]),p=Array.prototype;Array=function(){throw 7;};let b=a.toSpliced(1,1,9);b.join()==='1,9' && Object.getPrototypeOf(b)===p",
+        r#"
+            let a = Object.freeze([1, 2]),
+                p = Array.prototype;
+            Array = function() {
+                throw 7;
+            };
+            let b = a.toSpliced(1, 1, 9);
+            b.join() === '1,9' && Object.getPrototypeOf(b) === p
+        "#,
     );
     assert_true(
-        "let a=[1,2];Object.defineProperty(a,'constructor',{get:()=>{throw 7;}});Object.defineProperty(Array.prototype,'0',{set:()=>{throw 8;}});let b=a.toSpliced(),d=Object.getOwnPropertyDescriptor(b,'0');d.value===1 && d.writable && d.enumerable && d.configurable && Object.getPrototypeOf(b)===Array.prototype",
+        r#"
+            let a = [1, 2];
+            Object.defineProperty(a, 'constructor', {
+                get: () => {
+                    throw 7;
+                }
+            });
+            Object.defineProperty(Array.prototype, '0', {
+                set: () => {
+                    throw 8;
+                }
+            });
+            let b = a.toSpliced(),
+                d = Object.getOwnPropertyDescriptor(b, '0');
+            d.value === 1 && d.writable && d.enumerable && d.configurable && Object.getPrototypeOf(b) ===
+                Array.prototype
+        "#,
     );
 }
 
 #[test]
 fn removed_elements_are_never_read_and_retained_gets_are_ordered_and_live() {
     assert_true(
-        "let a=[0,1,2,3],log='';Object.defineProperty(a,'0',{get:()=>{log+='0';a[3]=9;return 0;}});Object.defineProperty(a,'1',{get:()=>{throw 7;}});Object.defineProperty(a,'2',{get:()=>{throw 8;}});let b=a.toSpliced(1,2,7);b.join()==='0,7,9' && log==='0'",
+        r#"
+            let a = [0, 1, 2, 3],
+                log = '';
+            Object.defineProperty(a, '0', {
+                get: () => {
+                    log += '0';
+                    a[3] = 9;
+                    return 0;
+                }
+            });
+            Object.defineProperty(a, '1', {
+                get: () => {
+                    throw 7;
+                }
+            });
+            Object.defineProperty(a, '2', {
+                get: () => {
+                    throw 8;
+                }
+            });
+            let b = a.toSpliced(1, 2, 7);
+            b.join() === '0,7,9' && log === '0'
+        "#,
     );
     assert_true(
-        "let a=[0,1,2,3],log='';Object.defineProperty(a,'0',{get:()=>{log+='0';return 0;}});Object.defineProperty(a,'2',{get:()=>{log+='2';a.length=3;return 2;},configurable:true});let b=a.toSpliced(1,1);b.length===3 && b[0]===0 && b[1]===2 && b[2]===undefined && Object.hasOwn(b,'2') && log==='02'",
+        r#"
+            let a = [0, 1, 2, 3],
+                log = '';
+            Object.defineProperty(a, '0', {
+                get: () => {
+                    log += '0';
+                    return 0;
+                }
+            });
+            Object.defineProperty(a, '2', {
+                get: () => {
+                    log += '2';
+                    a.length = 3;
+                    return 2;
+                },
+                configurable: true
+            });
+            let b = a.toSpliced(1, 1);
+            b.length === 3 && b[0] === 0 && b[1] === 2 && b[2] === undefined && Object.hasOwn(b, '2') &&
+                log === '02'
+        "#,
     );
     assert_true(
         "let a=[0,1,2];Object.defineProperty(a,'0',{get:()=>{throw 7;}});a.toSpliced(0,Infinity,9).join()==='9'",
@@ -68,10 +142,61 @@ fn removed_elements_are_never_read_and_retained_gets_are_ordered_and_live() {
 #[test]
 fn length_start_and_skip_conversions_precede_reads_and_use_captured_length() {
     assert_true(
-        "let log='',o={0:0,1:1,2:2};Object.defineProperty(o,'length',{get:()=>{log+='l';return {valueOf:()=>{log+='n';return 3;}};}});Object.defineProperty(o,'0',{get:()=>{log+='g';return 0;}});let a=Array.prototype.toSpliced.call(o,{valueOf:()=>{log+='s';return 1;}},{valueOf:()=>{log+='d';return 1;}},7);a.join()==='0,7,2' && log==='lnsdg'",
+        r#"
+            let log = '',
+                o = {
+                    0: 0,
+                    1: 1,
+                    2: 2
+                };
+            Object.defineProperty(o, 'length', {
+                get: () => {
+                    log += 'l';
+                    return {
+                        valueOf: () => {
+                            log += 'n';
+                            return 3;
+                        }
+                    };
+                }
+            });
+            Object.defineProperty(o, '0', {
+                get: () => {
+                    log += 'g';
+                    return 0;
+                }
+            });
+            let a = Array.prototype.toSpliced.call(o, {
+                valueOf: () => {
+                    log += 's';
+                    return 1;
+                }
+            }, {
+                valueOf: () => {
+                    log += 'd';
+                    return 1;
+                }
+            }, 7);
+            a.join() === '0,7,2' && log === 'lnsdg'
+        "#,
     );
     assert_true(
-        "let a=[0,1,2];let b=a.toSpliced({valueOf:()=>{a.length=1;return 1;}},{valueOf:()=>{a[2]=9;a[3]=7;return 1;}});b.length===2 && b.join()==='0,9' && a.length===4",
+        r#"
+            let a = [0, 1, 2];
+            let b = a.toSpliced({
+                valueOf: () => {
+                    a.length = 1;
+                    return 1;
+                }
+            }, {
+                valueOf: () => {
+                    a[2] = 9;
+                    a[3] = 7;
+                    return 1;
+                }
+            });
+            b.length === 2 && b.join() === '0,9' && a.length === 4
+        "#,
     );
     assert_true(
         "let log='';[].toSpliced({valueOf:()=>{log+='s';return 0;}},{valueOf:()=>{log+='d';return 0;}});log==='sd'",
@@ -130,7 +255,25 @@ fn type_errors_and_output_length_bounds_precede_element_reads() {
         ("9007199254740990", "0,0,1,2", "TypeError"),
     ] {
         assert_true(&format!(
-            "let n=0,caught=false,o={{length:{length}}};Object.defineProperty(o,'0',{{get:()=>{{n++;throw 7;}}}});try{{Array.prototype.toSpliced.call(o{comma}{args});}}catch(e){{caught=e instanceof {error};}}caught && n===0",
+            r#"
+                let n = 0,
+                    caught = false,
+                    o = {{
+                        length: {length}
+                    }};
+                Object.defineProperty(o, '0', {{
+                    get: () => {{
+                        n++;
+                        throw 7;
+                    }}
+                }});
+                try {{
+                    Array.prototype.toSpliced.call(o{comma}{args});
+                }} catch (e) {{
+                    caught = e instanceof {error};
+                }}
+                caught && n === 0
+            "#,
             comma = if args.is_empty() { "" } else { "," }
         ));
     }
@@ -139,7 +282,12 @@ fn type_errors_and_output_length_bounds_precede_element_reads() {
 #[test]
 fn metadata_and_gc_retain_intrinsics_and_copied_values() {
     assert_true(
-        "let f=Array.prototype.toSpliced,d=Object.getOwnPropertyDescriptor(Array.prototype,'toSpliced');f.name==='toSpliced' && f.length===2 && f.prototype===undefined && d.value===f && d.writable && !d.enumerable && d.configurable",
+        r#"
+            let f = Array.prototype.toSpliced,
+                d = Object.getOwnPropertyDescriptor(Array.prototype, 'toSpliced');
+            f.name === 'toSpliced' && f.length === 2 && f.prototype === undefined && d.value === f && d
+                .writable && !d.enumerable && d.configurable
+        "#,
     );
     assert!(matches!(
         Realm::default().eval("new Array.prototype.toSpliced"),

@@ -31,10 +31,44 @@ fn type_error(source: &str) {
 #[test]
 fn object_keys_use_identity_without_coercion_and_missing_differs_from_present_undefined() {
     assert_true(
-        "let a={get [Symbol.toPrimitive](){throw 7;},valueOf(){throw 8;},toString(){throw 9;}},b={},m=new WeakMap([[a,1],[b,2],[a,undefined]]);m.has(a) && m.get(a)===undefined && m.get(b)===2 && !m.has({}) && m.get({})===undefined && m.set(a,3)===m && m.get(a)===3 && m.delete(a) && !m.delete(a) && !m.has(a) && m.has(b) && m.set(a,4)===m && m.get(a)===4",
+        r#"
+            let a = {
+                    get [Symbol.toPrimitive]() {
+                        throw 7;
+                    },
+                    valueOf() {
+                        throw 8;
+                    },
+                    toString() {
+                        throw 9;
+                    }
+                },
+                b = {},
+                m = new WeakMap([
+                    [a, 1],
+                    [b, 2],
+                    [a, undefined]
+                ]);
+            m.has(a) && m.get(a) === undefined && m.get(b) === 2 && !m.has({}) && m.get({}) ===
+                undefined && m.set(a, 3) === m && m.get(a) === 3 && m.delete(a) && !m.delete(a) && !m.has(
+                    a) && m.has(b) && m.set(a, 4) === m && m.get(a) === 4
+        "#,
     );
     assert_true(
-        "let a=Object(Symbol('x')),b=Object(Symbol('x')),c=Object(Symbol.for('registered')),f=function(){},m=new WeakMap([[a,1],[b,2],[c,3],[f,4]]);m.get(a)===1 && m.get(b)===2 && m.get(c)===3 && m.get(f)===4 && !m.has(Object(Symbol.for('registered')))",
+        r#"
+            let a = Object(Symbol('x')),
+                b = Object(Symbol('x')),
+                c = Object(Symbol.for('registered')),
+                f = function() {},
+                m = new WeakMap([
+                    [a, 1],
+                    [b, 2],
+                    [c, 3],
+                    [f, 4]
+                ]);
+            m.get(a) === 1 && m.get(b) === 2 && m.get(c) === 3 && m.get(f) === 4 && !m.has(Object(Symbol
+                .for('registered')))
+        "#,
     );
     assert_true(
         "let key={},m=new WeakMap([[key]]);m.has(key) && m.get(key)===undefined && m.set(key)===m && m.has(key)",
@@ -89,7 +123,14 @@ fn invalid_primitives_and_registered_symbols_keep_their_language_defined_outcome
         }
     }
     assert_true(
-        "Symbol.keyFor=function(){throw 7;};let registered=Symbol.for('weak-map-registered'),m=new WeakMap();m.get(registered)===undefined && !m.has(registered) && !m.delete(registered)",
+        r#"
+            Symbol.keyFor = function() {
+                throw 7;
+            };
+            let registered = Symbol.for('weak-map-registered'),
+                m = new WeakMap();
+            m.get(registered) === undefined && !m.has(registered) && !m.delete(registered)
+        "#,
     );
 }
 
@@ -120,15 +161,24 @@ fn receiver_brand_checks_precede_symbol_key_and_callback_handling() {
 fn nonregistered_symbol_keys_support_all_methods_and_preserve_callback_order() {
     for key in ["Symbol('key')", "Symbol.iterator", "Symbol.toStringTag"] {
         assert_true(&format!(
-            "let key={key},m=new WeakMap(),calls=0;Symbol.keyFor=function(){{throw 8;}};\
-             m.get(key)===undefined && !m.has(key) && !m.delete(key) && \
-             m.set(key,7)===m && m.has(key) && m.get(key)===7 && \
-             m.getOrInsert(key,8)===7 && \
-             m.getOrInsertComputed(key,()=>{{calls++;return 9;}})===7 && calls===0 && \
-             m.delete(key) && !m.has(key) && m.getOrInsert(key,10)===10 && \
-             m.get(key)===10 && m.delete(key) && \
-             m.getOrInsertComputed(key,()=>{{calls++;return 11;}})===11 && \
-             calls===1 && m.get(key)===11 && !m.delete(Symbol('key'))"
+            r#"
+                let key = {key},
+                    m = new WeakMap(),
+                    calls = 0;
+                Symbol.keyFor = function() {{
+                    throw 8;
+                }};
+                m.get(key) === undefined && !m.has(key) && !m.delete(key) && m.set(key, 7) === m && m.has(
+                    key) && m.get(key) === 7 && m.getOrInsert(key, 8) === 7 && m.getOrInsertComputed(key,
+                () => {{
+                        calls++;
+                        return 9;
+                    }}) === 7 && calls === 0 && m.delete(key) && !m.has(key) && m.getOrInsert(key, 10) === 10 &&
+                    m.get(key) === 10 && m.delete(key) && m.getOrInsertComputed(key, () => {{
+                        calls++;
+                        return 11;
+                    }}) === 11 && calls === 1 && m.get(key) === 11 && !m.delete(Symbol('key'))
+            "#
         ));
         type_error(&format!("new WeakMap().getOrInsertComputed({key},null)"));
         type_error(&format!(
@@ -140,7 +190,24 @@ fn nonregistered_symbol_keys_support_all_methods_and_preserve_callback_order() {
 #[test]
 fn upserts_return_existing_undefined_and_validate_computed_callbacks_before_lookup() {
     assert_true(
-        "let key={},other={},m=new WeakMap([[key,undefined]]),calls=0,value={valueOf(){throw 7;}};m.getOrInsert(key,value)===undefined && m.getOrInsertComputed(key,()=>{calls++;return 8;})===undefined && calls===0 && m.getOrInsert(other)===undefined && m.has(other) && m.get(other)===undefined",
+        r#"
+            let key = {},
+                other = {},
+                m = new WeakMap([
+                    [key, undefined]
+                ]),
+                calls = 0,
+                value = {
+                    valueOf() {
+                        throw 7;
+                    }
+                };
+            m.getOrInsert(key, value) === undefined && m.getOrInsertComputed(key, () => {
+                    calls++;
+                    return 8;
+                }) === undefined && calls === 0 && m.getOrInsert(other) === undefined && m.has(other) && m
+                .get(other) === undefined
+        "#,
     );
     for callback in ["undefined", "null", "7", "{}", "Symbol()"] {
         type_error(&format!(
@@ -157,7 +224,22 @@ fn upserts_return_existing_undefined_and_validate_computed_callbacks_before_look
         "(()=>{let {proxy,revoke}=Proxy.revocable(class{},{});revoke();return proxy})()",
     ] {
         assert_true(&format!(
-            "let key={{}},missing={{}},callback={callback},m=new WeakMap([[key,undefined]]);let hit=m.getOrInsertComputed(key,callback)===undefined,failed=false;try{{m.getOrInsertComputed(missing,callback)}}catch(error){{failed=error instanceof TypeError}}hit&&failed&&m.has(key)&&!m.has(missing)"
+            r#"
+                let key = {{}},
+                    missing = {{}},
+                    callback = {callback},
+                    m = new WeakMap([
+                        [key, undefined]
+                    ]);
+                let hit = m.getOrInsertComputed(key, callback) === undefined,
+                    failed = false;
+                try {{
+                    m.getOrInsertComputed(missing, callback)
+                }} catch (error) {{
+                    failed = error instanceof TypeError
+                }}
+                hit && failed && m.has(key) && !m.has(missing)
+            "#
         ));
     }
 }
@@ -165,40 +247,161 @@ fn upserts_return_existing_undefined_and_validate_computed_callbacks_before_look
 #[test]
 fn computed_callbacks_receive_exactly_the_original_key_with_undefined_this() {
     assert_true(
-        "let key={toString(){throw 7;}},value={valueOf(){throw 8;}},m=new WeakMap(),calls=0,valid=false;let result=m.getOrInsertComputed(key,function(k){'use strict';calls++;valid=this===undefined && arguments.length===1 && k===key;return value;});valid && calls===1 && result===value && m.has(key) && m.get(key)===value",
+        r#"
+            let key = {
+                    toString() {
+                        throw 7;
+                    }
+                },
+                value = {
+                    valueOf() {
+                        throw 8;
+                    }
+                },
+                m = new WeakMap(),
+                calls = 0,
+                valid = false;
+            let result = m.getOrInsertComputed(key, function(k) {
+                'use strict';
+                calls++;
+                valid = this === undefined && arguments.length === 1 && k === key;
+                return value;
+            });
+            valid && calls === 1 && result === value && m.has(key) && m.get(key) === value
+        "#,
     );
     assert_true(
-        "let key={},value=Symbol('value'),m=new WeakMap();m.getOrInsertComputed(key,()=>value)===value && m.get(key)===value",
+        r#"
+            let key = {},
+                value = Symbol('value'),
+                m = new WeakMap();
+            m.getOrInsertComputed(key, () => value) === value && m.get(key) === value
+        "#,
     );
 }
 
 #[test]
 fn computed_upsert_rechecks_after_reentrant_insert_delete_and_dense_relocation() {
     assert_true(
-        "let a={},b={},key={},other={},m=new WeakMap([[a,1],[b,2]]),calls=0;let result=m.getOrInsertComputed(key,()=>{calls++;m.set(key,'temporary');m.delete(a);m.delete(b);m.set(other,7);return 8;});result===8 && calls===1 && m.get(key)===8 && m.get(other)===7 && !m.has(a) && !m.has(b)",
+        r#"
+            let a = {},
+                b = {},
+                key = {},
+                other = {},
+                m = new WeakMap([
+                    [a, 1],
+                    [b, 2]
+                ]),
+                calls = 0;
+            let result = m.getOrInsertComputed(key, () => {
+                calls++;
+                m.set(key, 'temporary');
+                m.delete(a);
+                m.delete(b);
+                m.set(other, 7);
+                return 8;
+            });
+            result === 8 && calls === 1 && m.get(key) === 8 && m.get(other) === 7 && !m.has(a) && !m.has(b)
+        "#,
     );
     assert_true(
-        "let key={},other={},m=new WeakMap();let result=m.getOrInsertComputed(key,()=>{m.set(key,1);m.delete(key);m.set(other,7);return undefined;});result===undefined && m.has(key) && m.get(key)===undefined && m.get(other)===7",
+        r#"
+            let key = {},
+                other = {},
+                m = new WeakMap();
+            let result = m.getOrInsertComputed(key, () => {
+                m.set(key, 1);
+                m.delete(key);
+                m.set(other, 7);
+                return undefined;
+            });
+            result === undefined && m.has(key) && m.get(key) === undefined && m.get(other) === 7
+        "#,
     );
     assert_true(
-        "let key={},m=new WeakMap(),calls=0;let result=m.getOrInsertComputed(key,()=>{calls++;let nested=m.getOrInsertComputed(key,()=>{calls++;return 3;});return nested+2;});result===5 && calls===2 && m.get(key)===5",
+        r#"
+            let key = {},
+                m = new WeakMap(),
+                calls = 0;
+            let result = m.getOrInsertComputed(key, () => {
+                calls++;
+                let nested = m.getOrInsertComputed(key, () => {
+                    calls++;
+                    return 3;
+                });
+                return nested + 2;
+            });
+            result === 5 && calls === 2 && m.get(key) === 5
+        "#,
     );
 }
 
 #[test]
 fn upsert_storage_does_not_call_public_get_has_or_set_overrides() {
     assert_true(
-        "let key={},other={},m=new WeakMap(),get=WeakMap.prototype.get;m.get=function(){throw 7;};m.has=function(){throw 8;};m.set=function(){throw 9;};let first=m.getOrInsert(key,3),second=m.getOrInsertComputed(other,()=>{Object.defineProperty(m,'set',{get(){throw 10;}});return 4;});first===3 && second===4 && get.call(m,key)===3 && get.call(m,other)===4",
+        r#"
+            let key = {},
+                other = {},
+                m = new WeakMap(),
+                get = WeakMap.prototype.get;
+            m.get = function() {
+                throw 7;
+            };
+            m.has = function() {
+                throw 8;
+            };
+            m.set = function() {
+                throw 9;
+            };
+            let first = m.getOrInsert(key, 3),
+                second = m.getOrInsertComputed(other, () => {
+                    Object.defineProperty(m, 'set', {
+                        get() {
+                            throw 10;
+                        }
+                    });
+                    return 4;
+                });
+            first === 3 && second === 4 && get.call(m, key) === 3 && get.call(m, other) === 4
+        "#,
     );
 }
 
 #[test]
 fn callback_throws_keep_original_values_and_only_the_callbacks_own_prior_effects() {
     assert_true(
-        "let key={},other={},marker={},m=new WeakMap(),caught=false;try{m.getOrInsertComputed(key,()=>{m.set(other,7);throw marker;});}catch(e){caught=e===marker;}caught && !m.has(key) && m.get(other)===7",
+        r#"
+            let key = {},
+                other = {},
+                marker = {},
+                m = new WeakMap(),
+                caught = false;
+            try {
+                m.getOrInsertComputed(key, () => {
+                    m.set(other, 7);
+                    throw marker;
+                });
+            } catch (e) {
+                caught = e === marker;
+            }
+            caught && !m.has(key) && m.get(other) === 7
+        "#,
     );
     assert_true(
-        "let key={},m=new WeakMap(),caught=false;try{m.getOrInsertComputed(key,()=>{m.set(key,3);throw 7;});}catch(e){caught=e===7;}caught && m.get(key)===3",
+        r#"
+            let key = {},
+                m = new WeakMap(),
+                caught = false;
+            try {
+                m.getOrInsertComputed(key, () => {
+                    m.set(key, 3);
+                    throw 7;
+                });
+            } catch (e) {
+                caught = e === 7;
+            }
+            caught && m.get(key) === 3
+        "#,
     );
 }
 
@@ -206,26 +409,162 @@ fn callback_throws_keep_original_values_and_only_the_callbacks_own_prior_effects
 fn constructor_requires_new_and_orders_new_target_adder_iterator_and_entry_reads() {
     type_error("WeakMap()");
     assert_true(
-        "let effects=0,caught=false;try{WeakMap(effects++);}catch(e){caught=e instanceof TypeError;}caught && effects===1",
+        r#"
+            let effects = 0,
+                caught = false;
+            try {
+                WeakMap(effects++);
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && effects === 1
+        "#,
     );
     assert_true(
-        "let trace='',key={},p=Object.create(WeakMap.prototype);Object.defineProperty(p,'set',{get(){trace+='s';return function(k,v){'use strict';trace+='a';if(arguments.length!==2 || k!==key || v!==7)throw 8;WeakMap.prototype.set.call(this,k,v);};}});function C(){}let N=C.bind(null);Object.defineProperty(N,'prototype',{get(){trace+='p';return p;}});let items={[Symbol.iterator](){trace+='i';let used=false;return {get next(){trace+='n';return function(){if(used)return {done:true};used=true;return {value:{get 0(){trace+='k';return key;},get 1(){trace+='v';return 7;}}};};}};}};let m=Reflect.construct(WeakMap,[items],N);trace==='psinkva' && Object.getPrototypeOf(m)===p && m.get(key)===7",
+        r#"
+            let trace = '',
+                key = {},
+                p = Object.create(WeakMap.prototype);
+            Object.defineProperty(p, 'set', {
+                get() {
+                    trace += 's';
+                    return function(k, v) {
+                        'use strict';
+                        trace += 'a';
+                        if (arguments.length !== 2 || k !== key || v !== 7) throw 8;
+                        WeakMap.prototype.set.call(this, k, v);
+                    };
+                }
+            });
+
+            function C() {}
+            let N = C.bind(null);
+            Object.defineProperty(N, 'prototype', {
+                get() {
+                    trace += 'p';
+                    return p;
+                }
+            });
+            let items = {
+                [Symbol.iterator]() {
+                    trace += 'i';
+                    let used = false;
+                    return {
+                        get next() {
+                            trace += 'n';
+                            return function() {
+                                if (used) return {
+                                    done: true
+                                };
+                                used = true;
+                                return {
+                                    value: {
+                                        get 0() {
+                                            trace += 'k';
+                                            return key;
+                                        },
+                                        get 1() {
+                                            trace += 'v';
+                                            return 7;
+                                        }
+                                    }
+                                };
+                            };
+                        }
+                    };
+                }
+            };
+            let m = Reflect.construct(WeakMap, [items], N);
+            trace === 'psinkva' && Object.getPrototypeOf(m) === p && m.get(key) === 7
+        "#,
     );
     assert_true(
-        "let p=Object.create(WeakMap.prototype);Object.defineProperty(p,'set',{get(){throw 7;}});function C(){}C.prototype=p;Object.getPrototypeOf(Reflect.construct(WeakMap,[],C))===p && Object.getPrototypeOf(Reflect.construct(WeakMap,[undefined],C))===p && Object.getPrototypeOf(Reflect.construct(WeakMap,[null],C))===p",
+        r#"
+            let p = Object.create(WeakMap.prototype);
+            Object.defineProperty(p, 'set', {
+                get() {
+                    throw 7;
+                }
+            });
+
+            function C() {}
+            C.prototype = p;
+            Object.getPrototypeOf(Reflect.construct(WeakMap, [], C)) === p && Object.getPrototypeOf(Reflect
+                .construct(WeakMap, [undefined], C)) === p && Object.getPrototypeOf(Reflect.construct(
+                WeakMap, [null], C)) === p
+        "#,
     );
     assert_true(
-        "let touched=false,p=Object.create(WeakMap.prototype);p.set=null;function C(){}C.prototype=p;let items={get [Symbol.iterator](){touched=true;throw 7;}},caught=false;try{Reflect.construct(WeakMap,[items],C);}catch(e){caught=e instanceof TypeError;}caught && !touched",
+        r#"
+            let touched = false,
+                p = Object.create(WeakMap.prototype);
+            p.set = null;
+
+            function C() {}
+            C.prototype = p;
+            let items = {
+                    get [Symbol.iterator]() {
+                        touched = true;
+                        throw 7;
+                    }
+                },
+                caught = false;
+            try {
+                Reflect.construct(WeakMap, [items], C);
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && !touched
+        "#,
     );
 }
 
 #[test]
 fn constructor_captures_the_adder_once_and_does_not_prevalidate_custom_adder_keys() {
     assert_true(
-        "let key={},other={},calls=0,set=WeakMap.prototype.set;WeakMap.prototype.set=function(k,v){calls++;if(calls===1)WeakMap.prototype.set=function(){throw 7;};return set.call(this,k,v);};let m=new WeakMap([[key,1],[other,2]]);calls===2 && m.get(key)===1 && m.get(other)===2",
+        r#"
+            let key = {},
+                other = {},
+                calls = 0,
+                set = WeakMap.prototype.set;
+            WeakMap.prototype.set = function(k, v) {
+                calls++;
+                if (calls === 1) WeakMap.prototype.set = function() {
+                    throw 7;
+                };
+                return set.call(this, k, v);
+            };
+            let m = new WeakMap([
+                [key, 1],
+                [other, 2]
+            ]);
+            calls === 2 && m.get(key) === 1 && m.get(other) === 2
+        "#,
     );
     assert_true(
-        "let registered=Symbol.for('weak-map-custom'),fresh=Symbol('fresh'),keys=[],values=[],valid=true;class C extends WeakMap{set(k,v){valid=valid && arguments.length===2 && WeakMap.prototype.has.call(this,{})===false;keys.push(k);values.push(v);return 7;}}let m=new C([[1,2],[registered,3],[fresh,4]]);valid && m instanceof C && keys.length===3 && keys[0]===1 && keys[1]===registered && keys[2]===fresh && values.join()==='2,3,4'",
+        r#"
+            let registered = Symbol.for('weak-map-custom'),
+                fresh = Symbol('fresh'),
+                keys = [],
+                values = [],
+                valid = true;
+            class C extends WeakMap {
+                set(k, v) {
+                    valid = valid && arguments.length === 2 && WeakMap.prototype.has.call(this, {}) ===
+                        false;
+                    keys.push(k);
+                    values.push(v);
+                    return 7;
+                }
+            }
+            let m = new C([
+                [1, 2],
+                [registered, 3],
+                [fresh, 4]
+            ]);
+            valid && m instanceof C && keys.length === 3 && keys[0] === 1 && keys[1] === registered &&
+                keys[2] === fresh && values.join() === '2,3,4'
+        "#,
     );
     type_error("new WeakMap({0:[{},7],length:1})");
     type_error("new WeakMap(7)");
@@ -244,11 +583,67 @@ fn entry_get_and_adder_failures_close_once_while_iterator_step_failures_do_not()
             "e===marker"
         };
         assert_true(&format!(
-            "let marker={{}},log='',closed=0,i={{next(){{return {{value:{entry}}};}},return(){{closed++;throw 9;}}}},caught=false;try{{new WeakMap({{[Symbol.iterator](){{return i;}}}});}}catch(e){{caught={expected};}}caught && closed===1"
+            r#"
+                let marker = {{}},
+                    log = '',
+                    closed = 0,
+                    i = {{
+                        next() {{
+                            return {{
+                                value: {entry}
+                            }};
+                        }},
+                        return () {{
+                            closed++;
+                            throw 9;
+                        }}
+                    }},
+                    caught = false;
+                try {{
+                    new WeakMap({{
+                        [Symbol.iterator]() {{
+                            return i;
+                        }}
+                    }});
+                }} catch (e) {{
+                    caught = {expected};
+                }}
+                caught && closed === 1
+            "#
         ));
     }
     assert_true(
-        "let marker={},closed=0,calls=0;WeakMap.prototype.set=function(){calls++;throw marker;};let i={next(){return {value:[{},7]};},return(){closed++;return 1;}},caught=false;try{new WeakMap({[Symbol.iterator](){return i;}});}catch(e){caught=e===marker;}caught && calls===1 && closed===1",
+        r#"
+            let marker = {},
+                closed = 0,
+                calls = 0;
+            WeakMap.prototype.set = function() {
+                calls++;
+                throw marker;
+            };
+            let i = {
+                    next() {
+                        return {
+                            value: [{}, 7]
+                        };
+                    },
+                    return () {
+                        closed++;
+                        return 1;
+                    }
+                },
+                caught = false;
+            try {
+                new WeakMap({
+                    [Symbol.iterator]() {
+                        return i;
+                    }
+                });
+            } catch (e) {
+                caught = e === marker;
+            }
+            caught && calls === 1 && closed === 1
+        "#,
     );
     for step in [
         "throw marker;",
@@ -256,7 +651,30 @@ fn entry_get_and_adder_failures_close_once_while_iterator_step_failures_do_not()
         "return {get value(){throw marker;}};",
     ] {
         assert_true(&format!(
-            "let marker={{}},closed=0,i={{next(){{{step}}},return(){{closed++;return {{}};}}}},caught=false;try{{new WeakMap({{[Symbol.iterator](){{return i;}}}});}}catch(e){{caught=e===marker;}}caught && closed===0"
+            r#"
+                let marker = {{}},
+                    closed = 0,
+                    i = {{
+                        next() {{
+                            {step}
+                        }},
+                        return () {{
+                            closed++;
+                            return {{}};
+                        }}
+                    }},
+                    caught = false;
+                try {{
+                    new WeakMap({{
+                        [Symbol.iterator]() {{
+                            return i;
+                        }}
+                    }});
+                }} catch (e) {{
+                    caught = e === marker;
+                }}
+                caught && closed === 0
+            "#
         ));
     }
 }
@@ -264,7 +682,38 @@ fn entry_get_and_adder_failures_close_once_while_iterator_step_failures_do_not()
 #[test]
 fn invalid_key_constructor_failure_preserves_earlier_entries_and_language_close_effects() {
     assert_true(
-        "let key={},escaped,closed=0,n=0,set=WeakMap.prototype.set;WeakMap.prototype.set=function(k,v){escaped=this;return set.call(this,k,v);};let i={next(){return {value:n++===0?[key,7]:[Symbol.for('registered'),8]};},return(){closed++;throw 9;}},caught=false;try{new WeakMap({[Symbol.iterator](){return i;}});}catch(e){caught=e instanceof TypeError;}caught && closed===1 && escaped.get(key)===7",
+        r#"
+            let key = {},
+                escaped, closed = 0,
+                n = 0,
+                set = WeakMap.prototype.set;
+            WeakMap.prototype.set = function(k, v) {
+                escaped = this;
+                return set.call(this, k, v);
+            };
+            let i = {
+                    next() {
+                        return {
+                            value: n++ === 0 ? [key, 7] : [Symbol.for('registered'), 8]
+                        };
+                    },
+                    return () {
+                        closed++;
+                        throw 9;
+                    }
+                },
+                caught = false;
+            try {
+                new WeakMap({
+                    [Symbol.iterator]() {
+                        return i;
+                    }
+                });
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && closed === 1 && escaped.get(key) === 7
+        "#,
     );
 }
 
@@ -272,16 +721,16 @@ fn invalid_key_constructor_failure_preserves_earlier_entries_and_language_close_
 fn constructor_accepts_mixed_object_and_symbol_entries_without_iterator_close() {
     assert_true(
         r#"
-        let key={},symbol=Symbol('key'),boxed=Object(symbol),escaped,closed=0,n=0,steps=0,flag=0,m;
-        let entries=[[key,7],[symbol,8],[Symbol.iterator,9],[boxed,10]],set=WeakMap.prototype.set;
-        WeakMap.prototype.set=function(k,v){escaped=this;return set.call(this,k,v);};
-        let i={
-            next(){steps++;return n<entries.length?{value:entries[n++]}:{done:true};},
-            return(){closed++;throw 11;}
-        };
-        try{m=new WeakMap({[Symbol.iterator](){return i;}});}finally{flag=2;}
-        flag===2 && n===4 && steps===5 && closed===0 && escaped===m &&
-        m.get(key)===7 && m.get(symbol)===8 && m.get(Symbol.iterator)===9 && m.get(boxed)===10
+            let key={},symbol=Symbol('key'),boxed=Object(symbol),escaped,closed=0,n=0,steps=0,flag=0,m;
+            let entries=[[key,7],[symbol,8],[Symbol.iterator,9],[boxed,10]],set=WeakMap.prototype.set;
+            WeakMap.prototype.set=function(k,v){escaped=this;return set.call(this,k,v);};
+            let i={
+                next(){steps++;return n<entries.length?{value:entries[n++]}:{done:true};},
+                return(){closed++;throw 11;}
+            };
+            try{m=new WeakMap({[Symbol.iterator](){return i;}});}finally{flag=2;}
+            flag===2 && n===4 && steps===5 && closed===0 && escaped===m &&
+            m.get(key)===7 && m.get(symbol)===8 && m.get(Symbol.iterator)===9 && m.get(boxed)===10
         "#,
     );
 }
@@ -289,13 +738,34 @@ fn constructor_accepts_mixed_object_and_symbol_entries_without_iterator_close() 
 #[test]
 fn subclasses_bound_construction_and_nonstandard_prototypes_retain_the_private_slot() {
     assert_true(
-        "let key={};class C extends WeakMap{#initial=this.get(key);read(){return this.#initial;}}let m=new C([[key,7]]);m instanceof C && m instanceof WeakMap && m.read()===7 && m.get(key)===7",
+        r#"
+            let key = {};
+            class C extends WeakMap {
+                #initial = this.get(key);
+                read() {
+                    return this.#initial;
+                }
+            }
+            let m = new C([
+                [key, 7]
+            ]);
+            m instanceof C && m instanceof WeakMap && m.read() === 7 && m.get(key) === 7
+        "#,
     );
     assert_true(
         "let key={},B=WeakMap.bind(null,[[key,7]]),m=new B();m instanceof WeakMap && m.get(key)===7",
     );
     assert_true(
-        "let key={},p={};function C(){}C.prototype=p;let m=Reflect.construct(WeakMap,[],C);Object.getPrototypeOf(m)===p && WeakMap.prototype.set.call(m,key,7)===m && WeakMap.prototype.get.call(m,key)===7",
+        r#"
+            let key = {},
+                p = {};
+
+            function C() {}
+            C.prototype = p;
+            let m = Reflect.construct(WeakMap, [], C);
+            Object.getPrototypeOf(m) === p && WeakMap.prototype.set.call(m, key, 7) === m && WeakMap
+                .prototype.get.call(m, key) === 7
+        "#,
     );
     assert_true(
         "function C(){}C.prototype=1;Object.getPrototypeOf(Reflect.construct(WeakMap,[],C))===WeakMap.prototype",
@@ -352,13 +822,39 @@ fn reflection_and_descriptors_match_the_complete_noniterable_weakmap_surface() {
 #[test]
 fn ordinary_object_integrity_does_not_freeze_entries_or_replace_the_internal_brand() {
     assert_true(
-        "let key={},other={},m=new WeakMap([[key,1]]);Object.freeze(m);m.set(key,2)===m && m.get(key)===2 && m.getOrInsert(other,3)===3 && m.delete(key) && Object.isFrozen(m) && Reflect.ownKeys(m).length===0",
+        r#"
+            let key = {},
+                other = {},
+                m = new WeakMap([
+                    [key, 1]
+                ]);
+            Object.freeze(m);
+            m.set(key, 2) === m && m.get(key) === 2 && m.getOrInsert(other, 3) === 3 && m.delete(key) &&
+                Object.isFrozen(m) && Reflect.ownKeys(m).length === 0
+        "#,
     );
     assert_true(
-        "let key={},m=new WeakMap(),set=m.set,get=m.get,has=m.has;Object.setPrototypeOf(m,null);Object.freeze(m);set.call(m,key,7)===m && get.call(m,key)===7 && has.call(m,key)",
+        r#"
+            let key = {},
+                m = new WeakMap(),
+                set = m.set,
+                get = m.get,
+                has = m.has;
+            Object.setPrototypeOf(m, null);
+            Object.freeze(m);
+            set.call(m, key, 7) === m && get.call(m, key) === 7 && has.call(m, key)
+        "#,
     );
     assert_true(
-        "Object.freeze(WeakMap);Object.freeze(WeakMap.prototype);let key={},m=new WeakMap([[key,7]]);m.get(key)===7 && m.delete(key)",
+        r#"
+            Object.freeze(WeakMap);
+            Object.freeze(WeakMap.prototype);
+            let key = {},
+                m = new WeakMap([
+                    [key, 7]
+                ]);
+            m.get(key) === 7 && m.delete(key)
+        "#,
     );
 }
 
@@ -460,15 +956,15 @@ fn constructor_host_abort_does_not_close_the_iterator_or_enter_language_handlers
 fn symbol_identity_and_boxed_symbols_remain_separate_from_registered_primitive_keys() {
     assert_true(
         r#"
-        let key=Symbol('same'),other=Symbol('same'),boxed=Object(key),otherBox=Object(key);
-        let registered=Symbol.for('weak-map-boxed'),registeredBox=Object(registered);
-        Object.defineProperty(boxed,Symbol.toPrimitive,{get(){throw 7;}});
-        boxed.valueOf=function(){throw 8;};
-        let m=new WeakMap([[key,1],[other,2],[boxed,3],[otherBox,4],[registeredBox,5]]);
-        m.get(key)===1 && m.get(other)===2 && !m.has(Symbol('same')) &&
-        m.get(boxed)===3 && m.get(otherBox)===4 && m.get(registeredBox)===5 &&
-        m.get(registered)===undefined && !m.has(registered) && !m.delete(registered) &&
-        m.delete(key) && !m.has(key) && m.get(other)===2 && m.get(boxed)===3
+            let key=Symbol('same'),other=Symbol('same'),boxed=Object(key),otherBox=Object(key);
+            let registered=Symbol.for('weak-map-boxed'),registeredBox=Object(registered);
+            Object.defineProperty(boxed,Symbol.toPrimitive,{get(){throw 7;}});
+            boxed.valueOf=function(){throw 8;};
+            let m=new WeakMap([[key,1],[other,2],[boxed,3],[otherBox,4],[registeredBox,5]]);
+            m.get(key)===1 && m.get(other)===2 && !m.has(Symbol('same')) &&
+            m.get(boxed)===3 && m.get(otherBox)===4 && m.get(registeredBox)===5 &&
+            m.get(registered)===undefined && !m.has(registered) && !m.delete(registered) &&
+            m.delete(key) && !m.has(key) && m.get(other)===2 && m.get(boxed)===3
         "#,
     );
 }
@@ -477,13 +973,13 @@ fn symbol_identity_and_boxed_symbols_remain_separate_from_registered_primitive_k
 fn symbol_upserts_keep_cached_undefined_and_validate_callbacks_before_lookup() {
     assert_true(
         r#"
-        let key=Symbol('cached'),other=Symbol('insert'),m=new WeakMap([[key,undefined]]),calls=0;
-        let value={valueOf(){throw 7;}};
-        m.getOrInsert(key,value)===undefined &&
-        m.getOrInsertComputed(key,()=>{calls++;return 8;})===undefined && calls===0 &&
-        m.getOrInsert(other)===undefined && m.has(other) && m.get(other)===undefined &&
-        m.delete(other) && m.getOrInsertComputed(other,()=>{calls++;return undefined;})===undefined &&
-        calls===1 && m.has(other)
+            let key=Symbol('cached'),other=Symbol('insert'),m=new WeakMap([[key,undefined]]),calls=0;
+            let value={valueOf(){throw 7;}};
+            m.getOrInsert(key,value)===undefined &&
+            m.getOrInsertComputed(key,()=>{calls++;return 8;})===undefined && calls===0 &&
+            m.getOrInsert(other)===undefined && m.has(other) && m.get(other)===undefined &&
+            m.delete(other) && m.getOrInsertComputed(other,()=>{calls++;return undefined;})===undefined &&
+            calls===1 && m.has(other)
         "#,
     );
     for callback in ["undefined", "null", "7", "{}", "Symbol()"] {
@@ -501,45 +997,45 @@ fn symbol_upserts_keep_cached_undefined_and_validate_callbacks_before_lookup() {
 fn symbol_computed_upserts_pass_the_original_key_and_recheck_after_reentrant_changes() {
     assert_true(
         r#"
-        let key=Symbol('key'),a=Symbol('a'),b=Symbol('b'),other={},value={},calls=0,valid=false;
-        let m=new WeakMap([[a,1],[b,2]]);
-        let result=m.getOrInsertComputed(key,function(k){
-            'use strict';
-            calls++;
-            valid=this===undefined && arguments.length===1 && k===key;
-            m.set(key,'temporary');m.delete(a);m.delete(b);m.set(other,7);
-            return value;
-        });
-        valid && calls===1 && result===value && m.get(key)===value &&
-        m.get(other)===7 && !m.has(a) && !m.has(b)
+            let key=Symbol('key'),a=Symbol('a'),b=Symbol('b'),other={},value={},calls=0,valid=false;
+            let m=new WeakMap([[a,1],[b,2]]);
+            let result=m.getOrInsertComputed(key,function(k){
+                'use strict';
+                calls++;
+                valid=this===undefined && arguments.length===1 && k===key;
+                m.set(key,'temporary');m.delete(a);m.delete(b);m.set(other,7);
+                return value;
+            });
+            valid && calls===1 && result===value && m.get(key)===value &&
+            m.get(other)===7 && !m.has(a) && !m.has(b)
         "#,
     );
     assert_true(
         r#"
-        let key=Symbol('key'),other=Symbol('other'),m=new WeakMap();
-        let result=m.getOrInsertComputed(key,()=>{
-            m.set(key,1);m.delete(key);m.set(other,7);return undefined;
-        });
-        result===undefined && m.has(key) && m.get(key)===undefined && m.get(other)===7
+            let key=Symbol('key'),other=Symbol('other'),m=new WeakMap();
+            let result=m.getOrInsertComputed(key,()=>{
+                m.set(key,1);m.delete(key);m.set(other,7);return undefined;
+            });
+            result===undefined && m.has(key) && m.get(key)===undefined && m.get(other)===7
         "#,
     );
     assert_true(
         r#"
-        let key=Symbol('key'),m=new WeakMap(),calls=0;
-        let result=m.getOrInsertComputed(key,()=>{
-            calls++;return m.getOrInsertComputed(key,()=>{calls++;return 3;})+2;
-        });
-        result===5 && calls===2 && m.get(key)===5
+            let key=Symbol('key'),m=new WeakMap(),calls=0;
+            let result=m.getOrInsertComputed(key,()=>{
+                calls++;return m.getOrInsertComputed(key,()=>{calls++;return 3;})+2;
+            });
+            result===5 && calls===2 && m.get(key)===5
         "#,
     );
     assert_true(
         r#"
-        let key=Symbol('key'),other=Symbol('other'),m=new WeakMap(),get=WeakMap.prototype.get;
-        m.get=function(){throw 7;};m.has=function(){throw 8;};m.set=function(){throw 9;};
-        let first=m.getOrInsert(key,3),second=m.getOrInsertComputed(other,()=>{
-            Object.defineProperty(m,'set',{get(){throw 10;}});return 4;
-        });
-        first===3 && second===4 && get.call(m,key)===3 && get.call(m,other)===4
+            let key=Symbol('key'),other=Symbol('other'),m=new WeakMap(),get=WeakMap.prototype.get;
+            m.get=function(){throw 7;};m.has=function(){throw 8;};m.set=function(){throw 9;};
+            let first=m.getOrInsert(key,3),second=m.getOrInsertComputed(other,()=>{
+                Object.defineProperty(m,'set',{get(){throw 10;}});return 4;
+            });
+            first===3 && second===4 && get.call(m,key)===3 && get.call(m,other)===4
         "#,
     );
 }
@@ -548,18 +1044,18 @@ fn symbol_computed_upserts_pass_the_original_key_and_recheck_after_reentrant_cha
 fn symbol_callback_throws_preserve_only_prior_callback_effects() {
     assert_true(
         r#"
-        let key=Symbol('key'),other=Symbol('other'),marker={},m=new WeakMap(),caught=false;
-        try{m.getOrInsertComputed(key,()=>{m.set(other,7);throw marker;});}
-        catch(e){caught=e===marker;}
-        caught && !m.has(key) && m.get(other)===7
+            let key=Symbol('key'),other=Symbol('other'),marker={},m=new WeakMap(),caught=false;
+            try{m.getOrInsertComputed(key,()=>{m.set(other,7);throw marker;});}
+            catch(e){caught=e===marker;}
+            caught && !m.has(key) && m.get(other)===7
         "#,
     );
     assert_true(
         r#"
-        let key=Symbol('key'),m=new WeakMap(),caught=false;
-        try{m.getOrInsertComputed(key,()=>{m.set(key,3);throw 7;});}
-        catch(e){caught=e===7;}
-        caught && m.get(key)===3
+            let key=Symbol('key'),m=new WeakMap(),caught=false;
+            try{m.getOrInsertComputed(key,()=>{m.set(key,3);throw 7;});}
+            catch(e){caught=e===7;}
+            caught && m.get(key)===3
         "#,
     );
 }
@@ -568,16 +1064,16 @@ fn symbol_callback_throws_preserve_only_prior_callback_effects() {
 fn registered_symbol_constructor_failure_closes_once_after_prior_mixed_entries() {
     assert_true(
         r#"
-        let object={},symbol=Symbol('key'),registered=Symbol.for('weak-map-invalid');
-        let entries=[[object,1],[symbol,2],[registered,3]],n=0,closed=0,escaped;
-        let set=WeakMap.prototype.set;
-        WeakMap.prototype.set=function(k,v){escaped=this;return set.call(this,k,v);};
-        let i={next(){return n<entries.length?{value:entries[n++]}:{done:true};},
-               return(){closed++;throw 7;}},caught=false;
-        try{new WeakMap({[Symbol.iterator](){return i;}});}
-        catch(e){caught=e instanceof TypeError;}
-        caught && n===3 && closed===1 && escaped.get(object)===1 &&
-        escaped.get(symbol)===2 && escaped.get(registered)===undefined
+            let object={},symbol=Symbol('key'),registered=Symbol.for('weak-map-invalid');
+            let entries=[[object,1],[symbol,2],[registered,3]],n=0,closed=0,escaped;
+            let set=WeakMap.prototype.set;
+            WeakMap.prototype.set=function(k,v){escaped=this;return set.call(this,k,v);};
+            let i={next(){return n<entries.length?{value:entries[n++]}:{done:true};},
+                   return(){closed++;throw 7;}},caught=false;
+            try{new WeakMap({[Symbol.iterator](){return i;}});}
+            catch(e){caught=e instanceof TypeError;}
+            caught && n===3 && closed===1 && escaped.get(object)===1 &&
+            escaped.get(symbol)===2 && escaped.get(registered)===undefined
         "#,
     );
 }
@@ -587,7 +1083,18 @@ fn a_host_symbol_keeps_its_conditional_object_alive_until_the_host_drops_it() {
     let mut realm = Realm::default();
     let pair = realm
         .eval(
-            "let map=new WeakMap();(()=>{let key=Symbol('host-only'),value={n:7,back:key};map.set(key,value);return [key,value];})()",
+            r#"
+                let map = new WeakMap();
+                (() => {
+                    let key = Symbol('host-only'),
+                        value = {
+                            n: 7,
+                            back: key
+                        };
+                    map.set(key, value);
+                    return [key, value];
+                })()
+            "#,
         )
         .unwrap();
     let Value::Symbol(symbol) = realm.read_property(&pair, &JsString::from("0")).unwrap() else {

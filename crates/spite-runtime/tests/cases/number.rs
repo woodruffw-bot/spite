@@ -59,7 +59,20 @@ fn explicit_bigint_conversion_rounds_once_and_does_not_change_implicit_conversio
 #[test]
 fn object_conversion_calls_valueof_then_tostring_and_propagates_abrupt_results() {
     assert_true(
-        "let order=''; let value=Number({valueOf:()=>{order+='v';return {};},toString:()=>{order+='s';return '7';}}); value===7 && order==='vs'",
+        r#"
+            let order = '';
+            let value = Number({
+                valueOf: () => {
+                    order += 'v';
+                    return {};
+                },
+                toString: () => {
+                    order += 's';
+                    return '7';
+                }
+            });
+            value === 7 && order === 'vs'
+        "#,
     );
     assert_true(
         "let called=false; new Number({valueOf:()=>3,toString:()=>{called=true;return '4';}}).valueOf()===3 && !called",
@@ -126,7 +139,14 @@ fn wrappers_have_own_slots_and_bound_construction_ignores_bound_this() {
 #[test]
 fn non_strict_receivers_box_and_primitive_data_writes_do_not_persist() {
     assert_true(
-        "function f(){return this;} let a=f.call(-0),b=f.call(-0); a!==b && a instanceof Number && 1/a.valueOf()===-Infinity",
+        r#"
+            function f() {
+                return this;
+            }
+            let a = f.call(-0),
+                b = f.call(-0);
+            a !== b && a instanceof Number && 1 / a.valueOf() === -Infinity
+        "#,
     );
     assert_true(
         "function f(){'use strict';return this;} f.call(7)===7 && 1/f.call(-0)===-Infinity",
@@ -146,7 +166,11 @@ fn non_strict_receivers_box_and_primitive_data_writes_do_not_persist() {
         })
     ));
     assert_true(
-        "let N=Number; delete Number; typeof Number==='undefined' && (1).constructor===N && ({}).valueOf.call(2) instanceof N",
+        r#"
+            let N = Number;
+            delete Number;
+            typeof Number === 'undefined' && (1).constructor === N && ({}).valueOf.call(2) instanceof N
+        "#,
     );
 }
 
@@ -168,13 +192,24 @@ fn numeric_predicates_never_coerce_and_distinguish_integer_boundaries() {
     }
     assert_true("Number.isNaN(NaN) && !Number.isNaN(Infinity) && !Number.isNaN(0)");
     assert_true(
-        "Number.isFinite(0) && Number.isFinite(Number.MAX_VALUE) && !Number.isFinite(NaN) && !Number.isFinite(Infinity) && !Number.isFinite(-Infinity)",
+        r#"
+            Number.isFinite(0) && Number.isFinite(Number.MAX_VALUE) && !Number.isFinite(NaN) && !Number
+                .isFinite(Infinity) && !Number.isFinite(-Infinity)
+        "#,
     );
     assert_true(
-        "Number.isInteger(-0) && Number.isInteger(-7) && Number.isInteger(Number.MAX_VALUE) && !Number.isInteger(0.5) && !Number.isInteger(Number.MIN_VALUE) && !Number.isInteger(NaN) && !Number.isInteger(Infinity)",
+        r#"
+            Number.isInteger(-0) && Number.isInteger(-7) && Number.isInteger(Number.MAX_VALUE) && !Number
+                .isInteger(0.5) && !Number.isInteger(Number.MIN_VALUE) && !Number.isInteger(NaN) && !Number
+                .isInteger(Infinity)
+        "#,
     );
     assert_true(
-        "Number.isSafeInteger(-0) && Number.isSafeInteger(Number.MAX_SAFE_INTEGER) && Number.isSafeInteger(Number.MIN_SAFE_INTEGER) && !Number.isSafeInteger(9007199254740992) && !Number.isSafeInteger(-9007199254740992) && !Number.isSafeInteger(0.5)",
+        r#"
+            Number.isSafeInteger(-0) && Number.isSafeInteger(Number.MAX_SAFE_INTEGER) && Number
+                .isSafeInteger(Number.MIN_SAFE_INTEGER) && !Number.isSafeInteger(9007199254740992) && !
+                Number.isSafeInteger(-9007199254740992) && !Number.isSafeInteger(0.5)
+        "#,
     );
 }
 

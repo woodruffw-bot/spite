@@ -23,9 +23,22 @@ fn collect(realm: &mut Realm) {
 #[test]
 fn defaults_resume_in_order_before_later_elements_and_declarators() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let events=[],result;async function f(){let [x=await(events.push('x'),7),y=await(events.push(x),9)]=[],tail=(events.push('tail'),11);return [x,y,tail].join(',')}f().then(value=>{result=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let events = [],
+                    result;
+                async function f() {
+                    let [x = await (events.push('x'), 7), y = await (events.push(x), 9)] = [], tail = (
+                        events.push('tail'), 11);
+                    return [x, y, tail].join(',')
+                }
+                f().then(value => {
+                    result = value
+                });
+            "#,
+        )
+        .unwrap();
     check(&mut realm, "events.join(',')==='x'&&result===undefined");
     drain(&mut realm);
     check(
@@ -37,9 +50,21 @@ fn defaults_resume_in_order_before_later_elements_and_declarators() {
 #[test]
 fn defined_values_and_unselected_await_branches_skip_their_operands() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let effects=0,result;async function f(){let [x=await(effects++,7),y=false?await missing:()=>{}]=[1,undefined];return x===1&&typeof y==='function'&&y.name===''&&effects===0}f().then(value=>{result=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let effects = 0,
+                    result;
+                async function f() {
+                    let [x = await (effects++, 7), y = false ? await missing : () => {}] = [1, undefined];
+                    return x === 1 && typeof y === 'function' && y.name === '' && effects === 0
+                }
+                f().then(value => {
+                    result = value
+                });
+            "#,
+        )
+        .unwrap();
     check(&mut realm, "effects===0");
     drain(&mut realm);
     check(&mut realm, "result===true&&effects===0");
@@ -48,10 +73,51 @@ fn defined_values_and_unselected_await_branches_skip_their_operands() {
 #[test]
 fn nested_arrays_rest_patterns_and_elisions_keep_iterator_protocol_order() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let result,reads=0,calls=0;let source={[Symbol.iterator](){return this},next(){calls++;if(calls===1)return{done:false,get value(){reads++;throw 1}};return calls===2?{done:false,value:[]}:calls===3?{done:false,value:undefined}:calls===4?{done:false,value:11}:calls===5?{done:false,value:12}:{done:true}}};
-        async function f(){let [,[x=await 7],...[y=await 9,...tail]]=source;return [x,y,tail.join(',')].join(';')}f().then(value=>{result=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let result, reads = 0,
+                    calls = 0;
+                let source = {
+                    [Symbol.iterator]() {
+                        return this
+                    },
+                    next() {
+                        calls++;
+                        if (calls === 1) return {
+                            done: false,
+                            get value() {
+                                reads++;
+                                throw 1
+                            }
+                        };
+                        return calls === 2 ? {
+                            done: false,
+                            value: []
+                        } : calls === 3 ? {
+                            done: false,
+                            value: undefined
+                        } : calls === 4 ? {
+                            done: false,
+                            value: 11
+                        } : calls === 5 ? {
+                            done: false,
+                            value: 12
+                        } : {
+                            done: true
+                        }
+                    }
+                };
+                async function f() {
+                    let [, [x = await 7], ...[y = await 9, ...tail]] = source;
+                    return [x, y, tail.join(',')].join(';')
+                }
+                f().then(value => {
+                    result = value
+                });
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     check(&mut realm, "result==='7;9;11,12'&&reads===0&&calls===6");
 }
@@ -69,9 +135,28 @@ fn awaited_rhs_and_three_clause_headers_preserve_tdz_and_iteration_closures() {
 #[test]
 fn ordinary_defaults_keep_name_inference_and_awaited_anonymous_values_do_not_gain_names() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let events=[],result;async function f(){let [klass=class{static{events.push(this.name)}},arrow=await(()=>{}),named=function(){},anonymous=await class{static seen=this.name}]=[];return klass.name==='klass'&&arrow.name===''&&named.name==='named'&&anonymous.name===''&&anonymous.seen===''}f().then(value=>{result=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let events = [],
+                    result;
+                async function f() {
+                    let [klass = class {
+                        static {
+                            events.push(this.name)
+                        }
+                    }, arrow = await (() => {}), named = function() {}, anonymous = await class {
+                        static seen = this.name
+                    }] = [];
+                    return klass.name === 'klass' && arrow.name === '' && named.name === 'named' &&
+                        anonymous.name === '' && anonymous.seen === ''
+                }
+                f().then(value => {
+                    result = value
+                });
+            "#,
+        )
+        .unwrap();
     check(&mut realm, "events.join(',')==='klass'&&result===undefined");
     drain(&mut realm);
     check(&mut realm, "result===true");
@@ -84,9 +169,53 @@ fn rejection_and_normal_close_errors_close_nested_iterators_once_from_inside_out
         realm
             .eval("let reason={},closing={},events=[],result;")
             .unwrap();
-        realm.eval("function source(name,value){return{[Symbol.iterator](){return this},next(){return{done:false,value}},return(){events.push(name);if(name==='inner')throw closing;return{done:true}}}}").unwrap();
+        realm
+            .eval(
+                r#"
+                    function source(name, value) {
+                        return {
+                            [Symbol.iterator]() {
+                                return this
+                            },
+                            next() {
+                                return {
+                                    done: false,
+                                    value
+                                }
+                            },
+                            return () {
+                                events.push(name);
+                                if (name === 'inner') throw closing;
+                                return {
+                                    done: true
+                                }
+                            }
+                        }
+                    }
+                "#,
+            )
+            .unwrap();
         let value = if reject { "undefined" } else { "1" };
-        realm.eval(&format!("async function f(){{try{{let [[x=await Promise.reject(reason)]]=source('outer',source('inner',{value}));return false}}catch(error){{return error==={}}}}}f().then(value=>{{result=value}})",if reject {"reason"}else{"closing"})).unwrap();
+        realm
+            .eval(&format!(
+                r#"
+                    async function f() {{
+                        try {{
+                            let [
+                                [x = await Promise.reject(reason)]
+                            ] = source('outer', source('inner', {value}));
+                            return false
+                        }} catch (error) {{
+                            return error === {}
+                        }}
+                    }}
+                    f().then(value => {{
+                        result = value
+                    }})
+                "#,
+                if reject { "reason" } else { "closing" }
+            ))
+            .unwrap();
         drain(&mut realm);
         check(
             &mut realm,
@@ -114,11 +243,51 @@ fn step_and_result_errors_skip_current_close_but_close_the_parent_iterator() {
 #[test]
 fn pending_defaults_keep_cached_next_and_its_environment_live_then_release_them() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let release,gate=new Promise(resolve=>{release=resolve}),weak,nextWeak,iteratorWeak,result;
-        function source(){let keep={};weak=new WeakRef(keep);let next=()=>{keep;return{done:false,value:undefined}};nextWeak=new WeakRef(next);let iterator={next,return(){return{done:true}}};iteratorWeak=new WeakRef(iterator);return{[Symbol.iterator](){return iterator}}}
-        async function f(){let [x=await gate]=source();return x}f().then(value=>{result=value});iteratorWeak.deref().next=null;
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let release, gate = new Promise(resolve => {
+                        release = resolve
+                    }),
+                    weak, nextWeak, iteratorWeak, result;
+
+                function source() {
+                    let keep = {};
+                    weak = new WeakRef(keep);
+                    let next = () => {
+                        keep;
+                        return {
+                            done: false,
+                            value: undefined
+                        }
+                    };
+                    nextWeak = new WeakRef(next);
+                    let iterator = {
+                        next,
+                        return () {
+                            return {
+                                done: true
+                            }
+                        }
+                    };
+                    iteratorWeak = new WeakRef(iterator);
+                    return {
+                        [Symbol.iterator]() {
+                            return iterator
+                        }
+                    }
+                }
+                async function f() {
+                    let [x = await gate] = source();
+                    return x
+                }
+                f().then(value => {
+                    result = value
+                });
+                iteratorWeak.deref().next = null;
+            "#,
+        )
+        .unwrap();
     collect(&mut realm);
     check(
         &mut realm,
@@ -140,7 +309,21 @@ fn host_failure_in_a_default_skips_iterator_close_disposal_catch_and_finally() {
             max_steps: limited.then_some(10_000),
             ..Default::default()
         });
-        realm.eval("let state={},closed=0,disposed=0,finalized=0,caught=false,proceed,gate=new Promise(resolve=>{proceed=resolve});const dispose=Symbol.dispose;").unwrap();
+        realm
+            .eval(
+                r#"
+                    let state = {},
+                        closed = 0,
+                        disposed = 0,
+                        finalized = 0,
+                        caught = false,
+                        proceed, gate = new Promise(resolve => {
+                            proceed = resolve
+                        });
+                    const dispose = Symbol.dispose;
+                "#,
+            )
+            .unwrap();
         realm.eval("let resource={[dispose](){disposed++}};state.weak=new WeakRef(resource[dispose]);function spin(){while(true){}};let source={[Symbol.iterator](){return this},next(){return{done:false,value:undefined}},return(){closed++;return{done:true}}}").unwrap();
         let tail = if limited {
             "spin()"
@@ -184,7 +367,26 @@ fn object_bindings_and_assignment_defaults_resume_operands_and_finalizers() {
         realm
             .eval("let before=0,operand=0,handled=0,observed=-1")
             .unwrap();
-        realm.eval(&format!("async function f(){{before++;try{{{declaration};observed=x}}catch{{handled=1}}finally{{handled=2}}}}f().catch(()=>{{handled=3}})")).unwrap();
+        realm
+            .eval(&format!(
+                r#"
+                    async function f() {{
+                        before++;
+                        try {{
+                            {declaration};
+                            observed = x
+                        }} catch {{
+                            handled = 1
+                        }} finally {{
+                            handled = 2
+                        }}
+                    }}
+                    f().catch(() => {{
+                        handled = 3
+                    }})
+                "#
+            ))
+            .unwrap();
         check(
             &mut realm,
             "before===1&&operand===1&&handled===0&&observed===-1",

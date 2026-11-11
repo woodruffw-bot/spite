@@ -101,7 +101,21 @@ fn callability_failures_follow_argument_evaluation_and_captures_are_values() {
 #[test]
 fn bound_targets_receivers_arguments_and_cycles_survive_collection() {
     let mut realm = Realm::default();
-    realm.eval("let f; { let receiver = {}; let extra = {}; let target = ({}).valueOf.call.bind(({}).valueOf, receiver); f = target.bind(null, extra); receiver.f = f; extra.f = f; }").unwrap();
+    realm
+        .eval(
+            r#"
+                let f;
+                {
+                    let receiver = {};
+                    let extra = {};
+                    let target = ({}).valueOf.call.bind(({}).valueOf, receiver);
+                    f = target.bind(null, extra);
+                    receiver.f = f;
+                    extra.f = f;
+                }
+            "#,
+        )
+        .unwrap();
     assert_eq!(realm.collect(usize::MAX).unwrap().live, REALM_ENTRIES + 4); // global environment, global object, nine intrinsics, two bound functions, two captures
     assert_eq!(realm.eval("f().f === f"), Ok(Value::Boolean(true)));
     let value = realm.eval("f").unwrap();
@@ -116,12 +130,24 @@ fn bound_targets_receivers_arguments_and_cycles_survive_collection() {
     for field in ["length", "name"] {
         let mut failed = Realm::default();
         assert_eq!(failed.eval(&format!(r#"
-            let refs,marker={{}};
-            (()=>{{
-                let target=function(){{}},receiver={{symbol:Symbol('receiver')}},argument=Symbol('argument');
-                refs=[target,receiver,receiver.symbol,argument].map(value=>new WeakRef(value));
-                Object.defineProperty(target,'{field}',{{get(){{throw marker;}}}});
-                try{{Function.prototype.bind.call(target,receiver,argument);}}catch(error){{return error===marker;}}
+            let refs, marker = {{}};
+            (() => {{
+                let target = function() {{}},
+                    receiver = {{
+                        symbol: Symbol('receiver')
+                    }},
+                    argument = Symbol('argument');
+                refs = [target, receiver, receiver.symbol, argument].map(value => new WeakRef(value));
+                Object.defineProperty(target, '{field}', {{
+                    get() {{
+                        throw marker;
+                    }}
+                }});
+                try {{
+                    Function.prototype.bind.call(target, receiver, argument);
+                }} catch (error) {{
+                    return error === marker;
+                }}
                 return false;
             }})()
         "#)),Ok(Value::Boolean(true)));

@@ -7,13 +7,30 @@ use crate::common::assert_true;
 #[test]
 fn relative_indices_truncate_and_preserve_absence() {
     assert_true(
-        "let a=[1,,3];a.at()===1 && a.at(undefined)===1 && a.at(null)===1 && a.at(NaN)===1 && a.at(-0)===1 && a.at(-0.5)===1 && a.at(-1)===3 && a.at(-1.9)===3 && a.at('2')===3 && a.at(1)===undefined",
+        r#"
+            let a = [1, , 3];
+            a.at() === 1 && a.at(undefined) === 1 && a.at(null) === 1 && a.at(NaN) === 1 && a.at(-0) ===
+                1 && a.at(-0.5) === 1 && a.at(-1) === 3 && a.at(-1.9) === 3 && a.at('2') === 3 && a.at(
+                1) === undefined
+        "#,
     );
     assert_true(
-        "let a=[1,2,3];a.at(-3)===1 && a.at(-4)===undefined && a.at(3)===undefined && a.at(Infinity)===undefined && a.at(-Infinity)===undefined && [].at(0)===undefined",
+        r#"
+            let a = [1, 2, 3];
+            a.at(-3) === 1 && a.at(-4) === undefined && a.at(3) === undefined && a.at(Infinity) ===
+                undefined && a.at(-Infinity) === undefined && [].at(0) === undefined
+        "#,
     );
     assert_true(
-        "Object.defineProperty(Array.prototype,'0',{value:7,writable:true,configurable:true});let a=[,];a.at(0)===7 && !Object.hasOwn(a,'0')",
+        r#"
+            Object.defineProperty(Array.prototype, '0', {
+                value: 7,
+                writable: true,
+                configurable: true
+            });
+            let a = [, ];
+            a.at(0) === 7 && !Object.hasOwn(a, '0')
+        "#,
     );
 }
 
@@ -24,7 +41,18 @@ fn generic_receivers_use_utf16_and_the_entire_to_length_range() {
     );
     assert_true("Array.prototype.at.call({0:'a',1:'b',length:'2.9'},-1)==='b'");
     assert_true(
-        "let o={0:'first',9007199254740990:'last',9007199254740991:'outside',length:Infinity};Array.prototype.at.call(o,-1)==='last' && Array.prototype.at.call(o,9007199254740990)==='last' && Array.prototype.at.call(o,-9007199254740991)==='first' && Array.prototype.at.call(o,-9007199254740992)===undefined && Array.prototype.at.call(o,9007199254740991)===undefined",
+        r#"
+            let o = {
+                0: 'first',
+                9007199254740990: 'last',
+                9007199254740991: 'outside',
+                length: Infinity
+            };
+            Array.prototype.at.call(o, -1) === 'last' && Array.prototype.at.call(o, 9007199254740990) ===
+                'last' && Array.prototype.at.call(o, -9007199254740991) === 'first' && Array.prototype.at
+                .call(o, -9007199254740992) === undefined && Array.prototype.at.call(o,
+                9007199254740991) === undefined
+        "#,
     );
     for length in ["undefined", "null", "NaN", "-Infinity", "-1", "0.9"] {
         assert_true(&format!(
@@ -36,7 +64,34 @@ fn generic_receivers_use_utf16_and_the_entire_to_length_range() {
 #[test]
 fn length_is_converted_once_before_index_and_get_observes_mutations() {
     assert_true(
-        "let log='',o={};Object.defineProperty(o,'length',{get:()=>{log+='l';return {valueOf:()=>{log+='n';return 2;}};}});Object.defineProperty(o,'1',{get:()=>{log+='g';return 7;}});let i={valueOf:()=>{log+='i';return -1;}};Array.prototype.at.call(o,i)===7 && log==='lnig'",
+        r#"
+            let log = '',
+                o = {};
+            Object.defineProperty(o, 'length', {
+                get: () => {
+                    log += 'l';
+                    return {
+                        valueOf: () => {
+                            log += 'n';
+                            return 2;
+                        }
+                    };
+                }
+            });
+            Object.defineProperty(o, '1', {
+                get: () => {
+                    log += 'g';
+                    return 7;
+                }
+            });
+            let i = {
+                valueOf: () => {
+                    log += 'i';
+                    return -1;
+                }
+            };
+            Array.prototype.at.call(o, i) === 7 && log === 'lnig'
+        "#,
     );
     assert_true("let a=[1,2,3],i={valueOf:()=>{a.length=1;a[2]=9;return -1;}};a.at(i)===9");
     assert_true(
@@ -51,7 +106,19 @@ fn length_is_converted_once_before_index_and_get_observes_mutations() {
 #[test]
 fn coercion_and_get_failures_propagate_in_spec_order() {
     for source in [
-        "let o={};Object.defineProperty(o,'length',{get:()=>{throw 7;}});Array.prototype.at.call(o,{valueOf:()=>{throw 8;}})",
+        r#"
+            let o = {};
+            Object.defineProperty(o, 'length', {
+                get: () => {
+                    throw 7;
+                }
+            });
+            Array.prototype.at.call(o, {
+                valueOf: () => {
+                    throw 8;
+                }
+            })
+        "#,
         "[].at({valueOf:()=>{throw 7;}})",
         "let a=[1];Object.defineProperty(a,'0',{get:()=>{throw 7;}});a.at(0)",
     ] {
@@ -83,7 +150,12 @@ fn coercion_and_get_failures_propagate_in_spec_order() {
 #[test]
 fn method_metadata_nonconstructibility_and_roots_are_standard() {
     assert_true(
-        "let f=Array.prototype.at,d=Object.getOwnPropertyDescriptor(Array.prototype,'at');f.name==='at' && f.length===1 && f.prototype===undefined && d.value===f && d.writable && !d.enumerable && d.configurable",
+        r#"
+            let f = Array.prototype.at,
+                d = Object.getOwnPropertyDescriptor(Array.prototype, 'at');
+            f.name === 'at' && f.length === 1 && f.prototype === undefined && d.value === f && d
+                .writable && !d.enumerable && d.configurable
+        "#,
     );
     assert!(matches!(
         Realm::default().eval("new Array.prototype.at"),

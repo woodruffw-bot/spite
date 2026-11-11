@@ -9,20 +9,64 @@ use crate::common::assert_true;
 #[test]
 fn signed_zero_and_nonfinite_results_follow_full_iteration() {
     assert_true(
-        "Object.is(Math.sumPrecise([]),-0) && Object.is(Math.sumPrecise([-0,-0]),-0) && Object.is(Math.sumPrecise([-0,0]),0) && Object.is(Math.sumPrecise([1,-1,-0]),0) && Number.isNaN(Math.sumPrecise([NaN,Infinity])) && Number.isNaN(Math.sumPrecise([Infinity,-Infinity])) && Math.sumPrecise([1,Infinity,2])===Infinity && Math.sumPrecise([-Infinity,-Infinity])===-Infinity",
+        r#"
+            Object.is(Math.sumPrecise([]), -0) && Object.is(Math.sumPrecise([-0, -0]), -0) && Object.is(
+                    Math.sumPrecise([-0, 0]), 0) && Object.is(Math.sumPrecise([1, -1, -0]), 0) && Number
+                .isNaN(Math.sumPrecise([NaN, Infinity])) && Number.isNaN(Math.sumPrecise([Infinity, -
+                    Infinity
+                ])) && Math.sumPrecise([1, Infinity, 2]) === Infinity && Math.sumPrecise([-Infinity, -
+                    Infinity
+                ]) === -Infinity
+        "#,
     );
     assert_true(
-        "let calls=0,items={[Symbol.iterator](){return {next(){calls++;if(calls===1)return {value:NaN};if(calls===2)return {value:Infinity};return {done:true};},return(){throw 8;}};}};Number.isNaN(Math.sumPrecise(items)) && calls===3",
+        r#"
+            let calls = 0,
+                items = {
+                    [Symbol.iterator]() {
+                        return {
+                            next() {
+                                calls++;
+                                if (calls === 1) return {
+                                    value: NaN
+                                };
+                                if (calls === 2) return {
+                                    value: Infinity
+                                };
+                                return {
+                                    done: true
+                                };
+                            },
+                            return () {
+                                throw 8;
+                            }
+                        };
+                    }
+                };
+            Number.isNaN(Math.sumPrecise(items)) && calls === 3
+        "#,
     );
 }
 
 #[test]
 fn exact_cancellation_and_halfway_rounding_do_not_round_intermediate_sums() {
     assert_true(
-        "Math.sumPrecise([1e308,1e308,0.1,0.1,1e30,0.1,-1e30,-1e308,-1e308])===0.30000000000000004 && Math.sumPrecise([1e30,0.1,-1e30])===0.1 && Math.sumPrecise([Number.MAX_VALUE,Number.MAX_VALUE,-Number.MAX_VALUE])===Number.MAX_VALUE && Math.sumPrecise([Number.MIN_VALUE,-Number.MIN_VALUE,Number.MIN_VALUE])===Number.MIN_VALUE",
+        r#"
+            Math.sumPrecise([1e308, 1e308, 0.1, 0.1, 1e30, 0.1, -1e30, -1e308, -1e308]) ===
+                0.30000000000000004 && Math.sumPrecise([1e30, 0.1, -1e30]) === 0.1 && Math.sumPrecise([
+                    Number.MAX_VALUE, Number.MAX_VALUE, -Number.MAX_VALUE
+                ]) === Number.MAX_VALUE && Math.sumPrecise([Number.MIN_VALUE, -Number.MIN_VALUE, Number
+                    .MIN_VALUE
+                ]) === Number.MIN_VALUE
+        "#,
     );
     assert_true(
-        "Math.sumPrecise([1,2**-53])===1 && Math.sumPrecise([1,2**-53,Number.MIN_VALUE])===1+Number.EPSILON && Math.sumPrecise([1+Number.EPSILON,2**-53])===1+2*Number.EPSILON && Math.sumPrecise([Number.MAX_VALUE,2**970,-Number.MIN_VALUE])===Number.MAX_VALUE && Math.sumPrecise([Number.MAX_VALUE,2**970])===Infinity",
+        r#"
+            Math.sumPrecise([1, 2 ** -53]) === 1 && Math.sumPrecise([1, 2 ** -53, Number.MIN_VALUE]) ===
+                1 + Number.EPSILON && Math.sumPrecise([1 + Number.EPSILON, 2 ** -53]) === 1 + 2 * Number
+                .EPSILON && Math.sumPrecise([Number.MAX_VALUE, 2 ** 970, -Number.MIN_VALUE]) === Number
+                .MAX_VALUE && Math.sumPrecise([Number.MAX_VALUE, 2 ** 970]) === Infinity
+        "#,
     );
 }
 
@@ -38,11 +82,38 @@ fn element_types_are_validated_without_coercion_even_after_nonfinite_values() {
         "Object(3)",
     ] {
         assert_true(&format!(
-            "let caught=false;try{{Math.sumPrecise([NaN,Infinity,{value}]);}}catch(e){{caught=e instanceof TypeError;}}caught"
+            r#"
+                let caught = false;
+                try {{
+                    Math.sumPrecise([NaN, Infinity, {value}]);
+                }} catch (e) {{
+                    caught = e instanceof TypeError;
+                }}
+                caught
+            "#
         ));
     }
     assert_true(
-        "let calls=0,caught=false,o={[Symbol.toPrimitive](){calls++;throw 7;},valueOf(){calls++;throw 8;}};try{Math.sumPrecise([o]);}catch(e){caught=e instanceof TypeError;}caught && calls===0",
+        r#"
+            let calls = 0,
+                caught = false,
+                o = {
+                    [Symbol.toPrimitive]() {
+                        calls++;
+                        throw 7;
+                    },
+                    valueOf() {
+                        calls++;
+                        throw 8;
+                    }
+                };
+            try {
+                Math.sumPrecise([o]);
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && calls === 0
+        "#,
     );
     for input in [
         "undefined",
@@ -61,10 +132,61 @@ fn element_types_are_validated_without_coercion_even_after_nonfinite_values() {
 #[test]
 fn iterator_method_and_next_are_captured_with_exact_receivers_and_live_steps() {
     assert_true(
-        "let log='',steps=0,iterator={get next(){log+='n';return function(){if(this!==iterator)throw 7;steps++;return steps<3?{value:steps}:{done:true,get value(){throw 8;}};};}},items={get [Symbol.iterator](){log+='i';return function(){if(this!==items)throw 9;log+='c';return iterator;};}};Math.sumPrecise.call(Symbol(),items,{valueOf(){throw 10;}})===3 && steps===3 && log==='icn'",
+        r#"
+            let log = '',
+                steps = 0,
+                iterator = {
+                    get next() {
+                        log += 'n';
+                        return function() {
+                            if (this !== iterator) throw 7;
+                            steps++;
+                            return steps < 3 ? {
+                                value: steps
+                            } : {
+                                done: true,
+                                get value() {
+                                    throw 8;
+                                }
+                            };
+                        };
+                    }
+                },
+                items = {
+                    get [Symbol.iterator]() {
+                        log += 'i';
+                        return function() {
+                            if (this !== items) throw 9;
+                            log += 'c';
+                            return iterator;
+                        };
+                    }
+                };
+            Math.sumPrecise.call(Symbol(), items, {
+                valueOf() {
+                    throw 10;
+                }
+            }) === 3 && steps === 3 && log === 'icn'
+        "#,
     );
     assert_true(
-        "let a=[1,2];a[Symbol.iterator]=function(){let i=0;return {next(){i++;return i===1?{value:7}:{done:true};}};};Math.sumPrecise(a)===7",
+        r#"
+            let a = [1, 2];
+            a[Symbol.iterator] = function() {
+                let i = 0;
+                return {
+                    next() {
+                        i++;
+                        return i === 1 ? {
+                            value: 7
+                        } : {
+                            done: true
+                        };
+                    }
+                };
+            };
+            Math.sumPrecise(a) === 7
+        "#,
     );
 }
 
@@ -72,11 +194,61 @@ fn iterator_method_and_next_are_captured_with_exact_receivers_and_live_steps() {
 fn element_errors_close_but_step_errors_leave_the_iterator_open() {
     for cleanup in ["return {};", "return 7;", "throw 8;"] {
         assert_true(&format!(
-            "let closed=0,steps=0,caught=false,items={{[Symbol.iterator](){{return {{next(){{steps++;return {{value:{{}}}};}},return(){{closed++;{cleanup}}}}};}}}};try{{Math.sumPrecise(items);}}catch(e){{caught=e instanceof TypeError;}}caught && steps===1 && closed===1"
+            r#"
+                let closed = 0,
+                    steps = 0,
+                    caught = false,
+                    items = {{
+                        [Symbol.iterator]() {{
+                            return {{
+                                next() {{
+                                    steps++;
+                                    return {{
+                                        value: {{}}
+                                    }};
+                                }},
+                                return () {{
+                                    closed++;
+                                    {cleanup}
+                                }}
+                            }};
+                        }}
+                    }};
+                try {{
+                    Math.sumPrecise(items);
+                }} catch (e) {{
+                    caught = e instanceof TypeError;
+                }}
+                caught && steps === 1 && closed === 1
+            "#
         ));
     }
     assert_true(
-        "let closed=0,caught=false,items={[Symbol.iterator](){return {next(){return {value:{}};},get return(){closed++;throw 8;}};}};try{Math.sumPrecise(items);}catch(e){caught=e instanceof TypeError;}caught && closed===1",
+        r#"
+            let closed = 0,
+                caught = false,
+                items = {
+                    [Symbol.iterator]() {
+                        return {
+                            next() {
+                                return {
+                                    value: {}
+                                };
+                            },
+                            get return() {
+                                closed++;
+                                throw 8;
+                            }
+                        };
+                    }
+                };
+            try {
+                Math.sumPrecise(items);
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && closed === 1
+        "#,
     );
     for result in [
         "throw 7;",
@@ -84,11 +256,55 @@ fn element_errors_close_but_step_errors_leave_the_iterator_open() {
         "return {done:false,get value(){throw 7;}};",
     ] {
         assert_true(&format!(
-            "let closed=0,caught=false,items={{[Symbol.iterator](){{return {{next(){{{result}}},return(){{closed++;return {{}};}}}};}}}};try{{Math.sumPrecise(items);}}catch(e){{caught=e===7;}}caught && closed===0"
+            r#"
+                let closed = 0,
+                    caught = false,
+                    items = {{
+                        [Symbol.iterator]() {{
+                            return {{
+                                next() {{
+                                    {result}
+                                }},
+                                return () {{
+                                    closed++;
+                                    return {{}};
+                                }}
+                            }};
+                        }}
+                    }};
+                try {{
+                    Math.sumPrecise(items);
+                }} catch (e) {{
+                    caught = e === 7;
+                }}
+                caught && closed === 0
+            "#
         ));
     }
     assert_true(
-        "let closed=0,caught=false,items={[Symbol.iterator](){return {next(){return 7;},return(){closed++;return {};}};}};try{Math.sumPrecise(items);}catch(e){caught=e instanceof TypeError;}caught && closed===0",
+        r#"
+            let closed = 0,
+                caught = false,
+                items = {
+                    [Symbol.iterator]() {
+                        return {
+                            next() {
+                                return 7;
+                            },
+                            return () {
+                                closed++;
+                                return {};
+                            }
+                        };
+                    }
+                };
+            try {
+                Math.sumPrecise(items);
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && closed === 0
+        "#,
     );
 }
 
@@ -118,7 +334,29 @@ fn host_failures_skip_cleanup_and_handlers_and_cannot_be_masked_during_close() {
         max_steps: Some(5000),
         ..Limits::default()
     });
-    limited.eval("let flag=0,closed=0,items={[Symbol.iterator](){return {next(){return {value:1};},return(){closed++;return {};}};}};").unwrap();
+    limited
+        .eval(
+            r#"
+                let flag = 0,
+                    closed = 0,
+                    items = {
+                        [Symbol.iterator]() {
+                            return {
+                                next() {
+                                    return {
+                                        value: 1
+                                    };
+                                },
+                                return () {
+                                    closed++;
+                                    return {};
+                                }
+                            };
+                        }
+                    };
+            "#,
+        )
+        .unwrap();
     assert!(matches!(
         limited.eval("try{Math.sumPrecise(items);}catch{flag=1;}finally{flag=2;}"),
         Err(Error::Limit { .. })
@@ -144,7 +382,14 @@ fn number_summation_does_not_use_the_host_bigint_magnitude_quota() {
 #[test]
 fn standard_descriptors_non_constructibility_and_intrinsic_roots_are_preserved() {
     assert_true(
-        "let d=Object.getOwnPropertyDescriptor(Math,'sumPrecise'),n=Object.getOwnPropertyDescriptor(d.value,'name'),l=Object.getOwnPropertyDescriptor(d.value,'length');d.writable && !d.enumerable && d.configurable && n.value==='sumPrecise' && !n.writable && !n.enumerable && n.configurable && l.value===1 && !l.writable && !l.enumerable && l.configurable && !Object.hasOwn(d.value,'prototype')",
+        r#"
+            let d = Object.getOwnPropertyDescriptor(Math, 'sumPrecise'),
+                n = Object.getOwnPropertyDescriptor(d.value, 'name'),
+                l = Object.getOwnPropertyDescriptor(d.value, 'length');
+            d.writable && !d.enumerable && d.configurable && n.value === 'sumPrecise' && !n.writable && !n
+                .enumerable && n.configurable && l.value === 1 && !l.writable && !l.enumerable && l
+                .configurable && !Object.hasOwn(d.value, 'prototype')
+        "#,
     );
     assert_true(
         "let caught=false;try{new Math.sumPrecise();}catch(e){caught=e instanceof TypeError;}caught",

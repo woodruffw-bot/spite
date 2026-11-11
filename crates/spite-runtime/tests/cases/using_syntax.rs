@@ -28,7 +28,27 @@ fn await_using_boundaries_abort_handlers_for_statements_and_loops() {
 
 #[test]
 fn actual_using_early_errors_are_catchable_in_eval_and_dynamic_functions() {
-    assert_eq!(Realm::default().eval("let caught=0;for(const source of ['using x=null;','{using x;}','switch(0){case 0:using x=null;}']){try{eval(source)}catch(e){if(e instanceof SyntaxError)caught++}}try{Function('x','using x=null;')}catch(e){if(e instanceof SyntaxError)caught++}caught"),Ok(Value::Number(4.0)));
+    assert_eq!(
+        Realm::default().eval(
+            r#"
+                let caught = 0;
+                for (const source of ['using x=null;', '{using x;}', 'switch(0){case 0:using x=null;}']) {
+                    try {
+                        eval(source)
+                    } catch (e) {
+                        if (e instanceof SyntaxError) caught++
+                    }
+                }
+                try {
+                    Function('x', 'using x=null;')
+                } catch (e) {
+                    if (e instanceof SyntaxError) caught++
+                }
+                caught
+            "#
+        ),
+        Ok(Value::Number(4.0))
+    );
 }
 
 #[test]

@@ -40,7 +40,25 @@ fn non_whitespace_and_surrogates_stop_trimming() {
 fn generic_conversion_runs_once_and_ignores_extra_arguments() {
     for (name, expected) in [("trim", "a"), ("trimStart", "a "), ("trimEnd", " a")] {
         assert_true(&format!(
-            "let log='';let r={{toString:()=>{{log+='s';return ' a ';}},valueOf:()=>{{throw 1;}}}},ignored={{toString:()=>{{throw 2;}}}};String.prototype.{name}.call(r,(log+='a',ignored))==='{expected}' && log==='as'"
+            r#"
+                let log = '';
+                let r = {{
+                        toString: () => {{
+                            log += 's';
+                            return ' a ';
+                        }},
+                        valueOf: () => {{
+                            throw 1;
+                        }}
+                    }},
+                    ignored = {{
+                        toString: () => {{
+                            throw 2;
+                        }}
+                    }};
+                String.prototype.{name}.call(r, (log += 'a', ignored)) === '{expected}' && log ===
+                    'as'
+            "#
         ));
         assert_true(&format!(
             "new String(' a ').{name}()==='{expected}' && String.prototype.{name}.call(123n)==='123' && String.prototype.{name}.call(true)==='true'"
@@ -70,7 +88,11 @@ fn generic_conversion_runs_once_and_ignores_extra_arguments() {
 fn mandatory_methods_have_standard_metadata_and_remain_rooted() {
     for name in ["trim", "trimStart", "trimEnd"] {
         assert_true(&format!(
-            "let d=Object.getOwnPropertyDescriptor(String.prototype,'{name}');d.writable && !d.enumerable && d.configurable && d.value.name==='{name}' && d.value.length===0 && !Object.hasOwn(d.value,'prototype')"
+            r#"
+                let d = Object.getOwnPropertyDescriptor(String.prototype, '{name}');
+                d.writable && !d.enumerable && d.configurable && d.value.name === '{name}' && d.value
+                    .length === 0 && !Object.hasOwn(d.value, 'prototype')
+            "#
         ));
         assert!(matches!(
             Realm::default().eval(&format!("new String.prototype.{name}()")),

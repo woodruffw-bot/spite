@@ -7,7 +7,10 @@ use crate::common::assert_true;
 #[test]
 fn operators_keep_precedence_grouping_and_right_associated_exponentiation() {
     assert_true(
-        "1+2*3+4===11 && 2**3**2+4===516 && 2**3+4-1===11 && (1+2)*3+4===13 && (1+2<<1&7^2|1)===5 && (10-3-2)===5 && (8/2/2)===2",
+        r#"
+            1 + 2 * 3 + 4 === 11 && 2 ** 3 ** 2 + 4 === 516 && 2 ** 3 + 4 - 1 === 11 && (1 + 2) * 3 + 4 ===
+                13 && (1 + 2 << 1 & 7 ^ 2 | 1) === 5 && (10 - 3 - 2) === 5 && (8 / 2 / 2) === 2
+        "#,
     );
     assert_true("let a={x:1},b={true:1};('x' in a in b)===true");
 }
@@ -15,20 +18,58 @@ fn operators_keep_precedence_grouping_and_right_associated_exponentiation() {
 #[test]
 fn right_operands_run_before_each_primitive_conversion_and_before_later_terms() {
     assert_true(
-        "let trace=[];function v(name,n){trace.push(name);return {valueOf(){trace.push(name+'v');return n;}}}let result=v('a',1)+v('b',2)+v('c',3);result===6 && trace.join(',')==='a,b,av,bv,c,cv'",
+        r#"
+            let trace = [];
+
+            function v(name, n) {
+                trace.push(name);
+                return {
+                    valueOf() {
+                        trace.push(name + 'v');
+                        return n;
+                    }
+                }
+            }
+            let result = v('a', 1) + v('b', 2) + v('c', 3);
+            result === 6 && trace.join(',') === 'a,b,av,bv,c,cv'
+        "#,
     );
     assert_true(
         "let n=0,a={valueOf(){return n}};function b(){n=2;return 1}function c(){n=10;return 1}a+b()+c()===4 && n===10",
     );
     assert_true(
-        "let calls=0;function late(){calls++;return 0}let caught=false;try{1n+2+late()}catch(e){caught=e instanceof TypeError}caught && calls===0",
+        r#"
+            let calls = 0;
+
+            function late() {
+                calls++;
+                return 0
+            }
+            let caught = false;
+            try {
+                1n + 2 + late()
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && calls === 0
+        "#,
     );
 }
 
 #[test]
 fn short_circuit_decisions_apply_to_each_accumulated_value() {
     assert_true(
-        "let calls=[];function v(n){calls.push(n);return n}let a=0&&v(1)&&v(2)||v(3);a===3 && calls.join(',')==='3' && (null??undefined??false)===false && ('x'||v(4)||v(5))==='x' && calls.join(',')==='3'",
+        r#"
+            let calls = [];
+
+            function v(n) {
+                calls.push(n);
+                return n
+            }
+            let a = 0 && v(1) && v(2) || v(3);
+            a === 3 && calls.join(',') === '3' && (null ?? undefined ?? false) === false && ('x' || v(4) ||
+                v(5)) === 'x' && calls.join(',') === '3'
+        "#,
     );
     assert_true("let calls=0;function v(){calls++;return 4}(((0&&1)||2)||v())===2 && calls===0");
 }

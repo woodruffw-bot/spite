@@ -7,14 +7,40 @@ use crate::common::assert_true;
 #[test]
 fn non_string_values_return_unchanged_without_coercion() {
     assert_true(
-        "eval()===undefined && eval(undefined)===undefined && eval(null)===null && eval(true)===true && eval(7)===7 && Object.is(eval(-0),-0) && Object.is(eval(NaN),NaN) && eval(3n)===3n",
+        r#"
+            eval() === undefined && eval(undefined) === undefined && eval(null) === null && eval(true) ===
+                true && eval(7) === 7 && Object.is(eval(-0), -0) && Object.is(eval(NaN), NaN) && eval(
+                3n) === 3n
+        "#,
     );
     assert_true(
-        "let value={toString(){throw 1;},valueOf(){throw 2;},[Symbol.toPrimitive](){throw 3;}};eval(value)===value && eval(Symbol.for('x'))===Symbol.for('x')",
+        r#"
+            let value = {
+                toString() {
+                    throw 1;
+                },
+                valueOf() {
+                    throw 2;
+                },
+                [Symbol.toPrimitive]() {
+                    throw 3;
+                }
+            };
+            eval(value) === value && eval(Symbol.for('x')) === Symbol.for('x')
+        "#,
     );
     assert_true("let value=new String('throw 7');eval(value)===value");
     assert_true(
-        "let value={};function f(){'use strict';return eval(value)===value && (0,eval)(value)===value && eval.call(null,value)===value && Reflect.apply(eval,undefined,[value])===value;}f()",
+        r#"
+            let value = {};
+
+            function f() {
+                'use strict';
+                return eval(value) === value && (0, eval)(value) === value && eval.call(null, value) ===
+                    value && Reflect.apply(eval, undefined, [value]) === value;
+            }
+            f()
+        "#,
     );
 }
 

@@ -35,11 +35,46 @@ fn object_class_static_and_private_methods_create_functions_without_running_bodi
 #[test]
 fn method_creation_after_an_awaited_key_completes_with_disposal_and_no_body_execution() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let release,gate=new Promise(resolve=>{release=resolve}),operand=0,disposed=0,finalized=0,caught=false,result;
-        let resource={[Symbol.dispose](){disposed++}},weak=new WeakRef(resource[Symbol.dispose]);
-        async function f(){using r=resource;try{return{*[await gate](){operand++;yield 1}}}finally{finalized++}}f().then(value=>{result=value},()=>{caught=true});delete resource[Symbol.dispose];release('g');
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let release, gate = new Promise(resolve => {
+                        release = resolve
+                    }),
+                    operand = 0,
+                    disposed = 0,
+                    finalized = 0,
+                    caught = false,
+                    result;
+                let resource = {
+                        [Symbol.dispose]() {
+                            disposed++
+                        }
+                    },
+                    weak = new WeakRef(resource[Symbol.dispose]);
+                async function f() {
+                    using r = resource;
+                    try {
+                        return {
+                            *[await gate]() {
+                                operand++;
+                                yield 1
+                            }
+                        }
+                    } finally {
+                        finalized++
+                    }
+                }
+                f().then(value => {
+                    result = value
+                }, () => {
+                    caught = true
+                });
+                delete resource[Symbol.dispose];
+                release('g');
+            "#,
+        )
+        .unwrap();
     loop {
         match realm.run_next_promise_job().unwrap() {
             PromiseJobOutcome::NoJob => break,

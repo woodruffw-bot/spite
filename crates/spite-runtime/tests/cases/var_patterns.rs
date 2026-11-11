@@ -7,7 +7,18 @@ use crate::common::assert_true;
 #[test]
 fn vars_hoist_all_names_allow_duplicates_and_keep_parameter_aliasing() {
     assert_true(
-        "let before=x;var {a:x,b:[y=x],...rest}={a:2,b:[]};before===undefined && x===2 && y===2 && Object.keys(rest).length===0",
+        r#"
+            let before = x;
+            var {
+                a: x,
+                b: [y = x],
+                ...rest
+            } = {
+                a: 2,
+                b: []
+            };
+            before === undefined && x === 2 && y === 2 && Object.keys(rest).length === 0
+        "#,
     );
     assert_true(
         "if(false)var {a:x,...rest}=missing;typeof x==='undefined' && typeof rest==='undefined'",
@@ -24,26 +35,124 @@ fn vars_hoist_all_names_allow_duplicates_and_keep_parameter_aliasing() {
 #[test]
 fn object_single_names_resolve_after_key_conversion_and_before_getv() {
     assert_true(
-        "var x=1;let object={x:0},source={get a(){delete object.x;return 7;}};with(object)var {a:x}=source;object.x===7 && x===1",
+        r#"
+            var x = 1;
+            let object = {
+                    x: 0
+                },
+                source = {
+                    get a() {
+                        delete object.x;
+                        return 7;
+                    }
+                };
+            with(object) var {
+                a: x
+            } = source;
+            object.x === 7 && x === 1
+        "#,
     );
     assert_true(
-        "var x=1;let log=[],written,key={[Symbol.toPrimitive](){log.push('key');return 'a';}},source={get a(){log.push('get');return 7;}},object={set x(value){log.push('set');written=value;},[Symbol.unscopables]:{get x(){log.push('resolve');return false;}}};function rhs(){log.push('rhs');return source;}with(object)var {[key]:x}=rhs();written===7 && x===1 && log.join(',')==='rhs,key,resolve,get,set'",
+        r#"
+            var x = 1;
+            let log = [],
+                written, key = {
+                    [Symbol.toPrimitive]() {
+                        log.push('key');
+                        return 'a';
+                    }
+                },
+                source = {
+                    get a() {
+                        log.push('get');
+                        return 7;
+                    }
+                },
+                object = {
+                    set x(value) {
+                        log.push('set');
+                        written = value;
+                    },
+                    [Symbol.unscopables]: {
+                        get x() {
+                            log.push('resolve');
+                            return false;
+                        }
+                    }
+                };
+
+            function rhs() {
+                log.push('rhs');
+                return source;
+            }
+            with(object) var {
+                [key]: x
+            } = rhs();
+            written === 7 && x === 1 && log.join(',') === 'rhs,key,resolve,get,set'
+        "#,
     );
     assert_true(
         "var x=1;let object={x:0};with(object)var {a:x=(delete object.x,7)}={};object.x===7 && x===1",
     );
     assert_true(
-        "var x=1;let object={x:0},source={get a(){delete object.x;return {b:7};}};with(object)var {a:{b:x}}=source;x===7 && !('x' in object)",
+        r#"
+            var x = 1;
+            let object = {
+                    x: 0
+                },
+                source = {
+                    get a() {
+                        delete object.x;
+                        return {
+                            b: 7
+                        };
+                    }
+                };
+            with(object) var {
+                a: {
+                    b: x
+                }
+            } = source;
+            x === 7 && !('x' in object)
+        "#,
     );
 }
 
 #[test]
 fn pattern_rhs_evaluation_precedes_binding_lookup_while_identifier_rhs_follows_it() {
     assert_true(
-        "var x=1;let object={x:0};function rhs(){delete object.x;return{x:7};}with(object)var {x}=rhs();x===7 && !('x' in object)",
+        r#"
+            var x = 1;
+            let object = {
+                x: 0
+            };
+
+            function rhs() {
+                delete object.x;
+                return {
+                    x: 7
+                };
+            }
+            with(object) var {
+                x
+            } = rhs();
+            x === 7 && !('x' in object)
+        "#,
     );
     assert_true(
-        "var x=1;let object={x:0};function rhs(){delete object.x;return 7;}with(object)var x=rhs();x===1 && object.x===7",
+        r#"
+            var x = 1;
+            let object = {
+                x: 0
+            };
+
+            function rhs() {
+                delete object.x;
+                return 7;
+            }
+            with(object) var x = rhs();
+            x === 1 && object.x === 7
+        "#,
     );
     assert_true(
         "var x=1;let object={x:0,[Symbol.unscopables]:{x:true}};with(object)var {a:x}={a:7};x===7 && object.x===0",
@@ -53,44 +162,235 @@ fn pattern_rhs_evaluation_precedes_binding_lookup_while_identifier_rhs_follows_i
 #[test]
 fn array_single_names_resolve_before_steps_and_keep_the_original_binding_object() {
     assert_true(
-        "var x=1;let log=[],object={x:0,[Symbol.unscopables]:{get x(){log.push('resolve');return false;}}},iterator={get next(){log.push('next');return function(){log.push('step');delete object.x;return{done:false,value:7};};},return(){log.push('return');return{};},[Symbol.iterator](){log.push('iterator');return this;}};with(object)var [x]=iterator;object.x===7 && x===1 && log.join(',')==='iterator,next,resolve,step,return'",
+        r#"
+            var x = 1;
+            let log = [],
+                object = {
+                    x: 0,
+                    [Symbol.unscopables]: {
+                        get x() {
+                            log.push('resolve');
+                            return false;
+                        }
+                    }
+                },
+                iterator = {
+                    get next() {
+                        log.push('next');
+                        return function() {
+                            log.push('step');
+                            delete object.x;
+                            return {
+                                done: false,
+                                value: 7
+                            };
+                        };
+                    },
+                    return () {
+                        log.push('return');
+                        return {};
+                    },
+                    [Symbol.iterator]() {
+                        log.push('iterator');
+                        return this;
+                    }
+                };
+            with(object) var [x] = iterator;
+            object.x === 7 && x === 1 && log.join(',') === 'iterator,next,resolve,step,return'
+        "#,
     );
     assert_true(
-        "var x=1;let object={x:0},iterator={next(){return{done:false,value:undefined};},return(){return{};},[Symbol.iterator](){return this;}};with(object)var [x=(delete object.x,7)]=iterator;object.x===7 && x===1",
+        r#"
+            var x = 1;
+            let object = {
+                    x: 0
+                },
+                iterator = {
+                    next() {
+                        return {
+                            done: false,
+                            value: undefined
+                        };
+                    },
+                    return () {
+                        return {};
+                    },
+                    [Symbol.iterator]() {
+                        return this;
+                    }
+                };
+            with(object) var [x = (delete object.x, 7)] = iterator;
+            object.x === 7 && x === 1
+        "#,
     );
     assert_true(
-        "var x=1;let log=[],object={x:0,[Symbol.unscopables]:{get x(){log.push('resolve');return false;}}},iterator={next(){log.push('step');return{done:true};},[Symbol.iterator](){return this;}};with(object)var [x,x]=iterator;object.x===undefined && x===1 && log.join(',')==='resolve,step,resolve'",
+        r#"
+            var x = 1;
+            let log = [],
+                object = {
+                    x: 0,
+                    [Symbol.unscopables]: {
+                        get x() {
+                            log.push('resolve');
+                            return false;
+                        }
+                    }
+                },
+                iterator = {
+                    next() {
+                        log.push('step');
+                        return {
+                            done: true
+                        };
+                    },
+                    [Symbol.iterator]() {
+                        return this;
+                    }
+                };
+            with(object) var [x, x] = iterator;
+            object.x === undefined && x === 1 && log.join(',') === 'resolve,step,resolve'
+        "#,
     );
 }
 
 #[test]
 fn rest_identifiers_resolve_before_copying_or_consuming_and_nested_rest_recurses() {
     assert_true(
-        "var rest=1;let object={rest:0},source={get a(){delete object.rest;return 7;}};with(object)var {...rest}=source;rest===1 && object.rest.a===7",
+        r#"
+            var rest = 1;
+            let object = {
+                    rest: 0
+                },
+                source = {
+                    get a() {
+                        delete object.rest;
+                        return 7;
+                    }
+                };
+            with(object) var {
+                ...rest
+            } = source;
+            rest === 1 && object.rest.a === 7
+        "#,
     );
     assert_true(
-        "var rest=1;let object={rest:0},n=0,iterator={next(){n++;delete object.rest;return n===1?{done:false,value:7}:{done:true};},[Symbol.iterator](){return this;}};with(object)var [...rest]=iterator;rest===1 && Array.isArray(object.rest) && object.rest[0]===7",
+        r#"
+            var rest = 1;
+            let object = {
+                    rest: 0
+                },
+                n = 0,
+                iterator = {
+                    next() {
+                        n++;
+                        delete object.rest;
+                        return n === 1 ? {
+                            done: false,
+                            value: 7
+                        } : {
+                            done: true
+                        };
+                    },
+                    [Symbol.iterator]() {
+                        return this;
+                    }
+                };
+            with(object) var [...rest] = iterator;
+            rest === 1 && Array.isArray(object.rest) && object.rest[0] === 7
+        "#,
     );
     assert_true("var [x,...{0:y,length}]=[1,2,3];x===1 && y===2 && length===2");
     assert_true(
-        "let s=Symbol('x'),other=Symbol('x');var {[s]:x,...rest}={a:1,[s]:2,[other]:3};x===2 && !(s in rest) && rest[other]===3 && rest.a===1",
+        r#"
+            let s = Symbol('x'),
+                other = Symbol('x');
+            var {
+                [s]: x, ...rest
+            } = {
+                a: 1,
+                [s]: 2,
+                [other]: 3
+            };
+            x === 2 && !(s in rest) && rest[other] === 3 && rest.a === 1
+        "#,
     );
 }
 
 #[test]
 fn loops_reuse_var_environments_and_assignment_failures_close_active_iterators() {
     assert_true(
-        "let fs=[];for(var [i]=[0],{j}={j:10};i<3;i++,j++)fs.push(()=>i+j);i===3 && j===13 && fs[0]()===16 && fs[2]()===16",
+        r#"
+            let fs = [];
+            for (var [i] = [0], {
+                    j
+                } = {
+                    j: 10
+                }; i < 3; i++, j++) fs.push(() => i + j);
+            i === 3 && j === 13 && fs[0]() === 16 && fs[2]() === 16
+        "#,
     );
     assert_true(
         "let fs=[];for(var {x} of [{x:1},{x:2}])fs.push(()=>x);x===2 && fs[0]()===2 && fs[1]()===2",
     );
     assert_true("for(var [first,...rest] in {ab:1,cd:2}) ;first==='c' && rest.join('')==='d'");
     assert_true(
-        "'use strict';let error,closed=0,iterator={next(){return{done:false,value:7};},return(){closed++;throw 8;},[Symbol.iterator](){return this;}};try{var [undefined]=iterator;}catch(e){error=e instanceof TypeError;}error && closed===1 && undefined===void 0",
+        r#"
+            'use strict';
+            let error, closed = 0,
+                iterator = {
+                    next() {
+                        return {
+                            done: false,
+                            value: 7
+                        };
+                    },
+                    return () {
+                        closed++;
+                        throw 8;
+                    },
+                    [Symbol.iterator]() {
+                        return this;
+                    }
+                };
+            try {
+                var [undefined] = iterator;
+            } catch (e) {
+                error = e instanceof TypeError;
+            }
+            error && closed === 1 && undefined === void 0
+        "#,
     );
     assert_true(
-        "'use strict';let error,closed=0,iterator={next(){return{done:false,value:{a:7}};},return(){closed++;throw 8;},[Symbol.iterator](){return this;}};try{for(var {a:undefined} of iterator) ;}catch(e){error=e instanceof TypeError;}error && closed===1",
+        r#"
+            'use strict';
+            let error, closed = 0,
+                iterator = {
+                    next() {
+                        return {
+                            done: false,
+                            value: {
+                                a: 7
+                            }
+                        };
+                    },
+                    return () {
+                        closed++;
+                        throw 8;
+                    },
+                    [Symbol.iterator]() {
+                        return this;
+                    }
+                };
+            try {
+                for (var {
+                        a: undefined
+                    }
+                    of iterator);
+            } catch (e) {
+                error = e instanceof TypeError;
+            }
+            error && closed === 1
+        "#,
     );
     assert_true(
         "var x=9;let object={x:0};with(object)for(var [x] of [[1],[2]]) ;object.x===2 && x===9",
@@ -100,16 +400,109 @@ fn loops_reuse_var_environments_and_assignment_failures_close_active_iterators()
 #[test]
 fn elisions_step_failures_and_partial_initialization_follow_shared_iterator_rules() {
     assert_true(
-        "let steps=0,values=0,closed=0,iterator={next(){steps++;return{done:false,get value(){values++;return 7;}};},return(){closed++;return{};},[Symbol.iterator](){return this;}};var [,x,,]=iterator;x===7 && steps===3 && values===1 && closed===1",
+        r#"
+            let steps = 0,
+                values = 0,
+                closed = 0,
+                iterator = {
+                    next() {
+                        steps++;
+                        return {
+                            done: false,
+                            get value() {
+                                values++;
+                                return 7;
+                            }
+                        };
+                    },
+                    return () {
+                        closed++;
+                        return {};
+                    },
+                    [Symbol.iterator]() {
+                        return this;
+                    }
+                };
+            var [, x, , ] = iterator;
+            x === 7 && steps === 3 && values === 1 && closed === 1
+        "#,
     );
     assert_true(
-        "let error={},closed=0,result,iterator={next(){return{done:false,get value(){throw error;}};},return(){closed++;return{};},[Symbol.iterator](){return this;}};try{var [x]=iterator;}catch(e){result=e===error;}result && closed===0 && x===undefined",
+        r#"
+            let error = {},
+                closed = 0,
+                result, iterator = {
+                    next() {
+                        return {
+                            done: false,
+                            get value() {
+                                throw error;
+                            }
+                        };
+                    },
+                    return () {
+                        closed++;
+                        return {};
+                    },
+                    [Symbol.iterator]() {
+                        return this;
+                    }
+                };
+            try {
+                var [x] = iterator;
+            } catch (e) {
+                result = e === error;
+            }
+            result && closed === 0 && x === undefined
+        "#,
     );
     assert_true(
-        "let error={},closed=0,result,iterator={next(){return{done:false,value:undefined};},return(){closed++;throw 8;},[Symbol.iterator](){return this;}};function fail(){throw error;}try{var [x=fail()]=iterator;}catch(e){result=e===error;}result && closed===1 && x===undefined",
+        r#"
+            let error = {},
+                closed = 0,
+                result, iterator = {
+                    next() {
+                        return {
+                            done: false,
+                            value: undefined
+                        };
+                    },
+                    return () {
+                        closed++;
+                        throw 8;
+                    },
+                    [Symbol.iterator]() {
+                        return this;
+                    }
+                };
+
+            function fail() {
+                throw error;
+            }
+            try {
+                var [x = fail()] = iterator;
+            } catch (e) {
+                result = e === error;
+            }
+            result && closed === 1 && x === undefined
+        "#,
     );
     assert_true(
-        "let result;try{var {a,b=missing,c}={a:1};}catch(e){result=e instanceof ReferenceError;}result && a===1 && b===undefined && c===undefined",
+        r#"
+            let result;
+            try {
+                var {
+                    a,
+                    b = missing,
+                    c
+                } = {
+                    a: 1
+                };
+            } catch (e) {
+                result = e instanceof ReferenceError;
+            }
+            result && a === 1 && b === undefined && c === undefined
+        "#,
     );
 }
 
@@ -144,7 +537,44 @@ fn opt_in_abort_skips_language_cleanup_and_restores_with_and_loop_scopes() {
         max_steps: Some(5000),
         ..Limits::default()
     });
-    realm.eval("let flag=0,closed=0,inner={next(){return{done:false,value:1};},return(){closed++;return{};},[Symbol.iterator](){return this;}},outer={next(){return{done:false,value:inner};},return(){closed++;return{};},[Symbol.iterator](){return this;}};").unwrap();
+    realm
+        .eval(
+            r#"
+                let flag = 0,
+                    closed = 0,
+                    inner = {
+                        next() {
+                            return {
+                                done: false,
+                                value: 1
+                            };
+                        },
+                        return () {
+                            closed++;
+                            return {};
+                        },
+                        [Symbol.iterator]() {
+                            return this;
+                        }
+                    },
+                    outer = {
+                        next() {
+                            return {
+                                done: false,
+                                value: inner
+                            };
+                        },
+                        return () {
+                            closed++;
+                            return {};
+                        },
+                        [Symbol.iterator]() {
+                            return this;
+                        }
+                    };
+            "#,
+        )
+        .unwrap();
     assert!(matches!(
         realm.eval(
             "try{with({flag:7})for(var [...rest] of outer)flag=3;}catch{flag=1;}finally{flag=2;}"

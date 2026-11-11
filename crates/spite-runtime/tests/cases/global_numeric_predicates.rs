@@ -51,7 +51,21 @@ fn conversion_uses_number_hint_and_preserves_abrupt_results() {
     for name in ["isFinite", "isNaN"] {
         let mut realm = Realm::default();
         let source = format!(
-            "let order=''; let o={{valueOf:function(){{order+='v';return {{}};}},toString:function(){{order+='s';return '7';}}}}; {name}(o); order==='vs'"
+            r#"
+                let order = '';
+                let o = {{
+                    valueOf: function() {{
+                        order += 'v';
+                        return {{}};
+                    }},
+                    toString: function() {{
+                        order += 's';
+                        return '7';
+                    }}
+                }};
+                {name}(o);
+                order === 'vs'
+            "#
         );
         assert_eq!(realm.eval(&source), Ok(Value::Boolean(true)));
         assert_eq!(
@@ -82,7 +96,21 @@ fn conversion_uses_number_hint_and_preserves_abrupt_results() {
         }
         // Argument evaluation still runs left-to-right; extra values and this
         // are not themselves coerced by either builtin.
-        assert_eq!(realm.eval(&format!("order='';let unused={{valueOf:()=>{{throw 11;}}}};{name}.call(unused,(order+='a',1),(order+='b',unused));order==='ab'")),Ok(Value::Boolean(true)));
+        assert_eq!(
+            realm.eval(&format!(
+                r#"
+                    order = '';
+                    let unused = {{
+                        valueOf: () => {{
+                            throw 11;
+                        }}
+                    }};
+                    {name}.call(unused, (order += 'a', 1), (order += 'b', unused));
+                    order === 'ab'
+                "#
+            )),
+            Ok(Value::Boolean(true))
+        );
         assert_eq!(realm.eval("after=3"), Ok(Value::Number(3.0)));
     }
 }

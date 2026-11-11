@@ -7,10 +7,20 @@ use crate::common::assert_true;
 #[test]
 fn primitives_omissions_and_well_formed_utf16_quoting_are_exact() {
     assert_true(
-        "JSON.stringify(null)==='null' && JSON.stringify(true)==='true' && JSON.stringify(false)==='false' && JSON.stringify(-0)==='0' && JSON.stringify(NaN)==='null' && JSON.stringify(Infinity)==='null' && JSON.stringify(-Infinity)==='null' && JSON.stringify(undefined)===undefined && JSON.stringify(Symbol())===undefined && JSON.stringify(()=>{})===undefined",
+        r#"
+            JSON.stringify(null) === 'null' && JSON.stringify(true) === 'true' && JSON.stringify(false) ===
+                'false' && JSON.stringify(-0) === '0' && JSON.stringify(NaN) === 'null' && JSON.stringify(
+                    Infinity) === 'null' && JSON.stringify(-Infinity) === 'null' && JSON.stringify(
+                    undefined) === undefined && JSON.stringify(Symbol()) === undefined && JSON.stringify(
+                () => {}) === undefined
+        "#,
     );
     assert_true(
-        r#"JSON.stringify('\u0000\b\t\n\f\r"\\/')==='"\\u0000\\b\\t\\n\\f\\r\\"\\\\/"' && JSON.stringify('\uD800x\uDC00')==='"\\ud800x\\udc00"' && JSON.stringify('\uD800\uDC00')==='"\uD800\uDC00"' && JSON.stringify('\u2028\u2029')==='"\u2028\u2029"'"#,
+        r#"
+            JSON.stringify('\u0000\b\t\n\f\r"\\/') === '"\\u0000\\b\\t\\n\\f\\r\\"\\\\/"' && JSON
+                .stringify('\uD800x\uDC00') === '"\\ud800x\\udc00"' && JSON.stringify('\uD800\uDC00') ===
+                '"\uD800\uDC00"' && JSON.stringify('\u2028\u2029') === '"\u2028\u2029"'
+        "#,
     );
     assert_true(
         "JSON.stringify([undefined,Symbol(),()=>{},NaN,Infinity])==='[null,null,null,null,null]' && JSON.stringify({a:undefined,b:Symbol(),c(){},d:null})==='{\"d\":null}'",
@@ -20,35 +30,134 @@ fn primitives_omissions_and_well_formed_utf16_quoting_are_exact() {
 #[test]
 fn object_keys_and_array_lengths_are_snapshotted_but_values_are_read_live() {
     assert_true(
-        r#"let value={z:1,2:2,1:1,get a(){delete this.b;this.c=4;return 3;},b:2};value[Symbol()]=5;Object.defineProperty(value,'hidden',{value:6});JSON.stringify(value)==='{"1":1,"2":2,"z":1,"a":3}'"#,
+        r#"
+            let value = {
+                z: 1,
+                2: 2,
+                1: 1,
+                get a() {
+                    delete this.b;
+                    this.c = 4;
+                    return 3;
+                },
+                b: 2
+            };
+            value[Symbol()] = 5;
+            Object.defineProperty(value, 'hidden', {
+                value: 6
+            });
+            JSON.stringify(value) === '{"1":1,"2":2,"z":1,"a":3}'
+        "#,
     );
     assert_true(
-        r#"let value=[1,2,3];Object.defineProperty(value,'0',{get(){value.length=1;value[5]=9;return 1;}});JSON.stringify(value)==='[1,null,null]' && value.length===6"#,
+        r#"
+            let value = [1, 2, 3];
+            Object.defineProperty(value, '0', {
+                get() {
+                    value.length = 1;
+                    value[5] = 9;
+                    return 1;
+                }
+            });
+            JSON.stringify(value) === '[1,null,null]' && value.length === 6
+        "#,
     );
     assert_true(
         "Array.prototype[1]=8;let value=[1,,3];value.extra=9;JSON.stringify(value)==='[1,8,3]'",
     );
     assert_true(
-        r#"let trace='',value={get a(){trace+='a';return 1;},get b(){trace+='b';return 2;}};JSON.stringify(value,function(k,v){trace+='r'+k;return v;})==='{"a":1,"b":2}' && trace==='rara'+'brb'"#,
+        r#"
+            let trace = '',
+                value = {
+                    get a() {
+                        trace += 'a';
+                        return 1;
+                    },
+                    get b() {
+                        trace += 'b';
+                        return 2;
+                    }
+                };
+            JSON.stringify(value, function(k, v) {
+                trace += 'r' + k;
+                return v;
+            }) === '{"a":1,"b":2}' && trace === 'rara' + 'brb'
+        "#,
     );
 }
 
 #[test]
 fn tojson_then_replacer_then_wrapper_conversion_follow_the_spec_order() {
     assert_true(
-        r#"let trace='',value={toJSON(k){trace+='to:'+k+';';return new Number(2);}},replacer=function(k,v){trace+='replace:'+k+';';let result=new String('yes');result[Symbol.toPrimitive]=function(hint){trace+=hint;return 'done';};return result;};JSON.stringify(value,replacer)==='"done"' && trace==='to:;replace:;string'"#,
+        r#"
+            let trace = '',
+                value = {
+                    toJSON(k) {
+                        trace += 'to:' + k + ';';
+                        return new Number(2);
+                    }
+                },
+                replacer = function(k, v) {
+                    trace += 'replace:' + k + ';';
+                    let result = new String('yes');
+                    result[Symbol.toPrimitive] = function(hint) {
+                        trace += hint;
+                        return 'done';
+                    };
+                    return result;
+                };
+            JSON.stringify(value, replacer) === '"done"' && trace === 'to:;replace:;string'
+        "#,
     );
     assert_true(
-        "let trace='',f=function(){};f.toJSON=function(k){trace+=k;return 7;};JSON.stringify({x:f})==='{\"x\":7}' && trace==='x'",
+        r#"
+            let trace = '',
+                f = function() {};
+            f.toJSON = function(k) {
+                trace += k;
+                return 7;
+            };
+            JSON.stringify({
+                x: f
+            }) === '{"x":7}' && trace === 'x'
+        "#,
     );
     assert_true(
-        "let calls=0,value={toJSON(k){if(this!==value || arguments.length!==1 || k!=='')throw 7;calls++;return {a:1};}};JSON.stringify(value)==='{\"a\":1}' && calls===1",
+        r#"
+            let calls = 0,
+                value = {
+                    toJSON(k) {
+                        if (this !== value || arguments.length !== 1 || k !== '') throw 7;
+                        calls++;
+                        return {
+                            a: 1
+                        };
+                    }
+                };
+            JSON.stringify(value) === '{"a":1}' && calls === 1
+        "#,
     );
     assert_true(
-        "let called=false,result=new Boolean(false);result.valueOf=function(){called=true;return true;};JSON.stringify(result)==='false' && !called",
+        r#"
+            let called = false,
+                result = new Boolean(false);
+            result.valueOf = function() {
+                called = true;
+                return true;
+            };
+            JSON.stringify(result) === 'false' && !called
+        "#,
     );
     assert_true(
-        "let called=false,result=new Number(3);result.valueOf=function(){called=true;return 4;};JSON.stringify(result)==='4' && called",
+        r#"
+            let called = false,
+                result = new Number(3);
+            result.valueOf = function() {
+                called = true;
+                return 4;
+            };
+            JSON.stringify(result) === '4' && called
+        "#,
     );
     assert_true(
         "JSON.stringify(Object(Symbol()))==='{}' && JSON.stringify({toJSON:3})==='{\"toJSON\":3}'",
@@ -58,10 +167,39 @@ fn tojson_then_replacer_then_wrapper_conversion_follow_the_spec_order() {
 #[test]
 fn replacer_callback_holders_root_wrapper_and_returned_values_are_preserved() {
     assert_true(
-        r#"let root={a:[1,2]},trace=[],wrapper;let text=JSON.stringify(root,function(k,v){if(arguments.length!==2)throw 7;trace.push(k);if(k===''){wrapper=this;if(this['']!==root)throw 8;}if(k==='a' && this!==root)throw 9;if(k==='0'){if(this!==root.a)throw 10;return undefined;}return v;});text==='{"a":[null,2]}' && trace.join(',')===',a,0,1' && Object.getPrototypeOf(wrapper)===Object.prototype && Object.keys(wrapper).join(',')===''"#,
+        r#"
+            let root = {
+                    a: [1, 2]
+                },
+                trace = [],
+                wrapper;
+            let text = JSON.stringify(root, function(k, v) {
+                if (arguments.length !== 2) throw 7;
+                trace.push(k);
+                if (k === '') {
+                    wrapper = this;
+                    if (this[''] !== root) throw 8;
+                }
+                if (k === 'a' && this !== root) throw 9;
+                if (k === '0') {
+                    if (this !== root.a) throw 10;
+                    return undefined;
+                }
+                return v;
+            });
+            text === '{"a":[null,2]}' && trace.join(',') === ',a,0,1' && Object.getPrototypeOf(wrapper) ===
+                Object.prototype && Object.keys(wrapper).join(',') === ''
+        "#,
     );
     assert_true(
-        "JSON.stringify({a:1,b:2},function(k,v){return k==='a'?undefined:v;})==='{\"b\":2}' && JSON.stringify(1,()=>undefined)===undefined",
+        r#"
+            JSON.stringify({
+                a: 1,
+                b: 2
+            }, function(k, v) {
+                return k === 'a' ? undefined : v;
+            }) === '{"b":2}' && JSON.stringify(1, () => undefined) === undefined
+        "#,
     );
     assert_true(
         "Object.defineProperty(Object.prototype,'',{set(){throw 7;}});JSON.stringify(1,(k,v)=>v)==='1'",
@@ -74,13 +212,56 @@ fn replacer_callback_holders_root_wrapper_and_returned_values_are_preserved() {
 #[test]
 fn replacer_property_lists_convert_deduplicate_and_include_inherited_properties() {
     assert_true(
-        r#"let object={a:1,b:2,2:3};Object.defineProperty(object,'hidden',{value:4});Object.setPrototypeOf(object,{inherited:5});JSON.stringify(object,['b',2,'b','hidden','inherited',true,null,Symbol()])==='{"b":2,"2":3,"hidden":4,"inherited":5}' && JSON.stringify(object,[])==='{}'"#,
+        r#"
+            let object = {
+                a: 1,
+                b: 2,
+                2: 3
+            };
+            Object.defineProperty(object, 'hidden', {
+                value: 4
+            });
+            Object.setPrototypeOf(object, {
+                inherited: 5
+            });
+            JSON.stringify(object, ['b', 2, 'b', 'hidden', 'inherited', true, null, Symbol()]) ===
+                '{"b":2,"2":3,"hidden":4,"inherited":5}' && JSON.stringify(object, []) === '{}'
+        "#,
     );
     assert_true(
-        r#"let trace='',item=new Number(1);item.toString=function(){trace+='convert';return 'a';};let list=[item,'a',new String('b')];let gap=new Number(2);gap.valueOf=function(){trace+='space';return 2;};JSON.stringify({a:1,b:2},list,gap)==='{\n  "a": 1,\n  "b": 2\n}' && trace==='convertspace'"#,
+        r#"
+            let trace = '',
+                item = new Number(1);
+            item.toString = function() {
+                trace += 'convert';
+                return 'a';
+            };
+            let list = [item, 'a', new String('b')];
+            let gap = new Number(2);
+            gap.valueOf = function() {
+                trace += 'space';
+                return 2;
+            };
+            JSON.stringify({
+                a: 1,
+                b: 2
+            }, list, gap) === '{\n  "a": 1,\n  "b": 2\n}' && trace === 'convertspace'
+        "#,
     );
     assert_true(
-        "let list=['a','b'];Object.defineProperty(list,'0',{get(){list.length=1;return 'a';}});JSON.stringify({a:1,b:2},list)==='{\"a\":1}'",
+        r#"
+            let list = ['a', 'b'];
+            Object.defineProperty(list, '0', {
+                get() {
+                    list.length = 1;
+                    return 'a';
+                }
+            });
+            JSON.stringify({
+                a: 1,
+                b: 2
+            }, list) === '{"a":1}'
+        "#,
     );
     assert_true(
         "JSON.stringify([1,2],[])==='[1,2]' && JSON.stringify({a:{a:1,b:2},b:3},['a'])==='{\"a\":{\"a\":1}}'",
@@ -93,7 +274,14 @@ fn replacer_property_lists_convert_deduplicate_and_include_inherited_properties(
 #[test]
 fn indentation_clamps_numbers_and_truncates_string_code_units() {
     assert_true(
-        r#"JSON.stringify({a:[1,{}]},null,2)==='{\n  "a": [\n    1,\n    {}\n  ]\n}' && JSON.stringify([],null,2)==='[]' && JSON.stringify({},null,2)==='{}' && JSON.stringify({a:1},null,1.9)==='{\n "a": 1\n}'"#,
+        r#"
+            JSON.stringify({
+                    a: [1, {}]
+                }, null, 2) === '{\n  "a": [\n    1,\n    {}\n  ]\n}' && JSON.stringify([], null, 2) ===
+                '[]' && JSON.stringify({}, null, 2) === '{}' && JSON.stringify({
+                    a: 1
+                }, null, 1.9) === '{\n "a": 1\n}'
+        "#,
     );
     assert_true(
         r#"JSON.stringify([1],null,Infinity)==='[\n          1\n]' && JSON.stringify([1],null,-Infinity)==='[1]' && JSON.stringify([1],null,NaN)==='[1]'"#,
@@ -125,7 +313,16 @@ fn bigint_hooks_raw_embedding_and_branded_values_obey_hook_order() {
         );
     }
     assert_true(
-        "BigInt.prototype.toJSON=function(k){'use strict';if(typeof this!=='bigint' || k!=='x')throw 7;return JSON.rawJSON(this);};JSON.stringify({x:9007199254740993n})==='{\"x\":9007199254740993}'",
+        r#"
+            BigInt.prototype.toJSON = function(k) {
+                'use strict';
+                if (typeof this !== 'bigint' || k !== 'x') throw 7;
+                return JSON.rawJSON(this);
+            };
+            JSON.stringify({
+                x: 9007199254740993n
+            }) === '{"x":9007199254740993}'
+        "#,
     );
     assert_true(
         "JSON.stringify({x:9007199254740993n},(k,v)=>typeof v==='bigint'?JSON.rawJSON(v):v)==='{\"x\":9007199254740993}'",
@@ -134,7 +331,16 @@ fn bigint_hooks_raw_embedding_and_branded_values_obey_hook_order() {
         r#"JSON.stringify([JSON.rawJSON('1E+02'),JSON.rawJSON('1e400'),JSON.rawJSON('"\\uD800"')])==='[1E+02,1e400,"\\uD800"]'"#,
     );
     assert_true(
-        "let raw=JSON.rawJSON('1'),called=0;JSON.stringify(raw,function(k,v){called++;return 'x';})==='\"x\"' && called===1 && JSON.stringify({...raw})==='{\"rawJSON\":\"1\"}'",
+        r#"
+            let raw = JSON.rawJSON('1'),
+                called = 0;
+            JSON.stringify(raw, function(k, v) {
+                called++;
+                return 'x';
+            }) === '"x"' && called === 1 && JSON.stringify({
+                ...raw
+            }) === '{"rawJSON":"1"}'
+        "#,
     );
 }
 
@@ -178,10 +384,42 @@ fn abrupt_getters_hooks_replacers_and_nested_serialization_keep_identity() {
         ));
     }
     assert_true(
-        "let number=new Number(1),marker={},caught=false;number.toString=function(){throw marker;};try{JSON.stringify(1,[number]);}catch(e){caught=e===marker;}caught",
+        r#"
+            let number = new Number(1),
+                marker = {},
+                caught = false;
+            number.toString = function() {
+                throw marker;
+            };
+            try {
+                JSON.stringify(1, [number]);
+            } catch (e) {
+                caught = e === marker;
+            }
+            caught
+        "#,
     );
     assert_true(
-        "let trace='',value={get a(){trace+='a';throw 7;},get b(){trace+='b';return 2;}};let caught=false;try{JSON.stringify(value);}catch(e){caught=e===7;}caught && trace==='a'",
+        r#"
+            let trace = '',
+                value = {
+                    get a() {
+                        trace += 'a';
+                        throw 7;
+                    },
+                    get b() {
+                        trace += 'b';
+                        return 2;
+                    }
+                };
+            let caught = false;
+            try {
+                JSON.stringify(value);
+            } catch (e) {
+                caught = e === 7;
+            }
+            caught && trace === 'a'
+        "#,
     );
     assert_true(
         "JSON.stringify({a:1},function(k,v){return k==='a'?JSON.stringify([v]):v;})==='{\"a\":\"[1]\"}'",
@@ -191,7 +429,13 @@ fn abrupt_getters_hooks_replacers_and_nested_serialization_keep_identity() {
 #[test]
 fn complete_metadata_reflection_and_saved_functions_survive_collection() {
     assert_true(
-        "JSON.stringify.name==='stringify' && JSON.stringify.length===3 && Object.getPrototypeOf(JSON.stringify)===Function.prototype && !Object.hasOwn(JSON.stringify,'prototype') && Object.getOwnPropertyNames(JSON).length===4 && Object.getOwnPropertySymbols(JSON).length===1 && Object.assign({},JSON).parse===undefined && Object.keys(JSON).length===0 && Object.freeze(JSON)===JSON && Object.isFrozen(JSON)",
+        r#"
+            JSON.stringify.name === 'stringify' && JSON.stringify.length === 3 && Object.getPrototypeOf(
+                    JSON.stringify) === Function.prototype && !Object.hasOwn(JSON.stringify,
+                'prototype') && Object.getOwnPropertyNames(JSON).length === 4 && Object
+                .getOwnPropertySymbols(JSON).length === 1 && Object.assign({}, JSON).parse === undefined &&
+                Object.keys(JSON).length === 0 && Object.freeze(JSON) === JSON && Object.isFrozen(JSON)
+        "#,
     );
     assert!(matches!(
         Realm::default().eval("new JSON.stringify(1)"),

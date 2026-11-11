@@ -24,7 +24,45 @@ fn async_arrows_have_standard_metadata_source_and_no_construction_capability() {
 #[test]
 fn expression_and_block_bodies_return_fresh_promises_and_reject_language_failures() {
     let mut realm = Realm::default();
-    realm.eval("let seen=[],marker={},original=Promise.resolve(7);let f=async x=>x+1,g=async()=>{return 4},h=async()=>{throw marker},empty=async()=>{},params=async({x})=>x;f(1).then(v=>{seen.push(v)});g().then(v=>{seen.push(v)});h().catch(e=>{if(e!==marker)throw 1;seen.push('throw')});empty().then(v=>{if(v!==undefined)throw 2;seen.push('empty')});params(null).catch(e=>{if(!(e instanceof TypeError))throw 3;seen.push('params')});let p=(async()=>original)();if(p===original)throw 4;p.then(v=>{seen.push(v)})").unwrap();
+    realm
+        .eval(
+            r#"
+                let seen = [],
+                    marker = {},
+                    original = Promise.resolve(7);
+                let f = async x => x + 1, g = async () => {
+                    return 4
+                }, h = async () => {
+                    throw marker
+                }, empty = async () => {}, params = async ({
+                    x
+                }) => x;
+                f(1).then(v => {
+                    seen.push(v)
+                });
+                g().then(v => {
+                    seen.push(v)
+                });
+                h().catch(e => {
+                    if (e !== marker) throw 1;
+                    seen.push('throw')
+                });
+                empty().then(v => {
+                    if (v !== undefined) throw 2;
+                    seen.push('empty')
+                });
+                params(null).catch(e => {
+                    if (!(e instanceof TypeError)) throw 3;
+                    seen.push('params')
+                });
+                let p = (async () => original)();
+                if (p === original) throw 4;
+                p.then(v => {
+                    seen.push(v)
+                })
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     assert_eq!(
         realm.eval("seen.join(',')"),

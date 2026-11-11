@@ -17,11 +17,19 @@ fn signed_and_unsigned_widths_reduce_exactly_across_word_boundaries() {
         };
         let signed = if bits == 0 { "0n" } else { "-1n" };
         assert_true(&format!(
-            "BigInt.asUintN({bits},-1n)===({unsigned}) && BigInt.asIntN({bits},-1n)==={signed} && BigInt.asIntN({bits},2n**{bits}n)===0n && BigInt.asUintN({bits},-(2n**{bits}n))===0n"
+            r#"
+                BigInt.asUintN({bits}, -1n) === ({unsigned}) && BigInt.asIntN({bits}, -1n) ===
+                    {signed} && BigInt.asIntN({bits}, 2n ** {bits}n) === 0n && BigInt
+                    .asUintN({bits}, -(2n ** {bits}n)) === 0n
+            "#
         ));
         if bits != 0 {
             assert_true(&format!(
-                "let min=-(2n**{}n);BigInt.asIntN({bits},-min)===min && BigInt.asIntN({bits},min)===min && BigInt.asIntN({bits},min-1n)===-min-1n",
+                r#"
+                    let min = -(2n ** {}n);
+                    BigInt.asIntN({bits}, -min) === min && BigInt.asIntN({bits}, min) === min &&
+                        BigInt.asIntN({bits}, min - 1n) === -min - 1n
+                "#,
                 bits - 1
             ));
         }
@@ -83,17 +91,62 @@ fn widths_use_to_index_and_values_use_to_bigint() {
 #[test]
 fn width_coercion_finishes_before_integer_coercion_even_for_zero_width() {
     assert_true(
-        "let log='',bits={[Symbol.toPrimitive](hint){log+='b'+hint;return 8;}},value={[Symbol.toPrimitive](hint){log+='v'+hint;return '-1';}};BigInt.asUintN(bits,value)===255n && log==='bnumbervnumber'",
+        r#"
+            let log = '',
+                bits = {
+                    [Symbol.toPrimitive](hint) {
+                        log += 'b' + hint;
+                        return 8;
+                    }
+                },
+                value = {
+                    [Symbol.toPrimitive](hint) {
+                        log += 'v' + hint;
+                        return '-1';
+                    }
+                };
+            BigInt.asUintN(bits, value) === 255n && log === 'bnumbervnumber'
+        "#,
     );
     assert_true(
         "let calls=0,value={valueOf(){calls++;return 7n;}};BigInt.asIntN(0,value)===0n && calls===1",
     );
     assert_true(
-        "let calls=0,value={valueOf(){calls++;throw 7;}};let caught=false;try{BigInt.asUintN(0,value);}catch(e){caught=e===7;}caught && calls===1",
+        r#"
+            let calls = 0,
+                value = {
+                    valueOf() {
+                        calls++;
+                        throw 7;
+                    }
+                };
+            let caught = false;
+            try {
+                BigInt.asUintN(0, value);
+            } catch (e) {
+                caught = e === 7;
+            }
+            caught && calls === 1
+        "#,
     );
     for width in ["-1", "Symbol()", "{valueOf(){throw 8;}}"] {
         assert_true(&format!(
-            "let calls=0,value={{valueOf(){{calls++;return 7n;}}}};let caught=false;try{{BigInt.asIntN({width},value);}}catch(e){{caught=true;}}caught && calls===0"
+            r#"
+                let calls = 0,
+                    value = {{
+                        valueOf() {{
+                            calls++;
+                            return 7n;
+                        }}
+                    }};
+                let caught = false;
+                try {{
+                    BigInt.asIntN({width}, value);
+                }} catch (e) {{
+                    caught = true;
+                }}
+                caught && calls === 0
+            "#
         ));
     }
 }
@@ -101,23 +154,49 @@ fn width_coercion_finishes_before_integer_coercion_even_for_zero_width() {
 #[test]
 fn huge_widths_do_not_allocate_width_sized_storage_for_fitting_values() {
     assert_true(
-        "BigInt.asIntN(9007199254740991,-1n)===-1n && BigInt.asIntN(9007199254740991,1n)===1n && BigInt.asUintN(9007199254740991,1n)===1n && BigInt.asUintN(9007199254740991,0n)===0n",
+        r#"
+            BigInt.asIntN(9007199254740991, -1n) === -1n && BigInt.asIntN(9007199254740991, 1n) === 1n &&
+                BigInt.asUintN(9007199254740991, 1n) === 1n && BigInt.asUintN(9007199254740991, 0n) === 0n
+        "#,
     );
 }
 
 #[test]
 fn static_descriptors_enumeration_deletion_and_collection_are_complete() {
     assert_true(
-        "BigInt.asIntN.name==='asIntN' && BigInt.asUintN.name==='asUintN' && BigInt.asIntN.length===2 && BigInt.asUintN.length===2 && Object.getOwnPropertyNames(BigInt).sort().join(',')==='asIntN,asUintN,length,name,prototype' && Object.keys(BigInt).length===0",
+        r#"
+            BigInt.asIntN.name === 'asIntN' && BigInt.asUintN.name === 'asUintN' && BigInt.asIntN
+                .length === 2 && BigInt.asUintN.length === 2 && Object.getOwnPropertyNames(BigInt).sort()
+                .join(',') === 'asIntN,asUintN,length,name,prototype' && Object.keys(BigInt).length === 0
+        "#,
     );
     assert_true(
-        "let d=Object.getOwnPropertyDescriptor(BigInt,'asIntN');d.writable && !d.enumerable && d.configurable && d.value===BigInt.asIntN && Object.freeze(BigInt)===BigInt && Object.isFrozen(BigInt)",
+        r#"
+            let d = Object.getOwnPropertyDescriptor(BigInt, 'asIntN');
+            d.writable && !d.enumerable && d.configurable && d.value === BigInt.asIntN && Object.freeze(
+                BigInt) === BigInt && Object.isFrozen(BigInt)
+        "#,
     );
     assert_true(
         "delete BigInt.asIntN;BigInt.asIntN===undefined && !Object.hasOwn(BigInt,'asIntN')",
     );
     assert_true(
-        "let calls=0,value={valueOf(){calls++;return 1n;}};let caught=false;try{new BigInt.asIntN(8,value);}catch(e){caught=e instanceof TypeError;}caught && calls===0",
+        r#"
+            let calls = 0,
+                value = {
+                    valueOf() {
+                        calls++;
+                        return 1n;
+                    }
+                };
+            let caught = false;
+            try {
+                new BigInt.asIntN(8, value);
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && calls === 0
+        "#,
     );
     let mut realm = Realm::default();
     realm

@@ -54,7 +54,17 @@ fn disposal_symbols_have_standard_descriptions_and_frozen_constructor_properties
     let mut realm = Realm::default();
     check(
         &mut realm,
-        "for (const name of ['dispose','asyncDispose']) { const value=Symbol[name],d=Object.getOwnPropertyDescriptor(Symbol,name); if(typeof value!=='symbol'||value.description!=='Symbol.'+name||d.value!==value||d.writable||d.enumerable||d.configurable||Symbol.keyFor(value)!==undefined||value===Symbol(value.description)||value===Symbol.for(value.description))throw 1; } Symbol.dispose!==Symbol.asyncDispose",
+        r#"
+            for (const name of ['dispose', 'asyncDispose']) {
+                const value = Symbol[name],
+                    d = Object.getOwnPropertyDescriptor(Symbol, name);
+                if (typeof value !== 'symbol' || value.description !== 'Symbol.' + name || d.value !==
+                    value || d.writable || d.enumerable || d.configurable || Symbol.keyFor(value) !==
+                    undefined || value === Symbol(value.description) || value === Symbol.for(value
+                        .description)) throw 1;
+            }
+            Symbol.dispose !== Symbol.asyncDispose
+        "#,
     );
 }
 
@@ -63,7 +73,32 @@ fn disposal_symbol_properties_reject_mutation_and_remain_distinct_property_keys(
     let mut realm = Realm::default();
     check(
         &mut realm,
-        "'use strict';const saved=Symbol.dispose;let rejected=0;try{Symbol.dispose=Symbol()}catch(e){if(e instanceof TypeError)rejected++}try{Object.defineProperty(Symbol,'asyncDispose',{value:Symbol()})}catch(e){if(e instanceof TypeError)rejected++}const object={[Symbol.dispose]:'sync',[Symbol.asyncDispose]:'async'},keys=Reflect.ownKeys(object);rejected===2&&!Reflect.deleteProperty(Symbol,'dispose')&&Symbol.dispose===saved&&keys.length===2&&keys[0]===Symbol.dispose&&keys[1]===Symbol.asyncDispose&&object[keys[0]]==='sync'&&object[keys[1]]==='async'&&object['Symbol.dispose']===undefined",
+        r#"
+            'use strict';
+            const saved = Symbol.dispose;
+            let rejected = 0;
+            try {
+                Symbol.dispose = Symbol()
+            } catch (e) {
+                if (e instanceof TypeError) rejected++
+            }
+            try {
+                Object.defineProperty(Symbol, 'asyncDispose', {
+                    value: Symbol()
+                })
+            } catch (e) {
+                if (e instanceof TypeError) rejected++
+            }
+            const object = {
+                    [Symbol.dispose]: 'sync',
+                    [Symbol.asyncDispose]: 'async'
+                },
+                keys = Reflect.ownKeys(object);
+            rejected === 2 && !Reflect.deleteProperty(Symbol, 'dispose') && Symbol.dispose === saved &&
+                keys.length === 2 && keys[0] === Symbol.dispose && keys[1] === Symbol.asyncDispose &&
+                object[keys[0]] === 'sync' && object[keys[1]] === 'async' && object['Symbol.dispose'] ===
+                undefined
+        "#,
     );
 }
 
@@ -77,7 +112,11 @@ fn disposal_symbols_remain_valid_weak_targets_across_collection() {
     realm.collect(usize::MAX).unwrap();
     check(
         &mut realm,
-        "map.get(Symbol.dispose)===1&&map.get(Symbol.asyncDispose)===2&&set.has(Symbol.dispose)&&set.has(Symbol.asyncDispose)&&ref.deref()===Symbol.dispose&&asyncRef.deref()===Symbol.asyncDispose",
+        r#"
+            map.get(Symbol.dispose) === 1 && map.get(Symbol.asyncDispose) === 2 && set.has(Symbol
+                .dispose) && set.has(Symbol.asyncDispose) && ref.deref() === Symbol.dispose && asyncRef
+                .deref() === Symbol.asyncDispose
+        "#,
     );
 }
 
@@ -107,11 +146,20 @@ fn script_iterators_use_standard_aliases_and_code_point_iteration() {
     let mut realm = Realm::default();
     check(
         &mut realm,
-        "let i=[1,,3][Symbol.iterator]();Array.prototype[Symbol.iterator]===Array.prototype.values && i[Symbol.iterator]()===i && i.next().value===1 && i.next().value===undefined && i.next().value===3 && i.next().done",
+        r#"
+            let i = [1, , 3][Symbol.iterator]();
+            Array.prototype[Symbol.iterator] === Array.prototype.values && i[Symbol.iterator]() === i && i
+                .next().value === 1 && i.next().value === undefined && i.next().value === 3 && i.next()
+                .done
+        "#,
     );
     check(
         &mut realm,
-        "i='a\\uD83D\\uDE00\\uD800'[Symbol.iterator]();i[Symbol.iterator]()===i && i.next().value==='a' && i.next().value==='\\uD83D\\uDE00' && i.next().value==='\\uD800' && i.next().done",
+        r#"
+            i = 'a\uD83D\uDE00\uD800' [Symbol.iterator]();
+            i[Symbol.iterator]() === i && i.next().value === 'a' && i.next().value === '\uD83D\uDE00' && i
+                .next().value === '\uD800' && i.next().done
+        "#,
     );
     check(
         &mut realm,

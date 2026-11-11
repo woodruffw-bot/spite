@@ -27,12 +27,48 @@ fn invalid_callbacks_close_before_next_but_primitive_receivers_are_rejected_firs
         ] {
             for close in ["return {};", "return 7;", "throw 8;"] {
                 assert_true(&format!(
-                    "let closed=0,i={{get next(){{throw 9;}},return(){{closed++;{close}}}}},caught=false;try{{Iterator.prototype.{method}.call(i,{callback});}}catch(e){{caught=e instanceof TypeError;}}caught && closed===1"
+                    r#"
+                        let closed = 0,
+                            i = {{
+                                get next() {{
+                                    throw 9;
+                                }},
+                                return () {{
+                                    closed++;
+                                    {close}
+                                }}
+                            }},
+                            caught = false;
+                        try {{
+                            Iterator.prototype.{method}.call(i, {callback});
+                        }} catch (e) {{
+                            caught = e instanceof TypeError;
+                        }}
+                        caught && closed === 1
+                    "#
                 ));
             }
         }
         assert_true(&format!(
-            "let closed=0,i={{get next(){{throw 7;}},get return(){{closed++;throw 8;}}}},caught=false;try{{Iterator.prototype.{method}.call(i);}}catch(e){{caught=e instanceof TypeError;}}caught && closed===1"
+            r#"
+                let closed = 0,
+                    i = {{
+                        get next() {{
+                            throw 7;
+                        }},
+                        get return() {{
+                            closed++;
+                            throw 8;
+                        }}
+                    }},
+                    caught = false;
+                try {{
+                    Iterator.prototype.{method}.call(i);
+                }} catch (e) {{
+                    caught = e instanceof TypeError;
+                }}
+                caught && closed === 1
+            "#
         ));
         for receiver in ["undefined", "null", "true", "1", "1n", "'x'", "Symbol()"] {
             assert!(
@@ -55,16 +91,78 @@ fn invalid_callbacks_close_before_next_but_primitive_receivers_are_rejected_firs
 fn short_circuit_closes_once_with_live_return_and_original_receiver_without_extra_steps() {
     for (method, predicate, expected, _) in METHODS {
         assert_true(&format!(
-            "let gets=0,calls=0,closed=0,argc,receiver,old=0,i={{next(){{calls++;return {{done:false,value:7}};}},return(){{old++;throw 8;}}}};let result=Iterator.prototype.{method}.call(i,()=>{{Object.defineProperty(i,'return',{{get(){{gets++;return function(){{'use strict';closed++;argc=arguments.length;receiver=this;return {{get value(){{throw 9;}},get done(){{throw 10;}}}};}};}}}});return {predicate};}});result==={expected} && gets===1 && calls===1 && closed===1 && receiver===i && argc===0 && old===0"
+            r#"
+                let gets = 0,
+                    calls = 0,
+                    closed = 0,
+                    argc, receiver, old = 0,
+                    i = {{
+                        next() {{
+                            calls++;
+                            return {{
+                                done: false,
+                                value: 7
+                            }};
+                        }},
+                        return () {{
+                            old++;
+                            throw 8;
+                        }}
+                    }};
+                let result = Iterator.prototype.{method}.call(i, () => {{
+                    Object.defineProperty(i, 'return', {{
+                        get() {{
+                            gets++;
+                            return function() {{
+                                'use strict';
+                                closed++;
+                                argc = arguments.length;
+                                receiver = this;
+                                return {{
+                                    get value() {{
+                                        throw 9;
+                                    }},
+                                    get done() {{
+                                        throw 10;
+                                    }}
+                                }};
+                            }};
+                        }}
+                    }});
+                    return {predicate};
+                }});
+                result === {expected} && gets === 1 && calls === 1 && closed === 1 && receiver === i &&
+                    argc === 0 && old === 0
+            "#
         ));
         for ret in ["undefined", "null"] {
             assert_true(&format!(
-                "let calls=0,i={{next:()=>({{done:false,value:7}}),return:{ret}}};Iterator.prototype.{method}.call(i,()=>{{calls++;return {predicate};}})==={expected} && calls===1"
+                r#"
+                    let calls = 0,
+                        i = {{
+                            next: () => ({{
+                                done: false,
+                                value: 7
+                            }}),
+                            return: {ret}
+                        }};
+                    Iterator.prototype.{method}.call(i, () => {{
+                        calls++;
+                        return {predicate};
+                    }}) === {expected} && calls === 1
+                "#
             ));
         }
     }
     assert_true(
-        "let a=[1,2,3].values(),b=[1,2,3].values(),c=[1,2,3].values();a.every(value=>value<2)===false && a.next().value===3 && b.some(value=>value===2)===true && b.next().value===3 && c.find(value=>value===2)===2 && c.next().value===3",
+        r#"
+            let a = [1, 2, 3].values(),
+                b = [1, 2, 3].values(),
+                c = [1, 2, 3].values();
+            a.every(value => value < 2) === false && a.next().value === 3 && b.some(value => value ===
+                2) === true && b.next().value === 3 && c.find(value => value === 2) === 2 && c.next()
+                .value === 3
+        "#,
     );
     assert_true("let i=Iterator.concat([1,2],[3]);i.some(value=>value===1) && i.next().done");
 }
@@ -74,25 +172,141 @@ fn normal_close_errors_replace_results_while_callback_throws_keep_incoming_ident
     for (method, predicate, _, _) in METHODS {
         for ret in ["return 7;", "return null;", "return undefined;"] {
             assert_true(&format!(
-                "let closed=0,i={{next:()=>({{done:false,value:7}}),return(){{closed++;{ret}}}}},caught=false;try{{Iterator.prototype.{method}.call(i,()=>{predicate});}}catch(e){{caught=e instanceof TypeError;}}caught && closed===1"
+                r#"
+                    let closed = 0,
+                        i = {{
+                            next: () => ({{
+                                done: false,
+                                value: 7
+                            }}),
+                            return () {{
+                                closed++;
+                                {ret}
+                            }}
+                        }},
+                        caught = false;
+                    try {{
+                        Iterator.prototype.{method}.call(i, () => {predicate});
+                    }} catch (e) {{
+                        caught = e instanceof TypeError;
+                    }}
+                    caught && closed === 1
+                "#
             ));
         }
         for ret in ["return 7;", "throw 8;", "return {};"] {
             assert_true(&format!(
-                "let sentinel={{}},closed=0,calls=0,i={{next:()=>({{done:false,value:7}}),return(){{closed++;{ret}}}}},caught=false;try{{Iterator.prototype.{method}.call(i,()=>{{calls++;throw sentinel;}});}}catch(e){{caught=e===sentinel;}}caught && closed===1 && calls===1"
+                r#"
+                    let sentinel = {{}},
+                        closed = 0,
+                        calls = 0,
+                        i = {{
+                            next: () => ({{
+                                done: false,
+                                value: 7
+                            }}),
+                            return () {{
+                                closed++;
+                                {ret}
+                            }}
+                        }},
+                        caught = false;
+                    try {{
+                        Iterator.prototype.{method}.call(i, () => {{
+                            calls++;
+                            throw sentinel;
+                        }});
+                    }} catch (e) {{
+                        caught = e === sentinel;
+                    }}
+                    caught && closed === 1 && calls === 1
+                "#
             ));
         }
         assert_true(&format!(
-            "let sentinel={{}},i={{next:()=>({{done:false,value:7}}),get return(){{throw sentinel;}}}},caught=false;try{{Iterator.prototype.{method}.call(i,()=>{predicate});}}catch(e){{caught=e===sentinel;}}caught"
+            r#"
+                let sentinel = {{}},
+                    i = {{
+                        next: () => ({{
+                            done: false,
+                            value: 7
+                        }}),
+                        get return() {{
+                            throw sentinel;
+                        }}
+                    }},
+                    caught = false;
+                try {{
+                    Iterator.prototype.{method}.call(i, () => {predicate});
+                }} catch (e) {{
+                    caught = e === sentinel;
+                }}
+                caught
+            "#
         ));
         assert_true(&format!(
-            "let sentinel={{}},i={{next:()=>({{done:false,value:7}}),return(){{throw sentinel;}}}},caught=false;try{{Iterator.prototype.{method}.call(i,()=>{predicate});}}catch(e){{caught=e===sentinel;}}caught"
+            r#"
+                let sentinel = {{}},
+                    i = {{
+                        next: () => ({{
+                            done: false,
+                            value: 7
+                        }}),
+                        return () {{
+                            throw sentinel;
+                        }}
+                    }},
+                    caught = false;
+                try {{
+                    Iterator.prototype.{method}.call(i, () => {predicate});
+                }} catch (e) {{
+                    caught = e === sentinel;
+                }}
+                caught
+            "#
         ));
         assert_true(&format!(
-            "let sentinel={{}},closed=0,i={{next:()=>({{done:false,value:7}}),get return(){{closed++;throw 8;}}}},caught=false;try{{Iterator.prototype.{method}.call(i,()=>{{throw sentinel;}});}}catch(e){{caught=e===sentinel;}}caught && closed===1"
+            r#"
+                let sentinel = {{}},
+                    closed = 0,
+                    i = {{
+                        next: () => ({{
+                            done: false,
+                            value: 7
+                        }}),
+                        get return() {{
+                            closed++;
+                            throw 8;
+                        }}
+                    }},
+                    caught = false;
+                try {{
+                    Iterator.prototype.{method}.call(i, () => {{
+                        throw sentinel;
+                    }});
+                }} catch (e) {{
+                    caught = e === sentinel;
+                }}
+                caught && closed === 1
+            "#
         ));
         assert_true(&format!(
-            "let i={{next:()=>({{done:false,value:7}}),return:7}},caught=false;try{{Iterator.prototype.{method}.call(i,()=>{predicate});}}catch(e){{caught=e instanceof TypeError;}}caught"
+            r#"
+                let i = {{
+                        next: () => ({{
+                            done: false,
+                            value: 7
+                        }}),
+                        return: 7
+                    }},
+                    caught = false;
+                try {{
+                    Iterator.prototype.{method}.call(i, () => {predicate});
+                }} catch (e) {{
+                    caught = e instanceof TypeError;
+                }}
+                caught
+            "#
         ));
     }
 }
@@ -102,17 +316,103 @@ fn traversal_caches_next_and_calls_predicates_with_undefined_this_value_and_exac
     for (method, _, _, empty) in METHODS {
         let continuing = if method == "every" { "true" } else { "false" };
         assert_true(&format!(
-            "let gets=0,n=0,seen=[],receiver,argc,callbackThis,i={{}};Object.defineProperty(i,Symbol.iterator,{{get(){{throw 7;}}}});Object.defineProperty(i,'next',{{configurable:true,get(){{gets++;return function(){{'use strict';receiver=this;argc=arguments.length;return {{done:n===3,value:n++}};}};}}}});let result=Iterator.prototype.{method}.call(i,function(value,index){{'use strict';callbackThis=this;seen.push(value,index,arguments.length);Object.defineProperty(i,'next',{{value:()=>{{throw 8;}}}});return {continuing};}},{{valueOf(){{throw 9;}}}});result==={empty} && gets===1 && callbackThis===undefined && receiver===i && argc===0 && seen.join(',')==='0,0,2,1,1,2,2,2,2'"
+            r#"
+                let gets = 0,
+                    n = 0,
+                    seen = [],
+                    receiver, argc, callbackThis, i = {{}};
+                Object.defineProperty(i, Symbol.iterator, {{
+                    get() {{
+                        throw 7;
+                    }}
+                }});
+                Object.defineProperty(i, 'next', {{
+                    configurable: true,
+                    get() {{
+                        gets++;
+                        return function() {{
+                            'use strict';
+                            receiver = this;
+                            argc = arguments.length;
+                            return {{
+                                done: n === 3,
+                                value: n++
+                            }};
+                        }};
+                    }}
+                }});
+                let result = Iterator.prototype.{method}.call(i, function(value, index) {{
+                    'use strict';
+                    callbackThis = this;
+                    seen.push(value, index, arguments.length);
+                    Object.defineProperty(i, 'next', {{
+                        value: () => {{
+                            throw 8;
+                        }}
+                    }});
+                    return {continuing};
+                }}, {{
+                    valueOf() {{
+                        throw 9;
+                    }}
+                }});
+                result === {empty} && gets === 1 && callbackThis === undefined && receiver === i &&
+                    argc === 0 && seen.join(',') === '0,0,2,1,1,2,2,2,2'
+            "#
         ));
         assert_true(&format!(
-            "let receiver,n=0;Iterator.prototype.{method}.call({{next:()=>({{done:n++>0,value:7}})}},function(){{receiver=this;return {continuing};}});receiver===globalThis"
+            r#"
+                let receiver, n = 0;
+                Iterator.prototype.{method}.call({{
+                    next: () => ({{
+                        done: n++ > 0,
+                        value: 7
+                    }})
+                }}, function() {{
+                    receiver = this;
+                    return {continuing};
+                }});
+                receiver === globalThis
+            "#
         ));
     }
     assert_true(
-        "let original={x:1},replacement={},slot=original,i={next:()=>({done:false,value:slot}),return:()=>({})};let result=Iterator.prototype.find.call(i,value=>{value.x=2;slot=replacement;return true;});result===original && result.x===2 && slot===replacement",
+        r#"
+            let original = {
+                    x: 1
+                },
+                replacement = {},
+                slot = original,
+                i = {
+                    next: () => ({
+                        done: false,
+                        value: slot
+                    }),
+                    return: () => ({})
+                };
+            let result = Iterator.prototype.find.call(i, value => {
+                value.x = 2;
+                slot = replacement;
+                return true;
+            });
+            result === original && result.x === 2 && slot === replacement
+        "#,
     );
     assert_true(
-        "let count=0,i={next:()=>({done:false,get value(){count++;return undefined;}}),return:()=>({})};Iterator.prototype.find.call(i,()=>true)===undefined && count===1",
+        r#"
+            let count = 0,
+                i = {
+                    next: () => ({
+                        done: false,
+                        get value() {
+                            count++;
+                            return undefined;
+                        }
+                    }),
+                    return: () => ({})
+                };
+            Iterator.prototype.find.call(i, () => true) === undefined && count === 1
+        "#,
     );
 }
 
@@ -137,7 +437,28 @@ fn truthiness_does_not_coerce_objects_and_handles_all_primitive_categories() {
     ] {
         for (method, _, _, _) in METHODS {
             assert_true(&format!(
-                "let result={result},calls=0,closed=0,i={{next(){{return {{value:7,done:calls++===1}};}},return(){{closed++;return {{}};}}}};let actual=Iterator.prototype.{method}.call(i,()=>result);let expected=('{method}'==='every') ? !!result : ('{method}'==='some' ? !!result : (result ? 7 : undefined));let expectedClose=('{method}'==='every') ? !result : !!result;actual===expected && closed===Number(expectedClose)"
+                r#"
+                    let result = {result},
+                        calls = 0,
+                        closed = 0,
+                        i = {{
+                            next() {{
+                                return {{
+                                    value: 7,
+                                    done: calls++ === 1
+                                }};
+                            }},
+                            return () {{
+                                closed++;
+                                return {{}};
+                            }}
+                        }};
+                    let actual = Iterator.prototype.{method}.call(i, () => result);
+                    let expected = ('{method}' === 'every') ? !!result : ('{method}' === 'some' ? !!
+                        result : (result ? 7 : undefined));
+                    let expectedClose = ('{method}' === 'every') ? !result : !!result;
+                    actual === expected && closed === Number(expectedClose)
+                "#
             ));
         }
     }
@@ -154,14 +475,66 @@ fn acquisition_and_step_errors_do_not_close_and_exhaustion_never_reads_return_or
             "7",
         ] {
             assert_true(&format!(
-                "let closed=0,calls=0,i={{next:{next},return(){{closed++;throw 8;}}}},caught=false;try{{Iterator.prototype.{method}.call(i,()=>{{calls++;}});}}catch(e){{caught=e===7 || e instanceof TypeError;}}caught && closed===0 && calls===0"
+                r#"
+                    let closed = 0,
+                        calls = 0,
+                        i = {{
+                            next: {next},
+                            return () {{
+                                closed++;
+                                throw 8;
+                            }}
+                        }},
+                        caught = false;
+                    try {{
+                        Iterator.prototype.{method}.call(i, () => {{
+                            calls++;
+                        }});
+                    }} catch (e) {{
+                        caught = e === 7 || e instanceof TypeError;
+                    }}
+                    caught && closed === 0 && calls === 0
+                "#
             ));
         }
         assert_true(&format!(
-            "let closed=0,i={{get next(){{throw 7;}},return(){{closed++;return {{}};}}}},caught=false;try{{Iterator.prototype.{method}.call(i,()=>true);}}catch(e){{caught=e===7;}}caught && closed===0"
+            r#"
+                let closed = 0,
+                    i = {{
+                        get next() {{
+                            throw 7;
+                        }},
+                        return () {{
+                            closed++;
+                            return {{}};
+                        }}
+                    }},
+                    caught = false;
+                try {{
+                    Iterator.prototype.{method}.call(i, () => true);
+                }} catch (e) {{
+                    caught = e === 7;
+                }}
+                caught && closed === 0
+            "#
         ));
         assert_true(&format!(
-            "let i={{next:()=>({{done:true,get value(){{throw 7;}}}}),get return(){{throw 8;}}}};Iterator.prototype.{method}.call(i,()=>{{throw 9;}})==={empty}"
+            r#"
+                let i = {{
+                    next: () => ({{
+                        done: true,
+                        get value() {{
+                            throw 7;
+                        }}
+                    }}),
+                    get return() {{
+                        throw 8;
+                    }}
+                }};
+                Iterator.prototype.{method}.call(i, () => {{
+                    throw 9;
+                }}) === {empty}
+            "#
         ));
     }
 }
@@ -170,7 +543,13 @@ fn acquisition_and_step_errors_do_not_close_and_exhaustion_never_reads_return_or
 fn standard_metadata_non_constructibility_and_intrinsic_retention_survive_collection() {
     for (method, _, _, _) in METHODS {
         assert_true(&format!(
-            "let f=Iterator.prototype.{method},d=Object.getOwnPropertyDescriptor(Iterator.prototype,'{method}');f.name==='{method}' && f.length===1 && Object.getPrototypeOf(f)===Function.prototype && !Object.hasOwn(f,'prototype') && d.value===f && d.writable && !d.enumerable && d.configurable"
+            r#"
+                let f = Iterator.prototype.{method},
+                    d = Object.getOwnPropertyDescriptor(Iterator.prototype, '{method}');
+                f.name === '{method}' && f.length === 1 && Object.getPrototypeOf(f) === Function
+                    .prototype && !Object.hasOwn(f, 'prototype') && d.value === f && d.writable && !d
+                    .enumerable && d.configurable
+            "#
         ));
         assert!(matches!(
             Realm::default().eval(&format!("new Iterator.prototype.{method}(()=>true)")),
@@ -202,7 +581,20 @@ fn large_default_inputs_work_and_host_aborts_skip_handlers_and_cleanup() {
     for (method, predicate, _, empty) in METHODS {
         let continuing = if method == "every" { "true" } else { "false" };
         assert_true(&format!(
-            "let n=0,sum=0;let result=Iterator.prototype.{method}.call({{next:()=>({{done:n===10000,value:n++}})}},(value,index)=>{{sum+=index;return {continuing};}});result==={empty} && sum===49995000"
+            r#"
+                let n = 0,
+                    sum = 0;
+                let result = Iterator.prototype.{method}.call({{
+                    next: () => ({{
+                        done: n === 10000,
+                        value: n++
+                    }})
+                }}, (value, index) => {{
+                    sum += index;
+                    return {continuing};
+                }});
+                result === {empty} && sum === 49995000
+            "#
         ));
         let mut realm = Realm::new(Limits {
             max_steps: Some(5000),

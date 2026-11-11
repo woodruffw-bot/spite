@@ -48,16 +48,106 @@ fn global_scope_capture_ignores_the_callers_local_bindings_and_strictness() {
 #[test]
 fn conversions_precede_parsing_and_prototype_reads_in_argument_order() {
     assert_true(
-        "let log=[],proto={},target=(function(){}).bind(null);Object.defineProperty(target,'prototype',{get(){log.push('prototype');return proto;}});let p={toString(){log.push('parameter');return 'a';}},b={toString(){log.push('body');return 'return a';}},f=Reflect.construct(Function,[p,b],target);log.join(',')==='parameter,body,prototype' && Object.getPrototypeOf(f)===proto && f(7)===7",
+        r#"
+            let log = [],
+                proto = {},
+                target = (function() {}).bind(null);
+            Object.defineProperty(target, 'prototype', {
+                get() {
+                    log.push('prototype');
+                    return proto;
+                }
+            });
+            let p = {
+                    toString() {
+                        log.push('parameter');
+                        return 'a';
+                    }
+                },
+                b = {
+                    toString() {
+                        log.push('body');
+                        return 'return a';
+                    }
+                },
+                f = Reflect.construct(Function, [p, b], target);
+            log.join(',') === 'parameter,body,prototype' && Object.getPrototypeOf(f) === proto && f(7) ===
+                7
+        "#,
     );
     assert_true(
-        "let log=[],target=(function(){}).bind(null);Object.defineProperty(target,'prototype',{get(){log.push('prototype');return {};}});let caught=false;try{Reflect.construct(Function,[{toString(){log.push('parameter');return 'a=';}},{toString(){log.push('body');return '1';}}],target);}catch(e){caught=e instanceof SyntaxError;}caught && log.join(',')==='parameter,body'",
+        r#"
+            let log = [],
+                target = (function() {}).bind(null);
+            Object.defineProperty(target, 'prototype', {
+                get() {
+                    log.push('prototype');
+                    return {};
+                }
+            });
+            let caught = false;
+            try {
+                Reflect.construct(Function, [{
+                    toString() {
+                        log.push('parameter');
+                        return 'a=';
+                    }
+                }, {
+                    toString() {
+                        log.push('body');
+                        return '1';
+                    }
+                }], target);
+            } catch (e) {
+                caught = e instanceof SyntaxError;
+            }
+            caught && log.join(',') === 'parameter,body'
+        "#,
     );
     assert_true(
-        "let log=[],error={},caught=false;try{Function({toString(){log.push('first');throw error;}},{toString(){log.push('second');return 'b';}},{toString(){log.push('body');return '';}});}catch(e){caught=e===error;}caught && log.join(',')==='first'",
+        r#"
+            let log = [],
+                error = {},
+                caught = false;
+            try {
+                Function({
+                    toString() {
+                        log.push('first');
+                        throw error;
+                    }
+                }, {
+                    toString() {
+                        log.push('second');
+                        return 'b';
+                    }
+                }, {
+                    toString() {
+                        log.push('body');
+                        return '';
+                    }
+                });
+            } catch (e) {
+                caught = e === error;
+            }
+            caught && log.join(',') === 'first'
+        "#,
     );
     assert_true(
-        "let n=0,caught=false;try{Function({toString(){n++;return 'a';}},Symbol());}catch(e){caught=e instanceof TypeError;}caught && n===1",
+        r#"
+            let n = 0,
+                caught = false;
+            try {
+                Function({
+                    toString() {
+                        n++;
+                        return 'a';
+                    }
+                }, Symbol());
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && n === 1
+        "#,
     );
 }
 
@@ -79,7 +169,18 @@ fn separate_goals_and_combined_early_errors_throw_catchable_syntaxerrors() {
         "Function('let a;var a;')",
     ] {
         assert_true(&format!(
-            "let caught=false,finalized=false;try{{{expression};}}catch(e){{caught=e instanceof SyntaxError;}}finally{{finalized=true;}}caught && finalized"
+            r#"
+                let caught = false,
+                    finalized = false;
+                try {{
+                    {expression};
+                }} catch (e) {{
+                    caught = e instanceof SyntaxError;
+                }} finally {{
+                    finalized = true;
+                }}
+                caught && finalized
+            "#
         ));
     }
 }
@@ -87,30 +188,83 @@ fn separate_goals_and_combined_early_errors_throw_catchable_syntaxerrors() {
 #[test]
 fn newtarget_controls_the_function_prototype_after_successful_parsing() {
     assert_true(
-        "function target(){}let f=Reflect.construct(Function,['return 7'],target);Object.getPrototypeOf(f)===target.prototype && f()===7 && Object.getPrototypeOf(f.prototype)===Object.prototype && f.prototype.constructor===f",
+        r#"
+            function target() {}
+            let f = Reflect.construct(Function, ['return 7'], target);
+            Object.getPrototypeOf(f) === target.prototype && f() === 7 && Object.getPrototypeOf(f
+                .prototype) === Object.prototype && f.prototype.constructor === f
+        "#,
     );
     assert_true(
-        "let target=(function(){}).bind(null);target.prototype=7;let f=Reflect.construct(Function,['return 7'],target);Object.getPrototypeOf(f)===Function.prototype && f()===7",
+        r#"
+            let target = (function() {}).bind(null);
+            target.prototype = 7;
+            let f = Reflect.construct(Function, ['return 7'], target);
+            Object.getPrototypeOf(f) === Function.prototype && f() === 7
+        "#,
     );
     assert_true(
-        "let count=0,error={},target=(function(){}).bind(null);Object.defineProperty(target,'prototype',{get(){count++;throw error;}});let caught=false;try{Reflect.construct(Function,['return 7'],target);}catch(e){caught=e===error;}caught && count===1",
+        r#"
+            let count = 0,
+                error = {},
+                target = (function() {}).bind(null);
+            Object.defineProperty(target, 'prototype', {
+                get() {
+                    count++;
+                    throw error;
+                }
+            });
+            let caught = false;
+            try {
+                Reflect.construct(Function, ['return 7'], target);
+            } catch (e) {
+                caught = e === error;
+            }
+            caught && count === 1
+        "#,
     );
     assert_true(
-        "let n=0,caught=false;try{Reflect.construct(Function,[{toString(){n++;return ''}}],()=>0);}catch(e){caught=e instanceof TypeError;}caught && n===0",
+        r#"
+            let n = 0,
+                caught = false;
+            try {
+                Reflect.construct(Function, [{
+                    toString() {
+                        n++;
+                        return ''
+                    }
+                }], () => 0);
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && n === 0
+        "#,
     );
 }
 
 #[test]
 fn dynamic_functions_are_ordinary_constructors_with_fresh_identity_and_newtarget() {
     assert_true(
-        "let f=Function('x','this.x=x;this.target=new.target'),a=new f(7);a.x===7 && a.target===f && a instanceof f && Object.getPrototypeOf(a)===f.prototype",
+        r#"
+            let f = Function('x', 'this.x=x;this.target=new.target'),
+                a = new f(7);
+            a.x === 7 && a.target === f && a instanceof f && Object.getPrototypeOf(a) === f.prototype
+        "#,
     );
     assert_true(
-        "let f=Function('return new.target'),g=function(){};f()===undefined && new f()===f && Reflect.construct(f,[],g)===g",
+        r#"
+            let f = Function('return new.target'),
+                g = function() {};
+            f() === undefined && new f() === f && Reflect.construct(f, [], g) === g
+        "#,
     );
     assert_true("let f=Function('x=new.target','return x');f()===undefined && new f()===f");
     assert_true(
-        "let f=Function('return {}'),g=Function('return {}');f!==g && f.prototype!==g.prototype && f()!==f() && f instanceof Function",
+        r#"
+            let f = Function('return {}'),
+                g = Function('return {}');
+            f !== g && f.prototype !== g.prototype && f() !== f() && f instanceof Function
+        "#,
     );
 }
 

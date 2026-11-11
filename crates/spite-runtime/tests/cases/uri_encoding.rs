@@ -8,7 +8,10 @@ use crate::common::assert_true;
 #[test]
 fn escape_sets_differ_and_octets_use_uppercase_hex_without_normalization() {
     assert_true(
-        "let s=\"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-.!~*'()\";encodeURI(s)===s && encodeURIComponent(s)===s",
+        r#"
+            let s = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-.!~*'()";
+            encodeURI(s) === s && encodeURIComponent(s) === s
+        "#,
     );
     assert_true(
         "let s=';/?:@&=+$,#';encodeURI(s)===s && encodeURIComponent(s)==='%3B%2F%3F%3A%40%26%3D%2B%24%2C%23'",
@@ -30,16 +33,62 @@ fn escape_sets_differ_and_octets_use_uppercase_hex_without_normalization() {
 fn primitive_and_object_inputs_use_once_only_string_hint_conversion() {
     for name in ["encodeURI", "encodeURIComponent"] {
         assert_true(&format!(
-            "{name}()==='undefined' && {name}(null)==='null' && {name}(true)==='true' && {name}(7n)==='7' && {name}(-0)==='0' && {name}(Infinity)==='Infinity' && {name}(new String('é'))==='%C3%A9'"
+            r#"
+                {name}() === 'undefined' && {name}(null) === 'null' && {name}(true) ===
+                    'true' && {name}(7n) === '7' && {name}(-0) === '0' && {name}(
+                    Infinity) === 'Infinity' && {name}(new String('é')) === '%C3%A9'
+            "#
         ));
         assert_true(&format!(
-            "let log='',o={{[Symbol.toPrimitive](hint){{log+=hint;return 'é';}},toString(){{throw 7;}}}};{name}(o)==='%C3%A9' && log==='string'"
+            r#"
+                let log = '',
+                    o = {{
+                        [Symbol.toPrimitive](hint) {{
+                            log += hint;
+                            return 'é';
+                        }},
+                        toString() {{
+                            throw 7;
+                        }}
+                    }};
+                {name}(o) === '%C3%A9' && log === 'string'
+            "#
         ));
         assert_true(&format!(
-            "let log='',o={{toString(){{log+='s';return {{}};}},valueOf(){{log+='v';return 'é';}}}};{name}(o)==='%C3%A9' && log==='sv'"
+            r#"
+                let log = '',
+                    o = {{
+                        toString() {{
+                            log += 's';
+                            return {{}};
+                        }},
+                        valueOf() {{
+                            log += 'v';
+                            return 'é';
+                        }}
+                    }};
+                {name}(o) === '%C3%A9' && log === 'sv'
+            "#
         ));
         assert_true(&format!(
-            "let sentinel={{}},o={{toString(){{throw sentinel;}},valueOf(){{throw 7;}}}},caught=false;try{{{name}(o);}}catch(e){{caught=e===sentinel;}}caught"
+            r#"
+                let sentinel = {{}},
+                    o = {{
+                        toString() {{
+                            throw sentinel;
+                        }},
+                        valueOf() {{
+                            throw 7;
+                        }}
+                    }},
+                    caught = false;
+                try {{
+                    {name}(o);
+                }} catch (e) {{
+                    caught = e === sentinel;
+                }}
+                caught
+            "#
         ));
         for input in [
             "Symbol()",
@@ -90,14 +139,36 @@ fn lone_surrogates_throw_urierror_and_paired_surrogates_encode_normally() {
                 "{source}"
             );
             assert_true(&format!(
-                "let flag=0,caught=false;try{{{source};}}catch(e){{caught=e instanceof URIError && e instanceof Error && Error.isError(e);flag++;}}finally{{flag++;}}caught && flag===2"
+                r#"
+                    let flag = 0,
+                        caught = false;
+                    try {{
+                        {source};
+                    }} catch (e) {{
+                        caught = e instanceof URIError && e instanceof Error && Error.isError(e);
+                        flag++;
+                    }} finally {{
+                        flag++;
+                    }}
+                    caught && flag === 2
+                "#
             ));
         }
         assert_true(&format!(
             "{name}('\\uD800\\uDC00\\uDBFF\\uDFFF')==='%F0%90%80%80%F4%8F%BF%BF'"
         ));
         assert_true(&format!(
-            "let Original=URIError;URIError=TypeError;let caught=false;try{{{name}('\\uD800');}}catch(e){{caught=e instanceof Original && !(e instanceof TypeError);}}caught"
+            r#"
+                let Original = URIError;
+                URIError = TypeError;
+                let caught = false;
+                try {{
+                    {name}('\uD800');
+                }} catch (e) {{
+                    caught = e instanceof Original && !(e instanceof TypeError);
+                }}
+                caught
+            "#
         ));
     }
     let mut realm = Realm::default();

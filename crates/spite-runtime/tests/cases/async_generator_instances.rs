@@ -42,12 +42,31 @@ fn awaited_yields_returns_and_queued_next_values_preserve_fifo_order() {
     let mut realm = Realm::default();
     check(
         &mut realm,
-        "let events=[],results=[];async function*g(x=(events.push('parameter'),1)){events.push('body');let received=yield x;events.push(received);yield await received;return received+1}let iterator=g();for(let promise of [iterator.next(99),iterator.next(4),iterator.next(),iterator.next()])promise.then(r=>results.push(r));events.join(',')==='parameter,body'&&results.length===0",
+        r#"
+            let events = [],
+                results = [];
+            async function* g(x = (events.push('parameter'), 1)) {
+                events.push('body');
+                let received = yield x;
+                events.push(received);
+                yield await received;
+                return received + 1
+            }
+            let iterator = g();
+            for (let promise of [iterator.next(99), iterator.next(4), iterator.next(), iterator.next()])
+                promise.then(r => results.push(r));
+            events.join(',') === 'parameter,body' && results.length === 0
+        "#,
     );
     drain(&mut realm);
     check(
         &mut realm,
-        "events.join(',')==='parameter,body,4'&&results.length===4&&results.map(r=>r.done).join(',')==='false,false,true,true'&&results[0].value===1&&results[1].value===4&&results[2].value===5&&results[3].value===undefined&&new Set(results).size===4",
+        r#"
+            events.join(',') === 'parameter,body,4' && results.length === 4 && results.map(r => r.done)
+                .join(',') === 'false,false,true,true' && results[0].value === 1 && results[1].value ===
+                4 && results[2].value === 5 && results[3].value === undefined && new Set(results).size ===
+                4
+        "#,
     );
 }
 
@@ -56,7 +75,24 @@ fn initial_throw_and_return_skip_bodies_and_completed_requests_remain_serialized
     let mut realm = Realm::default();
     check(
         &mut realm,
-        "let body=0,results=[],reason=Symbol();async function*g(){body++}let a=g(),b=g();a.throw(reason).catch(e=>results.push(e===reason));a.next().then(r=>results.push(r.done));let release;let gate=new Promise(r=>release=r);b.return(gate).then(r=>results.push(r.value===7&&r.done));b.next(8).then(r=>results.push(r.value===undefined&&r.done));b.throw(reason).catch(e=>results.push(e===reason));body===0&&results.length===0",
+        r#"
+            let body = 0,
+                results = [],
+                reason = Symbol();
+            async function* g() {
+                body++
+            }
+            let a = g(),
+                b = g();
+            a.throw(reason).catch(e => results.push(e === reason));
+            a.next().then(r => results.push(r.done));
+            let release;
+            let gate = new Promise(r => release = r);
+            b.return(gate).then(r => results.push(r.value === 7 && r.done));
+            b.next(8).then(r => results.push(r.value === undefined && r.done));
+            b.throw(reason).catch(e => results.push(e === reason));
+            body === 0 && results.length === 0
+        "#,
     );
     drain(&mut realm);
     check(&mut realm, "results.join(',')==='true,true'&&body===0");
@@ -71,11 +107,38 @@ fn initial_throw_and_return_skip_bodies_and_completed_requests_remain_serialized
 #[test]
 fn return_arguments_await_before_finalizers_and_rejections_enter_generator_catch() {
     let mut realm = Realm::default();
-    realm.eval("let events=[],results=[],release;async function*g(){try{yield 1}catch(e){events.push(e);yield 'recovered'}finally{events.push('finally')}}let a=g(),b=g();a.next();b.next()").unwrap();
+    realm
+        .eval(
+            r#"
+                let events = [],
+                    results = [],
+                    release;
+                async function* g() {
+                    try {
+                        yield 1
+                    } catch (e) {
+                        events.push(e);
+                        yield 'recovered'
+                    } finally {
+                        events.push('finally')
+                    }
+                }
+                let a = g(),
+                    b = g();
+                a.next();
+                b.next()
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     check(
         &mut realm,
-        "let gate=new Promise(r=>release=r);a.return(gate).then(r=>results.push(r));b.return(Promise.reject('reason')).then(r=>results.push(r));events.length===0",
+        r#"
+            let gate = new Promise(r => release = r);
+            a.return(gate).then(r => results.push(r));
+            b.return(Promise.reject('reason')).then(r => results.push(r));
+            events.length === 0
+        "#,
     );
     drain(&mut realm);
     check(
@@ -96,7 +159,27 @@ fn return_arguments_await_before_finalizers_and_rejections_enter_generator_catch
 #[test]
 fn queued_throws_wait_for_current_await_and_body_errors_reject_without_synchronous_throw() {
     let mut realm = Realm::default();
-    realm.eval("let release,events=[],results=[];let gate=new Promise(r=>release=r);async function*g(){try{await gate;yield 1}finally{events.push('finally')}}let iterator=g();iterator.next().then(r=>results.push(r.value));iterator.throw('reason').catch(e=>results.push(e));iterator.next().then(r=>results.push(r.done))").unwrap();
+    realm
+        .eval(
+            r#"
+                let release, events = [],
+                    results = [];
+                let gate = new Promise(r => release = r);
+                async function* g() {
+                    try {
+                        await gate;
+                        yield 1
+                    } finally {
+                        events.push('finally')
+                    }
+                }
+                let iterator = g();
+                iterator.next().then(r => results.push(r.value));
+                iterator.throw('reason').catch(e => results.push(e));
+                iterator.next().then(r => results.push(r.done))
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     check(&mut realm, "results.length===0&&events.length===0");
     realm.eval("release()").unwrap();
@@ -115,14 +198,53 @@ fn queued_throws_wait_for_current_await_and_body_errors_reject_without_synchrono
 #[test]
 fn return_expressions_await_before_finalizers_and_draining_constructor_errors_keep_queue_order() {
     let mut realm = Realm::default();
-    realm.eval("let events=[],result;async function*g(){try{return {get then(){events.push('get');return resolve=>{events.push('then');resolve(7)}}}}finally{events.push('finally')}}g().next().then(r=>result=r)").unwrap();
+    realm
+        .eval(
+            r#"
+                let events = [],
+                    result;
+                async function* g() {
+                    try {
+                        return {
+                            get then() {
+                                events.push('get');
+                                return resolve => {
+                                    events.push('then');
+                                    resolve(7)
+                                }
+                            }
+                        }
+                    } finally {
+                        events.push('finally')
+                    }
+                }
+                g().next().then(r => result = r)
+            "#,
+        )
+        .unwrap();
     check(&mut realm, "events.join(',')==='get'&&result===undefined");
     drain(&mut realm);
     check(
         &mut realm,
         "events.join(',')==='get,then,finally'&&result.value===7&&result.done",
     );
-    realm.eval("events=[];let iterator=(async function*(){})(),poisoned=Promise.resolve(1);Object.defineProperty(poisoned,'constructor',{get(){events.push('constructor');iterator.next().then(r=>events.push(r.done?'next':'bad'));throw 9}});iterator.return(poisoned).catch(e=>events.push(e===9?'catch':'bad'))").unwrap();
+    realm
+        .eval(
+            r#"
+                events = [];
+                let iterator = (async function*() {})(),
+                    poisoned = Promise.resolve(1);
+                Object.defineProperty(poisoned, 'constructor', {
+                    get() {
+                        events.push('constructor');
+                        iterator.next().then(r => events.push(r.done ? 'next' : 'bad'));
+                        throw 9
+                    }
+                });
+                iterator.return(poisoned).catch(e => events.push(e === 9 ? 'catch' : 'bad'))
+            "#,
+        )
+        .unwrap();
     check(&mut realm, "events.join(',')==='constructor'");
     drain(&mut realm);
     check(&mut realm, "events.join(',')==='constructor,next,catch'");
@@ -131,7 +253,34 @@ fn return_expressions_await_before_finalizers_and_draining_constructor_errors_ke
 #[test]
 fn iterator_result_then_getters_enqueue_without_reentering_the_executing_body() {
     let mut realm = Realm::default();
-    realm.eval("let events=[],results=[],added=false;async function*g(){yield 1;events.push('body-after');yield 2}let iterator=g();Object.defineProperty(Object.prototype,'then',{configurable:true,get(){if(Object.hasOwn(this,'done')&&!added){added=true;events.push('getter-start');iterator.next().then(r=>results.push(r.value));events.push('getter-end')}return undefined}});iterator.next().then(r=>results.push(r.value))").unwrap();
+    realm
+        .eval(
+            r#"
+                let events = [],
+                    results = [],
+                    added = false;
+                async function* g() {
+                    yield 1;
+                    events.push('body-after');
+                    yield 2
+                }
+                let iterator = g();
+                Object.defineProperty(Object.prototype, 'then', {
+                    configurable: true,
+                    get() {
+                        if (Object.hasOwn(this, 'done') && !added) {
+                            added = true;
+                            events.push('getter-start');
+                            iterator.next().then(r => results.push(r.value));
+                            events.push('getter-end')
+                        }
+                        return undefined
+                    }
+                });
+                iterator.next().then(r => results.push(r.value))
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     check(
         &mut realm,
@@ -167,7 +316,23 @@ fn async_consumers_and_disposal_close_the_source_without_body_replay() {
 #[test]
 fn queued_symbol_values_and_suspended_captures_are_traced_and_unreachable_cycles_release() {
     let mut realm = Realm::default();
-    realm.eval("let weak,release,iterator,first;let gate=new Promise(r=>release=r);iterator=(()=>{let held=Symbol();weak=new WeakRef(held);return(async function*(){await gate;yield held})()})();first=iterator.next()").unwrap();
+    realm
+        .eval(
+            r#"
+                let weak, release, iterator, first;
+                let gate = new Promise(r => release = r);
+                iterator = (() => {
+                    let held = Symbol();
+                    weak = new WeakRef(held);
+                    return (async function*() {
+                        await gate;
+                        yield held
+                    })()
+                })();
+                first = iterator.next()
+            "#,
+        )
+        .unwrap();
     collect(&mut realm);
     check(&mut realm, "weak.deref()!==undefined");
     realm.eval("release();release=null").unwrap();
@@ -175,7 +340,20 @@ fn queued_symbol_values_and_suspended_captures_are_traced_and_unreachable_cycles
     realm.eval("iterator=null;first=null;gate=null").unwrap();
     collect(&mut realm);
     check(&mut realm, "weak.deref()===undefined");
-    realm.eval("let queuedWeak,block=new Promise(()=>{}),queuedIterator=(async function*(){})();queuedIterator.return(block);(()=>{let held=Symbol();queuedWeak=new WeakRef(held);queuedIterator.next(held)})()").unwrap();
+    realm
+        .eval(
+            r#"
+                let queuedWeak, block = new Promise(() => {}),
+                    queuedIterator = (async function*() {})();
+                queuedIterator.return(block);
+                (() => {
+                    let held = Symbol();
+                    queuedWeak = new WeakRef(held);
+                    queuedIterator.next(held)
+                })()
+            "#,
+        )
+        .unwrap();
     collect(&mut realm);
     check(&mut realm, "queuedWeak.deref()!==undefined");
     realm.eval("queuedIterator=null;block=null").unwrap();
@@ -187,7 +365,35 @@ fn queued_symbol_values_and_suspended_captures_are_traced_and_unreachable_cycles
 fn host_aborts_complete_instances_skip_javascript_cleanup_and_release_captures() {
     let mut realm = Realm::default();
     realm.reserve_unsupported_global("unsupportedHost");
-    realm.eval("let weak,closed=0,caught=0,finalized=0;let resource={[Symbol.dispose](){closed++}};weak=new WeakRef(resource[Symbol.dispose]);async function*g(){using r=resource;delete resource[Symbol.dispose];try{yield 1;unsupportedHost}catch{caught++}finally{finalized++}}let iterator=g();iterator.next()").unwrap();
+    realm
+        .eval(
+            r#"
+                let weak, closed = 0,
+                    caught = 0,
+                    finalized = 0;
+                let resource = {
+                    [Symbol.dispose]() {
+                        closed++
+                    }
+                };
+                weak = new WeakRef(resource[Symbol.dispose]);
+                async function* g() {
+                    using r = resource;
+                    delete resource[Symbol.dispose];
+                    try {
+                        yield 1;
+                        unsupportedHost
+                    } catch {
+                        caught++
+                    } finally {
+                        finalized++
+                    }
+                }
+                let iterator = g();
+                iterator.next()
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     assert!(matches!(
         realm.eval("iterator.next()"),
@@ -207,7 +413,23 @@ fn host_aborts_complete_instances_skip_javascript_cleanup_and_release_captures()
         max_steps: Some(20_000),
         ..Limits::default()
     });
-    limited.eval("let finalized=0;async function*g(){try{yield 1;while(true){}}finally{finalized++}}let iterator=g();iterator.next()").unwrap();
+    limited
+        .eval(
+            r#"
+                let finalized = 0;
+                async function* g() {
+                    try {
+                        yield 1;
+                        while (true) {}
+                    } finally {
+                        finalized++
+                    }
+                }
+                let iterator = g();
+                iterator.next()
+            "#,
+        )
+        .unwrap();
     drain(&mut limited);
     assert!(matches!(
         limited.eval("iterator.next()"),

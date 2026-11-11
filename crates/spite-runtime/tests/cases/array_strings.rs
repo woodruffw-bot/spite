@@ -67,17 +67,82 @@ fn join_is_generic_and_uses_length_of_array_like() {
 #[test]
 fn join_reads_length_then_separator_then_live_elements_in_order() {
     assert_true(
-        "let log='',o={0:{toString:()=>{log+='a';return 'A';}},1:{toString:()=>{log+='b';return 'B';}}};Object.defineProperty(o,'length',{get:()=>{log+='l';return {valueOf:()=>{log+='n';return 2;}};}});let s={toString:()=>{log+='s';return '|';}};Array.prototype.join.call(o,s)==='A|B' && log==='lnsab'",
+        r#"
+            let log = '',
+                o = {
+                    0: {
+                        toString: () => {
+                            log += 'a';
+                            return 'A';
+                        }
+                    },
+                    1: {
+                        toString: () => {
+                            log += 'b';
+                            return 'B';
+                        }
+                    }
+                };
+            Object.defineProperty(o, 'length', {
+                get: () => {
+                    log += 'l';
+                    return {
+                        valueOf: () => {
+                            log += 'n';
+                            return 2;
+                        }
+                    };
+                }
+            });
+            let s = {
+                toString: () => {
+                    log += 's';
+                    return '|';
+                }
+            };
+            Array.prototype.join.call(o, s) === 'A|B' && log === 'lnsab'
+        "#,
     );
     assert_true("let a=[1,2,3],s={toString:()=>{a.length=1;return '|';}};a.join(s)==='1||'");
     assert_true(
         "let a=[{toString:()=>{a[1]=9;a[3]=7;return 'x';}},2,3];a.join()==='x,9,3' && a.length===4",
     );
     assert_true(
-        "let n=0,o={length:2};Object.defineProperty(o,'0',{get:()=>{n++;o[1]='b';return 'a';}});Array.prototype.join.call(o)==='a,b' && n===1",
+        r#"
+            let n = 0,
+                o = {
+                    length: 2
+                };
+            Object.defineProperty(o, '0', {
+                get: () => {
+                    n++;
+                    o[1] = 'b';
+                    return 'a';
+                }
+            });
+            Array.prototype.join.call(o) === 'a,b' && n === 1
+        "#,
     );
     assert_true(
-        "let log='',o={length:2};Object.defineProperty(o,'0',{get:()=>{log+='0';return null;}});Object.defineProperty(o,'1',{get:()=>{log+='1';return undefined;}});Array.prototype.join.call(o)===',' && log==='01'",
+        r#"
+            let log = '',
+                o = {
+                    length: 2
+                };
+            Object.defineProperty(o, '0', {
+                get: () => {
+                    log += '0';
+                    return null;
+                }
+            });
+            Object.defineProperty(o, '1', {
+                get: () => {
+                    log += '1';
+                    return undefined;
+                }
+            });
+            Array.prototype.join.call(o) === ',' && log === '01'
+        "#,
     );
 }
 
@@ -151,7 +216,12 @@ fn to_string_falls_back_to_intrinsic_object_tag_and_accepts_generic_receivers() 
 fn methods_have_standard_descriptors_and_are_not_constructors() {
     for (name, length) in [("join", 1), ("toString", 0)] {
         assert_true(&format!(
-            "let f=Array.prototype.{name},d=Object.getOwnPropertyDescriptor(Array.prototype,'{name}');f.name==='{name}' && f.length==={length} && f.prototype===undefined && d.value===f && d.writable && !d.enumerable && d.configurable"
+            r#"
+                let f = Array.prototype.{name},
+                    d = Object.getOwnPropertyDescriptor(Array.prototype, '{name}');
+                f.name === '{name}' && f.length === {length} && f.prototype === undefined && d
+                    .value === f && d.writable && !d.enumerable && d.configurable
+            "#
         ));
         assert!(matches!(
             Realm::default().eval(&format!("new Array.prototype.{name}")),
@@ -162,7 +232,16 @@ fn methods_have_standard_descriptors_and_are_not_constructors() {
         ));
     }
     let mut realm = Realm::default();
-    realm.eval("let j=Array.prototype.join,t=Array.prototype.toString;delete Array.prototype.join;delete Array.prototype.toString").unwrap();
+    realm
+        .eval(
+            r#"
+                let j = Array.prototype.join,
+                    t = Array.prototype.toString;
+                delete Array.prototype.join;
+                delete Array.prototype.toString
+            "#,
+        )
+        .unwrap();
     realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval("j.call([1,2])==='1,2' && t.call({join:j,0:'x',length:1})==='x'"),

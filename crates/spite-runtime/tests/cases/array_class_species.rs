@@ -18,7 +18,28 @@ use crate::common::assert_true;
 fn inherited_species_constructs_fresh_array_subclasses_with_private_brands() {
     for (call, length) in CALLS {
         assert_true(&format!(
-            "let args,target;class C extends Array{{#initial=this.length;#read(){{return this.#initial;}}constructor(...xs){{super(...xs);args=xs;target=new.target;}}read(){{return this.#read();}}}}let a=new C(1,2,3),b=a.{call};b!==a && b instanceof C && Array.isArray(b) && Object.getPrototypeOf(b)===C.prototype && b.join()==='1,2,3' && b.read()==={length} && a.read()===3 && args.length===1 && args[0]==={length} && target===C"
+            r#"
+                let args, target;
+                class C extends Array {{
+                    #initial = this.length;
+                    #read() {{
+                        return this.#initial;
+                    }}
+                    constructor(...xs) {{
+                        super(...xs);
+                        args = xs;
+                        target = new.target;
+                    }}
+                    read() {{
+                        return this.#read();
+                    }}
+                }}
+                let a = new C(1, 2, 3),
+                    b = a.{call};
+                b !== a && b instanceof C && Array.isArray(b) && Object.getPrototypeOf(b) === C.prototype && b
+                    .join() === '1,2,3' && b.read() === {length} && a.read() === 3 && args.length === 1 &&
+                    args[0] === {length} && target === C
+            "#
         ));
     }
 }
@@ -27,7 +48,43 @@ fn inherited_species_constructs_fresh_array_subclasses_with_private_brands() {
 fn base_and_derived_elements_initialize_before_the_species_constructor_body() {
     for (call, length) in CALLS {
         assert_true(&format!(
-            "let log='';class B extends Array{{#b=this.#m();#m(){{log+='b';return this.length;}}readB(){{return this.#b;}}}}class C extends B{{#c=this.#m();#m(){{log+='c';return this.readB();}}constructor(n){{log+='s';super(n);log+='e';if(this.#c!==n)throw 7;}}readC(){{return this.#c;}}}}let a=new C(3);a[0]=1;a[1]=2;a[2]=3;log='';let b=a.{call};log==='sbce' && b.readB()==={length} && b.readC()==={length} && b.join()==='1,2,3'"
+            r#"
+                let log = '';
+                class B extends Array {{
+                    #b = this.#m();
+                    #m() {{
+                        log += 'b';
+                        return this.length;
+                    }}
+                    readB() {{
+                        return this.#b;
+                    }}
+                }}
+                class C extends B {{
+                    #c = this.#m();
+                    #m() {{
+                        log += 'c';
+                        return this.readB();
+                    }}
+                    constructor(n) {{
+                        log += 's';
+                        super(n);
+                        log += 'e';
+                        if (this.#c !== n) throw 7;
+                    }}
+                    readC() {{
+                        return this.#c;
+                    }}
+                }}
+                let a = new C(3);
+                a[0] = 1;
+                a[1] = 2;
+                a[2] = 3;
+                log = '';
+                let b = a.{call};
+                log === 'sbce' && b.readB() === {length} && b.readC() === {length} && b.join() ===
+                    '1,2,3'
+            "#
         ));
     }
 }
@@ -36,7 +93,20 @@ fn base_and_derived_elements_initialize_before_the_species_constructor_body() {
 fn default_derived_species_forwards_without_observing_the_array_iterator() {
     for (call, length) in CALLS {
         assert_true(&format!(
-            "class C extends Array{{#n=this.length;read(){{return this.#n;}}}}let a=new C(1,2,3);Array.prototype[Symbol.iterator]=function(){{throw 7;}};let b=a.{call};Array.isArray(b) && b instanceof C && b.read()==={length} && b.join()==='1,2,3'"
+            r#"
+                class C extends Array {{
+                    #n = this.length;
+                    read() {{
+                        return this.#n;
+                    }}
+                }}
+                let a = new C(1, 2, 3);
+                Array.prototype[Symbol.iterator] = function() {{
+                    throw 7;
+                }};
+                let b = a.{call};
+                Array.isArray(b) && b instanceof C && b.read() === {length} && b.join() === '1,2,3'
+            "#
         ));
     }
 }
@@ -48,7 +118,33 @@ fn custom_class_species_can_produce_ordinary_objects_with_private_elements() {
             call.starts_with("slice") || call.starts_with("concat") || call.starts_with("splice");
         let final_length = if writes_length { 3 } else { 99 };
         assert_true(&format!(
-            "let argc,target;class Result{{length=99;#n;#get(){{return this.#n;}}constructor(n){{this.#n=n;argc=arguments.length;target=new.target;}}read(){{return this.#get();}}}}class C extends Array{{static get [Symbol.species](){{return Result;}}}}let a=new C(1,2,3),b=a.{call};b instanceof Result && !Array.isArray(b) && b[0]===1 && b[1]===2 && b[2]===3 && b.length==={final_length} && b.read()==={length} && argc===1 && target===Result"
+            r#"
+                let argc, target;
+                class Result {{
+                    length = 99;
+                    #n;
+                    #get() {{
+                        return this.#n;
+                    }}
+                    constructor(n) {{
+                        this.#n = n;
+                        argc = arguments.length;
+                        target = new.target;
+                    }}
+                    read() {{
+                        return this.#get();
+                    }}
+                }}
+                class C extends Array {{
+                    static get[Symbol.species]() {{
+                        return Result;
+                    }}
+                }}
+                let a = new C(1, 2, 3),
+                    b = a.{call};
+                b instanceof Result && !Array.isArray(b) && b[0] === 1 && b[1] === 2 && b[2] === 3 && b
+                    .length === {final_length} && b.read() === {length} && argc === 1 && target === Result
+            "#
         ));
     }
 }
@@ -57,7 +153,26 @@ fn custom_class_species_can_produce_ordinary_objects_with_private_elements() {
 fn null_species_uses_the_intrinsic_array_without_initializing_subclass_elements() {
     for (call, _) in CALLS {
         assert_true(&format!(
-            "let fields=0,species=0;class C extends Array{{#x=fields++;static get [Symbol.species](){{species++;return null;}}}}let a=new C(1,2,3),p=Array.prototype;fields=0;Array=function(){{throw 7;}};let b=a.{call};Object.getPrototypeOf(b)===p && !(b instanceof C) && b.join()==='1,2,3' && fields===0 && species===1"
+            r#"
+                let fields = 0,
+                    species = 0;
+                class C extends Array {{
+                    #x = fields++;
+                    static get[Symbol.species]() {{
+                        species++;
+                        return null;
+                    }}
+                }}
+                let a = new C(1, 2, 3),
+                    p = Array.prototype;
+                fields = 0;
+                Array = function() {{
+                    throw 7;
+                }};
+                let b = a.{call};
+                Object.getPrototypeOf(b) === p && !(b instanceof C) && b.join() === '1,2,3' && fields === 0 &&
+                    species === 1
+            "#
         ));
     }
 }
@@ -66,10 +181,62 @@ fn null_species_uses_the_intrinsic_array_without_initializing_subclass_elements(
 fn returned_objects_receive_derived_private_brands_before_result_definitions() {
     for (call, length) in CALLS {
         assert_true(&format!(
-            "let escaped={{}},n;class Base{{constructor(x){{n=x;return escaped;}}}}class Result extends Base{{#x=7;#read(){{return this.#x;}}static read(o){{return o.#read();}}}}let a=[1,2,3];a.constructor={{[Symbol.species]:Result}};let b=a.{call};b===escaped && Result.read(b)===7 && b[0]===1 && b[1]===2 && b[2]===3 && n==={length}"
+            r#"
+                let escaped = {{}},
+                    n;
+                class Base {{
+                    constructor(x) {{
+                        n = x;
+                        return escaped;
+                    }}
+                }}
+                class Result extends Base {{
+                    #x = 7;
+                    #read() {{
+                        return this.#x;
+                    }}
+                    static read(o) {{
+                        return o.#read();
+                    }}
+                }}
+                let a = [1, 2, 3];
+                a.constructor = {{
+                    [Symbol.species]: Result
+                }};
+                let b = a.{call};
+                b === escaped && Result.read(b) === 7 && b[0] === 1 && b[1] === 2 && b[2] === 3 && n ===
+                    {length}
+            "#
         ));
         assert_true(&format!(
-            "let escaped=Object.preventExtensions({{}});class Base{{constructor(){{return escaped;}}}}class Result extends Base{{#x=7;#read(){{return this.#x;}}static read(o){{return o.#read();}}}}let a=[1,2,3];a.constructor={{[Symbol.species]:Result}};let caught=false;try{{a.{call};}}catch(e){{caught=e instanceof TypeError;}}caught && Result.read(escaped)===7 && !Object.hasOwn(escaped,'0')"
+            r#"
+                let escaped = Object.preventExtensions({{}});
+                class Base {{
+                    constructor() {{
+                        return escaped;
+                    }}
+                }}
+                class Result extends Base {{
+                    #x = 7;
+                    #read() {{
+                        return this.#x;
+                    }}
+                    static read(o) {{
+                        return o.#read();
+                    }}
+                }}
+                let a = [1, 2, 3];
+                a.constructor = {{
+                    [Symbol.species]: Result
+                }};
+                let caught = false;
+                try {{
+                    a.{call};
+                }} catch (e) {{
+                    caught = e instanceof TypeError;
+                }}
+                caught && Result.read(escaped) === 7 && !Object.hasOwn(escaped, '0')
+            "#
         ));
     }
 }
@@ -88,7 +255,24 @@ fn species_results_retain_private_fields_and_method_captures_during_collection()
     let mut realm = Realm::default();
     realm
         .eval(
-            "let result;(function(){let capture={n:7};class C extends Array{#value=capture;#read(){return this.#value.n;}read(){return this.#read();}}result=new C(1,2,3).map(v=>v);})();",
+            r#"
+                let result;
+                (function() {
+                    let capture = {
+                        n: 7
+                    };
+                    class C extends Array {
+                        #value = capture;
+                        #read() {
+                            return this.#value.n;
+                        }
+                        read() {
+                            return this.#read();
+                        }
+                    }
+                    result = new C(1, 2, 3).map(v => v);
+                })();
+            "#,
         )
         .unwrap();
     realm.collect(usize::MAX).unwrap();

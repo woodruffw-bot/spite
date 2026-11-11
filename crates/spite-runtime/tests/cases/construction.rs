@@ -50,7 +50,18 @@ fn base_construction_uses_object_returns_and_ignores_primitive_returns() {
 #[test]
 fn constructor_lookup_and_arguments_precede_checks_and_allocation() {
     truth(
-        "let order='';function F(a,b){order+='c';this.x=a+b;}let o=new ({[(order+='k','f')]:F})[(order+='r','f')](order+='a',order+='b');order==='krabc'",
+        r#"
+            let order = '';
+
+            function F(a, b) {
+                order += 'c';
+                this.x = a + b;
+            }
+            let o = new({
+                [(order += 'k', 'f')]: F
+            })[(order += 'r', 'f')](order += 'a', order += 'b');
+            order === 'krabc'
+        "#,
     );
     for constructor in [
         "0",
@@ -84,7 +95,15 @@ fn constructor_lookup_and_arguments_precede_checks_and_allocation() {
 #[test]
 fn bound_construction_forwards_arguments_and_uses_the_target_prototype() {
     truth(
-        "function F(a,b){this.sum=a+b;}let receiver={};let B=F.bind(receiver,3);let o=new B(4);o.sum===7 && receiver.sum===undefined && o.constructor===F",
+        r#"
+            function F(a, b) {
+                this.sum = a + b;
+            }
+            let receiver = {};
+            let B = F.bind(receiver, 3);
+            let o = new B(4);
+            o.sum === 7 && receiver.sum === undefined && o.constructor === F
+        "#,
     );
     truth(
         "function F(a,b,c){this.sum=a*100+b*10+c;}let B=F.bind(1,1).bind(2,2);new B(3).sum===123",

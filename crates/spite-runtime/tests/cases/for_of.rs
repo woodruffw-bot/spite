@@ -10,33 +10,179 @@ fn arrays_strings_holes_and_live_lengths_are_iterated() {
         "let values=[];for(let x of [,2])values.push(x);values.length===2 && values[0]===undefined && values[1]===2",
     );
     assert_true(
-        "let values=[];for(const x of 'A\\uD834\\uDF06\\uD800')values.push(x);values.length===3 && values[1]==='\\uD834\\uDF06' && values[2]==='\\uD800'",
+        r#"
+            let values = [];
+            for (const x of 'A\uD834\uDF06\uD800') values.push(x);
+            values.length === 3 && values[1] === '\uD834\uDF06' && values[2] === '\uD800'
+        "#,
     );
     assert_true(
         "let a=[1,2],v=[];for(let x of a){v.push(x);if(x===1)a.push(3);}v.join(',')==='1,2,3'",
     );
     assert_true(
-        "let caught=0;try{for(let x of null){};}catch(e){if(e instanceof TypeError)caught++;}try{for(let x of {}){};}catch(e){if(e instanceof TypeError)caught++;}caught===2",
+        r#"
+            let caught = 0;
+            try {
+                for (let x of null) {};
+            } catch (e) {
+                if (e instanceof TypeError) caught++;
+            }
+            try {
+                for (let x of {}) {};
+            } catch (e) {
+                if (e instanceof TypeError) caught++;
+            }
+            caught === 2
+        "#,
     );
 }
 
 #[test]
 fn next_is_cached_and_its_receiver_and_result_access_order_are_preserved() {
     assert_true(
-        "let log='',calls=0,it={get next(){log+='n';return function(){if(this!==it || arguments.length!==0)throw 7;log+='c';calls++;return {get done(){log+='d';return calls>1;},get value(){log+='v';return 8;}};}},return(){throw 9;}},source={get [Symbol.iterator](){log+='m';return function(){if(this!==source || arguments.length!==0)throw 6;log+='i';return it;}}};let value;for(value of source){log+='b';it.next=()=>{throw 5;};}log==='mincdvbcd' && value===8",
+        r#"
+            let log = '',
+                calls = 0,
+                it = {
+                    get next() {
+                        log += 'n';
+                        return function() {
+                            if (this !== it || arguments.length !== 0) throw 7;
+                            log += 'c';
+                            calls++;
+                            return {
+                                get done() {
+                                    log += 'd';
+                                    return calls > 1;
+                                },
+                                get value() {
+                                    log += 'v';
+                                    return 8;
+                                }
+                            };
+                        }
+                    },
+                    return () {
+                        throw 9;
+                    }
+                },
+                source = {
+                    get [Symbol.iterator]() {
+                        log += 'm';
+                        return function() {
+                            if (this !== source || arguments.length !== 0) throw 6;
+                            log += 'i';
+                            return it;
+                        }
+                    }
+                };
+            let value;
+            for (value of source) {
+                log += 'b';
+                it.next = () => {
+                    throw 5;
+                };
+            }
+            log === 'mincdvbcd' && value === 8
+        "#,
     );
 }
 
 #[test]
 fn lhs_references_are_evaluated_after_each_value_and_assignment_errors_close() {
     assert_true(
-        "let log='',n=0,obj={},it={next(){log+='n';return {done:n++===2,get value(){log+='v';return n;}}}},source={[Symbol.iterator](){return it;}};function key(){log+='k';return n;}for(obj[key()] of source)log+='b';log==='nvkbnvkbn' && obj[1]===1 && obj[2]===2",
+        r#"
+            let log = '',
+                n = 0,
+                obj = {},
+                it = {
+                    next() {
+                        log += 'n';
+                        return {
+                            done: n++ === 2,
+                            get value() {
+                                log += 'v';
+                                return n;
+                            }
+                        }
+                    }
+                },
+                source = {
+                    [Symbol.iterator]() {
+                        return it;
+                    }
+                };
+
+            function key() {
+                log += 'k';
+                return n;
+            }
+            for (obj[key()] of source) log += 'b';
+            log === 'nvkbnvkbn' && obj[1] === 1 && obj[2] === 2
+        "#,
     );
     assert_true(
-        "let closes=0,source={[Symbol.iterator](){return {next(){return {value:7};},return(){closes++;return {};}}}};const x=1;let caught=false;try{for(x of source){throw 9;}}catch(e){caught=e instanceof TypeError;}caught && closes===1 && x===1",
+        r#"
+            let closes = 0,
+                source = {
+                    [Symbol.iterator]() {
+                        return {
+                            next() {
+                                return {
+                                    value: 7
+                                };
+                            },
+                            return () {
+                                closes++;
+                                return {};
+                            }
+                        }
+                    }
+                };
+            const x = 1;
+            let caught = false;
+            try {
+                for (x of source) {
+                    throw 9;
+                }
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && closes === 1 && x === 1
+        "#,
     );
     assert_true(
-        "let marker={},closes=0,obj={set x(v){throw marker;}},source={[Symbol.iterator](){return {next(){return {value:7};},return(){closes++;throw 8;}}}};let caught=false;try{for(obj.x of source){};}catch(e){caught=e===marker;}caught && closes===1",
+        r#"
+            let marker = {},
+                closes = 0,
+                obj = {
+                    set x(v) {
+                        throw marker;
+                    }
+                },
+                source = {
+                    [Symbol.iterator]() {
+                        return {
+                            next() {
+                                return {
+                                    value: 7
+                                };
+                            },
+                            return () {
+                                closes++;
+                                throw 8;
+                            }
+                        }
+                    }
+                };
+            let caught = false;
+            try {
+                for (obj.x of source) {};
+            } catch (e) {
+                caught = e === marker;
+            }
+            caught && closes === 1
+        "#,
     );
 }
 
@@ -46,7 +192,14 @@ fn var_is_hoisted_and_uses_the_surrounding_binding() {
         "let before=x;for(var x of [1,2]){};before===undefined && x===2 && globalThis.x===2",
     );
     assert_true(
-        "function f(){let before=x;for(var x of [1,2]){};return before===undefined && x===2;}f() && !Object.hasOwn(globalThis,'x')",
+        r#"
+            function f() {
+                let before = x;
+                for (var x of [1, 2]) {};
+                return before === undefined && x === 2;
+            }
+            f() && !Object.hasOwn(globalThis, 'x')
+        "#,
     );
     assert_true(
         "let closures=[];for(var x of [1,2])closures.push(()=>x);closures[0]()===2 && closures[1]()===2",
@@ -59,16 +212,62 @@ fn lexical_bindings_have_rhs_tdz_and_fresh_iteration_environments() {
         "let x=[1],caught=false;try{for(let x of x){};}catch(e){caught=e instanceof ReferenceError;}caught && x[0]===1",
     );
     assert_true(
-        "let x=7,closures=[];for(let x of [1,2]){closures.push(()=>x);x+=10;}x===7 && closures[0]()===11 && closures[1]()===12",
+        r#"
+            let x = 7,
+                closures = [];
+            for (let x of [1, 2]) {
+                closures.push(() => x);
+                x += 10;
+            }
+            x === 7 && closures[0]() === 11 && closures[1]() === 12
+        "#,
     );
     assert_true(
-        "let closures=[];for(const x of [1,2])closures.push(()=>x);closures[0]()===1 && closures[1]()===2 && typeof x==='undefined'",
+        r#"
+            let closures = [];
+            for (const x of [1, 2]) closures.push(() => x);
+            closures[0]() === 1 && closures[1]() === 2 && typeof x === 'undefined'
+        "#,
     );
     assert_true(
-        "let rhs,inside;for(let x of (rhs=()=>x,[1]))inside=()=>x;let caught=false;try{rhs();}catch(e){caught=e instanceof ReferenceError;}caught && inside()===1",
+        r#"
+            let rhs, inside;
+            for (let x of (rhs = () => x, [1])) inside = () => x;
+            let caught = false;
+            try {
+                rhs();
+            } catch (e) {
+                caught = e instanceof ReferenceError;
+            }
+            caught && inside() === 1
+        "#,
     );
     assert_true(
-        "let closes=0,caught=false,source={[Symbol.iterator](){return {next(){return {value:1};},return(){closes++;return {};}}}};try{for(const x of source)x=2;}catch(e){caught=e instanceof TypeError;}caught && closes===1 && typeof x==='undefined'",
+        r#"
+            let closes = 0,
+                caught = false,
+                source = {
+                    [Symbol.iterator]() {
+                        return {
+                            next() {
+                                return {
+                                    value: 1
+                                };
+                            },
+                            return () {
+                                closes++;
+                                return {};
+                            }
+                        }
+                    }
+                };
+            try {
+                for (const x of source) x = 2;
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && closes === 1 && typeof x === 'undefined'
+        "#,
     );
 }
 
@@ -88,61 +287,422 @@ fn closures_from_iteration_bindings_survive_explicit_collection() {
 #[test]
 fn break_return_and_outer_continue_close_but_matching_continue_does_not() {
     assert_true(
-        "let closes=0,nexts=0,source={[Symbol.iterator](){return {next(){nexts++;return {value:nexts};},return(){closes++;return {};}}}};for(let x of source){if(x===1)continue;break;}closes===1 && nexts===2",
+        r#"
+            let closes = 0,
+                nexts = 0,
+                source = {
+                    [Symbol.iterator]() {
+                        return {
+                            next() {
+                                nexts++;
+                                return {
+                                    value: nexts
+                                };
+                            },
+                            return () {
+                                closes++;
+                                return {};
+                            }
+                        }
+                    }
+                };
+            for (let x of source) {
+                if (x === 1) continue;
+                break;
+            }
+            closes === 1 && nexts === 2
+        "#,
     );
     assert_true(
-        "let closes=0,n=0,source={[Symbol.iterator](){return {next(){return {value:++n,done:n>2};},return(){closes++;return {};}}}};a:b:for(let x of source)continue a;closes===0 && n===3",
+        r#"
+            let closes = 0,
+                n = 0,
+                source = {
+                    [Symbol.iterator]() {
+                        return {
+                            next() {
+                                return {
+                                    value: ++n,
+                                    done: n > 2
+                                };
+                            },
+                            return () {
+                                closes++;
+                                return {};
+                            }
+                        }
+                    }
+                };
+            a: b: for (let x of source) continue a;
+            closes === 0 && n === 3
+        "#,
     );
     assert_true(
-        "let log='',source={[Symbol.iterator](){return {next(){return {value:7};},get return(){log+='g';return function(){if(arguments.length!==0)throw 9;log+='r';return {};};}}}};function f(){for(let x of source){try{return x;}finally{log+='f';}}}f()===7 && log==='fgr'",
+        r#"
+            let log = '',
+                source = {
+                    [Symbol.iterator]() {
+                        return {
+                            next() {
+                                return {
+                                    value: 7
+                                };
+                            },
+                            get return() {
+                                log += 'g';
+                                return function() {
+                                    if (arguments.length !== 0) throw 9;
+                                    log += 'r';
+                                    return {};
+                                };
+                            }
+                        }
+                    }
+                };
+
+            function f() {
+                for (let x of source) {
+                    try {
+                        return x;
+                    } finally {
+                        log += 'f';
+                    }
+                }
+            }
+            f() === 7 && log === 'fgr'
+        "#,
     );
     assert_true(
-        "let closes=0,source={[Symbol.iterator](){return {next(){return {value:1};},return(){closes++;return {};}}}};outer:for(let i=0;i<2;i++){for(let x of source)continue outer;}closes===2",
+        r#"
+            let closes = 0,
+                source = {
+                    [Symbol.iterator]() {
+                        return {
+                            next() {
+                                return {
+                                    value: 1
+                                };
+                            },
+                            return () {
+                                closes++;
+                                return {};
+                            }
+                        }
+                    }
+                };
+            outer: for (let i = 0; i < 2; i++) {
+                for (let x of source) continue outer;
+            }
+            closes === 2
+        "#,
     );
     assert_true(
-        "let log='',source={[Symbol.iterator](){return {next(){return {value:1};},return(){log+='r';return {};}}}};outer:for(let x of source){for(let y of source)break outer;}log==='rr'",
+        r#"
+            let log = '',
+                source = {
+                    [Symbol.iterator]() {
+                        return {
+                            next() {
+                                return {
+                                    value: 1
+                                };
+                            },
+                            return () {
+                                log += 'r';
+                                return {};
+                            }
+                        }
+                    }
+                };
+            outer: for (let x of source) {
+                for (let y of source) break outer;
+            }
+            log === 'rr'
+        "#,
     );
 }
 
 #[test]
 fn normal_close_validates_return_and_can_replace_control_transfers() {
     assert_true(
-        "let caught=0;for(let method of [1,()=>1]){let source={[Symbol.iterator](){return {next(){return {value:7};},return:method};}};try{for(let x of source)break;}catch(e){if(e instanceof TypeError)caught++;}}caught===2",
+        r#"
+            let caught = 0;
+            for (let method of [1, () => 1]) {
+                let source = {
+                    [Symbol.iterator]() {
+                        return {
+                            next() {
+                                return {
+                                    value: 7
+                                };
+                            },
+                            return: method
+                        };
+                    }
+                };
+                try {
+                    for (let x of source) break;
+                } catch (e) {
+                    if (e instanceof TypeError) caught++;
+                }
+            }
+            caught === 2
+        "#,
     );
     assert_true(
-        "let marker={},source={[Symbol.iterator](){return {next(){return {value:7};},get return(){throw marker;}}}},caught=false;try{for(let x of source)break;}catch(e){caught=e===marker;}caught",
+        r#"
+            let marker = {},
+                source = {
+                    [Symbol.iterator]() {
+                        return {
+                            next() {
+                                return {
+                                    value: 7
+                                };
+                            },
+                            get return() {
+                                throw marker;
+                            }
+                        }
+                    }
+                },
+                caught = false;
+            try {
+                for (let x of source) break;
+            } catch (e) {
+                caught = e === marker;
+            }
+            caught
+        "#,
     );
     assert_true(
-        "let marker={},source={[Symbol.iterator](){return {next(){return {value:7};},return(){throw marker;}}}},caught=false;function f(){for(let x of source)return 7;}try{f();}catch(e){caught=e===marker;}caught",
+        r#"
+            let marker = {},
+                source = {
+                    [Symbol.iterator]() {
+                        return {
+                            next() {
+                                return {
+                                    value: 7
+                                };
+                            },
+                            return () {
+                                throw marker;
+                            }
+                        }
+                    }
+                },
+                caught = false;
+
+            function f() {
+                for (let x of source) return 7;
+            }
+            try {
+                f();
+            } catch (e) {
+                caught = e === marker;
+            }
+            caught
+        "#,
     );
     assert_true(
-        "let source={[Symbol.iterator](){return {next(){return {value:7};},return:null};}},x;for(x of source)break;x===7",
+        r#"
+            let source = {
+                    [Symbol.iterator]() {
+                        return {
+                            next() {
+                                return {
+                                    value: 7
+                                };
+                            },
+                            return: null
+                        };
+                    }
+                },
+                x;
+            for (x of source) break;
+            x === 7
+        "#,
     );
     assert_true(
-        "let source={[Symbol.iterator](){return {next(){return {value:7};},return(){return Object.freeze({get done(){throw 1;},get value(){throw 2;}});}}}};for(let x of source)break;true",
+        r#"
+            let source = {
+                [Symbol.iterator]() {
+                    return {
+                        next() {
+                            return {
+                                value: 7
+                            };
+                        },
+                        return () {
+                            return Object.freeze({
+                                get done() {
+                                    throw 1;
+                                },
+                                get value() {
+                                    throw 2;
+                                }
+                            });
+                        }
+                    }
+                }
+            };
+            for (let x of source) break;
+            true
+        "#,
     );
 }
 
 #[test]
 fn incoming_throws_override_cleanup_language_errors_and_non_object_results() {
     assert_true(
-        "let marker={},closes=0,caught=0;for(let method of [()=>{closes++;throw 8;},()=>{closes++;return 1;},1,null]){let source={[Symbol.iterator](){return {next(){return {value:7};},return:method};}};try{for(let x of source)throw marker;}catch(e){if(e===marker)caught++;}}caught===4 && closes===2",
+        r#"
+            let marker = {},
+                closes = 0,
+                caught = 0;
+            for (let method of [() => {
+                    closes++;
+                    throw 8;
+                }, () => {
+                    closes++;
+                    return 1;
+                }, 1, null]) {
+                let source = {
+                    [Symbol.iterator]() {
+                        return {
+                            next() {
+                                return {
+                                    value: 7
+                                };
+                            },
+                            return: method
+                        };
+                    }
+                };
+                try {
+                    for (let x of source) throw marker;
+                } catch (e) {
+                    if (e === marker) caught++;
+                }
+            }
+            caught === 4 && closes === 2
+        "#,
     );
     assert_true(
-        "let marker={},gets=0,source={[Symbol.iterator](){return {next(){return {value:7};},get return(){gets++;throw 8;}}}},caught=false;try{for(let x of source)throw marker;}catch(e){caught=e===marker;}caught && gets===1",
+        r#"
+            let marker = {},
+                gets = 0,
+                source = {
+                    [Symbol.iterator]() {
+                        return {
+                            next() {
+                                return {
+                                    value: 7
+                                };
+                            },
+                            get return() {
+                                gets++;
+                                throw 8;
+                            }
+                        }
+                    }
+                },
+                caught = false;
+            try {
+                for (let x of source) throw marker;
+            } catch (e) {
+                caught = e === marker;
+            }
+            caught && gets === 1
+        "#,
     );
 }
 
 #[test]
 fn iterator_step_failures_never_close_and_exhaustion_skips_value() {
     assert_true(
-        "let marker={},closes=0,caught=0;for(let next of [()=>{throw marker;},()=>({get done(){throw marker;}}),()=>({get value(){throw marker;}})]){let source={[Symbol.iterator](){return {next,return(){closes++;return {};}}}};try{for(let x of source){};}catch(e){if(e===marker)caught++;}}closes===0 && caught===3",
+        r#"
+            let marker = {},
+                closes = 0,
+                caught = 0;
+            for (let next of [() => {
+                    throw marker;
+                }, () => ({
+                    get done() {
+                        throw marker;
+                    }
+                }), () => ({
+                    get value() {
+                        throw marker;
+                    }
+                })]) {
+                let source = {
+                    [Symbol.iterator]() {
+                        return {
+                            next,
+                            return () {
+                                closes++;
+                                return {};
+                            }
+                        }
+                    }
+                };
+                try {
+                    for (let x of source) {};
+                } catch (e) {
+                    if (e === marker) caught++;
+                }
+            }
+            closes === 0 && caught === 3
+        "#,
     );
     assert_true(
-        "let closes=0,caught=0;for(let next of [1,()=>1]){let source={[Symbol.iterator](){return {next,return(){closes++;return {};}}}};try{for(let x of source){};}catch(e){if(e instanceof TypeError)caught++;}}closes===0 && caught===2",
+        r#"
+            let closes = 0,
+                caught = 0;
+            for (let next of [1, () => 1]) {
+                let source = {
+                    [Symbol.iterator]() {
+                        return {
+                            next,
+                            return () {
+                                closes++;
+                                return {};
+                            }
+                        }
+                    }
+                };
+                try {
+                    for (let x of source) {};
+                } catch (e) {
+                    if (e instanceof TypeError) caught++;
+                }
+            }
+            closes === 0 && caught === 2
+        "#,
     );
     assert_true(
-        "let source={[Symbol.iterator](){return {next(){return {done:1,get value(){throw 7;}}},return(){throw 8;}}}};for(let x of source)throw 9;true",
+        r#"
+            let source = {
+                [Symbol.iterator]() {
+                    return {
+                        next() {
+                            return {
+                                done: 1,
+                                get value() {
+                                    throw 7;
+                                }
+                            }
+                        },
+                        return () {
+                            throw 8;
+                        }
+                    }
+                }
+            };
+            for (let x of source) throw 9;
+            true
+        "#,
     );
 }
 

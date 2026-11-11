@@ -34,19 +34,40 @@ fn check(zone: &str, source: &str) {
 fn local_fields_keep_historical_seconds_and_utc_timezone_offset_is_positive_zero() {
     check(
         "UTC",
-        "let d=new Date(-1);d.getFullYear()===1969 && d.getMonth()===11 && d.getDate()===31 && d.getDay()===3 && d.getHours()===23 && d.getMinutes()===59 && d.getSeconds()===59 && d.getMilliseconds()===999 && 1/d.getTimezoneOffset()===Infinity",
+        r#"
+            let d = new Date(-1);
+            d.getFullYear() === 1969 && d.getMonth() === 11 && d.getDate() === 31 && d.getDay() === 3 && d
+                .getHours() === 23 && d.getMinutes() === 59 && d.getSeconds() === 59 && d
+            .getMilliseconds() === 999 && 1 / d.getTimezoneOffset() === Infinity
+        "#,
     );
     check(
         "America/New_York",
-        "let d=new Date(0);d.getFullYear()===1969 && d.getMonth()===11 && d.getDate()===31 && d.getDay()===3 && d.getHours()===19 && d.getMinutes()===0 && d.getSeconds()===0 && d.getMilliseconds()===0 && d.getTimezoneOffset()===300",
+        r#"
+            let d = new Date(0);
+            d.getFullYear() === 1969 && d.getMonth() === 11 && d.getDate() === 31 && d.getDay() === 3 && d
+                .getHours() === 19 && d.getMinutes() === 0 && d.getSeconds() === 0 && d
+            .getMilliseconds() === 0 && d.getTimezoneOffset() === 300
+        "#,
     );
     check(
         "America/New_York",
-        "let d=new Date(Date.UTC(1800,0,1));d.getFullYear()===1799 && d.getMonth()===11 && d.getDate()===31 && d.getHours()===19 && d.getMinutes()===3 && d.getSeconds()===58 && d.getTimezoneOffset()===17762/60",
+        r#"
+            let d = new Date(Date.UTC(1800, 0, 1));
+            d.getFullYear() === 1799 && d.getMonth() === 11 && d.getDate() === 31 && d.getHours() === 19 &&
+                d.getMinutes() === 3 && d.getSeconds() === 58 && d.getTimezoneOffset() === 17762 / 60
+        "#,
     );
     check(
         "Africa/Abidjan",
-        "let before=new Date(-1830383032001),at=new Date(-1830383032000);before.getHours()===23 && before.getMinutes()===59 && before.getSeconds()===59 && before.getMilliseconds()===999 && before.getDate()===31 && before.getTimezoneOffset()===968/60 && at.getHours()===0 && at.getMinutes()===16 && at.getSeconds()===8 && at.getDate()===1 && 1/at.getTimezoneOffset()===Infinity",
+        r#"
+            let before = new Date(-1830383032001),
+                at = new Date(-1830383032000);
+            before.getHours() === 23 && before.getMinutes() === 59 && before.getSeconds() === 59 && before
+                .getMilliseconds() === 999 && before.getDate() === 31 && before.getTimezoneOffset() ===
+                968 / 60 && at.getHours() === 0 && at.getMinutes() === 16 && at.getSeconds() === 8 && at
+                .getDate() === 1 && 1 / at.getTimezoneOffset() === Infinity
+        "#,
     );
 }
 
@@ -54,15 +75,31 @@ fn local_fields_keep_historical_seconds_and_utc_timezone_offset_is_positive_zero
 fn calendar_reads_follow_exact_spring_and_autumn_transitions() {
     check(
         "America/New_York",
-        "let before=new Date(Date.UTC(2024,2,10,6,59,59,999)),at=new Date(Date.UTC(2024,2,10,7));before.getHours()===1 && before.getMinutes()===59 && before.getMilliseconds()===999 && before.getTimezoneOffset()===300 && at.getHours()===3 && at.getMinutes()===0 && at.getTimezoneOffset()===240",
+        r#"
+            let before = new Date(Date.UTC(2024, 2, 10, 6, 59, 59, 999)),
+                at = new Date(Date.UTC(2024, 2, 10, 7));
+            before.getHours() === 1 && before.getMinutes() === 59 && before.getMilliseconds() === 999 &&
+                before.getTimezoneOffset() === 300 && at.getHours() === 3 && at.getMinutes() === 0 && at
+                .getTimezoneOffset() === 240
+        "#,
     );
     check(
         "America/New_York",
-        "let early=new Date(Date.UTC(2024,10,3,5,30)),late=new Date(Date.UTC(2024,10,3,6,30));early.getHours()===1 && early.getMinutes()===30 && early.getTimezoneOffset()===240 && late.getHours()===1 && late.getMinutes()===30 && late.getTimezoneOffset()===300",
+        r#"
+            let early = new Date(Date.UTC(2024, 10, 3, 5, 30)),
+                late = new Date(Date.UTC(2024, 10, 3, 6, 30));
+            early.getHours() === 1 && early.getMinutes() === 30 && early.getTimezoneOffset() === 240 &&
+                late.getHours() === 1 && late.getMinutes() === 30 && late.getTimezoneOffset() === 300
+        "#,
     );
     check(
         "Australia/Lord_Howe",
-        "let before=new Date(Date.UTC(2024,9,5,15,29,59,999)),at=new Date(Date.UTC(2024,9,5,15,30));before.getHours()===1 && before.getMinutes()===59 && before.getTimezoneOffset()===-630 && at.getHours()===2 && at.getMinutes()===30 && at.getTimezoneOffset()===-660",
+        r#"
+            let before = new Date(Date.UTC(2024, 9, 5, 15, 29, 59, 999)),
+                at = new Date(Date.UTC(2024, 9, 5, 15, 30));
+            before.getHours() === 1 && before.getMinutes() === 59 && before.getTimezoneOffset() === -630 &&
+                at.getHours() === 2 && at.getMinutes() === 30 && at.getTimezoneOffset() === -660
+        "#,
     );
 }
 

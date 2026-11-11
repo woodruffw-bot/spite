@@ -25,7 +25,22 @@ fn only_nullish_bases_short_circuit_and_ungrouped_suffixes_skip_keys_and_argumen
 #[test]
 fn grouping_ends_short_circuiting_but_preserves_property_call_receivers() {
     assert_true(
-        "let n=0,caught=0;null?.m(n++);try{(null?.m)(n++);}catch(e){if(e instanceof TypeError)caught++;}try{(null?.x).y;}catch(e){if(e instanceof TypeError)caught++;}caught===2 && n===1",
+        r#"
+            let n = 0,
+                caught = 0;
+            null?.m(n++);
+            try {
+                (null?.m)(n++);
+            } catch (e) {
+                if (e instanceof TypeError) caught++;
+            }
+            try {
+                (null?.x).y;
+            } catch (e) {
+                if (e instanceof TypeError) caught++;
+            }
+            caught === 2 && n === 1
+        "#,
     );
     for call in [
         "a?.m(7)",
@@ -36,7 +51,17 @@ fn grouping_ends_short_circuiting_but_preserves_property_call_receivers() {
         "(a.m)?.(7)",
     ] {
         assert_true(&format!(
-            "let calls=0,a={{m:function(value){{'use strict';calls++;return this===a && value===7 && arguments.length===1;}}}};{call} && calls===1"
+            r#"
+                let calls = 0,
+                    a = {{
+                        m: function(value) {{
+                            'use strict';
+                            calls++;
+                            return this === a && value === 7 && arguments.length === 1;
+                        }}
+                    }};
+                {call} && calls === 1
+            "#
         ));
     }
     assert_true(
@@ -48,16 +73,67 @@ fn grouping_ends_short_circuiting_but_preserves_property_call_receivers() {
 #[test]
 fn getters_keys_and_calls_are_ordered_once_with_late_callable_checks() {
     assert_true(
-        "let log='',receiver,argc,o={get m(){log+='g';return function(value){'use strict';receiver=this;argc=arguments.length;log+='c';return value;};}},key={[Symbol.toPrimitive](hint){log+='k';if(hint!=='string')throw 7;return 'm';}};let result=o?.[(log+='e',key)]?.((log+='a',8));result===8 && log==='ekgac' && receiver===o && argc===1",
+        r#"
+            let log = '',
+                receiver, argc, o = {
+                    get m() {
+                        log += 'g';
+                        return function(value) {
+                            'use strict';
+                            receiver = this;
+                            argc = arguments.length;
+                            log += 'c';
+                            return value;
+                        };
+                    }
+                },
+                key = {
+                    [Symbol.toPrimitive](hint) {
+                        log += 'k';
+                        if (hint !== 'string') throw 7;
+                        return 'm';
+                    }
+                };
+            let result = o?.[(log += 'e', key)]?.((log += 'a', 8));
+            result === 8 && log === 'ekgac' && receiver === o && argc === 1
+        "#,
     );
     assert_true(
         "let gets=0,steps=0,o={get m(){gets++;return null;}};o.m?.(steps++)===undefined && gets===1 && steps===0",
     );
     assert_true(
-        "let log='',o={m:7},caught=false;try{o?.m?.((log+='a',1));}catch(e){caught=e instanceof TypeError;}caught && log==='a'",
+        r#"
+            let log = '',
+                o = {
+                    m: 7
+                },
+                caught = false;
+            try {
+                o?.m?.((log += 'a', 1));
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && log === 'a'
+        "#,
     );
     assert_true(
-        "let sentinel={},log='',o={m:7},caught=false;try{o?.m((()=>{log+='a';throw sentinel;})(),(log+='b',2));}catch(e){caught=e===sentinel;}caught && log==='a'",
+        r#"
+            let sentinel = {},
+                log = '',
+                o = {
+                    m: 7
+                },
+                caught = false;
+            try {
+                o?.m((() => {
+                    log += 'a';
+                    throw sentinel;
+                })(), (log += 'b', 2));
+            } catch (e) {
+                caught = e === sentinel;
+            }
+            caught && log === 'a'
+        "#,
     );
     assert_true(
         "let original=function(){return 7;},o={m:original};o?.m?.((o.m=()=>8))===7 && o.m()===8",
@@ -71,10 +147,44 @@ fn only_explicit_optional_steps_guard_later_nullish_values() {
         "let o={},caught=false;try{o?.x.y;}catch(e){caught=e instanceof TypeError;}caught && o?.x?.y===undefined",
     );
     assert_true(
-        "let log='',key={[Symbol.toPrimitive](){log+='k';return 'x';}},caught=false;try{({x:null})?.x[(log+='e',key)];}catch(e){caught=e instanceof TypeError;}caught && log==='e'",
+        r#"
+            let log = '',
+                key = {
+                    [Symbol.toPrimitive]() {
+                        log += 'k';
+                        return 'x';
+                    }
+                },
+                caught = false;
+            try {
+                ({
+                    x: null
+                })?.x[(log += 'e', key)];
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && log === 'e'
+        "#,
     );
     assert_true(
-        "let log='',target={},o={get a(){log+='a';return target;}},key={[Symbol.toPrimitive](){log+='k';return 'b';}};(o?.a)[(log+='e',key)]=(log+='r',7);log==='aerk' && target.b===7",
+        r#"
+            let log = '',
+                target = {},
+                o = {
+                    get a() {
+                        log += 'a';
+                        return target;
+                    }
+                },
+                key = {
+                    [Symbol.toPrimitive]() {
+                        log += 'k';
+                        return 'b';
+                    }
+                };
+            (o?.a)[(log += 'e', key)] = (log += 'r', 7);
+            log === 'aerk' && target.b === 7
+        "#,
     );
     assert_true("(true?.30:false)===0.3");
 }
@@ -91,11 +201,36 @@ fn deletion_keeps_the_final_reference_and_never_reads_its_getter() {
         "let n=0,key={[Symbol.toPrimitive](){n++;throw 7;}};delete null?.[key] && delete undefined?.x.y && n===0",
     );
     assert_true(
-        "let symbol=Symbol(),n=0,key={[Symbol.toPrimitive](){n++;return symbol;}},o={[symbol]:7};delete o?.[key] && n===1 && !Object.hasOwn(o,symbol)",
+        r#"
+            let symbol = Symbol(),
+                n = 0,
+                key = {
+                    [Symbol.toPrimitive]() {
+                        n++;
+                        return symbol;
+                    }
+                },
+                o = {
+                    [symbol]: 7
+                };
+            delete o?.[key] && n === 1 && !Object.hasOwn(o, symbol)
+        "#,
     );
     assert_true("let o=Object.freeze({x:7});(delete o?.x)===false && o.x===7");
     assert_true(
-        "'use strict';let o=Object.freeze({x:7}),caught=false;try{delete o?.x;}catch(e){caught=e instanceof TypeError;}caught && delete null?.x",
+        r#"
+            'use strict';
+            let o = Object.freeze({
+                    x: 7
+                }),
+                caught = false;
+            try {
+                delete o?.x;
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && delete null?.x
+        "#,
     );
     assert_true("let calls=0,o={f(){calls++;return {x:7};}};delete o?.f() && calls===1");
 }
@@ -116,7 +251,24 @@ fn unresolvable_and_uninitialized_bases_throw_and_typeof_does_not_hide_them() {
     }
     assert_true("let x;typeof x?.value==='undefined'");
     assert_true(
-        "let sentinel={},o={get x(){throw sentinel;}},flag=0,caught=false;try{o?.x;}catch(e){caught=e===sentinel;}finally{flag=7;}caught && flag===7",
+        r#"
+            let sentinel = {},
+                o = {
+                    get x() {
+                        throw sentinel;
+                    }
+                },
+                flag = 0,
+                caught = false;
+            try {
+                o?.x;
+            } catch (e) {
+                caught = e === sentinel;
+            } finally {
+                flag = 7;
+            }
+            caught && flag === 7
+        "#,
     );
 }
 
@@ -126,10 +278,32 @@ fn primitive_receivers_spread_newtarget_and_grouped_construction_follow_normal_c
         "Object.defineProperty(Number.prototype,'f',{value:function(){'use strict';return this;}});(7)?.f?.()===7",
     );
     assert_true(
-        "let a={f:function(x,y){'use strict';return this===a && x===7 && y===8 && arguments.length===2;}};a?.f?.(...[7,8])",
+        r#"
+            let a = {
+                f: function(x, y) {
+                    'use strict';
+                    return this === a && x === 7 && y === 8 && arguments.length === 2;
+                }
+            };
+            a?.f?.(...[7, 8])
+        "#,
     );
     assert_true(
-        "let n=0,context;function F(){new.target?.();}function G(){n++;context=this;}Reflect.construct(F,[],G);n===1 && context===globalThis",
+        r#"
+            let n = 0,
+                context;
+
+            function F() {
+                new.target?.();
+            }
+
+            function G() {
+                n++;
+                context = this;
+            }
+            Reflect.construct(F, [], G);
+            n === 1 && context === globalThis
+        "#,
     );
     assert_true("let o={C:function(x){this.x=x;}},a=new (o?.C)(7);a.x===7 && a instanceof o.C");
     assert_true("let n=0;function F(){n++;this.x=7;}new F()?.x===7 && n===1");

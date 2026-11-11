@@ -126,7 +126,19 @@ fn switch_break_is_local_and_continue_reaches_the_enclosing_loop() {
         Value::Number(3.0),
     );
     result(
-        "let count = 0; for (let i = 0; i < 3; i = i + 1) { switch (i) { case 1: continue; default: ; } count = count + 1; } count",
+        r#"
+            let count = 0;
+            for (let i = 0; i < 3; i = i + 1) {
+                switch (i) {
+                    case 1:
+                        continue;
+                    default:
+                        ;
+                }
+                count = count + 1;
+            }
+            count
+        "#,
         Value::Number(2.0),
     );
     result(

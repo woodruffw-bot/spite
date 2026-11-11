@@ -27,7 +27,15 @@ fn reductions_use_the_given_initial_value_or_first_present_element() {
             "let n=0;[7].{method}((a,v)=>{{n++;return a===undefined && v===7;}},undefined) && n===1"
         ));
         assert_true(&format!(
-            "let o={{valueOf:()=>{{throw 7;}}}};[].{method}(()=>0,o)===o && [,,].{method}(()=>0,o)===o && [o].{method}(()=>0)===o"
+            r#"
+                let o = {{
+                    valueOf: () => {{
+                        throw 7;
+                    }}
+                }};
+                [].{method}(() => 0, o) === o && [, , ].{method}(() => 0, o) === o && [o]
+                    .{method}(() => 0) === o
+            "#
         ));
         assert_true(&format!(
             "let n=0;[1,2,3].{method}((a,v)=>{{if(n>0 && a!==undefined)throw 7;n++;}},0)===undefined && n===3"
@@ -57,7 +65,17 @@ fn empty_or_all_hole_receivers_without_an_initial_value_throw_type_error() {
             ));
         }
         assert_true(&format!(
-            "let o={{length:2}};Object.defineProperty(o,'1',{{set:function(v){{}}}});Array.prototype.{method}.call(o,()=>{{throw 7;}})===undefined"
+            r#"
+                let o = {{
+                    length: 2
+                }};
+                Object.defineProperty(o, '1', {{
+                    set: function(v) {{}}
+                }});
+                Array.prototype.{method}.call(o, () => {{
+                    throw 7;
+                }}) === undefined
+            "#
         ));
     }
 }
@@ -66,7 +84,18 @@ fn empty_or_all_hole_receivers_without_an_initial_value_throw_type_error() {
 fn callbacks_receive_four_arguments_and_undefined_this_with_ordered_indices() {
     for method in METHODS {
         assert_true(&format!(
-            "let a=[1,2,3],log='',valid=true;a.{method}(function(p,v,k,o){{'use strict';valid=valid && this===undefined && arguments.length===4 && o===a && o[k]===v;log+=k;return p+v;}},0)===6 && valid && log==='{}'",
+            r#"
+                let a = [1, 2, 3],
+                    log = '',
+                    valid = true;
+                a.{method}(function(p, v, k, o) {{
+                    'use strict';
+                    valid = valid && this === undefined && arguments.length === 4 && o === a && o[
+                        k] === v;
+                    log += k;
+                    return p + v;
+                }}, 0) === 6 && valid && log === '{}'
+            "#,
             if method == "reduce" { "012" } else { "210" }
         ));
         assert_true(&format!(
@@ -112,10 +141,33 @@ fn initial_length_is_fixed_but_seed_getters_and_callbacks_can_change_later_value
     assert_true("let a=[1,2,3];a.reduceRight((p,v,k)=>{a[0]=9;a[3]=7;return p+v;},0)===14");
     assert_true("let a=[1,2,3],n=0;a.reduce((p,v)=>{n++;a.length=0;return p+v;},0)===1 && n===1");
     assert_true(
-        "let a=[1,2,3];Object.defineProperty(a,'0',{get:()=>{delete a[1];a[2]=9;a[3]=7;return 1;}});a.reduce((p,v)=>p+v)===10",
+        r#"
+            let a = [1, 2, 3];
+            Object.defineProperty(a, '0', {
+                get: () => {
+                    delete a[1];
+                    a[2] = 9;
+                    a[3] = 7;
+                    return 1;
+                }
+            });
+            a.reduce((p, v) => p + v) === 10
+        "#,
     );
     assert_true(
-        "let a=[1,2,3];Object.defineProperty(a,'2',{get:()=>{a.length=0;return 3;},configurable:true});a.reduceRight(()=>{throw 7;})===3",
+        r#"
+            let a = [1, 2, 3];
+            Object.defineProperty(a, '2', {
+                get: () => {
+                    a.length = 0;
+                    return 3;
+                },
+                configurable: true
+            });
+            a.reduceRight(() => {
+                throw 7;
+            }) === 3
+        "#,
     );
     assert_true("let a=[1,,,];a.reduce((p,v,k)=>{a[2]=7;return p+v;},0)===8");
     assert_true("let a=[,,,1];a.reduceRight((p,v,k)=>{a[1]=7;return p+v;},0)===8");
@@ -127,13 +179,34 @@ fn generic_receivers_use_boxed_objects_and_utf16_code_unit_indices() {
         "Array.prototype.reduce.call('💩',(p,v)=>p+v,'')==='💩' && Array.prototype.reduceRight.call('💩',(p,v)=>p+v,'')==='\\uDCA9\\uD83D'",
     );
     assert_true(
-        "let valid=true;Array.prototype.reduce.call('ab',(p,v,k,o)=>{valid=valid && typeof o==='object' && o.valueOf()==='ab' && o[k]===v;return p+v;},'')==='ab' && valid",
+        r#"
+            let valid = true;
+            Array.prototype.reduce.call('ab', (p, v, k, o) => {
+                valid = valid && typeof o === 'object' && o.valueOf() === 'ab' && o[k] === v;
+                return p + v;
+            }, '') === 'ab' && valid
+        "#,
     );
     assert_true(
-        "let o={0:1,1:2,2:9,length:'2.9'};Array.prototype.reduce.call(o,(p,v)=>p+v,0)===3 && Array.prototype.reduceRight.call(o,(p,v)=>p+v,0)===3",
+        r#"
+            let o = {
+                0: 1,
+                1: 2,
+                2: 9,
+                length: '2.9'
+            };
+            Array.prototype.reduce.call(o, (p, v) => p + v, 0) === 3 && Array.prototype.reduceRight.call(o,
+                (p, v) => p + v, 0) === 3
+        "#,
     );
     assert_true(
-        "Array.prototype.reduce.call(false,()=>{throw 7;},9)===9 && Array.prototype.reduceRight.call(7,()=>{throw 7;},9)===9",
+        r#"
+            Array.prototype.reduce.call(false, () => {
+                throw 7;
+            }, 9) === 9 && Array.prototype.reduceRight.call(7, () => {
+                throw 7;
+            }, 9) === 9
+        "#,
     );
     for method in METHODS {
         let index = if method == "reduce" {
@@ -141,7 +214,22 @@ fn generic_receivers_use_boxed_objects_and_utf16_code_unit_indices() {
         } else {
             "9007199254740990"
         };
-        assert_eq!(Realm::default().eval(&format!("let o={{length:Infinity}};Object.defineProperty(o,'{index}',{{get:()=>{{throw 7;}}}});Array.prototype.{method}.call(o,()=>0)")),Err(Error::Thrown(Value::Number(7.0))));
+        assert_eq!(
+            Realm::default().eval(&format!(
+                r#"
+                    let o = {{
+                        length: Infinity
+                    }};
+                    Object.defineProperty(o, '{index}', {{
+                        get: () => {{
+                            throw 7;
+                        }}
+                    }});
+                    Array.prototype.{method}.call(o, () => 0)
+                "#
+            )),
+            Err(Error::Thrown(Value::Number(7.0)))
+        );
     }
 }
 
@@ -166,7 +254,24 @@ fn length_conversion_precedes_validation_and_abrupt_completions_stop_traversal()
             Err(Error::Thrown(Value::Number(7.0)))
         );
         assert_true(&format!(
-            "let n=0,o={{length:1}};Object.defineProperty(o,'0',{{get:()=>{{n++;throw 7;}}}});try{{Array.prototype.{method}.call(o,null);}}catch(e){{if(!(e instanceof TypeError))throw e;}}n===0"
+            r#"
+                let n = 0,
+                    o = {{
+                        length: 1
+                    }};
+                Object.defineProperty(o, '0', {{
+                    get: () => {{
+                        n++;
+                        throw 7;
+                    }}
+                }});
+                try {{
+                    Array.prototype.{method}.call(o, null);
+                }} catch (e) {{
+                    if (!(e instanceof TypeError)) throw e;
+                }}
+                n === 0
+            "#
         ));
         let mut realm = Realm::default();
         realm.eval("let n=0").unwrap();
@@ -176,7 +281,31 @@ fn length_conversion_precedes_validation_and_abrupt_completions_stop_traversal()
         );
         assert_eq!(realm.eval("n"), Ok(Value::Number(1.0)));
         assert_true(&format!(
-            "let log='',o={{}};Object.defineProperty(o,'length',{{get:()=>{{log+='l';return {{valueOf:()=>{{log+='n';return 1;}}}};}}}});Object.defineProperty(o,'0',{{get:()=>{{log+='g';return 7;}}}});Array.prototype.{method}.call(o,(p,v)=>{{log+='c';return p+v;}},0)===7 && log==='lngc'"
+            r#"
+                let log = '',
+                    o = {{}};
+                Object.defineProperty(o, 'length', {{
+                    get: () => {{
+                        log += 'l';
+                        return {{
+                            valueOf: () => {{
+                                log += 'n';
+                                return 1;
+                            }}
+                        }};
+                    }}
+                }});
+                Object.defineProperty(o, '0', {{
+                    get: () => {{
+                        log += 'g';
+                        return 7;
+                    }}
+                }});
+                Array.prototype.{method}.call(o, (p, v) => {{
+                    log += 'c';
+                    return p + v;
+                }}, 0) === 7 && log === 'lngc'
+            "#
         ));
     }
 }
@@ -185,7 +314,12 @@ fn length_conversion_precedes_validation_and_abrupt_completions_stop_traversal()
 fn metadata_nonconstructibility_and_collection_are_standard() {
     for method in METHODS {
         assert_true(&format!(
-            "let f=Array.prototype.{method},d=Object.getOwnPropertyDescriptor(Array.prototype,'{method}');f.name==='{method}' && f.length===1 && f.prototype===undefined && d.value===f && d.writable && !d.enumerable && d.configurable"
+            r#"
+                let f = Array.prototype.{method},
+                    d = Object.getOwnPropertyDescriptor(Array.prototype, '{method}');
+                f.name === '{method}' && f.length === 1 && f.prototype === undefined && d.value === f && d
+                    .writable && !d.enumerable && d.configurable
+            "#
         ));
         assert!(matches!(
             Realm::default().eval(&format!("new Array.prototype.{method}")),

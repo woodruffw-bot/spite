@@ -79,10 +79,38 @@ fn generic_receivers_convert_once_with_string_hint_and_propagate_abrupt_results(
         ));
         let expected = if method.contains("Upper") { "SS" } else { "ß" };
         assert_true(&format!(
-            "let log='',o={{[Symbol.toPrimitive](hint){{log+=hint;return 'ß';}},toString(){{throw 7;}}}};String.prototype.{method}.call(o)==='{expected}' && log==='string'"
+            r#"
+                let log = '',
+                    o = {{
+                        [Symbol.toPrimitive](hint) {{
+                            log += hint;
+                            return 'ß';
+                        }},
+                        toString() {{
+                            throw 7;
+                        }}
+                    }};
+                String.prototype.{method}.call(o) === '{expected}' && log === 'string'
+            "#
         ));
         assert_true(&format!(
-            "let marker={{}},caught=false;try{{String.prototype.{method}.call({{toString(){{throw marker;}},valueOf(){{throw 7;}}}});}}catch(e){{caught=e===marker;}}caught"
+            r#"
+                let marker = {{}},
+                    caught = false;
+                try {{
+                    String.prototype.{method}.call({{
+                        toString() {{
+                            throw marker;
+                        }},
+                        valueOf() {{
+                            throw 7;
+                        }}
+                    }});
+                }} catch (e) {{
+                    caught = e === marker;
+                }}
+                caught
+            "#
         ));
         for receiver in [
             "undefined",
@@ -104,7 +132,16 @@ fn generic_receivers_convert_once_with_string_hint_and_propagate_abrupt_results(
         }
     }
     assert_true(
-        "new String('ABC').toLowerCase()==='abc' && String.prototype.toUpperCase.call({toString(){return {};},valueOf(){return 'ß';}})==='SS'",
+        r#"
+            new String('ABC').toLowerCase() === 'abc' && String.prototype.toUpperCase.call({
+                toString() {
+                    return {};
+                },
+                valueOf() {
+                    return 'ß';
+                }
+            }) === 'SS'
+        "#,
     );
 }
 
@@ -117,7 +154,19 @@ fn locale_methods_use_fixed_neutral_casing_and_ignore_reserved_arguments() {
         "'I\\u0301'.toLocaleLowerCase('lt')==='i\\u0301' && 'ΟΣ'.toLocaleLowerCase()==='ος'",
     );
     assert_true(
-        "let log='',o={toString(){throw 7;},[Symbol.iterator](){throw 8;}};'ß'.toLocaleUpperCase((log+='a',o),(log+='b',o))==='SS' && 'ABC'.toLocaleLowerCase(o,o)==='abc' && log==='ab'",
+        r#"
+            let log = '',
+                o = {
+                    toString() {
+                        throw 7;
+                    },
+                    [Symbol.iterator]() {
+                        throw 8;
+                    }
+                };
+            'ß'.toLocaleUpperCase((log += 'a', o), (log += 'b', o)) === 'SS' && 'ABC'.toLocaleLowerCase(o,
+                o) === 'abc' && log === 'ab'
+        "#,
     );
     assert_true(
         "String.prototype.toLowerCase!==String.prototype.toLocaleLowerCase && String.prototype.toUpperCase!==String.prototype.toLocaleUpperCase",
@@ -154,7 +203,10 @@ fn method_descriptors_and_retained_intrinsics_are_standard() {
             assert!(!d.writable && !d.enumerable && d.configurable);
         }
         assert_true(&format!(
-            "let d=Object.getOwnPropertyDescriptor(String.prototype,'{method}');d.writable && !d.enumerable && d.configurable"
+            r#"
+                let d = Object.getOwnPropertyDescriptor(String.prototype, '{method}');
+                d.writable && !d.enumerable && d.configurable
+            "#
         ));
         assert!(matches!(
             realm.eval(&format!("new String.prototype.{method}()")),
@@ -214,6 +266,23 @@ fn large_default_expansions_work_and_opted_in_failures_skip_language_cleanup() {
     let mut realm = Realm::default();
     realm.reserve_unsupported_global("unsupportedHost");
     realm.eval("let flag=0;").unwrap();
-    assert!(matches!(realm.eval("try{String.prototype.toUpperCase.call({toString(){Function('unsupportedHost')();}});}catch{flag=1;}finally{flag=2;}"), Err(Error::Unsupported {..})));
+    assert!(matches!(
+        realm.eval(
+            r#"
+                try {
+                    String.prototype.toUpperCase.call({
+                        toString() {
+                            Function('unsupportedHost')();
+                        }
+                    });
+                } catch {
+                    flag = 1;
+                } finally {
+                    flag = 2;
+                }
+            "#
+        ),
+        Err(Error::Unsupported { .. })
+    ));
     assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
 }

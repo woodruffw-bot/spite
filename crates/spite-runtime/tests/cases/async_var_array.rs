@@ -22,10 +22,27 @@ fn collect(realm: &mut Realm) {
 #[test]
 fn var_defaults_preserve_parameter_aliases_multiple_declarators_and_for_headers() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let result,header;async function f(x){var [x=await 7]=await [],[y=await 9]=[],tail=11;return [x,arguments[0],y,tail].join(',')}
-        async function g(x){for(var [x=await 7]=[];x<9;x++){}return [x,arguments[0]].join(',')}f(1).then(value=>{result=value});g(1).then(value=>{header=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let result, header;
+                async function f(x) {
+                    var [x = await 7] = await [], [y = await 9] = [], tail = 11;
+                    return [x, arguments[0], y, tail].join(',')
+                }
+                async function g(x) {
+                    for (var [x = await 7] = []; x < 9; x++) {}
+                    return [x, arguments[0]].join(',')
+                }
+                f(1).then(value => {
+                    result = value
+                });
+                g(1).then(value => {
+                    header = value
+                });
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     check(&mut realm, "result==='7,7,9,11'&&header==='9,9'");
 }
@@ -105,12 +122,34 @@ fn rest_references_are_resolved_before_collecting_remaining_iterator_values() {
 #[test]
 fn var_iteration_defaults_update_mapped_parameters_across_all_three_loop_kinds() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let results=[];async function a(x){for(var [x=await 7] of [[]]){}return arguments[0]}
-        async function b(x){for await(var [x=await 9] of [[]]){}return arguments[0]}
-        async function c(x){for(var [x=await 11] in {'':1}){}return arguments[0]}
-        a(1).then(value=>results.push(value));b(1).then(value=>results.push(value));c(1).then(value=>results.push(value));
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let results = [];
+                async function a(x) {
+                    for (var [x = await 7] of [
+                            []
+                        ]) {}
+                    return arguments[0]
+                }
+                async function b(x) {
+                    for await (var [x = await 9] of [
+                        []
+                    ]) {}
+                    return arguments[0]
+                }
+                async function c(x) {
+                    for (var [x = await 11] in {
+                            '': 1
+                        }) {}
+                    return arguments[0]
+                }
+                a(1).then(value => results.push(value));
+                b(1).then(value => results.push(value));
+                c(1).then(value => results.push(value));
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     check(
         &mut realm,
@@ -151,7 +190,21 @@ fn host_abort_in_var_defaults_skips_iterator_close_disposal_and_handlers() {
             max_steps: limited.then_some(10_000),
             ..Default::default()
         });
-        realm.eval("let state={},closed=0,disposed=0,finalized=0,caught=false,proceed,gate=new Promise(resolve=>{proceed=resolve});const dispose=Symbol.dispose;").unwrap();
+        realm
+            .eval(
+                r#"
+                    let state = {},
+                        closed = 0,
+                        disposed = 0,
+                        finalized = 0,
+                        caught = false,
+                        proceed, gate = new Promise(resolve => {
+                            proceed = resolve
+                        });
+                    const dispose = Symbol.dispose;
+                "#,
+            )
+            .unwrap();
         realm.eval("let resource={[dispose](){disposed++}};state.weak=new WeakRef(resource[dispose]);function spin(){while(true){}};let source={[Symbol.iterator](){return this},next(){return{done:false,value:undefined}},return(){closed++;return{done:true}}}").unwrap();
         let tail = if limited {
             "spin()"

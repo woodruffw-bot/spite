@@ -25,11 +25,26 @@ fn collect(realm: &mut Realm) {
 #[test]
 fn while_conditions_and_bodies_await_once_in_order_for_each_iteration() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let tests=0,events=[],result;
-        async function f(){while(await(++tests<=3)){events.push(tests);await 0;events.push('end'+tests)}return 7}
-        f().then(value=>{result=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let tests = 0,
+                    events = [],
+                    result;
+                async function f() {
+                    while (await (++tests <= 3)) {
+                        events.push(tests);
+                        await 0;
+                        events.push('end' + tests)
+                    }
+                    return 7
+                }
+                f().then(value => {
+                    result = value
+                });
+            "#,
+        )
+        .unwrap();
     check(
         &mut realm,
         "tests===1&&events.length===0&&result===undefined",
@@ -47,11 +62,11 @@ fn while_skips_a_false_body_and_do_while_runs_its_body_before_the_first_test() {
     realm
         .eval(
             r#"
-        let events=[],first,second;
-        async function f(){while(await false){spiteUnavailableHost();await missing}return 1}
-        async function g(){do{events.push('body');await 0}while(await false);return 2}
-        f().then(value=>{first=value});g().then(value=>{second=value});
-    "#,
+                let events=[],first,second;
+                async function f(){while(await false){spiteUnavailableHost();await missing}return 1}
+                async function g(){do{events.push('body');await 0}while(await false);return 2}
+                f().then(value=>{first=value});g().then(value=>{second=value});
+            "#,
         )
         .unwrap();
     check(
@@ -68,11 +83,39 @@ fn while_skips_a_false_body_and_do_while_runs_its_body_before_the_first_test() {
 #[test]
 fn break_and_continue_wait_for_finalizers_and_dispose_body_resources_before_control_moves() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let events=[],result;
-        async function f(){let i=0;while(await(i<4)){const n=i++;using resource={[Symbol.dispose](){events.push('dispose'+n)}};try{await 0;if(n===0)continue;if(n===2)break;events.push('body'+n)}finally{events.push('finally'+n);await 0;events.push('end'+n)}}return i}
-        f().then(value=>{result=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let events = [],
+                    result;
+                async function f() {
+                    let i = 0;
+                    while (await (i < 4)) {
+                        const n = i++;
+                        using resource = {
+                            [Symbol.dispose]() {
+                                events.push('dispose' + n)
+                            }
+                        };
+                        try {
+                            await 0;
+                            if (n === 0) continue;
+                            if (n === 2) break;
+                            events.push('body' + n)
+                        } finally {
+                            events.push('finally' + n);
+                            await 0;
+                            events.push('end' + n)
+                        }
+                    }
+                    return i
+                }
+                f().then(value => {
+                    result = value
+                });
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     check(
         &mut realm,
@@ -83,11 +126,29 @@ fn break_and_continue_wait_for_finalizers_and_dispose_body_resources_before_cont
 #[test]
 fn do_while_continue_runs_the_test_and_block_closures_keep_distinct_iteration_bindings() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let tests=0,result;
-        async function f(){let i=0;const closures=[];do{const value=i++;await 0;closures.push(()=>value);if(i<3)continue;break}while(await(++tests,true));return closures.map(fn=>fn()).join(',')}
-        f().then(value=>{result=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let tests = 0,
+                    result;
+                async function f() {
+                    let i = 0;
+                    const closures = [];
+                    do {
+                        const value = i++;
+                        await 0;
+                        closures.push(() => value);
+                        if (i < 3) continue;
+                        break
+                    } while (await (++tests, true));
+                    return closures.map(fn => fn()).join(',')
+                }
+                f().then(value => {
+                    result = value
+                });
+            "#,
+        )
+        .unwrap();
     check(&mut realm, "tests===0&&result===undefined");
     drain(&mut realm);
     check(&mut realm, "tests===2&&result==='0,1,2'");
@@ -96,12 +157,47 @@ fn do_while_continue_runs_the_test_and_block_closures_keep_distinct_iteration_bi
 #[test]
 fn rejected_conditions_and_body_throws_reach_outer_catches_without_retesting() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let marker={},reason,thrown,body=0,tests=0,finalized=0,first,second;
-        async function f(){try{while(await Promise.reject(marker)){body++}}catch(error){reason=error;await 0}finally{finalized++}return 7}
-        async function g(){try{do{await 0;throw marker}while(await(++tests,false))}catch(error){thrown=error;return 8}}
-        f().then(value=>{first=value});g().then(value=>{second=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let marker = {},
+                    reason, thrown, body = 0,
+                    tests = 0,
+                    finalized = 0,
+                    first, second;
+                async function f() {
+                    try {
+                        while (await Promise.reject(marker)) {
+                            body++
+                        }
+                    } catch (error) {
+                        reason = error;
+                        await 0
+                    } finally {
+                        finalized++
+                    }
+                    return 7
+                }
+                async function g() {
+                    try {
+                        do {
+                            await 0;
+                            throw marker
+                        } while (await (++tests, false))
+                    } catch (error) {
+                        thrown = error;
+                        return 8
+                    }
+                }
+                f().then(value => {
+                    first = value
+                });
+                g().then(value => {
+                    second = value
+                });
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     check(
         &mut realm,
@@ -112,12 +208,44 @@ fn rejected_conditions_and_body_throws_reach_outer_catches_without_retesting() {
 #[test]
 fn loop_values_survive_suspended_retests_and_forward_until_the_parent_replaces_them() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let state={},tests=0,result;state.first=new Promise(resolve=>{state.releaseFirst=resolve});state.second=new Promise(resolve=>{state.releaseSecond=resolve});state.third=new Promise(resolve=>{state.releaseThird=resolve});
-        function make(){const value={x:7};state.weak=new WeakRef(value);return value}
-        async function f(){while(tests++===0?true:await state.first){make()}const x=await state.second;0;const y=await state.third;return 7}
-        f().then(value=>{result=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let state = {},
+                    tests = 0,
+                    result;
+                state.first = new Promise(resolve => {
+                    state.releaseFirst = resolve
+                });
+                state.second = new Promise(resolve => {
+                    state.releaseSecond = resolve
+                });
+                state.third = new Promise(resolve => {
+                    state.releaseThird = resolve
+                });
+
+                function make() {
+                    const value = {
+                        x: 7
+                    };
+                    state.weak = new WeakRef(value);
+                    return value
+                }
+                async function f() {
+                    while (tests++ === 0 ? true : await state.first) {
+                        make()
+                    }
+                    const x = await state.second;
+                    0;
+                    const y = await state.third;
+                    return 7
+                }
+                f().then(value => {
+                    result = value
+                });
+            "#,
+        )
+        .unwrap();
     collect(&mut realm);
     check(
         &mut realm,
@@ -145,12 +273,35 @@ fn loop_values_survive_suspended_retests_and_forward_until_the_parent_replaces_t
 #[test]
 fn loop_bodies_preserve_private_eval_arguments_and_var_parameter_aliases() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let result,alias;
-        class C{#x=10;async read(limit){let total=0;while(await(limit>0)){total+=eval('this.#x')+arguments.length;limit--;await 0}return total}}
-        async function f(x){while(await x)var x=await 0;return arguments[0]}
-        new C().read(2).then(value=>{result=value});f(1).then(value=>{alias=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let result, alias;
+                class C {
+                    #x = 10;
+                    async read(limit) {
+                        let total = 0;
+                        while (await (limit > 0)) {
+                            total += eval('this.#x') + arguments.length;
+                            limit--;
+                            await 0
+                        }
+                        return total
+                    }
+                }
+                async function f(x) {
+                    while (await x) var x = await 0;
+                    return arguments[0]
+                }
+                new C().read(2).then(value => {
+                    result = value
+                });
+                f(1).then(value => {
+                    alias = value
+                });
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     check(&mut realm, "result===22&&alias===0");
 }
@@ -174,7 +325,22 @@ fn host_failures_in_loop_bodies_bypass_finally_and_release_resources_at_budget_z
         } else {
             "spiteUnavailableHost()"
         };
-        let source="async function f(){using root=resource;try{while(true){using inner=resource;read=()=>inner;await 0;TAIL}}finally{finalized++}}".replace("TAIL",tail);
+        let source = r#"
+            async function f() {
+                using root = resource;
+                try {
+                    while (true) {
+                        using inner = resource;
+                        read = () => inner;
+                        await 0;
+                        TAIL
+                    }
+                } finally {
+                    finalized++
+                }
+            }
+        "#
+        .replace("TAIL", tail);
         realm.eval(&source).unwrap();
         realm.eval("f().catch(()=>{caught=true});").unwrap();
         realm.eval("delete resource[dispose];").unwrap();

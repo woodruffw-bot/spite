@@ -23,7 +23,48 @@ fn object_and_class_methods_have_async_metadata_standard_descriptors_and_no_cons
 #[test]
 fn receivers_arguments_and_parameter_body_errors_follow_async_call_semantics() {
     let mut realm = Realm::default();
-    realm.eval("let marker={},values=[],o={async m(x){return[this,x,arguments.length,new.target]},async bad({x}){return x},async thrown(){throw marker}};o.m(7).then(a=>{if(a[0]!==o||a[1]!==7||a[2]!==1||a[3]!==undefined)throw 1;values.push('object')});o.bad(null).catch(e=>{if(!(e instanceof TypeError))throw 2;values.push('param')});o.thrown().catch(e=>{if(e!==marker)throw 3;values.push('throw')});class C{async m(){return this}}C.prototype.m.call(9).then(v=>{if(v!==9)throw 4;values.push('strict')})").unwrap();
+    realm
+        .eval(
+            r#"
+                let marker = {},
+                    values = [],
+                    o = {
+                        async m(x) {
+                            return [this, x, arguments.length, new.target]
+                        },
+                        async bad({
+                            x
+                        }) {
+                            return x
+                        },
+                        async thrown() {
+                            throw marker
+                        }
+                    };
+                o.m(7).then(a => {
+                    if (a[0] !== o || a[1] !== 7 || a[2] !== 1 || a[3] !== undefined) throw 1;
+                    values.push('object')
+                });
+                o.bad(null).catch(e => {
+                    if (!(e instanceof TypeError)) throw 2;
+                    values.push('param')
+                });
+                o.thrown().catch(e => {
+                    if (e !== marker) throw 3;
+                    values.push('throw')
+                });
+                class C {
+                    async m() {
+                        return this
+                    }
+                }
+                C.prototype.m.call(9).then(v => {
+                    if (v !== 9) throw 4;
+                    values.push('strict')
+                })
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     assert_eq!(
         realm.eval("values.join(',')"),
@@ -34,7 +75,62 @@ fn receivers_arguments_and_parameter_body_errors_follow_async_call_semantics() {
 #[test]
 fn super_in_parameters_and_bodies_uses_live_home_objects_and_original_receivers() {
     let mut realm = Realm::default();
-    realm.eval("let values=[],base={get x(){return this.value}},o={__proto__:base,value:7,async m(x=super.x){return x}};o.m().then(v=>{values.push(v)});o.m.call({value:9}).then(v=>{values.push(v)});class Base{m(){return this.value}}class Derived extends Base{async m(){return super.m()+1}static async tag(){return super.name}}let d=new Derived();d.value=4;d.m().then(v=>{values.push(v)});Derived.tag().then(v=>{values.push(v)});Object.setPrototypeOf(o,{get x(){return this.value+10}});o.m().then(v=>{values.push(v)})").unwrap();
+    realm
+        .eval(
+            r#"
+                let values = [],
+                    base = {
+                        get x() {
+                            return this.value
+                        }
+                    },
+                    o = {
+                        __proto__: base,
+                        value: 7,
+                        async m(x = super.x) {
+                            return x
+                        }
+                    };
+                o.m().then(v => {
+                    values.push(v)
+                });
+                o.m.call({
+                    value: 9
+                }).then(v => {
+                    values.push(v)
+                });
+                class Base {
+                    m() {
+                        return this.value
+                    }
+                }
+                class Derived extends Base {
+                    async m() {
+                        return super.m() + 1
+                    }
+                    static async tag() {
+                        return super.name
+                    }
+                }
+                let d = new Derived();
+                d.value = 4;
+                d.m().then(v => {
+                    values.push(v)
+                });
+                Derived.tag().then(v => {
+                    values.push(v)
+                });
+                Object.setPrototypeOf(o, {
+                    get x() {
+                        return this.value + 10
+                    }
+                });
+                o.m().then(v => {
+                    values.push(v)
+                })
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     assert_eq!(
         realm.eval("values.join(',')"),
@@ -45,7 +141,47 @@ fn super_in_parameters_and_bodies_uses_live_home_objects_and_original_receivers(
 #[test]
 fn instance_and_static_private_async_methods_enforce_brands_through_rejections() {
     let mut realm = Realm::default();
-    realm.eval("let values=[];class C{#x=7;async #m(v){return this.#x+v}get(){return this.#m}static #y=9;static async #n(){return this.#y}static get(){return this.#n}}let c=new C(),m=c.get(),s=C.get();m.call(c,1).then(v=>{values.push(v)});m.call({}).catch(e=>{if(!(e instanceof TypeError))throw 1;values.push('brand')});s.call(C).then(v=>{values.push(v)});class D extends C{}s.call(D).catch(e=>{if(!(e instanceof TypeError))throw 2;values.push('static')})").unwrap();
+    realm
+        .eval(
+            r#"
+                let values = [];
+                class C {
+                    #x = 7;
+                    async #m(v) {
+                        return this.#x + v
+                    }
+                    get() {
+                        return this.#m
+                    }
+                    static #y = 9;
+                    static async #n() {
+                        return this.#y
+                    }
+                    static get() {
+                        return this.#n
+                    }
+                }
+                let c = new C(),
+                    m = c.get(),
+                    s = C.get();
+                m.call(c, 1).then(v => {
+                    values.push(v)
+                });
+                m.call({}).catch(e => {
+                    if (!(e instanceof TypeError)) throw 1;
+                    values.push('brand')
+                });
+                s.call(C).then(v => {
+                    values.push(v)
+                });
+                class D extends C {}
+                s.call(D).catch(e => {
+                    if (!(e instanceof TypeError)) throw 2;
+                    values.push('static')
+                })
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     assert_eq!(
         realm.eval("values.join(',')"),

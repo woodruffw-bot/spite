@@ -9,13 +9,63 @@ use crate::common::assert_true;
 #[test]
 fn initial_value_presence_controls_first_value_and_callback_index() {
     assert_true(
-        "let i={next:()=>({done:true,get value(){throw 7;}}),get return(){throw 8;}},caught=false;try{Iterator.prototype.reduce.call(i,()=>{throw 9;});}catch(e){caught=e instanceof TypeError;}caught && Iterator.prototype.reduce.call(i,()=>{throw 10;},undefined)===undefined",
+        r#"
+            let i = {
+                    next: () => ({
+                        done: true,
+                        get value() {
+                            throw 7;
+                        }
+                    }),
+                    get return() {
+                        throw 8;
+                    }
+                },
+                caught = false;
+            try {
+                Iterator.prototype.reduce.call(i, () => {
+                    throw 9;
+                });
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && Iterator.prototype.reduce.call(i, () => {
+                throw 10;
+            }, undefined) === undefined
+        "#,
     );
     assert_true(
-        "let initial={},i={next:()=>({done:true}),return:()=>{throw 7;}};Iterator.prototype.reduce.call(i,()=>{throw 8;},initial)===initial",
+        r#"
+            let initial = {},
+                i = {
+                    next: () => ({
+                        done: true
+                    }),
+                    return: () => {
+                        throw 7;
+                    }
+                };
+            Iterator.prototype.reduce.call(i, () => {
+                throw 8;
+            }, initial) === initial
+        "#,
     );
     assert_true(
-        "let initial={},n=0,calls=0;let result=Iterator.prototype.reduce.call({next:()=>({done:n++>0,value:initial})},()=>{calls++;throw 7;});result===initial && calls===0",
+        r#"
+            let initial = {},
+                n = 0,
+                calls = 0;
+            let result = Iterator.prototype.reduce.call({
+                next: () => ({
+                    done: n++ > 0,
+                    value: initial
+                })
+            }, () => {
+                calls++;
+                throw 7;
+            });
+            result === initial && calls === 0
+        "#,
     );
     for initial in ["", ",10", ",undefined"] {
         let first = if initial.is_empty() { "1" } else { "0" };
@@ -47,12 +97,52 @@ fn validation_closes_before_next_lookup_and_rejects_primitive_receivers() {
     ] {
         for close in ["return {};", "return 7;", "throw 8;"] {
             assert_true(&format!(
-                "let closed=0,i={{get next(){{throw 9;}},return(){{closed++;{close}}}}},caught=false;try{{Iterator.prototype.reduce.call(i,{reducer},{{valueOf(){{throw 10;}}}});}}catch(e){{caught=e instanceof TypeError;}}caught && closed===1"
+                r#"
+                    let closed = 0,
+                        i = {{
+                            get next() {{
+                                throw 9;
+                            }},
+                            return () {{
+                                closed++;
+                                {close}
+                            }}
+                        }},
+                        caught = false;
+                    try {{
+                        Iterator.prototype.reduce.call(i, {reducer}, {{
+                            valueOf() {{
+                                throw 10;
+                            }}
+                        }});
+                    }} catch (e) {{
+                        caught = e instanceof TypeError;
+                    }}
+                    caught && closed === 1
+                "#
             ));
         }
     }
     assert_true(
-        "let closed=0,i={get next(){throw 7;},get return(){closed++;throw 8;}},caught=false;try{Iterator.prototype.reduce.call(i);}catch(e){caught=e instanceof TypeError;}caught && closed===1",
+        r#"
+            let closed = 0,
+                i = {
+                    get next() {
+                        throw 7;
+                    },
+                    get return() {
+                        closed++;
+                        throw 8;
+                    }
+                },
+                caught = false;
+            try {
+                Iterator.prototype.reduce.call(i);
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && closed === 1
+        "#,
     );
     for receiver in ["undefined", "null", "true", "1", "1n", "'x'", "Symbol()"] {
         assert!(
@@ -73,13 +163,81 @@ fn validation_closes_before_next_lookup_and_rejects_primitive_receivers() {
 #[test]
 fn cached_next_and_live_values_preserve_accumulator_identity_without_coercion() {
     assert_true(
-        "let gets=0,n=0,seen=[],initial={valueOf(){throw 7;}},a={},b={},c={},values=[a,b,c],receiver,argc,i={};Object.defineProperty(i,Symbol.iterator,{get(){throw 8;}});Object.defineProperty(i,'next',{configurable:true,get(){gets++;return function(){'use strict';receiver=this;argc=arguments.length;return {done:n===3,value:values[n++]};};}});let result=Iterator.prototype.reduce.call(i,function(memo,value,index){seen.push(memo,value,index,arguments.length);Object.defineProperty(i,'next',{value:()=>{throw 9;}});return value;},initial,{valueOf(){throw 10;}});gets===1 && receiver===i && argc===0 && result===c && seen[0]===initial && seen[1]===a && seen[2]===0 && seen[3]===3 && seen[4]===a && seen[5]===b && seen[6]===1 && seen[8]===b && seen[9]===c && seen[10]===2",
+        r#"
+            let gets = 0,
+                n = 0,
+                seen = [],
+                initial = {
+                    valueOf() {
+                        throw 7;
+                    }
+                },
+                a = {},
+                b = {},
+                c = {},
+                values = [a, b, c],
+                receiver, argc, i = {};
+            Object.defineProperty(i, Symbol.iterator, {
+                get() {
+                    throw 8;
+                }
+            });
+            Object.defineProperty(i, 'next', {
+                configurable: true,
+                get() {
+                    gets++;
+                    return function() {
+                        'use strict';
+                        receiver = this;
+                        argc = arguments.length;
+                        return {
+                            done: n === 3,
+                            value: values[n++]
+                        };
+                    };
+                }
+            });
+            let result = Iterator.prototype.reduce.call(i, function(memo, value, index) {
+                seen.push(memo, value, index, arguments.length);
+                Object.defineProperty(i, 'next', {
+                    value: () => {
+                        throw 9;
+                    }
+                });
+                return value;
+            }, initial, {
+                valueOf() {
+                    throw 10;
+                }
+            });
+            gets === 1 && receiver === i && argc === 0 && result === c && seen[0] === initial && seen[
+                1] === a && seen[2] === 0 && seen[3] === 3 && seen[4] === a && seen[5] === b && seen[6] ===
+                1 && seen[8] === b && seen[9] === c && seen[10] === 2
+        "#,
     );
     assert_true(
         "let receiver;[1,2].values().reduce(function(memo){receiver=this;return memo;});receiver===globalThis",
     );
     assert_true(
-        "let original={x:1},replacement={},slot=original,n=0;let result=Iterator.prototype.reduce.call({next:()=>({done:n++===2,value:slot})},memo=>{memo.x=2;slot=replacement;return memo;});result===original && result.x===2 && slot===replacement",
+        r#"
+            let original = {
+                    x: 1
+                },
+                replacement = {},
+                slot = original,
+                n = 0;
+            let result = Iterator.prototype.reduce.call({
+                next: () => ({
+                    done: n++ === 2,
+                    value: slot
+                })
+            }, memo => {
+                memo.x = 2;
+                slot = replacement;
+                return memo;
+            });
+            result === original && result.x === 2 && slot === replacement
+        "#,
     );
     for value in [
         "undefined",
@@ -135,7 +293,30 @@ fn acquisition_and_both_initial_and_later_step_errors_do_not_close() {
             "let closed=0,i={{get next(){{throw 7;}},return(){{closed++;return {{}};}}}},caught=false;try{{Iterator.prototype.reduce.call(i,()=>0{initial});}}catch(e){{caught=e===7;}}caught && closed===0"
         ));
         assert_true(&format!(
-            "let n=0,closed=0,i={{next(){{if(n++===0)return {{done:false,value:7}};throw 8;}},return(){{closed++;return {{}};}}}},caught=false;try{{Iterator.prototype.reduce.call(i,memo=>memo{initial});}}catch(e){{caught=e===8;}}caught && closed===0"
+            r#"
+                let n = 0,
+                    closed = 0,
+                    i = {{
+                        next() {{
+                            if (n++ === 0) return {{
+                                done: false,
+                                value: 7
+                            }};
+                            throw 8;
+                        }},
+                        return () {{
+                            closed++;
+                            return {{}};
+                        }}
+                    }},
+                    caught = false;
+                try {{
+                    Iterator.prototype.reduce.call(i, memo => memo{initial});
+                }} catch (e) {{
+                    caught = e === 8;
+                }}
+                caught && closed === 0
+            "#
         ));
     }
 }
@@ -143,7 +324,13 @@ fn acquisition_and_both_initial_and_later_step_errors_do_not_close() {
 #[test]
 fn metadata_non_constructibility_and_intrinsic_retention_are_standard() {
     assert_true(
-        "let f=Iterator.prototype.reduce,d=Object.getOwnPropertyDescriptor(Iterator.prototype,'reduce');f.name==='reduce' && f.length===1 && Object.getPrototypeOf(f)===Function.prototype && !Object.hasOwn(f,'prototype') && d.value===f && d.writable && !d.enumerable && d.configurable",
+        r#"
+            let f = Iterator.prototype.reduce,
+                d = Object.getOwnPropertyDescriptor(Iterator.prototype, 'reduce');
+            f.name === 'reduce' && f.length === 1 && Object.getPrototypeOf(f) === Function.prototype && !
+                Object.hasOwn(f, 'prototype') && d.value === f && d.writable && !d.enumerable && d
+                .configurable
+        "#,
     );
     assert!(matches!(
         Realm::default().eval("new Iterator.prototype.reduce(()=>0,7)"),
@@ -166,7 +353,15 @@ fn metadata_non_constructibility_and_intrinsic_retention_are_standard() {
 #[test]
 fn large_default_inputs_work_and_host_aborts_skip_handlers_and_cleanup() {
     assert_true(
-        "let n=0;Iterator.prototype.reduce.call({next:()=>({done:n===10000,value:n++})},(memo,value)=>memo+value)===49995000",
+        r#"
+            let n = 0;
+            Iterator.prototype.reduce.call({
+                next: () => ({
+                    done: n === 10000,
+                    value: n++
+                })
+            }, (memo, value) => memo + value) === 49995000
+        "#,
     );
     let mut realm = Realm::new(Limits {
         max_steps: Some(5000),

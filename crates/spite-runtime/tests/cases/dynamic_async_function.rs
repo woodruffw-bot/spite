@@ -35,21 +35,87 @@ fn calls_and_construction_produce_async_functions_with_standard_source_and_fresh
 fn conversions_finish_before_parsing_and_newtarget_prototype_lookup() {
     assert_true(
         r#"
-        let AF=(async function(){}).constructor,log='',proto={},target=(function(){}).bind(null);
-        Object.defineProperty(target,'prototype',{get(){log+='p';return proto}});
-        let f=Reflect.construct(AF,[{toString(){log+='a';return'x'}},{toString(){log+='b';return'y'}},{toString(){log+='c';return'return x+y'}}],target);
-        let correct=log==='abcp'&&Object.getPrototypeOf(f)===proto;
-        log='';let caught=false;
-        try{Reflect.construct(AF,[{toString(){log+='a';return'x)'}},{toString(){log+='b';return'return 1'}}],target)}catch(e){caught=e instanceof SyntaxError}
-        correct&&caught&&log==='ab'
-    "#,
+            let AF = (async function() {}).constructor,
+                log = '',
+                proto = {},
+                target = (function() {}).bind(null);
+            Object.defineProperty(target, 'prototype', {
+                get() {
+                    log += 'p';
+                    return proto
+                }
+            });
+            let f = Reflect.construct(AF, [{
+                toString() {
+                    log += 'a';
+                    return 'x'
+                }
+            }, {
+                toString() {
+                    log += 'b';
+                    return 'y'
+                }
+            }, {
+                toString() {
+                    log += 'c';
+                    return 'return x+y'
+                }
+            }], target);
+            let correct = log === 'abcp' && Object.getPrototypeOf(f) === proto;
+            log = '';
+            let caught = false;
+            try {
+                Reflect.construct(AF, [{
+                    toString() {
+                        log += 'a';
+                        return 'x)'
+                    }
+                }, {
+                    toString() {
+                        log += 'b';
+                        return 'return 1'
+                    }
+                }], target)
+            } catch (e) {
+                caught = e instanceof SyntaxError
+            }
+            correct && caught && log === 'ab'
+        "#,
     );
 }
 
 #[test]
 fn subclass_and_primitive_prototype_fallback_preserve_internal_function_kind() {
     let mut realm = Realm::default();
-    assert_eq!(realm.eval("let AF=(async function(){}).constructor,values=[],target=(function(){}).bind(null);target.prototype=null;let fallback=Reflect.construct(AF,['return 3'],target);class C extends AF{}let subclass=new C('return 4');let asyncOrdinaryProto=Reflect.construct(AF,['return 5'],Function),ordinaryAsyncProto=Reflect.construct(Function,['return 6'],AF);fallback().then(v=>{values.push(v)});subclass().then(v=>{values.push(v)});asyncOrdinaryProto().then(v=>{values.push(v)});Object.getPrototypeOf(fallback)===AF.prototype&&subclass instanceof C&&Object.getPrototypeOf(asyncOrdinaryProto)===Function.prototype&&Object.getPrototypeOf(ordinaryAsyncProto)===AF.prototype&&ordinaryAsyncProto()===6&&Object.hasOwn(ordinaryAsyncProto,'prototype')&&!Object.hasOwn(asyncOrdinaryProto,'prototype')"),Ok(Value::Boolean(true)));
+    assert_eq!(
+        realm.eval(
+            r#"
+                let AF = (async function() {}).constructor,
+                    values = [],
+                    target = (function() {}).bind(null);
+                target.prototype = null;
+                let fallback = Reflect.construct(AF, ['return 3'], target);
+                class C extends AF {}
+                let subclass = new C('return 4');
+                let asyncOrdinaryProto = Reflect.construct(AF, ['return 5'], Function),
+                    ordinaryAsyncProto = Reflect.construct(Function, ['return 6'], AF);
+                fallback().then(v => {
+                    values.push(v)
+                });
+                subclass().then(v => {
+                    values.push(v)
+                });
+                asyncOrdinaryProto().then(v => {
+                    values.push(v)
+                });
+                Object.getPrototypeOf(fallback) === AF.prototype && subclass instanceof C && Object
+                    .getPrototypeOf(asyncOrdinaryProto) === Function.prototype && Object.getPrototypeOf(
+                        ordinaryAsyncProto) === AF.prototype && ordinaryAsyncProto() === 6 && Object.hasOwn(
+                        ordinaryAsyncProto, 'prototype') && !Object.hasOwn(asyncOrdinaryProto, 'prototype')
+            "#
+        ),
+        Ok(Value::Boolean(true))
+    );
     drain(&mut realm);
     assert_eq!(
         realm.eval("values.join(',')"),
@@ -60,7 +126,31 @@ fn subclass_and_primitive_prototype_fallback_preserve_internal_function_kind() {
 #[test]
 fn dynamic_scope_and_strictness_are_independent_of_the_constructor_caller() {
     let mut realm = Realm::default();
-    realm.eval("let AF=(async function(){}).constructor,globalValue=9,anonymous=8,values=[];function build(){'use strict';let globalValue=1;return AF('a,a','return[globalValue,a,anonymous,this===globalThis]')}let f=build();f(1,2).then(a=>{values=a});let strict=AF('\"use strict\";return this'),strictResult=false;strict.call(7).then(v=>{strictResult=v===7})").unwrap();
+    realm
+        .eval(
+            r#"
+                let AF = (async function() {}).constructor,
+                    globalValue = 9,
+                    anonymous = 8,
+                    values = [];
+
+                function build() {
+                    'use strict';
+                    let globalValue = 1;
+                    return AF('a,a', 'return[globalValue,a,anonymous,this===globalThis]')
+                }
+                let f = build();
+                f(1, 2).then(a => {
+                    values = a
+                });
+                let strict = AF('"use strict";return this'),
+                    strictResult = false;
+                strict.call(7).then(v => {
+                    strictResult = v === 7
+                })
+            "#,
+        )
+        .unwrap();
     realm.collect(usize::MAX).unwrap();
     drain(&mut realm);
     assert_eq!(

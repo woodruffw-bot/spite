@@ -8,7 +8,36 @@ fn for_await_executes_the_iterable_then_unwinds_finalizers_and_root_resources() 
     realm
         .eval("let before=0,operand=0,handled=0,disposed=0;const dispose=Symbol.dispose")
         .unwrap();
-    realm.eval("async function f(){using r={[dispose](){disposed++}};before++;try{for await(var x of (operand++,[])){} }catch{handled=1}finally{handled=2}}try{f().catch(()=>{handled=3})}catch{handled=4}finally{handled=5}").unwrap();
+    realm
+        .eval(
+            r#"
+                async function f() {
+                    using r = {
+                        [dispose]() {
+                            disposed++
+                        }
+                    };
+                    before++;
+                    try {
+                        for await (var x of (operand++, [])) {}
+                    } catch {
+                        handled = 1
+                    } finally {
+                        handled = 2
+                    }
+                }
+                try {
+                    f().catch(() => {
+                        handled = 3
+                    })
+                } catch {
+                    handled = 4
+                } finally {
+                    handled = 5
+                }
+            "#,
+        )
+        .unwrap();
     assert_eq!(
         realm.eval("before===1&&operand===1&&handled===5&&disposed===0"),
         Ok(Value::Boolean(true))

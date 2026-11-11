@@ -52,10 +52,10 @@ fn kept_objects_and_symbols_survive_current_execution_and_retire_at_the_checkpoi
     check(
         &mut realm,
         r#"
-        let objectWeak,symbolWeak;
-        (function(){objectWeak=new WeakRef({});symbolWeak=new WeakRef(Symbol())})();
-        $262.gc();objectWeak.deref()!==undefined&&symbolWeak.deref()!==undefined
-    "#,
+            let objectWeak,symbolWeak;
+            (function(){objectWeak=new WeakRef({});symbolWeak=new WeakRef(Symbol())})();
+            $262.gc();objectWeak.deref()!==undefined&&symbolWeak.deref()!==undefined
+        "#,
     );
     assert_eq!(realm.run_requested_gc(usize::MAX), Ok(true));
     check(
@@ -85,7 +85,19 @@ fn refused_collection_preserves_pending_requests_without_rejecting_javascript_pr
 #[test]
 fn finalization_callbacks_wait_for_a_separate_cleanup_job() {
     let mut realm = host();
-    realm.eval("let finalized=[],registry=new FinalizationRegistry(v=>finalized.push(v));(function(){let target={};registry.register(target,7)})();$262.gc()").unwrap();
+    realm
+        .eval(
+            r#"
+                let finalized = [],
+                    registry = new FinalizationRegistry(v => finalized.push(v));
+                (function() {
+                    let target = {};
+                    registry.register(target, 7)
+                })();
+                $262.gc()
+            "#,
+        )
+        .unwrap();
     realm.run_requested_gc(usize::MAX).unwrap();
     check(&mut realm, "finalized.length===0");
     assert!(matches!(
@@ -98,7 +110,21 @@ fn finalization_callbacks_wait_for_a_separate_cleanup_job() {
 #[test]
 fn suspended_async_contexts_survive_collection_and_release_completed_captures() {
     let mut realm = host();
-    realm.eval("let weak,result;(async function(){let target={x:7};weak=new WeakRef(target);await $262.gc();result=target.x===7&&weak.deref()===target})()").unwrap();
+    realm
+        .eval(
+            r#"
+                let weak, result;
+                (async function() {
+                    let target = {
+                        x: 7
+                    };
+                    weak = new WeakRef(target);
+                    await $262.gc();
+                    result = target.x === 7 && weak.deref() === target
+                })()
+            "#,
+        )
+        .unwrap();
     realm.run_requested_gc(usize::MAX).unwrap();
     drain(&mut realm);
     check(&mut realm, "result===true");
@@ -110,7 +136,25 @@ fn suspended_async_contexts_survive_collection_and_release_completed_captures() 
 #[test]
 fn suspended_generators_retain_locals_until_completion_without_collecting_on_the_stack() {
     let mut realm = host();
-    realm.eval("let weak;function*g(){let target={x:7};weak=new WeakRef(target);$262.gc();yield 1;return target.x}let iterator=g();iterator.next()").unwrap();
+    realm
+        .eval(
+            r#"
+                let weak;
+
+                function* g() {
+                    let target = {
+                        x: 7
+                    };
+                    weak = new WeakRef(target);
+                    $262.gc();
+                    yield 1;
+                    return target.x
+                }
+                let iterator = g();
+                iterator.next()
+            "#,
+        )
+        .unwrap();
     realm.run_requested_gc(usize::MAX).unwrap();
     check(
         &mut realm,

@@ -8,26 +8,184 @@ use crate::common::assert_true;
 #[test]
 fn prototype_message_cause_and_iterator_are_observed_in_order() {
     assert_true(
-        "let log='',proto={},N=function(){}.bind(null);Object.defineProperty(N,'prototype',{get(){log+='p';return proto;}});let message={toString(){log+='m';return 'detail';}},options={get cause(){log+='c';return 7;}},errors={get [Symbol.iterator](){log+='i';return function(){log+='j';return {get next(){log+='n';return function(){log+='s';return {get done(){log+='d';return true;},get value(){throw 8;}};};}};};}};let e=Reflect.construct(AggregateError,[errors,message,options],N);log==='pmcijnsd' && Object.getPrototypeOf(e)===proto && Error.isError(e) && e.message==='detail' && e.cause===7 && e.errors.length===0",
+        r#"
+            let log = '',
+                proto = {},
+                N = function() {}.bind(null);
+            Object.defineProperty(N, 'prototype', {
+                get() {
+                    log += 'p';
+                    return proto;
+                }
+            });
+            let message = {
+                    toString() {
+                        log += 'm';
+                        return 'detail';
+                    }
+                },
+                options = {
+                    get cause() {
+                        log += 'c';
+                        return 7;
+                    }
+                },
+                errors = {
+                    get [Symbol.iterator]() {
+                        log += 'i';
+                        return function() {
+                            log += 'j';
+                            return {
+                                get next() {
+                                    log += 'n';
+                                    return function() {
+                                        log += 's';
+                                        return {
+                                            get done() {
+                                                log += 'd';
+                                                return true;
+                                            },
+                                            get value() {
+                                                throw 8;
+                                            }
+                                        };
+                                    };
+                                }
+                            };
+                        };
+                    }
+                };
+            let e = Reflect.construct(AggregateError, [errors, message, options], N);
+            log === 'pmcijnsd' && Object.getPrototypeOf(e) === proto && Error.isError(e) && e.message ===
+                'detail' && e.cause === 7 && e.errors.length === 0
+        "#,
     );
     assert_true(
-        "let log='',errors={get [Symbol.iterator](){log+='i';throw 3;}},message={toString(){log+='m';throw 1;}},options={get cause(){log+='c';throw 2;}},caught=false;try{AggregateError(errors,message,options);}catch(e){caught=e===1;}caught && log==='m'",
+        r#"
+            let log = '',
+                errors = {
+                    get [Symbol.iterator]() {
+                        log += 'i';
+                        throw 3;
+                    }
+                },
+                message = {
+                    toString() {
+                        log += 'm';
+                        throw 1;
+                    }
+                },
+                options = {
+                    get cause() {
+                        log += 'c';
+                        throw 2;
+                    }
+                },
+                caught = false;
+            try {
+                AggregateError(errors, message, options);
+            } catch (e) {
+                caught = e === 1;
+            }
+            caught && log === 'm'
+        "#,
     );
     assert_true(
-        "let log='',errors={get [Symbol.iterator](){log+='i';throw 3;}},options={get cause(){log+='c';throw 2;}},caught=false;try{AggregateError(errors,'detail',options);}catch(e){caught=e===2;}caught && log==='c'",
+        r#"
+            let log = '',
+                errors = {
+                    get [Symbol.iterator]() {
+                        log += 'i';
+                        throw 3;
+                    }
+                },
+                options = {
+                    get cause() {
+                        log += 'c';
+                        throw 2;
+                    }
+                },
+                caught = false;
+            try {
+                AggregateError(errors, 'detail', options);
+            } catch (e) {
+                caught = e === 2;
+            }
+            caught && log === 'c'
+        "#,
     );
     assert_true(
-        "let log='',caught=false;try{AggregateError(undefined,{toString(){log+='m';throw 1;}});}catch(e){caught=e===1;}caught && log==='m'",
+        r#"
+            let log = '',
+                caught = false;
+            try {
+                AggregateError(undefined, {
+                    toString() {
+                        log += 'm';
+                        throw 1;
+                    }
+                });
+            } catch (e) {
+                caught = e === 1;
+            }
+            caught && log === 'm'
+        "#,
     );
     assert_true(
-        "let marker={},caught=false;try{AggregateError({[Symbol.iterator](){throw marker;}});}catch(e){caught=e===marker;}caught",
+        r#"
+            let marker = {},
+                caught = false;
+            try {
+                AggregateError({
+                    [Symbol.iterator]() {
+                        throw marker;
+                    }
+                });
+            } catch (e) {
+                caught = e === marker;
+            }
+            caught
+        "#,
     );
 }
 
 #[test]
 fn iteration_caches_next_and_never_closes_on_exhaustion_or_step_failure() {
     assert_true(
-        "let log='',i=0,it={get next(){log+='n';return function(){log+='s';if(this!==it)throw 9;return {get done(){log+='d';return i===2;},get value(){log+='v';return i++;}};};},get return(){throw 8;}},errors={[Symbol.iterator](){if(this!==errors)throw 7;return it;}};let a=AggregateError(errors).errors;log==='nsdvsdvsd' && a.length===2 && a[0]===0 && a[1]===1",
+        r#"
+            let log = '',
+                i = 0,
+                it = {
+                    get next() {
+                        log += 'n';
+                        return function() {
+                            log += 's';
+                            if (this !== it) throw 9;
+                            return {
+                                get done() {
+                                    log += 'd';
+                                    return i === 2;
+                                },
+                                get value() {
+                                    log += 'v';
+                                    return i++;
+                                }
+                            };
+                        };
+                    },
+                    get return() {
+                        throw 8;
+                    }
+                },
+                errors = {
+                    [Symbol.iterator]() {
+                        if (this !== errors) throw 7;
+                        return it;
+                    }
+                };
+            let a = AggregateError(errors).errors;
+            log === 'nsdvsdvsd' && a.length === 2 && a[0] === 0 && a[1] === 1
+        "#,
     );
     for step in [
         "throw marker;",
@@ -35,27 +193,144 @@ fn iteration_caches_next_and_never_closes_on_exhaustion_or_step_failure() {
         "return {done:false,get value(){throw marker;}};",
     ] {
         assert_true(&format!(
-            "let marker={{}},closed=false,caught=false,it={{next(){{{step}}},get return(){{closed=true;throw 8;}}}};try{{AggregateError({{[Symbol.iterator](){{return it;}}}});}}catch(e){{caught=e===marker;}}caught && !closed"
+            r#"
+                let marker = {{}},
+                    closed = false,
+                    caught = false,
+                    it = {{
+                        next() {{
+                            {step}
+                        }},
+                        get return() {{
+                            closed = true;
+                            throw 8;
+                        }}
+                    }};
+                try {{
+                    AggregateError({{
+                        [Symbol.iterator]() {{
+                            return it;
+                        }}
+                    }});
+                }} catch (e) {{
+                    caught = e === marker;
+                }}
+                caught && !closed
+            "#
         ));
     }
     assert_true(
-        "let closed=false,caught=false;try{AggregateError({[Symbol.iterator](){return {next(){return 1;},return(){closed=true;}};}});}catch(e){caught=e instanceof TypeError;}caught && !closed",
+        r#"
+            let closed = false,
+                caught = false;
+            try {
+                AggregateError({
+                    [Symbol.iterator]() {
+                        return {
+                            next() {
+                                return 1;
+                            },
+                            return () {
+                                closed = true;
+                            }
+                        };
+                    }
+                });
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && !closed
+        "#,
     );
     assert_true(
-        "let closed=false,caught=false;try{AggregateError({[Symbol.iterator](){return {get next(){throw 7;},get return(){closed=true;}};}});}catch(e){caught=e===7;}caught && !closed",
+        r#"
+            let closed = false,
+                caught = false;
+            try {
+                AggregateError({
+                    [Symbol.iterator]() {
+                        return {
+                            get next() {
+                                throw 7;
+                            },
+                            get return() {
+                                closed = true;
+                            }
+                        };
+                    }
+                });
+            } catch (e) {
+                caught = e === 7;
+            }
+            caught && !closed
+        "#,
     );
 }
 
 #[test]
 fn errors_are_an_intrinsic_dense_copy_without_value_conversion_or_species() {
     assert_true(
-        "let marker={toString(){throw 1;},valueOf(){throw 2;}},input=[marker,,undefined];Object.defineProperty(input,'constructor',{get(){throw 3;}});let e=AggregateError(input),f=AggregateError(input);input[0]=7;e.errors!==input && e.errors!==f.errors && e.errors.length===3 && e.errors[0]===marker && e.errors[1]===undefined && e.errors[2]===undefined && Object.keys(e.errors).join(',')==='0,1,2' && Array.isArray(e.errors)",
+        r#"
+            let marker = {
+                    toString() {
+                        throw 1;
+                    },
+                    valueOf() {
+                        throw 2;
+                    }
+                },
+                input = [marker, , undefined];
+            Object.defineProperty(input, 'constructor', {
+                get() {
+                    throw 3;
+                }
+            });
+            let e = AggregateError(input),
+                f = AggregateError(input);
+            input[0] = 7;
+            e.errors !== input && e.errors !== f.errors && e.errors.length === 3 && e.errors[0] ===
+                marker && e.errors[1] === undefined && e.errors[2] === undefined && Object.keys(e.errors)
+                .join(',') === '0,1,2' && Array.isArray(e.errors)
+        "#,
     );
     assert_true(
-        "let proto=Array.prototype,Original=Array;Object.defineProperty(proto,'0',{set(){throw 7;},configurable:true});Array=function(){throw 8;};let e=AggregateError({[Symbol.iterator](){let n=0;return {next(){return n++===0?{value:4,done:false}:{done:true};}};}});Object.getPrototypeOf(e.errors)===proto && e.errors[0]===4 && e.errors.length===1 && Original.isArray(e.errors)",
+        r#"
+            let proto = Array.prototype,
+                Original = Array;
+            Object.defineProperty(proto, '0', {
+                set() {
+                    throw 7;
+                },
+                configurable: true
+            });
+            Array = function() {
+                throw 8;
+            };
+            let e = AggregateError({
+                [Symbol.iterator]() {
+                    let n = 0;
+                    return {
+                        next() {
+                            return n++ === 0 ? {
+                                value: 4,
+                                done: false
+                            } : {
+                                done: true
+                            };
+                        }
+                    };
+                }
+            });
+            Object.getPrototypeOf(e.errors) === proto && e.errors[0] === 4 && e.errors.length === 1 &&
+                Original.isArray(e.errors)
+        "#,
     );
     assert_true(
-        "let e=AggregateError('a😀\\uD800');e.errors.length===3 && e.errors[0]==='a' && e.errors[1]==='😀' && e.errors[2]==='\\uD800'",
+        r#"
+            let e = AggregateError('a😀\uD800');
+            e.errors.length === 3 && e.errors[0] === 'a' && e.errors[1] === '😀' && e.errors[2] ===
+                '\uD800'
+        "#,
     );
     for input in [
         "undefined",
@@ -160,7 +435,23 @@ fn constructor_and_instance_descriptors_are_standard() {
 #[test]
 fn retained_intrinsics_and_list_values_survive_collection() {
     let mut realm = Realm::default();
-    realm.eval("let Saved=AggregateError,e=Saved([{message:'inner'}], 'outer', {cause:{message:'cause'}});delete globalThis.AggregateError;delete globalThis.Error;delete globalThis.Array;").unwrap();
+    realm
+        .eval(
+            r#"
+                let Saved = AggregateError,
+                    e = Saved([{
+                        message: 'inner'
+                    }], 'outer', {
+                        cause: {
+                            message: 'cause'
+                        }
+                    });
+                delete globalThis.AggregateError;
+                delete globalThis.Error;
+                delete globalThis.Array;
+            "#,
+        )
+        .unwrap();
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("e.errors[0].message==='inner' && e.cause.message==='cause' && Saved.isError(e) && Saved([3]).errors[0]===3"), Ok(Value::Boolean(true)));
 }
@@ -168,7 +459,24 @@ fn retained_intrinsics_and_list_values_survive_collection() {
 #[test]
 fn default_list_size_is_unrestricted_and_opted_in_host_failures_bypass_cleanup() {
     assert_true(
-        "let n=0,e=AggregateError({[Symbol.iterator](){return {next(){return n<5000?{value:n++,done:false}:{done:true};}};}});e.errors.length===5000 && e.errors[4999]===4999",
+        r#"
+            let n = 0,
+                e = AggregateError({
+                    [Symbol.iterator]() {
+                        return {
+                            next() {
+                                return n < 5000 ? {
+                                    value: n++,
+                                    done: false
+                                } : {
+                                    done: true
+                                };
+                            }
+                        };
+                    }
+                });
+            e.errors.length === 5000 && e.errors[4999] === 4999
+        "#,
     );
     let mut realm = Realm::new(Limits {
         max_steps: Some(5000),
@@ -176,11 +484,62 @@ fn default_list_size_is_unrestricted_and_opted_in_host_failures_bypass_cleanup()
     });
     realm.reserve_unsupported_global("unsupportedHost");
     realm.eval("let flag=0,closed=false;").unwrap();
-    assert!(matches!(realm.eval("try{AggregateError({[Symbol.iterator](){return {next(){return {done:false,value:1};},return(){closed=true;}};}});}catch{flag=1;}finally{flag=2;}"), Err(Error::Limit {..})));
+    assert!(matches!(
+        realm.eval(
+            r#"
+                try {
+                    AggregateError({
+                        [Symbol.iterator]() {
+                            return {
+                                next() {
+                                    return {
+                                        done: false,
+                                        value: 1
+                                    };
+                                },
+                                return () {
+                                    closed = true;
+                                }
+                            };
+                        }
+                    });
+                } catch {
+                    flag = 1;
+                } finally {
+                    flag = 2;
+                }
+            "#
+        ),
+        Err(Error::Limit { .. })
+    ));
     assert_eq!(realm.eval("flag===0 && !closed"), Ok(Value::Boolean(true)));
     let mut realm = Realm::default();
     realm.reserve_unsupported_global("unsupportedHost");
     realm.eval("let flag=0,closed=false;").unwrap();
-    assert!(matches!(realm.eval("try{AggregateError({[Symbol.iterator](){return {next(){Function('unsupportedHost')();},return(){closed=true;}};}});}catch{flag=1;}finally{flag=2;}"), Err(Error::Unsupported {..})));
+    assert!(matches!(
+        realm.eval(
+            r#"
+                try {
+                    AggregateError({
+                        [Symbol.iterator]() {
+                            return {
+                                next() {
+                                    Function('unsupportedHost')();
+                                },
+                                return () {
+                                    closed = true;
+                                }
+                            };
+                        }
+                    });
+                } catch {
+                    flag = 1;
+                } finally {
+                    flag = 2;
+                }
+            "#
+        ),
+        Err(Error::Unsupported { .. })
+    ));
     assert_eq!(realm.eval("flag===0 && !closed"), Ok(Value::Boolean(true)));
 }

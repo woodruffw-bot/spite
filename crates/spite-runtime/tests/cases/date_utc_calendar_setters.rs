@@ -13,7 +13,10 @@ fn omitted_fields_preserve_captured_components_and_undefined_is_nan() {
         ("setUTCFullYear", "2004", "2004-02-29T12:34:56.789Z"),
     ] {
         assert_true(&format!(
-            "let d=new Date('2000-02-29T12:34:56.789Z');d.{method}({argument})===d.getTime() && d.toISOString()==='{expected}'"
+            r#"
+                let d = new Date('2000-02-29T12:34:56.789Z');
+                d.{method}({argument}) === d.getTime() && d.toISOString() === '{expected}'
+            "#
         ));
     }
     for (method, arity) in METHODS {
@@ -51,7 +54,11 @@ fn fields_truncate_and_roll_over_without_adjusting_literal_short_years() {
         ),
     ] {
         assert_true(&format!(
-            "let d=new Date('{original}T12:34:56.789Z');d.{method}({args})===d.getTime() && d.toISOString()==='{expected}T12:34:56.789Z'"
+            r#"
+                let d = new Date('{original}T12:34:56.789Z');
+                d.{method}({args}) === d.getTime() && d.toISOString() ===
+                    '{expected}T12:34:56.789Z'
+            "#
         ));
     }
     assert_true("let d=new Date(0);1/d.setUTCMonth(-0.9)===Infinity && 1/d.getTime()===Infinity");
@@ -60,19 +67,67 @@ fn fields_truncate_and_roll_over_without_adjusting_literal_short_years() {
 #[test]
 fn captured_fields_survive_mutating_hooks_and_only_full_year_revives_invalid_dates() {
     assert_true(
-        "let d=new Date('2000-02-29T12:34:56.789Z');d.setUTCMonth({valueOf(){d.setTime(0);return 2;}})===d.getTime() && d.toISOString()==='2000-03-29T12:34:56.789Z'",
+        r#"
+            let d = new Date('2000-02-29T12:34:56.789Z');
+            d.setUTCMonth({
+                valueOf() {
+                    d.setTime(0);
+                    return 2;
+                }
+            }) === d.getTime() && d.toISOString() === '2000-03-29T12:34:56.789Z'
+        "#,
     );
     assert_true(
-        "let d=new Date('2000-02-29T12:34:56.789Z');d.setUTCFullYear({valueOf(){d.setTime(NaN);return 2001;}})===d.getTime() && d.toISOString()==='2001-03-01T12:34:56.789Z'",
+        r#"
+            let d = new Date('2000-02-29T12:34:56.789Z');
+            d.setUTCFullYear({
+                valueOf() {
+                    d.setTime(NaN);
+                    return 2001;
+                }
+            }) === d.getTime() && d.toISOString() === '2001-03-01T12:34:56.789Z'
+        "#,
     );
     assert_true(
-        "let d=new Date(NaN),trace='';Number.isNaN(d.setUTCMonth({valueOf(){trace+='m';d.setTime(7);return 0;}},{valueOf(){trace+='d';d.setTime(9);return 1;}})) && trace==='md' && d.getTime()===9",
+        r#"
+            let d = new Date(NaN),
+                trace = '';
+            Number.isNaN(d.setUTCMonth({
+                valueOf() {
+                    trace += 'm';
+                    d.setTime(7);
+                    return 0;
+                }
+            }, {
+                valueOf() {
+                    trace += 'd';
+                    d.setTime(9);
+                    return 1;
+                }
+            })) && trace === 'md' && d.getTime() === 9
+        "#,
     );
     assert_true(
-        "let d=new Date(NaN);d.setUTCFullYear({valueOf(){d.setTime(Date.parse('2000-07-09T12:34:56.789Z'));return 1;}})===d.getTime() && d.toISOString()==='0001-01-01T00:00:00.000Z'",
+        r#"
+            let d = new Date(NaN);
+            d.setUTCFullYear({
+                valueOf() {
+                    d.setTime(Date.parse('2000-07-09T12:34:56.789Z'));
+                    return 1;
+                }
+            }) === d.getTime() && d.toISOString() === '0001-01-01T00:00:00.000Z'
+        "#,
     );
     assert_true(
-        "let d=new Date(NaN);Number.isNaN(d.setUTCFullYear({valueOf(){d.setTime(9);return NaN;}})) && Number.isNaN(d.getTime())",
+        r#"
+            let d = new Date(NaN);
+            Number.isNaN(d.setUTCFullYear({
+                valueOf() {
+                    d.setTime(9);
+                    return NaN;
+                }
+            })) && Number.isNaN(d.getTime())
+        "#,
     );
     assert_true(
         "let d=new Date(NaN);d.setUTCFullYear(2000,1,29)===951782400000 && d.getTime()===951782400000",
@@ -94,7 +149,15 @@ fn all_present_fields_coerce_once_in_order_even_after_nan_and_extras_are_ignored
         }
         let args = if arity == 2 { "0,1" } else { "1970,0,1" };
         assert_true(&format!(
-            "let count=0,d=new Date(0);d.{method}({args},count++,{{valueOf(){{throw 7;}}}})===0 && count===1 && d.getTime()===0"
+            r#"
+                let count = 0,
+                    d = new Date(0);
+                d.{method}({args}, count++, {{
+                    valueOf() {{
+                        throw 7;
+                    }}
+                }}) === 0 && count === 1 && d.getTime() === 0
+            "#
         ));
     }
 }
@@ -119,7 +182,17 @@ fn abrupt_conversion_preserves_hook_mutations_and_stops_later_conversions() {
             let expected = (0..=failure).map(|i| i.to_string()).collect::<String>();
             for time in ["0", "NaN"] {
                 assert_true(&format!(
-                    "let trace='',caught=false,d=new Date({time});try{{d.{method}({args});}}catch(e){{caught=e===7;}}caught && trace==='{expected}' && d.getTime()===77"
+                    r#"
+                        let trace = '',
+                            caught = false,
+                            d = new Date({time});
+                        try {{
+                            d.{method}({args});
+                        }} catch (e) {{
+                            caught = e === 7;
+                        }}
+                        caught && trace === '{expected}' && d.getTime() === 77
+                    "#
                 ));
             }
         }
@@ -170,7 +243,13 @@ fn brand_checks_precede_conversion_and_frozen_internal_slots_remain_mutable() {
             "1970,1,1"
         };
         assert_true(&format!(
-            "let d=new Date(0);Object.setPrototypeOf(d,null);Object.freeze(d);Date.prototype.{method}.call(d,{args})===2678400000 && Object.isFrozen(d) && Date.prototype.getTime.call(d)===2678400000"
+            r#"
+                let d = new Date(0);
+                Object.setPrototypeOf(d, null);
+                Object.freeze(d);
+                Date.prototype.{method}.call(d, {args}) === 2678400000 && Object.isFrozen(d) &&
+                    Date.prototype.getTime.call(d) === 2678400000
+            "#
         ));
     }
 }
@@ -182,7 +261,12 @@ fn final_clipping_allows_outside_intermediates_and_enormous_components_to_cancel
         ("8640000000000000", "275760", "8", "13"),
     ] {
         assert_true(&format!(
-            "let d=new Date({time});d.setUTCMonth({month})==={time} && d.setUTCFullYear({year})==={time} && d.setUTCFullYear({year},{month},{day})==={time}"
+            r#"
+                let d = new Date({time});
+                d.setUTCMonth({month}) === {time} && d.setUTCFullYear({year}) ===
+                    {time} && d.setUTCFullYear({year}, {month}, {day}) ===
+                    {time}
+            "#
         ));
     }
     assert_true(
@@ -192,13 +276,25 @@ fn final_clipping_allows_outside_intermediates_and_enormous_components_to_cancel
         "let d=new Date(-8640000000000000);Number.isNaN(d.setUTCFullYear(-271821,3,19)) && Number.isNaN(d.getTime())",
     );
     assert_true(
-        "let d=new Date(0);d.setUTCFullYear(-(2**54),216172782113783840,1)===Date.parse('0000-09-01') && d.setUTCFullYear(2**54+4,-216172782113783840,1)===Date.parse('0000-05-01')",
+        r#"
+            let d = new Date(0);
+            d.setUTCFullYear(-(2 ** 54), 216172782113783840, 1) === Date.parse('0000-09-01') && d
+                .setUTCFullYear(2 ** 54 + 4, -216172782113783840, 1) === Date.parse('0000-05-01')
+        "#,
     );
     assert_true(
-        "let d=new Date(0);d.setUTCFullYear(-Number.MAX_VALUE/12,Number.MAX_VALUE,1)===Date.parse('0000-09-01') && d.setUTCFullYear(Number.MAX_VALUE/12,-Number.MAX_VALUE,1)===Date.parse('0000-05-01')",
+        r#"
+            let d = new Date(0);
+            d.setUTCFullYear(-Number.MAX_VALUE / 12, Number.MAX_VALUE, 1) === Date.parse('0000-09-01') && d
+                .setUTCFullYear(Number.MAX_VALUE / 12, -Number.MAX_VALUE, 1) === Date.parse('0000-05-01')
+        "#,
     );
     assert_true(
-        "let d=new Date(0);d.setUTCFullYear(5000000000,0,1-1826211780472)===0 && d.setUTCFullYear(1e200,0,-3.652425e202)===-86400000",
+        r#"
+            let d = new Date(0);
+            d.setUTCFullYear(5000000000, 0, 1 - 1826211780472) === 0 && d.setUTCFullYear(1e200, 0, -
+                3.652425e202) === -86400000
+        "#,
     );
     for (method, arity) in METHODS {
         for index in 0..arity {

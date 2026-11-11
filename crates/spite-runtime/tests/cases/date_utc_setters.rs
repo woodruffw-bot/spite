@@ -61,10 +61,18 @@ fn utc_day_setter_normalizes_days_and_preserves_the_original_time_of_day() {
 #[test]
 fn utc_day_setter_clips_only_after_month_day_and_time_of_day_are_combined() {
     assert_true(
-        "let d=new Date(-8640000000000000); d.setUTCDate(20)===-8640000000000000 && d.setUTCDate(21)===-8639999913600000 && Number.isNaN(d.setUTCDate(19)) && Number.isNaN(d.getTime())",
+        r#"
+            let d = new Date(-8640000000000000);
+            d.setUTCDate(20) === -8640000000000000 && d.setUTCDate(21) === -8639999913600000 && Number
+                .isNaN(d.setUTCDate(19)) && Number.isNaN(d.getTime())
+        "#,
     );
     assert_true(
-        "let d=new Date(8640000000000000); d.setUTCDate(13.9)===8640000000000000 && d.setUTCDate(12)===8639999913600000 && Number.isNaN(d.setUTCDate(14)) && Number.isNaN(d.getTime())",
+        r#"
+            let d = new Date(8640000000000000);
+            d.setUTCDate(13.9) === 8640000000000000 && d.setUTCDate(12) === 8639999913600000 && Number
+                .isNaN(d.setUTCDate(14)) && Number.isNaN(d.getTime())
+        "#,
     );
     assert_true(
         "let d=new Date(-8640000000000000+1);d.setUTCDate(20.9)===-8640000000000000+1 && d.getUTCMilliseconds()===1",
@@ -77,16 +85,65 @@ fn utc_day_setter_clips_only_after_month_day_and_time_of_day_are_combined() {
 #[test]
 fn utc_day_setter_captures_the_month_and_time_before_converting_the_day() {
     assert_true(
-        "let d=new Date('2000-02-29T12:34:56.789Z'),calls=0,hint='';let arg={[Symbol.toPrimitive](h){calls++;hint=h;d.setTime(0);return 31;}};let result=d.setUTCDate(arg);result===d.getTime() && calls===1 && hint==='number' && d.toISOString()==='2000-03-02T12:34:56.789Z'",
+        r#"
+            let d = new Date('2000-02-29T12:34:56.789Z'),
+                calls = 0,
+                hint = '';
+            let arg = {
+                [Symbol.toPrimitive](h) {
+                    calls++;
+                    hint = h;
+                    d.setTime(0);
+                    return 31;
+                }
+            };
+            let result = d.setUTCDate(arg);
+            result === d.getTime() && calls === 1 && hint === 'number' && d.toISOString() ===
+                '2000-03-02T12:34:56.789Z'
+        "#,
     );
     assert_true(
-        "let d=new Date(0),calls=0;d.setUTCDate({valueOf(){calls++;d.setTime(NaN);return 2;}})===86400000 && d.getTime()===86400000 && calls===1",
+        r#"
+            let d = new Date(0),
+                calls = 0;
+            d.setUTCDate({
+                valueOf() {
+                    calls++;
+                    d.setTime(NaN);
+                    return 2;
+                }
+            }) === 86400000 && d.getTime() === 86400000 && calls === 1
+        "#,
     );
     assert_true(
-        "let d=new Date(NaN),calls=0;Number.isNaN(d.setUTCDate({valueOf(){calls++;d.setTime(9);return 1;}})) && calls===1 && d.getTime()===9",
+        r#"
+            let d = new Date(NaN),
+                calls = 0;
+            Number.isNaN(d.setUTCDate({
+                valueOf() {
+                    calls++;
+                    d.setTime(9);
+                    return 1;
+                }
+            })) && calls === 1 && d.getTime() === 9
+        "#,
     );
     assert_true(
-        "let d=new Date(7),caught=false;try{d.setUTCDate({valueOf(){d.setTime(77);throw 9;}});}catch(e){caught=e===9;}caught && d.getTime()===77",
+        r#"
+            let d = new Date(7),
+                caught = false;
+            try {
+                d.setUTCDate({
+                    valueOf() {
+                        d.setTime(77);
+                        throw 9;
+                    }
+                });
+            } catch (e) {
+                caught = e === 9;
+            }
+            caught && d.getTime() === 77
+        "#,
     );
 }
 
@@ -128,7 +185,13 @@ fn utc_day_setter_checks_brand_before_coercion_and_can_mutate_frozen_slots() {
         }
     }
     assert_true(
-        "let d=new Date(0);Object.setPrototypeOf(d,null);Object.freeze(d);Date.prototype.setUTCDate.call(d,2)===86400000 && Object.isFrozen(d) && Date.prototype.getTime.call(d)===86400000",
+        r#"
+            let d = new Date(0);
+            Object.setPrototypeOf(d, null);
+            Object.freeze(d);
+            Date.prototype.setUTCDate.call(d, 2) === 86400000 && Object.isFrozen(d) && Date.prototype
+                .getTime.call(d) === 86400000
+        "#,
     );
     assert_true(
         "let d=new Date(0),count=0;d.setUTCDate(1,count++,{valueOf(){throw 7;}})===0 && count===1 && d.getTime()===0",
@@ -159,7 +222,11 @@ fn omitted_fields_retain_the_original_utc_components_and_explicit_undefined_is_n
         ("setUTCMilliseconds", "2000-02-29T12:34:56.001Z"),
     ] {
         assert_true(&format!(
-            "let d=new Date('2000-02-29T12:34:56.789Z');let result=d.{method}(1);result===d.getTime() && d.toISOString()==='{expected}'"
+            r#"
+                let d = new Date('2000-02-29T12:34:56.789Z');
+                let result = d.{method}(1);
+                result === d.getTime() && d.toISOString() === '{expected}'
+            "#
         ));
         assert_true(&format!(
             "let d=new Date(0);Number.isNaN(d.{method}()) && Number.isNaN(d.getTime())"
@@ -190,11 +257,17 @@ fn negative_and_oversized_components_roll_across_days_and_leap_boundaries() {
         ("setUTCMilliseconds", 1000, "2000-01-01T00:00:01.000Z"),
     ] {
         assert_true(&format!(
-            "let d=new Date('2000-01-01T00:00:00.005Z');d.{method}({value})===d.getTime() && d.toISOString()==='{expected}'"
+            r#"
+                let d = new Date('2000-01-01T00:00:00.005Z');
+                d.{method}({value}) === d.getTime() && d.toISOString() === '{expected}'
+            "#
         ));
     }
     assert_true(
-        "let d=new Date('2000-02-29T12:34:56.789Z');d.setUTCHours(24,0,0,0)===951868800000 && d.toISOString()==='2000-03-01T00:00:00.000Z'",
+        r#"
+            let d = new Date('2000-02-29T12:34:56.789Z');
+            d.setUTCHours(24, 0, 0, 0) === 951868800000 && d.toISOString() === '2000-03-01T00:00:00.000Z'
+        "#,
     );
     assert_true(
         "let d=new Date(-1);d.setUTCHours(0,0,0,0)===-86400000 && d.toISOString()==='1969-12-31T00:00:00.000Z'",
@@ -204,7 +277,11 @@ fn negative_and_oversized_components_roll_across_days_and_leap_boundaries() {
 #[test]
 fn arithmetic_truncates_fields_canonicalizes_zero_and_preserves_float_operation_order() {
     assert_true(
-        "let d=new Date(0);d.setUTCHours(1.9,2.9,3.9,4.9)===3723004 && d.getTime()===3723004 && d.setUTCHours(-1.9,-2.9,-3.9,-4.9)===-3723004",
+        r#"
+            let d = new Date(0);
+            d.setUTCHours(1.9, 2.9, 3.9, 4.9) === 3723004 && d.getTime() === 3723004 && d.setUTCHours(-1.9,
+                -2.9, -3.9, -4.9) === -3723004
+        "#,
     );
     assert_true(
         "let d=new Date(0);d.setUTCHours(2**52,-60*2**52,1,1)===1001 && d.getTime()===1001",
@@ -241,7 +318,12 @@ fn timeclip_endpoints_accept_unchanged_components_and_reject_outside_rollover() 
             ));
         }
         assert_true(&format!(
-            "let hi=new Date(8640000000000000),lo=new Date(-8640000000000000);Number.isNaN(hi.{method}(1)) && Number.isNaN(hi.getTime()) && Number.isNaN(lo.{method}(-1)) && Number.isNaN(lo.getTime())"
+            r#"
+                let hi = new Date(8640000000000000),
+                    lo = new Date(-8640000000000000);
+                Number.isNaN(hi.{method}(1)) && Number.isNaN(hi.getTime()) && Number.isNaN(lo
+                    .{method}(-1)) && Number.isNaN(lo.getTime())
+            "#
         ));
     }
 }
@@ -287,7 +369,20 @@ fn conversion_hooks_cannot_replace_the_captured_day_or_omitted_fields() {
         ("setUTCMilliseconds", "1969-12-31T23:59:59.000Z"),
     ] {
         assert_true(&format!(
-            "let d=new Date(-1),calls=0,arg={{valueOf(){{calls++;if(this!==arg || arguments.length!==0)throw 1;d.setTime(0);return 0;}}}};let result=d.{method}(arg);calls===1 && result===d.getTime() && d.toISOString()==='{expected}'"
+            r#"
+                let d = new Date(-1),
+                    calls = 0,
+                    arg = {{
+                        valueOf() {{
+                            calls++;
+                            if (this !== arg || arguments.length !== 0) throw 1;
+                            d.setTime(0);
+                            return 0;
+                        }}
+                    }};
+                let result = d.{method}(arg);
+                calls === 1 && result === d.getTime() && d.toISOString() === '{expected}'
+            "#
         ));
     }
 }
@@ -296,7 +391,17 @@ fn conversion_hooks_cannot_replace_the_captured_day_or_omitted_fields() {
 fn previously_invalid_dates_convert_arguments_then_return_nan_without_writing() {
     for (method, arity) in METHODS {
         assert_true(&format!(
-            "let d=new Date(NaN),calls=0;Number.isNaN(d.{method}({{valueOf(){{calls++;d.setTime(9);return 0;}}}})) && calls===1 && d.getTime()===9"
+            r#"
+                let d = new Date(NaN),
+                    calls = 0;
+                Number.isNaN(d.{method}({{
+                    valueOf() {{
+                        calls++;
+                        d.setTime(9);
+                        return 0;
+                    }}
+                }})) && calls === 1 && d.getTime() === 9
+            "#
         ));
         let args = (0..arity)
             .map(|i| format!("{{valueOf(){{trace+='{i}';d.setTime({i});return 0;}}}}"))
@@ -343,7 +448,17 @@ fn ordered_conversions_continue_after_nan_and_abrupt_completion_preserves_hook_m
                 .join(",");
             let expected = (0..=failure).map(|i| i.to_string()).collect::<String>();
             assert_true(&format!(
-                "let trace='',d=new Date(0),caught=false;try{{d.{method}({args});}}catch(e){{caught=e===7;}}caught && trace==='{expected}' && d.getTime()===9"
+                r#"
+                    let trace = '',
+                        d = new Date(0),
+                        caught = false;
+                    try {{
+                        d.{method}({args});
+                    }} catch (e) {{
+                        caught = e === 7;
+                    }}
+                    caught && trace === '{expected}' && d.getTime() === 9
+                "#
             ));
         }
     }
@@ -354,7 +469,15 @@ fn extra_arguments_are_evaluated_by_the_caller_and_never_coerced_by_setters() {
     for (method, arity) in METHODS {
         let args = vec!["0"; arity].join(",");
         assert_true(&format!(
-            "let d=new Date(0),count=0;d.{method}({args},count++,{{valueOf(){{throw 7;}}}})===0 && d.getTime()===0 && count===1"
+            r#"
+                let d = new Date(0),
+                    count = 0;
+                d.{method}({args}, count++, {{
+                    valueOf() {{
+                        throw 7;
+                    }}
+                }}) === 0 && d.getTime() === 0 && count === 1
+            "#
         ));
     }
 }

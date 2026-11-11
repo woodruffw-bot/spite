@@ -56,7 +56,24 @@ fn all_twelve_kinds_support_the_complete_observer_and_callback_family() {
             ("1", "2", "3", "6", "2")
         };
         assert_true(&format!(
-            "let a={name}.of({one},{two},{three}),count=0,mapped=a.map(v=>v*{factor}),kept=a.filter((v,i)=>i!==1);a.at(-1)==={three} && a.every(v=>v>0) && a.some(v=>v==={two}) && a.forEach(()=>{{count++;}})===undefined && count===3 && a.find(v=>v>={two})==={two} && a.findIndex(v=>v>={two})===1 && a.findLast(v=>v<={two})==={two} && a.findLastIndex(v=>v<={two})===1 && a.includes({two}) && a.indexOf({two})===1 && a.lastIndexOf({two})===1 && a.join('|')==='1|2|3' && a.toLocaleString()==='1,2,3' && a.reduce((p,v)=>p+v)==={six} && a.reduceRight((p,v)=>p+v)==={six} && mapped instanceof {name} && mapped.length===3 && mapped[0]==={two} && mapped[2]==={six} && kept instanceof {name} && kept.length===2 && kept[0]==={one} && kept[1]==={three}"
+            r#"
+                let a = {name}.of({one}, {two}, {three}),
+                    count = 0,
+                    mapped = a.map(v => v * {factor}),
+                    kept = a.filter((v, i) => i !== 1);
+                a.at(-1) === {three} && a.every(v => v > 0) && a.some(v => v === {two}) && a
+                    .forEach(() => {{
+                        count++;
+                    }}) === undefined && count === 3 && a.find(v => v >= {two}) === {two} && a
+                    .findIndex(v => v >= {two}) === 1 && a.findLast(v => v <= {two}) ===
+                    {two} && a.findLastIndex(v => v <= {two}) === 1 && a.includes(
+                        {two}) && a.indexOf({two}) === 1 && a.lastIndexOf({two}) ===
+                    1 && a.join('|') === '1|2|3' && a.toLocaleString() === '1,2,3' && a.reduce((p, v) => p +
+                    v) === {six} && a.reduceRight((p, v) => p + v) === {six} &&
+                    mapped instanceof {name} && mapped.length === 3 && mapped[0] === {two} &&
+                    mapped[2] === {six} && kept instanceof {name} && kept.length === 2 && kept[
+                        0] === {one} && kept[1] === {three}
+            "#
         ));
     }
 }
@@ -78,10 +95,53 @@ fn entry_validation_preempts_argument_hooks_for_unbranded_detached_and_outside_v
             );
         }
         assert_true(&format!(
-            "let a=new Uint8Array(3),hits=0,caught=false;a.buffer.transfer();try{{a.{method}({{valueOf(){{hits++;throw 7;}},toString(){{hits++;throw 8;}}}});}}catch(e){{caught=e instanceof TypeError;}}caught && hits===0"
+            r#"
+                let a = new Uint8Array(3),
+                    hits = 0,
+                    caught = false;
+                a.buffer.transfer();
+                try {{
+                    a.{method}({{
+                        valueOf() {{
+                            hits++;
+                            throw 7;
+                        }},
+                        toString() {{
+                            hits++;
+                            throw 8;
+                        }}
+                    }});
+                }} catch (e) {{
+                    caught = e instanceof TypeError;
+                }}
+                caught && hits === 0
+            "#
         ));
         assert_true(&format!(
-            "let b=new ArrayBuffer(4,{{maxByteLength:8}}),a=new Uint8Array(b,1,3),hits=0,caught=false;b.resize(2);try{{a.{method}({{valueOf(){{hits++;throw 7;}},toString(){{hits++;throw 8;}}}});}}catch(e){{caught=e instanceof TypeError;}}caught && hits===0"
+            r#"
+                let b = new ArrayBuffer(4, {{
+                        maxByteLength: 8
+                    }}),
+                    a = new Uint8Array(b, 1, 3),
+                    hits = 0,
+                    caught = false;
+                b.resize(2);
+                try {{
+                    a.{method}({{
+                        valueOf() {{
+                            hits++;
+                            throw 7;
+                        }},
+                        toString() {{
+                            hits++;
+                            throw 8;
+                        }}
+                    }});
+                }} catch (e) {{
+                    caught = e instanceof TypeError;
+                }}
+                caught && hits === 0
+            "#
         ));
     }
 }
@@ -89,7 +149,26 @@ fn entry_validation_preempts_argument_hooks_for_unbranded_detached_and_outside_v
 #[test]
 fn internal_length_and_kind_ignore_throwing_public_state_overrides() {
     assert_true(
-        "let a=Uint16Array.of(1,2,3);for(let key of ['length','buffer','byteLength','byteOffset','BYTES_PER_ELEMENT'])Object.defineProperty(a,key,{get(){throw 7;}});let count=0,mapped=a.map(v=>v+1),kept=a.filter(v=>v!==2);a.at(1)===2 && a.every(v=>v>0) && a.some(v=>v===2) && a.forEach(()=>{count++;})===undefined && count===3 && a.find(v=>v===2)===2 && a.findIndex(v=>v===2)===1 && a.findLast(v=>v!==2)===3 && a.findLastIndex(v=>v!==2)===2 && a.includes(2) && a.indexOf(2)===1 && a.lastIndexOf(2)===1 && a.join('|')==='1|2|3' && a.toLocaleString()==='1,2,3' && a.reduce((p,v)=>p+v)===6 && a.reduceRight((p,v)=>p+v)===6 && mapped instanceof Uint16Array && mapped[2]===4 && kept[0]===1 && kept[1]===3",
+        r#"
+            let a = Uint16Array.of(1, 2, 3);
+            for (let key of ['length', 'buffer', 'byteLength', 'byteOffset', 'BYTES_PER_ELEMENT']) Object
+                .defineProperty(a, key, {
+                    get() {
+                        throw 7;
+                    }
+                });
+            let count = 0,
+                mapped = a.map(v => v + 1),
+                kept = a.filter(v => v !== 2);
+            a.at(1) === 2 && a.every(v => v > 0) && a.some(v => v === 2) && a.forEach(() => {
+                    count++;
+                }) === undefined && count === 3 && a.find(v => v === 2) === 2 && a.findIndex(v => v ===
+                2) === 1 && a.findLast(v => v !== 2) === 3 && a.findLastIndex(v => v !== 2) === 2 && a
+                .includes(2) && a.indexOf(2) === 1 && a.lastIndexOf(2) === 1 && a.join('|') === '1|2|3' &&
+                a.toLocaleString() === '1,2,3' && a.reduce((p, v) => p + v) === 6 && a.reduceRight((p,
+                    v) => p + v) === 6 && mapped instanceof Uint16Array && mapped[2] === 4 && kept[0] ===
+                1 && kept[1] === 3
+        "#,
     );
 }
 
@@ -110,23 +189,71 @@ fn at_converts_indices_after_capturing_length_without_revalidating_live_bounds()
     }
     exception("new Uint8Array(0).at(Symbol())", ExceptionKind::TypeError);
     assert_true(
-        "let b=new ArrayBuffer(3,{maxByteLength:8}),a=new Uint8Array(b);a[2]=7;let value=a.at({valueOf(){b.resize(6);a[5]=9;return -1;}});value===7 && a.length===6",
+        r#"
+            let b = new ArrayBuffer(3, {
+                    maxByteLength: 8
+                }),
+                a = new Uint8Array(b);
+            a[2] = 7;
+            let value = a.at({
+                valueOf() {
+                    b.resize(6);
+                    a[5] = 9;
+                    return -1;
+                }
+            });
+            value === 7 && a.length === 6
+        "#,
     );
     assert_true(
-        "let a=Uint8Array.of(1,2,3),hits=0;let value=a.at({valueOf(){hits++;a.buffer.transfer();return 0;}});hits===1 && value===undefined",
+        r#"
+            let a = Uint8Array.of(1, 2, 3),
+                hits = 0;
+            let value = a.at({
+                valueOf() {
+                    hits++;
+                    a.buffer.transfer();
+                    return 0;
+                }
+            });
+            hits === 1 && value === undefined
+        "#,
     );
     assert_true(
-        "let b=new ArrayBuffer(3,{maxByteLength:8}),a=new Uint8Array(b,0,3);let value=a.at({valueOf(){b.resize(1);return 0;}});value===undefined && a.length===0",
+        r#"
+            let b = new ArrayBuffer(3, {
+                    maxByteLength: 8
+                }),
+                a = new Uint8Array(b, 0, 3);
+            let value = a.at({
+                valueOf() {
+                    b.resize(1);
+                    return 0;
+                }
+            });
+            value === undefined && a.length === 0
+        "#,
     );
 }
 
 #[test]
 fn searches_distinguish_same_value_zero_strict_equality_and_omitted_last_index() {
     assert_true(
-        "let a=Float64Array.of(NaN,-0,0,NaN);a.includes(NaN) && a.indexOf(NaN)===-1 && a.lastIndexOf(NaN)===-1 && a.indexOf(0)===1 && a.lastIndexOf(-0)===2 && !a.includes(undefined) && a.lastIndexOf(0,undefined)===-1 && a.lastIndexOf(0)===2",
+        r#"
+            let a = Float64Array.of(NaN, -0, 0, NaN);
+            a.includes(NaN) && a.indexOf(NaN) === -1 && a.lastIndexOf(NaN) === -1 && a.indexOf(0) === 1 &&
+                a.lastIndexOf(-0) === 2 && !a.includes(undefined) && a.lastIndexOf(0, undefined) === -1 &&
+                a.lastIndexOf(0) === 2
+        "#,
     );
     assert_true(
-        "let a=Uint8Array.of(1,2,1);a.lastIndexOf(1)===2 && a.lastIndexOf(1,undefined)===0 && a.lastIndexOf(1,NaN)===0 && a.lastIndexOf(1,Infinity)===2 && a.lastIndexOf(1,-Infinity)===-1 && a.lastIndexOf(1,-2)===0 && a.indexOf(1,-2)===2 && a.indexOf(1,Infinity)===-1 && a.indexOf(1,-Infinity)===0 && !a.includes(1,Infinity) && a.includes(1,-Infinity)",
+        r#"
+            let a = Uint8Array.of(1, 2, 1);
+            a.lastIndexOf(1) === 2 && a.lastIndexOf(1, undefined) === 0 && a.lastIndexOf(1, NaN) === 0 && a
+                .lastIndexOf(1, Infinity) === 2 && a.lastIndexOf(1, -Infinity) === -1 && a.lastIndexOf(1, -
+                    2) === 0 && a.indexOf(1, -2) === 2 && a.indexOf(1, Infinity) === -1 && a.indexOf(1, -
+                    Infinity) === 0 && !a.includes(1, Infinity) && a.includes(1, -Infinity)
+        "#,
     );
     assert_true(
         "let a=BigInt64Array.of(1n,2n);a.includes(1n) && !a.includes(1) && a.indexOf(1)===-1 && a.lastIndexOf(1)===-1",
@@ -153,16 +280,58 @@ fn includes_gets_invalidated_indices_while_index_searches_use_presence() {
         ("lastIndexOf", "-1"),
     ] {
         assert_true(&format!(
-            "let b=new ArrayBuffer(3,{{maxByteLength:8}}),a=new Uint8Array(b),p=Object.create(Object.getPrototypeOf(a));Object.defineProperty(p,'0',{{get(){{throw 7;}}}});Object.setPrototypeOf(a,p);let from={{valueOf(){{b.resize(0);return {};}}}};a.{method}(undefined,from)==={expected}",
+            r#"
+                let b = new ArrayBuffer(3, {{
+                        maxByteLength: 8
+                    }}),
+                    a = new Uint8Array(b),
+                    p = Object.create(Object.getPrototypeOf(a));
+                Object.defineProperty(p, '0', {{
+                    get() {{
+                        throw 7;
+                    }}
+                }});
+                Object.setPrototypeOf(a, p);
+                let from = {{
+                    valueOf() {{
+                        b.resize(0);
+                        return {};
+                    }}
+                }};
+                a.{method}(undefined, from) === {expected}
+            "#,
             if method == "lastIndexOf" { 2 } else { 0 }
         ));
         assert_true(&format!(
-            "let a=Uint8Array.of(1,2,3),from={{valueOf(){{a.buffer.transfer();return {};}}}};a.{method}(undefined,from)==={expected}",
+            r#"
+                let a = Uint8Array.of(1, 2, 3),
+                    from = {{
+                        valueOf() {{
+                            a.buffer.transfer();
+                            return {};
+                        }}
+                    }};
+                a.{method}(undefined, from) === {expected}
+            "#,
             if method == "lastIndexOf" { 2 } else { 0 }
         ));
     }
     assert_true(
-        "let b=new ArrayBuffer(2,{maxByteLength:8}),a=new Uint8Array(b);a[0]=1;a[1]=2;!a.includes(9,{valueOf(){b.resize(4);a[3]=9;return 0;}})",
+        r#"
+            let b = new ArrayBuffer(2, {
+                    maxByteLength: 8
+                }),
+                a = new Uint8Array(b);
+            a[0] = 1;
+            a[1] = 2;
+            !a.includes(9, {
+                valueOf() {
+                    b.resize(4);
+                    a[3] = 9;
+                    return 0;
+                }
+            })
+        "#,
     );
 }
 
@@ -192,7 +361,19 @@ fn callbacks_receive_exact_three_arguments_this_arg_and_direction_for_both_conte
                 "012"
             };
             assert_true(&format!(
-                "let a={name}.of({values}),log='',valid=true;a.{method}(function(value,index,source){{'use strict';valid=valid && this===false && arguments.length===3 && source===a && value===a[index];log+=index;return {result};}},false);valid && log==='{order}'"
+                r#"
+                    let a = {name}.of({values}),
+                        log = '',
+                        valid = true;
+                    a.{method}(function(value, index, source) {{
+                        'use strict';
+                        valid = valid && this === false && arguments.length === 3 && source === a &&
+                            value === a[index];
+                        log += index;
+                        return {result};
+                    }}, false);
+                    valid && log === '{order}'
+                "#
             ));
         }
     }
@@ -214,7 +395,23 @@ fn callback_validation_happens_on_empty_views_before_any_species_lookup() {
         "reduceRight",
     ] {
         assert_true(&format!(
-            "let a=new Uint8Array(0),hits=0,caught=false;Object.defineProperty(a,'constructor',{{get(){{hits++;throw 7;}}}});try{{a.{method}(null);}}catch(e){{caught=e instanceof TypeError;}}caught && hits===0"
+            r#"
+                let a = new Uint8Array(0),
+                    hits = 0,
+                    caught = false;
+                Object.defineProperty(a, 'constructor', {{
+                    get() {{
+                        hits++;
+                        throw 7;
+                    }}
+                }});
+                try {{
+                    a.{method}(null);
+                }} catch (e) {{
+                    caught = e instanceof TypeError;
+                }}
+                caught && hits === 0
+            "#
         ));
     }
 }
@@ -234,7 +431,22 @@ fn predicates_short_circuit_and_find_returns_the_value_read_before_mutation() {
         ("findLastIndex", "2", 2),
     ] {
         assert_true(&format!(
-            "let a=Uint8Array.of(1,2,3),count=0,o={{valueOf(){{throw 7;}}}};let result=a.{method}((v,i)=>{{count++;if(i!=={index})throw 8;a[i]=9;return o;}});result==={expected} && count===1 && a[{index}]===9"
+            r#"
+                let a = Uint8Array.of(1, 2, 3),
+                    count = 0,
+                    o = {{
+                        valueOf() {{
+                            throw 7;
+                        }}
+                    }};
+                let result = a.{method}((v, i) => {{
+                    count++;
+                    if (i !== {index}) throw 8;
+                    a[i] = 9;
+                    return o;
+                }});
+                result === {expected} && count === 1 && a[{index}] === 9
+            "#
         ));
     }
 }
@@ -258,14 +470,60 @@ fn callback_traversals_keep_the_captured_range_and_get_each_current_value_after_
             "0:1;1:undefined;2:undefined;"
         };
         assert_true(&format!(
-            "let a=Uint8Array.of(1,2,3),log='',first=true;a.{method}((v,i)=>{{log+=i+':'+v+';';if(first){{first=false;a.buffer.transfer();}}return {result};}});log==='{expected}'"
+            r#"
+                let a = Uint8Array.of(1, 2, 3),
+                    log = '',
+                    first = true;
+                a.{method}((v, i) => {{
+                    log += i + ':' + v + ';';
+                    if (first) {{
+                        first = false;
+                        a.buffer.transfer();
+                    }}
+                    return {result};
+                }});
+                log === '{expected}'
+            "#
         ));
     }
     assert_true(
-        "let b=new ArrayBuffer(3,{maxByteLength:8}),a=new Uint8Array(b,0,3),log='';a[0]=1;a[1]=2;a[2]=3;a.forEach((v,i)=>{log+=i+':'+v+';';if(i===0)b.resize(1);if(i===1)b.resize(3);});log==='0:1;1:undefined;2:0;'",
+        r#"
+            let b = new ArrayBuffer(3, {
+                    maxByteLength: 8
+                }),
+                a = new Uint8Array(b, 0, 3),
+                log = '';
+            a[0] = 1;
+            a[1] = 2;
+            a[2] = 3;
+            a.forEach((v, i) => {
+                log += i + ':' + v + ';';
+                if (i === 0) b.resize(1);
+                if (i === 1) b.resize(3);
+            });
+            log === '0:1;1:undefined;2:0;'
+        "#,
     );
     assert_true(
-        "let b=new ArrayBuffer(3,{maxByteLength:8}),a=new Uint8Array(b),log='';a[0]=1;a[1]=2;a[2]=3;a.forEach((v,i)=>{log+=i+':'+v+';';if(i===0){b.resize(6);a[1]=9;a[3]=7;}});log==='0:1;1:9;2:3;' && a.length===6",
+        r#"
+            let b = new ArrayBuffer(3, {
+                    maxByteLength: 8
+                }),
+                a = new Uint8Array(b),
+                log = '';
+            a[0] = 1;
+            a[1] = 2;
+            a[2] = 3;
+            a.forEach((v, i) => {
+                log += i + ':' + v + ';';
+                if (i === 0) {
+                    b.resize(6);
+                    a[1] = 9;
+                    a[3] = 7;
+                }
+            });
+            log === '0:1;1:9;2:3;' && a.length === 6
+        "#,
     );
 }
 
@@ -277,14 +535,46 @@ fn reductions_distinguish_omitted_initial_values_and_preserve_callback_signature
             ExceptionKind::TypeError,
         );
         assert_true(&format!(
-            "let hits=0;new Uint8Array(0).{method}(()=>{{hits++;throw 7;}},undefined)===undefined && Uint8Array.of(7).{method}(()=>{{hits++;throw 8;}})===7 && hits===0"
+            r#"
+                let hits = 0;
+                new Uint8Array(0).{method}(() => {{
+                    hits++;
+                    throw 7;
+                }}, undefined) === undefined && Uint8Array.of(7).{method}(() => {{
+                    hits++;
+                    throw 8;
+                }}) === 7 && hits === 0
+            "#
         ));
         let order = if method == "reduce" { "012" } else { "210" };
         assert_true(&format!(
-            "let a=BigInt64Array.of(1n,2n,3n),log='',valid=true;let result=a.{method}(function(acc,value,index,source){{'use strict';valid=valid && this===undefined && arguments.length===4 && source===a;log+=index;return acc+value;}},0n);valid && log==='{order}' && result===6n"
+            r#"
+                let a = BigInt64Array.of(1n, 2n, 3n),
+                    log = '',
+                    valid = true;
+                let result = a.{method}(function(acc, value, index, source) {{
+                    'use strict';
+                    valid = valid && this === undefined && arguments.length === 4 && source === a;
+                    log += index;
+                    return acc + value;
+                }}, 0n);
+                valid && log === '{order}' && result === 6n
+            "#
         ));
         assert_true(&format!(
-            "let calls=0,o={{valueOf(){{throw 7;}}}};let result=Uint8Array.of(7).{method}((acc,v)=>{{calls++;return acc===undefined && v===7;}},undefined);result && calls===1 && new Uint8Array(0).{method}(()=>0,o)===o"
+            r#"
+                let calls = 0,
+                    o = {{
+                        valueOf() {{
+                            throw 7;
+                        }}
+                    }};
+                let result = Uint8Array.of(7).{method}((acc, v) => {{
+                    calls++;
+                    return acc === undefined && v === 7;
+                }}, undefined);
+                result && calls === 1 && new Uint8Array(0).{method}(() => 0, o) === o
+            "#
         ));
     }
 }
@@ -298,11 +588,39 @@ fn reductions_get_invalidated_indices_without_presence_skips_or_length_growth() 
             "2:3;1:undefined;0:undefined;"
         };
         assert_true(&format!(
-            "let a=BigInt64Array.of(1n,2n,3n),first=true,log='';let result=a.{method}((acc,v,i)=>{{log+=i+':'+v+';';if(first){{first=false;a.buffer.transfer();}}return acc;}},7n);result===7n && log==='{expected}'"
+            r#"
+                let a = BigInt64Array.of(1n, 2n, 3n),
+                    first = true,
+                    log = '';
+                let result = a.{method}((acc, v, i) => {{
+                    log += i + ':' + v + ';';
+                    if (first) {{
+                        first = false;
+                        a.buffer.transfer();
+                    }}
+                    return acc;
+                }}, 7n);
+                result === 7n && log === '{expected}'
+            "#
         ));
     }
     assert_true(
-        "let b=new ArrayBuffer(3,{maxByteLength:8}),a=new Uint8Array(b),log='';a[0]=1;a[1]=2;a[2]=3;let result=a.reduce((acc,v,i)=>{log+=i+':'+v+';';if(i===1)b.resize(0);return acc;});result===1 && log==='1:2;2:undefined;'",
+        r#"
+            let b = new ArrayBuffer(3, {
+                    maxByteLength: 8
+                }),
+                a = new Uint8Array(b),
+                log = '';
+            a[0] = 1;
+            a[1] = 2;
+            a[2] = 3;
+            let result = a.reduce((acc, v, i) => {
+                log += i + ':' + v + ';';
+                if (i === 1) b.resize(0);
+                return acc;
+            });
+            result === 1 && log === '1:2;2:undefined;'
+        "#,
     );
 }
 
@@ -315,16 +633,67 @@ fn join_converts_separators_even_when_empty_and_uses_live_gets_over_captured_len
     );
     exception("new Uint8Array(0).join(Symbol())", ExceptionKind::TypeError);
     assert_true(
-        "let a=Uint8Array.of(1,2,3),hits=0;let result=a.join({toString(){hits++;a.buffer.transfer();return ':';}});result==='::' && hits===1",
+        r#"
+            let a = Uint8Array.of(1, 2, 3),
+                hits = 0;
+            let result = a.join({
+                toString() {
+                    hits++;
+                    a.buffer.transfer();
+                    return ':';
+                }
+            });
+            result === '::' && hits === 1
+        "#,
     );
     assert_true(
-        "let b=new ArrayBuffer(3,{maxByteLength:8}),a=new Uint8Array(b),hits=0;a[0]=1;a[1]=2;a[2]=3;let result=a.join({toString(){hits++;b.resize(6);a[3]=9;return '|';}});result==='1|2|3' && hits===1",
+        r#"
+            let b = new ArrayBuffer(3, {
+                    maxByteLength: 8
+                }),
+                a = new Uint8Array(b),
+                hits = 0;
+            a[0] = 1;
+            a[1] = 2;
+            a[2] = 3;
+            let result = a.join({
+                toString() {
+                    hits++;
+                    b.resize(6);
+                    a[3] = 9;
+                    return '|';
+                }
+            });
+            result === '1|2|3' && hits === 1
+        "#,
     );
     assert_true(
-        "let b=new ArrayBuffer(3,{maxByteLength:8}),a=new Uint8Array(b,0,3);a[0]=1;a[1]=2;a[2]=3;a.join({toString(){b.resize(1);return ':';}})==='::'",
+        r#"
+            let b = new ArrayBuffer(3, {
+                    maxByteLength: 8
+                }),
+                a = new Uint8Array(b, 0, 3);
+            a[0] = 1;
+            a[1] = 2;
+            a[2] = 3;
+            a.join({
+                toString() {
+                    b.resize(1);
+                    return ':';
+                }
+            }) === '::'
+        "#,
     );
     assert_true(
-        "Number.prototype.toString=function(){throw 7;};BigInt.prototype.toString=function(){throw 8;};Uint8Array.of(1,2).join()==='1,2' && BigInt64Array.of(1n,2n).join('|')==='1|2'",
+        r#"
+            Number.prototype.toString = function() {
+                throw 7;
+            };
+            BigInt.prototype.toString = function() {
+                throw 8;
+            };
+            Uint8Array.of(1, 2).join() === '1,2' && BigInt64Array.of(1n, 2n).join('|') === '1|2'
+        "#,
     );
 }
 
@@ -351,7 +720,32 @@ fn callback_and_species_abrupt_completions_preserve_the_original_throw_and_order
     }
     for (method, callbacks) in [("map", 0), ("filter", 3)] {
         assert_true(&format!(
-            "let a=Uint8Array.of(1,2,3),hits=0,log='',caught=false;Object.defineProperty(a,'constructor',{{get(){{log+='c';return {{get [Symbol.species](){{log+='s';throw 7;}}}};}}}});try{{a.{method}(v=>{{hits++;return v;}});}}catch(e){{caught=e===7;}}caught && hits==={callbacks} && log==='cs'"
+            r#"
+                let a = Uint8Array.of(1, 2, 3),
+                    hits = 0,
+                    log = '',
+                    caught = false;
+                Object.defineProperty(a, 'constructor', {{
+                    get() {{
+                        log += 'c';
+                        return {{
+                            get [Symbol.species]() {{
+                                log += 's';
+                                throw 7;
+                            }}
+                        }};
+                    }}
+                }});
+                try {{
+                    a.{method}(v => {{
+                        hits++;
+                        return v;
+                    }});
+                }} catch (e) {{
+                    caught = e === 7;
+                }}
+                caught && hits === {callbacks} && log === 'cs'
+            "#
         ));
     }
 }
@@ -363,34 +757,183 @@ fn locale_calls_receive_primitive_this_no_reserved_arguments_and_stringify_resul
         ("BigInt64Array", "BigInt", "1n,2n", "bigint"),
     ] {
         assert_true(&format!(
-            "let a={name}.of({values}),log='',calls=0;{prototype}.prototype.toLocaleString=function(){{'use strict';if(typeof this!=='{scalar_type}' || arguments.length!==0)throw 7;calls++;let value=this;log+='c'+value;return {{toString(){{log+='s'+value;return 'v'+value;}}}};}};let ignored={{toString(){{throw 8;}},valueOf(){{throw 9;}}}};a.toLocaleString(ignored,ignored)==='v1,v2' && calls===2 && log==='c1s1c2s2'"
+            r#"
+                let a = {name}.of({values}),
+                    log = '',
+                    calls = 0;
+                {prototype}.prototype.toLocaleString = function() {{
+                    'use strict';
+                    if (typeof this !== '{scalar_type}' || arguments.length !== 0) throw 7;
+                    calls++;
+                    let value = this;
+                    log += 'c' + value;
+                    return {{
+                        toString() {{
+                            log += 's' + value;
+                            return 'v' + value;
+                        }}
+                    }};
+                }};
+                let ignored = {{
+                    toString() {{
+                        throw 8;
+                    }},
+                    valueOf() {{
+                        throw 9;
+                    }}
+                }};
+                a.toLocaleString(ignored, ignored) === 'v1,v2' && calls === 2 && log === 'c1s1c2s2'
+            "#
         ));
     }
     assert_true(
-        "let a=Uint8Array.of(1,2,3),calls=0;Number.prototype.toLocaleString=function(){'use strict';calls++;return {toString(){a.buffer.transfer();return 'first';}};};a.toLocaleString()==='first,,' && calls===1",
+        r#"
+            let a = Uint8Array.of(1, 2, 3),
+                calls = 0;
+            Number.prototype.toLocaleString = function() {
+                'use strict';
+                calls++;
+                return {
+                    toString() {
+                        a.buffer.transfer();
+                        return 'first';
+                    }
+                };
+            };
+            a.toLocaleString() === 'first,,' && calls === 1
+        "#,
     );
     assert_true(
-        "let buffer=new ArrayBuffer(3,{maxByteLength:6}),a=new Uint8Array(buffer),log='';a[0]=1;a[1]=2;a[2]=3;Object.defineProperty(Number.prototype,'toLocaleString',{get(){log+='g';buffer.resize(0);return function(){'use strict';log+='m'+this;return 'first';};}});a.toLocaleString()==='first,,' && log==='gm1'",
+        r#"
+            let buffer = new ArrayBuffer(3, {
+                    maxByteLength: 6
+                }),
+                a = new Uint8Array(buffer),
+                log = '';
+            a[0] = 1;
+            a[1] = 2;
+            a[2] = 3;
+            Object.defineProperty(Number.prototype, 'toLocaleString', {
+                get() {
+                    log += 'g';
+                    buffer.resize(0);
+                    return function() {
+                        'use strict';
+                        log += 'm' + this;
+                        return 'first';
+                    };
+                }
+            });
+            a.toLocaleString() === 'first,,' && log === 'gm1'
+        "#,
     );
     assert_true(
-        "let a=Uint8Array.of(1,2,3);Number.prototype.toLocaleString=7;let caught=false;try{a.toLocaleString();}catch(e){caught=e instanceof TypeError;}caught",
+        r#"
+            let a = Uint8Array.of(1, 2, 3);
+            Number.prototype.toLocaleString = 7;
+            let caught = false;
+            try {
+                a.toLocaleString();
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught
+        "#,
     );
 }
 
 #[test]
 fn map_constructs_species_before_callbacks_and_sets_results_after_each_call() {
     assert_true(
-        "let a=Uint8Array.of(1,2,3),log='',count,argc,target;function C(n){log+='C'+n;count=n;argc=arguments.length;target=new.target;return new Uint16Array(n+1);}Object.defineProperty(a,'constructor',{get(){log+='c';return {get [Symbol.species](){log+='s';return C;}};}});let b=a.map((v,i)=>{log+='m'+i;return {valueOf(){log+='v'+i;return v+256;}};});log==='csC3m0v0m1v1m2v2' && count===3 && argc===1 && target===C && b instanceof Uint16Array && b.length===4 && b[0]===257 && b[2]===259 && b[3]===0",
+        r#"
+            let a = Uint8Array.of(1, 2, 3),
+                log = '',
+                count, argc, target;
+
+            function C(n) {
+                log += 'C' + n;
+                count = n;
+                argc = arguments.length;
+                target = new.target;
+                return new Uint16Array(n + 1);
+            }
+            Object.defineProperty(a, 'constructor', {
+                get() {
+                    log += 'c';
+                    return {
+                        get [Symbol.species]() {
+                            log += 's';
+                            return C;
+                        }
+                    };
+                }
+            });
+            let b = a.map((v, i) => {
+                log += 'm' + i;
+                return {
+                    valueOf() {
+                        log += 'v' + i;
+                        return v + 256;
+                    }
+                };
+            });
+            log === 'csC3m0v0m1v1m2v2' && count === 3 && argc === 1 && target === C &&
+                b instanceof Uint16Array && b.length === 4 && b[0] === 257 && b[2] === 259 && b[3] === 0
+        "#,
     );
 }
 
 #[test]
 fn filter_retains_pre_callback_values_and_constructs_only_after_all_predicates() {
     assert_true(
-        "let a=Uint8Array.of(1,2,3),log='',count,argc;function C(n){log+='C'+n;count=n;argc=arguments.length;return new Uint16Array(n+1);}Object.defineProperty(a,'constructor',{get(){log+='c';return {get [Symbol.species](){log+='s';return C;}};}});let b=a.filter((v,i)=>{log+='f'+i;a[i]=v+10;return i!==1;});log==='f0f1f2csC2' && count===2 && argc===1 && b instanceof Uint16Array && b.length===3 && b[0]===1 && b[1]===3 && b[2]===0 && a[0]===11 && a[2]===13",
+        r#"
+            let a = Uint8Array.of(1, 2, 3),
+                log = '',
+                count, argc;
+
+            function C(n) {
+                log += 'C' + n;
+                count = n;
+                argc = arguments.length;
+                return new Uint16Array(n + 1);
+            }
+            Object.defineProperty(a, 'constructor', {
+                get() {
+                    log += 'c';
+                    return {
+                        get [Symbol.species]() {
+                            log += 's';
+                            return C;
+                        }
+                    };
+                }
+            });
+            let b = a.filter((v, i) => {
+                log += 'f' + i;
+                a[i] = v + 10;
+                return i !== 1;
+            });
+            log === 'f0f1f2csC2' && count === 2 && argc === 1 && b instanceof Uint16Array && b.length ===
+                3 && b[0] === 1 && b[1] === 3 && b[2] === 0 && a[0] === 11 && a[2] === 13
+        "#,
     );
     assert_true(
-        "let a=Uint8Array.of(1),hits=0,count;function C(n){hits++;count=n;return new Uint8Array(0);}a.constructor={[Symbol.species]:C};let b=a.filter(()=>false);hits===1 && Object.is(count,0) && b.length===0",
+        r#"
+            let a = Uint8Array.of(1),
+                hits = 0,
+                count;
+
+            function C(n) {
+                hits++;
+                count = n;
+                return new Uint8Array(0);
+            }
+            a.constructor = {
+                [Symbol.species]: C
+            };
+            let b = a.filter(() => false);
+            hits === 1 && Object.is(count, 0) && b.length === 0
+        "#,
     );
 }
 
@@ -404,7 +947,17 @@ fn species_defaults_use_the_intrinsic_element_kind_despite_public_binding_change
             "{[Symbol.species]:null}",
         ] {
             assert_true(&format!(
-                "let A=Uint16Array,a=A.of(1,2),p=A.prototype;a.constructor={constructor};Uint16Array=function(){{throw 7;}};let b=a.{method}(v=>v);Object.getPrototypeOf(b)===p && b[0]===1 && b[1]===2 && b.BYTES_PER_ELEMENT===2"
+                r#"
+                    let A = Uint16Array,
+                        a = A.of(1, 2),
+                        p = A.prototype;
+                    a.constructor = {constructor};
+                    Uint16Array = function() {{
+                        throw 7;
+                    }};
+                    let b = a.{method}(v => v);
+                    Object.getPrototypeOf(b) === p && b[0] === 1 && b[1] === 2 && b.BYTES_PER_ELEMENT === 2
+                "#
             ));
         }
     }
@@ -421,11 +974,40 @@ fn species_validation_rejects_wrong_brands_short_or_outside_results_without_late
             "Object.create(new Uint8Array(3))",
             "new Uint8Array(2)",
             "(()=>{let b=new Uint8Array(3);b.buffer.transfer();return b;})()",
-            "(()=>{let buffer=new ArrayBuffer(3,{maxByteLength:6}),b=new Uint8Array(buffer,0,3);buffer.resize(1);return b;})()",
+            r#"
+                (() => {
+                    let buffer = new ArrayBuffer(3, {
+                            maxByteLength: 6
+                        }),
+                        b = new Uint8Array(buffer, 0, 3);
+                    buffer.resize(1);
+                    return b;
+                })()
+            "#,
             "new BigInt64Array(3)",
         ] {
             assert_true(&format!(
-                "let a=Uint8Array.of(1,2,3),hits=0,caught=false;function C(){{return {result};}}a.constructor={{[Symbol.species]:C}};try{{a.{method}(v=>{{hits++;return v;}});}}catch(e){{caught=e instanceof TypeError;}}caught && hits==={}",
+                r#"
+                    let a = Uint8Array.of(1, 2, 3),
+                        hits = 0,
+                        caught = false;
+
+                    function C() {{
+                        return {result};
+                    }}
+                    a.constructor = {{
+                        [Symbol.species]: C
+                    }};
+                    try {{
+                        a.{method}(v => {{
+                            hits++;
+                            return v;
+                        }});
+                    }} catch (e) {{
+                        caught = e instanceof TypeError;
+                    }}
+                    caught && hits === {}
+                "#,
                 if method == "map" { 0 } else { 3 }
             ));
         }
@@ -436,15 +1018,53 @@ fn species_validation_rejects_wrong_brands_short_or_outside_results_without_late
             "{[Symbol.species]:()=>new Uint8Array(3)}",
         ] {
             assert_true(&format!(
-                "let a=Uint8Array.of(1,2,3),hits=0,caught=false;a.constructor={constructor};try{{a.{method}(v=>{{hits++;return v;}});}}catch(e){{caught=e instanceof TypeError;}}caught && hits==={}",
+                r#"
+                    let a = Uint8Array.of(1, 2, 3),
+                        hits = 0,
+                        caught = false;
+                    a.constructor = {constructor};
+                    try {{
+                        a.{method}(v => {{
+                            hits++;
+                            return v;
+                        }});
+                    }} catch (e) {{
+                        caught = e instanceof TypeError;
+                    }}
+                    caught && hits === {}
+                "#,
                 if method == "map" { 0 } else { 3 }
             ));
         }
         assert_true(&format!(
-            "let a=new Uint8Array(0),caught=false;a.constructor={{[Symbol.species]:BigInt64Array}};try{{a.{method}(()=>true);}}catch(e){{caught=e instanceof TypeError;}}caught"
+            r#"
+                let a = new Uint8Array(0),
+                    caught = false;
+                a.constructor = {{
+                    [Symbol.species]: BigInt64Array
+                }};
+                try {{
+                    a.{method}(() => true);
+                }} catch (e) {{
+                    caught = e instanceof TypeError;
+                }}
+                caught
+            "#
         ));
         assert_true(&format!(
-            "let a=new BigInt64Array(0),caught=false;a.constructor={{[Symbol.species]:Uint8Array}};try{{a.{method}(()=>true);}}catch(e){{caught=e instanceof TypeError;}}caught"
+            r#"
+                let a = new BigInt64Array(0),
+                    caught = false;
+                a.constructor = {{
+                    [Symbol.species]: Uint8Array
+                }};
+                try {{
+                    a.{method}(() => true);
+                }} catch (e) {{
+                    caught = e instanceof TypeError;
+                }}
+                caught
+            "#
         ));
     }
 }
@@ -475,20 +1095,98 @@ fn source_invalidation_during_species_does_not_trigger_another_source_validation
 #[test]
 fn map_sets_convert_values_even_after_the_custom_target_loses_bounds() {
     assert_true(
-        "let a=Uint8Array.of(1,2,3),target,buffer,log='';function C(n){buffer=new ArrayBuffer(n,{maxByteLength:6});target=new Uint8Array(buffer);return target;}a.constructor={[Symbol.species]:C};let b=a.map((v,i)=>{if(i===0)buffer.resize(0);if(i===1)buffer.resize(3);return {valueOf(){log+=i;return v;}};});b===target && log==='012' && b.length===3 && b[0]===0 && b[1]===2 && b[2]===3",
+        r#"
+            let a = Uint8Array.of(1, 2, 3),
+                target, buffer, log = '';
+
+            function C(n) {
+                buffer = new ArrayBuffer(n, {
+                    maxByteLength: 6
+                });
+                target = new Uint8Array(buffer);
+                return target;
+            }
+            a.constructor = {
+                [Symbol.species]: C
+            };
+            let b = a.map((v, i) => {
+                if (i === 0) buffer.resize(0);
+                if (i === 1) buffer.resize(3);
+                return {
+                    valueOf() {
+                        log += i;
+                        return v;
+                    }
+                };
+            });
+            b === target && log === '012' && b.length === 3 && b[0] === 0 && b[1] === 2 && b[2] === 3
+        "#,
     );
     assert_true(
-        "let a=BigInt64Array.of(1n,2n),target,hits=0,caught=false;function C(n){target=new BigInt64Array(n);return target;}a.constructor={[Symbol.species]:C};try{a.map((v,i)=>{hits++;target.buffer.transfer();return 1;});}catch(e){caught=e instanceof TypeError;}caught && hits===1 && target.length===0",
+        r#"
+            let a = BigInt64Array.of(1n, 2n),
+                target, hits = 0,
+                caught = false;
+
+            function C(n) {
+                target = new BigInt64Array(n);
+                return target;
+            }
+            a.constructor = {
+                [Symbol.species]: C
+            };
+            try {
+                a.map((v, i) => {
+                    hits++;
+                    target.buffer.transfer();
+                    return 1;
+                });
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && hits === 1 && target.length === 0
+        "#,
     );
 }
 
 #[test]
 fn filter_copies_invalidated_values_as_number_zero_or_propagates_actual_bigint_failure() {
     assert_true(
-        "let a=Uint8Array.of(1,2,3),hits=0;let b=a.filter((v,i)=>{hits++;if(i===0)a.buffer.transfer();return true;});hits===3 && b.length===3 && b[0]===1 && b[1]===0 && b[2]===0",
+        r#"
+            let a = Uint8Array.of(1, 2, 3),
+                hits = 0;
+            let b = a.filter((v, i) => {
+                hits++;
+                if (i === 0) a.buffer.transfer();
+                return true;
+            });
+            hits === 3 && b.length === 3 && b[0] === 1 && b[1] === 0 && b[2] === 0
+        "#,
     );
     assert_true(
-        "let a=BigInt64Array.of(1n,2n,3n),hits=0,target,caught=false;function C(n){target=new BigInt64Array(n);return target;}a.constructor={[Symbol.species]:C};try{a.filter((v,i)=>{hits++;if(i===0)a.buffer.transfer();return true;});}catch(e){caught=e instanceof TypeError;}caught && hits===3 && target.length===3 && target[0]===1n && target[1]===0n",
+        r#"
+            let a = BigInt64Array.of(1n, 2n, 3n),
+                hits = 0,
+                target, caught = false;
+
+            function C(n) {
+                target = new BigInt64Array(n);
+                return target;
+            }
+            a.constructor = {
+                [Symbol.species]: C
+            };
+            try {
+                a.filter((v, i) => {
+                    hits++;
+                    if (i === 0) a.buffer.transfer();
+                    return true;
+                });
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && hits === 3 && target.length === 3 && target[0] === 1n && target[1] === 0n
+        "#,
     );
 }
 
@@ -500,7 +1198,12 @@ fn filter_lists_are_not_call_argument_lists_and_opted_in_limits_remain_host_fail
     });
     assert_eq!(
         realm.eval(
-            "let a=new Uint8Array([1,2,3,4,5]),b=a.filter(()=>true),c=a.map(v=>v);b.length===5 && b[4]===5 && c.length===5 && c[4]===5",
+            r#"
+                let a = new Uint8Array([1, 2, 3, 4, 5]),
+                    b = a.filter(() => true),
+                    c = a.map(v => v);
+                b.length === 5 && b[4] === 5 && c.length === 5 && c[4] === 5
+            "#,
         ),
         Ok(Value::Boolean(true))
     );
@@ -511,7 +1214,22 @@ fn filter_lists_are_not_call_argument_lists_and_opted_in_limits_remain_host_fail
         });
         realm
             .eval(
-                "let bytes=new Uint8Array(8);for(let i=0;i<8;i++)bytes[i]=255;let a=new BigUint64Array(bytes.buffer),flag=0,species=0,calls=0;function C(n){species++;return new BigUint64Array(n);}a.constructor={[Symbol.species]:C};",
+                r#"
+                    let bytes = new Uint8Array(8);
+                    for (let i = 0; i < 8; i++) bytes[i] = 255;
+                    let a = new BigUint64Array(bytes.buffer),
+                        flag = 0,
+                        species = 0,
+                        calls = 0;
+
+                    function C(n) {
+                        species++;
+                        return new BigUint64Array(n);
+                    }
+                    a.constructor = {
+                        [Symbol.species]: C
+                    };
+                "#,
             )
             .unwrap();
         assert!(matches!(

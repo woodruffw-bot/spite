@@ -10,7 +10,10 @@ use crate::common::assert_true;
 #[test]
 fn string_searches_replace_only_the_first_match_and_preserve_utf16_units() {
     assert_true(
-        "'ababa'.replace('ba','X')==='aXba' && 'abc'.replace('x','X')==='abc' && 'abc'.replace('','X')==='Xabc' && ''.replace('','X')==='X' && ''.replace('x','X')===''",
+        r#"
+            'ababa'.replace('ba', 'X') === 'aXba' && 'abc'.replace('x', 'X') === 'abc' && 'abc'.replace('',
+                'X') === 'Xabc' && ''.replace('', 'X') === 'X' && ''.replace('x', 'X') === ''
+        "#,
     );
     assert_true(
         "'anullb'.replace(null,7)==='a7b' && 'undefinedx'.replace(undefined,true)==='truex' && 'a1b1'.replace(1n,undefined)==='aundefinedb1'",
@@ -42,17 +45,65 @@ fn uncaptured_substitution_expands_supported_dollar_patterns_once() {
 #[test]
 fn functional_replacements_receive_exact_arguments_and_return_literal_text() {
     assert_true(
-        "let calls=0;function f(m,p,s){'use strict';if(this!==undefined || arguments.length!==3 || m!=='b' || p!==1 || s!=='aba')throw 7;calls++;return 3;}let result='aba'.replace('b',f);result==='a3a' && calls===1",
+        r#"
+            let calls = 0;
+
+            function f(m, p, s) {
+                'use strict';
+                if (this !== undefined || arguments.length !== 3 || m !== 'b' || p !== 1 || s !== 'aba')
+                    throw 7;
+                calls++;
+                return 3;
+            }
+            let result = 'aba'.replace('b', f);
+            result === 'a3a' && calls === 1
+        "#,
     );
     assert_true(
-        "let calls=0;function f(){if(this!==globalThis)throw 7;calls++;return 'X';}let result='aba'.replace('a',f);result==='Xba' && calls===1",
+        r#"
+            let calls = 0;
+
+            function f() {
+                if (this !== globalThis) throw 7;
+                calls++;
+                return 'X';
+            }
+            let result = 'aba'.replace('a', f);
+            result === 'Xba' && calls === 1
+        "#,
     );
     assert_true(r#"'aba'.replace('b',()=>"$$$&$`$'") === "a$$$&$`$'a""#);
     assert_true(
         "function f(){throw 7;}Object.defineProperty(f,'toString',{get(){throw 8;}});'abc'.replace('x',f)==='abc'",
     );
     assert_true(
-        "let log='',receiver={toString(){log+='s';return 'aba';}},search={toString(){log+='r';return 'b';}};let result=String.prototype.replace.call(receiver,search,(m,p,s)=>{log+='f';receiver.toString=()=> 'changed';if(m!=='b' || p!==1 || s!=='aba')throw 7;return {toString(){log+='v';return 'X';}};});result==='aXa' && log==='srfv'",
+        r#"
+            let log = '',
+                receiver = {
+                    toString() {
+                        log += 's';
+                        return 'aba';
+                    }
+                },
+                search = {
+                    toString() {
+                        log += 'r';
+                        return 'b';
+                    }
+                };
+            let result = String.prototype.replace.call(receiver, search, (m, p, s) => {
+                log += 'f';
+                receiver.toString = () => 'changed';
+                if (m !== 'b' || p !== 1 || s !== 'aba') throw 7;
+                return {
+                    toString() {
+                        log += 'v';
+                        return 'X';
+                    }
+                };
+            });
+            result === 'aXa' && log === 'srfv'
+        "#,
     );
     assert_true(
         "let caught=false;try{'aba'.replace('b',()=>Symbol());}catch(e){caught=e instanceof TypeError;}caught",
@@ -65,23 +116,122 @@ fn functional_replacements_receive_exact_arguments_and_return_literal_text() {
 #[test]
 fn object_hooks_run_before_conversions_and_preserve_original_values() {
     assert_true(
-        "let log='',receiver={toString(){throw 7;}},replace={toString(){throw 8;}},search={get [Symbol.replace](){log+='g';return function(o,r){'use strict';if(this!==search || o!==receiver || r!==replace || arguments.length!==2)throw 9;log+='c';return 3;};},toString(){throw 10;}};String.prototype.replace.call(receiver,search,replace)===3 && log==='gc'",
+        r#"
+            let log = '',
+                receiver = {
+                    toString() {
+                        throw 7;
+                    }
+                },
+                replace = {
+                    toString() {
+                        throw 8;
+                    }
+                },
+                search = {
+                    get [Symbol.replace]() {
+                        log += 'g';
+                        return function(o, r) {
+                            'use strict';
+                            if (this !== search || o !== receiver || r !== replace || arguments
+                                .length !== 2) throw 9;
+                            log += 'c';
+                            return 3;
+                        };
+                    },
+                    toString() {
+                        throw 10;
+                    }
+                };
+            String.prototype.replace.call(receiver, search, replace) === 3 && log === 'gc'
+        "#,
     );
     assert_true(
-        "let marker={};'abc'.replace({[Symbol.replace](){return marker;}},'X')===marker && 'abc'.replace({[Symbol.replace](){return undefined;}},'X')===undefined",
+        r#"
+            let marker = {};
+            'abc'.replace({
+                [Symbol.replace]() {
+                    return marker;
+                }
+            }, 'X') === marker && 'abc'.replace({
+                [Symbol.replace]() {
+                    return undefined;
+                }
+            }, 'X') === undefined
+        "#,
     );
     assert_true(
-        "let reads=0,caught=false,search={get [Symbol.replace](){reads++;throw 7;}};try{String.prototype.replace.call(null,search);}catch(e){caught=e instanceof TypeError;}caught && reads===0",
+        r#"
+            let reads = 0,
+                caught = false,
+                search = {
+                    get [Symbol.replace]() {
+                        reads++;
+                        throw 7;
+                    }
+                };
+            try {
+                String.prototype.replace.call(null, search);
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && reads === 0
+        "#,
     );
     assert_true(
-        "let caught=false,receiver={toString(){throw 8;}};try{String.prototype.replace.call(receiver,{get [Symbol.replace](){throw 7;}});}catch(e){caught=e===7;}caught",
+        r#"
+            let caught = false,
+                receiver = {
+                    toString() {
+                        throw 8;
+                    }
+                };
+            try {
+                String.prototype.replace.call(receiver, {
+                    get [Symbol.replace]() {
+                        throw 7;
+                    }
+                });
+            } catch (e) {
+                caught = e === 7;
+            }
+            caught
+        "#,
     );
     assert_true(
-        "let reads=0,caught=false,receiver={toString(){reads++;throw 8;}};try{String.prototype.replace.call(receiver,{[Symbol.replace]:7});}catch(e){caught=e instanceof TypeError;}caught && reads===0",
+        r#"
+            let reads = 0,
+                caught = false,
+                receiver = {
+                    toString() {
+                        reads++;
+                        throw 8;
+                    }
+                };
+            try {
+                String.prototype.replace.call(receiver, {
+                    [Symbol.replace]: 7
+                });
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && reads === 0
+        "#,
     );
     assert_true("'abc'.replace({[Symbol.replace]:null,toString(){return 'b';}},'X')==='aXc'");
     assert_true(
-        "let calls=0;'abc'.replace({get [Symbol.match](){calls++;throw 7;},toString(){return 'b';}},'X')==='aXc' && calls===0",
+        r#"
+            let calls = 0;
+            'abc'.replace({
+                get [Symbol.match]() {
+                    calls++;
+                    throw 7;
+                },
+                toString() {
+                    return 'b';
+                }
+            }, 'X') === 'aXc' && calls === 0
+        "#,
     );
 }
 
@@ -94,27 +244,123 @@ fn edition_seventeen_ignores_primitive_prototype_replace_hooks() {
         ("BigInt.prototype", "1n", "a1b1c", "aXb1c"),
     ] {
         assert_true(&format!(
-            "Object.defineProperty({prototype},Symbol.replace,{{get(){{throw 7;}}}});'{source}'.replace({search},'X')==='{expected}'"
+            r#"
+                Object.defineProperty({prototype}, Symbol.replace, {{
+                    get() {{
+                        throw 7;
+                    }}
+                }});
+                '{source}'.replace({search}, 'X') === '{expected}'
+            "#
         ));
     }
     assert_true(
-        "Object.defineProperty(Symbol.prototype,Symbol.replace,{get(){throw 7;}});let caught=false;try{'abc'.replace(Symbol(),'X');}catch(e){caught=e instanceof TypeError;}caught",
+        r#"
+            Object.defineProperty(Symbol.prototype, Symbol.replace, {
+                get() {
+                    throw 7;
+                }
+            });
+            let caught = false;
+            try {
+                'abc'.replace(Symbol(), 'X');
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught
+        "#,
     );
     assert_true(
-        "Number.prototype[Symbol.replace]=function(o,r){'use strict';return this.valueOf()+o.length+r;};'abc'.replace(Object(1),2)===6",
+        r#"
+            Number.prototype[Symbol.replace] = function(o, r) {
+                'use strict';
+                return this.valueOf() + o.length + r;
+            };
+            'abc'.replace(Object(1), 2) === 6
+        "#,
     );
 }
 
 #[test]
 fn fallback_conversions_precede_search_and_callable_replacements_skip_stringification() {
     assert_true(
-        "let log='',receiver={toString(){log+='s';return 'abc';}},search={get [Symbol.replace](){log+='g';return undefined;},toString(){log+='r';return 'x';}},replace={toString(){log+='v';return 'X';}};String.prototype.replace.call(receiver,search,replace)==='abc' && log==='gsrv'",
+        r#"
+            let log = '',
+                receiver = {
+                    toString() {
+                        log += 's';
+                        return 'abc';
+                    }
+                },
+                search = {
+                    get [Symbol.replace]() {
+                        log += 'g';
+                        return undefined;
+                    },
+                    toString() {
+                        log += 'r';
+                        return 'x';
+                    }
+                },
+                replace = {
+                    toString() {
+                        log += 'v';
+                        return 'X';
+                    }
+                };
+            String.prototype.replace.call(receiver, search, replace) === 'abc' && log === 'gsrv'
+        "#,
     );
     assert_true(
-        "let log='',receiver={toString(){log+='s';throw 7;}},search={toString(){log+='r';throw 8;}},replace={toString(){log+='v';throw 9;}},caught=false;try{String.prototype.replace.call(receiver,search,replace);}catch(e){caught=e===7;}caught && log==='s'",
+        r#"
+            let log = '',
+                receiver = {
+                    toString() {
+                        log += 's';
+                        throw 7;
+                    }
+                },
+                search = {
+                    toString() {
+                        log += 'r';
+                        throw 8;
+                    }
+                },
+                replace = {
+                    toString() {
+                        log += 'v';
+                        throw 9;
+                    }
+                },
+                caught = false;
+            try {
+                String.prototype.replace.call(receiver, search, replace);
+            } catch (e) {
+                caught = e === 7;
+            }
+            caught && log === 's'
+        "#,
     );
     assert_true(
-        "let reads=0,caught=false;try{'abc'.replace({toString(){throw 7;}},{toString(){reads++;throw 8;}});}catch(e){caught=e===7;}caught && reads===0",
+        r#"
+            let reads = 0,
+                caught = false;
+            try {
+                'abc'.replace({
+                    toString() {
+                        throw 7;
+                    }
+                }, {
+                    toString() {
+                        reads++;
+                        throw 8;
+                    }
+                });
+            } catch (e) {
+                caught = e === 7;
+            }
+            caught && reads === 0
+        "#,
     );
     assert_true(
         "let caught=false;try{'abc'.replace('x',{toString(){throw 7;}});}catch(e){caught=e===7;}caught",
@@ -127,7 +373,14 @@ fn fallback_conversions_precede_search_and_callable_replacements_skip_stringific
 #[test]
 fn metadata_deletion_intrinsic_retention_and_large_default_outputs() {
     assert_true(
-        "let d=Object.getOwnPropertyDescriptor(String.prototype,'replace'),n=Object.getOwnPropertyDescriptor(d.value,'name'),l=Object.getOwnPropertyDescriptor(d.value,'length');d.writable && !d.enumerable && d.configurable && n.value==='replace' && !n.writable && !n.enumerable && n.configurable && l.value===2 && !l.writable && !l.enumerable && l.configurable && !Object.hasOwn(d.value,'prototype')",
+        r#"
+            let d = Object.getOwnPropertyDescriptor(String.prototype, 'replace'),
+                n = Object.getOwnPropertyDescriptor(d.value, 'name'),
+                l = Object.getOwnPropertyDescriptor(d.value, 'length');
+            d.writable && !d.enumerable && d.configurable && n.value === 'replace' && !n.writable && !n
+                .enumerable && n.configurable && l.value === 2 && !l.writable && !l.enumerable && l
+                .configurable && !Object.hasOwn(d.value, 'prototype')
+        "#,
     );
     assert_true(
         "let caught=false;try{new String.prototype.replace();}catch(e){caught=e instanceof TypeError;}caught",

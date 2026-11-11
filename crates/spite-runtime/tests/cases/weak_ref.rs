@@ -58,11 +58,34 @@ fn construction_requires_new_and_rejects_invalid_targets_without_coercion() {
         "Symbol.for('weak-ref-registered')",
     ] {
         assert_true(&format!(
-            "let hits=0,registered=Symbol.for('weak-ref-registered');Symbol.keyFor=function(){{hits++;throw 7;}};let caught=false;try{{new WeakRef({target});}}catch(e){{caught=e instanceof TypeError;}}caught && hits===0"
+            r#"
+                let hits = 0,
+                    registered = Symbol.for('weak-ref-registered');
+                Symbol.keyFor = function() {{
+                    hits++;
+                    throw 7;
+                }};
+                let caught = false;
+                try {{
+                    new WeakRef({target});
+                }} catch (e) {{
+                    caught = e instanceof TypeError;
+                }}
+                caught && hits === 0
+            "#
         ));
     }
     assert_true(
-        "let hits=0,caught=false;try{WeakRef((hits++,{}),(hits++,7));}catch(e){caught=e instanceof TypeError;}caught && hits===2",
+        r#"
+            let hits = 0,
+                caught = false;
+            try {
+                WeakRef((hits++, {}), (hits++, 7));
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && hits === 2
+        "#,
     );
 }
 
@@ -70,23 +93,23 @@ fn construction_requires_new_and_rejects_invalid_targets_without_coercion() {
 fn all_supported_object_kinds_and_nonregistered_symbols_preserve_identity() {
     assert_true(
         r#"
-        let registered=Symbol.for('weak-ref-boxed'),targets=[
-            {},Object.create(null),[],function(){},()=>7,class C{},function(){}.bind(null),
-            new Boolean(false),new Number(0),new String(''),Object(1n),
-            Object(registered),Object(Symbol('boxed')),new Date(0),/x/,
-            new Map(),new Set(),new WeakMap(),new WeakSet(),
-            new ArrayBuffer(0),new DataView(new ArrayBuffer(0)),
-            new Uint8Array(0),new BigInt64Array(0),new Error('x'),
-            [1].values(),(function(){return arguments;})(),this,
-            Symbol(),Symbol('same'),Symbol('same')
-        ];
-        let hostile={get [Symbol.toPrimitive](){throw 7;},valueOf(){throw 8;},toString(){throw 9;}};
-        targets.push(hostile,new WeakRef(hostile));
-        for(let target of targets){
-            let a=new WeakRef(target),b=new WeakRef(target,()=>{throw 10;});
-            if(a===b || a.deref()!==target || b.deref()!==target || a.deref()!==b.deref())throw 11;
-        }
-        targets[targets.length-4]!==targets[targets.length-3]
+            let registered=Symbol.for('weak-ref-boxed'),targets=[
+                {},Object.create(null),[],function(){},()=>7,class C{},function(){}.bind(null),
+                new Boolean(false),new Number(0),new String(''),Object(1n),
+                Object(registered),Object(Symbol('boxed')),new Date(0),/x/,
+                new Map(),new Set(),new WeakMap(),new WeakSet(),
+                new ArrayBuffer(0),new DataView(new ArrayBuffer(0)),
+                new Uint8Array(0),new BigInt64Array(0),new Error('x'),
+                [1].values(),(function(){return arguments;})(),this,
+                Symbol(),Symbol('same'),Symbol('same')
+            ];
+            let hostile={get [Symbol.toPrimitive](){throw 7;},valueOf(){throw 8;},toString(){throw 9;}};
+            targets.push(hostile,new WeakRef(hostile));
+            for(let target of targets){
+                let a=new WeakRef(target),b=new WeakRef(target,()=>{throw 10;});
+                if(a===b || a.deref()!==target || b.deref()!==target || a.deref()!==b.deref())throw 11;
+            }
+            targets[targets.length-4]!==targets[targets.length-3]
         "#,
     );
     for symbol in WellKnownSymbol::ALL {
@@ -101,16 +124,34 @@ fn all_supported_object_kinds_and_nonregistered_symbols_preserve_identity() {
 fn target_validation_precedes_new_target_prototype_get() {
     for target in ["undefined", "7", "Symbol.for('weak-ref-invalid')"] {
         assert_true(&format!(
-            "let reads=0;function C(){{}}let N=C.bind(null);Object.defineProperty(N,'prototype',{{get(){{reads++;throw 7;}}}});let caught=false;try{{Reflect.construct(WeakRef,[{target}],N);}}catch(e){{caught=e instanceof TypeError;}}caught && reads===0"
+            r#"
+                let reads = 0;
+
+                function C() {{}}
+                let N = C.bind(null);
+                Object.defineProperty(N, 'prototype', {{
+                    get() {{
+                        reads++;
+                        throw 7;
+                    }}
+                }});
+                let caught = false;
+                try {{
+                    Reflect.construct(WeakRef, [{target}], N);
+                }} catch (e) {{
+                    caught = e instanceof TypeError;
+                }}
+                caught && reads === 0
+            "#
         ));
     }
     assert_true(
         r#"
-        let log='',target={},prototype=Object.create(WeakRef.prototype);
-        function C(){}let N=C.bind(null);
-        Object.defineProperty(N,'prototype',{get(){log+='p';return prototype;}});
-        let reference=Reflect.construct(WeakRef,[(log+='t',target)],N);
-        log==='tp' && Object.getPrototypeOf(reference)===prototype && reference.deref()===target
+            let log='',target={},prototype=Object.create(WeakRef.prototype);
+            function C(){}let N=C.bind(null);
+            Object.defineProperty(N,'prototype',{get(){log+='p';return prototype;}});
+            let reference=Reflect.construct(WeakRef,[(log+='t',target)],N);
+            log==='tp' && Object.getPrototypeOf(reference)===prototype && reference.deref()===target
         "#,
     );
     type_error("Reflect.construct(WeakRef,[{}],()=>{})");
@@ -120,17 +161,17 @@ fn target_validation_precedes_new_target_prototype_get() {
 fn prototype_getter_abrupts_propagate_and_cannot_change_the_original_target() {
     assert_true(
         r#"
-        let target={},original=target,other={},marker={},calls=0;
-        function C(){}let N=C.bind(null);
-        Object.defineProperty(N,'prototype',{get(){calls++;target=other;throw marker;}});
-        let caught=false;try{Reflect.construct(WeakRef,[target],N);}catch(e){caught=e===marker;}
-        if(!caught || calls!==1 || target!==other)throw 1;
-        Object.defineProperty(C,'prototype',{value:WeakRef.prototype});
-        let M=C.bind(null);
-        Object.defineProperty(M,'prototype',{get(){calls++;target=other;return WeakRef.prototype;}});
-        target=original;
-        let reference=Reflect.construct(WeakRef,[target],M);
-        calls===2 && target===other && reference.deref()===original
+            let target={},original=target,other={},marker={},calls=0;
+            function C(){}let N=C.bind(null);
+            Object.defineProperty(N,'prototype',{get(){calls++;target=other;throw marker;}});
+            let caught=false;try{Reflect.construct(WeakRef,[target],N);}catch(e){caught=e===marker;}
+            if(!caught || calls!==1 || target!==other)throw 1;
+            Object.defineProperty(C,'prototype',{value:WeakRef.prototype});
+            let M=C.bind(null);
+            Object.defineProperty(M,'prototype',{get(){calls++;target=other;return WeakRef.prototype;}});
+            target=original;
+            let reference=Reflect.construct(WeakRef,[target],M);
+            calls===2 && target===other && reference.deref()===original
         "#,
     );
 }
@@ -139,11 +180,11 @@ fn prototype_getter_abrupts_propagate_and_cannot_change_the_original_target() {
 fn subclassing_initializes_only_instances_that_call_the_constructor() {
     assert_true(
         r#"
-        let target={};class Derived extends WeakRef{constructor(value){super(value);this.marker=7;}}
-        let reference=new Derived(target);
-        reference instanceof Derived && reference instanceof WeakRef &&
-        Object.getPrototypeOf(reference)===Derived.prototype && reference.marker===7 &&
-        reference.deref()===target && WeakRef.prototype.deref.call(reference)===target
+            let target={};class Derived extends WeakRef{constructor(value){super(value);this.marker=7;}}
+            let reference=new Derived(target);
+            reference instanceof Derived && reference instanceof WeakRef &&
+            Object.getPrototypeOf(reference)===Derived.prototype && reference.marker===7 &&
+            reference.deref()===target && WeakRef.prototype.deref.call(reference)===target
         "#,
     );
     type_error(
@@ -156,17 +197,27 @@ fn subclassing_initializes_only_instances_that_call_the_constructor() {
 fn prototype_fallback_uses_the_intrinsic_after_global_replacement_and_deletion() {
     assert_true(
         r#"
-        let C=WeakRef,prototype=C.prototype,deref=prototype.deref,target={};
-        this.WeakRef=function(){throw 7;};delete this.WeakRef;
-        function N(){}
-        for(let value of [undefined,null,false,7,'prototype',Symbol('prototype')]){
-            N.prototype=value;
-            let reference=Reflect.construct(C,[target],N);
-            if(Object.getPrototypeOf(reference)!==prototype || deref.call(reference)!==target)throw 8;
-        }
-        let custom=Object.create(null);N.prototype=custom;
-        let reference=Reflect.construct(C,[target],N);
-        typeof WeakRef==='undefined' && Object.getPrototypeOf(reference)===custom && deref.call(reference)===target
+            let C = WeakRef,
+                prototype = C.prototype,
+                deref = prototype.deref,
+                target = {};
+            this.WeakRef = function() {
+                throw 7;
+            };
+            delete this.WeakRef;
+
+            function N() {}
+            for (let value of [undefined, null, false, 7, 'prototype', Symbol('prototype')]) {
+                N.prototype = value;
+                let reference = Reflect.construct(C, [target], N);
+                if (Object.getPrototypeOf(reference) !== prototype || deref.call(reference) !== target)
+                    throw 8;
+            }
+            let custom = Object.create(null);
+            N.prototype = custom;
+            let reference = Reflect.construct(C, [target], N);
+            typeof WeakRef === 'undefined' && Object.getPrototypeOf(reference) === custom && deref.call(
+                reference) === target
         "#,
     );
 }
@@ -175,12 +226,12 @@ fn prototype_fallback_uses_the_intrinsic_after_global_replacement_and_deletion()
 fn proxy_targets_are_valid_even_when_revoked_and_are_not_inspected() {
     assert_true(
         r#"
-        let hits=0,handler={get(){hits++;throw 7;},getPrototypeOf(){hits++;throw 8;},
-            ownKeys(){hits++;throw 9;},isExtensible(){hits++;throw 10;}},target={};
-        let proxy=new Proxy(target,handler),reference=new WeakRef(proxy);
-        let revoked=Proxy.revocable(function(){},handler),other=new WeakRef(revoked.proxy);
-        revoked.revoke();
-        reference.deref()===proxy && other.deref()===revoked.proxy && hits===0
+            let hits=0,handler={get(){hits++;throw 7;},getPrototypeOf(){hits++;throw 8;},
+                ownKeys(){hits++;throw 9;},isExtensible(){hits++;throw 10;}},target={};
+            let proxy=new Proxy(target,handler),reference=new WeakRef(proxy);
+            let revoked=Proxy.revocable(function(){},handler),other=new WeakRef(revoked.proxy);
+            revoked.revoke();
+            reference.deref()===proxy && other.deref()===revoked.proxy && hits===0
         "#,
     );
 }
@@ -189,11 +240,25 @@ fn proxy_targets_are_valid_even_when_revoked_and_are_not_inspected() {
 fn callable_proxy_new_targets_observe_only_the_required_prototype_lookup() {
     assert_true(
         r#"
-        let log='',target={},prototype=Object.create(WeakRef.prototype);
-        let N=new Proxy(function(){},{get(t,k,r){log+=String(k)+',';if(k==='prototype')return prototype;throw 7;},
-            construct(){throw 8;},apply(){throw 9;}});
-        let reference=Reflect.construct(WeakRef,[target],N);
-        log==='prototype,' && Object.getPrototypeOf(reference)===prototype && reference.deref()===target
+            let log = '',
+                target = {},
+                prototype = Object.create(WeakRef.prototype);
+            let N = new Proxy(function() {}, {
+                get(t, k, r) {
+                    log += String(k) + ',';
+                    if (k === 'prototype') return prototype;
+                    throw 7;
+                },
+                construct() {
+                    throw 8;
+                },
+                apply() {
+                    throw 9;
+                }
+            });
+            let reference = Reflect.construct(WeakRef, [target], N);
+            log === 'prototype,' && Object.getPrototypeOf(reference) === prototype && reference.deref() ===
+                target
         "#,
     );
     type_error(
@@ -203,31 +268,67 @@ fn callable_proxy_new_targets_observe_only_the_required_prototype_lookup() {
     // for a nonobject result, after the observable prototype Get has finished.
     assert_true(
         r#"
-        for(let bound of [false,true]){
-            for(let objectResult of [false,true]){
-                let armed=false,hooks=0,reads=0,pair,target={},prototype=Object.create(WeakRef.prototype);
-                let result=objectResult?prototype:0,plain=function(){};
-                if(!Object.getOwnPropertyDescriptor(plain,'prototype').writable)throw 1;
-                let handler={
-                    get(t,k,r){
-                        if(!armed)return Reflect.get(t,k,r);
-                        if(!bound && k==='prototype'){reads++;pair.revoke();return result;}
-                        hooks++;throw 2;
-                    },
-                    getPrototypeOf(t){if(armed){hooks++;throw 3;}return Reflect.getPrototypeOf(t);},
-                    construct(){hooks++;throw 4;},apply(){hooks++;throw 5;}
-                };
-                pair=Proxy.revocable(plain,handler);
-                let N=bound?pair.proxy.bind(null).bind(null):pair.proxy;
-                if(bound)Object.defineProperty(N,'prototype',{get(){reads++;pair.revoke();return result;}});
-                armed=true;let caught=false,reference;
-                try{reference=Reflect.construct(WeakRef,[target],N);}
-                catch(e){if(!(e instanceof TypeError))throw e;caught=true;}
-                if(reads!==1 || hooks!==0 || caught===objectResult)throw 6;
-                if(objectResult && (Object.getPrototypeOf(reference)!==prototype || WeakRef.prototype.deref.call(reference)!==target))throw 7;
+            for (let bound of [false, true]) {
+                for (let objectResult of [false, true]) {
+                    let armed = false,
+                        hooks = 0,
+                        reads = 0,
+                        pair, target = {},
+                        prototype = Object.create(WeakRef.prototype);
+                    let result = objectResult ? prototype : 0,
+                        plain = function() {};
+                    if (!Object.getOwnPropertyDescriptor(plain, 'prototype').writable) throw 1;
+                    let handler = {
+                        get(t, k, r) {
+                            if (!armed) return Reflect.get(t, k, r);
+                            if (!bound && k === 'prototype') {
+                                reads++;
+                                pair.revoke();
+                                return result;
+                            }
+                            hooks++;
+                            throw 2;
+                        },
+                        getPrototypeOf(t) {
+                            if (armed) {
+                                hooks++;
+                                throw 3;
+                            }
+                            return Reflect.getPrototypeOf(t);
+                        },
+                        construct() {
+                            hooks++;
+                            throw 4;
+                        },
+                        apply() {
+                            hooks++;
+                            throw 5;
+                        }
+                    };
+                    pair = Proxy.revocable(plain, handler);
+                    let N = bound ? pair.proxy.bind(null).bind(null) : pair.proxy;
+                    if (bound) Object.defineProperty(N, 'prototype', {
+                        get() {
+                            reads++;
+                            pair.revoke();
+                            return result;
+                        }
+                    });
+                    armed = true;
+                    let caught = false,
+                        reference;
+                    try {
+                        reference = Reflect.construct(WeakRef, [target], N);
+                    } catch (e) {
+                        if (!(e instanceof TypeError)) throw e;
+                        caught = true;
+                    }
+                    if (reads !== 1 || hooks !== 0 || caught === objectResult) throw 6;
+                    if (objectResult && (Object.getPrototypeOf(reference) !== prototype || WeakRef
+                            .prototype.deref.call(reference) !== target)) throw 7;
+                }
             }
-        }
-        true
+            true
         "#,
     );
 }
@@ -252,11 +353,31 @@ fn deref_requires_an_own_real_slot_and_does_not_unwrap_proxy_receivers() {
     }
     assert_true(
         r#"
-        let reference=new WeakRef({}),hits=0,handler={get(){hits++;throw 7;},getPrototypeOf(){hits++;throw 8;}};
-        let revoked=Proxy.revocable(reference,handler),receivers=[new Proxy(reference,handler),revoked.proxy];
-        revoked.revoke();let caught=0;
-        for(let receiver of receivers){try{Reflect.apply(WeakRef.prototype.deref,receiver,[]);}catch(e){if(!(e instanceof TypeError))throw e;caught++;}}
-        caught===2 && hits===0
+            let reference = new WeakRef({}),
+                hits = 0,
+                handler = {
+                    get() {
+                        hits++;
+                        throw 7;
+                    },
+                    getPrototypeOf() {
+                        hits++;
+                        throw 8;
+                    }
+                };
+            let revoked = Proxy.revocable(reference, handler),
+                receivers = [new Proxy(reference, handler), revoked.proxy];
+            revoked.revoke();
+            let caught = 0;
+            for (let receiver of receivers) {
+                try {
+                    Reflect.apply(WeakRef.prototype.deref, receiver, []);
+                } catch (e) {
+                    if (!(e instanceof TypeError)) throw e;
+                    caught++;
+                }
+            }
+            caught === 2 && hits === 0
         "#,
     );
     type_error("new WeakRef.prototype.deref()");
@@ -266,12 +387,30 @@ fn deref_requires_an_own_real_slot_and_does_not_unwrap_proxy_receivers() {
 fn deref_ignores_arguments_and_public_target_properties_and_survives_integrity_changes() {
     assert_true(
         r#"
-        let target={},reference=new WeakRef(target),deref=reference.deref,hits=0;
-        Object.defineProperty(reference,'target',{get(){hits++;throw 7;}});
-        Object.defineProperty(reference,Symbol.toStringTag,{value:'custom'});Object.setPrototypeOf(reference,null);Object.freeze(reference);
-        let hostile={get [Symbol.toPrimitive](){hits++;throw 8;}};
-        deref.call(reference,hostile)===target && Reflect.apply(deref,reference,[hostile,hostile])===target &&
-        deref.bind(reference)(hostile)===target && hits===0 && Object.isFrozen(reference)
+            let target = {},
+                reference = new WeakRef(target),
+                deref = reference.deref,
+                hits = 0;
+            Object.defineProperty(reference, 'target', {
+                get() {
+                    hits++;
+                    throw 7;
+                }
+            });
+            Object.defineProperty(reference, Symbol.toStringTag, {
+                value: 'custom'
+            });
+            Object.setPrototypeOf(reference, null);
+            Object.freeze(reference);
+            let hostile = {
+                get [Symbol.toPrimitive]() {
+                    hits++;
+                    throw 8;
+                }
+            };
+            deref.call(reference, hostile) === target && Reflect.apply(deref, reference, [hostile,
+                    hostile]) === target &&
+                deref.bind(reference)(hostile) === target && hits === 0 && Object.isFrozen(reference)
         "#,
     );
 }
@@ -455,7 +594,25 @@ fn a_host_symbol_owner_survives_clear_and_a_later_deref_keeps_it_after_host_drop
 #[test]
 fn weakrefs_do_not_keep_mixed_weakmap_cycles_after_the_explicit_checkpoint() {
     let mut realm = Realm::default();
-    realm.eval("let first=new WeakMap(),second=new WeakMap(),objectRef,symbolRef;(()=>{let object={},symbol=Symbol('cycle');first.set(object,symbol);second.set(symbol,{back:object});objectRef=new WeakRef(object);symbolRef=new WeakRef(symbol);})()").unwrap();
+    realm
+        .eval(
+            r#"
+                let first = new WeakMap(),
+                    second = new WeakMap(),
+                    objectRef, symbolRef;
+                (() => {
+                    let object = {},
+                        symbol = Symbol('cycle');
+                    first.set(object, symbol);
+                    second.set(symbol, {
+                        back: object
+                    });
+                    objectRef = new WeakRef(object);
+                    symbolRef = new WeakRef(symbol);
+                })()
+            "#,
+        )
+        .unwrap();
     realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval("first.get(objectRef.deref())===symbolRef.deref() && second.get(symbolRef.deref()).back===objectRef.deref()"),

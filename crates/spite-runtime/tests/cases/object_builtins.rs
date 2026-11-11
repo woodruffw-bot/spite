@@ -8,13 +8,35 @@ use crate::common::assert_true;
 #[test]
 fn construction_distinguishes_nullish_object_and_primitive_arguments() {
     assert_true(
-        "let a=Object(),b=new Object(null),c=Object(undefined);a!==b && b!==c && a instanceof Object && Object.prototype.isPrototypeOf(a) && a.constructor===Object",
+        r#"
+            let a = Object(),
+                b = new Object(null),
+                c = Object(undefined);
+            a !== b && b !== c && a instanceof Object && Object.prototype.isPrototypeOf(a) && a
+                .constructor === Object
+        "#,
     );
     assert_true(
-        "let o={valueOf:()=>{throw 1;},toString:()=>{throw 2;}};Object(o)===o && new Object(o)===o && Object.call(null,o)===o && new (Object.bind(null,o))()===o",
+        r#"
+            let o = {
+                valueOf: () => {
+                    throw 1;
+                },
+                toString: () => {
+                    throw 2;
+                }
+            };
+            Object(o) === o && new Object(o) === o && Object.call(null, o) === o && new(Object.bind(null,
+                o))() === o
+        "#,
     );
     assert_true(
-        "let b=Object(false),n=new Object(-0);b instanceof Boolean && b.valueOf()===false && n instanceof Number && 1/n.valueOf()===-Infinity && n!==Object(-0)",
+        r#"
+            let b = Object(false),
+                n = new Object(-0);
+            b instanceof Boolean && b.valueOf() === false && n instanceof Number && 1 / n.valueOf() === -
+                Infinity && n !== Object(-0)
+        "#,
     );
     assert_true("let effect=0;Object(null,effect=1);effect===1");
     for source in ["Object(1n)", "new Object(1n)"] {
@@ -97,7 +119,17 @@ fn object_constructor_and_prototype_methods_have_standard_descriptors() {
 #[test]
 fn property_predicates_use_own_descriptors_and_convert_keys_before_receivers() {
     assert_true(
-        "let o={__proto__:{inherited:1},own:2,1:3};o.hasOwnProperty('own') && o.propertyIsEnumerable('own') && o.hasOwnProperty(1n) && !o.hasOwnProperty('inherited') && !o.propertyIsEnumerable('inherited')",
+        r#"
+            let o = {
+                __proto__: {
+                    inherited: 1
+                },
+                own: 2,
+                1: 3
+            };
+            o.hasOwnProperty('own') && o.propertyIsEnumerable('own') && o.hasOwnProperty(1n) && !o
+                .hasOwnProperty('inherited') && !o.propertyIsEnumerable('inherited')
+        "#,
     );
     assert_true(
         "Object.prototype.hasOwnProperty('constructor') && !Object.prototype.propertyIsEnumerable('constructor') && !({}).hasOwnProperty('constructor')",
@@ -107,7 +139,26 @@ fn property_predicates_use_own_descriptors_and_convert_keys_before_receivers() {
     );
     for method in ["hasOwnProperty", "propertyIsEnumerable"] {
         let mut realm = Realm::default();
-        assert_eq!(realm.eval(&format!("let order='';let key={{toString:()=>{{order+='s';return 'x';}},valueOf:()=>{{throw 1;}}}};Object.prototype.{method}.call({{x:1}},key) && order==='s'")),Ok(Value::Boolean(true)));
+        assert_eq!(
+            realm.eval(&format!(
+                r#"
+                    let order = '';
+                    let key = {{
+                        toString: () => {{
+                            order += 's';
+                            return 'x';
+                        }},
+                        valueOf: () => {{
+                            throw 1;
+                        }}
+                    }};
+                    Object.prototype.{method}.call({{
+                        x: 1
+                    }}, key) && order === 's'
+                "#
+            )),
+            Ok(Value::Boolean(true))
+        );
         assert_eq!(
             realm.eval(&format!(
                 "Object.prototype.{method}.call(null,{{toString:()=>{{throw 7;}}}})"
@@ -140,7 +191,19 @@ fn prototype_predicate_checks_argument_before_receiver_and_walks_ancestors() {
         })
     ));
     assert_true(
-        "let p={},child={__proto__:p},grandchild={__proto__:child};p.isPrototypeOf(child) && p.isPrototypeOf(grandchild) && !p.isPrototypeOf(p) && !child.isPrototypeOf(p) && !p.isPrototypeOf({__proto__:null})",
+        r#"
+            let p = {},
+                child = {
+                    __proto__: p
+                },
+                grandchild = {
+                    __proto__: child
+                };
+            p.isPrototypeOf(child) && p.isPrototypeOf(grandchild) && !p.isPrototypeOf(p) && !child
+                .isPrototypeOf(p) && !p.isPrototypeOf({
+                    __proto__: null
+                })
+        "#,
     );
     assert_true(
         "Object.prototype.isPrototypeOf(new TypeError) && Error.prototype.isPrototypeOf(new TypeError) && !TypeError.prototype.isPrototypeOf(new Error)",
@@ -150,10 +213,28 @@ fn prototype_predicate_checks_argument_before_receiver_and_walks_ancestors() {
 #[test]
 fn locale_string_invokes_the_current_method_without_forwarding_reserved_arguments() {
     assert_true(
-        "let count=0;let o={toString:function(){'use strict';count++;return this;}};o.toLocaleString()===o && count===1",
+        r#"
+            let count = 0;
+            let o = {
+                toString: function() {
+                    'use strict';
+                    count++;
+                    return this;
+                }
+            };
+            o.toLocaleString() === o && count === 1
+        "#,
     );
     assert_true(
-        "let effect=0;let o={toString:function(){return arguments.length;}};o.toLocaleString(effect=1,effect=2)===0 && effect===2",
+        r#"
+            let effect = 0;
+            let o = {
+                toString: function() {
+                    return arguments.length;
+                }
+            };
+            o.toLocaleString(effect = 1, effect = 2) === 0 && effect === 2
+        "#,
     );
     assert_true(
         "Object.prototype.toLocaleString.call(true)==='true' && Object.prototype.toLocaleString.call(12)==='12'",

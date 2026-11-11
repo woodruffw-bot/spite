@@ -231,12 +231,47 @@ fn arguments_descriptors_and_property_order_follow_the_unmapped_algorithm() {
 #[test]
 fn captured_this_arguments_and_named_function_cycles_survive_collection() {
     let mut realm = Realm::default();
-    realm.eval("let make=function local(x){'use strict';return ()=>this.value+arguments[0].value;};let saved=make.call({value:3},{value:4});make=null;").unwrap();
+    realm
+        .eval(
+            r#"
+                let make = function local(x) {
+                    'use strict';
+                    return () => this.value + arguments[0].value;
+                };
+                let saved = make.call({
+                    value: 3
+                }, {
+                    value: 4
+                });
+                make = null;
+            "#,
+        )
+        .unwrap();
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("saved()"), Ok(Value::Number(7.0)));
     realm.eval("saved=null").unwrap();
     assert_eq!(realm.collect(usize::MAX).unwrap().live, REALM_ENTRIES);
-    realm.eval("let escaped;let f;{ 'unused';f=(()=>{'use strict';return function(a=(escaped=()=>this),b=missing){};})();}try{f.call({value:7});}catch{}f=null;").unwrap();
+    realm
+        .eval(
+            r#"
+                let escaped;
+                let f;
+                {
+                    'unused';
+                    f = (() => {
+                        'use strict';
+                        return function(a = (escaped = () => this), b = missing) {};
+                    })();
+                }
+                try {
+                    f.call({
+                        value: 7
+                    });
+                } catch {}
+                f = null;
+            "#,
+        )
+        .unwrap();
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("escaped().value"), Ok(Value::Number(7.0)));
     realm.eval("escaped=null").unwrap();

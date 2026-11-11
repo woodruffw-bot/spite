@@ -25,11 +25,51 @@ fn collect(realm: &mut Realm) {
 #[test]
 fn super_base_is_read_after_the_awaited_key_and_before_key_coercion() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let release,gate=new Promise(resolve=>{release=resolve}),events=[],result,receiver,before={get x(){throw 9}},after={get x(){events.push('after');receiver=this;return this.marker+7}},latest={get x(){throw 9}};
-        let home={__proto__:before,marker:10,async read(){return super[await gate]}},key={[Symbol.toPrimitive](){events.push('key');Object.setPrototypeOf(home,latest);return 'x'}};
-        home.read().then(value=>{result=value});Object.setPrototypeOf(home,after);
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let release, gate = new Promise(resolve => {
+                        release = resolve
+                    }),
+                    events = [],
+                    result, receiver, before = {
+                        get x() {
+                            throw 9
+                        }
+                    },
+                    after = {
+                        get x() {
+                            events.push('after');
+                            receiver = this;
+                            return this.marker + 7
+                        }
+                    },
+                    latest = {
+                        get x() {
+                            throw 9
+                        }
+                    };
+                let home = {
+                        __proto__: before,
+                        marker: 10,
+                        async read() {
+                            return super[await gate]
+                        }
+                    },
+                    key = {
+                        [Symbol.toPrimitive]() {
+                            events.push('key');
+                            Object.setPrototypeOf(home, latest);
+                            return 'x'
+                        }
+                    };
+                home.read().then(value => {
+                    result = value
+                });
+                Object.setPrototypeOf(home, after);
+            "#,
+        )
+        .unwrap();
     check(&mut realm, "result===undefined&&events.length===0");
     realm.eval("release(key)").unwrap();
     drain(&mut realm);
@@ -42,11 +82,51 @@ fn super_base_is_read_after_the_awaited_key_and_before_key_coercion() {
 #[test]
 fn computed_super_calls_optional_calls_tags_and_constructor_values_keep_their_receivers() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let first,second,third,fourth,proto={m(value){return this.marker+value},tag(strings,value){return this.marker+value},Ctor:function(value){this.x=value}};
-        let home={__proto__:proto,marker:10,async f(){return super[await 'm'](await 7)},async g(){return super[await 'm']?.(await 8)},async h(){return(super[await 'tag'])`x${await 9}`},async j(){return new(super[await 'Ctor'])(await 11)}};
-        home.f().then(value=>{first=value});home.g().then(value=>{second=value});home.h().then(value=>{third=value});home.j().then(value=>{fourth=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let first, second, third, fourth, proto = {
+                    m(value) {
+                        return this.marker + value
+                    },
+                    tag(strings, value) {
+                        return this.marker + value
+                    },
+                    Ctor: function(value) {
+                        this.x = value
+                    }
+                };
+                let home = {
+                    __proto__: proto,
+                    marker: 10,
+                    async f() {
+                        return super[await 'm'](await 7)
+                    },
+                    async g() {
+                        return super[await 'm']?.(await 8)
+                    },
+                    async h() {
+                        return (super[await 'tag'])`x${await 9}`
+                    },
+                    async j() {
+                        return new(super[await 'Ctor'])(await 11)
+                    }
+                };
+                home.f().then(value => {
+                    first = value
+                });
+                home.g().then(value => {
+                    second = value
+                });
+                home.h().then(value => {
+                    third = value
+                });
+                home.j().then(value => {
+                    fourth = value
+                });
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     check(
         &mut realm,
@@ -57,11 +137,50 @@ fn computed_super_calls_optional_calls_tags_and_constructor_values_keep_their_re
 #[test]
 fn super_assignments_and_updates_keep_the_selected_base_through_a_later_rhs_await() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let release,gate=new Promise(resolve=>{release=resolve}),first,second,third,events=[],proto={get x(){events.push('get');return 3},set x(value){events.push('set');this.savedX=value},set y(value){this.savedY=value},get z(){return '4'},set z(value){this.savedZ=value}};
-        let home={__proto__:proto,async f(){return super[await 'x']+=await gate},async g(){return super[await 'y']=await 7},async h(){return(super[await 'z'])++}};
-        home.f().then(value=>{first=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let release, gate = new Promise(resolve => {
+                        release = resolve
+                    }),
+                    first, second, third, events = [],
+                    proto = {
+                        get x() {
+                            events.push('get');
+                            return 3
+                        },
+                        set x(value) {
+                            events.push('set');
+                            this.savedX = value
+                        },
+                        set y(value) {
+                            this.savedY = value
+                        },
+                        get z() {
+                            return '4'
+                        },
+                        set z(value) {
+                            this.savedZ = value
+                        }
+                    };
+                let home = {
+                    __proto__: proto,
+                    async f() {
+                        return super[await 'x'] += await gate
+                    },
+                    async g() {
+                        return super[await 'y'] = await 7
+                    },
+                    async h() {
+                        return (super[await 'z']) ++
+                    }
+                };
+                home.f().then(value => {
+                    first = value
+                });
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     check(&mut realm, "events.join(',')==='get'&&first===undefined");
     realm
@@ -82,15 +201,51 @@ fn super_assignments_and_updates_keep_the_selected_base_through_a_later_rhs_awai
     // 13.3.7.1/3: the selected base and unconverted key remain part of the
     // reference while its RHS awaits, even after the home prototype changes.
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let release,gate=new Promise(resolve=>{release=resolve}),result,events=[],keyWeak;
-        const symbol=Symbol('key');
-        let proto={set [symbol](value){events.push('set');this.saved=value}},baseWeak=new WeakRef(proto);
-        function makeKey(){let key={[Symbol.toPrimitive](hint){events.push(hint);return symbol}};keyWeak=new WeakRef(key);return key}
-        let home={__proto__:proto,async f(){return super[makeKey()]=await gate}};
-        home.f().then(value=>{result=value});
-        Object.setPrototypeOf(home,{set [symbol](value){throw 9}});proto=null;
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let release, gate = new Promise(resolve => {
+                        release = resolve
+                    }),
+                    result, events = [],
+                    keyWeak;
+                const symbol = Symbol('key');
+                let proto = {
+                        set [symbol](value) {
+                            events.push('set');
+                            this.saved = value
+                        }
+                    },
+                    baseWeak = new WeakRef(proto);
+
+                function makeKey() {
+                    let key = {
+                        [Symbol.toPrimitive](hint) {
+                            events.push(hint);
+                            return symbol
+                        }
+                    };
+                    keyWeak = new WeakRef(key);
+                    return key
+                }
+                let home = {
+                    __proto__: proto,
+                    async f() {
+                        return super[makeKey()] = await gate
+                    }
+                };
+                home.f().then(value => {
+                    result = value
+                });
+                Object.setPrototypeOf(home, {
+                    set [symbol](value) {
+                        throw 9
+                    }
+                });
+                proto = null;
+            "#,
+        )
+        .unwrap();
     collect(&mut realm);
     check(
         &mut realm,
@@ -102,18 +257,63 @@ fn super_assignments_and_updates_keep_the_selected_base_through_a_later_rhs_awai
     collect(&mut realm);
     check(
         &mut realm,
-        "result===7&&home.saved===7&&events.join(',')==='string,set'&&baseWeak.deref()===undefined&&keyWeak.deref()===undefined",
+        r#"
+            result === 7 && home.saved === 7 && events.join(',') === 'string,set' && baseWeak.deref() ===
+                undefined && keyWeak.deref() === undefined
+        "#,
     );
 }
 
 #[test]
 fn deleting_awaited_super_references_throws_without_getting_or_converting_the_key() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let first,second,keys=0,coerced=0,gets=0,key={[Symbol.toPrimitive](){coerced++;return 'x'}},proto={get x(){gets++;throw 9}};
-        let home={__proto__:proto,async f(){try{return delete super[await(keys++,key)]}catch(error){return error instanceof ReferenceError}}},empty={__proto__:null,async f(){try{return delete super[await(keys++,key)]}catch(error){return error instanceof ReferenceError}}};
-        home.f().then(value=>{first=value});empty.f().then(value=>{second=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let first, second, keys = 0,
+                    coerced = 0,
+                    gets = 0,
+                    key = {
+                        [Symbol.toPrimitive]() {
+                            coerced++;
+                            return 'x'
+                        }
+                    },
+                    proto = {
+                        get x() {
+                            gets++;
+                            throw 9
+                        }
+                    };
+                let home = {
+                        __proto__: proto,
+                        async f() {
+                            try {
+                                return delete super[await (keys++, key)]
+                            } catch (error) {
+                                return error instanceof ReferenceError
+                            }
+                        }
+                    },
+                    empty = {
+                        __proto__: null,
+                        async f() {
+                            try {
+                                return delete super[await (keys++, key)]
+                            } catch (error) {
+                                return error instanceof ReferenceError
+                            }
+                        }
+                    };
+                home.f().then(value => {
+                    first = value
+                });
+                empty.f().then(value => {
+                    second = value
+                });
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     check(
         &mut realm,
@@ -124,11 +324,42 @@ fn deleting_awaited_super_references_throws_without_getting_or_converting_the_ke
 #[test]
 fn super_reads_this_before_the_key_and_rejection_skips_later_super_getters() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let effects=0,failed,rejected,gets=0,reason={};class Base{}class Derived extends Base{constructor(){return(async()=>super[await(++effects,'x')])()}}
-        let home={__proto__:{get x(){gets++;return 7}},async f(){try{return super[await Promise.reject(reason)]}catch(error){return error===reason}}};
-        new Derived().then(undefined,error=>{failed=error instanceof ReferenceError});home.f().then(value=>{rejected=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let effects = 0,
+                    failed, rejected, gets = 0,
+                    reason = {};
+                class Base {}
+                class Derived extends Base {
+                    constructor() {
+                        return (async () => super[await (++effects, 'x')])()
+                    }
+                }
+                let home = {
+                    __proto__: {
+                        get x() {
+                            gets++;
+                            return 7
+                        }
+                    },
+                    async f() {
+                        try {
+                            return super[await Promise.reject(reason)]
+                        } catch (error) {
+                            return error === reason
+                        }
+                    }
+                };
+                new Derived().then(undefined, error => {
+                    failed = error instanceof ReferenceError
+                });
+                home.f().then(value => {
+                    rejected = value
+                });
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     check(
         &mut realm,
@@ -139,10 +370,32 @@ fn super_reads_this_before_the_key_and_rejection_skips_later_super_getters() {
 #[test]
 fn pending_super_keys_do_not_retain_old_prototypes_and_host_abort_releases_resource_captures() {
     let mut realm = Realm::with_unavailable_host();
-    realm.eval(r#"
-        let release,gate=new Promise(resolve=>{release=resolve}),proto={x:7},weak=new WeakRef(proto),result,home={__proto__:proto,async f(){return super[await gate]}};
-        home.f().then(value=>{result=value});Object.setPrototypeOf(home,{x:8});proto=null;
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let release, gate = new Promise(resolve => {
+                        release = resolve
+                    }),
+                    proto = {
+                        x: 7
+                    },
+                    weak = new WeakRef(proto),
+                    result, home = {
+                        __proto__: proto,
+                        async f() {
+                            return super[await gate]
+                        }
+                    };
+                home.f().then(value => {
+                    result = value
+                });
+                Object.setPrototypeOf(home, {
+                    x: 8
+                });
+                proto = null;
+            "#,
+        )
+        .unwrap();
     collect(&mut realm);
     check(&mut realm, "weak.deref()===undefined&&result===undefined");
     realm.eval("release('x')").unwrap();
@@ -168,7 +421,22 @@ fn pending_super_keys_do_not_retain_old_prototypes_and_host_abort_releases_resou
         } else {
             "spiteUnavailableHost()"
         };
-        let code="let home={async f(){using root=resource;try{return super[(await 0,TAIL)]}finally{finalized++}}};home.f().catch(()=>{caught=true})".replace("TAIL",tail);
+        let code = r#"
+            let home = {
+                async f() {
+                    using root = resource;
+                    try {
+                        return super[(await 0, TAIL)]
+                    } finally {
+                        finalized++
+                    }
+                }
+            };
+            home.f().catch(() => {
+                caught = true
+            })
+        "#
+        .replace("TAIL", tail);
         realm.eval(&code).unwrap();
         realm.eval("delete resource[dispose]").unwrap();
         let mut reported = false;

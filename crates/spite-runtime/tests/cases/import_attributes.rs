@@ -33,14 +33,43 @@ fn syntax(error: Error) {
 #[test]
 fn default_keys_reject_imports_through_fresh_intrinsic_promises_before_the_host_boundary() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let NativePromise=Promise,errors=0,events=[];
-        globalThis.Promise=function(){throw 'public constructor'};
-        let p,q;try{p=import('source',{with:{type:'json'}});q=import('source',{with:{type:'javascript'}});events.push('after')}
-        catch(e){events.push('wrong')}finally{events.push('finally')}
-        let fresh=p!==q&&Object.getPrototypeOf(p)===NativePromise.prototype;
-        p.catch(e=>{if(e instanceof TypeError)errors++});q.catch(e=>{if(e instanceof TypeError)errors++});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let NativePromise = Promise,
+                    errors = 0,
+                    events = [];
+                globalThis.Promise = function() {
+                    throw 'public constructor'
+                };
+                let p, q;
+                try {
+                    p = import('source', {
+                        with: {
+                            type: 'json'
+                        }
+                    });
+                    q = import('source', {
+                        with: {
+                            type: 'javascript'
+                        }
+                    });
+                    events.push('after')
+                } catch (e) {
+                    events.push('wrong')
+                } finally {
+                    events.push('finally')
+                }
+                let fresh = p !== q && Object.getPrototypeOf(p) === NativePromise.prototype;
+                p.catch(e => {
+                    if (e instanceof TypeError) errors++
+                });
+                q.catch(e => {
+                    if (e instanceof TypeError) errors++
+                });
+            "#,
+        )
+        .unwrap();
     check(
         &mut realm,
         "fresh&&errors===0&&events.join(',')==='after,finally'",
@@ -53,11 +82,40 @@ fn default_keys_reject_imports_through_fresh_intrinsic_promises_before_the_host_
 fn all_getters_and_value_validation_precede_unsupported_key_rejection() {
     let mut realm = Realm::default();
     realm.enable_module_imports();
-    realm.eval(r#"
-        let events=[],marker={},same=false,typed=false;
-        import('source',{with:{get unknown(){events.push('unknown');return 'x'},get later(){events.push('later');throw marker}}}).catch(e=>same=e===marker);
-        import('source',{with:{get unknown(){events.push('again');return 'x'},get later(){events.push('value');return 7}}}).catch(e=>typed=e instanceof TypeError);
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let events = [],
+                    marker = {},
+                    same = false,
+                    typed = false;
+                import('source', {
+                    with: {
+                        get unknown() {
+                            events.push('unknown');
+                            return 'x'
+                        },
+                        get later() {
+                            events.push('later');
+                            throw marker
+                        }
+                    }
+                }).catch(e => same = e === marker);
+                import('source', {
+                    with: {
+                        get unknown() {
+                            events.push('again');
+                            return 'x'
+                        },
+                        get later() {
+                            events.push('value');
+                            return 7
+                        }
+                    }
+                }).catch(e => typed = e instanceof TypeError);
+            "#,
+        )
+        .unwrap();
     check(&mut realm, "events.join(',')==='unknown,later,again,value'");
     assert!(realm.take_module_import_request().is_none());
     drain(&mut realm);
@@ -101,10 +159,10 @@ fn ignored_keys_do_not_require_support_and_normalization_is_not_applied() {
     realm
         .eval(
             r#"
-        let rejected=false,attrs={[Symbol()]:7};Object.defineProperty(attrs,'unknown',{value:7});
-        import('ignored',{with:attrs});import('exact',{with:{é:'x'}});
-        import('different',{with:{'e\u0301':'x'}}).catch(e=>rejected=e instanceof TypeError);
-    "#,
+                let rejected=false,attrs={[Symbol()]:7};Object.defineProperty(attrs,'unknown',{value:7});
+                import('ignored',{with:attrs});import('exact',{with:{é:'x'}});
+                import('different',{with:{'e\u0301':'x'}}).catch(e=>rejected=e instanceof TypeError);
+            "#,
         )
         .unwrap();
     assert!(

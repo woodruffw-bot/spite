@@ -48,7 +48,11 @@ fn defaults_truncation_rollover_and_literal_years_follow_the_local_calendar() {
     }
     check(
         "UTC",
-        "let d=new Date('2000-02-29T12:34:56.789Z');d.setFullYear(0.9)===d.getTime() && d.toISOString()==='0000-02-29T12:34:56.789Z' && d.setFullYear(70)===d.getTime() && d.toISOString()==='0070-03-01T12:34:56.789Z'",
+        r#"
+            let d = new Date('2000-02-29T12:34:56.789Z');
+            d.setFullYear(0.9) === d.getTime() && d.toISOString() === '0000-02-29T12:34:56.789Z' && d
+                .setFullYear(70) === d.getTime() && d.toISOString() === '0070-03-01T12:34:56.789Z'
+        "#,
     );
     for (method, arity) in METHODS {
         check(
@@ -177,13 +181,29 @@ fn captured_time_survives_hooks_and_full_year_revives_using_the_local_epoch_cale
         check(
             "America/New_York",
             &format!(
-                "let d=new Date('2000-02-29T17:34:56.789Z');d.{method}({{valueOf(){{d.setTime(NaN);return {args};}}}})===d.getTime() && d.toISOString()==='{expected}'"
+                r#"
+                    let d = new Date('2000-02-29T17:34:56.789Z');
+                    d.{method}({{
+                        valueOf() {{
+                            d.setTime(NaN);
+                            return {args};
+                        }}
+                    }}) === d.getTime() && d.toISOString() === '{expected}'
+                "#
             ),
         );
     }
     check(
         "America/New_York",
-        "let d=new Date(NaN);d.setFullYear({valueOf(){d.setTime(9);return 2000;}})===d.getTime() && d.toISOString()==='2000-01-01T05:00:00.000Z'",
+        r#"
+            let d = new Date(NaN);
+            d.setFullYear({
+                valueOf() {
+                    d.setTime(9);
+                    return 2000;
+                }
+            }) === d.getTime() && d.toISOString() === '2000-01-01T05:00:00.000Z'
+        "#,
     );
     check(
         "America/New_York",
@@ -195,7 +215,15 @@ fn captured_time_survives_hooks_and_full_year_revives_using_the_local_epoch_cale
     );
     check(
         "America/New_York",
-        "let d=new Date(NaN);Number.isNaN(d.setFullYear({valueOf(){d.setTime(9);return NaN;}})) && Number.isNaN(d.getTime())",
+        r#"
+            let d = new Date(NaN);
+            Number.isNaN(d.setFullYear({
+                valueOf() {
+                    d.setTime(9);
+                    return NaN;
+                }
+            })) && Number.isNaN(d.getTime())
+        "#,
     );
 }
 
@@ -238,7 +266,17 @@ fn every_present_field_converts_in_order_after_nan_and_excess_values_are_ignored
                 check(
                     "America/New_York",
                     &format!(
-                        "let d=new Date({time}),trace='',caught=false;try{{d.{method}({args});}}catch(e){{caught=e===7;}}caught && trace==='{trace}' && d.getTime()===77"
+                        r#"
+                            let d = new Date({time}),
+                                trace = '',
+                                caught = false;
+                            try {{
+                                d.{method}({args});
+                            }} catch (e) {{
+                                caught = e === 7;
+                            }}
+                            caught && trace === '{trace}' && d.getTime() === 77
+                        "#
                     ),
                 );
             }
@@ -308,7 +346,13 @@ fn enormous_calendar_components_can_cancel_without_javascript_bigint_value_limit
         ..Limits::default()
     });
     r.set_time_zone(TimeZone::utc());
-    assert_eq!(r.eval("let d=new Date(0);d.setFullYear(-Number.MAX_VALUE/12,Number.MAX_VALUE,1)===Date.parse('0000-09-01') && d.setFullYear(Number.MAX_VALUE/12,-Number.MAX_VALUE,1)===Date.parse('0000-05-01') && d.setFullYear(5000000000,0,1-1826211780472)===0 && d.setFullYear(1e200,0,-3.652425e202)===-86400000"),Ok(Value::Boolean(true)));
+    assert_eq!(r.eval(r#"
+        let d = new Date(0);
+        d.setFullYear(-Number.MAX_VALUE / 12, Number.MAX_VALUE, 1) === Date.parse('0000-09-01') && d
+            .setFullYear(Number.MAX_VALUE / 12, -Number.MAX_VALUE, 1) === Date.parse('0000-05-01') && d
+            .setFullYear(5000000000, 0, 1 - 1826211780472) === 0 && d.setFullYear(1e200, 0, -
+                3.652425e202) === -86400000
+    "#),Ok(Value::Boolean(true)));
 }
 
 #[test]
@@ -341,7 +385,13 @@ fn brand_checks_precede_coercion_and_frozen_slots_still_mutate() {
         check(
             "UTC",
             &format!(
-                "let d=new Date(0);Object.setPrototypeOf(d,null);Object.freeze(d);Date.prototype.{method}.call(d,1)===Date.prototype.getTime.call(d) && Object.isFrozen(d)"
+                r#"
+                    let d = new Date(0);
+                    Object.setPrototypeOf(d, null);
+                    Object.freeze(d);
+                    Date.prototype.{method}.call(d, 1) === Date.prototype.getTime.call(d) && Object.isFrozen(
+                        d)
+                "#
             ),
         );
     }

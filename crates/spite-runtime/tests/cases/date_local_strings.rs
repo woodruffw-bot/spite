@@ -68,7 +68,30 @@ fn branded_string_methods_ignore_arguments_and_receiver_conversion_properties() 
         check(
             "UTC",
             &format!(
-                "let d=new Date(0),n=0;Object.defineProperty(d,Symbol.toPrimitive,{{get(){{throw 7;}}}});Object.defineProperty(d,'valueOf',{{get(){{throw 8;}}}});Object.defineProperty(d,'toISOString',{{get(){{throw 9;}}}});typeof Date.prototype.{method}.call(d,n++,{{[Symbol.toPrimitive](){{throw 10;}}}})==='string' && n===1 && Date.prototype.getTime.call(d)===0"
+                r#"
+                    let d = new Date(0),
+                        n = 0;
+                    Object.defineProperty(d, Symbol.toPrimitive, {{
+                        get() {{
+                            throw 7;
+                        }}
+                    }});
+                    Object.defineProperty(d, 'valueOf', {{
+                        get() {{
+                            throw 8;
+                        }}
+                    }});
+                    Object.defineProperty(d, 'toISOString', {{
+                        get() {{
+                            throw 9;
+                        }}
+                    }});
+                    typeof Date.prototype.{method}.call(d, n++, {{
+                        [Symbol.toPrimitive]() {{
+                            throw 10;
+                        }}
+                    }}) === 'string' && n === 1 && Date.prototype.getTime.call(d) === 0
+                "#
             ),
         );
         for receiver in [
@@ -98,7 +121,12 @@ fn branded_string_methods_ignore_arguments_and_receiver_conversion_properties() 
         check(
             "UTC",
             &format!(
-                "let d=new Date(0);Object.setPrototypeOf(d,null);Object.freeze(d);typeof Date.prototype.{method}.call(d)==='string' && Object.isFrozen(d)"
+                r#"
+                    let d = new Date(0);
+                    Object.setPrototypeOf(d, null);
+                    Object.freeze(d);
+                    typeof Date.prototype.{method}.call(d) === 'string' && Object.isFrozen(d)
+                "#
             ),
         );
         check("UTC", &format!("new Date(NaN).{method}()==='Invalid Date'"));

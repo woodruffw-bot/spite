@@ -22,10 +22,90 @@ fn type_error(source: &str) {
 #[test]
 fn ordered_method_capture_is_eager_but_iterator_opening_and_next_capture_are_lazy() {
     assert_true(
-        "let log='',reads=0,calls=0,receiver,argc,i={};Object.defineProperty(i,'next',{configurable:true,get:()=>{reads++;log+='n';return function(){'use strict';receiver=this;argc=arguments.length;return {done:calls++>0,value:7};};}});let a={};Object.defineProperty(a,Symbol.iterator,{configurable:true,get:()=>{log+='g';return function(){'use strict';log+=this===a?'c':'X';return i;};}});let b={};Object.defineProperty(b,Symbol.iterator,{get:()=>{log+='h';return ()=>{log+='d';return [].values();};}});let w=Iterator.concat.call(null,a,b);let eager=log==='gh' && reads===0;Object.defineProperty(a,Symbol.iterator,{value:()=>{throw 9;}});let first=w.next(99);Object.defineProperty(i,'next',{value:()=>{throw 10;}});eager && first.value===7 && !first.done && w.next().done && log==='ghcnd' && reads===1 && receiver===i && argc===0",
+        r#"
+            let log = '',
+                reads = 0,
+                calls = 0,
+                receiver, argc, i = {};
+            Object.defineProperty(i, 'next', {
+                configurable: true,
+                get: () => {
+                    reads++;
+                    log += 'n';
+                    return function() {
+                        'use strict';
+                        receiver = this;
+                        argc = arguments.length;
+                        return {
+                            done: calls++ > 0,
+                            value: 7
+                        };
+                    };
+                }
+            });
+            let a = {};
+            Object.defineProperty(a, Symbol.iterator, {
+                configurable: true,
+                get: () => {
+                    log += 'g';
+                    return function() {
+                        'use strict';
+                        log += this === a ? 'c' : 'X';
+                        return i;
+                    };
+                }
+            });
+            let b = {};
+            Object.defineProperty(b, Symbol.iterator, {
+                get: () => {
+                    log += 'h';
+                    return () => {
+                        log += 'd';
+                        return [].values();
+                    };
+                }
+            });
+            let w = Iterator.concat.call(null, a, b);
+            let eager = log === 'gh' && reads === 0;
+            Object.defineProperty(a, Symbol.iterator, {
+                value: () => {
+                    throw 9;
+                }
+            });
+            let first = w.next(99);
+            Object.defineProperty(i, 'next', {
+                value: () => {
+                    throw 10;
+                }
+            });
+            eager && first.value === 7 && !first.done && w.next().done && log === 'ghcnd' && reads === 1 &&
+                receiver === i && argc === 0
+        "#,
     );
     assert_true(
-        "let reads=0,a={};Object.defineProperty(a,Symbol.iterator,{get:()=>{reads++;return ()=>{throw 7;};}});let caught=false;try{Iterator.concat(a,null,{get [Symbol.iterator](){throw 8;}});}catch(e){caught=e instanceof TypeError;}caught && reads===1",
+        r#"
+            let reads = 0,
+                a = {};
+            Object.defineProperty(a, Symbol.iterator, {
+                get: () => {
+                    reads++;
+                    return () => {
+                        throw 7;
+                    };
+                }
+            });
+            let caught = false;
+            try {
+                Iterator.concat(a, null, {
+                    get [Symbol.iterator]() {
+                        throw 8;
+                    }
+                });
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && reads === 1
+        "#,
     );
     for method in [
         "class{}",
@@ -33,11 +113,67 @@ fn ordered_method_capture_is_eager_but_iterator_opening_and_next_capture_are_laz
         "(()=>{let {proxy,revoke}=Proxy.revocable(function(){},{});revoke();return proxy})()",
     ] {
         assert_true(&format!(
-            "let closed=0,count=0,inner={{next(){{return {{value:7,done:count++>0}}}},return(){{closed++;return {{}}}}}},first={{[Symbol.iterator]:()=>inner}};let w=Iterator.concat(first,{{[Symbol.iterator]:{method}}}),head=w.next(),failed=false;try{{w.next()}}catch(error){{failed=error instanceof TypeError}}head.value===7&&!head.done&&failed&&closed===0&&w.next().done&&w.return().done"
+            r#"
+                let closed = 0,
+                    count = 0,
+                    inner = {{
+                        next() {{
+                            return {{
+                                value: 7,
+                                done: count++ > 0
+                            }}
+                        }},
+                        return () {{
+                            closed++;
+                            return {{}}
+                        }}
+                    }},
+                    first = {{
+                        [Symbol.iterator]: () => inner
+                    }};
+                let w = Iterator.concat(first, {{
+                        [Symbol.iterator]: {method}
+                    }}),
+                    head = w.next(),
+                    failed = false;
+                try {{
+                    w.next()
+                }} catch (error) {{
+                    failed = error instanceof TypeError
+                }}
+                head.value === 7 && !head.done && failed && closed === 0 && w.next().done && w.return().done
+            "#
         ));
     }
     assert_true(
-        "let opened=0,replacement=0,{proxy,revoke}=Proxy.revocable(function(){opened++;return [8].values()},{}),source={[Symbol.iterator]:proxy},w=Iterator.concat([7],source);revoke();source[Symbol.iterator]=()=>{replacement++;return [9].values()};let head=w.next(),failed=false;try{w.next()}catch(error){failed=error instanceof TypeError}head.value===7&&failed&&opened===0&&replacement===0&&w.next().done",
+        r#"
+            let opened = 0,
+                replacement = 0,
+                {
+                    proxy,
+                    revoke
+                } = Proxy.revocable(function() {
+                    opened++;
+                    return [8].values()
+                }, {}),
+                source = {
+                    [Symbol.iterator]: proxy
+                },
+                w = Iterator.concat([7], source);
+            revoke();
+            source[Symbol.iterator] = () => {
+                replacement++;
+                return [9].values()
+            };
+            let head = w.next(),
+                failed = false;
+            try {
+                w.next()
+            } catch (error) {
+                failed = error instanceof TypeError
+            }
+            head.value === 7 && failed && opened === 0 && replacement === 0 && w.next().done
+        "#,
     );
 }
 
@@ -45,7 +181,19 @@ fn ordered_method_capture_is_eager_but_iterator_opening_and_next_capture_are_laz
 fn primitives_and_missing_methods_are_rejected_without_opening_sources() {
     for value in ["undefined", "null", "true", "1", "1n", "'ab'", "Symbol()"] {
         type_error(&format!(
-            "Object.defineProperty(Number.prototype,Symbol.iterator,{{get:()=>{{throw 7;}}}});Object.defineProperty(String.prototype,Symbol.iterator,{{get:()=>{{throw 8;}}}});Iterator.concat({value})"
+            r#"
+                Object.defineProperty(Number.prototype, Symbol.iterator, {{
+                    get: () => {{
+                        throw 7;
+                    }}
+                }});
+                Object.defineProperty(String.prototype, Symbol.iterator, {{
+                    get: () => {{
+                        throw 8;
+                    }}
+                }});
+                Iterator.concat({value})
+            "#
         ));
     }
     for method in ["undefined", "null", "true", "7", "7n", "'x'", "Symbol()"] {
@@ -61,13 +209,54 @@ fn primitives_and_missing_methods_are_rejected_without_opening_sources() {
 #[test]
 fn results_are_fresh_and_done_skips_value_while_empty_sources_advance_iteratively() {
     assert_true(
-        "let done={done:true,get value(){throw 7;}},value={},result={done:false,value},n=0,a={[Symbol.iterator]:()=>({next:()=>n++===0?result:done,return:()=>{throw 8;}})},w=Iterator.concat([],a,[],[9]);let first=w.next(),second=w.next(),last=w.next();first!==result && first.value===value && !first.done && second.value===9 && !second.done && last.value===undefined && last.done && w.next()!==last && w.next().done && w.return().done",
+        r#"
+            let done = {
+                    done: true,
+                    get value() {
+                        throw 7;
+                    }
+                },
+                value = {},
+                result = {
+                    done: false,
+                    value
+                },
+                n = 0,
+                a = {
+                    [Symbol.iterator]: () => ({
+                        next: () => n++ === 0 ? result : done,
+                        return: () => {
+                            throw 8;
+                        }
+                    })
+                },
+                w = Iterator.concat([], a, [], [9]);
+            let first = w.next(),
+                second = w.next(),
+                last = w.next();
+            first !== result && first.value === value && !first.done && second.value === 9 && !second
+                .done && last.value === undefined && last.done && w.next() !== last && w.next().done && w
+                .return().done
+        "#,
     );
     assert_true(
-        "let w=Iterator.concat(),a=w.next(),b=w.next(),c=w.return();a!==b && b!==c && a.done && a.value===undefined && Reflect.ownKeys(a).join(',')==='value,done' && Object.getPrototypeOf(a)===Object.prototype",
+        r#"
+            let w = Iterator.concat(),
+                a = w.next(),
+                b = w.next(),
+                c = w.return();
+            a !== b && b !== c && a.done && a.value === undefined && Reflect.ownKeys(a).join(',') ===
+                'value,done' && Object.getPrototypeOf(a) === Object.prototype
+        "#,
     );
     assert_true(
-        "let sources=[];for(let i=0;i<2000;i++)sources.push([]);sources.push([7]);let w=Iterator.concat(...sources);w.next().value===7 && w.next().done",
+        r#"
+            let sources = [];
+            for (let i = 0; i < 2000; i++) sources.push([]);
+            sources.push([7]);
+            let w = Iterator.concat(...sources);
+            w.next().value === 7 && w.next().done
+        "#,
     );
 }
 
@@ -80,7 +269,35 @@ fn step_and_opening_errors_complete_without_closing_and_never_resume_again() {
         "()=>({done:false,get value(){throw 7;}})",
     ] {
         assert_true(&format!(
-            "let calls=0,closed=0,opens=0,a={{[Symbol.iterator](){{opens++;return {{next(){{calls++;return ({next})();}},return(){{closed++;throw 8;}}}};}}}},w=Iterator.concat(a),caught=false;try{{w.next();}}catch(e){{caught=true;}}caught && calls===1 && closed===0 && opens===1 && w.next().done && w.return().done && calls===1"
+            r#"
+                let calls = 0,
+                    closed = 0,
+                    opens = 0,
+                    a = {{
+                        [Symbol.iterator]() {{
+                            opens++;
+                            return {{
+                                next() {{
+                                    calls++;
+                                    return ({next})();
+                                }},
+                                return () {{
+                                    closed++;
+                                    throw 8;
+                                }}
+                            }};
+                        }}
+                    }},
+                    w = Iterator.concat(a),
+                    caught = false;
+                try {{
+                    w.next();
+                }} catch (e) {{
+                    caught = true;
+                }}
+                caught && calls === 1 && closed === 0 && opens === 1 && w.next().done && w.return().done &&
+                    calls === 1
+            "#
         ));
     }
     for method in [
@@ -89,7 +306,23 @@ fn step_and_opening_errors_complete_without_closing_and_never_resume_again() {
         "()=>({get next(){throw 7;},return(){throw 8;}})",
     ] {
         assert_true(&format!(
-            "let calls=0,a={{[Symbol.iterator](){{calls++;return ({method})();}}}},w=Iterator.concat(a),caught=false;try{{w.next();}}catch(e){{caught=true;}}caught && calls===1 && w.next().done && w.return().done && calls===1"
+            r#"
+                let calls = 0,
+                    a = {{
+                        [Symbol.iterator]() {{
+                            calls++;
+                            return ({method})();
+                        }}
+                    }},
+                    w = Iterator.concat(a),
+                    caught = false;
+                try {{
+                    w.next();
+                }} catch (e) {{
+                    caught = true;
+                }}
+                caught && calls === 1 && w.next().done && w.return().done && calls === 1
+            "#
         ));
     }
 }
@@ -117,11 +350,46 @@ fn return_closes_only_the_yielded_source_once_with_zero_arguments() {
 fn return_errors_complete_the_helper_and_do_not_reopen_or_reclose_sources() {
     for method in ["7", "()=>7", "()=>{throw 7;}"] {
         assert_true(&format!(
-            "let closed=0,i={{next:()=>({{done:false,value:8}}),get return(){{closed++;return {method};}}}},w=Iterator.concat({{[Symbol.iterator]:()=>i}});w.next();let caught=false;try{{w.return();}}catch(e){{caught=true;}}caught && closed===1 && w.return().done && w.next().done && closed===1"
+            r#"
+                let closed = 0,
+                    i = {{
+                        next: () => ({{
+                            done: false,
+                            value: 8
+                        }}),
+                        get return() {{
+                            closed++;
+                            return {method};
+                        }}
+                    }},
+                    w = Iterator.concat({{
+                        [Symbol.iterator]: () => i
+                    }});
+                w.next();
+                let caught = false;
+                try {{
+                    w.return();
+                }} catch (e) {{
+                    caught = true;
+                }}
+                caught && closed === 1 && w.return().done && w.next().done && closed === 1
+            "#
         ));
     }
     assert_true(
-        "let i={next:()=>({done:false,value:7})},w=Iterator.concat({[Symbol.iterator]:()=>i});w.next();w.return().done && w.next().done",
+        r#"
+            let i = {
+                    next: () => ({
+                        done: false,
+                        value: 7
+                    })
+                },
+                w = Iterator.concat({
+                    [Symbol.iterator]: () => i
+                });
+            w.next();
+            w.return().done && w.next().done
+        "#,
     );
 }
 
@@ -129,14 +397,74 @@ fn return_errors_complete_the_helper_and_do_not_reopen_or_reclose_sources() {
 fn executing_next_and_return_reject_reentry_but_caught_reentry_can_continue() {
     for action in ["w.next()", "w.return()"] {
         assert_true(&format!(
-            "let calls=0,w=Iterator.concat({{[Symbol.iterator]:()=>({{next(){{calls++;{action};return {{done:false}};}}}})}}),caught=false;try{{w.next();}}catch(e){{caught=e instanceof TypeError;}}caught && calls===1 && w.next().done"
+            r#"
+                let calls = 0,
+                    w = Iterator.concat({{
+                        [Symbol.iterator]: () => ({{
+                            next() {{
+                                calls++;
+                                {action};
+                                return {{
+                                    done: false
+                                }};
+                            }}
+                        }})
+                    }}),
+                    caught = false;
+                try {{
+                    w.next();
+                }} catch (e) {{
+                    caught = e instanceof TypeError;
+                }}
+                caught && calls === 1 && w.next().done
+            "#
         ));
         assert_true(&format!(
-            "let closed=0,w=Iterator.concat({{[Symbol.iterator]:()=>({{next:()=>({{done:false}}),return(){{closed++;{action};return {{}};}}}})}});w.next();let caught=false;try{{w.return();}}catch(e){{caught=e instanceof TypeError;}}caught && closed===1 && w.return().done && w.next().done"
+            r#"
+                let closed = 0,
+                    w = Iterator.concat({{
+                        [Symbol.iterator]: () => ({{
+                            next: () => ({{
+                                done: false
+                            }}),
+                            return () {{
+                                closed++;
+                                {action};
+                                return {{}};
+                            }}
+                        }})
+                    }});
+                w.next();
+                let caught = false;
+                try {{
+                    w.return();
+                }} catch (e) {{
+                    caught = e instanceof TypeError;
+                }}
+                caught && closed === 1 && w.return().done && w.next().done
+            "#
         ));
     }
     assert_true(
-        "let caught=false,w=Iterator.concat({[Symbol.iterator]:()=>({next(){try{w.next();}catch(e){caught=e instanceof TypeError;}return {done:false,value:7};}})});w.next().value===7 && caught && w.next().value===7",
+        r#"
+            let caught = false,
+                w = Iterator.concat({
+                    [Symbol.iterator]: () => ({
+                        next() {
+                            try {
+                                w.next();
+                            } catch (e) {
+                                caught = e instanceof TypeError;
+                            }
+                            return {
+                                done: false,
+                                value: 7
+                            };
+                        }
+                    })
+                });
+            w.next().value === 7 && caught && w.next().value === 7
+        "#,
     );
 }
 

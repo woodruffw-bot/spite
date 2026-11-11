@@ -19,16 +19,64 @@ fn fixed_locale_separator_nullish_holes_and_nested_arrays() {
 #[test]
 fn invokes_current_methods_with_original_receivers_and_no_arguments() {
     assert_true(
-        "let o={toLocaleString:function(){'use strict';return this===o && arguments.length===0;}},bad={toString:()=>{throw 7;}};[o,o].toLocaleString(bad,bad,bad)==='true,true'",
+        r#"
+            let o = {
+                    toLocaleString: function() {
+                        'use strict';
+                        return this === o && arguments.length === 0;
+                    }
+                },
+                bad = {
+                    toString: () => {
+                        throw 7;
+                    }
+                };
+            [o, o].toLocaleString(bad, bad, bad) === 'true,true'
+        "#,
     );
     assert_true(
-        "let log='',o={};Object.defineProperty(o,'toLocaleString',{get:function(){'use strict';log+=this===o?'g':'x';return function(){'use strict';log+=this===o?'c':'y';return 7;};}});[o].toLocaleString()==='7' && log==='gc'",
+        r#"
+            let log = '',
+                o = {};
+            Object.defineProperty(o, 'toLocaleString', {
+                get: function() {
+                    'use strict';
+                    log += this === o ? 'g' : 'x';
+                    return function() {
+                        'use strict';
+                        log += this === o ? 'c' : 'y';
+                        return 7;
+                    };
+                }
+            });
+            [o].toLocaleString() === '7' && log === 'gc'
+        "#,
     );
     assert_true(
-        "'use strict';let log='';Object.defineProperty(Boolean.prototype,'toLocaleString',{get:function(){log+=typeof this;return function(){log+=typeof this;return this;};}});[true].toLocaleString()==='true' && log==='booleanboolean'",
+        r#"
+            'use strict';
+            let log = '';
+            Object.defineProperty(Boolean.prototype, 'toLocaleString', {
+                get: function() {
+                    log += typeof this;
+                    return function() {
+                        log += typeof this;
+                        return this;
+                    };
+                }
+            });
+            [true].toLocaleString() === 'true' && log === 'booleanboolean'
+        "#,
     );
     assert_true(
-        "let seen;Boolean.prototype.toLocaleString=function(){seen=this;return this.valueOf();};[true].toLocaleString()==='true' && seen instanceof Boolean",
+        r#"
+            let seen;
+            Boolean.prototype.toLocaleString = function() {
+                seen = this;
+                return this.valueOf();
+            };
+            [true].toLocaleString() === 'true' && seen instanceof Boolean
+        "#,
     );
     assert_true(
         "let n=0,o={toLocaleString:()=>{n++;return 7;}};[null,undefined,,o].toLocaleString()===',,,7' && n===1",
@@ -38,10 +86,44 @@ fn invokes_current_methods_with_original_receivers_and_no_arguments() {
 #[test]
 fn method_results_are_converted_to_strings_before_visiting_the_next_element() {
     assert_true(
-        "let log='',a=[{toLocaleString:()=>{log+='c';return {toString:()=>{log+='s';return 7;},valueOf:()=>{throw 7;}};}},2];Object.defineProperty(a,'1',{get:()=>{log+='g';return 2;}});a.toLocaleString()==='7,2' && log==='csg'",
+        r#"
+            let log = '',
+                a = [{
+                    toLocaleString: () => {
+                        log += 'c';
+                        return {
+                            toString: () => {
+                                log += 's';
+                                return 7;
+                            },
+                            valueOf: () => {
+                                throw 7;
+                            }
+                        };
+                    }
+                }, 2];
+            Object.defineProperty(a, '1', {
+                get: () => {
+                    log += 'g';
+                    return 2;
+                }
+            });
+            a.toLocaleString() === '7,2' && log === 'csg'
+        "#,
     );
     assert_true(
-        "let o={toLocaleString:()=>undefined},n={toLocaleString:()=>null},b={toLocaleString:()=>7n};[o,n,b].toLocaleString()==='undefined,null,7'",
+        r#"
+            let o = {
+                    toLocaleString: () => undefined
+                },
+                n = {
+                    toLocaleString: () => null
+                },
+                b = {
+                    toLocaleString: () => 7n
+                };
+            [o, n, b].toLocaleString() === 'undefined,null,7'
+        "#,
     );
     assert!(matches!(
         Realm::default()
@@ -65,7 +147,30 @@ fn captured_length_and_live_reads_preserve_mutation_order() {
         "let a=[{toLocaleString:()=>{delete a[1];return 1;}},2];Array.prototype[1]=9;a.toLocaleString()==='1,9'",
     );
     assert_true(
-        "let log='',o={0:1};Object.defineProperty(o,'length',{get:()=>{log+='l';return {valueOf:()=>{log+='n';return 1;}};}});Object.defineProperty(o,'0',{get:()=>{log+='g';return 7;}});Array.prototype.toLocaleString.call(o)==='7' && log==='lng'",
+        r#"
+            let log = '',
+                o = {
+                    0: 1
+                };
+            Object.defineProperty(o, 'length', {
+                get: () => {
+                    log += 'l';
+                    return {
+                        valueOf: () => {
+                            log += 'n';
+                            return 1;
+                        }
+                    };
+                }
+            });
+            Object.defineProperty(o, '0', {
+                get: () => {
+                    log += 'g';
+                    return 7;
+                }
+            });
+            Array.prototype.toLocaleString.call(o) === '7' && log === 'lng'
+        "#,
     );
 }
 
@@ -116,7 +221,12 @@ fn generic_receivers_and_abrupt_operations_follow_the_specification() {
 #[test]
 fn metadata_nonconstructibility_and_collection_preserve_the_method() {
     assert_true(
-        "let f=Array.prototype.toLocaleString,d=Object.getOwnPropertyDescriptor(Array.prototype,'toLocaleString');f.name==='toLocaleString' && f.length===0 && f.prototype===undefined && d.value===f && d.writable && !d.enumerable && d.configurable",
+        r#"
+            let f = Array.prototype.toLocaleString,
+                d = Object.getOwnPropertyDescriptor(Array.prototype, 'toLocaleString');
+            f.name === 'toLocaleString' && f.length === 0 && f.prototype === undefined && d.value === f &&
+                d.writable && !d.enumerable && d.configurable
+        "#,
     );
     assert!(matches!(
         Realm::default().eval("new Array.prototype.toLocaleString"),

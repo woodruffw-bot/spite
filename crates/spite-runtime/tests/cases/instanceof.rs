@@ -65,16 +65,69 @@ fn arrow_and_bound_checks_use_callability_not_constructibility() {
     // 7.3.21 and 13.10.2: the intrinsic skips prototype access for a
     // primitive, while bound delegation still performs the live target lookup.
     truth(
-        "let pair=Proxy.revocable(function(){},{}),h=Function.prototype[Symbol.hasInstance];pair.revoke();let caught=false;try{0 instanceof pair.proxy}catch(e){caught=e instanceof TypeError}caught&&h.call(pair.proxy,0)===false",
+        r#"
+            let pair = Proxy.revocable(function() {}, {}),
+                h = Function.prototype[Symbol.hasInstance];
+            pair.revoke();
+            let caught = false;
+            try {
+                0 instanceof pair.proxy
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && h.call(pair.proxy, 0) === false
+        "#,
     );
     truth(
-        "let pair=Proxy.revocable(function(){},{}),bound=pair.proxy.bind(null),h=Function.prototype[Symbol.hasInstance];pair.revoke();let caught=false;try{h.call(bound,0)}catch(e){caught=e instanceof TypeError}caught",
+        r#"
+            let pair = Proxy.revocable(function() {}, {}),
+                bound = pair.proxy.bind(null),
+                h = Function.prototype[Symbol.hasInstance];
+            pair.revoke();
+            let caught = false;
+            try {
+                h.call(bound, 0)
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught
+        "#,
     );
     truth(
-        "let log='',pair=Proxy.revocable(function(){},{get(t,k,r){if(k===Symbol.hasInstance){log+='h';pair.revoke();return null}if(k==='prototype')throw 7;return Reflect.get(t,k,r)}});(0 instanceof pair.proxy)===false&&log==='h'",
+        r#"
+            let log = '',
+                pair = Proxy.revocable(function() {}, {
+                    get(t, k, r) {
+                        if (k === Symbol.hasInstance) {
+                            log += 'h';
+                            pair.revoke();
+                            return null
+                        }
+                        if (k === 'prototype') throw 7;
+                        return Reflect.get(t, k, r)
+                    }
+                });
+            (0 instanceof pair.proxy) === false && log === 'h'
+        "#,
     );
     truth(
-        "let log='',pair=Proxy.revocable(function(){},{get(t,k,r){if(k===Symbol.hasInstance){log+='h';pair.revoke();return null}if(k==='prototype')throw 7;return Reflect.get(t,k,r)}}),bound=pair.proxy.bind(null),h=Function.prototype[Symbol.hasInstance];h.call(bound,0)===false&&log==='h'",
+        r#"
+            let log = '',
+                pair = Proxy.revocable(function() {}, {
+                    get(t, k, r) {
+                        if (k === Symbol.hasInstance) {
+                            log += 'h';
+                            pair.revoke();
+                            return null
+                        }
+                        if (k === 'prototype') throw 7;
+                        return Reflect.get(t, k, r)
+                    }
+                }),
+                bound = pair.proxy.bind(null),
+                h = Function.prototype[Symbol.hasInstance];
+            h.call(bound, 0) === false && log === 'h'
+        "#,
     );
 }
 
@@ -104,7 +157,16 @@ fn inherited_intrinsic_has_instance_handles_non_callable_receivers() {
 #[test]
 fn both_operands_are_evaluated_before_the_right_operand_is_checked() {
     truth(
-        "let order='';let caught=false;try{(order+='l',1) instanceof (order+='r',2);}catch{caught=true;}caught && order==='lr'",
+        r#"
+            let order = '';
+            let caught = false;
+            try {
+                (order += 'l', 1) instanceof(order += 'r', 2);
+            } catch {
+                caught = true;
+            }
+            caught && order === 'lr'
+        "#,
     );
     truth(
         "let effect=0;function left(){throw 7;}try{left() instanceof (effect=1);}catch{}effect===0",

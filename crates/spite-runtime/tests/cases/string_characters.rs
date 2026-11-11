@@ -8,7 +8,10 @@ use crate::common::assert_true;
 #[test]
 fn code_unit_construction_uses_modulo_uint16_and_keeps_surrogates() {
     assert_true(
-        "String.fromCharCode()==='' && String.fromCharCode(65,66,67)==='ABC' && String.fromCharCode(0xD83D,0xDCA9)==='💩' && String.fromCharCode(0xD800)==='\\uD800'",
+        r#"
+            String.fromCharCode() === '' && String.fromCharCode(65, 66, 67) === 'ABC' && String
+                .fromCharCode(0xD83D, 0xDCA9) === '💩' && String.fromCharCode(0xD800) === '\uD800'
+        "#,
     );
     for (input, unit) in [
         ("undefined", 0),
@@ -42,7 +45,10 @@ fn code_unit_construction_uses_modulo_uint16_and_keeps_surrogates() {
 #[test]
 fn code_point_construction_accepts_surrogates_but_rejects_non_integral_or_out_of_range_values() {
     assert_true(
-        "String.fromCodePoint()==='' && String.fromCodePoint(65,0x1F4A9,0xD800)==='A💩\\uD800' && String.fromCodePoint(-0)==='\\u0000' && String.fromCodePoint('66')==='B'",
+        r#"
+            String.fromCodePoint() === '' && String.fromCodePoint(65, 0x1F4A9, 0xD800) === 'A💩\uD800' &&
+                String.fromCodePoint(-0) === '\u0000' && String.fromCodePoint('66') === 'B'
+        "#,
     );
     for (point, units) in [
         (0xffff, vec![0xffff]),
@@ -88,7 +94,25 @@ fn code_point_construction_accepts_surrogates_but_rejects_non_integral_or_out_of
 fn variadic_construction_converts_each_argument_once_and_stops_on_abrupt_completion() {
     for name in ["fromCharCode", "fromCodePoint"] {
         assert_true(&format!(
-            "let log='';let a={{valueOf:()=>{{log+='a';return 65;}},toString:()=>{{throw 1;}}}},b={{valueOf:()=>{{log+='b';return 66;}}}};String.{name}(a,b)==='AB' && log==='ab'"
+            r#"
+                let log = '';
+                let a = {{
+                        valueOf: () => {{
+                            log += 'a';
+                            return 65;
+                        }},
+                        toString: () => {{
+                            throw 1;
+                        }}
+                    }},
+                    b = {{
+                        valueOf: () => {{
+                            log += 'b';
+                            return 66;
+                        }}
+                    }};
+                String.{name}(a, b) === 'AB' && log === 'ab'
+            "#
         ));
         let mut realm = Realm::default();
         realm.eval("let log='',evaluated=0;let a={valueOf:()=>{log+='a';return 65;}},b={valueOf:()=>{log+='b';throw 9;}},c={valueOf:()=>{log+='c';return 67;}}").unwrap();
@@ -106,31 +130,52 @@ fn variadic_construction_converts_each_argument_once_and_stops_on_abrupt_complet
 #[test]
 fn indexed_methods_use_utf16_and_keep_distinct_out_of_range_results() {
     assert_true(
-        "'💩x'.at(0)==='\\uD83D' && '💩x'.at(1)==='\\uDCA9' && '💩x'.at(-1)==='x' && '💩x'.at(-2)==='\\uDCA9' && '💩x'.at(-3)==='\\uD83D'",
+        r#"
+            '💩x'.at(0) === '\uD83D' && '💩x'.at(1) === '\uDCA9' && '💩x'.at(-1) === 'x' && '💩x'.at(-
+                2) === '\uDCA9' && '💩x'.at(-3) === '\uD83D'
+        "#,
     );
     assert_true(
-        "'💩x'.charAt(0)==='\\uD83D' && '💩x'.charAt(1)==='\\uDCA9' && '💩x'.charCodeAt(0)===0xD83D && '💩x'.charCodeAt(1)===0xDCA9 && '💩x'.codePointAt(0)===0x1F4A9 && '💩x'.codePointAt(1)===0xDCA9",
+        r#"
+            '💩x'.charAt(0) === '\uD83D' && '💩x'.charAt(1) === '\uDCA9' && '💩x'.charCodeAt(0) ===
+                0xD83D && '💩x'.charCodeAt(1) === 0xDCA9 && '💩x'.codePointAt(0) === 0x1F4A9 && '💩x'
+                .codePointAt(1) === 0xDCA9
+        "#,
     );
     assert_true(
         "'\\uD800x'.codePointAt(0)===0xD800 && '\\uDC00\\uD800'.codePointAt(0)===0xDC00 && '\\uD800'.codePointAt(0)===0xD800",
     );
     for index in ["3", "4", "Infinity", "-Infinity", "-4"] {
         assert_true(&format!(
-            "'abc'.at({index})===undefined && 'abc'.charAt({index})==='' && Number.isNaN('abc'.charCodeAt({index})) && 'abc'.codePointAt({index})===undefined"
+            r#"
+                'abc'.at({index}) === undefined && 'abc'.charAt({index}) === '' && Number.isNaN(
+                    'abc'.charCodeAt({index})) && 'abc'.codePointAt({index}) === undefined
+            "#
         ));
     }
     assert_true(
-        "''.at()===undefined && ''.charAt()==='' && Number.isNaN(''.charCodeAt()) && ''.codePointAt()===undefined && 'abc'.charAt(-1)==='' && 'abc'.at(-1)==='c'",
+        r#"
+            ''.at() === undefined && ''.charAt() === '' && Number.isNaN(''.charCodeAt()) && ''
+            .codePointAt() === undefined && 'abc'.charAt(-1) === '' && 'abc'.at(-1) === 'c'
+        "#,
     );
     for index in ["undefined", "NaN", "null", "false", "-0", "-0.5"] {
         assert_true(&format!(
-            "'abc'.at({index})==='a' && 'abc'.charAt({index})==='a' && 'abc'.charCodeAt({index})===97 && 'abc'.codePointAt({index})===97"
+            r#"
+                'abc'.at({index}) === 'a' && 'abc'.charAt({index}) === 'a' && 'abc'.charCodeAt(
+                    {index}) === 97 && 'abc'.codePointAt({index}) === 97
+            "#
         ));
     }
     assert_true("'abc'.at(-1.9)==='c' && 'abc'.charAt(1.9)==='b' && 'abc'.charAt('2')==='c'");
     for unit in [97, 0x6f22, 0xd800, 0xdc00] {
         assert_true(&format!(
-            "let text=String.fromCharCode({unit});[undefined,NaN,null,false,0,-0,0.5,-0.5].every(i=>text.at(i)===text&&text.charAt(i)===text)&&text.at(-1)===text&&text.at(-1.9)===text&&text.charAt(-1)===''&&text.at(1)===undefined&&text.charAt(1)===''"
+            r#"
+                let text = String.fromCharCode({unit});
+                [undefined, NaN, null, false, 0, -0, 0.5, -0.5].every(i => text.at(i) === text && text.charAt(
+                        i) === text) && text.at(-1) === text && text.at(-1.9) === text && text.charAt(-1) ===
+                    '' && text.at(1) === undefined && text.charAt(1) === ''
+            "#
         ));
     }
     assert_true("'💩'.at(0).charCodeAt(0)===0xd83d&&'💩'.charAt(1).charCodeAt(0)===0xdca9");
@@ -173,7 +218,10 @@ fn character_methods_are_generic_and_convert_receivers_before_positions() {
         ));
     }
     assert_true(
-        "String.prototype.charAt.call(123,1)==='2' && String.prototype.charAt.call(123n,1)==='2' && String.prototype.at.call(true,-1)==='e' && new String('abc').charAt(2)==='c'",
+        r#"
+            String.prototype.charAt.call(123, 1) === '2' && String.prototype.charAt.call(123n, 1) ===
+                '2' && String.prototype.at.call(true, -1) === 'e' && new String('abc').charAt(2) === 'c'
+        "#,
     );
 }
 
@@ -188,7 +236,11 @@ fn methods_have_standard_metadata_and_survive_global_deletion() {
     ] {
         for name in names {
             assert_true(&format!(
-                "let d=Object.getOwnPropertyDescriptor({owner},'{name}');d.writable && !d.enumerable && d.configurable && d.value.name==='{name}' && d.value.length===1"
+                r#"
+                    let d = Object.getOwnPropertyDescriptor({owner}, '{name}');
+                    d.writable && !d.enumerable && d.configurable && d.value.name === '{name}' && d.value
+                        .length === 1
+                "#
             ));
             assert!(matches!(
                 Realm::default().eval(&format!("new {owner}.{name}()")),

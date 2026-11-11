@@ -7,19 +7,62 @@ use crate::common::assert_true;
 #[test]
 fn mixed_declarations_initialize_in_order_with_tdz_and_named_defaults() {
     assert_true(
-        "let a=2,{b=a+1,c=()=>b}={},[d=b+1,...rest]=[];a===2 && b===3 && c()===3 && c.name==='c' && d===4 && rest.length===0",
+        r#"
+            let a = 2,
+                {
+                    b = a + 1,
+                    c = () => b
+                } = {},
+                [d = b + 1, ...rest] = [];
+            a === 2 && b === 3 && c() === 3 && c.name === 'c' && d === 4 && rest.length === 0
+        "#,
     );
     assert_true(
-        "const fn=function(){},{a=(function(){}),b=(0,function(){})}={};fn.name==='fn' && a.name==='a' && b.name!== 'b'",
+        r#"
+            const fn = function() {},
+                {
+                    a = (function() {}),
+                    b = (0, function() {})
+                } = {};
+            fn.name === 'fn' && a.name === 'a' && b.name !== 'b'
+        "#,
     );
     assert_true(
-        "let calls=0;function fallback(){calls++;return 9;}let {a=fallback(),b=fallback(),c=fallback(),d=fallback()}={a:null,b:false,c:0};a===null && b===false && c===0 && d===9 && calls===1",
+        r#"
+            let calls = 0;
+
+            function fallback() {
+                calls++;
+                return 9;
+            }
+            let {
+                a = fallback(), b = fallback(), c = fallback(), d = fallback()
+            } = {
+                a: null,
+                b: false,
+                c: 0
+            };
+            a === null && b === false && c === 0 && d === 9 && calls === 1
+        "#,
     );
     assert_true(
         "let x=7,result;try{let {a=x,x=1}={};}catch(e){result=e instanceof ReferenceError;}result && x===7",
     );
     assert_true(
-        "let key='a',result;try{let {[key]:key}={a:1};}catch(e){result=e instanceof ReferenceError;}result && key==='a'",
+        r#"
+            let key = 'a',
+                result;
+            try {
+                let {
+                    [key]: key
+                } = {
+                    a: 1
+                };
+            } catch (e) {
+                result = e instanceof ReferenceError;
+            }
+            result && key === 'a'
+        "#,
     );
     assert_true("let result=false;with({x:9}) {let {x}={x:2};result=x===2;}result");
 }
@@ -27,13 +70,68 @@ fn mixed_declarations_initialize_in_order_with_tdz_and_named_defaults() {
 #[test]
 fn object_keys_and_rest_preserve_receivers_identity_and_live_descriptors() {
     assert_true(
-        "let log=[],key={[Symbol.toPrimitive](hint){log.push(hint);return 'a';}},source={get a(){log.push('get');return undefined;},get b(){log.push('b');return 7;}};function fallback(){log.push('default');return 3;}const {[key]:x=fallback(),b:y}=source;x+y===10 && log.join(',')==='string,get,default,b'",
+        r#"
+            let log = [],
+                key = {
+                    [Symbol.toPrimitive](hint) {
+                        log.push(hint);
+                        return 'a';
+                    }
+                },
+                source = {
+                    get a() {
+                        log.push('get');
+                        return undefined;
+                    },
+                    get b() {
+                        log.push('b');
+                        return 7;
+                    }
+                };
+
+            function fallback() {
+                log.push('default');
+                return 3;
+            }
+            const {
+                [key]: x = fallback(), b: y
+            } = source;
+            x + y === 10 && log.join(',') === 'string,get,default,b'
+        "#,
     );
     assert_true(
-        "let s=Symbol('x'),other=Symbol('x'),source={x:1,[s]:2,[other]:3};const {[s]:v,...rest}=source;v===2 && !(s in rest) && rest[other]===3 && rest.x===1 && Object.getPrototypeOf(rest)===Object.prototype",
+        r#"
+            let s = Symbol('x'),
+                other = Symbol('x'),
+                source = {
+                    x: 1,
+                    [s]: 2,
+                    [other]: 3
+                };
+            const {
+                [s]: v, ...rest
+            } = source;
+            v === 2 && !(s in rest) && rest[other] === 3 && rest.x === 1 && Object.getPrototypeOf(rest) ===
+                Object.prototype
+        "#,
     );
     assert_true(
-        "let source={get a(){delete source.b;source.c=3;return 1;},b:2};const {a,...rest}=source;a===1 && !('b' in rest) && rest.c===3 && Object.getOwnPropertyDescriptor(rest,'c').writable",
+        r#"
+            let source = {
+                get a() {
+                    delete source.b;
+                    source.c = 3;
+                    return 1;
+                },
+                b: 2
+            };
+            const {
+                a,
+                ...rest
+            } = source;
+            a === 1 && !('b' in rest) && rest.c === 3 && Object.getOwnPropertyDescriptor(rest, 'c')
+                .writable
+        "#,
     );
     assert_true(
         "Object.defineProperty(Number.prototype,'x',{get:function(){'use strict';return this;}});let {x}=7;x===7",
@@ -46,15 +144,77 @@ fn object_keys_and_rest_preserve_receivers_identity_and_live_descriptors() {
 #[test]
 fn arrays_use_iterators_skip_elision_values_and_close_after_partial_consumption() {
     assert_true(
-        "let steps=0,values=0,closed=0,iterator={next(){steps++;return{done:false,get value(){values++;return 7;}};},return(){closed++;return{};},[Symbol.iterator](){return this;}};const [,x,,]=iterator;x===7 && steps===3 && values===1 && closed===1",
+        r#"
+            let steps = 0,
+                values = 0,
+                closed = 0,
+                iterator = {
+                    next() {
+                        steps++;
+                        return {
+                            done: false,
+                            get value() {
+                                values++;
+                                return 7;
+                            }
+                        };
+                    },
+                    return () {
+                        closed++;
+                        return {};
+                    },
+                    [Symbol.iterator]() {
+                        return this;
+                    }
+                };
+            const [, x, , ] = iterator;
+            x === 7 && steps === 3 && values === 1 && closed === 1
+        "#,
     );
     assert_true(
-        "let closed=0,iterator={next(){throw 7;},return(){closed++;return{};},[Symbol.iterator](){return this;}};let []=iterator;closed===1",
+        r#"
+            let closed = 0,
+                iterator = {
+                    next() {
+                        throw 7;
+                    },
+                    return () {
+                        closed++;
+                        return {};
+                    },
+                    [Symbol.iterator]() {
+                        return this;
+                    }
+                };
+            let [] = iterator;
+            closed === 1
+        "#,
     );
     assert_true("const [first,...rest]='😀x';first==='😀' && rest.join('')==='x'");
     assert_true("let [a,b=2,...{0:c,length}]=[1,,3,4];a===1 && b===2 && c===3 && length===2");
     assert_true(
-        "let calls=0,iterator={next(){calls++;return{done:true,get value(){throw 7;}};},return(){throw 8;},[Symbol.iterator](){return this;}};const [,x=1,,y=x]=iterator;x===1 && y===1 && calls===1",
+        r#"
+            let calls = 0,
+                iterator = {
+                    next() {
+                        calls++;
+                        return {
+                            done: true,
+                            get value() {
+                                throw 7;
+                            }
+                        };
+                    },
+                    return () {
+                        throw 8;
+                    },
+                    [Symbol.iterator]() {
+                        return this;
+                    }
+                };
+            const [, x = 1, , y = x] = iterator;
+            x === 1 && y === 1 && calls === 1
+        "#,
     );
 }
 
@@ -74,13 +234,31 @@ fn immutable_patterns_and_function_arguments_shadowing_follow_declarations() {
 #[test]
 fn three_clause_loops_copy_every_let_name_and_restore_scope_on_all_exits() {
     assert_true(
-        "let fs=[];for(let [i]=[0],{j}={j:10};i<3;i++,j++)fs.push(()=>i+j);fs[0]()===10 && fs[1]()===12 && fs[2]()===14 && typeof i==='undefined' && typeof j==='undefined'",
+        r#"
+            let fs = [];
+            for (let [i] = [0], {
+                    j
+                } = {
+                    j: 10
+                }; i < 3; i++, j++) fs.push(() => i + j);
+            fs[0]() === 10 && fs[1]() === 12 && fs[2]() === 14 && typeof i === 'undefined' && typeof j ===
+                'undefined'
+        "#,
     );
     assert_true(
         "let initial,body;for(let [i=0,f=()=>i]=[];i<1;i++){initial=f;body=()=>i;}initial()===0 && body()===0",
     );
     assert_true(
-        "let i=9,result;try{for(let [i]=[j],j=1;false;) ;}catch(e){result=e instanceof ReferenceError;}result && i===9 && typeof j==='undefined'",
+        r#"
+            let i = 9,
+                result;
+            try {
+                for (let [i] = [j], j = 1; false;);
+            } catch (e) {
+                result = e instanceof ReferenceError;
+            }
+            result && i === 9 && typeof j === 'undefined'
+        "#,
     );
     assert_true(
         "let fs=[],n=0;for(const {x}={x:7};n<2;n++)fs.push(()=>x);fs[0]()===7 && fs[1]()===7",
@@ -100,20 +278,102 @@ fn in_and_of_patterns_have_rhs_tdz_fresh_scopes_and_nested_iterator_closing() {
         "let fs=[];for(let [x,y=x] of [[1],[2]]){y++;fs.push(()=>x+y);}fs[0]()===3 && fs[1]()===5",
     );
     assert_true(
-        "let fs=[];for(const [first,...rest] in {ab:1,cd:2})fs.push(()=>first+rest.join(''));fs[0]()==='ab' && fs[1]()==='cd'",
+        r#"
+            let fs = [];
+            for (const [first, ...rest] in {
+                    ab: 1,
+                    cd: 2
+                }) fs.push(() => first + rest.join(''));
+            fs[0]() === 'ab' && fs[1]() === 'cd'
+        "#,
     );
     assert_true(
         "let x=[],result;try{for(let [x] of x) ;}catch(e){result=e instanceof ReferenceError;}result && x.length===0",
     );
     assert_true(
-        "let key={},result;try{for(const {key} in key) ;}catch(e){result=e instanceof ReferenceError;}result && typeof key==='object'",
+        r#"
+            let key = {},
+                result;
+            try {
+                for (const {
+                        key
+                    }
+                    in key);
+            } catch (e) {
+                result = e instanceof ReferenceError;
+            }
+            result && typeof key === 'object'
+        "#,
     );
     assert_true("let count=0;for(const {} of [1,2])count++;for(let {} in null)count++;count===2");
     assert_true(
-        "let log=[],error={},x=9,result,inner={next(){return{done:false,value:undefined};},return(){log.push('inner');throw 8;},[Symbol.iterator](){return this;}},outer={next(){return{done:false,value:inner};},return(){log.push('outer');throw 7;},[Symbol.iterator](){return this;}};function fail(){throw error;}try{for(const [x=fail()] of outer) ;}catch(e){result=e===error;}result && x===9 && log.join(',')==='inner,outer'",
+        r#"
+            let log = [],
+                error = {},
+                x = 9,
+                result, inner = {
+                    next() {
+                        return {
+                            done: false,
+                            value: undefined
+                        };
+                    },
+                    return () {
+                        log.push('inner');
+                        throw 8;
+                    },
+                    [Symbol.iterator]() {
+                        return this;
+                    }
+                },
+                outer = {
+                    next() {
+                        return {
+                            done: false,
+                            value: inner
+                        };
+                    },
+                    return () {
+                        log.push('outer');
+                        throw 7;
+                    },
+                    [Symbol.iterator]() {
+                        return this;
+                    }
+                };
+
+            function fail() {
+                throw error;
+            }
+            try {
+                for (const [x = fail()] of outer);
+            } catch (e) {
+                result = e === error;
+            }
+            result && x === 9 && log.join(',') === 'inner,outer'
+        "#,
     );
     assert_true(
-        "let closed=0,outer={next(){return{done:false,value:[7]};},return(){closed++;return{};},[Symbol.iterator](){return this;}};for(let [x] of outer)break;closed===1 && typeof x==='undefined'",
+        r#"
+            let closed = 0,
+                outer = {
+                    next() {
+                        return {
+                            done: false,
+                            value: [7]
+                        };
+                    },
+                    return () {
+                        closed++;
+                        return {};
+                    },
+                    [Symbol.iterator]() {
+                        return this;
+                    }
+                };
+            for (let [x] of outer) break;
+            closed === 1 && typeof x === 'undefined'
+        "#,
     );
 }
 
@@ -182,7 +442,44 @@ fn opted_in_host_aborts_restore_loop_scopes_and_skip_javascript_cleanup() {
         max_steps: Some(5000),
         ..Limits::default()
     });
-    realm.eval("let flag=0,closed=0,inner={next(){return{done:false,value:1};},return(){closed++;return{};},[Symbol.iterator](){return this;}},outer={next(){return{done:false,value:inner};},return(){closed++;return{};},[Symbol.iterator](){return this;}};").unwrap();
+    realm
+        .eval(
+            r#"
+                let flag = 0,
+                    closed = 0,
+                    inner = {
+                        next() {
+                            return {
+                                done: false,
+                                value: 1
+                            };
+                        },
+                        return () {
+                            closed++;
+                            return {};
+                        },
+                        [Symbol.iterator]() {
+                            return this;
+                        }
+                    },
+                    outer = {
+                        next() {
+                            return {
+                                done: false,
+                                value: inner
+                            };
+                        },
+                        return () {
+                            closed++;
+                            return {};
+                        },
+                        [Symbol.iterator]() {
+                            return this;
+                        }
+                    };
+            "#,
+        )
+        .unwrap();
     assert!(matches!(
         realm.eval("try{for(let [...rest] of outer)flag=3;}catch{flag=1;}finally{flag=2;}"),
         Err(Error::Limit { .. })

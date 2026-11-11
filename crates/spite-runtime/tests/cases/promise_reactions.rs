@@ -17,7 +17,31 @@ fn drain(realm: &mut Realm) {
 #[test]
 fn pending_reactions_run_asynchronously_in_registration_order_and_append_children() {
     let mut realm = Realm::default();
-    realm.eval("let log='',resolve,p=new Promise(r=>{resolve=r}),a=p.then(function(v){'use strict';if(this!==undefined||arguments.length!==1||v!==7)throw 1;log+='a';return v+1});p.then(v=>{log+='b';return v});a.then(v=>{if(v!==8)throw 2;log+='c'});resolve(7);").unwrap();
+    realm
+        .eval(
+            r#"
+                let log = '',
+                    resolve, p = new Promise(r => {
+                        resolve = r
+                    }),
+                    a = p.then(function(v) {
+                        'use strict';
+                        if (this !== undefined || arguments.length !== 1 || v !== 7) throw 1;
+                        log += 'a';
+                        return v + 1
+                    });
+                p.then(v => {
+                    log += 'b';
+                    return v
+                });
+                a.then(v => {
+                    if (v !== 8) throw 2;
+                    log += 'c'
+                });
+                resolve(7);
+            "#,
+        )
+        .unwrap();
     assert_eq!(realm.eval("log"), Ok(Value::String("".into())));
     for expected in ["a", "ab", "abc"] {
         realm.collect(usize::MAX).unwrap();
@@ -36,7 +60,24 @@ fn pending_reactions_run_asynchronously_in_registration_order_and_append_childre
 #[test]
 fn absent_handlers_propagate_values_and_reasons_and_catch_recovers() {
     let mut realm = Realm::default();
-    realm.eval("let seen=[],marker={};Promise.reject(marker).then(null,false).catch(e=>{if(e!==marker)throw 1;seen.push('r');return 3}).then(v=>{seen.push(v)});Promise.resolve(9).then(1,2).then(v=>{seen.push(v)});").unwrap();
+    realm
+        .eval(
+            r#"
+                let seen = [],
+                    marker = {};
+                Promise.reject(marker).then(null, false).catch(e => {
+                    if (e !== marker) throw 1;
+                    seen.push('r');
+                    return 3
+                }).then(v => {
+                    seen.push(v)
+                });
+                Promise.resolve(9).then(1, 2).then(v => {
+                    seen.push(v)
+                });
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     assert_eq!(
         realm.eval("seen.join(',')"),
@@ -50,10 +91,70 @@ fn absent_handlers_propagate_values_and_reasons_and_catch_recovers() {
 #[test]
 fn branding_precedes_hooks_and_species_construction_can_settle_the_parent() {
     assert_true(
-        "let then=Promise.prototype.then,traps=0,fake=Object.create(Promise.prototype),proxy=new Proxy(Promise.resolve(1),{get(){traps++;throw 1}});Object.defineProperty(fake,'constructor',{get(){traps++;throw 2}});let caught=0;for(const value of [undefined,null,1,{},fake,proxy]){try{then.call(value)}catch(e){if(e instanceof TypeError)caught++}}caught===6&&traps===0",
+        r#"
+            let then = Promise.prototype.then,
+                traps = 0,
+                fake = Object.create(Promise.prototype),
+                proxy = new Proxy(Promise.resolve(1), {
+                    get() {
+                        traps++;
+                        throw 1
+                    }
+                });
+            Object.defineProperty(fake, 'constructor', {
+                get() {
+                    traps++;
+                    throw 2
+                }
+            });
+            let caught = 0;
+            for (const value of [undefined, null, 1, {}, fake, proxy]) {
+                try {
+                    then.call(value)
+                } catch (e) {
+                    if (e instanceof TypeError) caught++
+                }
+            }
+            caught === 6 && traps === 0
+        "#,
     );
     let mut realm = Realm::default();
-    assert_eq!(realm.eval("let log='',resolve,p=new Promise(r=>{resolve=r}),result={};function C(executor){log+='c';resolve(7);executor(function(v){'use strict';if(this!==undefined||arguments.length!==1||v!==8)throw 1;log+='r8'},()=>{throw 2});return result}p.constructor={get [Symbol.species](){log+='s';return C}};let out=p.then(v=>{log+='h';return v+1});out===result&&log==='sc'"),Ok(Value::Boolean(true)));
+    assert_eq!(
+        realm.eval(
+            r#"
+                let log = '',
+                    resolve, p = new Promise(r => {
+                        resolve = r
+                    }),
+                    result = {};
+
+                function C(executor) {
+                    log += 'c';
+                    resolve(7);
+                    executor(function(v) {
+                        'use strict';
+                        if (this !== undefined || arguments.length !== 1 || v !== 8) throw 1;
+                        log += 'r8'
+                    }, () => {
+                        throw 2
+                    });
+                    return result
+                }
+                p.constructor = {
+                    get [Symbol.species]() {
+                        log += 's';
+                        return C
+                    }
+                };
+                let out = p.then(v => {
+                    log += 'h';
+                    return v + 1
+                });
+                out === result && log === 'sc'
+            "#
+        ),
+        Ok(Value::Boolean(true))
+    );
     drain(&mut realm);
     assert_eq!(realm.eval("log"), Ok(Value::String("schr8".into())));
 }
@@ -61,10 +162,40 @@ fn branding_precedes_hooks_and_species_construction_can_settle_the_parent() {
 #[test]
 fn child_self_resolution_rejects_and_custom_resolver_throws_are_reported() {
     let mut realm = Realm::default();
-    realm.eval("let child,caught=false;child=Promise.resolve(1).then(()=>child);child.catch(e=>{caught=e instanceof TypeError});").unwrap();
+    realm
+        .eval(
+            r#"
+                let child, caught = false;
+                child = Promise.resolve(1).then(() => child);
+                child.catch(e => {
+                    caught = e instanceof TypeError
+                });
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     assert_eq!(realm.eval("caught"), Ok(Value::Boolean(true)));
-    realm.eval("let marker={},rejected=false,p=Promise.resolve(1);function C(executor){executor(()=>{throw marker},()=>{rejected=true})}p.constructor={[Symbol.species]:C};p.then(()=>2);").unwrap();
+    realm
+        .eval(
+            r#"
+                let marker = {},
+                    rejected = false,
+                    p = Promise.resolve(1);
+
+                function C(executor) {
+                    executor(() => {
+                        throw marker
+                    }, () => {
+                        rejected = true
+                    })
+                }
+                p.constructor = {
+                    [Symbol.species]: C
+                };
+                p.then(() => 2);
+            "#,
+        )
+        .unwrap();
     let PromiseJobOutcome::Reported(Error::Thrown(value)) = realm.run_next_promise_job().unwrap()
     else {
         panic!("reported resolver throw")
@@ -76,7 +207,30 @@ fn child_self_resolution_rejects_and_custom_resolver_throws_are_reported() {
 #[test]
 fn pending_and_queued_reaction_captures_survive_collection_and_release_after_execution() {
     let mut realm = Realm::default();
-    realm.eval("let calls=0,state=(()=>{let value={},symbol=Symbol(),resolve,p=new Promise(r=>{resolve=r});p.then(()=>{calls++;return[value,symbol]});return{p,resolve,object:new WeakRef(value),symbol:new WeakRef(symbol)}})();").unwrap();
+    realm
+        .eval(
+            r#"
+                let calls = 0,
+                    state = (() => {
+                        let value = {},
+                            symbol = Symbol(),
+                            resolve, p = new Promise(r => {
+                                resolve = r
+                            });
+                        p.then(() => {
+                            calls++;
+                            return [value, symbol]
+                        });
+                        return {
+                            p,
+                            resolve,
+                            object: new WeakRef(value),
+                            symbol: new WeakRef(symbol)
+                        }
+                    })();
+            "#,
+        )
+        .unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
     assert_eq!(
@@ -106,12 +260,24 @@ fn queued_reaction_arguments_keep_weak_map_keys_and_values_alive_until_execution
             // cannot retain the key/value independently of the queued argument.
             realm
                 .eval(&format!(
-                    "let observed=false,state={{map:new WeakMap()}};\
-                     function observe(argument){{observed=argument===state.key.deref()&&\
-                     state.map.get(argument)===state.value.deref()}}\
-                     (()=>{{const key={key},value={{}};state.key=new WeakRef(key);\
-                     state.value=new WeakRef(value);state.map.set(key,value);\
-                     Promise.{settle}(key).then(observe,observe)}})()"
+                    r#"
+                        let observed = false,
+                            state = {{
+                                map: new WeakMap()
+                            }};
+
+                        function observe(argument) {{
+                            observed = argument === state.key.deref() && state.map.get(argument) === state.value
+                            .deref()
+                        }}(() => {{
+                            const key = {key},
+                                value = {{}};
+                            state.key = new WeakRef(key);
+                            state.value = new WeakRef(value);
+                            state.map.set(key, value);
+                            Promise.{settle}(key).then(observe, observe)
+                        }})()
+                    "#
                 ))
                 .unwrap();
             realm.clear_kept_objects().unwrap();

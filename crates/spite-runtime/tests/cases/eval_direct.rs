@@ -17,7 +17,17 @@ fn direct_reference_forms_use_caller_bindings_after_all_argument_effects() {
         "let x=1;function f(){let x=7;with({eval:globalThis.eval}){return eval('x')===7;}}f()",
     );
     assert_true(
-        "let x=1;function f(){let x=7,indirect=eval;return indirect('x')===1 && globalThis.eval('x')===1 && eval?.('x')===1 && eval('x')===7;}f()",
+        r#"
+            let x = 1;
+
+            function f() {
+                let x = 7,
+                    indirect = eval;
+                return indirect('x') === 1 && globalThis.eval('x') === 1 && eval?.('x') === 1 && eval(
+                    'x') === 7;
+            }
+            f()
+        "#,
     );
     assert_true("eval('')===undefined && eval('/*comment*/')===undefined && eval('1;var x;')===1");
 }
@@ -29,12 +39,33 @@ fn regexp_flag_early_errors_throw_before_eval_effects_and_pattern_gaps_remain_ho
     );
     for flags in ["G", "gig", "uv", "vu"] {
         assert_true(&format!(
-            "let effects=0,caught=false;try{{eval('effects=1; /./{flags};');}}catch(e){{caught=e instanceof SyntaxError;}}caught && effects===0"
+            r#"
+                let effects = 0,
+                    caught = false;
+                try {{
+                    eval('effects=1; /./{flags};');
+                }} catch (e) {{
+                    caught = e instanceof SyntaxError;
+                }}
+                caught && effects === 0
+            "#
         ));
     }
     let mut realm = Realm::default();
     realm.eval("var marker=0;").unwrap();
-    realm.eval("try{eval('marker=1; /(?:(?:((?:(?:.a*b*){2}){2}){2}){2})|){2,3}/g.test(0);');}catch{marker=2;}finally{marker=3;}").unwrap();
+    realm
+        .eval(
+            r#"
+                try {
+                    eval('marker=1; /(?:(?:((?:(?:.a*b*){2}){2}){2}){2})|){2,3}/g.test(0);');
+                } catch {
+                    marker = 2;
+                } finally {
+                    marker = 3;
+                }
+            "#,
+        )
+        .unwrap();
     assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)));
 }
 
@@ -54,7 +85,16 @@ fn regexp_pattern_early_errors_throw_before_eval_effects_without_catching_host_g
         "(?<42>a)",
     ] {
         assert_true(&format!(
-            "let effects=0,caught=false;try{{eval('effects=1; /{pattern}/;');}}catch(e){{caught=e instanceof SyntaxError;}}caught && effects===0"
+            r#"
+                let effects = 0,
+                    caught = false;
+                try {{
+                    eval('effects=1; /{pattern}/;');
+                }} catch (e) {{
+                    caught = e instanceof SyntaxError;
+                }}
+                caught && effects === 0
+            "#
         ));
     }
     for pattern in [
@@ -74,7 +114,16 @@ fn unicode_class_errors_precede_eval_effects_and_valid_unions_execute() {
     for pattern in ["[z-a]", r"[^\q{}]", r"[a-\d]", "[!!]", "[a&&]", "[a&&b--c]"] {
         let code = format!("effects=1; /{pattern}/v;");
         assert_true(&format!(
-            "let effects=0,caught=false;try{{eval({code:?});}}catch(e){{caught=e instanceof SyntaxError;}}caught && effects===0"
+            r#"
+                let effects = 0,
+                    caught = false;
+                try {{
+                    eval({code:?});
+                }} catch (e) {{
+                    caught = e instanceof SyntaxError;
+                }}
+                caught && effects === 0
+            "#
         ));
     }
     for (pattern, input, expected) in [
@@ -88,7 +137,18 @@ fn unicode_class_errors_precede_eval_effects_and_valid_unions_execute() {
     ] {
         let code = format!("marker=1; /{pattern}/v.test('{input}');");
         assert_true(&format!(
-            "let marker=0,result;try{{result=eval({code:?})}}catch{{marker=2}}finally{{marker=3}}marker===3&&result==={expected}"
+            r#"
+                let marker = 0,
+                    result;
+                try {{
+                    result = eval({code:?})
+                }} catch {{
+                    marker = 2
+                }} finally {{
+                    marker = 3
+                }}
+                marker === 3 && result === {expected}
+            "#
         ));
     }
     {
@@ -119,7 +179,16 @@ fn unicode_property_errors_precede_eval_effects_and_valid_patterns_execute() {
     ] {
         let code = format!("effects=1; /{pattern}/{flags};");
         assert_true(&format!(
-            "let effects=0,caught=false;try{{eval({code:?});}}catch(e){{caught=e instanceof SyntaxError;}}caught && effects===0"
+            r#"
+                let effects = 0,
+                    caught = false;
+                try {{
+                    eval({code:?});
+                }} catch (e) {{
+                    caught = e instanceof SyntaxError;
+                }}
+                caught && effects === 0
+            "#
         ));
     }
     for (pattern, flags, expected) in [
@@ -128,7 +197,18 @@ fn unicode_property_errors_precede_eval_effects_and_valid_patterns_execute() {
     ] {
         let code = format!("marker=1; /{pattern}/{flags}.test('a');");
         assert_true(&format!(
-            "let marker=0,result;try{{result=eval({code:?})}}catch{{marker=2}}finally{{marker=3}}marker===3&&result==={expected}"
+            r#"
+                let marker = 0,
+                    result;
+                try {{
+                    result = eval({code:?})
+                }} catch {{
+                    marker = 2
+                }} finally {{
+                    marker = 3
+                }}
+                marker === 3 && result === {expected}
+            "#
         ));
     }
     for (pattern, flags, expected) in [
@@ -155,7 +235,25 @@ fn sloppy_declarations_enter_the_caller_variable_environment_and_are_deletable()
         "var x;x=(delete x,7);x===7&&delete x",
         "var x=3;x+=(delete x,4);x===7&&delete x",
         "var x=undefined;x??=(delete x,7);x===7&&delete x",
-        "var x=3;function remove(){return delete x;}function assign(){'use strict';x=remove();}var caught=false;try{assign()}catch(e){caught=e instanceof ReferenceError}caught&&x===19",
+        r#"
+            var x = 3;
+
+            function remove() {
+                return delete x;
+            }
+
+            function assign() {
+                'use strict';
+                x = remove();
+            }
+            var caught = false;
+            try {
+                assign()
+            } catch (e) {
+                caught = e instanceof ReferenceError
+            }
+            caught && x === 19
+        "#,
     ] {
         assert_true(&format!(
             "let x=19;function f(){{return eval({body:?})}}f()&&x===19&&!Object.hasOwn(globalThis,'x')"
@@ -164,33 +262,89 @@ fn sloppy_declarations_enter_the_caller_variable_environment_and_are_deletable()
     // Destructuring resolves the target after evaluating its RHS, so deletion
     // deliberately exposes the outer binding instead of recreating the old one.
     assert_true(
-        "let x=19;function f(){return eval('var x;var [x]=(delete x,[7]);x===7&&!delete x')}f()&&x===7&&!Object.hasOwn(globalThis,'x')",
+        r#"
+            let x = 19;
+
+            function f() {
+                return eval('var x;var [x]=(delete x,[7]);x===7&&!delete x')
+            }
+            f() && x === 7 && !Object.hasOwn(globalThis, 'x')
+        "#,
     );
     assert_true(
-        "function f(){eval('var x=7;function g(){return x;}function g(){return x+1;}');return x===7 && g()===8 && delete x && delete g && typeof x==='undefined' && typeof g==='undefined';}f() && typeof x==='undefined' && typeof g==='undefined'",
+        r#"
+            function f() {
+                eval('var x=7;function g(){return x;}function g(){return x+1;}');
+                return x === 7 && g() === 8 && delete x && delete g && typeof x === 'undefined' &&
+                    typeof g === 'undefined';
+            }
+            f() && typeof x === 'undefined' && typeof g === 'undefined'
+        "#,
     );
     assert_true(
         "function f(){var x=3;eval('var x;function g(){return 7;}');return x===3 && !delete x && delete g;}f()",
     );
     assert_true(
-        "function f(x){eval('var x=7;');if(arguments[0]!==7 || delete x)return false;eval('function x(){return 9;}');return x()===9 && arguments[0]===x && !delete x;}f(3)",
+        r#"
+            function f(x) {
+                eval('var x=7;');
+                if (arguments[0] !== 7 || delete x) return false;
+                eval('function x(){return 9;}');
+                return x() === 9 && arguments[0] === x && !delete x;
+            }
+            f(3)
+        "#,
     );
     assert_true("let x=19;function f(){eval('var x=7;');return x===7;}f() && x===19");
     assert_true(
-        "eval('var x=7;function g(){return x;}');Object.getOwnPropertyDescriptor(globalThis,'x').configurable && delete g && delete x",
+        r#"
+            eval('var x=7;function g(){return x;}');
+            Object.getOwnPropertyDescriptor(globalThis, 'x').configurable && delete g && delete x
+        "#,
     );
 }
 
 #[test]
 fn eval_lexicals_are_fresh_with_tdz_and_function_closures_capture_them() {
     assert_true(
-        "function f(){let x=19;eval('let x=7;const y=2;function saved(){return x+y;}');eval('let x=33;');return x===19 && saved()===9 && typeof y==='undefined';}f()",
+        r#"
+            function f() {
+                let x = 19;
+                eval('let x=7;const y=2;function saved(){return x+y;}');
+                eval('let x=33;');
+                return x === 19 && saved() === 9 && typeof y === 'undefined';
+            }
+            f()
+        "#,
     );
     assert_true(
-        "function f(){let x=7,caught=false;try{eval('x;let x;');}catch(e){caught=e instanceof ReferenceError;}return caught && x===7;}f()",
+        r#"
+            function f() {
+                let x = 7,
+                    caught = false;
+                try {
+                    eval('x;let x;');
+                } catch (e) {
+                    caught = e instanceof ReferenceError;
+                }
+                return caught && x === 7;
+            }
+            f()
+        "#,
     );
     assert_true(
-        "function f(){let caught=false;try{eval('const x=7;x=9;');}catch(e){caught=e instanceof TypeError;}return caught && typeof x==='undefined';}f()",
+        r#"
+            function f() {
+                let caught = false;
+                try {
+                    eval('const x=7;x=9;');
+                } catch (e) {
+                    caught = e instanceof TypeError;
+                }
+                return caught && typeof x === 'undefined';
+            }
+            f()
+        "#,
     );
     assert_true("function f(){let x=7;return eval('let x=9;()=>x')()===9 && x===7;}f()");
 }
@@ -203,14 +357,50 @@ fn lexical_conflicts_are_checked_before_declarations_and_effects() {
         "var fresh;{var x;}",
     ] {
         assert_true(&format!(
-            "function f(){{let x=7,caught=false;try{{eval('{body}globalThis.effect=9;');}}catch(e){{caught=e instanceof SyntaxError;}}return caught && typeof fresh==='undefined' && !('effect' in globalThis);}}f()"
+            r#"
+                function f() {{
+                    let x = 7,
+                        caught = false;
+                    try {{
+                        eval('{body}globalThis.effect=9;');
+                    }} catch (e) {{
+                        caught = e instanceof SyntaxError;
+                    }}
+                    return caught && typeof fresh === 'undefined' && !('effect' in globalThis);
+                }}
+                f()
+            "#
         ));
     }
     assert_true(
-        "let caught=false;{let x=7;try{eval('var x;');}catch(e){caught=e instanceof SyntaxError;}}caught && !('x' in globalThis)",
+        r#"
+            let caught = false;
+            {
+                let x = 7;
+                try {
+                    eval('var x;');
+                } catch (e) {
+                    caught = e instanceof SyntaxError;
+                }
+            }
+            caught && !('x' in globalThis)
+        "#,
     );
     assert_true(
-        "function f(){try{throw 7;}catch(x){try{eval('var fresh;var x;');}catch(e){return e instanceof SyntaxError && typeof fresh==='undefined' && x===7;}}}f()",
+        r#"
+            function f() {
+                try {
+                    throw 7;
+                } catch (x) {
+                    try {
+                        eval('var fresh;var x;');
+                    } catch (e) {
+                        return e instanceof SyntaxError && typeof fresh === 'undefined' && x === 7;
+                    }
+                }
+            }
+            f()
+        "#,
     );
     assert_true(
         "function f(){try{eval('var x;');}catch(e){return e instanceof SyntaxError;}let x;}f()",
@@ -220,20 +410,68 @@ fn lexical_conflicts_are_checked_before_declarations_and_effects() {
 #[test]
 fn with_environments_are_skipped_for_conflicts_and_initializers_resolve_live() {
     assert_true(
-        "function f(){let object={x:3};with(object){eval('var x=7;function g(){return x;}');}return object.x===7 && x===undefined && g()===7 && delete x && delete g;}f()",
+        r#"
+            function f() {
+                let object = {
+                    x: 3
+                };
+                with(object) {
+                    eval('var x=7;function g(){return x;}');
+                }
+                return object.x === 7 && x === undefined && g() === 7 && delete x && delete g;
+            }
+            f()
+        "#,
     );
     assert_true(
-        "function f(){let count=0,object={get x(){count++;return 3;}};with(object){eval('var x;');}return count===0 && x===undefined && delete x;}f()",
+        r#"
+            function f() {
+                let count = 0,
+                    object = {
+                        get x() {
+                            count++;
+                            return 3;
+                        }
+                    };
+                with(object) {
+                    eval('var x;');
+                }
+                return count === 0 && x === undefined && delete x;
+            }
+            f()
+        "#,
     );
     assert_true(
-        "function f(){let object={x:3,[Symbol.unscopables]:{x:true}};with(object){eval('var x=7;');}return object.x===3 && x===7;}f()",
+        r#"
+            function f() {
+                let object = {
+                    x: 3,
+                    [Symbol.unscopables]: {
+                        x: true
+                    }
+                };
+                with(object) {
+                    eval('var x=7;');
+                }
+                return object.x === 3 && x === 7;
+            }
+            f()
+        "#,
     );
 }
 
 #[test]
 fn strictness_is_inherited_and_eval_vars_remain_local() {
     assert_true(
-        r#"function f(){'use strict';let x=19;let read=eval('var x=7;function g(){return x;}g;');return x===19 && read()===7 && typeof g==='undefined';}f()"#,
+        r#"
+            function f() {
+                'use strict';
+                let x = 19;
+                let read = eval('var x=7;function g(){return x;}g;');
+                return x === 19 && read() === 7 && typeof g === 'undefined';
+            }
+            f()
+        "#,
     );
     assert_true(
         r#"function f(){let x=19;let read=eval('"use strict";var x=7;()=>x;');return x===19 && read()===7;}f()"#,
@@ -247,12 +485,36 @@ fn strictness_is_inherited_and_eval_vars_remain_local() {
         "delete x;",
     ] {
         assert_true(&format!(
-            "function f(){{'use strict';let caught=false;try{{eval({body:?});}}catch(e){{caught=e instanceof SyntaxError;}}return caught;}}f()"
+            r#"
+                function f() {{
+                    'use strict';
+                    let caught = false;
+                    try {{
+                        eval({body:?});
+                    }} catch (e) {{
+                        caught = e instanceof SyntaxError;
+                    }}
+                    return caught;
+                }}
+                f()
+            "#
         ));
     }
     assert_true(r#"function f(){'use strict';return eval('this')===undefined;}f()"#);
     assert_true(
-        r#"function f(){'use strict';let caught=false;try{eval('missing=7;');}catch(e){caught=e instanceof ReferenceError;}return caught && typeof missing==='undefined';}f()"#,
+        r#"
+            function f() {
+                'use strict';
+                let caught = false;
+                try {
+                    eval('missing=7;');
+                } catch (e) {
+                    caught = e instanceof ReferenceError;
+                }
+                return caught && typeof missing === 'undefined';
+            }
+            f()
+        "#,
     );
 }
 
@@ -280,7 +542,16 @@ fn parameter_default_eval_uses_separate_parameter_and_body_environments() {
     );
     assert_true("function f(a=7,b=eval('a=9;')){var a;return a===9;}f()");
     assert_true(
-        "function f(a=eval('var arguments;')){}let caught=false;try{f();}catch(e){caught=e instanceof SyntaxError;}caught",
+        r#"
+            function f(a = eval('var arguments;')) {}
+            let caught = false;
+            try {
+                f();
+            } catch (e) {
+                caught = e instanceof SyntaxError;
+            }
+            caught
+        "#,
     );
     assert_true("function f(...x){eval('var x;');return x[0]===7 && !delete x;}f(7)");
 }
@@ -291,7 +562,13 @@ fn this_and_new_target_follow_the_nearest_non_arrow_function() {
         "let object={x:7,m(){return eval('this.x')===7 && eval('new.target')===undefined;}};object.m()",
     );
     assert_true(
-        "function F(){this.ok=eval('new.target')===F && eval('(()=>new.target)()')===F && (()=>eval('new.target'))()===F;}new F().ok",
+        r#"
+            function F() {
+                this.ok = eval('new.target') === F && eval('(()=>new.target)()') === F && (() => eval(
+                    'new.target'))() === F;
+            }
+            new F().ok
+        "#,
     );
     assert_true(
         "function f(){return eval('new.target')===undefined && (()=>eval('new.target'))()===undefined;}f()",
@@ -333,19 +610,78 @@ fn method_super_context_is_inherited_only_through_arrows() {
 #[test]
 fn nested_eval_and_abrupt_completions_restore_caller_context() {
     assert_true(
-        r#"function f(){let x=7;eval('eval("var y=9;");');return x===7 && y===9 && delete y;}f() && typeof y==='undefined'"#,
+        r#"
+            function f() {
+                let x = 7;
+                eval('eval("var y=9;");');
+                return x === 7 && y === 9 && delete y;
+            }
+            f() && typeof y === 'undefined'
+        "#,
     );
     assert_true(
-        r#"function f(){'use strict';let x=7;try{eval('throw 9;');}catch(e){if(e!==9)return false;}let caught=false;try{missing=1;}catch(e){caught=e instanceof ReferenceError;}return caught && x===7;}f()"#,
+        r#"
+            function f() {
+                'use strict';
+                let x = 7;
+                try {
+                    eval('throw 9;');
+                } catch (e) {
+                    if (e !== 9) return false;
+                }
+                let caught = false;
+                try {
+                    missing = 1;
+                } catch (e) {
+                    caught = e instanceof ReferenceError;
+                }
+                return caught && x === 7;
+            }
+            f()
+        "#,
     );
     assert_true(
-        r#"function f(){let x=7;try{eval('"use strict";throw 9;');}catch(e){if(e!==9)return false;}eval('var y=3;');return x===7 && y===3 && delete y;}f()"#,
+        r#"
+            function f() {
+                let x = 7;
+                try {
+                    eval('"use strict";throw 9;');
+                } catch (e) {
+                    if (e !== 9) return false;
+                }
+                eval('var y=3;');
+                return x === 7 && y === 3 && delete y;
+            }
+            f()
+        "#,
     );
     assert_true(
-        "function f(){let saved;try{eval('let x=7;saved=()=>x;throw 9;');}catch(e){if(e!==9)return false;}return saved;}f()()===7",
+        r#"
+            function f() {
+                let saved;
+                try {
+                    eval('let x=7;saved=()=>x;throw 9;');
+                } catch (e) {
+                    if (e !== 9) return false;
+                }
+                return saved;
+            }
+            f()() === 7
+        "#,
     );
     assert_true(
-        "function f(){let caught=false;try{eval('var effect=7;throw 9;');}catch(e){caught=e===9;}return caught && effect===7;}f()",
+        r#"
+            function f() {
+                let caught = false;
+                try {
+                    eval('var effect=7;throw 9;');
+                } catch (e) {
+                    caught = e === 9;
+                }
+                return caught && effect === 7;
+            }
+            f()
+        "#,
     );
 }
 

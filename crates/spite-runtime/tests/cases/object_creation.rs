@@ -20,7 +20,18 @@ fn type_error(source: &str) {
 #[test]
 fn create_uses_exact_prototype_identity_without_calling_or_coercing_it() {
     assert_true(
-        "let p={x:1,valueOf:()=>{throw 1;}};let a=Object.create(p),b=Object.create(p);a!==b && a.x===1 && !Object.hasOwn(a,'x') && Object.getPrototypeOf(a)===p && Object.isExtensible(a)",
+        r#"
+            let p = {
+                x: 1,
+                valueOf: () => {
+                    throw 1;
+                }
+            };
+            let a = Object.create(p),
+                b = Object.create(p);
+            a !== b && a.x === 1 && !Object.hasOwn(a, 'x') && Object.getPrototypeOf(a) === p && Object
+                .isExtensible(a)
+        "#,
     );
     assert_true(
         "let o=Object.create(null);Object.getPrototypeOf(o)===null && !('constructor' in o) && !('toString' in o)",
@@ -29,7 +40,21 @@ fn create_uses_exact_prototype_identity_without_calling_or_coercing_it() {
         "let F=function(){throw 1;};let o=Object.create(F);Object.getPrototypeOf(o)===F && typeof o==='object'",
     );
     assert_true(
-        "let p={},o=Object.create(p,{x:{value:3},y:{get:function(){return this;}}});o.x===3 && o.y===o && !Object.getOwnPropertyDescriptor(o,'x').writable && Object.getPrototypeOf(o)===p",
+        r#"
+            let p = {},
+                o = Object.create(p, {
+                    x: {
+                        value: 3
+                    },
+                    y: {
+                        get: function() {
+                            return this;
+                        }
+                    }
+                });
+            o.x === 3 && o.y === o && !Object.getOwnPropertyDescriptor(o, 'x').writable && Object
+                .getPrototypeOf(o) === p
+        "#,
     );
     assert_true(
         "let o=Object.create(null,{['__proto__']:{value:7}});o.__proto__===7 && Object.getPrototypeOf(o)===null",
@@ -46,7 +71,45 @@ fn create_uses_exact_prototype_identity_without_calling_or_coercing_it() {
 #[test]
 fn definitions_snapshot_numeric_then_string_keys_and_ignore_inherited_or_hidden_fields() {
     let mut realm = Realm::default();
-    let Value::Object(object)=realm.eval("let log='',props={__proto__:{inherited:null}};function add(k){Object.defineProperty(props,k,{get:()=>{log+=k+':';return {value:k};},enumerable:true});}add('b');add('10');add('2');add('a');add('0');Object.defineProperty(props,'hidden',{get:()=>{throw 1;}});let o={};Object.defineProperties(o,props)").unwrap() else {panic!("target");};
+    let Value::Object(object) = realm
+        .eval(
+            r#"
+                let log = '',
+                    props = {
+                        __proto__: {
+                            inherited: null
+                        }
+                    };
+
+                function add(k) {
+                    Object.defineProperty(props, k, {
+                        get: () => {
+                            log += k + ':';
+                            return {
+                                value: k
+                            };
+                        },
+                        enumerable: true
+                    });
+                }
+                add('b');
+                add('10');
+                add('2');
+                add('a');
+                add('0');
+                Object.defineProperty(props, 'hidden', {
+                    get: () => {
+                        throw 1;
+                    }
+                });
+                let o = {};
+                Object.defineProperties(o, props)
+            "#,
+        )
+        .unwrap()
+    else {
+        panic!("target");
+    };
     assert_eq!(
         realm.inspect_object(&object).unwrap().own_keys(),
         ["0", "2", "10", "b", "a"].map(spite_core::PropertyKey::from)
@@ -58,17 +121,75 @@ fn definitions_snapshot_numeric_then_string_keys_and_ignore_inherited_or_hidden_
         Ok(Value::Boolean(true))
     );
     assert_true(
-        "let props={};Object.defineProperty(props,'a',{get:()=>{delete props.b;props.c={value:3};return {value:1};},enumerable:true});props.b={value:2};let o={};Object.defineProperties(o,props);o.a===1 && !Object.hasOwn(o,'b') && !Object.hasOwn(o,'c')",
+        r#"
+            let props = {};
+            Object.defineProperty(props, 'a', {
+                get: () => {
+                    delete props.b;
+                    props.c = {
+                        value: 3
+                    };
+                    return {
+                        value: 1
+                    };
+                },
+                enumerable: true
+            });
+            props.b = {
+                value: 2
+            };
+            let o = {};
+            Object.defineProperties(o, props);
+            o.a === 1 && !Object.hasOwn(o, 'b') && !Object.hasOwn(o, 'c')
+        "#,
     );
     assert_true(
-        "let props={};Object.defineProperty(props,'a',{get:()=>{Object.defineProperty(props,'b',{enumerable:false});return {value:1};},enumerable:true});props.b=null;let o={};Object.defineProperties(o,props);o.a===1 && !Object.hasOwn(o,'b')",
+        r#"
+            let props = {};
+            Object.defineProperty(props, 'a', {
+                get: () => {
+                    Object.defineProperty(props, 'b', {
+                        enumerable: false
+                    });
+                    return {
+                        value: 1
+                    };
+                },
+                enumerable: true
+            });
+            props.b = null;
+            let o = {};
+            Object.defineProperties(o, props);
+            o.a === 1 && !Object.hasOwn(o, 'b')
+        "#,
     );
 }
 
 #[test]
 fn every_conversion_precedes_definitions_and_earlier_records_are_independent() {
     assert_true(
-        "let target={},observed=false,first={value:1};let props={a:first};Object.defineProperty(props,'b',{get:()=>{observed=!Object.hasOwn(target,'a');first.value=99;return {value:2};},enumerable:true});Object.defineProperties(target,props)===target && observed && target.a===1 && target.b===2",
+        r#"
+            let target = {},
+                observed = false,
+                first = {
+                    value: 1
+                };
+            let props = {
+                a: first
+            };
+            Object.defineProperty(props, 'b', {
+                get: () => {
+                    observed = !Object.hasOwn(target, 'a');
+                    first.value = 99;
+                    return {
+                        value: 2
+                    };
+                },
+                enumerable: true
+            });
+            Object.defineProperties(target, props) === target && observed && target.a === 1 && target.b ===
+                2
+        "#,
     );
     let mut realm = Realm::default();
     realm
@@ -99,7 +220,34 @@ fn every_conversion_precedes_definitions_and_earlier_records_are_independent() {
 #[test]
 fn later_definition_rejection_keeps_earlier_definitions_after_all_conversions() {
     let mut realm = Realm::default();
-    realm.eval("let o={},seen=false;Object.defineProperty(o,'b',{value:0});let props={a:{value:1},b:{value:2}};Object.defineProperty(props,'c',{get:()=>{seen=!Object.hasOwn(o,'a');return {value:3};},enumerable:true})").unwrap();
+    realm
+        .eval(
+            r#"
+                let o = {},
+                    seen = false;
+                Object.defineProperty(o, 'b', {
+                    value: 0
+                });
+                let props = {
+                    a: {
+                        value: 1
+                    },
+                    b: {
+                        value: 2
+                    }
+                };
+                Object.defineProperty(props, 'c', {
+                    get: () => {
+                        seen = !Object.hasOwn(o, 'a');
+                        return {
+                            value: 3
+                        };
+                    },
+                    enumerable: true
+                })
+            "#,
+        )
+        .unwrap();
     assert!(matches!(
         realm.eval("Object.defineProperties(o,props)"),
         Err(Error::Exception {
@@ -112,7 +260,22 @@ fn later_definition_rejection_keeps_earlier_definitions_after_all_conversions() 
         Ok(Value::Boolean(true))
     );
     assert_true(
-        "function f(a){Object.defineProperties(arguments,{0:{value:3,writable:false},x:{get:()=>9}});a=4;return arguments[0]===3 && arguments.x===9 && a===4;}f(1)",
+        r#"
+            function f(a) {
+                Object.defineProperties(arguments, {
+                    0: {
+                        value: 3,
+                        writable: false
+                    },
+                    x: {
+                        get: () => 9
+                    }
+                });
+                a = 4;
+                return arguments[0] === 3 && arguments.x === 9 && a === 4;
+            }
+            f(1)
+        "#,
     );
 }
 
@@ -145,7 +308,11 @@ fn primitive_properties_and_invalid_targets_follow_distinct_conversion_rules() {
 fn metadata_and_created_object_edges_survive_global_replacement_and_collection() {
     for name in ["create", "defineProperties"] {
         assert_true(&format!(
-            "let d=Object.getOwnPropertyDescriptor(Object,'{name}');d.writable && !d.enumerable && d.configurable && d.value.name==='{name}' && d.value.length===2"
+            r#"
+                let d = Object.getOwnPropertyDescriptor(Object, '{name}');
+                d.writable && !d.enumerable && d.configurable && d.value.name === '{name}' && d.value
+                    .length === 2
+            "#
         ));
         type_error(&format!("new Object.{name}()"));
     }

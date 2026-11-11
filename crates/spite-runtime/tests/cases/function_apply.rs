@@ -139,7 +139,23 @@ fn nonobjects_are_rejected_and_callable_check_precedes_list_inspection() {
 #[test]
 fn unlimited_argument_lists_preserve_full_width_getter_failures() {
     assert_true(
-        "let reads=0,o={length:Infinity,get 0(){reads++;throw 17;}};let caught=false;try{Boolean.apply(null,o);}catch(e){caught=e===17;}caught && reads===1",
+        r#"
+            let reads = 0,
+                o = {
+                    length: Infinity,
+                    get 0() {
+                        reads++;
+                        throw 17;
+                    }
+                };
+            let caught = false;
+            try {
+                Boolean.apply(null, o);
+            } catch (e) {
+                caught = e === 17;
+            }
+            caught && reads === 1
+        "#,
     );
     // CreateListFromArrayLike reads each index before appending its value:
     // https://262.ecma-international.org/17.0/#sec-createlistfromarraylike
@@ -153,11 +169,43 @@ fn unlimited_argument_lists_preserve_full_width_getter_failures() {
             "Reflect.construct(target,args,new Proxy(function(){},{get(){throw 99}}))",
         ] {
             for proxy in [false, true] {
-                let source = "let log='',marker={},args={get length(){if(this!==args)throw 99;log+='l';return LENGTH},get 0(){if(this!==args)throw 99;log+='0';throw marker}};if(PROXY)args=new Proxy(args,{get(t,k,r){log+='g'+String(k)+';';return Reflect.get(t,k,r)}});function target(){throw 99}let caught=false;try{CALL}catch(e){caught=e===marker}caught&&log===TRACE"
-                    .replace("LENGTH", length)
-                    .replace("PROXY", if proxy { "true" } else { "false" })
-                    .replace("CALL", operation)
-                    .replace("TRACE", if proxy { "'glength;lg0;0'" } else { "'l0'" });
+                let source = r#"
+                    let log = '',
+                        marker = {},
+                        args = {
+                            get length() {
+                                if (this !== args) throw 99;
+                                log += 'l';
+                                return LENGTH
+                            },
+                            get 0() {
+                                if (this !== args) throw 99;
+                                log += '0';
+                                throw marker
+                            }
+                        };
+                    if (PROXY) args = new Proxy(args, {
+                        get(t, k, r) {
+                            log += 'g' + String(k) + ';';
+                            return Reflect.get(t, k, r)
+                        }
+                    });
+
+                    function target() {
+                        throw 99
+                    }
+                    let caught = false;
+                    try {
+                        CALL
+                    } catch (e) {
+                        caught = e === marker
+                    }
+                    caught && log === TRACE
+                "#
+                .replace("LENGTH", length)
+                .replace("PROXY", if proxy { "true" } else { "false" })
+                .replace("CALL", operation)
+                .replace("TRACE", if proxy { "'glength;lg0;0'" } else { "'l0'" });
                 assert_eq!(
                     Realm::default().eval(&source),
                     Ok(Value::Boolean(true)),
@@ -213,16 +261,43 @@ fn failed_argument_lists_and_calls_release_object_and_symbol_captures() {
     ] {
         for path in ["get", "call", "class", "revoked"] {
             let source = r#"
-                let state=(()=>{
-                    const path='PATH';
-                    let object={},symbol=Symbol(),weak=[new WeakRef(object),new WeakRef(symbol)],caught=false;
-                    let target=path==='class'?class{}:function(a,b){throw 7};
-                    if(path==='revoked'){let pair=Proxy.revocable(target,{});pair.revoke();target=pair.proxy}
-                    let list={length:path==='get'?3:2,get 0(){return object},get 1(){return symbol},get 2(){throw 7}};
-                    try{INVOKE}catch(e){caught=path==='get'||path==='call'?e===7:e instanceof TypeError}
-                    return{weak,caught}
+                let state = (() => {
+                    const path = 'PATH';
+                    let object = {},
+                        symbol = Symbol(),
+                        weak = [new WeakRef(object), new WeakRef(symbol)],
+                        caught = false;
+                    let target = path === 'class' ? class {} : function(a, b) {
+                        throw 7
+                    };
+                    if (path === 'revoked') {
+                        let pair = Proxy.revocable(target, {});
+                        pair.revoke();
+                        target = pair.proxy
+                    }
+                    let list = {
+                        length: path === 'get' ? 3 : 2,
+                        get 0() {
+                            return object
+                        },
+                        get 1() {
+                            return symbol
+                        },
+                        get 2() {
+                            throw 7
+                        }
+                    };
+                    try {
+                        INVOKE
+                    } catch (e) {
+                        caught = path === 'get' || path === 'call' ? e === 7 : e instanceof TypeError
+                    }
+                    return {
+                        weak,
+                        caught
+                    }
                 })();
-                state.caught&&state.weak.every(r=>r.deref()!==undefined)
+                state.caught && state.weak.every(r => r.deref() !== undefined)
             "#
             .replace("PATH", path)
             .replace("INVOKE", invoke);

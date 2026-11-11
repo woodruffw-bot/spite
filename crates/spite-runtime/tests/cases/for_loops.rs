@@ -20,7 +20,16 @@ fn initializer_test_body_and_update_are_ordered() {
         Value::Number(3.0),
     );
     result(
-        "let trace = ''; let i = 0; for (trace = 'i'; (trace = trace + 't', i < 2); (trace = trace + 'u', i = i + 1)) { trace = trace + 'b'; } trace",
+        r#"
+            let trace = '';
+            let i = 0;
+            for (trace = 'i';
+                (trace = trace + 't', i < 2);
+                (trace = trace + 'u', i = i + 1)) {
+                trace = trace + 'b';
+            }
+            trace
+        "#,
         Value::String(JsString::from("itbutbut")),
     );
     result(
@@ -246,7 +255,16 @@ fn lexical_scopes_restore_on_all_exits() {
         Value::Number(3.0),
     );
     result(
-        "let sum = 0; a: for (let i = 0; i < 3; i = i + 1) { for (let j = 0;;missing) { sum = sum + i; continue a; } } sum",
+        r#"
+            let sum = 0;
+            a: for (let i = 0; i < 3; i = i + 1) {
+                for (let j = 0;; missing) {
+                    sum = sum + i;
+                    continue a;
+                }
+            }
+            sum
+        "#,
         Value::Number(3.0),
     );
 }

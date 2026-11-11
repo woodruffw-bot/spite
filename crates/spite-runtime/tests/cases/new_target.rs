@@ -37,7 +37,18 @@ fn calls_bind_undefined_and_construction_binds_the_constructor() {
 #[test]
 fn nested_ordinary_functions_create_their_own_new_target_binding() {
     truth(
-        "function F(){function G(){return new.target;}this.normal=G();this.constructed=new G();this.G=G;}let o=new F();o.normal===undefined && o.constructed===o.G",
+        r#"
+            function F() {
+                function G() {
+                    return new.target;
+                }
+                this.normal = G();
+                this.constructed = new G();
+                this.G = G;
+            }
+            let o = new F();
+            o.normal === undefined && o.constructed === o.G
+        "#,
     );
     truth("function F(){function G(){return ()=>new.target;}return G();}new F()()===undefined");
     truth(

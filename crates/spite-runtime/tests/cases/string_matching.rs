@@ -12,10 +12,42 @@ fn hooks_preserve_original_receivers_return_values_and_exact_call_arguments() {
         ("search", "search"),
     ] {
         assert_true(&format!(
-            "let log='',receiver={{toString(){{throw 7;}}}},result={{}},pattern={{get [Symbol.{symbol}](){{log+='g';return function(o){{'use strict';if(this!==pattern || o!==receiver || arguments.length!==1)throw 8;log+='c';return result;}};}},toString(){{throw 9;}}}};String.prototype.{method}.call(receiver,pattern)===result && log==='gc'"
+            r#"
+                let log = '',
+                    receiver = {{
+                        toString() {{
+                            throw 7;
+                        }}
+                    }},
+                    result = {{}},
+                    pattern = {{
+                        get [Symbol.{symbol}]() {{
+                            log += 'g';
+                            return function(o) {{
+                                'use strict';
+                                if (this !== pattern || o !== receiver || arguments.length !== 1)
+                                throw 8;
+                                log += 'c';
+                                return result;
+                            }};
+                        }},
+                        toString() {{
+                            throw 9;
+                        }}
+                    }};
+                String.prototype.{method}.call(receiver, pattern) === result && log === 'gc'
+            "#
         ));
         assert_true(&format!(
-            "let proto={{[Symbol.{symbol}](o){{return o;}}}},pattern=Object.create(proto);String.prototype.{method}.call(7,pattern)===7"
+            r#"
+                let proto = {{
+                        [Symbol.{symbol}](o) {{
+                            return o;
+                        }}
+                    }},
+                    pattern = Object.create(proto);
+                String.prototype.{method}.call(7, pattern) === 7
+            "#
         ));
         for result in ["null", "undefined", "false", "7", "7n", "Symbol.iterator"] {
             assert_true(&format!(
@@ -33,16 +65,82 @@ fn receiver_check_and_getmethod_failures_precede_conversion() {
         ("search", "search"),
     ] {
         assert_true(&format!(
-            "let reads=0,caught=false,pattern={{get [Symbol.{symbol}](){{reads++;throw 7;}}}};try{{String.prototype.{method}.call(null,pattern);}}catch(e){{caught=e instanceof TypeError;}}caught && reads===0"
+            r#"
+                let reads = 0,
+                    caught = false,
+                    pattern = {{
+                        get [Symbol.{symbol}]() {{
+                            reads++;
+                            throw 7;
+                        }}
+                    }};
+                try {{
+                    String.prototype.{method}.call(null, pattern);
+                }} catch (e) {{
+                    caught = e instanceof TypeError;
+                }}
+                caught && reads === 0
+            "#
         ));
         assert_true(&format!(
-            "let reads=0,caught=false,receiver={{toString(){{reads++;throw 8;}}}},pattern={{get [Symbol.{symbol}](){{throw 7;}}}};try{{String.prototype.{method}.call(receiver,pattern);}}catch(e){{caught=e===7;}}caught && reads===0"
+            r#"
+                let reads = 0,
+                    caught = false,
+                    receiver = {{
+                        toString() {{
+                            reads++;
+                            throw 8;
+                        }}
+                    }},
+                    pattern = {{
+                        get [Symbol.{symbol}]() {{
+                            throw 7;
+                        }}
+                    }};
+                try {{
+                    String.prototype.{method}.call(receiver, pattern);
+                }} catch (e) {{
+                    caught = e === 7;
+                }}
+                caught && reads === 0
+            "#
         ));
         assert_true(&format!(
-            "let reads=0,caught=false,receiver={{toString(){{reads++;throw 8;}}}},pattern={{[Symbol.{symbol}]:3}};try{{String.prototype.{method}.call(receiver,pattern);}}catch(e){{caught=e instanceof TypeError;}}caught && reads===0"
+            r#"
+                let reads = 0,
+                    caught = false,
+                    receiver = {{
+                        toString() {{
+                            reads++;
+                            throw 8;
+                        }}
+                    }},
+                    pattern = {{
+                        [Symbol.{symbol}]: 3
+                    }};
+                try {{
+                    String.prototype.{method}.call(receiver, pattern);
+                }} catch (e) {{
+                    caught = e instanceof TypeError;
+                }}
+                caught && reads === 0
+            "#
         ));
         assert_true(&format!(
-            "let marker={{}},caught=false;try{{'x'.{method}({{[Symbol.{symbol}](){{throw marker;}}}});}}catch(e){{caught=e===marker;}}caught"
+            r#"
+                let marker = {{}},
+                    caught = false;
+                try {{
+                    'x'.{method}({{
+                        [Symbol.{symbol}]() {{
+                            throw marker;
+                        }}
+                    }});
+                }} catch (e) {{
+                    caught = e === marker;
+                }}
+                caught
+            "#
         ));
     }
 }
@@ -50,14 +148,84 @@ fn receiver_check_and_getmethod_failures_precede_conversion() {
 #[test]
 fn matchall_regexp_marker_and_global_flags_are_checked_before_the_hook() {
     assert_true(
-        "let log='',receiver={toString(){throw 7;}},pattern={get [Symbol.match](){log+='m';return true;},get flags(){log+='f';return {toString(){log+='s';return 'dog';}};},get [Symbol.matchAll](){log+='h';return function(o){if(o!==receiver)throw 8;log+='c';return 9;};}};String.prototype.matchAll.call(receiver,pattern)===9 && log==='mfshc'",
+        r#"
+            let log = '',
+                receiver = {
+                    toString() {
+                        throw 7;
+                    }
+                },
+                pattern = {
+                    get [Symbol.match]() {
+                        log += 'm';
+                        return true;
+                    },
+                    get flags() {
+                        log += 'f';
+                        return {
+                            toString() {
+                                log += 's';
+                                return 'dog';
+                            }
+                        };
+                    },
+                    get [Symbol.matchAll]() {
+                        log += 'h';
+                        return function(o) {
+                            if (o !== receiver) throw 8;
+                            log += 'c';
+                            return 9;
+                        };
+                    }
+                };
+            String.prototype.matchAll.call(receiver, pattern) === 9 && log === 'mfshc'
+        "#,
     );
     assert_true(
-        "let log='',pattern={get [Symbol.match](){log+='m';return false;},get flags(){throw 7;},get [Symbol.matchAll](){log+='h';return ()=>8;}};'x'.matchAll(pattern)===8 && log==='mh'",
+        r#"
+            let log = '',
+                pattern = {
+                    get [Symbol.match]() {
+                        log += 'm';
+                        return false;
+                    },
+                    get flags() {
+                        throw 7;
+                    },
+                    get [Symbol.matchAll]() {
+                        log += 'h';
+                        return () => 8;
+                    }
+                };
+            'x'.matchAll(pattern) === 8 && log === 'mh'
+        "#,
     );
     for flags in ["undefined", "null", "''", "'G'", "'i'", "Symbol()"] {
         assert_true(&format!(
-            "let reads=0,caught=false,receiver={{toString(){{reads++;throw 7;}}}},pattern={{[Symbol.match]:true,flags:{flags},get [Symbol.matchAll](){{reads++;throw 8;}}}};try{{String.prototype.matchAll.call(receiver,pattern);}}catch(e){{caught=e instanceof TypeError;}}caught && reads===0"
+            r#"
+                let reads = 0,
+                    caught = false,
+                    receiver = {{
+                        toString() {{
+                            reads++;
+                            throw 7;
+                        }}
+                    }},
+                    pattern = {{
+                        [Symbol.match]: true,
+                        flags: {flags},
+                        get [Symbol.matchAll]() {{
+                            reads++;
+                            throw 8;
+                        }}
+                    }};
+                try {{
+                    String.prototype.matchAll.call(receiver, pattern);
+                }} catch (e) {{
+                    caught = e instanceof TypeError;
+                }}
+                caught && reads === 0
+            "#
         ));
     }
     for properties in [
@@ -66,12 +234,41 @@ fn matchall_regexp_marker_and_global_flags_are_checked_before_the_hook() {
         "[Symbol.match]:true,flags:{toString(){throw 7;}}",
     ] {
         assert_true(&format!(
-            "let reads=0,caught=false,pattern={{{properties},get [Symbol.matchAll](){{reads++;throw 8;}}}};try{{'x'.matchAll(pattern);}}catch(e){{caught=e===7;}}caught && reads===0"
+            r#"
+                let reads = 0,
+                    caught = false,
+                    pattern = {{
+                        {properties},
+                        get [Symbol.matchAll]() {{
+                            reads++;
+                            throw 8;
+                        }}
+                    }};
+                try {{
+                    'x'.matchAll(pattern);
+                }} catch (e) {{
+                    caught = e === 7;
+                }}
+                caught && reads === 0
+            "#
         ));
     }
     // Match and search never inspect IsRegExp or the flags property.
     assert_true(
-        "let pattern={get flags(){throw 7;},[Symbol.match](){return 8;},[Symbol.search](){return 9;}};'x'.match(pattern)===8 && 'x'.search(pattern)===9",
+        r#"
+            let pattern = {
+                get flags() {
+                    throw 7;
+                },
+                [Symbol.match]() {
+                    return 8;
+                },
+                [Symbol.search]() {
+                    return 9;
+                }
+            };
+            'x'.match(pattern) === 8 && 'x'.search(pattern) === 9
+        "#,
     );
 }
 
@@ -90,7 +287,22 @@ fn primitive_hooks_are_ignored_and_fallbacks_create_native_patterns() {
             ("Symbol.prototype", "Symbol()"),
         ] {
             let mut realm = Realm::default();
-            realm.eval(&format!("let reads=0;Object.defineProperty({prototype},Symbol.{symbol},{{get(){{reads++;throw 7;}}}});RegExp.prototype[Symbol.{symbol}]=function(s){{return s;}};")).unwrap();
+            realm
+                .eval(&format!(
+                    r#"
+                        let reads = 0;
+                        Object.defineProperty({prototype}, Symbol.{symbol}, {{
+                            get() {{
+                                reads++;
+                                throw 7;
+                            }}
+                        }});
+                        RegExp.prototype[Symbol.{symbol}] = function(s) {{
+                            return s;
+                        }};
+                    "#
+                ))
+                .unwrap();
             let source = if prototype == "Symbol.prototype" {
                 format!(
                     "let caught=false;try{{'x'.{method}({pattern});}}catch(e){{caught=e instanceof TypeError;}}caught && reads===0"
@@ -120,7 +332,19 @@ fn primitive_hooks_are_ignored_and_fallbacks_create_native_patterns() {
             assert_eq!(realm.eval(&format!("String.prototype.{method}.call({{toString(){{log+='s';return 'x';}}}},{pattern})==='x' && log==='s'")),Ok(Value::Boolean(true)));
         }
         assert_true(&format!(
-            "let caught=false;try{{String.prototype.{method}.call({{toString(){{throw 7;}}}},null);}}catch(e){{caught=e===7;}}caught"
+            r#"
+                let caught = false;
+                try {{
+                    String.prototype.{method}.call({{
+                        toString() {{
+                            throw 7;
+                        }}
+                    }}, null);
+                }} catch (e) {{
+                    caught = e === 7;
+                }}
+                caught
+            "#
         ));
     }
 }
@@ -129,10 +353,66 @@ fn primitive_hooks_are_ignored_and_fallbacks_create_native_patterns() {
 fn fallback_conversion_creates_fresh_native_objects_and_invokes_live_symbol_methods() {
     for (method, flags) in [("match", ""), ("matchAll", "g"), ("search", "")] {
         assert_true(&format!(
-            "let t='',result={{}},seen,receiver={{[Symbol.toPrimitive](h){{t+='r'+h;return 'input';}}}},pattern={{get constructor(){{throw 7;}},get source(){{throw 8;}},get flags(){{throw 9;}},toString(){{t+='p';return 'a';}}}};Object.defineProperty(pattern,Symbol.{method},{{get(){{t+='k';return undefined;}}}});Object.defineProperty(RegExp.prototype,Symbol.{method},{{get(){{t+='h';seen=this;return function(s){{'use strict';t+='c';if(this!==seen || s!=='input' || arguments.length!==1)throw 10;return result;}};}}}});let a=String.prototype.{method}.call(receiver,pattern);a===result && t==='krstringphc' && seen!==pattern && seen instanceof RegExp && seen.source==='a' && seen.flags==='{flags}' && seen.lastIndex===0"
+            r#"
+                let t = '',
+                    result = {{}},
+                    seen, receiver = {{
+                        [Symbol.toPrimitive](h) {{
+                            t += 'r' + h;
+                            return 'input';
+                        }}
+                    }},
+                    pattern = {{
+                        get constructor() {{
+                            throw 7;
+                        }},
+                        get source() {{
+                            throw 8;
+                        }},
+                        get flags() {{
+                            throw 9;
+                        }},
+                        toString() {{
+                            t += 'p';
+                            return 'a';
+                        }}
+                    }};
+                Object.defineProperty(pattern, Symbol.{method}, {{
+                    get() {{
+                        t += 'k';
+                        return undefined;
+                    }}
+                }});
+                Object.defineProperty(RegExp.prototype, Symbol.{method}, {{
+                    get() {{
+                        t += 'h';
+                        seen = this;
+                        return function(s) {{
+                            'use strict';
+                            t += 'c';
+                            if (this !== seen || s !== 'input' || arguments.length !== 1)
+                            throw 10;
+                            return result;
+                        }};
+                    }}
+                }});
+                let a = String.prototype.{method}.call(receiver, pattern);
+                a === result && t === 'krstringphc' && seen !== pattern && seen instanceof RegExp && seen
+                    .source === 'a' && seen.flags === '{flags}' && seen.lastIndex === 0
+            "#
         ));
         assert_true(&format!(
-            "let first;RegExp.prototype[Symbol.{method}]=function(s){{if(first===undefined){{first=this;return this.source;}}return this!==first && this.source==='(?:)' && this.flags==='{flags}';}};'x'.{method}(undefined)==='(?:)' && 'x'.{method}(undefined)"
+            r#"
+                let first;
+                RegExp.prototype[Symbol.{method}] = function(s) {{
+                    if (first === undefined) {{
+                        first = this;
+                        return this.source;
+                    }}
+                    return this !== first && this.source === '(?:)' && this.flags === '{flags}';
+                }};
+                'x'.{method}(undefined) === '(?:)' && 'x'.{method}(undefined)
+            "#
         ));
     }
 }
@@ -140,16 +420,88 @@ fn fallback_conversion_creates_fresh_native_objects_and_invokes_live_symbol_meth
 #[test]
 fn direct_creation_bypasses_regexp_identity_native_copy_and_repeated_match_lookups() {
     assert_true(
-        "let t='',pattern={get [Symbol.match](){t+='m';return undefined;},get constructor(){throw 7;},get source(){throw 8;},get flags(){throw 9;},toString(){t+='p';return 'a';}};RegExp.prototype[Symbol.match]=function(s){return this.source;};'x'.match(pattern)==='a' && t==='mp'",
+        r#"
+            let t = '',
+                pattern = {
+                    get [Symbol.match]() {
+                        t += 'm';
+                        return undefined;
+                    },
+                    get constructor() {
+                        throw 7;
+                    },
+                    get source() {
+                        throw 8;
+                    },
+                    get flags() {
+                        throw 9;
+                    },
+                    toString() {
+                        t += 'p';
+                        return 'a';
+                    }
+                };
+            RegExp.prototype[Symbol.match] = function(s) {
+                return this.source;
+            };
+            'x'.match(pattern) === 'a' && t === 'mp'
+        "#,
     );
     assert_true(
-        "let t='',pattern={get [Symbol.match](){t+='m';return false;},get [Symbol.matchAll](){t+='a';return undefined;},get source(){throw 7;},get flags(){throw 8;},get constructor(){throw 9;},toString(){t+='p';return 'a';}};RegExp.prototype[Symbol.matchAll]=function(s){return this.source;};'x'.matchAll(pattern)==='a' && t==='map'",
+        r#"
+            let t = '',
+                pattern = {
+                    get [Symbol.match]() {
+                        t += 'm';
+                        return false;
+                    },
+                    get [Symbol.matchAll]() {
+                        t += 'a';
+                        return undefined;
+                    },
+                    get source() {
+                        throw 7;
+                    },
+                    get flags() {
+                        throw 8;
+                    },
+                    get constructor() {
+                        throw 9;
+                    },
+                    toString() {
+                        t += 'p';
+                        return 'a';
+                    }
+                };
+            RegExp.prototype[Symbol.matchAll] = function(s) {
+                return this.source;
+            };
+            'x'.matchAll(pattern) === 'a' && t === 'map'
+        "#,
     );
     assert_true(
-        r"let r=new RegExp('a','g');r[Symbol.match]=null;r.toString=function(){return 'custom';};RegExp.prototype[Symbol.match]=function(s){return this.source;};'x'.match(r)==='custom'",
+        r#"
+            let r = new RegExp('a', 'g');
+            r[Symbol.match] = null;
+            r.toString = function() {
+                return 'custom';
+            };
+            RegExp.prototype[Symbol.match] = function(s) {
+                return this.source;
+            };
+            'x'.match(r) === 'custom'
+        "#,
     );
     assert_true(
-        "let r=new RegExp('a','g');r[Symbol.search]=undefined;RegExp.prototype[Symbol.search]=function(s){return this.source;};let expected=String.fromCharCode(92)+'/a'+String.fromCharCode(92)+'/g';'x'.search(r)===expected",
+        r#"
+            let r = new RegExp('a', 'g');
+            r[Symbol.search] = undefined;
+            RegExp.prototype[Symbol.search] = function(s) {
+                return this.source;
+            };
+            let expected = String.fromCharCode(92) + '/a' + String.fromCharCode(92) + '/g';
+            'x'.search(r) === expected
+        "#,
     );
 }
 
@@ -157,18 +509,81 @@ fn direct_creation_bypasses_regexp_identity_native_copy_and_repeated_match_looku
 fn fallback_errors_follow_receiver_pattern_and_live_method_order() {
     for method in ["match", "matchAll", "search"] {
         assert_true(&format!(
-            "let reads=0,caught=false;Object.defineProperty(RegExp.prototype,Symbol.{method},{{get(){{reads++;throw 8;}}}});try{{'x'.{method}('(');}}catch(e){{caught=e instanceof SyntaxError;}}caught && reads===0"
+            r#"
+                let reads = 0,
+                    caught = false;
+                Object.defineProperty(RegExp.prototype, Symbol.{method}, {{
+                    get() {{
+                        reads++;
+                        throw 8;
+                    }}
+                }});
+                try {{
+                    'x'.{method}('(');
+                }} catch (e) {{
+                    caught = e instanceof SyntaxError;
+                }}
+                caught && reads === 0
+            "#
         ));
         assert_true(&format!(
-            "let t='',pattern={{toString(){{t+='p';throw 7;}}}};Object.defineProperty(RegExp.prototype,Symbol.{method},{{get(){{t+='h';throw 8;}}}});try{{String.prototype.{method}.call({{toString(){{t+='r';return 'x';}}}},pattern);}}catch(e){{t+=e;}}t==='rp7'"
+            r#"
+                let t = '',
+                    pattern = {{
+                        toString() {{
+                            t += 'p';
+                            throw 7;
+                        }}
+                    }};
+                Object.defineProperty(RegExp.prototype, Symbol.{method}, {{
+                    get() {{
+                        t += 'h';
+                        throw 8;
+                    }}
+                }});
+                try {{
+                    String.prototype.{method}.call({{
+                        toString() {{
+                            t += 'r';
+                            return 'x';
+                        }}
+                    }}, pattern);
+                }} catch (e) {{
+                    t += e;
+                }}
+                t === 'rp7'
+            "#
         ));
         for value in ["undefined", "null", "1", "{}"] {
             assert_true(&format!(
-                "RegExp.prototype[Symbol.{method}]={value};let caught=false;try{{'x'.{method}('a');}}catch(e){{caught=e instanceof TypeError;}}caught"
+                r#"
+                    RegExp.prototype[Symbol.{method}] = {value};
+                    let caught = false;
+                    try {{
+                        'x'.{method}('a');
+                    }} catch (e) {{
+                        caught = e instanceof TypeError;
+                    }}
+                    caught
+                "#
             ));
         }
         assert_true(&format!(
-            "let marker={{}},caught=false;Object.defineProperty(RegExp.prototype,Symbol.{method},{{get(){{throw marker;}}}});try{{'x'.{method}('a');}}catch(e){{caught=e===marker;}}caught"
+            r#"
+                let marker = {{}},
+                    caught = false;
+                Object.defineProperty(RegExp.prototype, Symbol.{method}, {{
+                    get() {{
+                        throw marker;
+                    }}
+                }});
+                try {{
+                    'x'.{method}('a');
+                }} catch (e) {{
+                    caught = e === marker;
+                }}
+                caught
+            "#
         ));
     }
 }
@@ -176,21 +591,64 @@ fn fallback_errors_follow_receiver_pattern_and_live_method_order() {
 #[test]
 fn matchall_creation_is_lazy_and_custom_exec_observes_the_new_native_matcher() {
     assert_true(
-        "let n=0,seen,result={0:'x',index:0,length:1};RegExp.prototype.exec=function(s){n++;seen=this;if(this.source!=='a' || this.flags!=='g' || s!=='input')throw 7;return n===1?result:null;};let it='input'.matchAll('a');let lazy=n===0,a=it.next(),b=it.next(),c=it.next();lazy && a.value===result && !a.done && b.done && c.done && n===2 && seen instanceof RegExp",
+        r#"
+            let n = 0,
+                seen, result = {
+                    0: 'x',
+                    index: 0,
+                    length: 1
+                };
+            RegExp.prototype.exec = function(s) {
+                n++;
+                seen = this;
+                if (this.source !== 'a' || this.flags !== 'g' || s !== 'input') throw 7;
+                return n === 1 ? result : null;
+            };
+            let it = 'input'.matchAll('a');
+            let lazy = n === 0,
+                a = it.next(),
+                b = it.next(),
+                c = it.next();
+            lazy && a.value === result && !a.done && b.done && c.done && n === 2 && seen instanceof RegExp
+        "#,
     );
     assert_true(
-        "let n=0;RegExp.prototype.exec=function(s){n++;return null;};let iterator='x'.matchAll();n===0 && Object.getPrototypeOf(iterator)[Symbol.toStringTag]==='RegExp String Iterator' && iterator.next().done && n===1",
+        r#"
+            let n = 0;
+            RegExp.prototype.exec = function(s) {
+                n++;
+                return null;
+            };
+            let iterator = 'x'.matchAll();
+            n === 0 && Object.getPrototypeOf(iterator)[Symbol.toStringTag] === 'RegExp String Iterator' &&
+                iterator.next().done && n === 1
+        "#,
     );
     let mut realm = Realm::default();
     realm
         .eval("let it='x'.matchAll('(?:(?:(?:(?:a(a|bc)){2}){2})|){2,3}'),flag=0")
         .unwrap();
     assert_eq!(
-        realm.eval("let first;try{first=it.next();}catch{flag=1;}finally{flag=2;}!first.done&&first.value[0]===''&&first.value[1]===undefined&&first.value.index===0&&first.value.input==='x'&&flag===2"),
+        realm.eval(r#"
+            let first;
+            try {
+                first = it.next();
+            } catch {
+                flag = 1;
+            } finally {
+                flag = 2;
+            }!first.done && first.value[0] === '' && first.value[1] === undefined && first.value.index ===
+                0 && first.value.input === 'x' && flag === 2
+        "#),
         Ok(Value::Boolean(true))
     );
     assert_eq!(
-        realm.eval("let second=it.next(),end=it.next();!second.done&&second.value[0]===''&&second.value.index===1&&end.done&&it.next().done"),
+        realm.eval(r#"
+            let second = it.next(),
+                end = it.next();
+            !second.done && second.value[0] === '' && second.value.index === 1 && end.done && it.next()
+                .done
+        "#),
         Ok(Value::Boolean(true))
     );
 }
@@ -198,7 +656,26 @@ fn matchall_creation_is_lazy_and_custom_exec_observes_the_new_native_matcher() {
 #[test]
 fn fallback_intrinsics_and_large_inputs_survive_global_replacement_and_collection() {
     let mut realm = Realm::default();
-    realm.eval("let calls=0,input='a'.repeat(120000);RegExp.prototype.exec=function(s){calls++;return null;};let it=input.matchAll('a');RegExp=function(){throw 7;};String=function(){throw 8;};input=null;").unwrap();
+    realm
+        .eval(
+            r#"
+                let calls = 0,
+                    input = 'a'.repeat(120000);
+                RegExp.prototype.exec = function(s) {
+                    calls++;
+                    return null;
+                };
+                let it = input.matchAll('a');
+                RegExp = function() {
+                    throw 7;
+                };
+                String = function() {
+                    throw 8;
+                };
+                input = null;
+            "#,
+        )
+        .unwrap();
     realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval("calls===0 && it.next().done && calls===1"),
@@ -206,7 +683,16 @@ fn fallback_intrinsics_and_large_inputs_survive_global_replacement_and_collectio
     );
     for method in ["match", "matchAll", "search"] {
         assert_true(&format!(
-            "let f=String.prototype.{method};RegExp.prototype[Symbol.{method}]=function(s){{return this.source==='a' && s==='x';}};RegExp=function(){{throw 7;}};f.call('x','a')"
+            r#"
+                let f = String.prototype.{method};
+                RegExp.prototype[Symbol.{method}] = function(s) {{
+                    return this.source === 'a' && s === 'x';
+                }};
+                RegExp = function() {{
+                    throw 7;
+                }};
+                f.call('x', 'a')
+            "#
         ));
     }
 }
@@ -232,22 +718,51 @@ fn full_string_property_inventory_supports_reflection_copying_and_integrity() {
         "Object.getOwnPropertyNames(String.prototype).sort().join(',')==='at,charAt,charCodeAt,codePointAt,concat,constructor,endsWith,includes,indexOf,isWellFormed,lastIndexOf,length,localeCompare,match,matchAll,normalize,padEnd,padStart,repeat,replace,replaceAll,search,slice,split,startsWith,substring,toLocaleLowerCase,toLocaleUpperCase,toLowerCase,toString,toUpperCase,toWellFormed,trim,trimEnd,trimStart,valueOf'",
     );
     assert_true(
-        "let keys=Reflect.ownKeys(String.prototype),symbols=Object.getOwnPropertySymbols(String.prototype);keys.length===37 && keys[0]==='length' && keys[1]==='constructor' && keys[2]==='toString' && keys[3]==='valueOf' && keys[36]===Symbol.iterator && symbols.length===1 && symbols[0]===Symbol.iterator && Object.keys(String.prototype).length===0",
+        r#"
+            let keys = Reflect.ownKeys(String.prototype),
+                symbols = Object.getOwnPropertySymbols(String.prototype);
+            keys.length === 37 && keys[0] === 'length' && keys[1] === 'constructor' && keys[2] ===
+                'toString' && keys[3] === 'valueOf' && keys[36] === Symbol.iterator && symbols.length ===
+                1 && symbols[0] === Symbol.iterator && Object.keys(String.prototype).length === 0
+        "#,
     );
     assert_true(
-        "let descriptors=Object.getOwnPropertyDescriptors(String.prototype);Reflect.ownKeys(descriptors).length===37 && descriptors.normalize.value===String.prototype.normalize && descriptors.matchAll.value===String.prototype.matchAll && !descriptors.length.writable && !descriptors.length.enumerable && !descriptors.length.configurable",
+        r#"
+            let descriptors = Object.getOwnPropertyDescriptors(String.prototype);
+            Reflect.ownKeys(descriptors).length === 37 && descriptors.normalize.value === String.prototype
+                .normalize && descriptors.matchAll.value === String.prototype.matchAll && !descriptors
+                .length.writable && !descriptors.length.enumerable && !descriptors.length.configurable
+        "#,
     );
     assert_true(
-        "let receiver={};Object.assign(receiver,String.prototype)===receiver && Object.keys(receiver).length===0 && Object.defineProperties(receiver,String.prototype)===receiver && Object.keys(receiver).length===0",
+        r#"
+            let receiver = {};
+            Object.assign(receiver, String.prototype) === receiver && Object.keys(receiver).length === 0 &&
+                Object.defineProperties(receiver, String.prototype) === receiver && Object.keys(receiver)
+                .length === 0
+        "#,
     );
     assert_true(
         "let seen='';String.prototype.added=7;for(let key in 'x'){seen+=key+',';}seen==='0,added,'",
     );
     assert_true(
-        "let p=String.prototype;Object.freeze(p)===p && Object.isFrozen(p) && Object.isSealed(p) && !Object.isExtensible(p) && 'é'.normalize()==='é' && 'x'.match({[Symbol.match](){return 7;}})===7",
+        r#"
+            let p = String.prototype;
+            Object.freeze(p) === p && Object.isFrozen(p) && Object.isSealed(p) && !Object.isExtensible(
+                p) && 'é'.normalize() === 'é' && 'x'.match({
+                    [Symbol.match]() {
+                        return 7;
+                    }
+                }) === 7
+        "#,
     );
     assert_true(
-        "let p=String.prototype;delete p.matchAll;Object.getOwnPropertyDescriptor(p,'matchAll')===undefined && !Object.hasOwn(p,'matchAll') && 'x'.matchAll===undefined && !Reflect.ownKeys(p).includes('matchAll')",
+        r#"
+            let p = String.prototype;
+            delete p.matchAll;
+            Object.getOwnPropertyDescriptor(p, 'matchAll') === undefined && !Object.hasOwn(p,
+                'matchAll') && 'x'.matchAll === undefined && !Reflect.ownKeys(p).includes('matchAll')
+        "#,
     );
 }
 
@@ -255,16 +770,54 @@ fn full_string_property_inventory_supports_reflection_copying_and_integrity() {
 fn method_metadata_and_retention_are_standard() {
     for method in ["match", "matchAll", "search"] {
         assert_true(&format!(
-            "let d=Object.getOwnPropertyDescriptor(String.prototype,'{method}'),n=Object.getOwnPropertyDescriptor(d.value,'name'),l=Object.getOwnPropertyDescriptor(d.value,'length');d.writable && !d.enumerable && d.configurable && n.value==='{method}' && !n.writable && !n.enumerable && n.configurable && l.value===1 && !l.writable && !l.enumerable && l.configurable && !Object.hasOwn(d.value,'prototype')"
+            r#"
+                let d = Object.getOwnPropertyDescriptor(String.prototype, '{method}'),
+                    n = Object.getOwnPropertyDescriptor(d.value, 'name'),
+                    l = Object.getOwnPropertyDescriptor(d.value, 'length');
+                d.writable && !d.enumerable && d.configurable && n.value === '{method}' && !n.writable &&
+                    !n.enumerable && n.configurable && l.value === 1 && !l.writable && !l.enumerable && l
+                    .configurable && !Object.hasOwn(d.value, 'prototype')
+            "#
         ));
         assert_true(&format!(
             "let caught=false;try{{new String.prototype.{method}();}}catch(e){{caught=e instanceof TypeError;}}caught"
         ));
     }
     let mut realm = Realm::default();
-    realm.eval("let match=String.prototype.match,all=String.prototype.matchAll,search=String.prototype.search;delete String.prototype.match;delete String.prototype.matchAll;delete String.prototype.search;delete globalThis.String;").unwrap();
+    realm
+        .eval(
+            r#"
+                let match = String.prototype.match,
+                    all = String.prototype.matchAll,
+                    search = String.prototype.search;
+                delete String.prototype.match;
+                delete String.prototype.matchAll;
+                delete String.prototype.search;
+                delete globalThis.String;
+            "#,
+        )
+        .unwrap();
     realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let p={[Symbol.match](o){return o;},[Symbol.matchAll](o){return o;},[Symbol.search](o){return o;},flags:'g'};match.call(7,p)===7 && all.call(8,p)===8 && search.call(9,p)===9"),Ok(Value::Boolean(true)));
+    assert_eq!(
+        realm.eval(
+            r#"
+                let p = {
+                    [Symbol.match](o) {
+                        return o;
+                    },
+                    [Symbol.matchAll](o) {
+                        return o;
+                    },
+                    [Symbol.search](o) {
+                        return o;
+                    },
+                    flags: 'g'
+                };
+                match.call(7, p) === 7 && all.call(8, p) === 8 && search.call(9, p) === 9
+            "#
+        ),
+        Ok(Value::Boolean(true))
+    );
 }
 
 #[test]
@@ -281,7 +834,24 @@ fn opted_in_and_unsupported_hook_failures_bypass_handlers() {
         let mut realm = Realm::default();
         realm.reserve_unsupported_global("unsupportedHost");
         realm.eval("let flag=0;").unwrap();
-        assert!(matches!(realm.eval(&format!("try{{'x'.{method}({{[Symbol.{method}](){{Function('unsupportedHost')();}}}});}}catch{{flag=1;}}finally{{flag=2;}}")),Err(Error::Unsupported {..})));
+        assert!(matches!(
+            realm.eval(&format!(
+                r#"
+                    try {{
+                        'x'.{method}({{
+                            [Symbol.{method}]() {{
+                                Function('unsupportedHost')();
+                            }}
+                        }});
+                    }} catch {{
+                        flag = 1;
+                    }} finally {{
+                        flag = 2;
+                    }}
+                "#
+            )),
+            Err(Error::Unsupported { .. })
+        ));
         assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     }
 }

@@ -25,12 +25,39 @@ fn collect(realm: &mut Realm) {
 #[test]
 fn tagged_templates_capture_method_and_receiver_before_substitutions() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let events=[],result,receiver,object={get tag(){events.push('get');return function(strings,a,b){events.push('call');receiver=this;return a+b}}};
-        function first(){events.push('first');return 7}function second(){events.push('second');return 8}
-        async function f(){return object.tag`a${await first()}b${second()}c`}
-        f().then(value=>{result=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let events = [],
+                    result, receiver, object = {
+                        get tag() {
+                            events.push('get');
+                            return function(strings, a, b) {
+                                events.push('call');
+                                receiver = this;
+                                return a + b
+                            }
+                        }
+                    };
+
+                function first() {
+                    events.push('first');
+                    return 7
+                }
+
+                function second() {
+                    events.push('second');
+                    return 8
+                }
+                async function f() {
+                    return object.tag`a${await first()}b${second()}c`
+                }
+                f().then(value => {
+                    result = value
+                });
+            "#,
+        )
+        .unwrap();
     check(
         &mut realm,
         "events.join(',')==='get,first'&&result===undefined",
@@ -48,12 +75,30 @@ fn tagged_templates_capture_method_and_receiver_before_substitutions() {
 #[test]
 fn awaited_tag_values_lose_receivers_while_parenthesized_member_tags_preserve_them() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let first,second,object={tag:function(strings,value){'use strict';return this===object?value+1:value+2}};
-        async function f(){return((await object).tag)`x${await 7}`}
-        async function g(){return(await object.tag)`x${await 7}`}
-        f().then(value=>{first=value});g().then(value=>{second=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let first, second, object = {
+                    tag: function(strings, value) {
+                        'use strict';
+                        return this === object ? value + 1 : value + 2
+                    }
+                };
+                async function f() {
+                    return ((await object).tag)`x${await 7}`
+                }
+                async function g() {
+                    return (await object.tag)`x${await 7}`
+                }
+                f().then(value => {
+                    first = value
+                });
+                g().then(value => {
+                    second = value
+                });
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     check(&mut realm, "first===8&&second===9");
 }
@@ -75,10 +120,23 @@ fn tagged_substitutions_preserve_raw_symbols_objects_and_promises_without_conver
 fn suspended_tagged_calls_share_frozen_template_sites_and_preserve_invalid_escape_raw_text() {
     let mut realm = Realm::default();
     realm.eval(r#"
-        let sites=[],results=[];
-        function tag(strings,value){sites.push(strings);return Object.isFrozen(strings)&&Object.isFrozen(strings.raw)&&strings[0]===undefined&&strings.raw[0]==='\\u{110000}'&&strings[1]==='tail'&&value===7}
-        async function f(){return tag`\u{110000}${await 7}tail`}
-        f().then(value=>{results.push(value)});f().then(value=>{results.push(value)});
+        let sites = [],
+            results = [];
+
+        function tag(strings, value) {
+            sites.push(strings);
+            return Object.isFrozen(strings) && Object.isFrozen(strings.raw) && strings[0] ===
+                undefined && strings.raw[0] === '\\u{110000}' && strings[1] === 'tail' && value === 7
+        }
+        async function f() {
+            return tag`\u{110000}${await 7}tail`
+        }
+        f().then(value => {
+            results.push(value)
+        });
+        f().then(value => {
+            results.push(value)
+        });
     "#).unwrap();
     drain(&mut realm);
     check(
@@ -90,31 +148,90 @@ fn suspended_tagged_calls_share_frozen_template_sites_and_preserve_invalid_escap
 #[test]
 fn tagged_callability_is_checked_after_every_substitution_and_eval_receives_the_template_object() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let effects=0,result,template,bad=3;
-        async function f(){try{return bad`x${await(effects++,7)}y${effects++}z`}catch(error){return error instanceof TypeError}}
-        async function g(){return eval`a${await 7}b`}
-        f().then(value=>{result=value});g().then(value=>{template=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let effects = 0,
+                    result, template, bad = 3;
+                async function f() {
+                    try {
+                        return bad`x${await(effects++,7)}y${effects++}z`
+                    } catch (error) {
+                        return error instanceof TypeError
+                    }
+                }
+                async function g() {
+                    return eval`a${await 7}b`
+                }
+                f().then(value => {
+                    result = value
+                });
+                g().then(value => {
+                    template = value
+                });
+            "#,
+        )
+        .unwrap();
     check(&mut realm, "effects===1&&result===undefined");
     drain(&mut realm);
     check(
         &mut realm,
-        "effects===2&&result===true&&Array.isArray(template)&&Object.isFrozen(template)&&template[0]==='a'&&template[1]==='b'",
+        r#"
+            effects === 2 && result === true && Array.isArray(template) && Object.isFrozen(template) &&
+                template[0] === 'a' && template[1] === 'b'
+        "#,
     );
 }
 
 #[test]
 fn private_super_and_object_environment_tags_keep_their_receivers_and_contexts() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let first,second,third,state={},holder={tag(strings,value){return this===holder?value+30:0}};
-        class Base{tag(strings,value){return this.x+value}}
-        class C extends Base{#x=10;#tag(strings,value){return this.#x+value}async f(){return this.#tag`x${await 7}`}async g(){this.x=20;return super.tag`x${await 8}`}}
-        let object=new C();object.f().then(value=>{first=value});object.g().then(value=>{second=value});
-        with(holder){state.f=async()=>tag`x${await 9}`}
-        state.f().then(value=>{third=value});holder.tag=()=>{throw 9};
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let first, second, third, state = {},
+                    holder = {
+                        tag(strings, value) {
+                            return this === holder ? value + 30 : 0
+                        }
+                    };
+                class Base {
+                    tag(strings, value) {
+                        return this.x + value
+                    }
+                }
+                class C extends Base {
+                    #x = 10;
+                    #tag(strings, value) {
+                        return this.#x + value
+                    }
+                    async f() {
+                        return this.#tag`x${await 7}`
+                    }
+                    async g() {
+                        this.x = 20;
+                        return super.tag`x${await 8}`
+                    }
+                }
+                let object = new C();
+                object.f().then(value => {
+                    first = value
+                });
+                object.g().then(value => {
+                    second = value
+                });
+                with(holder) {
+                    state.f = async () => tag`x${await 9}`
+                }
+                state.f().then(value => {
+                    third = value
+                });
+                holder.tag = () => {
+                    throw 9
+                };
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     check(&mut realm, "first===17&&second===28&&third===39");
 }
@@ -122,14 +239,50 @@ fn private_super_and_object_environment_tags_keep_their_receivers_and_contexts()
 #[test]
 fn tagged_calls_trace_receivers_and_earlier_arguments_then_release_them_after_invocation() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let release,releaseSecond,gate=new Promise(resolve=>{release=resolve}),second=new Promise(resolve=>{releaseSecond=resolve}),receiverWeak,argumentWeak,called,result;
-        function tag(strings,a,b){called=this.marker+a.x+b;return called}
-        function receiver(){const value={marker:1,tag};receiverWeak=new WeakRef(value);return value}
-        function earlier(){const value={x:2};argumentWeak=new WeakRef(value);return value}
-        async function f(){receiver().tag`${earlier()}${await gate}`;0;await second;return 7}
-        f().then(value=>{result=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let release, releaseSecond, gate = new Promise(resolve => {
+                        release = resolve
+                    }),
+                    second = new Promise(resolve => {
+                        releaseSecond = resolve
+                    }),
+                    receiverWeak, argumentWeak, called, result;
+
+                function tag(strings, a, b) {
+                    called = this.marker + a.x + b;
+                    return called
+                }
+
+                function receiver() {
+                    const value = {
+                        marker: 1,
+                        tag
+                    };
+                    receiverWeak = new WeakRef(value);
+                    return value
+                }
+
+                function earlier() {
+                    const value = {
+                        x: 2
+                    };
+                    argumentWeak = new WeakRef(value);
+                    return value
+                }
+                async function f() {
+                    receiver().tag`${earlier()}${await gate}`;
+                    0;
+                    await second;
+                    return 7
+                }
+                f().then(value => {
+                    result = value
+                });
+            "#,
+        )
+        .unwrap();
     collect(&mut realm);
     check(
         &mut realm,
@@ -157,7 +310,23 @@ fn tagged_argument_quotas_count_the_template_object_and_host_aborts_skip_cleanup
     realm
         .eval("let resource={[dispose](){disposed++}};function tag(strings,a,b){called++}")
         .unwrap();
-    realm.eval("async function f(){using root=resource;try{return tag`x${await(effects++,7)}y${(effects++,8)}z`}catch{caught=true}finally{finalized++}}f()").unwrap();
+    realm
+        .eval(
+            r#"
+                async function f() {
+                    using root = resource;
+                    try {
+                        return tag`x${await(effects++,7)}y${(effects++,8)}z`
+                    } catch {
+                        caught = true
+                    } finally {
+                        finalized++
+                    }
+                }
+                f()
+            "#,
+        )
+        .unwrap();
     let mut reported = false;
     loop {
         match realm.run_next_promise_job().unwrap() {

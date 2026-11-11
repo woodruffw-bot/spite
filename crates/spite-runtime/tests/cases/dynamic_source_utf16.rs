@@ -49,7 +49,33 @@ fn comments_and_all_nested_function_sources_retain_their_own_ranges() {
 #[test]
 fn invalid_identifiers_throw_after_all_conversions_and_before_prototype_lookup() {
     assert_true(
-        r#"let log=[],target=(function(){}).bind(null);Object.defineProperty(target,'prototype',{get(){log.push('prototype');return {};}});let caught=false;try{Reflect.construct(Function,[{toString(){log.push('parameter');return '\uD800';}},{toString(){log.push('body');return 'return 7';}}],target);}catch(e){caught=e instanceof SyntaxError;}caught && log.join(',')==='parameter,body'"#,
+        r#"
+            let log = [],
+                target = (function() {}).bind(null);
+            Object.defineProperty(target, 'prototype', {
+                get() {
+                    log.push('prototype');
+                    return {};
+                }
+            });
+            let caught = false;
+            try {
+                Reflect.construct(Function, [{
+                    toString() {
+                        log.push('parameter');
+                        return '\uD800';
+                    }
+                }, {
+                    toString() {
+                        log.push('body');
+                        return 'return 7';
+                    }
+                }], target);
+            } catch (e) {
+                caught = e instanceof SyntaxError;
+            }
+            caught && log.join(',') === 'parameter,body'
+        "#,
     );
     for input in [
         r#"Function('return \uDFFF;')"#,
@@ -59,7 +85,18 @@ fn invalid_identifiers_throw_after_all_conversions_and_before_prototype_lookup()
         r#"Function('"use strict";return "\uD800" + 010;')"#,
     ] {
         assert_true(&format!(
-            "let caught=false,finalized=false;try{{{input};}}catch(e){{caught=e instanceof SyntaxError;}}finally{{finalized=true;}}caught && finalized"
+            r#"
+                let caught = false,
+                    finalized = false;
+                try {{
+                    {input};
+                }} catch (e) {{
+                    caught = e instanceof SyntaxError;
+                }} finally {{
+                    finalized = true;
+                }}
+                caught && finalized
+            "#
         ));
     }
 }

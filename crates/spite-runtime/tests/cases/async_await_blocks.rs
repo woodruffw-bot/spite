@@ -20,11 +20,35 @@ fn drain(realm: &mut Realm) {
 #[test]
 fn nested_block_bindings_keep_their_scopes_and_var_bindings_target_the_function() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let state={},events=[],result;state.gate=new Promise(resolve=>{state.release=resolve});
-        async function f(){let value=1;{let value=await state.gate;var saved=value;{const[x,y]=await[2,3];events.push(value+x+y)}events.push(value)}events.push(value);return saved}
-        f().then(value=>{result=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let state = {},
+                    events = [],
+                    result;
+                state.gate = new Promise(resolve => {
+                    state.release = resolve
+                });
+                async function f() {
+                    let value = 1;
+                    {
+                        let value = await state.gate;
+                        var saved = value;
+                        {
+                            const [x, y] = await [2, 3];
+                            events.push(value + x + y)
+                        }
+                        events.push(value)
+                    }
+                    events.push(value);
+                    return saved
+                }
+                f().then(value => {
+                    result = value
+                });
+            "#,
+        )
+        .unwrap();
     check(&mut realm, "events.length===0&&result===undefined");
     realm.eval("state.release(7)").unwrap();
     drain(&mut realm);
@@ -34,11 +58,34 @@ fn nested_block_bindings_keep_their_scopes_and_var_bindings_target_the_function(
 #[test]
 fn block_instantiation_preserves_tdz_and_strict_block_function_hoisting() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let before,outside,tdz=false,result;
-        async function f(){'use strict';{before=typeof local;const read=()=>value;try{read()}catch(error){tdz=error instanceof ReferenceError}const value=await 3;function local(){return value}result=local()+read()}outside=typeof local}
-        f();
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let before, outside, tdz = false,
+                    result;
+                async function f() {
+                    'use strict';
+                    {
+                        before = typeof local;
+                        const read = () => value;
+                        try {
+                            read()
+                        } catch (error) {
+                            tdz = error instanceof ReferenceError
+                        }
+                        const value = await 3;
+
+                        function local() {
+                            return value
+                        }
+                        result = local() + read()
+                    }
+                    outside = typeof local
+                }
+                f();
+            "#,
+        )
+        .unwrap();
     check(&mut realm, "before==='function'&&tdz&&result===undefined");
     drain(&mut realm);
     check(&mut realm, "result===6&&outside==='undefined'");
@@ -47,11 +94,47 @@ fn block_instantiation_preserves_tdz_and_strict_block_function_hoisting() {
 #[test]
 fn normal_block_exit_disposes_before_parent_statements_and_root_disposal() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let state={},events=[],result;state.gate=new Promise(resolve=>{state.release=resolve});
-        async function f(){using r={[Symbol.dispose](){events.push('root')}};{using a={[Symbol.dispose](){events.push('a')}};await state.gate;{using b={[Symbol.dispose](){events.push('b')}};await 0}events.push('after-inner')}events.push('after-outer');return 7}
-        f().then(value=>{result=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let state = {},
+                    events = [],
+                    result;
+                state.gate = new Promise(resolve => {
+                    state.release = resolve
+                });
+                async function f() {
+                    using r = {
+                        [Symbol.dispose]() {
+                            events.push('root')
+                        }
+                    };
+                    {
+                        using a = {
+                            [Symbol.dispose]() {
+                                events.push('a')
+                            }
+                        };
+                        await state.gate;
+                        {
+                            using b = {
+                                [Symbol.dispose]() {
+                                    events.push('b')
+                                }
+                            };
+                            await 0
+                        }
+                        events.push('after-inner')
+                    }
+                    events.push('after-outer');
+                    return 7
+                }
+                f().then(value => {
+                    result = value
+                });
+            "#,
+        )
+        .unwrap();
     check(&mut realm, "events.length===0&&result===undefined");
     realm.eval("state.release(0)").unwrap();
     drain(&mut realm);
@@ -88,7 +171,11 @@ fn returns_throws_and_rejected_awaits_unwind_all_blocks_with_ordered_suppression
             match mode {
                 0 => "result===7&&reason===undefined",
                 1 => {
-                    "reason instanceof SuppressedError&&reason.error===r&&reason.suppressed.error===a&&reason.suppressed.suppressed.error===b&&reason.suppressed.suppressed.suppressed===marker"
+                    r#"
+                        reason instanceof SuppressedError && reason.error === r && reason.suppressed.error === a &&
+                            reason.suppressed.suppressed.error === b && reason.suppressed.suppressed.suppressed ===
+                            marker
+                    "#
                 }
                 _ => "reason===marker&&result===undefined",
             },
@@ -99,11 +186,36 @@ fn returns_throws_and_rejected_awaits_unwind_all_blocks_with_ordered_suppression
 #[test]
 fn exited_block_bindings_are_collectible_while_the_function_remains_suspended() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let state={},result;state.first=new Promise(resolve=>{state.releaseFirst=resolve});state.second=new Promise(resolve=>{state.releaseSecond=resolve});
-        async function f(){let saved;{const value={x:7};state.weak=new WeakRef(value);await state.first;saved=value.x}await state.second;return saved}
-        f().then(value=>{result=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let state = {},
+                    result;
+                state.first = new Promise(resolve => {
+                    state.releaseFirst = resolve
+                });
+                state.second = new Promise(resolve => {
+                    state.releaseSecond = resolve
+                });
+                async function f() {
+                    let saved;
+                    {
+                        const value = {
+                            x: 7
+                        };
+                        state.weak = new WeakRef(value);
+                        await state.first;
+                        saved = value.x
+                    }
+                    await state.second;
+                    return saved
+                }
+                f().then(value => {
+                    result = value
+                });
+            "#,
+        )
+        .unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
     check(
@@ -126,11 +238,28 @@ fn exited_block_bindings_are_collectible_while_the_function_remains_suspended() 
 #[test]
 fn class_private_eval_this_and_arguments_survive_nested_block_awaits() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let result;
-        class C{#x=10;async read(value){{const x=await value;{await 0;return eval('this.#x')+x+arguments.length}}}}
-        new C().read(2).then(value=>{result=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let result;
+                class C {
+                    #x = 10;
+                    async read(value) {
+                        {
+                            const x = await value;
+                            {
+                                await 0;
+                                return eval('this.#x') + x + arguments.length
+                            }
+                        }
+                    }
+                }
+                new C().read(2).then(value => {
+                    result = value
+                });
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     check(&mut realm, "result===13");
 }

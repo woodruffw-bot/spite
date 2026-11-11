@@ -109,10 +109,32 @@ fn malformed_percent_sequences_and_invalid_utf8_throw_urierror() {
             );
         }
         assert_true(&format!(
-            "let flag=0,caught=false;try{{{name}('%ED%A0%80');}}catch(e){{caught=e instanceof URIError && e instanceof Error && Error.isError(e);flag++;}}finally{{flag++;}}caught && flag===2"
+            r#"
+                let flag = 0,
+                    caught = false;
+                try {{
+                    {name}('%ED%A0%80');
+                }} catch (e) {{
+                    caught = e instanceof URIError && e instanceof Error && Error.isError(e);
+                    flag++;
+                }} finally {{
+                    flag++;
+                }}
+                caught && flag === 2
+            "#
         ));
         assert_true(&format!(
-            "let Original=URIError;URIError=TypeError;let caught=false;try{{{name}('%FF');}}catch(e){{caught=e instanceof Original && !(e instanceof TypeError);}}caught"
+            r#"
+                let Original = URIError;
+                URIError = TypeError;
+                let caught = false;
+                try {{
+                    {name}('%FF');
+                }} catch (e) {{
+                    caught = e instanceof Original && !(e instanceof TypeError);
+                }}
+                caught
+            "#
         ));
     }
 }
@@ -121,16 +143,58 @@ fn malformed_percent_sequences_and_invalid_utf8_throw_urierror() {
 fn conversion_is_string_hinted_once_and_receivers_extra_values_are_ignored() {
     for name in ["decodeURI", "decodeURIComponent"] {
         assert_true(&format!(
-            "{name}()==='undefined' && {name}(null)==='null' && {name}(7n)==='7' && {name}(-0)==='0' && {name}(new String('%C3%A9'))==='é'"
+            r#"
+                {name}() === 'undefined' && {name}(null) === 'null' && {name}(7n) ===
+                    '7' && {name}(-0) === '0' && {name}(new String('%C3%A9')) === 'é'
+            "#
         ));
         assert_true(&format!(
-            "let log='',o={{[Symbol.toPrimitive](hint){{log+=hint;return '%C3%A9';}},toString(){{throw 7;}}}};{name}(o)==='é' && log==='string'"
+            r#"
+                let log = '',
+                    o = {{
+                        [Symbol.toPrimitive](hint) {{
+                            log += hint;
+                            return '%C3%A9';
+                        }},
+                        toString() {{
+                            throw 7;
+                        }}
+                    }};
+                {name}(o) === 'é' && log === 'string'
+            "#
         ));
         assert_true(&format!(
-            "let log='',o={{toString(){{log+='s';return {{}};}},valueOf(){{log+='v';return '%C3%A9';}}}};{name}(o)==='é' && log==='sv'"
+            r#"
+                let log = '',
+                    o = {{
+                        toString() {{
+                            log += 's';
+                            return {{}};
+                        }},
+                        valueOf() {{
+                            log += 'v';
+                            return '%C3%A9';
+                        }}
+                    }};
+                {name}(o) === 'é' && log === 'sv'
+            "#
         ));
         assert_true(&format!(
-            "let sentinel={{}},o={{toString(){{throw sentinel;}}}},caught=false;try{{{name}(o);}}catch(e){{caught=e===sentinel;}}caught"
+            r#"
+                let sentinel = {{}},
+                    o = {{
+                        toString() {{
+                            throw sentinel;
+                        }}
+                    }},
+                    caught = false;
+                try {{
+                    {name}(o);
+                }} catch (e) {{
+                    caught = e === sentinel;
+                }}
+                caught
+            "#
         ));
         for input in [
             "Symbol()",
@@ -208,7 +272,11 @@ fn descriptors_nonconstruction_and_intrinsic_retention_follow_standard_globals()
 #[test]
 fn large_default_inputs_and_opted_in_host_failures_keep_their_distinct_behavior() {
     assert_true(
-        "let s='%F0%9F%98%80%20'.repeat(3000),expected='😀 '.repeat(3000);decodeURI(s)===expected && decodeURIComponent(s)===expected",
+        r#"
+            let s = '%F0%9F%98%80%20'.repeat(3000),
+                expected = '😀 '.repeat(3000);
+            decodeURI(s) === expected && decodeURIComponent(s) === expected
+        "#,
     );
     assert_true("let s='é😀\\uD800+ '.repeat(3000);decodeURI(s)===s && decodeURIComponent(s)===s");
     let mut realm = Realm::new(Limits {

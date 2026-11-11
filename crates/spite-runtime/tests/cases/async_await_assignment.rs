@@ -28,11 +28,11 @@ fn awaited_identifier_and_nested_property_assignments_preserve_selected_referenc
     realm
         .eval(
             r#"
-        let release,gate=new Promise(resolve=>{release=resolve}),first,second,old={},object=old;
-        async function f(){let x=1;return(x=await 7)+x}
-        async function g(){return object.x=(object.y=await gate)}
-        f().then(value=>{first=value});g().then(value=>{second=value});object={};
-    "#,
+                let release,gate=new Promise(resolve=>{release=resolve}),first,second,old={},object=old;
+                async function f(){let x=1;return(x=await 7)+x}
+                async function g(){return object.x=(object.y=await gate)}
+                f().then(value=>{first=value});g().then(value=>{second=value});object={};
+            "#,
         )
         .unwrap();
     check(
@@ -50,13 +50,52 @@ fn awaited_identifier_and_nested_property_assignments_preserve_selected_referenc
 #[test]
 fn simple_member_assignment_defers_key_coercion_until_after_the_awaited_rhs() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let events=[],result,gets=0,saved,receiver,object={get x(){gets++;return 1},set x(value){events.push('set');saved=value;receiver=this}};
-        let key={[Symbol.toPrimitive](){events.push('coerce');return 'x'}};
-        function base(){events.push('base');return object}function name(){events.push('name');return key}function rhs(){events.push('rhs');return 7}
-        async function f(){return((await base())[await name()]=await rhs())}
-        f().then(value=>{result=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let events = [],
+                    result, gets = 0,
+                    saved, receiver, object = {
+                        get x() {
+                            gets++;
+                            return 1
+                        },
+                        set x(value) {
+                            events.push('set');
+                            saved = value;
+                            receiver = this
+                        }
+                    };
+                let key = {
+                    [Symbol.toPrimitive]() {
+                        events.push('coerce');
+                        return 'x'
+                    }
+                };
+
+                function base() {
+                    events.push('base');
+                    return object
+                }
+
+                function name() {
+                    events.push('name');
+                    return key
+                }
+
+                function rhs() {
+                    events.push('rhs');
+                    return 7
+                }
+                async function f() {
+                    return ((await base())[await name()] = await rhs())
+                }
+                f().then(value => {
+                    result = value
+                });
+            "#,
+        )
+        .unwrap();
     check(
         &mut realm,
         "events.join(',')==='base'&&gets===0&&saved===undefined",
@@ -71,11 +110,30 @@ fn simple_member_assignment_defers_key_coercion_until_after_the_awaited_rhs() {
 #[test]
 fn simple_nullish_assignment_runs_the_rhs_before_throwing_without_converting_its_key() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let rhs=0,coerced=0,result,key={[Symbol.toPrimitive](){coerced++;return 'x'}};
-        async function f(){try{(await null)[await key]=await(rhs++,7)}catch(error){return error instanceof TypeError}}
-        f().then(value=>{result=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let rhs = 0,
+                    coerced = 0,
+                    result, key = {
+                        [Symbol.toPrimitive]() {
+                            coerced++;
+                            return 'x'
+                        }
+                    };
+                async function f() {
+                    try {
+                        (await null)[await key] = await (rhs++, 7)
+                    } catch (error) {
+                        return error instanceof TypeError
+                    }
+                }
+                f().then(value => {
+                    result = value
+                });
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     check(&mut realm, "rhs===1&&coerced===0&&result===true");
 }
@@ -83,13 +141,45 @@ fn simple_nullish_assignment_runs_the_rhs_before_throwing_without_converting_its
 #[test]
 fn compound_assignment_caches_the_key_and_getter_before_rhs_but_converts_the_value_after_it() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let release,gate=new Promise(resolve=>{release=resolve}),events=[],result,saved;
-        let left={valueOf(){events.push('old-coerce');return 10}},key={[Symbol.toPrimitive](){events.push('key');return 'x'}};
-        let object={get x(){events.push('get');return left},set x(value){events.push('set');saved=value}};
-        async function f(){return object[key]+=await gate}
-        f().then(value=>{result=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let release, gate = new Promise(resolve => {
+                        release = resolve
+                    }),
+                    events = [],
+                    result, saved;
+                let left = {
+                        valueOf() {
+                            events.push('old-coerce');
+                            return 10
+                        }
+                    },
+                    key = {
+                        [Symbol.toPrimitive]() {
+                            events.push('key');
+                            return 'x'
+                        }
+                    };
+                let object = {
+                    get x() {
+                        events.push('get');
+                        return left
+                    },
+                    set x(value) {
+                        events.push('set');
+                        saved = value
+                    }
+                };
+                async function f() {
+                    return object[key] += await gate
+                }
+                f().then(value => {
+                    result = value
+                });
+            "#,
+        )
+        .unwrap();
     check(
         &mut realm,
         "events.join(',')==='key,get'&&saved===undefined",
@@ -105,11 +195,38 @@ fn compound_assignment_caches_the_key_and_getter_before_rhs_but_converts_the_val
 #[test]
 fn logical_assignments_short_circuit_without_rhs_or_put_and_write_only_selected_values() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let rhs=0,sets=0,result,object={get x(){return true},set x(value){sets++}};
-        async function f(){let a=0,b=1,c=7,d=null;let x=object.x||=await(rhs++,9);a&&=await(rhs++,8);b||=await(rhs++,8);c??=await(rhs++,8);d??=await(rhs++,5);a||=await(rhs++,3);return x===true&&a===3&&b===1&&c===7&&d===5}
-        f().then(value=>{result=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let rhs = 0,
+                    sets = 0,
+                    result, object = {
+                        get x() {
+                            return true
+                        },
+                        set x(value) {
+                            sets++
+                        }
+                    };
+                async function f() {
+                    let a = 0,
+                        b = 1,
+                        c = 7,
+                        d = null;
+                    let x = object.x ||= await (rhs++, 9);
+                    a &&= await (rhs++, 8);
+                    b ||= await (rhs++, 8);
+                    c ??= await (rhs++, 8);
+                    d ??= await (rhs++, 5);
+                    a ||= await (rhs++, 3);
+                    return x === true && a === 3 && b === 1 && c === 7 && d === 5
+                }
+                f().then(value => {
+                    result = value
+                });
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     check(&mut realm, "result===true&&rhs===2&&sets===0");
 }
@@ -117,12 +234,49 @@ fn logical_assignments_short_circuit_without_rhs_or_put_and_write_only_selected_
 #[test]
 fn awaited_assignments_keep_private_brands_super_receivers_and_selected_super_bases() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let release,gate=new Promise(resolve=>{release=resolve}),result,brand,rhs=0,events=[];
-        class Base{get x(){events.push('get');return 3}set x(value){events.push('set');this.saved=value}}
-        class C extends Base{#x=1;async f(){(await this).#x=await 7;super.x+=await gate;return this.#x+this.saved}async bad(){try{(await {}).#x=await(rhs++,9)}catch(error){return error instanceof TypeError}}}
-        let object=new C();object.f().then(value=>{result=value});object.bad().then(value=>{brand=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let release, gate = new Promise(resolve => {
+                        release = resolve
+                    }),
+                    result, brand, rhs = 0,
+                    events = [];
+                class Base {
+                    get x() {
+                        events.push('get');
+                        return 3
+                    }
+                    set x(value) {
+                        events.push('set');
+                        this.saved = value
+                    }
+                }
+                class C extends Base {
+                    #x = 1;
+                    async f() {
+                        (await this).#x = await 7;
+                        super.x += await gate;
+                        return this.#x + this.saved
+                    }
+                    async bad() {
+                        try {
+                            (await {}).#x = await (rhs++, 9)
+                        } catch (error) {
+                            return error instanceof TypeError
+                        }
+                    }
+                }
+                let object = new C();
+                object.f().then(value => {
+                    result = value
+                });
+                object.bad().then(value => {
+                    brand = value
+                });
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     check(
         &mut realm,
@@ -141,11 +295,33 @@ fn awaited_assignments_keep_private_brands_super_receivers_and_selected_super_ba
 #[test]
 fn saved_object_environment_bindings_ignore_later_unscopables_changes() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let release,gate=new Promise(resolve=>{release=resolve}),state={},result,x=5,holder={x:1,[Symbol.unscopables]:{x:false}};
-        with(holder){state.f=async()=>{x=await gate;return x}}
-        state.f().then(value=>{result=value});holder[Symbol.unscopables].x=true;
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let release, gate = new Promise(resolve => {
+                        release = resolve
+                    }),
+                    state = {},
+                    result, x = 5,
+                    holder = {
+                        x: 1,
+                        [Symbol.unscopables]: {
+                            x: false
+                        }
+                    };
+                with(holder) {
+                    state.f = async () => {
+                        x = await gate;
+                        return x
+                    }
+                }
+                state.f().then(value => {
+                    result = value
+                });
+                holder[Symbol.unscopables].x = true;
+            "#,
+        )
+        .unwrap();
     realm.eval("release(7)").unwrap();
     drain(&mut realm);
     check(&mut realm, "holder.x===7&&x===5&&result===5");
@@ -156,15 +332,15 @@ fn saved_object_environment_bindings_ignore_later_unscopables_changes() {
     realm
         .eval(
             r#"
-        let release,gate=new Promise(resolve=>{release=resolve}),events=[],result,x=5,state={};
-        let target={x:1},holder=new Proxy(target,{
-            has(t,k){if(k==='x')events.push('has');return Reflect.has(t,k)},
-            get(t,k,r){if(k==='x')events.push('get');return Reflect.get(t,k,r)},
-            set(t,k,v,r){if(k==='x')events.push('put:'+v);return Reflect.set(t,k,v,r)}
-        }),weak=new WeakRef(holder);
-        with(holder){state.f=async()=>{x=await gate;return x}}
-        state.f().then(value=>{result=value});delete target.x;holder=null;state.f=null;
-    "#,
+                let release,gate=new Promise(resolve=>{release=resolve}),events=[],result,x=5,state={};
+                let target={x:1},holder=new Proxy(target,{
+                    has(t,k){if(k==='x')events.push('has');return Reflect.has(t,k)},
+                    get(t,k,r){if(k==='x')events.push('get');return Reflect.get(t,k,r)},
+                    set(t,k,v,r){if(k==='x')events.push('put:'+v);return Reflect.set(t,k,v,r)}
+                }),weak=new WeakRef(holder);
+                with(holder){state.f=async()=>{x=await gate;return x}}
+                state.f().then(value=>{result=value});delete target.x;holder=null;state.f=null;
+            "#,
         )
         .unwrap();
     collect(&mut realm);
@@ -185,45 +361,163 @@ fn saved_object_environment_bindings_ignore_later_unscopables_changes() {
 #[test]
 fn awaited_writes_reuse_strict_sloppy_immutable_and_rejection_rules() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let results=[],rhs=0,writes=0,reason={},object={set x(value){writes++}};
-        async function strict(){'use strict';try{missingStrict=await(rhs++,7)}catch(error){return error instanceof ReferenceError}}
-        async function sloppy(){missingSloppy=await 9;return missingSloppy===9}
-        async function constant(){const x=1;try{x=await 2}catch(error){return error instanceof TypeError&&x===1}}
-        async function rejected(){try{object.x=await Promise.reject(reason)}catch(error){return error===reason}}
-        strict().then(value=>{results.push(value)});sloppy().then(value=>{results.push(value)});constant().then(value=>{results.push(value)});rejected().then(value=>{results.push(value)});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let results = [],
+                    rhs = 0,
+                    writes = 0,
+                    reason = {},
+                    object = {
+                        set x(value) {
+                            writes++
+                        }
+                    };
+                async function strict() {
+                    'use strict';
+                    try {
+                        missingStrict = await (rhs++, 7)
+                    } catch (error) {
+                        return error instanceof ReferenceError
+                    }
+                }
+                async function sloppy() {
+                    missingSloppy = await 9;
+                    return missingSloppy === 9
+                }
+                async function constant() {
+                    const x = 1;
+                    try {
+                        x = await 2
+                    } catch (error) {
+                        return error instanceof TypeError && x === 1
+                    }
+                }
+                async function rejected() {
+                    try {
+                        object.x = await Promise.reject(reason)
+                    } catch (error) {
+                        return error === reason
+                    }
+                }
+                strict().then(value => {
+                    results.push(value)
+                });
+                sloppy().then(value => {
+                    results.push(value)
+                });
+                constant().then(value => {
+                    results.push(value)
+                });
+                rejected().then(value => {
+                    results.push(value)
+                });
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     check(
         &mut realm,
-        "results.length===4&&results.every(value=>value)&&rhs===1&&writes===0&&this.missingStrict===undefined&&this.missingSloppy===9",
+        r#"
+            results.length === 4 && results.every(value => value) && rhs === 1 && writes === 0 && this
+                .missingStrict === undefined && this.missingSloppy === 9
+        "#,
     );
 }
 
 #[test]
 fn pending_assignment_references_trace_raw_bases_keys_and_compound_values_then_release_them() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let release,releaseSecond,gate=new Promise(resolve=>{release=resolve}),second=new Promise(resolve=>{releaseSecond=resolve}),baseWeak,keyWeak,leftWeak,compoundKeyWeak,first,other;
-        function base(){const object={};baseWeak=new WeakRef(object);return object}
-        function key(){const object={[Symbol.toPrimitive](){return 'x'}};keyWeak=new WeakRef(object);return object}
-        function compoundKey(){const object={[Symbol.toPrimitive](){return 'x'}};compoundKeyWeak=new WeakRef(object);return object}
-        function compound(){return{get x(){const object={valueOf(){return 3}};leftWeak=new WeakRef(object);return object},set x(value){}}}
-        async function a(){base()[key()]=await gate;0;await second;return 7}
-        async function b(){compound()[compoundKey()]+=await gate;0;await second;return 8}
-        a().then(value=>{first=value});b().then(value=>{other=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let release, releaseSecond, gate = new Promise(resolve => {
+                        release = resolve
+                    }),
+                    second = new Promise(resolve => {
+                        releaseSecond = resolve
+                    }),
+                    baseWeak, keyWeak, leftWeak, compoundKeyWeak, first, other;
+
+                function base() {
+                    const object = {};
+                    baseWeak = new WeakRef(object);
+                    return object
+                }
+
+                function key() {
+                    const object = {
+                        [Symbol.toPrimitive]() {
+                            return 'x'
+                        }
+                    };
+                    keyWeak = new WeakRef(object);
+                    return object
+                }
+
+                function compoundKey() {
+                    const object = {
+                        [Symbol.toPrimitive]() {
+                            return 'x'
+                        }
+                    };
+                    compoundKeyWeak = new WeakRef(object);
+                    return object
+                }
+
+                function compound() {
+                    return {
+                        get x() {
+                            const object = {
+                                valueOf() {
+                                    return 3
+                                }
+                            };
+                            leftWeak = new WeakRef(object);
+                            return object
+                        },
+                        set x(value) {}
+                    }
+                }
+                async function a() {
+                    base()[key()] = await gate;
+                    0;
+                    await second;
+                    return 7
+                }
+                async function b() {
+                    compound()[compoundKey()] += await gate;
+                    0;
+                    await second;
+                    return 8
+                }
+                a().then(value => {
+                    first = value
+                });
+                b().then(value => {
+                    other = value
+                });
+            "#,
+        )
+        .unwrap();
     collect(&mut realm);
     check(
         &mut realm,
-        "baseWeak.deref()!==undefined&&keyWeak.deref()!==undefined&&leftWeak.deref()!==undefined&&compoundKeyWeak.deref()===undefined&&first===undefined&&other===undefined",
+        r#"
+            baseWeak.deref() !== undefined && keyWeak.deref() !== undefined && leftWeak.deref() !==
+                undefined && compoundKeyWeak.deref() === undefined && first === undefined && other ===
+                undefined
+        "#,
     );
     realm.eval("release(2)").unwrap();
     drain(&mut realm);
     collect(&mut realm);
     check(
         &mut realm,
-        "baseWeak.deref()===undefined&&keyWeak.deref()===undefined&&leftWeak.deref()===undefined&&first===undefined&&other===undefined",
+        r#"
+            baseWeak.deref() === undefined && keyWeak.deref() === undefined && leftWeak.deref() ===
+                undefined && first === undefined && other === undefined
+        "#,
     );
     realm.eval("releaseSecond(0)").unwrap();
     drain(&mut realm);
@@ -233,11 +527,34 @@ fn pending_assignment_references_trace_raw_bases_keys_and_compound_values_then_r
 #[test]
 fn assignments_in_for_updates_and_named_rhs_evaluation_keep_existing_semantics() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let result,events=[],object={set x(value){events.push('put');this.value=value}};
-        async function f(){let total=0;for(let i=await 0;await(i<3);i=await(i+1)){total+=i;await 0}(await object).x=class{static{events.push(this.name)}};return total}
-        f().then(value=>{result=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let result, events = [],
+                    object = {
+                        set x(value) {
+                            events.push('put');
+                            this.value = value
+                        }
+                    };
+                async function f() {
+                    let total = 0;
+                    for (let i = await 0; await (i < 3); i = await (i + 1)) {
+                        total += i;
+                        await 0
+                    }(await object).x = class {
+                        static {
+                            events.push(this.name)
+                        }
+                    };
+                    return total
+                }
+                f().then(value => {
+                    result = value
+                });
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     check(
         &mut realm,

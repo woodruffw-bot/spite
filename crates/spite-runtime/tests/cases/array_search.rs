@@ -13,7 +13,10 @@ fn equality_handles_nan_zeros_types_and_object_identity_without_coercion() {
         "[0].includes(-0) && [-0].includes(0) && Object.is([-0].indexOf(0),0) && Object.is([0].lastIndexOf(-0),0)",
     );
     assert_true(
-        "![1].includes('1') && ![1].includes(1n) && ![1].includes(true) && ![null].includes(undefined) && [1n].includes(1n)",
+        r#"
+            ![1].includes('1') && ![1].includes(1n) && ![1].includes(true) && ![null].includes(
+                undefined) && [1n].includes(1n)
+        "#,
     );
     assert_true(
         "[1,2,1].indexOf(1)===0 && [1,2,1].lastIndexOf(1)===2 && [1,2].indexOf(7)===-1 && ![1,2].includes(7)",
@@ -48,7 +51,13 @@ fn includes_reads_holes_while_index_searches_skip_absent_properties() {
         "Array.prototype[1]=7;[,,].includes(7) && [,,].indexOf(7)===1 && [,,].lastIndexOf(7)===1",
     );
     assert_true(
-        "let a=[,,];Object.defineProperty(Array.prototype,'1',{get:()=>9});a.includes(9) && a.indexOf(9)===1 && a.lastIndexOf(9)===1",
+        r#"
+            let a = [, , ];
+            Object.defineProperty(Array.prototype, '1', {
+                get: () => 9
+            });
+            a.includes(9) && a.indexOf(9) === 1 && a.lastIndexOf(9) === 1
+        "#,
     );
 }
 
@@ -77,7 +86,10 @@ fn starting_indices_distinguish_absence_nan_infinities_and_relative_offsets() {
         "[1,2,3].indexOf(2,'1.9')===1 && [1,2,3].indexOf(3,-1.9)===2 && [1,2,3].lastIndexOf(2,-1.9)===1",
     );
     assert_true(
-        "![1,2].includes(1,Infinity) && [1,2].indexOf(1,Infinity)===-1 && [1,2].lastIndexOf(2,Infinity)===1 && [1,2].lastIndexOf(1,-Infinity)===-1",
+        r#"
+            ![1, 2].includes(1, Infinity) && [1, 2].indexOf(1, Infinity) === -1 && [1, 2].lastIndexOf(2,
+                Infinity) === 1 && [1, 2].lastIndexOf(1, -Infinity) === -1
+        "#,
     );
     assert_true(
         "[1,2,1].lastIndexOf(1,99)===2 && [1,2,1].lastIndexOf(1,-3)===0 && [1,2,1].lastIndexOf(1,-4)===-1",
@@ -93,10 +105,27 @@ fn generic_receivers_use_utf16_indices_and_the_full_safe_integer_length_range() 
         "Array.prototype.includes.call('💩x','\\uDCA9') && Array.prototype.indexOf.call('💩x','x')===2 && Array.prototype.lastIndexOf.call('aba','a')===2",
     );
     assert_true(
-        "let o={0:'a',1:'b',2:'c',length:'2.9'};Array.prototype.includes.call(o,'b') && Array.prototype.indexOf.call(o,'c')===-1 && Array.prototype.lastIndexOf.call(o,'b')===1",
+        r#"
+            let o = {
+                0: 'a',
+                1: 'b',
+                2: 'c',
+                length: '2.9'
+            };
+            Array.prototype.includes.call(o, 'b') && Array.prototype.indexOf.call(o, 'c') === -1 && Array
+                .prototype.lastIndexOf.call(o, 'b') === 1
+        "#,
     );
     assert_true(
-        "let o={9007199254740990:7,length:Infinity};Array.prototype.includes.call(o,7,-1) && Array.prototype.indexOf.call(o,7,9007199254740990)===9007199254740990 && Array.prototype.lastIndexOf.call(o,7)===9007199254740990",
+        r#"
+            let o = {
+                9007199254740990: 7,
+                length: Infinity
+            };
+            Array.prototype.includes.call(o, 7, -1) && Array.prototype.indexOf.call(o, 7,
+                9007199254740990) === 9007199254740990 && Array.prototype.lastIndexOf.call(o, 7) ===
+                9007199254740990
+        "#,
     );
     assert_true(
         "!Array.prototype.includes.call(false,undefined) && Array.prototype.indexOf.call(7,undefined)===-1 && Array.prototype.lastIndexOf.call(7,undefined)===-1",
@@ -124,7 +153,34 @@ fn length_is_snapshotted_before_index_coercion_but_property_values_remain_live()
     );
     for method in METHODS {
         assert_true(&format!(
-            "let log='',o={{}};Object.defineProperty(o,'length',{{get:()=>{{log+='l';return {{valueOf:()=>{{log+='n';return 1;}}}};}}}});Object.defineProperty(o,'0',{{get:()=>{{log+='g';return 7;}}}});Array.prototype.{method}.call(o,7,{{valueOf:()=>{{log+='i';return 0;}}}});log==='lnig'"
+            r#"
+                let log = '',
+                    o = {{}};
+                Object.defineProperty(o, 'length', {{
+                    get: () => {{
+                        log += 'l';
+                        return {{
+                            valueOf: () => {{
+                                log += 'n';
+                                return 1;
+                            }}
+                        }};
+                    }}
+                }});
+                Object.defineProperty(o, '0', {{
+                    get: () => {{
+                        log += 'g';
+                        return 7;
+                    }}
+                }});
+                Array.prototype.{method}.call(o, 7, {{
+                    valueOf: () => {{
+                        log += 'i';
+                        return 0;
+                    }}
+                }});
+                log === 'lnig'
+            "#
         ));
     }
 }
@@ -145,7 +201,20 @@ fn empty_ranges_skip_index_conversion_and_out_of_range_indices_skip_getters() {
             "Infinity"
         };
         assert_true(&format!(
-            "let n=0,o={{length:1}};Object.defineProperty(o,'0',{{get:()=>{{n++;throw 7;}}}});Array.prototype.{method}.call(o,7,{from});n===0"
+            r#"
+                let n = 0,
+                    o = {{
+                        length: 1
+                    }};
+                Object.defineProperty(o, '0', {{
+                    get: () => {{
+                        n++;
+                        throw 7;
+                    }}
+                }});
+                Array.prototype.{method}.call(o, 7, {from});
+                n === 0
+            "#
         ));
         for receiver in ["null", "undefined", "{length:1n}"] {
             assert!(matches!(
@@ -171,7 +240,26 @@ fn reads_are_ordered_and_stop_after_success_or_an_abrupt_completion() {
     for method in METHODS {
         let expected = if method == "lastIndexOf" { "10" } else { "01" };
         assert_true(&format!(
-            "let log='',o={{length:2}};Object.defineProperty(o,'0',{{get:()=>{{log+='0';return 0;}}}});Object.defineProperty(o,'1',{{get:()=>{{log+='1';return 1;}}}});Array.prototype.{method}.call(o,9);log==='{expected}'"
+            r#"
+                let log = '',
+                    o = {{
+                        length: 2
+                    }};
+                Object.defineProperty(o, '0', {{
+                    get: () => {{
+                        log += '0';
+                        return 0;
+                    }}
+                }});
+                Object.defineProperty(o, '1', {{
+                    get: () => {{
+                        log += '1';
+                        return 1;
+                    }}
+                }});
+                Array.prototype.{method}.call(o, 9);
+                log === '{expected}'
+            "#
         ));
         assert_true(&format!(
             "let n=0,a=[7,7];Object.defineProperty(a,'{}',{{get:()=>{{n++;throw 8;}}}});a.{method}(7);n===0",
@@ -196,7 +284,12 @@ fn reads_are_ordered_and_stop_after_success_or_an_abrupt_completion() {
 fn metadata_nonconstructibility_and_collection_are_standard() {
     for method in METHODS {
         assert_true(&format!(
-            "let f=Array.prototype.{method},d=Object.getOwnPropertyDescriptor(Array.prototype,'{method}');f.name==='{method}' && f.length===1 && f.prototype===undefined && d.value===f && d.writable && !d.enumerable && d.configurable"
+            r#"
+                let f = Array.prototype.{method},
+                    d = Object.getOwnPropertyDescriptor(Array.prototype, '{method}');
+                f.name === '{method}' && f.length === 1 && f.prototype === undefined && d.value === f && d
+                    .writable && !d.enumerable && d.configurable
+            "#
         ));
         assert!(matches!(
             Realm::default().eval(&format!("new Array.prototype.{method}")),

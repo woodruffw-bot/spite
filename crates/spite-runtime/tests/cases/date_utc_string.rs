@@ -20,7 +20,11 @@ fn utc_strings_use_standard_names_signed_years_and_containing_seconds() {
         (MAX_TIME, "Sat, 13 Sep 275760 00:00:00 GMT", MAX_TIME),
     ] {
         assert_true(&format!(
-            "let d=new Date({time}); d.toUTCString()==='{text}' && Date.parse(d.toUTCString())==={parsed} && new Date('{text}').getTime()==={parsed} && d.getTime()==={time}"
+            r#"
+                let d = new Date({time});
+                d.toUTCString() === '{text}' && Date.parse(d.toUTCString()) === {parsed} &&
+                    new Date('{text}').getTime() === {parsed} && d.getTime() === {time}
+            "#
         ));
     }
     assert_true(
@@ -48,7 +52,11 @@ fn utc_string_round_trips_preserve_literal_short_and_expanded_years() {
         "-123456-01-01",
     ] {
         assert_true(&format!(
-            "let d=new Date('{text}'),s=d.toUTCString(); Date.parse(s)===d.getTime() && new Date(s).toISOString()===d.toISOString()"
+            r#"
+                let d = new Date('{text}'),
+                    s = d.toUTCString();
+                Date.parse(s) === d.getTime() && new Date(s).toISOString() === d.toISOString()
+            "#
         ));
     }
 }
@@ -56,10 +64,31 @@ fn utc_string_round_trips_preserve_literal_short_and_expanded_years() {
 #[test]
 fn formatting_checks_own_date_brand_and_ignores_conversion_hooks_and_arguments() {
     assert_true(
-        "let d=new Date(0);Object.defineProperty(d,Symbol.toPrimitive,{value(){throw 1;}});d.valueOf=()=>{throw 2;};Object.freeze(d);Object.setPrototypeOf(d,Date.prototype); Date.prototype.toUTCString.call(d,{toString(){throw 3;}})==='Thu, 01 Jan 1970 00:00:00 GMT'",
+        r#"
+            let d = new Date(0);
+            Object.defineProperty(d, Symbol.toPrimitive, {
+                value() {
+                    throw 1;
+                }
+            });
+            d.valueOf = () => {
+                throw 2;
+            };
+            Object.freeze(d);
+            Object.setPrototypeOf(d, Date.prototype);
+            Date.prototype.toUTCString.call(d, {
+                toString() {
+                    throw 3;
+                }
+            }) === 'Thu, 01 Jan 1970 00:00:00 GMT'
+        "#,
     );
     assert_true(
-        "let d=new Date(0);Object.setPrototypeOf(d,null);Date.prototype.toUTCString.call(d)==='Thu, 01 Jan 1970 00:00:00 GMT'",
+        r#"
+            let d = new Date(0);
+            Object.setPrototypeOf(d, null);
+            Date.prototype.toUTCString.call(d) === 'Thu, 01 Jan 1970 00:00:00 GMT'
+        "#,
     );
     for receiver in [
         "undefined",
@@ -91,10 +120,34 @@ fn formatting_checks_own_date_brand_and_ignores_conversion_hooks_and_arguments()
 #[test]
 fn parsing_converts_once_with_string_hint_and_propagates_abrupt_completions() {
     assert_true(
-        "let trace='',o={ [Symbol.toPrimitive](hint){trace+=hint;return 'Thu, 01 Jan 1970 00:00:00 GMT';},toString(){throw 1;}};Date.parse(o)===0 && trace==='string'",
+        r#"
+            let trace = '',
+                o = {
+                    [Symbol.toPrimitive](hint) {
+                        trace += hint;
+                        return 'Thu, 01 Jan 1970 00:00:00 GMT';
+                    },
+                    toString() {
+                        throw 1;
+                    }
+                };
+            Date.parse(o) === 0 && trace === 'string'
+        "#,
     );
     assert_true(
-        "let trace='',o={toString(){trace+='s';return 'Thu, 01 Jan 1970 00:00:00 GMT';},valueOf(){throw 1;}};Date.parse(o)===0 && trace==='s'",
+        r#"
+            let trace = '',
+                o = {
+                    toString() {
+                        trace += 's';
+                        return 'Thu, 01 Jan 1970 00:00:00 GMT';
+                    },
+                    valueOf() {
+                        throw 1;
+                    }
+                };
+            Date.parse(o) === 0 && trace === 's'
+        "#,
     );
     assert_true(
         "let caught=false;try{Date.parse({toString(){throw 7;}});}catch(e){caught=e===7;}caught",

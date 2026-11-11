@@ -21,16 +21,41 @@ fn type_error(source: &str) {
 #[test]
 fn call_and_construction_distinguish_missing_undefined_and_object_arguments() {
     assert_true(
-        "String()==='' && String(undefined)==='undefined' && String(null)==='null' && String(true)==='true' && String(-0)==='0' && String(42n)==='42' && String(NaN)==='NaN'",
+        r#"
+            String() === '' && String(undefined) === 'undefined' && String(null) === 'null' && String(
+                true) === 'true' && String(-0) === '0' && String(42n) === '42' && String(NaN) === 'NaN'
+        "#,
     );
     assert_true(
-        "let a=new String,b=new String(undefined),c=Object('x');a.valueOf()==='' && b.valueOf()==='undefined' && c.valueOf()==='x' && c instanceof String && new String('x')!==c && typeof c==='object'",
+        r#"
+            let a = new String,
+                b = new String(undefined),
+                c = Object('x');
+            a.valueOf() === '' && b.valueOf() === 'undefined' && c.valueOf() === 'x' &&
+                c instanceof String && new String('x') !== c && typeof c === 'object'
+        "#,
     );
     assert_true(
-        "let log='',o={toString:()=>{log+='s';return 'x';},valueOf:()=>{throw 1;}};String(o)==='x' && new String(o).valueOf()==='x' && log==='ss'",
+        r#"
+            let log = '',
+                o = {
+                    toString: () => {
+                        log += 's';
+                        return 'x';
+                    },
+                    valueOf: () => {
+                        throw 1;
+                    }
+                };
+            String(o) === 'x' && new String(o).valueOf() === 'x' && log === 'ss'
+        "#,
     );
     assert_true(
-        "let F=String.bind(null,'bound');new F().valueOf()==='bound' && String.call(null,7)==='7' && new String('x').constructor===String",
+        r#"
+            let F = String.bind(null, 'bound');
+            new F().valueOf() === 'bound' && String.call(null, 7) === '7' && new String('x')
+                .constructor === String
+        "#,
     );
     assert_eq!(
         Realm::default().eval("String({toString:()=>{throw 9;}})"),
@@ -62,10 +87,26 @@ fn wrappers_expose_immutable_utf16_indices_length_and_exact_key_order() {
         assert_eq!(realm.eval(&format!("var d=Object.getOwnPropertyDescriptor(s,'{key}');!d.writable && !d.configurable && d.enumerable==={}",key!="length")),Ok(Value::Boolean(true)));
     }
     assert_true(
-        "let s=Object('abc');s[0]='z';s.length=7;s[0]==='a' && s.length===3 && !delete s[0] && !delete s.length && s.hasOwnProperty('1') && !s.hasOwnProperty('-0') && !s.hasOwnProperty('01')",
+        r#"
+            let s = Object('abc');
+            s[0] = 'z';
+            s.length = 7;
+            s[0] === 'a' && s.length === 3 && !delete s[0] && !delete s.length && s.hasOwnProperty('1') &&
+                !s.hasOwnProperty('-0') && !s.hasOwnProperty('01')
+        "#,
     );
     assert_true(
-        "let s=Object('x');Object.defineProperty(s,'0',{value:'x'});Object.defineProperty(s,'length',{value:1});Object.freeze(s);Object.isFrozen(s) && s.valueOf()==='x'",
+        r#"
+            let s = Object('x');
+            Object.defineProperty(s, '0', {
+                value: 'x'
+            });
+            Object.defineProperty(s, 'length', {
+                value: 1
+            });
+            Object.freeze(s);
+            Object.isFrozen(s) && s.valueOf() === 'x'
+        "#,
     );
     for change in [
         "{value:'z'}",
@@ -111,16 +152,57 @@ fn primitive_property_getters_and_setters_preserve_receivers_and_own_index_prece
         "Object.defineProperty(String.prototype,'x',{get:function(){'use strict';return this;}});'abc'.x==='abc'",
     );
     assert_true(
-        "Object.defineProperty(String.prototype,'x',{get:function(){return this;}});let a='abc'.x,b='abc'.x;a instanceof String && a.valueOf()==='abc' && a!==b",
+        r#"
+            Object.defineProperty(String.prototype, 'x', {
+                get: function() {
+                    return this;
+                }
+            });
+            let a = 'abc'.x,
+                b = 'abc'.x;
+            a instanceof String && a.valueOf() === 'abc' && a !== b
+        "#,
     );
     assert_true(
-        "'use strict';let receiver,value;Object.defineProperty(String.prototype,'x',{set:function(v){receiver=this;value=v;}});'abc'.x=7;receiver==='abc' && value===7",
+        r#"
+            'use strict';
+            let receiver, value;
+            Object.defineProperty(String.prototype, 'x', {
+                set: function(v) {
+                    receiver = this;
+                    value = v;
+                }
+            });
+            'abc'.x = 7;
+            receiver === 'abc' && value === 7
+        "#,
     );
     assert_true(
-        "let count=0;Object.defineProperty(String.prototype,'0',{get:()=>{count++;return 'p';},set:()=>{count++;}});let s='abc';s[0]='z';s[0]==='a' && count===0 && ''[0]==='p' && count===1",
+        r#"
+            let count = 0;
+            Object.defineProperty(String.prototype, '0', {
+                get: () => {
+                    count++;
+                    return 'p';
+                },
+                set: () => {
+                    count++;
+                }
+            });
+            let s = 'abc';
+            s[0] = 'z';
+            s[0] === 'a' && count === 0 && '' [0] === 'p' && count === 1
+        "#,
     );
     assert_true(
-        "function f(){return this;}let s=f.call('abc');s instanceof String && s.length===3 && s[1]==='b' && Object.getPrototypeOf(s)===String.prototype",
+        r#"
+            function f() {
+                return this;
+            }
+            let s = f.call('abc');
+            s instanceof String && s.length === 3 && s[1] === 'b' && Object.getPrototypeOf(s) === String
+                .prototype
+        "#,
     );
     assert_true(
         "function f(){'use strict';return this;}f.call('abc')==='abc' && f.apply('abc')==='abc'",
@@ -130,10 +212,18 @@ fn primitive_property_getters_and_setters_preserve_receivers_and_own_index_prece
 #[test]
 fn object_algorithms_on_strings_use_index_descriptors_without_special_substitutions() {
     assert_true(
-        "let ds=Object.getOwnPropertyDescriptors('💩');ds[0].value==='\\uD83D' && ds[1].value==='\\uDCA9' && ds.length.value===2 && !ds.length.enumerable && ds[0].enumerable",
+        r#"
+            let ds = Object.getOwnPropertyDescriptors('💩');
+            ds[0].value === '\uD83D' && ds[1].value === '\uDCA9' && ds.length.value === 2 && !ds.length
+                .enumerable && ds[0].enumerable
+        "#,
     );
     assert_true(
-        "let o=Object.assign({},'ab','x');o[0]==='x' && o[1]==='b' && !Object.hasOwn(o,'length') && 'ab'.hasOwnProperty('1') && Object.hasOwn('ab','length')",
+        r#"
+            let o = Object.assign({}, 'ab', 'x');
+            o[0] === 'x' && o[1] === 'b' && !Object.hasOwn(o, 'length') && 'ab'.hasOwnProperty('1') &&
+                Object.hasOwn('ab', 'length')
+        "#,
     );
     type_error("Object.assign('x',{0:'z'})");
     type_error("Object.defineProperties({},'x')");

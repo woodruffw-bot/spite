@@ -20,12 +20,41 @@ fn drain(realm: &mut Realm) {
 fn callee_lookup_and_arguments_run_once_in_order_and_method_replacement_does_not_change_the_target()
 {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let state={},events=[],result,obj={x:7,get method(){events.push('get');return function(a,b,c){'use strict';if(this!==obj||arguments.length!==3)throw 1;events.push('call');return a+b+c}}};
-        state.gate=new Promise(resolve=>{state.release=resolve});
-        async function f(){return obj.method((events.push('first'),1),await state.gate,(events.push('last'),3))}
-        f().then(value=>{result=value});Object.defineProperty(obj,'method',{value(){throw 2}});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let state = {},
+                    events = [],
+                    result, obj = {
+                        x: 7,
+                        get method() {
+                            events.push('get');
+                            return function(a, b, c) {
+                                'use strict';
+                                if (this !== obj || arguments.length !== 3) throw 1;
+                                events.push('call');
+                                return a + b + c
+                            }
+                        }
+                    };
+                state.gate = new Promise(resolve => {
+                    state.release = resolve
+                });
+                async function f() {
+                    return obj.method((events.push('first'), 1), await state.gate, (events.push('last'),
+                        3))
+                }
+                f().then(value => {
+                    result = value
+                });
+                Object.defineProperty(obj, 'method', {
+                    value() {
+                        throw 2
+                    }
+                });
+            "#,
+        )
+        .unwrap();
     check(
         &mut realm,
         "events.join(',')==='get,first'&&result===undefined",
@@ -44,13 +73,13 @@ fn member_references_keep_receivers_while_comma_and_awaited_callee_values_do_not
     realm
         .eval(
             r#"
-        let state={},result,obj={method:function(value){'use strict';return[this,value]}};
-        state.gate=new Promise(resolve=>{state.release=resolve});
-        async function a(){return (obj.method)(await state.gate)}
-        async function b(){return (0,obj.method)(await state.gate)}
-        async function c(){return (await obj.method)(await state.gate)}
-        Promise.all([a(),b(),c()]).then(value=>{result=value});
-    "#,
+                let state={},result,obj={method:function(value){'use strict';return[this,value]}};
+                state.gate=new Promise(resolve=>{state.release=resolve});
+                async function a(){return (obj.method)(await state.gate)}
+                async function b(){return (0,obj.method)(await state.gate)}
+                async function c(){return (await obj.method)(await state.gate)}
+                Promise.all([a(),b(),c()]).then(value=>{result=value});
+            "#,
         )
         .unwrap();
     drain(&mut realm);
@@ -65,16 +94,53 @@ fn member_references_keep_receivers_while_comma_and_awaited_callee_values_do_not
     // before awaited arguments (13.3.6.2), including optional calls (13.3.9.2).
     for call in ["method(await state.gate)", "method?.(await state.gate)"] {
         let mut realm = Realm::default();
-        realm.eval(&r#"
-            let state={},events=[],result,receiver;
-            state.gate=new Promise(resolve=>{state.release=resolve});
-            let target={tag:7,[Symbol.unscopables]:{method:false},get method(){return function(value){'use strict';events.push('call');receiver=this;return this.tag+value}}};
-            let holder=new Proxy(target,{get(t,k,r){if(k==='method')events.push('get');return Reflect.get(t,k,r)}}),selected=holder;
-            with(holder){state.call=async()=>CALL}
-            state.call().then(value=>{result=value});
-            delete target.method;target[Symbol.unscopables].method=true;
-            globalThis.method=()=>{throw 7};holder=null;state.call=null;
-        "#.replace("CALL", call)).unwrap();
+        realm
+            .eval(
+                &r#"
+                    let state = {},
+                        events = [],
+                        result, receiver;
+                    state.gate = new Promise(resolve => {
+                        state.release = resolve
+                    });
+                    let target = {
+                        tag: 7,
+                        [Symbol.unscopables]: {
+                            method: false
+                        },
+                        get method() {
+                            return function(value) {
+                                'use strict';
+                                events.push('call');
+                                receiver = this;
+                                return this.tag + value
+                            }
+                        }
+                    };
+                    let holder = new Proxy(target, {
+                            get(t, k, r) {
+                                if (k === 'method') events.push('get');
+                                return Reflect.get(t, k, r)
+                            }
+                        }),
+                        selected = holder;
+                    with(holder) {
+                        state.call = async () => CALL
+                    }
+                    state.call().then(value => {
+                        result = value
+                    });
+                    delete target.method;
+                    target[Symbol.unscopables].method = true;
+                    globalThis.method = () => {
+                        throw 7
+                    };
+                    holder = null;
+                    state.call = null;
+                "#
+                .replace("CALL", call),
+            )
+            .unwrap();
         realm.clear_kept_objects().unwrap();
         realm.collect(usize::MAX).unwrap();
         check(&mut realm, "events.join(',')==='get'&&result===undefined");
@@ -90,13 +156,37 @@ fn member_references_keep_receivers_while_comma_and_awaited_callee_values_do_not
 #[test]
 fn direct_eval_with_awaited_arguments_keeps_original_identity_variables_and_private_context() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let state={},result,privateResult;state.gate=new Promise(resolve=>{state.release=resolve});
-        async function f(){let value=1;const result=eval(await state.gate);return[result,value]}
-        class C{#x=12;async read(p){return eval(await p)}}
-        f().then(value=>{result=value});new C().read(Promise.resolve('this.#x')).then(value=>{privateResult=value});
-        globalThis.eval=function(){throw 1};
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let state = {},
+                    result, privateResult;
+                state.gate = new Promise(resolve => {
+                    state.release = resolve
+                });
+                async function f() {
+                    let value = 1;
+                    const result = eval(await state.gate);
+                    return [result, value]
+                }
+                class C {
+                    #x = 12;
+                    async read(p) {
+                        return eval(await p)
+                    }
+                }
+                f().then(value => {
+                    result = value
+                });
+                new C().read(Promise.resolve('this.#x')).then(value => {
+                    privateResult = value
+                });
+                globalThis.eval = function() {
+                    throw 1
+                };
+            "#,
+        )
+        .unwrap();
     realm.eval("state.release('value=7;value')").unwrap();
     drain(&mut realm);
     check(&mut realm, "result.join(',')==='7,7'&&privateResult===12");
@@ -123,10 +213,10 @@ fn awaited_eval_callee_is_an_indirect_value_call() {
     realm
         .eval(
             r#"
-        let marker=99,result,saved=eval;
-        async function f(){let marker=1;return (await saved)('marker')}
-        f().then(value=>{result=value});
-    "#,
+                let marker=99,result,saved=eval;
+                async function f(){let marker=1;return (await saved)('marker')}
+                f().then(value=>{result=value});
+            "#,
         )
         .unwrap();
     drain(&mut realm);
@@ -139,10 +229,10 @@ fn awaited_spread_uses_sync_iteration_and_does_not_await_yielded_arguments() {
     realm
         .eval(
             r#"
-        let result,promise=Promise.resolve(4);function target(...values){return values}
-        async function f(){return target(...await [1,2],await 3,...[promise])}
-        f().then(value=>{result=value});
-    "#,
+                let result,promise=Promise.resolve(4);function target(...values){return values}
+                async function f(){return target(...await [1,2],await 3,...[promise])}
+                f().then(value=>{result=value});
+            "#,
         )
         .unwrap();
     drain(&mut realm);
@@ -178,13 +268,38 @@ fn noncallable_targets_evaluate_arguments_but_lookup_failures_skip_them() {
 #[test]
 fn pending_call_frames_trace_receivers_and_earlier_arguments_and_release_them_after_invocation() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let state={},result;state.gate=new Promise(resolve=>{state.release=resolve});
-        function target(first,second){return this.x+first.x+second}
-        let obj={x:3,method:target},arg={x:4};state.receiver=new WeakRef(obj);state.argument=new WeakRef(arg);
-        async function f(){return obj.method(arg,await state.gate)}
-        f().then(value=>{result=value});obj=null;arg=null;
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let state = {},
+                    result;
+                state.gate = new Promise(resolve => {
+                    state.release = resolve
+                });
+
+                function target(first, second) {
+                    return this.x + first.x + second
+                }
+                let obj = {
+                        x: 3,
+                        method: target
+                    },
+                    arg = {
+                        x: 4
+                    };
+                state.receiver = new WeakRef(obj);
+                state.argument = new WeakRef(arg);
+                async function f() {
+                    return obj.method(arg, await state.gate)
+                }
+                f().then(value => {
+                    result = value
+                });
+                obj = null;
+                arg = null;
+            "#,
+        )
+        .unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
     check(
@@ -207,8 +322,41 @@ fn resumed_argument_limit_failure_skips_invocation_rejection_and_resource_cleanu
         max_arguments: Some(2),
         ..Default::default()
     });
-    realm.eval("let state={},called=false,caught=false,disposed=0;state.gate=new Promise(resolve=>{state.release=resolve});function target(){called=true}").unwrap();
-    realm.eval("async function f(){using resource={[Symbol.dispose](){disposed++}};return target(1,await state.gate,3)}let output=f();output.catch(()=>{caught=true})").unwrap();
+    realm
+        .eval(
+            r#"
+                let state = {},
+                    called = false,
+                    caught = false,
+                    disposed = 0;
+                state.gate = new Promise(resolve => {
+                    state.release = resolve
+                });
+
+                function target() {
+                    called = true
+                }
+            "#,
+        )
+        .unwrap();
+    realm
+        .eval(
+            r#"
+                async function f() {
+                    using resource = {
+                        [Symbol.dispose]() {
+                            disposed++
+                        }
+                    };
+                    return target(1, await state.gate, 3)
+                }
+                let output = f();
+                output.catch(() => {
+                    caught = true
+                })
+            "#,
+        )
+        .unwrap();
     realm.eval("state.release(2)").unwrap();
     let mut reported = false;
     loop {

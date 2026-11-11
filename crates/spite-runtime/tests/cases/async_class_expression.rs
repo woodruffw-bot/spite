@@ -22,19 +22,19 @@ fn bindings_and_pattern_defaults_name_classes_before_static_initialization() {
     realm
         .eval(
             r#"
-        let result;
-        async function f(){
-            let A=class extends (await Object){static seen=this.name};
-            var B=(class{[await 'm'](){}static seen=this.name});
-            let [C=class{[await 'm'](){}static seen=this.name}]=[];
-            let {q:D=class{[await 'm'](){}static seen=this.name}}={};
-            let names=[A.seen,B.seen,C.seen,D.seen];
-            for(let [E=class{[await 'm'](){}static seen=this.name}] of [[]])names.push(E.seen);
-            try{throw []}catch([F=class{[await 'm'](){}static seen=this.name}]){names.push(F.seen)}
-            return names;
-        }
-        f().then(v=>result=v);
-    "#,
+                let result;
+                async function f(){
+                    let A=class extends (await Object){static seen=this.name};
+                    var B=(class{[await 'm'](){}static seen=this.name});
+                    let [C=class{[await 'm'](){}static seen=this.name}]=[];
+                    let {q:D=class{[await 'm'](){}static seen=this.name}}={};
+                    let names=[A.seen,B.seen,C.seen,D.seen];
+                    for(let [E=class{[await 'm'](){}static seen=this.name}] of [[]])names.push(E.seen);
+                    try{throw []}catch([F=class{[await 'm'](){}static seen=this.name}]){names.push(F.seen)}
+                    return names;
+                }
+                f().then(v=>result=v);
+            "#,
         )
         .unwrap();
     drain(&mut realm);
@@ -47,19 +47,44 @@ fn object_keys_name_classes_while_awaited_and_explicitly_named_values_keep_their
     realm
         .eval(
             r#"
-        let result;
-        async function f(){
-            let key=Symbol('key');
-            let object={plain:class{[await 'm'](){}static seen=this.name},
-                [key]:(class extends (await Object){static seen=this.name}),
-                explicit:class Inner{[await 'm'](){}static seen=this.name},
-                awaited:await(class{[await 'm'](){}static seen=this.name})};
-            let protoLiteral={__proto__:class{[await 'm'](){}static seen=this.name}};
-            let protoData={['__proto__']:class{[await 'm'](){}static seen=this.name}};
-            return [object.plain.seen,object[key].seen,object.explicit.seen,object.awaited.seen,Object.getPrototypeOf(protoLiteral).seen,protoData['__proto__'].seen];
-        }
-        f().then(v=>result=v);
-    "#,
+                let result;
+                async function f() {
+                    let key = Symbol('key');
+                    let object = {
+                        plain: class {
+                            [await 'm']() {}
+                            static seen = this.name
+                        },
+                        [key]: (class extends(await Object) {
+                            static seen = this.name
+                        }),
+                        explicit: class Inner {
+                            [await 'm']() {}
+                            static seen = this.name
+                        },
+                        awaited: await (class {
+                            [await 'm']() {}
+                            static seen = this.name
+                        })
+                    };
+                    let protoLiteral = {
+                        __proto__: class {
+                            [await 'm']() {}
+                            static seen = this.name
+                        }
+                    };
+                    let protoData = {
+                        ['__proto__']: class {
+                            [await 'm']() {}
+                            static seen = this.name
+                        }
+                    };
+                    return [object.plain.seen, object[key].seen, object.explicit.seen, object.awaited.seen,
+                        Object.getPrototypeOf(protoLiteral).seen, protoData['__proto__'].seen
+                    ];
+                }
+                f().then(v => result = v);
+            "#,
         )
         .unwrap();
     drain(&mut realm);
@@ -75,18 +100,18 @@ fn identifier_assignment_infers_names_and_property_or_parenthesized_targets_do_n
     realm
         .eval(
             r#"
-        let result;
-        async function f(){
-            let A,B=0,C=null,D,object={};
-            A=class{[await 'm'](){}static seen=this.name};
-            B||=class extends(await Object){static seen=this.name};
-            C??=(class{[await 'm'](){}static seen=this.name});
-            (D)=class{[await 'm'](){}static seen=this.name};
-            object.x=class{[await 'm'](){}static seen=this.name};
-            return [A.seen,B.seen,C.seen,D.seen,object.x.seen];
-        }
-        f().then(v=>result=v);
-    "#,
+                let result;
+                async function f(){
+                    let A,B=0,C=null,D,object={};
+                    A=class{[await 'm'](){}static seen=this.name};
+                    B||=class extends(await Object){static seen=this.name};
+                    C??=(class{[await 'm'](){}static seen=this.name});
+                    (D)=class{[await 'm'](){}static seen=this.name};
+                    object.x=class{[await 'm'](){}static seen=this.name};
+                    return [A.seen,B.seen,C.seen,D.seen,object.x.seen];
+                }
+                f().then(v=>result=v);
+            "#,
         )
         .unwrap();
     drain(&mut realm);
@@ -96,18 +121,32 @@ fn identifier_assignment_infers_names_and_property_or_parenthesized_targets_do_n
 #[test]
 fn nested_class_heritage_and_key_expressions_preserve_outer_tasks_and_internal_tdz() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let result,read,release;let gate=new Promise(r=>release=r);
-        async function f(){
-            let C=class Outer extends (read=()=>Outer,await gate,await(class Base{[await 'base'](){return 3}})){
-                [(await(class Key{static[await 'keyName']='m'})).keyName](){return this.base()+4}
-                static seen=this.name;
-            };
-            let internal=read();C=99;
-            return [internal,new internal().m(),internal.seen,C];
-        }
-        f().then(v=>result=v);
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let result, read, release;
+                let gate = new Promise(r => release = r);
+                async function f() {
+                    let C = class Outer extends(read = () => Outer, await gate, await (class Base {
+                        [await 'base']() {
+                            return 3
+                        }
+                    })) {
+                        [(await (class Key {
+                            static[await 'keyName'] = 'm'
+                        })).keyName]() {
+                            return this.base() + 4
+                        }
+                        static seen = this.name;
+                    };
+                    let internal = read();
+                    C = 99;
+                    return [internal, new internal().m(), internal.seen, C];
+                }
+                f().then(v => result = v);
+            "#,
+        )
+        .unwrap();
     check(
         &mut realm,
         "(()=>{try{read()}catch(e){return e instanceof ReferenceError}})()",
@@ -166,15 +205,40 @@ fn yielded_expression_classes_preserve_inferred_names_and_handle_return_and_thro
     check(
         &mut realm,
         r#"
-        let events=[],marker={};
-        function* g(){try{let C=class extends(yield 'base'){[yield 'key'](){return 8}static seen=this.name};return C}
-        catch(e){events.push(e===marker)}finally{expressionGeneratorSloppy=4;events.push('finally')}}
-        let success=g();if(success.next().value!=='base'||success.next(Object).value!=='key')throw 1;
-        let C=success.next('m').value;if(C.seen!=='C'||new C().m()!==8)throw 2;
-        let returned=g();returned.next();returned.next(Object);let end=returned.return(99);if(!end.done||end.value!==99)throw 3;
-        let thrown=g();thrown.next();thrown.next(Object);thrown.throw(marker);
-        events.join(',')==='finally,finally,true,finally'&&expressionGeneratorSloppy===4
-    "#,
+            let events = [],
+                marker = {};
+
+            function* g() {
+                try {
+                    let C = class extends(yield 'base') {
+                        [yield 'key']() {
+                            return 8
+                        }
+                        static seen = this.name
+                    };
+                    return C
+                } catch (e) {
+                    events.push(e === marker)
+                } finally {
+                    expressionGeneratorSloppy = 4;
+                    events.push('finally')
+                }
+            }
+            let success = g();
+            if (success.next().value !== 'base' || success.next(Object).value !== 'key') throw 1;
+            let C = success.next('m').value;
+            if (C.seen !== 'C' || new C().m() !== 8) throw 2;
+            let returned = g();
+            returned.next();
+            returned.next(Object);
+            let end = returned.return(99);
+            if (!end.done || end.value !== 99) throw 3;
+            let thrown = g();
+            thrown.next();
+            thrown.next(Object);
+            thrown.throw(marker);
+            events.join(',') === 'finally,finally,true,finally' && expressionGeneratorSloppy === 4
+        "#,
     );
 }
 
@@ -182,7 +246,19 @@ fn yielded_expression_classes_preserve_inferred_names_and_handle_return_and_thro
 fn parenthesized_default_export_names_expression_classes_before_static_elements() {
     let mut realm = Realm::default();
     realm.eval("let observed=[]").unwrap();
-    let promise=realm.eval_module("export default (class extends(await Object){[await 'm'](){return 7}static record=observed.push(this.name,new this().m())});observed.push('body')").unwrap();
+    let promise = realm
+        .eval_module(
+            r#"
+                export default (class extends(await Object) {
+                    [await 'm']() {
+                        return 7
+                    }
+                    static record = observed.push(this.name, new this().m())
+                });
+                observed.push('body')
+            "#,
+        )
+        .unwrap();
     let Value::Object(promise) = promise else {
         panic!("evaluation promise")
     };

@@ -9,7 +9,12 @@ use crate::common::assert_true;
 #[test]
 fn constructors_distinguish_lengths_from_single_elements() {
     assert_true(
-        "let a=Array(),b=new Array;a!==b && a.length===0 && b.length===0 && a instanceof Array && Object.getPrototypeOf(a)===Array.prototype",
+        r#"
+            let a = Array(),
+                b = new Array;
+            a !== b && a.length === 0 && b.length === 0 && a instanceof Array && Object.getPrototypeOf(
+                a) === Array.prototype
+        "#,
     );
     assert_true("let a=Array(3);a.length===3 && !('0' in a) && !('1' in a) && !('2' in a)");
     assert_true(
@@ -64,7 +69,13 @@ fn calls_apply_and_bound_construction_preserve_array_identity() {
     assert_true("let a=Array.call({x:1},'x');a[0]==='x' && a.length===1 && a instanceof Array");
     assert_true("let a=Array.apply(null,{0:3,1:4,length:2});a.length===2 && a[0]===3 && a[1]===4");
     assert_true(
-        "let F=Array.bind(null,'a');F.prototype={};let a=new F('b');a[0]==='a' && a[1]==='b' && a.length===2 && Object.getPrototypeOf(a)===Array.prototype && a instanceof F",
+        r#"
+            let F = Array.bind(null, 'a');
+            F.prototype = {};
+            let a = new F('b');
+            a[0] === 'a' && a[1] === 'b' && a.length === 2 && Object.getPrototypeOf(a) === Array
+                .prototype && a instanceof F
+        "#,
     );
     assert_true("let F=Array.bind(null,4);new F().length===4 && F().length===4");
 }
@@ -72,13 +83,38 @@ fn calls_apply_and_bound_construction_preserve_array_identity() {
 #[test]
 fn constructor_uses_own_data_definitions_without_inherited_setters() {
     assert_true(
-        "let n=0;Object.defineProperty(Array.prototype,'0',{set:()=>{n++;},configurable:true});let a=Array('x'),b=Array(1,2);n===0 && a[0]==='x' && b[0]===1 && b[1]===2 && Object.hasOwn(a,'0')",
+        r#"
+            let n = 0;
+            Object.defineProperty(Array.prototype, '0', {
+                set: () => {
+                    n++;
+                },
+                configurable: true
+            });
+            let a = Array('x'),
+                b = Array(1, 2);
+            n === 0 && a[0] === 'x' && b[0] === 1 && b[1] === 2 && Object.hasOwn(a, '0')
+        "#,
     );
     assert_true(
-        "Object.defineProperty(Array.prototype,'0',{value:9,writable:false,configurable:true});let a=Array(1,2);a[0]===1 && a[1]===2",
+        r#"
+            Object.defineProperty(Array.prototype, '0', {
+                value: 9,
+                writable: false,
+                configurable: true
+            });
+            let a = Array(1, 2);
+            a[0] === 1 && a[1] === 2
+        "#,
     );
     assert_true(
-        "Object.defineProperty(Array.prototype,'length',{writable:false});let a=Array(2,3);a.length===2 && a[0]===2 && a[1]===3",
+        r#"
+            Object.defineProperty(Array.prototype, 'length', {
+                writable: false
+            });
+            let a = Array(2, 3);
+            a.length === 2 && a[0] === 2 && a[1] === 3
+        "#,
     );
 }
 
@@ -159,20 +195,37 @@ fn index_growth_readonly_lengths_and_integrity_operations_use_array_rules() {
     assert_true("let a=Array(1,2,3);delete a[2];a.length===3 && !('2' in a)");
     assert_true("let a=Array(1,2,3);a.length='1';a.length===1 && !('1' in a) && !('2' in a)");
     assert_true(
-        "let a=Array(1,2);Object.freeze(a);a[0]=8;a[2]=9;a.length=0;Object.isFrozen(a) && a[0]===1 && a.length===2 && !('2' in a)",
+        r#"
+            let a = Array(1, 2);
+            Object.freeze(a);
+            a[0] = 8;
+            a[2] = 9;
+            a.length = 0;
+            Object.isFrozen(a) && a[0] === 1 && a.length === 2 && !('2' in a)
+        "#,
     );
     assert_true(
         "let a=Array(1,2);Object.seal(a);a[0]=8;a.length=0;Object.isSealed(a) && a[0]===8 && a.length===2",
     );
     assert_true(
-        "let a=Array(1);Object.preventExtensions(a);a.length=5;a[0]=8;!Object.isExtensible(a) && a.length===5 && !('0' in a)",
+        r#"
+            let a = Array(1);
+            Object.preventExtensions(a);
+            a.length = 5;
+            a[0] = 8;
+            !Object.isExtensible(a) && a.length === 5 && !('0' in a)
+        "#,
     );
 }
 
 #[test]
 fn array_intrinsic_descriptors_and_ordinary_missing_properties_are_observable() {
     assert_true(
-        "let d=Object.getOwnPropertyDescriptors(Array);d.fromAsync.value===Array.fromAsync&&d.fromAsync.writable&&!d.fromAsync.enumerable&&d.fromAsync.configurable",
+        r#"
+            let d = Object.getOwnPropertyDescriptors(Array);
+            d.fromAsync.value === Array.fromAsync && d.fromAsync.writable && !d.fromAsync.enumerable && d
+                .fromAsync.configurable
+        "#,
     );
     assert_true("Object.defineProperty(Array,'fromAsync',{value:7});Array.fromAsync===7");
     assert_true("let a=Array();a.join=7;a.join===7&&a.random===undefined");

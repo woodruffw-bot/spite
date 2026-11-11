@@ -9,26 +9,74 @@ use crate::common::assert_true;
 #[test]
 fn all_json_values_and_binary64_boundaries_materialize() {
     assert_true(
-        "JSON.parse('null')===null && JSON.parse('true')===true && JSON.parse('false')===false && Object.is(JSON.parse('-0'),-0) && JSON.parse('1e400')===Infinity && Object.is(JSON.parse('-1e-400'),-0) && JSON.parse('9007199254740993')===9007199254740992 && JSON.parse('5e-324')===Number.MIN_VALUE",
+        r#"
+            JSON.parse('null') === null && JSON.parse('true') === true && JSON.parse('false') === false &&
+                Object.is(JSON.parse('-0'), -0) && JSON.parse('1e400') === Infinity && Object.is(JSON
+                    .parse('-1e-400'), -0) && JSON.parse('9007199254740993') === 9007199254740992 && JSON
+                .parse('5e-324') === Number.MIN_VALUE
+        "#,
     );
     assert_true(
-        r#"let value=JSON.parse(' {"a":[1,true,null,"x"],"b":{}} ');Array.isArray(value.a) && value.a.length===4 && value.a[0]===1 && value.a[1]===true && value.a[2]===null && value.a[3]==='x' && Object.getPrototypeOf(value)===Object.prototype && Object.getPrototypeOf(value.a)===Array.prototype && Object.getPrototypeOf(value.b)===Object.prototype"#,
+        r#"
+            let value = JSON.parse(' {"a":[1,true,null,"x"],"b":{}} ');
+            Array.isArray(value.a) && value.a.length === 4 && value.a[0] === 1 && value.a[1] === true &&
+                value.a[2] === null && value.a[3] === 'x' && Object.getPrototypeOf(value) === Object
+                .prototype && Object.getPrototypeOf(value.a) === Array.prototype && Object.getPrototypeOf(
+                    value.b) === Object.prototype
+        "#,
     );
     assert_true(
-        r#"JSON.parse('"\\uD800\\uDC00"')==='\uD800\uDC00' && JSON.parse('"\\uD800"')==='\uD800' && JSON.parse('"'+ '\uDC00' +'"')==='\uDC00' && JSON.parse('"\\u2028\\u2029"')==='\u2028\u2029'"#,
+        r#"
+            JSON.parse('"\\uD800\\uDC00"') === '\uD800\uDC00' && JSON.parse('"\\uD800"') === '\uD800' &&
+                JSON.parse('"' + '\uDC00' + '"') === '\uDC00' && JSON.parse('"\\u2028\\u2029"') ===
+                '\u2028\u2029'
+        "#,
     );
 }
 
 #[test]
 fn duplicates_proto_names_and_setters_obey_json_data_property_semantics() {
     assert_true(
-        r#"let value=JSON.parse('{"z":1,"__proto__":{"x":3},"2":7,"z":2,"1":8,"__proto__":4}');value.z===2 && value.__proto__===4 && Object.getPrototypeOf(value)===Object.prototype && Object.keys(value).join(',')==='1,2,z,__proto__' && Object.hasOwn(value,'__proto__')"#,
+        r#"
+            let value = JSON.parse('{"z":1,"__proto__":{"x":3},"2":7,"z":2,"1":8,"__proto__":4}');
+            value.z === 2 && value.__proto__ === 4 && Object.getPrototypeOf(value) === Object.prototype &&
+                Object.keys(value).join(',') === '1,2,z,__proto__' && Object.hasOwn(value, '__proto__')
+        "#,
     );
     assert_true(
-        r#"Object.defineProperty(Object.prototype,'x',{set(){throw 7;}});Object.defineProperty(Array.prototype,'0',{set(){throw 8;}});let value=JSON.parse('{"x":1,"a":[2]}'),d=Object.getOwnPropertyDescriptor(value,'x'),e=Object.getOwnPropertyDescriptor(value.a,'0');value.x===1 && value.a[0]===2 && d.writable && d.enumerable && d.configurable && e.writable && e.enumerable && e.configurable"#,
+        r#"
+            Object.defineProperty(Object.prototype, 'x', {
+                set() {
+                    throw 7;
+                }
+            });
+            Object.defineProperty(Array.prototype, '0', {
+                set() {
+                    throw 8;
+                }
+            });
+            let value = JSON.parse('{"x":1,"a":[2]}'),
+                d = Object.getOwnPropertyDescriptor(value, 'x'),
+                e = Object.getOwnPropertyDescriptor(value.a, '0');
+            value.x === 1 && value.a[0] === 2 && d.writable && d.enumerable && d.configurable && e
+                .writable && e.enumerable && e.configurable
+        "#,
     );
     assert_true(
-        r#"let parse=JSON.parse,get=Object.getPrototypeOf,op=Object.prototype,ap=Array.prototype;globalThis.Object=function(){throw 7;};globalThis.Array=function(){throw 8;};let value=parse('{"a":[]}');get(value)===op && get(value.a)===ap"#,
+        r#"
+            let parse = JSON.parse,
+                get = Object.getPrototypeOf,
+                op = Object.prototype,
+                ap = Array.prototype;
+            globalThis.Object = function() {
+                throw 7;
+            };
+            globalThis.Array = function() {
+                throw 8;
+            };
+            let value = parse('{"a":[]}');
+            get(value) === op && get(value.a) === ap
+        "#,
     );
 }
 
@@ -75,7 +123,19 @@ fn invalid_json_throws_intrinsic_syntaxerror() {
         );
     }
     assert_true(
-        "let C=SyntaxError;globalThis.SyntaxError=function(){throw 7;};let caught=false;try{JSON.parse('x');}catch(e){caught=e instanceof C && e.constructor===C;}caught",
+        r#"
+            let C = SyntaxError;
+            globalThis.SyntaxError = function() {
+                throw 7;
+            };
+            let caught = false;
+            try {
+                JSON.parse('x');
+            } catch (e) {
+                caught = e instanceof C && e.constructor === C;
+            }
+            caught
+        "#,
     );
 }
 
@@ -108,7 +168,14 @@ fn metadata_nonconstruction_and_intrinsic_retention_are_standard() {
 #[test]
 fn deep_default_values_and_opted_in_host_aborts_are_safe() {
     assert_true(
-        "let value=JSON.parse('['.repeat(10000)+'0'+']'.repeat(10000));for(let i=0;i<10000;i++){if(!Array.isArray(value) || value.length!==1)throw 7;value=value[0];}value===0",
+        r#"
+            let value = JSON.parse('['.repeat(10000) + '0' + ']'.repeat(10000));
+            for (let i = 0; i < 10000; i++) {
+                if (!Array.isArray(value) || value.length !== 1) throw 7;
+                value = value[0];
+            }
+            value === 0
+        "#,
     );
     let mut realm = Realm::new(Limits {
         max_steps: Some(5000),

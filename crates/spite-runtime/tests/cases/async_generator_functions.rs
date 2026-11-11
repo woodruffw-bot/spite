@@ -35,12 +35,42 @@ fn declarations_expressions_and_public_private_methods_are_callable_and_nonconst
     check(
         &mut realm,
         r#"
-        async function*g(){}let o={async*m(x,y=1){}},expression=async function* named(){};
-        class C{async*m(){}static async*s(){}async*#p(){}get(){return this.#p}}
-        let values=[g,expression,o.m,new C().m,C.s,new C().get()],FP=Object.getPrototypeOf(g),GP=FP.prototype;
-        values.every(f=>{let caught=false;try{new f()}catch(e){caught=e instanceof TypeError}let target=false;try{Reflect.construct(Object,[],f)}catch(e){target=e instanceof TypeError}return typeof f==='function'&&caught&&target&&Object.getPrototypeOf(f)===FP&&Object.hasOwn(f,'prototype')&&Object.getPrototypeOf(f.prototype)===GP})&&
-        expression.name==='named'&&o.m.name==='m'&&o.m.length===1&&new C().get().name==='#p'&&g instanceof FP.constructor&&Object.create(g.prototype) instanceof g
-    "#,
+            async function* g() {}
+            let o = {
+                    async * m(x, y = 1) {}
+                },
+                expression = async function* named() {};
+            class C {
+                async * m() {}
+                static async * s() {}
+                async * #p() {}
+                get() {
+                    return this.#p
+                }
+            }
+            let values = [g, expression, o.m, new C().m, C.s, new C().get()],
+                FP = Object.getPrototypeOf(g),
+                GP = FP.prototype;
+            values.every(f => {
+                    let caught = false;
+                    try {
+                        new f()
+                    } catch (e) {
+                        caught = e instanceof TypeError
+                    }
+                    let target = false;
+                    try {
+                        Reflect.construct(Object, [], f)
+                    } catch (e) {
+                        target = e instanceof TypeError
+                    }
+                    return typeof f === 'function' && caught && target && Object.getPrototypeOf(f) ===
+                        FP && Object.hasOwn(f, 'prototype') && Object.getPrototypeOf(f.prototype) ===
+                        GP
+                }) &&
+                expression.name === 'named' && o.m.name === 'm' && o.m.length === 1 && new C().get()
+                .name === '#p' && g instanceof FP.constructor && Object.create(g.prototype) instanceof g
+        "#,
     );
 }
 
@@ -73,12 +103,21 @@ fn prototype_methods_reject_unbranded_receivers_with_fresh_intrinsic_promises() 
     check(
         &mut realm,
         r#"
-        let P=Promise,GP=Object.getPrototypeOf(async function*(){}).prototype,seen=[],promises=[];Promise=null;
-        for(let name of ['next','return','throw'])for(let receiver of [undefined,null,7,Symbol(),{},GP,(function*(){})(),new Proxy({}, {})]){
-            let promise=GP[name].call(receiver,1);if(!(promise instanceof P))throw 1;promises.push(promise);promise.then(()=>seen.push(false),error=>seen.push(error instanceof TypeError));
-        }
-        promises.length===24&&new Set(promises).size===24&&seen.length===0
-    "#,
+            let P = Promise,
+                GP = Object.getPrototypeOf(async function*() {}).prototype,
+                seen = [],
+                promises = [];
+            Promise = null;
+            for (let name of ['next', 'return', 'throw'])
+                for (let receiver of [undefined, null, 7, Symbol(), {}, GP, (function*() {})(),
+                    new Proxy({}, {})]) {
+                    let promise = GP[name].call(receiver, 1);
+                    if (!(promise instanceof P)) throw 1;
+                    promises.push(promise);
+                    promise.then(() => seen.push(false), error => seen.push(error instanceof TypeError));
+                }
+            promises.length === 24 && new Set(promises).size === 24 && seen.length === 0
+        "#,
     );
     loop {
         match realm.run_next_promise_job().unwrap() {

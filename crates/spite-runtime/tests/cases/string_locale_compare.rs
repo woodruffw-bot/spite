@@ -27,35 +27,127 @@ fn canonical_equivalence_returns_positive_zero_for_all_spec_examples() {
 fn fixed_host_order_is_consistent_and_preserves_compatibility_distinctions() {
     // NFD makes canonically equivalent spellings interchangeable in comparisons.
     assert_true(
-        "let values=['','A','a','a\\u0301','á','b','ﬃ','\\uD800','😀','\\uE000'];let valid=true;for(let a of values){for(let b of values){let ab=a.localeCompare(b),ba=b.localeCompare(a);valid=valid && ab===-ba;for(let c of values){if(ab<=0 && b.localeCompare(c)<=0){valid=valid && a.localeCompare(c)<=0;}}}}valid",
+        r#"
+            let values = ['', 'A', 'a', 'a\u0301', 'á', 'b', 'ﬃ', '\uD800', '😀', '\uE000'];
+            let valid = true;
+            for (let a of values) {
+                for (let b of values) {
+                    let ab = a.localeCompare(b),
+                        ba = b.localeCompare(a);
+                    valid = valid && ab === -ba;
+                    for (let c of values) {
+                        if (ab <= 0 && b.localeCompare(c) <= 0) {
+                            valid = valid && a.localeCompare(c) <= 0;
+                        }
+                    }
+                }
+            }
+            valid
+        "#,
     );
     assert_true(
-        "'é'.localeCompare('f')===-1 && 'e\\u0301'.localeCompare('f')===-1 && 'f'.localeCompare('é')===1 && 'a'.localeCompare('aa')===-1",
+        r#"
+            'é'.localeCompare('f') === -1 && 'e\u0301'.localeCompare('f') === -1 && 'f'.localeCompare(
+                'é') === 1 && 'a'.localeCompare('aa') === -1
+        "#,
     );
     assert_true(
         "'ﬃ'.localeCompare('ffi')!==0 && '①'.localeCompare('1')!==0 && 'Ａ'.localeCompare('A')!==0",
     );
     assert_true(
-        "'\\uD800'.localeCompare('\\uD801')===-1 && '😀'.localeCompare('\\uE000')===-1 && 'é\\uDC00'.localeCompare('e\\u0301\\uDC00')===0 && 'é\\uD800'.localeCompare('e\\uD800\\u0301')!==0",
+        r#"
+            '\uD800'.localeCompare('\uD801') === -1 && '😀'.localeCompare('\uE000') === -1 && 'é\uDC00'
+                .localeCompare('e\u0301\uDC00') === 0 && 'é\uD800'.localeCompare('e\uD800\u0301') !== 0
+        "#,
     );
 }
 
 #[test]
 fn coercion_is_ordered_once_with_string_hints_and_preserves_abrupt_results() {
     assert_true(
-        "let log='',s={[Symbol.toPrimitive](hint){log+='s'+hint;return 'é';}},t={[Symbol.toPrimitive](hint){log+='t'+hint;return 'e\\u0301';}};String.prototype.localeCompare.call(s,t)===0 && log==='sstringtstring'",
+        r#"
+            let log = '',
+                s = {
+                    [Symbol.toPrimitive](hint) {
+                        log += 's' + hint;
+                        return 'é';
+                    }
+                },
+                t = {
+                    [Symbol.toPrimitive](hint) {
+                        log += 't' + hint;
+                        return 'e\u0301';
+                    }
+                };
+            String.prototype.localeCompare.call(s, t) === 0 && log === 'sstringtstring'
+        "#,
     );
     assert_true(
-        "let log='',caught=false;try{String.prototype.localeCompare.call({toString(){log+='s';throw 7;}},{toString(){log+='t';throw 8;}});}catch(e){caught=e===7;}caught && log==='s'",
+        r#"
+            let log = '',
+                caught = false;
+            try {
+                String.prototype.localeCompare.call({
+                    toString() {
+                        log += 's';
+                        throw 7;
+                    }
+                }, {
+                    toString() {
+                        log += 't';
+                        throw 8;
+                    }
+                });
+            } catch (e) {
+                caught = e === 7;
+            }
+            caught && log === 's'
+        "#,
     );
     assert_true(
-        "let log='',caught=false;try{String.prototype.localeCompare.call({toString(){log+='s';return 'x';}},{toString(){log+='t';throw 8;}});}catch(e){caught=e===8;}caught && log==='st'",
+        r#"
+            let log = '',
+                caught = false;
+            try {
+                String.prototype.localeCompare.call({
+                    toString() {
+                        log += 's';
+                        return 'x';
+                    }
+                }, {
+                    toString() {
+                        log += 't';
+                        throw 8;
+                    }
+                });
+            } catch (e) {
+                caught = e === 8;
+            }
+            caught && log === 'st'
+        "#,
     );
     assert_true(
-        "let touched=false,caught=false;try{String.prototype.localeCompare.call(null,{toString(){touched=true;}});}catch(e){caught=e instanceof TypeError;}caught && !touched",
+        r#"
+            let touched = false,
+                caught = false;
+            try {
+                String.prototype.localeCompare.call(null, {
+                    toString() {
+                        touched = true;
+                    }
+                });
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && !touched
+        "#,
     );
     assert_true(
-        "String.prototype.localeCompare.call(7,7n)===0 && String.prototype.localeCompare.call(true,'true')===0 && new String('é').localeCompare(new String('e\\u0301'))===0 && 'undefined'.localeCompare()===0",
+        r#"
+            String.prototype.localeCompare.call(7, 7n) === 0 && String.prototype.localeCompare.call(true,
+                    'true') === 0 && new String('é').localeCompare(new String('e\u0301')) === 0 &&
+                'undefined'.localeCompare() === 0
+        "#,
     );
     for source in [
         "String.prototype.localeCompare.call(undefined,'x')",
@@ -78,7 +170,19 @@ fn coercion_is_ordered_once_with_string_hints_and_preserves_abrupt_results() {
 #[test]
 fn reserved_arguments_are_ignored_and_public_normalization_is_not_consulted() {
     assert_true(
-        "let log='',reserved={get length(){throw 7;},toString(){throw 8;}};'é'.localeCompare('e\\u0301',(log+='a',reserved),(log+='b',reserved))===0 && log==='ab'",
+        r#"
+            let log = '',
+                reserved = {
+                    get length() {
+                        throw 7;
+                    },
+                    toString() {
+                        throw 8;
+                    }
+                };
+            'é'.localeCompare('e\u0301', (log += 'a', reserved), (log += 'b', reserved)) === 0 && log ===
+                'ab'
+        "#,
     );
     assert_true(
         "Object.defineProperty(String.prototype,'normalize',{get(){throw 9;}});'é'.localeCompare('e\\u0301')===0",
@@ -91,7 +195,14 @@ fn reserved_arguments_are_ignored_and_public_normalization_is_not_consulted() {
 #[test]
 fn descriptors_nonconstruction_and_intrinsic_retention_are_standard() {
     assert_true(
-        "let d=Object.getOwnPropertyDescriptor(String.prototype,'localeCompare'),n=Object.getOwnPropertyDescriptor(d.value,'name'),l=Object.getOwnPropertyDescriptor(d.value,'length');d.writable && !d.enumerable && d.configurable && n.value==='localeCompare' && !n.writable && !n.enumerable && n.configurable && l.value===1 && !l.writable && !l.enumerable && l.configurable && !Object.hasOwn(d.value,'prototype')",
+        r#"
+            let d = Object.getOwnPropertyDescriptor(String.prototype, 'localeCompare'),
+                n = Object.getOwnPropertyDescriptor(d.value, 'name'),
+                l = Object.getOwnPropertyDescriptor(d.value, 'length');
+            d.writable && !d.enumerable && d.configurable && n.value === 'localeCompare' && !n.writable &&
+                !n.enumerable && n.configurable && l.value === 1 && !l.writable && !l.enumerable && l
+                .configurable && !Object.hasOwn(d.value, 'prototype')
+        "#,
     );
     assert!(matches!(
         Realm::default().eval("new String.prototype.localeCompare()"),

@@ -55,7 +55,13 @@ fn suspended_class_metadata_consumes_collection_work() {
                 }
                 let target = if static_fields { "C" } else { "instance" };
                 assert_eq!(realm.eval(&format!(
-                    "let instance=new C();done&&Object.hasOwn(instance,'late')&&instance.late===undefined&&Object.keys({target}).length==={}&&Object.hasOwn({target},'f0')&&Object.hasOwn({target},'f511')&&{target}.f0===undefined&&{target}.f511===undefined",
+                    r#"
+                        let instance = new C();
+                        done && Object.hasOwn(instance, 'late') && instance.late === undefined && Object.keys(
+                                {target}).length === {} && Object.hasOwn({target}, 'f0') && Object
+                            .hasOwn({target}, 'f511') && {target}.f0 === undefined && {target}.f511 ===
+                            undefined
+                    "#,
                     FIELDS + usize::from(!static_fields)
                 )), Ok(Value::Boolean(true)));
             }

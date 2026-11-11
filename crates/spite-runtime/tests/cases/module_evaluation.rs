@@ -30,14 +30,31 @@ fn state<'a>(realm: &'a Realm, value: &Value) -> &'a PromiseState {
 fn module_bindings_are_private_and_functions_are_initialized_before_body_entry() {
     let mut realm = Realm::default();
     realm.eval("var shared=99;let observations=[]").unwrap();
-    let promise = realm.eval_module("observations.push(f(),shared);export var shared=1;export let value=2;export function f(){return shared};globalThis.readModule=()=>[shared,value,f()];globalThis.writeModule=x=>shared=x").unwrap();
+    let promise = realm
+        .eval_module(
+            r#"
+                observations.push(f(), shared);
+                export var shared = 1;
+                export let value = 2;
+                export function f() {
+                    return shared
+                };
+                globalThis.readModule = () => [shared, value, f()];
+                globalThis.writeModule = x => shared = x
+            "#,
+        )
+        .unwrap();
     assert!(matches!(
         state(&realm, &promise),
         PromiseState::Fulfilled(Value::Undefined)
     ));
     check(
         &mut realm,
-        "observations.length===2&&observations.every(x=>x===undefined)&&shared===99&&readModule().join(',')==='1,2,1'&&typeof value==='undefined'&&typeof f==='undefined'&&!Object.hasOwn(globalThis,'value')",
+        r#"
+            observations.length === 2 && observations.every(x => x === undefined) && shared === 99 &&
+                readModule().join(',') === '1,2,1' && typeof value === 'undefined' && typeof f ===
+                'undefined' && !Object.hasOwn(globalThis, 'value')
+        "#,
     );
     check(
         &mut realm,
@@ -49,14 +66,39 @@ fn module_bindings_are_private_and_functions_are_initialized_before_body_entry()
 fn module_this_and_direct_eval_keep_module_context_across_functions_and_arrows() {
     let mut realm = Realm::default();
     realm.eval("let results=[]").unwrap();
-    let promise=realm.eval_module("results.push(this===undefined,(()=>this)()===undefined,eval('this')===undefined);try{eval('new.target')}catch(e){results.push(e instanceof SyntaxError)};eval('var local=1');results.push(typeof local==='undefined');globalThis.arrow=()=>eval('new.target');globalThis.ordinary=function(){return eval('new.target')}").unwrap();
+    let promise = realm
+        .eval_module(
+            r#"
+                results.push(this === undefined, (() => this)() === undefined, eval('this') === undefined);
+                try {
+                    eval('new.target')
+                } catch (e) {
+                    results.push(e instanceof SyntaxError)
+                };
+                eval('var local=1');
+                results.push(typeof local === 'undefined');
+                globalThis.arrow = () => eval('new.target');
+                globalThis.ordinary = function() {
+                    return eval('new.target')
+                }
+            "#,
+        )
+        .unwrap();
     assert!(matches!(
         state(&realm, &promise),
         PromiseState::Fulfilled(_)
     ));
     check(
         &mut realm,
-        "results.length===5&&results.every(x=>x)&&ordinary()===undefined&&(()=>{try{arrow()}catch(e){return e instanceof SyntaxError}})()&&this===globalThis",
+        r#"
+            results.length === 5 && results.every(x => x) && ordinary() === undefined && (() => {
+                try {
+                    arrow()
+                } catch (e) {
+                    return e instanceof SyntaxError
+                }
+            })() && this === globalThis
+        "#,
     );
 }
 

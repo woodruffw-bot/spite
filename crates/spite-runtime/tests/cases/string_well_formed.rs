@@ -60,7 +60,27 @@ fn generic_receivers_use_string_hint_and_ignore_arguments_after_evaluation() {
             "'�'"
         };
         assert_true(&format!(
-            "let log='';let r={{toString:()=>{{log+='s';return '\\uD800';}},valueOf:()=>{{throw 1;}}}},ignored={{toString:()=>{{throw 2;}},valueOf:()=>{{throw 3;}}}};String.prototype.{name}.call(r,(log+='a',ignored))==={expected} && log==='as'"
+            r#"
+                let log = '';
+                let r = {{
+                        toString: () => {{
+                            log += 's';
+                            return '\uD800';
+                        }},
+                        valueOf: () => {{
+                            throw 1;
+                        }}
+                    }},
+                    ignored = {{
+                        toString: () => {{
+                            throw 2;
+                        }},
+                        valueOf: () => {{
+                            throw 3;
+                        }}
+                    }};
+                String.prototype.{name}.call(r, (log += 'a', ignored)) === {expected} && log === 'as'
+            "#
         ));
         assert_eq!(
             Realm::default().eval(&format!(
@@ -91,7 +111,10 @@ fn generic_receivers_use_string_hint_and_ignore_arguments_after_evaluation() {
         "String.prototype.isWellFormed.call(123n) && String.prototype.toWellFormed.call(true)==='true' && String.prototype.toWellFormed.call({toString:()=>({}),valueOf:()=>123})==='123'",
     );
     assert_true(
-        "!new String('\\uD800').isWellFormed() && new String('\\uD800').toWellFormed()==='�' && String.prototype.isWellFormed() && String.prototype.toWellFormed()===''",
+        r#"
+            !new String('\uD800').isWellFormed() && new String('\uD800').toWellFormed() === '�' && String
+                .prototype.isWellFormed() && String.prototype.toWellFormed() === ''
+        "#,
     );
 }
 
@@ -99,7 +122,11 @@ fn generic_receivers_use_string_hint_and_ignore_arguments_after_evaluation() {
 fn standard_method_metadata_and_intrinsic_roots_are_preserved() {
     for name in ["isWellFormed", "toWellFormed"] {
         assert_true(&format!(
-            "let d=Object.getOwnPropertyDescriptor(String.prototype,'{name}');d.writable && !d.enumerable && d.configurable && d.value.name==='{name}' && d.value.length===0 && !Object.hasOwn(d.value,'prototype')"
+            r#"
+                let d = Object.getOwnPropertyDescriptor(String.prototype, '{name}');
+                d.writable && !d.enumerable && d.configurable && d.value.name === '{name}' && d.value
+                    .length === 0 && !Object.hasOwn(d.value, 'prototype')
+            "#
         ));
         assert!(matches!(
             Realm::default().eval(&format!("new String.prototype.{name}()")),

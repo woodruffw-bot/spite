@@ -34,11 +34,47 @@ fn rest_patterns_receive_dense_intrinsic_arrays_and_may_contain_defaults() {
     assert_true("let f=(...[,,...{length:n}])=>n;f(1,2,3,4)===2 && f()===0");
     assert_true("function f(...{length:n,0:first=7}){return n+first;}f()===7 && f(3,4)===5");
     assert_true(
-        "let original=Array;Array=function(){throw 1;};function f(...[x,...xs]){return xs;}let xs=f({},2,3);Array=original;xs.length===2 && xs[0]===2 && Object.getPrototypeOf(xs)===original.prototype",
+        r#"
+            let original = Array;
+            Array = function() {
+                throw 1;
+            };
+
+            function f(...[x, ...xs]) {
+                return xs;
+            }
+            let xs = f({}, 2, 3);
+            Array = original;
+            xs.length === 2 && xs[0] === 2 && Object.getPrototypeOf(xs) === original.prototype
+        "#,
     );
     assert_true("let saved;function f(...[x=(saved=()=>x,2)]){var x=7;return saved()+x;}f()===9");
     assert_true(
-        "let original=Array.prototype[Symbol.iterator],calls=0;Array.prototype[Symbol.iterator]=function(){calls++;return{next(){return{done:false,value:7};},return(){return{};}};};function f(...[x]){return x;}let result=f(1,2);Array.prototype[Symbol.iterator]=original;result===7 && calls===1",
+        r#"
+            let original = Array.prototype[Symbol.iterator],
+                calls = 0;
+            Array.prototype[Symbol.iterator] = function() {
+                calls++;
+                return {
+                    next() {
+                        return {
+                            done: false,
+                            value: 7
+                        };
+                    },
+                    return () {
+                        return {};
+                    }
+                };
+            };
+
+            function f(...[x]) {
+                return x;
+            }
+            let result = f(1, 2);
+            Array.prototype[Symbol.iterator] = original;
+            result === 7 && calls === 1
+        "#,
     );
 }
 
@@ -119,13 +155,93 @@ fn length_counts_patterns_until_a_top_level_default_or_rest_and_source_is_exact(
 #[test]
 fn iterator_closing_preserves_errors_and_skips_later_parameters_and_body() {
     assert_true(
-        "let log=[],source={next(){log.push('step');return{done:false,value:undefined};},return(){log.push('close');throw 8;},[Symbol.iterator](){return this;}};function fail(){throw 7;}function f([x=fail()],y=(log.push('later'),2)){log.push('body');}let result;try{f(source);}catch(e){result=e===7;}result && log.join(',')==='step,close'",
+        r#"
+            let log = [],
+                source = {
+                    next() {
+                        log.push('step');
+                        return {
+                            done: false,
+                            value: undefined
+                        };
+                    },
+                    return () {
+                        log.push('close');
+                        throw 8;
+                    },
+                    [Symbol.iterator]() {
+                        return this;
+                    }
+                };
+
+            function fail() {
+                throw 7;
+            }
+
+            function f([x = fail()], y = (log.push('later'), 2)) {
+                log.push('body');
+            }
+            let result;
+            try {
+                f(source);
+            } catch (e) {
+                result = e === 7;
+            }
+            result && log.join(',') === 'step,close'
+        "#,
     );
     assert_true(
-        "let log=[],source={next(){log.push('step');return{done:false,value:2};},return(){log.push('close');return{};},[Symbol.iterator](){return this;}};function f([x],y=(log.push('later'),3)){log.push('body');return x+y;}f(source)===5 && log.join(',')==='step,close,later,body'",
+        r#"
+            let log = [],
+                source = {
+                    next() {
+                        log.push('step');
+                        return {
+                            done: false,
+                            value: 2
+                        };
+                    },
+                    return () {
+                        log.push('close');
+                        return {};
+                    },
+                    [Symbol.iterator]() {
+                        return this;
+                    }
+                };
+
+            function f([x], y = (log.push('later'), 3)) {
+                log.push('body');
+                return x + y;
+            }
+            f(source) === 5 && log.join(',') === 'step,close,later,body'
+        "#,
     );
     assert_true(
-        "let closed=0,source={next(){throw 7;},return(){closed++;return{};},[Symbol.iterator](){return this;}};function f([x]){}let result;try{f(source);}catch(e){result=e===7;}result && closed===0",
+        r#"
+            let closed = 0,
+                source = {
+                    next() {
+                        throw 7;
+                    },
+                    return () {
+                        closed++;
+                        return {};
+                    },
+                    [Symbol.iterator]() {
+                        return this;
+                    }
+                };
+
+            function f([x]) {}
+            let result;
+            try {
+                f(source);
+            } catch (e) {
+                result = e === 7;
+            }
+            result && closed === 0
+        "#,
     );
 }
 
@@ -145,7 +261,26 @@ fn escaped_partial_parameters_survive_collection_and_failed_calls_restore_state(
     ));
     realm.eval("saved=null").unwrap();
     assert_eq!(realm.collect(usize::MAX).unwrap().live, REALM_ENTRIES);
-    realm.eval("function make({[(saved=()=>x,'a')]:x}){var x={value:9};return()=>saved().value+x.value;}let escaped=make({a:{value:2}});make=null;").unwrap();
+    realm
+        .eval(
+            r#"
+                function make({
+                    [(saved = () => x, 'a')]: x
+                }) {
+                    var x = {
+                        value: 9
+                    };
+                    return () => saved().value + x.value;
+                }
+                let escaped = make({
+                    a: {
+                        value: 2
+                    }
+                });
+                make = null;
+            "#,
+        )
+        .unwrap();
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("escaped()"), Ok(Value::Number(11.0)));
     realm.eval("escaped=null;saved=null").unwrap();

@@ -19,7 +19,15 @@ fn hex_round_trips_every_byte_with_case_insensitive_input_and_lowercase_output()
         .collect::<String>();
     let upper = hex.to_ascii_uppercase();
     assert_true(&format!(
-        "let lower='{hex}',upper='{upper}',a=Uint8Array.fromHex(lower),b=Uint8Array.fromHex(upper),valid=a.length===256 && b.length===256;for(let i=0;i<256;i++)valid=valid && a[i]===i && b[i]===i;valid && a.toHex()===lower && b.toHex()===lower"
+        r#"
+            let lower = '{hex}',
+                upper = '{upper}',
+                a = Uint8Array.fromHex(lower),
+                b = Uint8Array.fromHex(upper),
+                valid = a.length === 256 && b.length === 256;
+            for (let i = 0; i < 256; i++) valid = valid && a[i] === i && b[i] === i;
+            valid && a.toHex() === lower && b.toHex() === lower
+        "#
     ));
     assert_true(
         "let a=Uint8Array.fromHex('aB01CdEf');a.join()==='171,1,205,239' && a.toHex()==='ab01cdef'",
@@ -86,10 +94,48 @@ fn setter_decode_matrix_distinguishes_odd_inputs_partial_errors_and_unexamined_s
 #[test]
 fn static_decoder_ignores_this_subclasses_species_and_replaced_global_bindings() {
     assert_true(
-        "let A=Uint8Array,from=A.fromHex,prototype=A.prototype;class S extends A{constructor(){throw 7;}}Object.defineProperty(S,Symbol.species,{get(){throw 8;}});let inherited=S.fromHex('fF');let receiver={get prototype(){throw 9;},get [Symbol.species](){throw 10;}};Uint8Array=function(){throw 11;};let a=from.call(receiver,'0010'),b=from.call(null,''),c=from.call(Symbol(),'aB');Object.getPrototypeOf(inherited)===prototype && !(inherited instanceof S) && inherited[0]===255 && Object.getPrototypeOf(a)===prototype && a.join()==='0,16' && a.byteOffset===0 && a.byteLength===2 && a.buffer.byteLength===2 && a.buffer.maxByteLength===2 && !a.buffer.resizable && b.length===0 && b.buffer.byteLength===0 && b.buffer!==a.buffer && c[0]===171 && Object.getPrototypeOf(c)===prototype",
+        r#"
+            let A = Uint8Array,
+                from = A.fromHex,
+                prototype = A.prototype;
+            class S extends A {
+                constructor() {
+                    throw 7;
+                }
+            }
+            Object.defineProperty(S, Symbol.species, {
+                get() {
+                    throw 8;
+                }
+            });
+            let inherited = S.fromHex('fF');
+            let receiver = {
+                get prototype() {
+                    throw 9;
+                },
+                get [Symbol.species]() {
+                    throw 10;
+                }
+            };
+            Uint8Array = function() {
+                throw 11;
+            };
+            let a = from.call(receiver, '0010'),
+                b = from.call(null, ''),
+                c = from.call(Symbol(), 'aB');
+            Object.getPrototypeOf(inherited) === prototype && !(inherited instanceof S) && inherited[0] ===
+                255 && Object.getPrototypeOf(a) === prototype && a.join() === '0,16' && a.byteOffset ===
+                0 && a.byteLength === 2 && a.buffer.byteLength === 2 && a.buffer.maxByteLength === 2 && !a
+                .buffer.resizable && b.length === 0 && b.buffer.byteLength === 0 && b.buffer !== a
+                .buffer && c[0] === 171 && Object.getPrototypeOf(c) === prototype
+        "#,
     );
     assert_true(
-        "let a=Uint8Array.fromHex(''),b=Uint8Array.fromHex('');a!==b && a.buffer!==b.buffer && !a.buffer.resizable && !b.buffer.resizable",
+        r#"
+            let a = Uint8Array.fromHex(''),
+                b = Uint8Array.fromHex('');
+            a !== b && a.buffer !== b.buffer && !a.buffer.resizable && !b.buffer.resizable
+        "#,
     );
 }
 
@@ -118,7 +164,31 @@ fn decoders_require_primitive_strings_without_invoking_any_coercion_hook() {
     }
     for call in ["Uint8Array.fromHex(input)", "a.setFromHex(input)"] {
         assert_true(&format!(
-            "let a=new Uint8Array(2),hits=0,caught=false,input={{get [Symbol.toPrimitive](){{hits++;throw 7;}},valueOf(){{hits++;throw 8;}},toString(){{hits++;throw 9;}}}};try{{{call};}}catch(e){{caught=e instanceof TypeError;}}caught && hits===0 && a[0]===0 && a[1]===0"
+            r#"
+                let a = new Uint8Array(2),
+                    hits = 0,
+                    caught = false,
+                    input = {{
+                        get [Symbol.toPrimitive]() {{
+                            hits++;
+                            throw 7;
+                        }},
+                        valueOf() {{
+                            hits++;
+                            throw 8;
+                        }},
+                        toString() {{
+                            hits++;
+                            throw 9;
+                        }}
+                    }};
+                try {{
+                    {call};
+                }} catch (e) {{
+                    caught = e instanceof TypeError;
+                }}
+                caught && hits === 0 && a[0] === 0 && a[1] === 0
+            "#
         ));
     }
 }
@@ -165,13 +235,32 @@ fn instance_methods_require_the_exact_uint8_kind_and_accept_its_subclasses() {
         );
     }
     assert_true(
-        "class S extends Uint8Array{}let a=new S(2),r=a.setFromHex('00Ff');a instanceof S && a[0]===0 && a[1]===255 && a.toHex()==='00ff' && r.read===4 && r.written===2",
+        r#"
+            class S extends Uint8Array {}
+            let a = new S(2),
+                r = a.setFromHex('00Ff');
+            a instanceof S && a[0] === 0 && a[1] === 255 && a.toHex() === '00ff' && r.read === 4 && r
+                .written === 2
+        "#,
     );
     assert_true(
-        "let a=new Uint8Array(1),set=Uint8Array.prototype.setFromHex,to=Uint8Array.prototype.toHex;Object.setPrototypeOf(a,Uint8ClampedArray.prototype);let r=set.call(a,'aB');r.written===1 && to.call(a)==='ab'",
+        r#"
+            let a = new Uint8Array(1),
+                set = Uint8Array.prototype.setFromHex,
+                to = Uint8Array.prototype.toHex;
+            Object.setPrototypeOf(a, Uint8ClampedArray.prototype);
+            let r = set.call(a, 'aB');
+            r.written === 1 && to.call(a) === 'ab'
+        "#,
     );
     exception(
-        "let a=new Uint8ClampedArray(1);Object.defineProperty(a,Symbol.toStringTag,{value:'Uint8Array'});Uint8Array.prototype.toHex.call(a)",
+        r#"
+            let a = new Uint8ClampedArray(1);
+            Object.defineProperty(a, Symbol.toStringTag, {
+                value: 'Uint8Array'
+            });
+            Uint8Array.prototype.toHex.call(a)
+        "#,
         ExceptionKind::TypeError,
     );
 }
@@ -179,17 +268,71 @@ fn instance_methods_require_the_exact_uint8_kind_and_accept_its_subclasses() {
 #[test]
 fn hex_methods_ignore_public_state_iteration_and_numeric_string_conversion_overrides() {
     assert_true(
-        "let a=Uint8Array.of(1,2,3);for(let key of ['length','buffer','byteLength','byteOffset','BYTES_PER_ELEMENT','constructor',Symbol.iterator,Symbol.toStringTag])Object.defineProperty(a,key,{get(){throw 7;}});Number.prototype.toString=function(){throw 8;};String.prototype.toLowerCase=function(){throw 9;};Object.defineProperty(String.prototype,'charCodeAt',{get(){throw 10;}});let r=a.setFromHex('aB00');r.read===4 && r.written===2 && a[0]===171 && a[1]===0 && a[2]===3 && a.toHex()==='ab0003' && Uint8Array.fromHex('fF')[0]===255",
+        r#"
+            let a = Uint8Array.of(1, 2, 3);
+            for (let key of ['length', 'buffer', 'byteLength', 'byteOffset', 'BYTES_PER_ELEMENT',
+                    'constructor', Symbol.iterator, Symbol.toStringTag
+                ]) Object.defineProperty(a, key, {
+                get() {
+                    throw 7;
+                }
+            });
+            Number.prototype.toString = function() {
+                throw 8;
+            };
+            String.prototype.toLowerCase = function() {
+                throw 9;
+            };
+            Object.defineProperty(String.prototype, 'charCodeAt', {
+                get() {
+                    throw 10;
+                }
+            });
+            let r = a.setFromHex('aB00');
+            r.read === 4 && r.written === 2 && a[0] === 171 && a[1] === 0 && a[2] === 3 && a.toHex() ===
+                'ab0003' && Uint8Array.fromHex('fF')[0] === 255
+        "#,
     );
 }
 
 #[test]
 fn unused_options_are_not_read_but_normal_argument_evaluation_still_precedes_the_call() {
     assert_true(
-        "let ignored={get alphabet(){throw 7;},get lastChunkHandling(){throw 8;},get omitPadding(){throw 9;},valueOf(){throw 10;},toString(){throw 11;}};let a=Uint8Array.fromHex('00',ignored),r=a.setFromHex('ff',ignored);r.read===2 && r.written===1 && a.toHex(ignored)==='ff'",
+        r#"
+            let ignored = {
+                get alphabet() {
+                    throw 7;
+                },
+                get lastChunkHandling() {
+                    throw 8;
+                },
+                get omitPadding() {
+                    throw 9;
+                },
+                valueOf() {
+                    throw 10;
+                },
+                toString() {
+                    throw 11;
+                }
+            };
+            let a = Uint8Array.fromHex('00', ignored),
+                r = a.setFromHex('ff', ignored);
+            r.read === 2 && r.written === 1 && a.toHex(ignored) === 'ff'
+        "#,
     );
     assert_true(
-        "let a=Uint8Array.of(1),log='',caught=false;try{a.toHex((log+='argument',a.buffer.transfer()));}catch(e){caught=e instanceof TypeError;}caught && log==='argument'",
+        r#"
+            let a = Uint8Array.of(1),
+                log = '',
+                caught = false;
+            try {
+                a.toHex((log += 'argument', a.buffer.transfer()));
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && log === 'argument'
+        "#,
     );
 }
 
@@ -243,20 +386,68 @@ fn setters_write_only_complete_valid_pairs_before_a_language_syntax_error() {
 #[test]
 fn result_objects_have_only_ordered_writable_enumerable_configurable_data_properties() {
     assert_true(
-        "let a=new Uint8Array(3),r=a.setFromHex('00ff'),read=Object.getOwnPropertyDescriptor(r,'read'),written=Object.getOwnPropertyDescriptor(r,'written');Object.getPrototypeOf(r)===Object.prototype && Reflect.ownKeys(r).join()==='read,written' && read.value===4 && read.writable && read.enumerable && read.configurable && !('get' in read) && !('set' in read) && written.value===2 && written.writable && written.enumerable && written.configurable && !('get' in written) && !('set' in written)",
+        r#"
+            let a = new Uint8Array(3),
+                r = a.setFromHex('00ff'),
+                read = Object.getOwnPropertyDescriptor(r, 'read'),
+                written = Object.getOwnPropertyDescriptor(r, 'written');
+            Object.getPrototypeOf(r) === Object.prototype && Reflect.ownKeys(r).join() ===
+                'read,written' && read.value === 4 && read.writable && read.enumerable && read
+                .configurable && !('get' in read) && !('set' in read) && written.value === 2 && written
+                .writable && written.enumerable && written.configurable && !('get' in written) && !(
+                    'set' in written)
+        "#,
     );
     assert_true(
-        "let hits=0;Object.defineProperty(Object.prototype,'read',{set(){hits++;throw 7;},configurable:true});Object.defineProperty(Object.prototype,'written',{set(){hits++;throw 8;},configurable:true});let a=new Uint8Array(1),r=a.setFromHex('ff'),s=a.setFromHex('');hits===0 && r!==s && r.read===2 && r.written===1 && s.read===0 && s.written===0 && Reflect.ownKeys(r).join()==='read,written' && Object.getOwnPropertyDescriptor(r,'read').value===2 && a[0]===255",
+        r#"
+            let hits = 0;
+            Object.defineProperty(Object.prototype, 'read', {
+                set() {
+                    hits++;
+                    throw 7;
+                },
+                configurable: true
+            });
+            Object.defineProperty(Object.prototype, 'written', {
+                set() {
+                    hits++;
+                    throw 8;
+                },
+                configurable: true
+            });
+            let a = new Uint8Array(1),
+                r = a.setFromHex('ff'),
+                s = a.setFromHex('');
+            hits === 0 && r !== s && r.read === 2 && r.written === 1 && s.read === 0 && s.written === 0 &&
+                Reflect.ownKeys(r).join() === 'read,written' && Object.getOwnPropertyDescriptor(r, 'read')
+                .value === 2 && a[0] === 255
+        "#,
     );
 }
 
 #[test]
 fn nonzero_offsets_and_partial_errors_preserve_outside_bytes_and_unwritten_tail() {
     assert_true(
-        "let bytes=Uint8Array.of(90,91,170,171,172,173,92),a=new Uint8Array(bytes.buffer,2,4),caught=false;try{a.setFromHex('0102xz');}catch(e){caught=e instanceof SyntaxError;}caught && bytes.join()==='90,91,1,2,172,173,92' && a.toHex()==='0102acad'",
+        r#"
+            let bytes = Uint8Array.of(90, 91, 170, 171, 172, 173, 92),
+                a = new Uint8Array(bytes.buffer, 2, 4),
+                caught = false;
+            try {
+                a.setFromHex('0102xz');
+            } catch (e) {
+                caught = e instanceof SyntaxError;
+            }
+            caught && bytes.join() === '90,91,1,2,172,173,92' && a.toHex() === '0102acad'
+        "#,
     );
     assert_true(
-        "let bytes=Uint8Array.of(90,91,170,171,172,173,92),a=new Uint8Array(bytes.buffer,2,4),r=a.setFromHex('00010203zz');r.read===8 && r.written===4 && bytes.join()==='90,91,0,1,2,3,92' && a.toHex()==='00010203'",
+        r#"
+            let bytes = Uint8Array.of(90, 91, 170, 171, 172, 173, 92),
+                a = new Uint8Array(bytes.buffer, 2, 4),
+                r = a.setFromHex('00010203zz');
+            r.read === 8 && r.written === 4 && bytes.join() === '90,91,0,1,2,3,92' && a.toHex() ===
+                '00010203'
+        "#,
     );
 }
 
@@ -269,36 +460,100 @@ fn detached_and_oob_receivers_fail_even_for_empty_inputs_and_regrow_recovers_fix
         );
         exception(
             &format!(
-                "let buffer=new ArrayBuffer(4,{{maxByteLength:8}}),a=new Uint8Array(buffer,1,3);buffer.resize(2);a.{method}('')"
+                r#"
+                    let buffer = new ArrayBuffer(4, {{
+                            maxByteLength: 8
+                        }}),
+                        a = new Uint8Array(buffer, 1, 3);
+                    buffer.resize(2);
+                    a.{method}('')
+                "#
             ),
             ExceptionKind::TypeError,
         );
     }
     assert_true(
-        "let buffer=new ArrayBuffer(8,{maxByteLength:12}),bytes=new Uint8Array(buffer),fixed=new Uint8Array(buffer,2,3),auto=new Uint8Array(buffer,2);bytes.set([144,145,18,52,86,120,154,188]);let initial=fixed.toHex()==='123456' && auto.toHex()==='123456789abc';buffer.resize(4);let short=auto.toHex()==='1234',r=auto.setFromHex('ffffabcd');buffer.resize(8);let recovered=fixed.toHex()==='ffff00' && auto.toHex()==='ffff00000000';let s=fixed.setFromHex('0a0b');initial && short && r.read===4 && r.written===2 && recovered && s.read===4 && s.written===2 && fixed.toHex()==='0a0b00' && auto.toHex()==='0a0b00000000' && bytes[0]===144 && bytes[1]===145",
+        r#"
+            let buffer = new ArrayBuffer(8, {
+                    maxByteLength: 12
+                }),
+                bytes = new Uint8Array(buffer),
+                fixed = new Uint8Array(buffer, 2, 3),
+                auto = new Uint8Array(buffer, 2);
+            bytes.set([144, 145, 18, 52, 86, 120, 154, 188]);
+            let initial = fixed.toHex() === '123456' && auto.toHex() === '123456789abc';
+            buffer.resize(4);
+            let short = auto.toHex() === '1234',
+                r = auto.setFromHex('ffffabcd');
+            buffer.resize(8);
+            let recovered = fixed.toHex() === 'ffff00' && auto.toHex() === 'ffff00000000';
+            let s = fixed.setFromHex('0a0b');
+            initial && short && r.read === 4 && r.written === 2 && recovered && s.read === 4 && s
+                .written === 2 && fixed.toHex() === '0a0b00' && auto.toHex() === '0a0b00000000' && bytes[
+                0] === 144 && bytes[1] === 145
+        "#,
     );
     assert_true(
-        "let buffer=new ArrayBuffer(0,{maxByteLength:3}),a=new Uint8Array(buffer),r=a.setFromHex('zz');r.read===0 && r.written===0 && a.toHex()===''",
+        r#"
+            let buffer = new ArrayBuffer(0, {
+                    maxByteLength: 3
+                }),
+                a = new Uint8Array(buffer),
+                r = a.setFromHex('zz');
+            r.read === 0 && r.written === 0 && a.toHex() === ''
+        "#,
     );
 }
 
 #[test]
 fn captured_current_capacity_tracks_rab_growth_and_argument_side_effects() {
     assert_true(
-        "let buffer=new ArrayBuffer(2,{maxByteLength:6}),a=new Uint8Array(buffer),r=a.setFromHex((buffer.resize(4),'00010203ff'));r.read===8 && r.written===4 && a.toHex()==='00010203'",
+        r#"
+            let buffer = new ArrayBuffer(2, {
+                    maxByteLength: 6
+                }),
+                a = new Uint8Array(buffer),
+                r = a.setFromHex((buffer.resize(4), '00010203ff'));
+            r.read === 8 && r.written === 4 && a.toHex() === '00010203'
+        "#,
     );
     assert_true(
-        "let buffer=new ArrayBuffer(4,{maxByteLength:8}),a=new Uint8Array(buffer,0,4);buffer.resize(1);let r=a.setFromHex((buffer.resize(4),'01020304'));r.read===8 && r.written===4 && a.toHex()==='01020304'",
+        r#"
+            let buffer = new ArrayBuffer(4, {
+                    maxByteLength: 8
+                }),
+                a = new Uint8Array(buffer, 0, 4);
+            buffer.resize(1);
+            let r = a.setFromHex((buffer.resize(4), '01020304'));
+            r.read === 8 && r.written === 4 && a.toHex() === '01020304'
+        "#,
     );
 }
 
 #[test]
 fn writes_cross_sparse_page_boundaries_and_safe_integer_offsets_without_touching_guards() {
     assert_true(
-        "let buffer=new ArrayBuffer(4102),a=new Uint8Array(buffer,4094,6),bytes=new Uint8Array(buffer);bytes[4093]=90;bytes[4100]=91;let r=a.setFromHex('000102030405');r.read===12 && r.written===6 && a.toHex()==='000102030405' && bytes[4093]===90 && bytes[4100]===91",
+        r#"
+            let buffer = new ArrayBuffer(4102),
+                a = new Uint8Array(buffer, 4094, 6),
+                bytes = new Uint8Array(buffer);
+            bytes[4093] = 90;
+            bytes[4100] = 91;
+            let r = a.setFromHex('000102030405');
+            r.read === 12 && r.written === 6 && a.toHex() === '000102030405' && bytes[4093] === 90 &&
+                bytes[4100] === 91
+        "#,
     );
     assert_true(
-        "let maximum=9007199254740991,buffer=new ArrayBuffer(maximum),a=new Uint8Array(buffer,maximum-3,3),guard=new DataView(buffer,maximum-4,1),r=a.setFromHex('0001ff');r.read===6 && r.written===3 && a.toHex()==='0001ff' && a.byteOffset===maximum-3 && buffer.byteLength===maximum && guard.getUint8(0)===0",
+        r#"
+            let maximum = 9007199254740991,
+                buffer = new ArrayBuffer(maximum),
+                a = new Uint8Array(buffer, maximum - 3, 3),
+                guard = new DataView(buffer, maximum - 4, 1),
+                r = a.setFromHex('0001ff');
+            r.read === 6 && r.written === 3 && a.toHex() === '0001ff' && a.byteOffset === maximum - 3 &&
+                buffer.byteLength === maximum && guard.getUint8(0) === 0
+        "#,
     );
 }
 
@@ -322,7 +577,18 @@ fn decoded_byte_lists_are_not_call_argument_lists() {
         max_arguments: Some(1),
         ..Limits::default()
     });
-    assert_eq!(realm.eval(&format!("let text='{hex}',a=Uint8Array.fromHex(text),b=new Uint8Array(256),r=b.setFromHex(text);r.read===512 && r.written===256 && a.toHex()===text && b.toHex()===text")),Ok(Value::Boolean(true)));
+    assert_eq!(
+        realm.eval(&format!(
+            r#"
+                let text = '{hex}',
+                    a = Uint8Array.fromHex(text),
+                    b = new Uint8Array(256),
+                    r = b.setFromHex(text);
+                r.read === 512 && r.written === 256 && a.toHex() === text && b.toHex() === text
+            "#
+        )),
+        Ok(Value::Boolean(true))
+    );
 }
 
 #[test]

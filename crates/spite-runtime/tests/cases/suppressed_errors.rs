@@ -7,33 +7,132 @@ use crate::common::assert_true;
 #[test]
 fn values_are_retained_without_hooks_and_options_are_ignored() {
     assert_true(
-        "let value=new Proxy({},{get(){throw 1}}),options=new Proxy({},{get(){throw 2},has(){throw 3}}),e=SuppressedError(value,value,'detail',options);e.error===value&&e.suppressed===value&&e.message==='detail'&&!Object.hasOwn(e,'cause')&&Reflect.ownKeys(e).join(',')==='message,error,suppressed'",
+        r#"
+            let value = new Proxy({}, {
+                    get() {
+                        throw 1
+                    }
+                }),
+                options = new Proxy({}, {
+                    get() {
+                        throw 2
+                    },
+                    has() {
+                        throw 3
+                    }
+                }),
+                e = SuppressedError(value, value, 'detail', options);
+            e.error === value && e.suppressed === value && e.message === 'detail' && !Object.hasOwn(e,
+                'cause') && Reflect.ownKeys(e).join(',') === 'message,error,suppressed'
+        "#,
     );
     assert_true(
-        "let e=SuppressedError();Object.hasOwn(e,'error')&&Object.hasOwn(e,'suppressed')&&e.error===undefined&&e.suppressed===undefined&&!Object.hasOwn(e,'message')&&Reflect.ownKeys(e).join(',')==='error,suppressed'",
+        r#"
+            let e = SuppressedError();
+            Object.hasOwn(e, 'error') && Object.hasOwn(e, 'suppressed') && e.error === undefined && e
+                .suppressed === undefined && !Object.hasOwn(e, 'message') && Reflect.ownKeys(e).join(
+                ',') === 'error,suppressed'
+        "#,
     );
     assert_true(
-        "for(const v of [undefined,null,false,0,-0,NaN,1n,Symbol(),'text',{}]){let e=SuppressedError(v,v);if(!Object.is(e.error,v)||!Object.is(e.suppressed,v))throw 1;}true",
+        r#"
+            for (const v of [undefined, null, false, 0, -0, NaN, 1n, Symbol(), 'text', {}]) {
+                let e = SuppressedError(v, v);
+                if (!Object.is(e.error, v) || !Object.is(e.suppressed, v)) throw 1;
+            }
+            true
+        "#,
     );
 }
 
 #[test]
 fn message_conversion_follows_prototype_lookup_and_preserves_abrupt_completions() {
     assert_true(
-        "let log='',proto={},N=new Proxy(function(){},{get(t,p){if(p==='prototype'){log+='p';return proto}return t[p]}}),message={toString(){log+='m';return 'detail'}},e=Reflect.construct(SuppressedError,[1,2,message],N);log==='pm'&&Object.getPrototypeOf(e)===proto&&Error.isError(e)&&e.message==='detail'&&e.error===1&&e.suppressed===2",
+        r#"
+            let log = '',
+                proto = {},
+                N = new Proxy(function() {}, {
+                    get(t, p) {
+                        if (p === 'prototype') {
+                            log += 'p';
+                            return proto
+                        }
+                        return t[p]
+                    }
+                }),
+                message = {
+                    toString() {
+                        log += 'm';
+                        return 'detail'
+                    }
+                },
+                e = Reflect.construct(SuppressedError, [1, 2, message], N);
+            log === 'pm' && Object.getPrototypeOf(e) === proto && Error.isError(e) && e.message ===
+                'detail' && e.error === 1 && e.suppressed === 2
+        "#,
     );
     assert_true(
-        "let marker={},calls=0,N=new Proxy(function(){},{get(){throw marker}}),message={toString(){calls++;throw 7}},caught=false;try{Reflect.construct(SuppressedError,[1,2,message],N)}catch(e){caught=e===marker}caught&&calls===0",
+        r#"
+            let marker = {},
+                calls = 0,
+                N = new Proxy(function() {}, {
+                    get() {
+                        throw marker
+                    }
+                }),
+                message = {
+                    toString() {
+                        calls++;
+                        throw 7
+                    }
+                },
+                caught = false;
+            try {
+                Reflect.construct(SuppressedError, [1, 2, message], N)
+            } catch (e) {
+                caught = e === marker
+            }
+            caught && calls === 0
+        "#,
     );
     assert_true(
-        "let marker={},caught=false;try{SuppressedError(1,2,{toString(){throw marker}})}catch(e){caught=e===marker}caught",
+        r#"
+            let marker = {},
+                caught = false;
+            try {
+                SuppressedError(1, 2, {
+                    toString() {
+                        throw marker
+                    }
+                })
+            } catch (e) {
+                caught = e === marker
+            }
+            caught
+        "#,
     );
 }
 
 #[test]
 fn instance_fields_bypass_inherited_setters_and_have_standard_descriptors() {
     assert_true(
-        "let p=SuppressedError.prototype;for(const key of ['message','error','suppressed'])Object.defineProperty(p,key,{set(){throw 1},configurable:true});let e=SuppressedError(1,2,'detail');for(const key of ['message','error','suppressed']){let d=Object.getOwnPropertyDescriptor(e,key);if(!d.writable||d.enumerable||!d.configurable)throw 2;}e.message==='detail'&&e.error===1&&e.suppressed===2&&Object.keys(e).length===0&&delete e.error&&delete e.suppressed&&!Object.hasOwn(e,'error')&&!Object.hasOwn(e,'suppressed')",
+        r#"
+            let p = SuppressedError.prototype;
+            for (const key of ['message', 'error', 'suppressed']) Object.defineProperty(p, key, {
+                set() {
+                    throw 1
+                },
+                configurable: true
+            });
+            let e = SuppressedError(1, 2, 'detail');
+            for (const key of ['message', 'error', 'suppressed']) {
+                let d = Object.getOwnPropertyDescriptor(e, key);
+                if (!d.writable || d.enumerable || !d.configurable) throw 2;
+            }
+            e.message === 'detail' && e.error === 1 && e.suppressed === 2 && Object.keys(e).length === 0 &&
+                delete e.error && delete e.suppressed && !Object.hasOwn(e, 'error') && !Object.hasOwn(e,
+                    'suppressed')
+        "#,
     );
 }
 
@@ -50,7 +149,20 @@ fn calls_bound_construction_and_subclasses_preserve_the_error_brand() {
 #[test]
 fn retained_intrinsics_and_both_error_values_survive_collection() {
     let mut realm = Realm::default();
-    realm.eval("let Saved=SuppressedError,e=Saved({message:'new'},{message:'old'});delete globalThis.SuppressedError;delete globalThis.Error;").unwrap();
+    realm
+        .eval(
+            r#"
+                let Saved = SuppressedError,
+                    e = Saved({
+                        message: 'new'
+                    }, {
+                        message: 'old'
+                    });
+                delete globalThis.SuppressedError;
+                delete globalThis.Error;
+            "#,
+        )
+        .unwrap();
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("Saved.isError(e)&&e.error.message==='new'&&e.suppressed.message==='old'&&Saved(1,2).suppressed===2"), Ok(Value::Boolean(true)));
 }

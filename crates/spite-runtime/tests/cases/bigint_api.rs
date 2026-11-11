@@ -36,16 +36,56 @@ fn constructor_converts_booleans_integral_numbers_and_integer_strings() {
 #[test]
 fn constructor_uses_number_hint_once_and_preserves_abrupt_results() {
     assert_true(
-        "let calls=0,o={[Symbol.toPrimitive](hint){calls++;if(hint!=='number')throw 7;return 8;}};BigInt(o)===8n && calls===1",
+        r#"
+            let calls = 0,
+                o = {
+                    [Symbol.toPrimitive](hint) {
+                        calls++;
+                        if (hint !== 'number') throw 7;
+                        return 8;
+                    }
+                };
+            BigInt(o) === 8n && calls === 1
+        "#,
     );
     assert_true(
         "let log='',o={valueOf(){log+='v';return {};},toString(){log+='s';return '7';}};BigInt(o)===7n && log==='vs'",
     );
     assert_true(
-        "let called=0,o={valueOf(){called++;throw 7;}};let caught=false;try{BigInt(o);}catch(e){caught=e===7;}caught && called===1",
+        r#"
+            let called = 0,
+                o = {
+                    valueOf() {
+                        called++;
+                        throw 7;
+                    }
+                };
+            let caught = false;
+            try {
+                BigInt(o);
+            } catch (e) {
+                caught = e === 7;
+            }
+            caught && called === 1
+        "#,
     );
     assert_true(
-        "let called=0,o={valueOf(){called++;return 1;}};let caught=false;try{new BigInt(o);}catch(e){caught=e instanceof TypeError;}caught && called===0",
+        r#"
+            let called = 0,
+                o = {
+                    valueOf() {
+                        called++;
+                        return 1;
+                    }
+                };
+            let caught = false;
+            try {
+                new BigInt(o);
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && called === 0
+        "#,
     );
     assert_true(
         "BigInt(Object(7n))===7n && BigInt(new Number(8))===8n && BigInt(new Boolean(true))===1n",
@@ -156,7 +196,16 @@ fn radix_formatting_and_non_402_locale_fallback_follow_brand_and_conversion_orde
         assert_true(&format!("(-255n).toString({radix})==='{expected}'"));
     }
     assert_true(
-        "let calls=0,r={valueOf(){calls++;return 16;}};Object(255n).toString(r)==='ff' && calls===1 && (0n).toString(2)==='0'",
+        r#"
+            let calls = 0,
+                r = {
+                    valueOf() {
+                        calls++;
+                        return 16;
+                    }
+                };
+            Object(255n).toString(r) === 'ff' && calls === 1 && (0n).toString(2) === '0'
+        "#,
     );
     for radix in ["NaN", "0", "1", "37", "Infinity", "-Infinity", "null"] {
         assert_true(&format!(
@@ -164,7 +213,16 @@ fn radix_formatting_and_non_402_locale_fallback_follow_brand_and_conversion_orde
         ));
     }
     assert_true(
-        "let calls=0,o={valueOf(){calls++;throw 7;}};(-123n).toLocaleString(o,o)==='-123' && calls===0 && [1n,2n].toLocaleString()==='1,2'",
+        r#"
+            let calls = 0,
+                o = {
+                    valueOf() {
+                        calls++;
+                        throw 7;
+                    }
+                };
+            (-123n).toLocaleString(o, o) === '-123' && calls === 0 && [1n, 2n].toLocaleString() === '1,2'
+        "#,
     );
     assert_true(
         "let caught=false;try{(1n).toString(10n);}catch(e){caught=e instanceof TypeError;}caught",
@@ -174,14 +232,43 @@ fn radix_formatting_and_non_402_locale_fallback_follow_brand_and_conversion_orde
 #[test]
 fn non_strict_calls_box_bigints_and_strict_accessors_keep_primitive_receivers() {
     assert_true(
-        "function f(){return this;}let a=f.call(7n),b=f.call(7n);a!==b && a instanceof BigInt && a.valueOf()===7n && f.bind(8n)().valueOf()===8n",
+        r#"
+            function f() {
+                return this;
+            }
+            let a = f.call(7n),
+                b = f.call(7n);
+            a !== b && a instanceof BigInt && a.valueOf() === 7n && f.bind(8n)().valueOf() === 8n
+        "#,
     );
     assert_true("function f(){'use strict';return this;}f.call(7n)===7n");
     assert_true(
-        "let received,assigned;Object.defineProperty(BigInt.prototype,'x',{get(){'use strict';return this;},set(v){'use strict';received=this;assigned=v;}});(7n).x=8; (7n).x===7n && received===7n && assigned===8",
+        r#"
+            let received, assigned;
+            Object.defineProperty(BigInt.prototype, 'x', {
+                get() {
+                    'use strict';
+                    return this;
+                },
+                set(v) {
+                    'use strict';
+                    received = this;
+                    assigned = v;
+                }
+            });
+            (7n).x = 8;
+            (7n).x === 7n && received === 7n && assigned === 8
+        "#,
     );
     assert_true(
-        "Object.defineProperty(BigInt.prototype,'x',{get(){return this;}});(7n).x instanceof BigInt && (7n).x.valueOf()===7n",
+        r#"
+            Object.defineProperty(BigInt.prototype, 'x', {
+                get() {
+                    return this;
+                }
+            });
+            (7n).x instanceof BigInt && (7n).x.valueOf() === 7n
+        "#,
     );
 }
 

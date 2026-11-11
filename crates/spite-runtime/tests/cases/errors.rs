@@ -127,16 +127,51 @@ fn constructors_and_instances_have_only_standard_properties() {
 #[test]
 fn causes_use_presence_without_coercing_values_or_primitive_options() {
     assert_true(
-        "let cause={};let e=TypeError('text',{__proto__:{cause:cause}});e.cause===cause && 'cause' in e && delete e.cause && !('cause' in e)",
+        r#"
+            let cause = {};
+            let e = TypeError('text', {
+                __proto__: {
+                    cause: cause
+                }
+            });
+            e.cause === cause && 'cause' in e && delete e.cause && !('cause' in e)
+        "#,
     );
     assert_true(
-        "let unused={valueOf:()=>{throw 1;},toString:()=>{throw 2;}};let e=Error('text',{cause:unused});e.cause===unused",
+        r#"
+            let unused = {
+                valueOf: () => {
+                    throw 1;
+                },
+                toString: () => {
+                    throw 2;
+                }
+            };
+            let e = Error('text', {
+                cause: unused
+            });
+            e.cause === unused
+        "#,
     );
     for options in ["undefined", "null", "true", "1", "1n", "'text'", "{}"] {
         assert_true(&format!("!('cause' in Error(undefined,{options}))"));
     }
     assert_true(
-        "let order='';let e=Error({toString:()=>{order+='m';return 'text';},valueOf:()=>{throw 1;}},{cause:3});e.message==='text' && e.cause===3 && order==='m'",
+        r#"
+            let order = '';
+            let e = Error({
+                toString: () => {
+                    order += 'm';
+                    return 'text';
+                },
+                valueOf: () => {
+                    throw 1;
+                }
+            }, {
+                cause: 3
+            });
+            e.message === 'text' && e.cause === 3 && order === 'm'
+        "#,
     );
     assert_eq!(
         Realm::default().eval("Error({toString:()=>{throw 4;}},{cause:3})"),

@@ -20,39 +20,227 @@ fn reads_use_the_method_home_prototype_and_calls_use_the_actual_receiver() {
 #[test]
 fn inherited_accessors_receive_objects_and_strict_primitive_this_values() {
     assert_true(
-        "let p={get x(){return this.v;},set x(v){this.v=v;}},h={v:2,m(v){super.x=v;return super.x;}};Object.setPrototypeOf(h,p);let r={v:3};h.m.call(r,7)===7 && r.v===7 && h.v===2 && !Object.hasOwn(p,'v')",
+        r#"
+            let p = {
+                    get x() {
+                        return this.v;
+                    },
+                    set x(v) {
+                        this.v = v;
+                    }
+                },
+                h = {
+                    v: 2,
+                    m(v) {
+                        super.x = v;
+                        return super.x;
+                    }
+                };
+            Object.setPrototypeOf(h, p);
+            let r = {
+                v: 3
+            };
+            h.m.call(r, 7) === 7 && r.v === 7 && h.v === 2 && !Object.hasOwn(p, 'v')
+        "#,
     );
     assert_true(
-        "let seen, p={get x(){'use strict';return this;},set x(v){'use strict';seen=[this,v];}},h={m(){'use strict';super.x=4;return super.x;}};Object.setPrototypeOf(h,p);h.m.call(7)===7 && seen[0]===7 && seen[1]===4 && h.m.call(undefined)===undefined && seen[0]===undefined",
+        r#"
+            let seen, p = {
+                    get x() {
+                        'use strict';
+                        return this;
+                    },
+                    set x(v) {
+                        'use strict';
+                        seen = [this, v];
+                    }
+                },
+                h = {
+                    m() {
+                        'use strict';
+                        super.x = 4;
+                        return super.x;
+                    }
+                };
+            Object.setPrototypeOf(h, p);
+            h.m.call(7) === 7 && seen[0] === 7 && seen[1] === 4 && h.m.call(undefined) === undefined &&
+                seen[0] === undefined
+        "#,
     );
     assert_true(
-        "let p={get x(){return this.v;},set x(v){this.v=v;}},h={v:3,get x(){return super.x+1;},set x(v){super.x=v+1;}};Object.setPrototypeOf(h,p);let r={v:10};Reflect.get(h,'x',r)===11 && Reflect.set(h,'x',5,r) && r.v===6 && h.v===3",
+        r#"
+            let p = {
+                    get x() {
+                        return this.v;
+                    },
+                    set x(v) {
+                        this.v = v;
+                    }
+                },
+                h = {
+                    v: 3,
+                    get x() {
+                        return super.x + 1;
+                    },
+                    set x(v) {
+                        super.x = v + 1;
+                    }
+                };
+            Object.setPrototypeOf(h, p);
+            let r = {
+                v: 10
+            };
+            Reflect.get(h, 'x', r) === 11 && Reflect.set(h, 'x', 5, r) && r.v === 6 && h.v === 3
+        "#,
     );
 }
 
 #[test]
 fn data_writes_update_the_receiver_without_mutating_the_super_base() {
     assert_true(
-        "let p={x:1},h={x:2,m(v){super.x=v;return super.x;}};Object.setPrototypeOf(h,p);let r={};h.m(7)===1 && h.x===7 && h.m.call(r,9)===1 && r.x===9 && p.x===1",
+        r#"
+            let p = {
+                    x: 1
+                },
+                h = {
+                    x: 2,
+                    m(v) {
+                        super.x = v;
+                        return super.x;
+                    }
+                };
+            Object.setPrototypeOf(h, p);
+            let r = {};
+            h.m(7) === 1 && h.x === 7 && h.m.call(r, 9) === 1 && r.x === 9 && p.x === 1
+        "#,
     );
     assert_true(
-        "let calls=0,p={x:1},h={m(){super.x=7;return 3;},strict(){'use strict';super.x=7;}},r={set x(v){calls++;}};Object.setPrototypeOf(h,p);let caught=false;try{h.strict.call(r);}catch(e){caught=e instanceof TypeError;}caught && h.m.call(r)===3 && calls===0 && p.x===1",
+        r#"
+            let calls = 0,
+                p = {
+                    x: 1
+                },
+                h = {
+                    m() {
+                        super.x = 7;
+                        return 3;
+                    },
+                    strict() {
+                        'use strict';
+                        super.x = 7;
+                    }
+                },
+                r = {
+                    set x(v) {
+                        calls++;
+                    }
+                };
+            Object.setPrototypeOf(h, p);
+            let caught = false;
+            try {
+                h.strict.call(r);
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && h.m.call(r) === 3 && calls === 0 && p.x === 1
+        "#,
     );
     assert_true(
-        "let p={x:1},h={m(){super.x=7;},strict(){'use strict';super.x=7;}};Object.setPrototypeOf(h,p);Object.freeze(h);let caught=false;try{h.strict();}catch(e){caught=e instanceof TypeError;}h.m();caught && p.x===1 && !Object.hasOwn(h,'x')",
+        r#"
+            let p = {
+                    x: 1
+                },
+                h = {
+                    m() {
+                        super.x = 7;
+                    },
+                    strict() {
+                        'use strict';
+                        super.x = 7;
+                    }
+                };
+            Object.setPrototypeOf(h, p);
+            Object.freeze(h);
+            let caught = false;
+            try {
+                h.strict();
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            h.m();
+            caught && p.x === 1 && !Object.hasOwn(h, 'x')
+        "#,
     );
 }
 
 #[test]
 fn non_writable_base_and_primitive_receivers_follow_reference_strictness() {
     assert_true(
-        "let p={},h={m(){return super.x=7;},strict(){'use strict';super.x=7;}};Object.defineProperty(p,'x',{value:1});Object.setPrototypeOf(h,p);let caught=false;try{h.strict();}catch(e){caught=e instanceof TypeError;}caught && h.m()===7 && p.x===1 && !Object.hasOwn(h,'x')",
+        r#"
+            let p = {},
+                h = {
+                    m() {
+                        return super.x = 7;
+                    },
+                    strict() {
+                        'use strict';
+                        super.x = 7;
+                    }
+                };
+            Object.defineProperty(p, 'x', {
+                value: 1
+            });
+            Object.setPrototypeOf(h, p);
+            let caught = false;
+            try {
+                h.strict();
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && h.m() === 7 && p.x === 1 && !Object.hasOwn(h, 'x')
+        "#,
     );
     assert_true(
-        "let h={m(){'use strict';return super.x=7;}};Object.setPrototypeOf(h,{});let caught=false;try{h.m.call(1);}catch(e){caught=e instanceof TypeError;}caught",
+        r#"
+            let h = {
+                m() {
+                    'use strict';
+                    return super.x = 7;
+                }
+            };
+            Object.setPrototypeOf(h, {});
+            let caught = false;
+            try {
+                h.m.call(1);
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught
+        "#,
     );
     assert_true(
-        "let h={m(){'use strict';return super.x=7;}},p={};Object.defineProperty(p,'x',{get(){return 1;}});Object.setPrototypeOf(h,p);let caught=false;try{h.m();}catch(e){caught=e instanceof TypeError;}caught && !Object.hasOwn(h,'x')",
+        r#"
+            let h = {
+                    m() {
+                        'use strict';
+                        return super.x = 7;
+                    }
+                },
+                p = {};
+            Object.defineProperty(p, 'x', {
+                get() {
+                    return 1;
+                }
+            });
+            Object.setPrototypeOf(h, p);
+            let caught = false;
+            try {
+                h.m();
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && !Object.hasOwn(h, 'x')
+        "#,
     );
 }
 
@@ -61,13 +249,76 @@ fn computed_expression_precedes_base_lookup_and_conversion_follows_it() {
     // Edition 17 13.3.7.1/3 and 6.2.5.5: capture the prototype after the name
     // expression, then convert the name when GetValue executes.
     assert_true(
-        "let log='',a={x:1},b={x:2},c={x:3},k={toString(){log+='K';Object.setPrototypeOf(h,c);return 'x';}},h={m(){return super[(log+='E',Object.setPrototypeOf(h,b),k)];}};Object.setPrototypeOf(h,a);h.m()===2 && log==='EK' && Object.getPrototypeOf(h)===c",
+        r#"
+            let log = '',
+                a = {
+                    x: 1
+                },
+                b = {
+                    x: 2
+                },
+                c = {
+                    x: 3
+                },
+                k = {
+                    toString() {
+                        log += 'K';
+                        Object.setPrototypeOf(h, c);
+                        return 'x';
+                    }
+                },
+                h = {
+                    m() {
+                        return super[(log += 'E', Object.setPrototypeOf(h, b), k)];
+                    }
+                };
+            Object.setPrototypeOf(h, a);
+            h.m() === 2 && log === 'EK' && Object.getPrototypeOf(h) === c
+        "#,
     );
     assert_true(
-        "let log='',key={[Symbol.toPrimitive](hint){log+=hint;return Symbol.iterator;}},p={[Symbol.iterator]:7},h={m(){return super[key];}};Object.setPrototypeOf(h,p);h.m()===7 && log==='string'",
+        r#"
+            let log = '',
+                key = {
+                    [Symbol.toPrimitive](hint) {
+                        log += hint;
+                        return Symbol.iterator;
+                    }
+                },
+                p = {
+                    [Symbol.iterator]: 7
+                },
+                h = {
+                    m() {
+                        return super[key];
+                    }
+                };
+            Object.setPrototypeOf(h, p);
+            h.m() === 7 && log === 'string'
+        "#,
     );
     assert_true(
-        "let log='',h={m(){return super[(log+='E',{toString(){log+='K';return 'x';}})];}};Object.setPrototypeOf(h,null);let caught=false;try{h.m();}catch(e){caught=e instanceof TypeError;}caught && log==='E'",
+        r#"
+            let log = '',
+                h = {
+                    m() {
+                        return super[(log += 'E', {
+                            toString() {
+                                log += 'K';
+                                return 'x';
+                            }
+                        })];
+                    }
+                };
+            Object.setPrototypeOf(h, null);
+            let caught = false;
+            try {
+                h.m();
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && log === 'E'
+        "#,
     );
     assert_true(
         "let p={['\\uD800']:7},h={m(){return super['\\uD800'];}};Object.setPrototypeOf(h,p);h.m()===7",
@@ -77,39 +328,223 @@ fn computed_expression_precedes_base_lookup_and_conversion_follows_it() {
 #[test]
 fn simple_assignment_defers_conversion_until_after_rhs_but_retains_base() {
     assert_true(
-        "let log='',seen='',a={set x(v){seen='A'+v;}},b={set x(v){seen='B'+v;}},k={toString(){log+='K';return 'x';}},h={m(){return super[(log+='E',k)]=(log+='R',Object.setPrototypeOf(h,b),7);}};Object.setPrototypeOf(h,a);h.m()===7 && log==='ERK' && seen==='A7'",
+        r#"
+            let log = '',
+                seen = '',
+                a = {
+                    set x(v) {
+                        seen = 'A' + v;
+                    }
+                },
+                b = {
+                    set x(v) {
+                        seen = 'B' + v;
+                    }
+                },
+                k = {
+                    toString() {
+                        log += 'K';
+                        return 'x';
+                    }
+                },
+                h = {
+                    m() {
+                        return super[(log += 'E', k)] = (log += 'R', Object.setPrototypeOf(h, b), 7);
+                    }
+                };
+            Object.setPrototypeOf(h, a);
+            h.m() === 7 && log === 'ERK' && seen === 'A7'
+        "#,
     );
     assert_true(
-        "let log='',h={m(){super[{toString(){log+='K';return 'x';}}]=(log+='R',7);}};Object.setPrototypeOf(h,null);let caught=false;try{h.m();}catch(e){caught=e instanceof TypeError;}caught && log==='R'",
+        r#"
+            let log = '',
+                h = {
+                    m() {
+                        super[{
+                            toString() {
+                                log += 'K';
+                                return 'x';
+                            }
+                        }] = (log += 'R', 7);
+                    }
+                };
+            Object.setPrototypeOf(h, null);
+            let caught = false;
+            try {
+                h.m();
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && log === 'R'
+        "#,
     );
     assert_true(
-        "let log='',h={m(){super[{toString(){log+='K';return 'x';}}]=(log+='R',function(){throw 8;}());}};let caught=false;try{h.m();}catch(e){caught=e===8;}caught && log==='R'",
+        r#"
+            let log = '',
+                h = {
+                    m() {
+                        super[{
+                            toString() {
+                                log += 'K';
+                                return 'x';
+                            }
+                        }] = (log += 'R', function() {
+                            throw 8;
+                        }());
+                    }
+                };
+            let caught = false;
+            try {
+                h.m();
+            } catch (e) {
+                caught = e === 8;
+            }
+            caught && log === 'R'
+        "#,
     );
 }
 
 #[test]
 fn compound_logical_and_update_operations_convert_the_name_once() {
     assert_true(
-        "let log='',p={get x(){log+='G';return 2;},set x(v){log+='S'+v;}},k={toString(){log+='K';return 'x';}},h={m(){return super[k]+=(log+='R',3);}};Object.setPrototypeOf(h,p);h.m()===5 && log==='KGRS5'",
+        r#"
+            let log = '',
+                p = {
+                    get x() {
+                        log += 'G';
+                        return 2;
+                    },
+                    set x(v) {
+                        log += 'S' + v;
+                    }
+                },
+                k = {
+                    toString() {
+                        log += 'K';
+                        return 'x';
+                    }
+                },
+                h = {
+                    m() {
+                        return super[k] += (log += 'R', 3);
+                    }
+                };
+            Object.setPrototypeOf(h, p);
+            h.m() === 5 && log === 'KGRS5'
+        "#,
     );
     assert_true(
-        "let log='',p={get x(){log+='G';return 2n;},set x(v){log+='S'+v;}},k={toString(){log+='K';return 'x';}},h={m(){return super[k]++;}};Object.setPrototypeOf(h,p);h.m()===2n && log==='KGS3'",
+        r#"
+            let log = '',
+                p = {
+                    get x() {
+                        log += 'G';
+                        return 2n;
+                    },
+                    set x(v) {
+                        log += 'S' + v;
+                    }
+                },
+                k = {
+                    toString() {
+                        log += 'K';
+                        return 'x';
+                    }
+                },
+                h = {
+                    m() {
+                        return super[k]++;
+                    }
+                };
+            Object.setPrototypeOf(h, p);
+            h.m() === 2n && log === 'KGS3'
+        "#,
     );
     assert_true(
-        "let log='',p={get x(){log+='G';return 2;},set x(v){log+='S';}},h={m(){return super[{toString(){log+='K';return 'x';}}]||=(log+='R',3);}};Object.setPrototypeOf(h,p);h.m()===2 && log==='KG'",
+        r#"
+            let log = '',
+                p = {
+                    get x() {
+                        log += 'G';
+                        return 2;
+                    },
+                    set x(v) {
+                        log += 'S';
+                    }
+                },
+                h = {
+                    m() {
+                        return super[{
+                            toString() {
+                                log += 'K';
+                                return 'x';
+                            }
+                        }] ||= (log += 'R', 3);
+                    }
+                };
+            Object.setPrototypeOf(h, p);
+            h.m() === 2 && log === 'KG'
+        "#,
     );
 }
 
 #[test]
 fn optional_calls_and_tagged_templates_keep_the_super_receiver() {
     assert_true(
-        "let log='',p={m(v){return this.x+v;}},h={x:4,m(){return super.m?.(3);},missing(){return super.no?.(log+='A');}};Object.setPrototypeOf(h,p);h.m()===7 && h.missing()===undefined && log===''",
+        r#"
+            let log = '',
+                p = {
+                    m(v) {
+                        return this.x + v;
+                    }
+                },
+                h = {
+                    x: 4,
+                    m() {
+                        return super.m?.(3);
+                    },
+                    missing() {
+                        return super.no?.(log += 'A');
+                    }
+                };
+            Object.setPrototypeOf(h, p);
+            h.m() === 7 && h.missing() === undefined && log === ''
+        "#,
     );
     assert_true(
-        "let p={tag(s,v){return this.x+s[0]+v;}},h={x:'H',m(){return super.tag`T${7}`;}};Object.setPrototypeOf(h,p);h.m()==='HT7'",
+        r#"
+            let p = {
+                    tag(s, v) {
+                        return this.x + s[0] + v;
+                    }
+                },
+                h = {
+                    x: 'H',
+                    m() {
+                        return super.tag`T${7}`;
+                    }
+                };
+            Object.setPrototypeOf(h, p);
+            h.m() === 'HT7'
+        "#,
     );
     assert_true(
-        "let p={m(){'use strict';return this;}},h={m(){return (0,super.m)();}};Object.setPrototypeOf(h,p);h.m()===undefined",
+        r#"
+            let p = {
+                    m() {
+                        'use strict';
+                        return this;
+                    }
+                },
+                h = {
+                    m() {
+                        return (0, super.m)();
+                    }
+                };
+            Object.setPrototypeOf(h, p);
+            h.m() === undefined
+        "#,
     );
     assert_true(
         "function F(v){this.x=v;}let p={F},h={m(){return new super.F(7);}};Object.setPrototypeOf(h,p);h.m().x===7",
@@ -122,37 +557,153 @@ fn deletion_throws_before_base_or_name_conversion_without_reading_the_property()
     // the base; computed-name evaluation still precedes the error.
     for base in ["{get x(){log+='G';}}", "null"] {
         assert_true(&format!(
-            "let log='',h={{m(){{delete (super[(log+='E',{{toString(){{log+='K';return 'x';}}}})]);}}}};Object.setPrototypeOf(h,{base});let caught=false;try{{h.m();}}catch(e){{caught=e instanceof ReferenceError;}}caught && log==='E'"
+            r#"
+                let log = '',
+                    h = {{
+                        m() {{
+                            delete(super[(log += 'E', {{
+                                toString() {{
+                                    log += 'K';
+                                    return 'x';
+                                }}
+                            }})]);
+                        }}
+                    }};
+                Object.setPrototypeOf(h, {base});
+                let caught = false;
+                try {{
+                    h.m();
+                }} catch (e) {{
+                    caught = e instanceof ReferenceError;
+                }}
+                caught && log === 'E'
+            "#
         ));
     }
     assert_true(
-        "let h={m(){'use strict';delete super.x;}},caught=false;try{h.m();}catch(e){caught=e instanceof ReferenceError;}caught",
+        r#"
+            let h = {
+                    m() {
+                        'use strict';
+                        delete super.x;
+                    }
+                },
+                caught = false;
+            try {
+                h.m();
+            } catch (e) {
+                caught = e instanceof ReferenceError;
+            }
+            caught
+        "#,
     );
 }
 
 #[test]
 fn destructuring_and_loop_assignment_heads_use_super_references() {
     assert_true(
-        "let log='',p={set x(v){log+=v;}},h={m(){[super.x,super.x]=[1,2];({x:super.x}={x:3});for(super.x of [4,5]){}for(super.x in {a:1}){}}};Object.setPrototypeOf(h,p);h.m();log==='12345a'",
+        r#"
+            let log = '',
+                p = {
+                    set x(v) {
+                        log += v;
+                    }
+                },
+                h = {
+                    m() {
+                        [super.x, super.x] = [1, 2];
+                        ({
+                            x: super.x
+                        } = {
+                            x: 3
+                        });
+                        for (super.x of [4, 5]) {}
+                        for (super.x in {
+                                a: 1
+                            }) {}
+                    }
+                };
+            Object.setPrototypeOf(h, p);
+            h.m();
+            log === '12345a'
+        "#,
     );
     assert_true(
-        "let p={x:1},h={m(){super.x??=7;return super.x;}};Object.setPrototypeOf(h,p);h.m()===1 && !Object.hasOwn(h,'x')",
+        r#"
+            let p = {
+                    x: 1
+                },
+                h = {
+                    m() {
+                        super.x ??= 7;
+                        return super.x;
+                    }
+                };
+            Object.setPrototypeOf(h, p);
+            h.m() === 1 && !Object.hasOwn(h, 'x')
+        "#,
     );
 }
 
 #[test]
 fn arrows_eval_and_default_parameters_inherit_method_home_and_this() {
     assert_true(
-        "let p={x:3},h={x:9,m(v=super.x){return ()=>super.x+this.x+v;},e(){return eval('(()=>super.x+this.x)()');}};Object.setPrototypeOf(h,p);let f=h.m();f()===15 && h.e()===12",
+        r#"
+            let p = {
+                    x: 3
+                },
+                h = {
+                    x: 9,
+                    m(v = super.x) {
+                        return () => super.x + this.x + v;
+                    },
+                    e() {
+                        return eval('(()=>super.x+this.x)()');
+                    }
+                };
+            Object.setPrototypeOf(h, p);
+            let f = h.m();
+            f() === 15 && h.e() === 12
+        "#,
     );
     assert_true(
-        "let p={x:2},h={m(){return eval('()=>super.x');}};Object.setPrototypeOf(h,p);let f=h.m();Object.setPrototypeOf(h,{x:7});f()===7",
+        r#"
+            let p = {
+                    x: 2
+                },
+                h = {
+                    m() {
+                        return eval('()=>super.x');
+                    }
+                };
+            Object.setPrototypeOf(h, p);
+            let f = h.m();
+            Object.setPrototypeOf(h, {
+                x: 7
+            });
+            f() === 7
+        "#,
     );
     assert_true(
         "let p={m(){return this.x;}},h={x:7,e(){return eval('super.m()');}};Object.setPrototypeOf(h,p);h.e()===7",
     );
     assert_true(
-        "let h={m(){return function(){return eval('super.x');};}},caught=false;try{h.m()();}catch(e){caught=e instanceof SyntaxError;}caught",
+        r#"
+            let h = {
+                    m() {
+                        return function() {
+                            return eval('super.x');
+                        };
+                    }
+                },
+                caught = false;
+            try {
+                h.m()();
+            } catch (e) {
+                caught = e instanceof SyntaxError;
+            }
+            caught
+        "#,
     );
     assert_true(
         "var x=1;let h={m(){let x=2;return super.eval('x');}};Object.setPrototypeOf(h,{eval});h.m()===1",
@@ -162,7 +713,25 @@ fn arrows_eval_and_default_parameters_inherit_method_home_and_this() {
 #[test]
 fn captured_method_homes_survive_collection_and_mutation() {
     let mut realm = Realm::default();
-    realm.eval("let arrow=(function(){let p={x:7},h={x:9,m(){return ()=>super.x+this.x;}};Object.setPrototypeOf(h,p);return h.m();})();").unwrap();
+    realm
+        .eval(
+            r#"
+                let arrow = (function() {
+                    let p = {
+                            x: 7
+                        },
+                        h = {
+                            x: 9,
+                            m() {
+                                return () => super.x + this.x;
+                            }
+                        };
+                    Object.setPrototypeOf(h, p);
+                    return h.m();
+                })();
+            "#,
+        )
+        .unwrap();
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("arrow()"), Ok(Value::Number(16.0)));
     assert_eq!(realm.eval("let f=(function(){let h={m(){return eval('()=>super.x');}};Object.setPrototypeOf(h,{x:8});return h.m();})();"), Ok(Value::Undefined));

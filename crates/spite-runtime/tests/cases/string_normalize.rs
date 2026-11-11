@@ -8,7 +8,12 @@ use crate::common::assert_true;
 #[test]
 fn all_forms_handle_recursive_mappings_reordering_blocking_and_hangul() {
     assert_true(
-        "let text=Array.from({length:128},(_,i)=>String.fromCharCode(i)).join('').repeat(16);['NFC','NFD','NFKC','NFKD'].every(form=>text.normalize(form)===text)",
+        r#"
+            let text = Array.from({
+                length: 128
+            }, (_, i) => String.fromCharCode(i)).join('').repeat(16);
+            ['NFC', 'NFD', 'NFKC', 'NFKD'].every(form => text.normalize(form) === text)
+        "#,
     );
     assert_true(
         "'e\\u0301'.normalize()==='é' && 'é'.normalize('NFD')==='e\\u0301' && 'é'.normalize(undefined)==='é'",
@@ -24,7 +29,10 @@ fn all_forms_handle_recursive_mappings_reordering_blocking_and_hangul() {
     );
     assert_true("'\\u0344'.normalize()==='\\u0308\\u0301' && 'क़'.normalize()==='क़'");
     assert_true(
-        "'각'.normalize()==='각' && '각'.normalize('NFD')==='각' && '가'.normalize()==='가' && '힣'.normalize('NFD')==='힣'",
+        r#"
+            '각'.normalize() === '각' && '각'.normalize('NFD') === '각' && '가'.normalize() === '가' && '힣'
+                .normalize('NFD') === '힣'
+        "#,
     );
     assert_true(
         "'𝕬'.normalize('NFKD')==='A' && '\\u{10FFFF}😀'.normalize()==='\\u{10FFFF}😀' && ''.normalize()===''",
@@ -49,19 +57,86 @@ fn lone_surrogates_preserve_identity_and_separate_ordering_sequences() {
 #[test]
 fn receiver_precedes_form_conversion_and_both_use_the_string_hint_once() {
     assert_true(
-        "let log='',s={[Symbol.toPrimitive](hint){log+='s'+hint;return 'é';}},f={[Symbol.toPrimitive](hint){log+='f'+hint;return 'NFD';}};String.prototype.normalize.call(s,f)==='e\\u0301' && log==='sstringfstring'",
+        r#"
+            let log = '',
+                s = {
+                    [Symbol.toPrimitive](hint) {
+                        log += 's' + hint;
+                        return 'é';
+                    }
+                },
+                f = {
+                    [Symbol.toPrimitive](hint) {
+                        log += 'f' + hint;
+                        return 'NFD';
+                    }
+                };
+            String.prototype.normalize.call(s, f) === 'e\u0301' && log === 'sstringfstring'
+        "#,
     );
     assert_true(
-        "let log='',caught=false,s={toString(){log+='s';throw 7;}},f={toString(){log+='f';throw 8;}};try{String.prototype.normalize.call(s,f);}catch(e){caught=e===7;}caught && log==='s'",
+        r#"
+            let log = '',
+                caught = false,
+                s = {
+                    toString() {
+                        log += 's';
+                        throw 7;
+                    }
+                },
+                f = {
+                    toString() {
+                        log += 'f';
+                        throw 8;
+                    }
+                };
+            try {
+                String.prototype.normalize.call(s, f);
+            } catch (e) {
+                caught = e === 7;
+            }
+            caught && log === 's'
+        "#,
     );
     assert_true(
-        "let log='',caught=false;try{String.prototype.normalize.call(null,{toString(){log+='f';throw 8;}});}catch(e){caught=e instanceof TypeError;}caught && log===''",
+        r#"
+            let log = '',
+                caught = false;
+            try {
+                String.prototype.normalize.call(null, {
+                    toString() {
+                        log += 'f';
+                        throw 8;
+                    }
+                });
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && log === ''
+        "#,
     );
     assert_true(
-        "let marker={},caught=false;try{'abc'.normalize({toString(){throw marker;}});}catch(e){caught=e===marker;}caught",
+        r#"
+            let marker = {},
+                caught = false;
+            try {
+                'abc'.normalize({
+                    toString() {
+                        throw marker;
+                    }
+                });
+            } catch (e) {
+                caught = e === marker;
+            }
+            caught
+        "#,
     );
     assert_true(
-        "String.prototype.normalize.call(7)==='7' && String.prototype.normalize.call(true)==='true' && String.prototype.normalize.call(7n)==='7' && new String('e\\u0301').normalize()==='é'",
+        r#"
+            String.prototype.normalize.call(7) === '7' && String.prototype.normalize.call(true) ===
+                'true' && String.prototype.normalize.call(7n) === '7' && new String('e\u0301')
+            .normalize() === 'é'
+        "#,
     );
     for receiver in [
         "null",
@@ -126,10 +201,28 @@ fn invalid_forms_throw_rangeerror_after_conversion_without_case_folding() {
         );
     }
     assert_true(
-        "let Original=RangeError;RangeError=TypeError;let caught=false;try{'x'.normalize('wrong');}catch(e){caught=e instanceof Original && !(e instanceof TypeError);}caught",
+        r#"
+            let Original = RangeError;
+            RangeError = TypeError;
+            let caught = false;
+            try {
+                'x'.normalize('wrong');
+            } catch (e) {
+                caught = e instanceof Original && !(e instanceof TypeError);
+            }
+            caught
+        "#,
     );
     assert_true(
-        "let log='',o={toString(){throw 7;}};'e\\u0301'.normalize((log+='a',undefined),(log+='b',o))==='é' && log==='ab'",
+        r#"
+            let log = '',
+                o = {
+                    toString() {
+                        throw 7;
+                    }
+                };
+            'e\u0301'.normalize((log += 'a', undefined), (log += 'b', o)) === 'é' && log === 'ab'
+        "#,
     );
 }
 
@@ -155,7 +248,10 @@ fn metadata_descriptors_deletion_and_retention_are_standard() {
         assert!(!d.writable && !d.enumerable && d.configurable);
     }
     assert_true(
-        "let d=Object.getOwnPropertyDescriptor(String.prototype,'normalize');d.writable && !d.enumerable && d.configurable",
+        r#"
+            let d = Object.getOwnPropertyDescriptor(String.prototype, 'normalize');
+            d.writable && !d.enumerable && d.configurable
+        "#,
     );
     assert!(matches!(
         realm.eval("new String.prototype.normalize()"),

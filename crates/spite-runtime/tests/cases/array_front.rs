@@ -34,10 +34,31 @@ fn generic_length_conversion_and_zero_argument_paths_still_write_length() {
         "let o={0:1,length:'1.9'};Array.prototype.unshift.call(o,7)===2 && o[0]===7 && o[1]===1 && o.length===2",
     );
     assert_true(
-        "let n=0,o={};Object.defineProperty(o,'length',{get:()=>-7,set:function(v){if(this!==o || !Object.is(v,0))throw 7;n++;}});Array.prototype.shift.call(o)===undefined && Array.prototype.unshift.call(o)===0 && n===2",
+        r#"
+            let n = 0,
+                o = {};
+            Object.defineProperty(o, 'length', {
+                get: () => -7,
+                set: function(v) {
+                    if (this !== o || !Object.is(v, 0)) throw 7;
+                    n++;
+                }
+            });
+            Array.prototype.shift.call(o) === undefined && Array.prototype.unshift.call(o) === 0 && n === 2
+        "#,
     );
     assert_true(
-        "let o={length:Infinity};Object.defineProperty(o,'0',{get:()=>{throw 7;}});Array.prototype.unshift.call(o)===9007199254740991 && o.length===9007199254740991",
+        r#"
+            let o = {
+                length: Infinity
+            };
+            Object.defineProperty(o, '0', {
+                get: () => {
+                    throw 7;
+                }
+            });
+            Array.prototype.unshift.call(o) === 9007199254740991 && o.length === 9007199254740991
+        "#,
     );
     assert_true(
         "Array.prototype.shift.call(false)===undefined && Array.prototype.unshift.call(7)===0 && Array.prototype.unshift.call(false,7)===1",
@@ -53,26 +74,99 @@ fn inherited_values_and_setters_are_observed_and_prototype_properties_survive() 
         "Array.prototype[1]=7;let a=[1,,];a.unshift(9);a[0]===9 && a[1]===1 && a[2]===7 && Array.prototype[1]===7",
     );
     assert_true(
-        "let p={0:9},o=Object.create(p);o[0]=1;o.length=2;Array.prototype.shift.call(o)===1 && !Object.hasOwn(o,'0') && o[0]===9 && o.length===1",
+        r#"
+            let p = {
+                    0: 9
+                },
+                o = Object.create(p);
+            o[0] = 1;
+            o.length = 2;
+            Array.prototype.shift.call(o) === 1 && !Object.hasOwn(o, '0') && o[0] === 9 && o.length === 1
+        "#,
     );
     assert_true(
-        "let p={},valid=false,value;Object.defineProperty(p,'0',{set:function(v){valid=this===o;value=v;}});let o=Object.create(p);o.length=0;Array.prototype.unshift.call(o,7)===1 && valid && value===7 && !Object.hasOwn(o,'0')",
+        r#"
+            let p = {},
+                valid = false,
+                value;
+            Object.defineProperty(p, '0', {
+                set: function(v) {
+                    valid = this === o;
+                    value = v;
+                }
+            });
+            let o = Object.create(p);
+            o.length = 0;
+            Array.prototype.unshift.call(o, 7) === 1 && valid && value === 7 && !Object.hasOwn(o, '0')
+        "#,
     );
 }
 
 #[test]
 fn captured_length_and_live_values_survive_getter_and_setter_mutations() {
     assert_true(
-        "let a=[1,2,3];Object.defineProperty(a,'0',{get:()=>{a.length=0;return 1;},configurable:true});a.shift()===1 && a.length===2 && !(0 in a) && !(1 in a)",
+        r#"
+            let a = [1, 2, 3];
+            Object.defineProperty(a, '0', {
+                get: () => {
+                    a.length = 0;
+                    return 1;
+                },
+                configurable: true
+            });
+            a.shift() === 1 && a.length === 2 && !(0 in a) && !(1 in a)
+        "#,
     );
     assert_true(
-        "let a=[1,2,3];Object.defineProperty(a,'1',{get:()=>{a[2]=9;return 2;},set:function(v){Object.defineProperty(a,'1',{value:v,writable:true});},configurable:true});a.shift()===1 && a[0]===2 && a[1]===9 && a.length===2",
+        r#"
+            let a = [1, 2, 3];
+            Object.defineProperty(a, '1', {
+                get: () => {
+                    a[2] = 9;
+                    return 2;
+                },
+                set: function(v) {
+                    Object.defineProperty(a, '1', {
+                        value: v,
+                        writable: true
+                    });
+                },
+                configurable: true
+            });
+            a.shift() === 1 && a[0] === 2 && a[1] === 9 && a.length === 2
+        "#,
     );
     assert_true(
-        "let a=[1,2];Object.defineProperty(a,'1',{get:()=>{a[0]=9;return 2;},set:function(v){Object.defineProperty(a,'1',{value:v,writable:true});},configurable:true});a.unshift(7)===3 && a.join()==='7,9,2'",
+        r#"
+            let a = [1, 2];
+            Object.defineProperty(a, '1', {
+                get: () => {
+                    a[0] = 9;
+                    return 2;
+                },
+                set: function(v) {
+                    Object.defineProperty(a, '1', {
+                        value: v,
+                        writable: true
+                    });
+                },
+                configurable: true
+            });
+            a.unshift(7) === 3 && a.join() === '7,9,2'
+        "#,
     );
     assert_true(
-        "let a=[1,2];Object.defineProperty(a,'1',{get:()=>{a.length=0;return 2;},configurable:true});a.unshift(7)===3 && a[0]===7 && !(1 in a) && a[2]===2",
+        r#"
+            let a = [1, 2];
+            Object.defineProperty(a, '1', {
+                get: () => {
+                    a.length = 0;
+                    return 2;
+                },
+                configurable: true
+            });
+            a.unshift(7) === 3 && a[0] === 7 && !(1 in a) && a[2] === 2
+        "#,
     );
 }
 
@@ -83,7 +177,47 @@ fn getter_setter_and_final_length_order_follow_each_algorithm() {
         ("unshift.call(o,7)", "lng2s3:2;g1s2:1;g0s1:0;s0:7;L4;"),
     ] {
         assert_true(&format!(
-            "let log='',o={{}};Object.defineProperty(o,'length',{{get:()=>{{log+='l';return {{valueOf:()=>{{log+='n';return 3;}}}};}},set:v=>{{log+='L'+v+';'}}}});function define(k){{Object.defineProperty(o,k,{{get:()=>{{log+='g'+k;return k;}},set:v=>{{log+='s'+k+':'+v+';'}},configurable:true}});}}define(0);define(1);define(2);Object.defineProperty(o,'3',{{set:v=>{{log+='s3:'+v+';'}}}});Array.prototype.{call};log==='{expected}'"
+            r#"
+                let log = '',
+                    o = {{}};
+                Object.defineProperty(o, 'length', {{
+                    get: () => {{
+                        log += 'l';
+                        return {{
+                            valueOf: () => {{
+                                log += 'n';
+                                return 3;
+                            }}
+                        }};
+                    }},
+                    set: v => {{
+                        log += 'L' + v + ';'
+                    }}
+                }});
+
+                function define(k) {{
+                    Object.defineProperty(o, k, {{
+                        get: () => {{
+                            log += 'g' + k;
+                            return k;
+                        }},
+                        set: v => {{
+                            log += 's' + k + ':' + v + ';'
+                        }},
+                        configurable: true
+                    }});
+                }}
+                define(0);
+                define(1);
+                define(2);
+                Object.defineProperty(o, '3', {{
+                    set: v => {{
+                        log += 's3:' + v + ';'
+                    }}
+                }});
+                Array.prototype.{call};
+                log === '{expected}'
+            "#
         ));
     }
 }
@@ -146,10 +280,41 @@ fn strict_failures_keep_earlier_moves_insertions_and_deletions() {
 #[test]
 fn maximum_safe_length_is_checked_before_movement_and_large_keys_stay_exact() {
     assert_true(
-        "let n=0,o={length:Infinity};Object.defineProperty(o,'9007199254740990',{get:()=>{n++;throw 7;}});try{Array.prototype.unshift.call(o,1);}catch(e){if(!(e instanceof TypeError))throw e;}n===0 && o.length===Infinity && !Object.hasOwn(o,'0')",
+        r#"
+            let n = 0,
+                o = {
+                    length: Infinity
+                };
+            Object.defineProperty(o, '9007199254740990', {
+                get: () => {
+                    n++;
+                    throw 7;
+                }
+            });
+            try {
+                Array.prototype.unshift.call(o, 1);
+            } catch (e) {
+                if (!(e instanceof TypeError)) throw e;
+            }
+            n === 0 && o.length === Infinity && !Object.hasOwn(o, '0')
+        "#,
     );
     let mut realm = Realm::default();
-    realm.eval("let o={9007199254740989:7,length:9007199254740990};Object.defineProperty(o,'9007199254740988',{get:()=>{throw 7;}})").unwrap();
+    realm
+        .eval(
+            r#"
+                let o = {
+                    9007199254740989: 7,
+                    length: 9007199254740990
+                };
+                Object.defineProperty(o, '9007199254740988', {
+                    get: () => {
+                        throw 7;
+                    }
+                })
+            "#,
+        )
+        .unwrap();
     assert_eq!(
         realm.eval("Array.prototype.unshift.call(o,1)"),
         Err(Error::Thrown(Value::Number(7.0)))
@@ -213,7 +378,12 @@ fn receiver_conversion_getters_and_readonly_lengths_propagate_errors() {
 fn metadata_nonconstructibility_and_collection_are_standard() {
     for (method, length) in [("shift", 0), ("unshift", 1)] {
         assert_true(&format!(
-            "let f=Array.prototype.{method},d=Object.getOwnPropertyDescriptor(Array.prototype,'{method}');f.name==='{method}' && f.length==={length} && f.prototype===undefined && d.value===f && d.writable && !d.enumerable && d.configurable"
+            r#"
+                let f = Array.prototype.{method},
+                    d = Object.getOwnPropertyDescriptor(Array.prototype, '{method}');
+                f.name === '{method}' && f.length === {length} && f.prototype === undefined && d
+                    .value === f && d.writable && !d.enumerable && d.configurable
+            "#
         ));
         assert!(matches!(
             Realm::default().eval(&format!("new Array.prototype.{method}")),

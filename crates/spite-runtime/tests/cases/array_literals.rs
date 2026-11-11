@@ -11,10 +11,22 @@ fn holes_and_trailing_commas_preserve_presence_and_length() {
         "[].length===0 && [,].length===1 && [,,].length===2 && [1,].length===1 && [1,,].length===2",
     );
     assert_true(
-        "let a=[,undefined,,3,];a.length===4 && !Object.hasOwn(a,'0') && Object.hasOwn(a,'1') && !Object.hasOwn(a,'2') && Object.hasOwn(a,'3') && a[0]===undefined && a[3]===3",
+        r#"
+            let a = [, undefined, , 3, ];
+            a.length === 4 && !Object.hasOwn(a, '0') && Object.hasOwn(a, '1') && !Object.hasOwn(a, '2') &&
+                Object.hasOwn(a, '3') && a[0] === undefined && a[3] === 3
+        "#,
     );
     assert_true(
-        "let a=[1,,];Object.defineProperty(Array.prototype,'1',{value:9,writable:true,configurable:true});a.length===2 && a[1]===9 && !Object.hasOwn(a,'1')",
+        r#"
+            let a = [1, , ];
+            Object.defineProperty(Array.prototype, '1', {
+                value: 9,
+                writable: true,
+                configurable: true
+            });
+            a.length === 2 && a[1] === 9 && !Object.hasOwn(a, '1')
+        "#,
     );
     assert_true(
         "let a=[1,[2],{}];Array.isArray(a) && Array.isArray(a[1]) && a[1][0]===2 && !Array.isArray(a[2])",
@@ -24,10 +36,22 @@ fn holes_and_trailing_commas_preserve_presence_and_length() {
 #[test]
 fn literals_use_intrinsics_independently_of_global_array_binding() {
     assert_true(
-        "let A=Array;Array=()=>{throw 1;};let a=[1];a[0]===1 && a instanceof A && Object.getPrototypeOf(a)===A.prototype",
+        r#"
+            let A = Array;
+            Array = () => {
+                throw 1;
+            };
+            let a = [1];
+            a[0] === 1 && a instanceof A && Object.getPrototypeOf(a) === A.prototype
+        "#,
     );
     assert_true(
-        "let A=Array;delete globalThis.Array;let a=[,2,];a.length===2 && a[1]===2 && A.isArray(a) && Object.getPrototypeOf(a)===A.prototype",
+        r#"
+            let A = Array;
+            delete globalThis.Array;
+            let a = [, 2, ];
+            a.length === 2 && a[1] === 2 && A.isArray(a) && Object.getPrototypeOf(a) === A.prototype
+        "#,
     );
     assert_true("function f(){let Array=7;return [3];}f()[0]===3");
 }
@@ -50,10 +74,31 @@ fn element_evaluation_is_left_to_right_and_stops_on_throw() {
 #[test]
 fn elements_define_own_properties_bypassing_inherited_setters() {
     assert_true(
-        "let n=0;Object.defineProperty(Array.prototype,'0',{set:()=>{n++;},configurable:true});let a=[4];a[0]===4 && Object.hasOwn(a,'0') && n===0",
+        r#"
+            let n = 0;
+            Object.defineProperty(Array.prototype, '0', {
+                set: () => {
+                    n++;
+                },
+                configurable: true
+            });
+            let a = [4];
+            a[0] === 4 && Object.hasOwn(a, '0') && n === 0
+        "#,
     );
     assert_true(
-        "Object.defineProperty(Array.prototype,'0',{value:9,writable:false,configurable:true});Object.defineProperty(Array.prototype,'length',{writable:false});let a=[1,,];a[0]===1 && a.length===2 && !Object.hasOwn(a,'1')",
+        r#"
+            Object.defineProperty(Array.prototype, '0', {
+                value: 9,
+                writable: false,
+                configurable: true
+            });
+            Object.defineProperty(Array.prototype, 'length', {
+                writable: false
+            });
+            let a = [1, , ];
+            a[0] === 1 && a.length === 2 && !Object.hasOwn(a, '1')
+        "#,
     );
     assert_true(
         "let a=[Object.defineProperty(Array.prototype,'1',{value:9,writable:false,configurable:true}),2];a[1]===2",

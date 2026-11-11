@@ -1,5 +1,6 @@
 use super::{DateTimeString, DateTimeZone, JsString, parse_date_time_string};
 use std::fmt::Write;
+use test_case::test_case;
 
 #[test]
 fn date_time_forms_snapshot_defaults_expanded_years_midnight_and_zones() {
@@ -332,21 +333,21 @@ fn nominal_calendar_validation_keeps_invalid_fields_distinct_from_zone_selection
     assert!(invalid_zone.utc_time_value().unwrap().is_nan());
 }
 
+#[test_case("1970" => Some(0.0); "year_defaults_to_january_first")]
+#[test_case("1970T00:00Z" => Some(0.0); "time_with_default_month_and_day")]
+#[test_case("1970-02" => Some(2_678_400_000.0); "month_defaults_to_first_day")]
+#[test_case("1969-12-31T23:59:59.999Z" => Some(-1.0); "last_millisecond_before_epoch")]
+#[test_case("1970-01-01T00:00+05:30" => Some(-19_800_000.0); "positive_offset")]
+#[test_case("1970-01-01T00:00-05:30" => Some(19_800_000.0); "negative_offset")]
+#[test_case("0000" => Some(-62_167_219_200_000.0); "year_zero")]
+#[test_case("+000000" => Some(-62_167_219_200_000.0); "expanded_year_zero")]
+#[test_case("-000001" => Some(-62_198_755_200_000.0); "negative_year")]
+fn utc_forms_convert_to_expected_milliseconds(source: &str) -> Option<f64> {
+    parsed(source).utc_time_value()
+}
+
 #[test]
-fn utc_forms_convert_defaults_extended_years_and_offsets_without_short_year_adjustment() {
-    for (source, expected) in [
-        ("1970", 0.0),
-        ("1970T00:00Z", 0.0),
-        ("1970-02", 2_678_400_000.0),
-        ("1969-12-31T23:59:59.999Z", -1.0),
-        ("1970-01-01T00:00+05:30", -19_800_000.0),
-        ("1970-01-01T00:00-05:30", 19_800_000.0),
-        ("0000", -62_167_219_200_000.0),
-        ("+000000", -62_167_219_200_000.0),
-        ("-000001", -62_198_755_200_000.0),
-    ] {
-        assert_eq!(parsed(source).utc_time_value(), Some(expected), "{source}");
-    }
+fn utc_conversion_preserves_positive_zero_and_literal_years() {
     assert_eq!(parsed("1970").utc_time_value().unwrap().to_bits(), 0);
     for source in ["0001", "0099", "+000001", "-000001"] {
         let value = parsed(source);
@@ -355,7 +356,8 @@ fn utc_forms_convert_defaults_extended_years_and_offsets_without_short_year_adju
             super::super::UtcDateTime::from_time_value(time as i64)
                 .unwrap()
                 .year,
-            value.year
+            value.year,
+            "year must not receive Date constructor's 1900 adjustment: {source}",
         );
     }
 }
@@ -410,15 +412,11 @@ fn utc_range_checks_follow_offset_adjustment_at_both_endpoints() {
     }
 }
 
-#[test]
-fn local_forms_require_resolution_instead_of_substituting_a_utc_instant() {
-    for source in [
-        "1970T00:00",
-        "2000-02-29T12:34:56.789",
-        "+275760-09-13T00:00",
-    ] {
-        assert_eq!(parsed(source).utc_time_value(), None);
-    }
+#[test_case("1970T00:00"; "epoch_time_without_zone")]
+#[test_case("2000-02-29T12:34:56.789"; "leap_day_with_fractional_seconds")]
+#[test_case("+275760-09-13T00:00"; "expanded_year_without_zone")]
+fn local_forms_require_time_zone_resolution(source: &str) {
+    assert_eq!(parsed(source).utc_time_value(), None);
 }
 
 #[test]

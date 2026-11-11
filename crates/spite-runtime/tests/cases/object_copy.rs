@@ -7,13 +7,48 @@ use crate::common::assert_true;
 #[test]
 fn assign_boxes_targets_skips_nullish_sources_and_copies_only_enumerable_own_values() {
     assert_true(
-        "let o={};Object.assign(o)===o && Object.assign(o,null,undefined,true,1)===o && Object.assign(o,{x:1},{x:2,y:3})===o && o.x===2 && o.y===3",
+        r#"
+            let o = {};
+            Object.assign(o) === o && Object.assign(o, null, undefined, true, 1) === o && Object.assign(
+            o, {
+                x: 1
+            }, {
+                x: 2,
+                y: 3
+            }) === o && o.x === 2 && o.y === 3
+        "#,
     );
     assert_true(
-        "let n=Object.assign(3,{x:4}),b=Object.assign(false,{x:5});n instanceof Number && n.valueOf()===3 && n.x===4 && b instanceof Boolean && !b.valueOf() && b.x===5",
+        r#"
+            let n = Object.assign(3, {
+                    x: 4
+                }),
+                b = Object.assign(false, {
+                    x: 5
+                });
+            n instanceof Number && n.valueOf() === 3 && n.x === 4 && b instanceof Boolean && !b
+            .valueOf() && b.x === 5
+        "#,
     );
     assert_true(
-        "let p={inherited:1},source=Object.create(p,{hidden:{value:2},x:{value:3,enumerable:true}});let o=Object.assign({},source);!Object.hasOwn(o,'hidden') && !Object.hasOwn(o,'inherited') && o.x===3 && Object.getOwnPropertyDescriptor(o,'x').writable && Object.getOwnPropertyDescriptor(o,'x').configurable",
+        r#"
+            let p = {
+                    inherited: 1
+                },
+                source = Object.create(p, {
+                    hidden: {
+                        value: 2
+                    },
+                    x: {
+                        value: 3,
+                        enumerable: true
+                    }
+                });
+            let o = Object.assign({}, source);
+            !Object.hasOwn(o, 'hidden') && !Object.hasOwn(o, 'inherited') && o.x === 3 && Object
+                .getOwnPropertyDescriptor(o, 'x').writable && Object.getOwnPropertyDescriptor(o, 'x')
+                .configurable
+        "#,
     );
     for source in [
         "Object.assign()",
@@ -36,16 +71,75 @@ fn assign_boxes_targets_skips_nullish_sources_and_copies_only_enumerable_own_val
 #[test]
 fn assign_orders_getters_and_setters_and_rechecks_each_snapshotted_key() {
     assert_true(
-        "let log='',p={},s={};Object.defineProperty(p,'x',{set:function(v){if(this!==o)throw 1;log+='s'+v;}});Object.defineProperty(s,'x',{get:function(){if(this!==s)throw 2;log+='g';return 7;},enumerable:true});let o=Object.create(p);Object.assign(o,s)===o && log==='gs7' && !Object.hasOwn(o,'x')",
+        r#"
+            let log = '',
+                p = {},
+                s = {};
+            Object.defineProperty(p, 'x', {
+                set: function(v) {
+                    if (this !== o) throw 1;
+                    log += 's' + v;
+                }
+            });
+            Object.defineProperty(s, 'x', {
+                get: function() {
+                    if (this !== s) throw 2;
+                    log += 'g';
+                    return 7;
+                },
+                enumerable: true
+            });
+            let o = Object.create(p);
+            Object.assign(o, s) === o && log === 'gs7' && !Object.hasOwn(o, 'x')
+        "#,
     );
     assert_true(
-        "let s={};Object.defineProperty(s,'a',{get:()=>{delete s.b;s.c=3;return 1;},enumerable:true});s.b=2;let o=Object.assign({},s);o.a===1 && !Object.hasOwn(o,'b') && !Object.hasOwn(o,'c')",
+        r#"
+            let s = {};
+            Object.defineProperty(s, 'a', {
+                get: () => {
+                    delete s.b;
+                    s.c = 3;
+                    return 1;
+                },
+                enumerable: true
+            });
+            s.b = 2;
+            let o = Object.assign({}, s);
+            o.a === 1 && !Object.hasOwn(o, 'b') && !Object.hasOwn(o, 'c')
+        "#,
     );
     assert_true(
-        "let s={};Object.defineProperty(s,'a',{get:()=>{Object.defineProperty(s,'b',{enumerable:false});return 1;},enumerable:true});s.b=2;let o=Object.assign({},s);o.a===1 && !Object.hasOwn(o,'b')",
+        r#"
+            let s = {};
+            Object.defineProperty(s, 'a', {
+                get: () => {
+                    Object.defineProperty(s, 'b', {
+                        enumerable: false
+                    });
+                    return 1;
+                },
+                enumerable: true
+            });
+            s.b = 2;
+            let o = Object.assign({}, s);
+            o.a === 1 && !Object.hasOwn(o, 'b')
+        "#,
     );
     assert_true(
-        "let later={},first={};Object.defineProperty(first,'a',{get:()=>{later.x=7;return 1;},enumerable:true});let o=Object.assign({},first,later);o.a===1 && o.x===7",
+        r#"
+            let later = {},
+                first = {};
+            Object.defineProperty(first, 'a', {
+                get: () => {
+                    later.x = 7;
+                    return 1;
+                },
+                enumerable: true
+            });
+            let o = Object.assign({}, first, later);
+            o.a === 1 && o.x === 7
+        "#,
     );
     let mut realm = Realm::default();
     let Value::Object(object) = realm.eval("Object.assign({},{b:1,10:2,2:3,a:4})").unwrap() else {
@@ -60,7 +154,28 @@ fn assign_orders_getters_and_setters_and_rechecks_each_snapshotted_key() {
 #[test]
 fn assignment_abrupt_completions_preserve_earlier_copies_and_stop_later_sources() {
     let mut realm = Realm::default();
-    realm.eval("let o={},read=false;Object.defineProperty(o,'b',{value:0});let s={a:1,b:2};Object.defineProperty(s,'c',{get:()=>{read=true;return 3;},enumerable:true})").unwrap();
+    realm
+        .eval(
+            r#"
+                let o = {},
+                    read = false;
+                Object.defineProperty(o, 'b', {
+                    value: 0
+                });
+                let s = {
+                    a: 1,
+                    b: 2
+                };
+                Object.defineProperty(s, 'c', {
+                    get: () => {
+                        read = true;
+                        return 3;
+                    },
+                    enumerable: true
+                })
+            "#,
+        )
+        .unwrap();
     assert!(matches!(
         realm.eval("Object.assign(o,s,{later:1})"),
         Err(Error::Exception {
@@ -98,13 +213,51 @@ fn assignment_abrupt_completions_preserve_earlier_copies_and_stop_later_sources(
 #[test]
 fn descriptor_copy_preserves_accessors_and_hidden_properties_without_invoking_them() {
     assert_true(
-        "let o={},get=()=>{throw 9;};Object.defineProperties(o,{x:{get:get,enumerable:true},hidden:{value:3}});let ds=Object.getOwnPropertyDescriptors(o);ds.x.get===get && ds.x.set===undefined && ds.x.enumerable && !ds.x.configurable && ds.hidden.value===3 && !ds.hidden.enumerable && !Object.hasOwn(ds,'constructor')",
+        r#"
+            let o = {},
+                get = () => {
+                    throw 9;
+                };
+            Object.defineProperties(o, {
+                x: {
+                    get: get,
+                    enumerable: true
+                },
+                hidden: {
+                    value: 3
+                }
+            });
+            let ds = Object.getOwnPropertyDescriptors(o);
+            ds.x.get === get && ds.x.set === undefined && ds.x.enumerable && !ds.x.configurable && ds
+                .hidden.value === 3 && !ds.hidden.enumerable && !Object.hasOwn(ds, 'constructor')
+        "#,
     );
     assert_true(
-        "let o={x:1},a=Object.getOwnPropertyDescriptors(o),b=Object.getOwnPropertyDescriptors(o);a!==b && a.x!==b.x && a.constructor===Object && a.x.constructor===Object && (a.x.value=2)===2 && b.x.value===1 && o.x===1",
+        r#"
+            let o = {
+                    x: 1
+                },
+                a = Object.getOwnPropertyDescriptors(o),
+                b = Object.getOwnPropertyDescriptors(o);
+            a !== b && a.x !== b.x && a.constructor === Object && a.x.constructor === Object && (a.x
+                .value = 2) === 2 && b.x.value === 1 && o.x === 1
+        "#,
     );
     assert_true(
-        "let o=Object.create(null,{x:{get:function(){return this;},enumerable:true,configurable:true}});let copy=Object.create(null,Object.getOwnPropertyDescriptors(o));copy!==o && copy.x===copy && Object.getOwnPropertyDescriptor(copy,'x').get===Object.getOwnPropertyDescriptor(o,'x').get",
+        r#"
+            let o = Object.create(null, {
+                x: {
+                    get: function() {
+                        return this;
+                    },
+                    enumerable: true,
+                    configurable: true
+                }
+            });
+            let copy = Object.create(null, Object.getOwnPropertyDescriptors(o));
+            copy !== o && copy.x === copy && Object.getOwnPropertyDescriptor(copy, 'x').get === Object
+                .getOwnPropertyDescriptor(o, 'x').get
+        "#,
     );
     assert_true(
         "function f(a){a=7;return Object.getOwnPropertyDescriptors(arguments)['0'].value===7;}f(1)",
@@ -114,10 +267,32 @@ fn descriptor_copy_preserves_accessors_and_hidden_properties_without_invoking_th
 #[test]
 fn descriptor_results_define_data_properties_even_over_inherited_setters_and_proto_names() {
     assert_true(
-        "Object.defineProperty(Object.prototype,'x',{set:()=>{throw 9;}});let o=Object.create(null,{x:{value:7}});let ds=Object.getOwnPropertyDescriptors(o);ds.x.value===7 && Object.hasOwn(ds,'x') && Object.getOwnPropertyDescriptor(ds,'x').enumerable",
+        r#"
+            Object.defineProperty(Object.prototype, 'x', {
+                set: () => {
+                    throw 9;
+                }
+            });
+            let o = Object.create(null, {
+                x: {
+                    value: 7
+                }
+            });
+            let ds = Object.getOwnPropertyDescriptors(o);
+            ds.x.value === 7 && Object.hasOwn(ds, 'x') && Object.getOwnPropertyDescriptor(ds, 'x')
+                .enumerable
+        "#,
     );
     assert_true(
-        "let o={['__proto__']:7};let ds=Object.getOwnPropertyDescriptors(o);Object.getPrototypeOf(ds)===Object.prototype && Object.hasOwn(ds,'__proto__') && ds.__proto__.value===7 && Object.getOwnPropertyDescriptor(ds,'__proto__').writable && Object.getOwnPropertyDescriptor(ds,'__proto__').configurable",
+        r#"
+            let o = {
+                ['__proto__']: 7
+            };
+            let ds = Object.getOwnPropertyDescriptors(o);
+            Object.getPrototypeOf(ds) === Object.prototype && Object.hasOwn(ds, '__proto__') && ds
+                .__proto__.value === 7 && Object.getOwnPropertyDescriptor(ds, '__proto__').writable &&
+                Object.getOwnPropertyDescriptor(ds, '__proto__').configurable
+        "#,
     );
     assert_true(
         "let ds=Object.getOwnPropertyDescriptors(true);ds.constructor===Object && !Object.hasOwn(ds,'valueOf')",
@@ -138,7 +313,15 @@ fn descriptor_results_define_data_properties_even_over_inherited_setters_and_pro
         );
     }
     assert_true(
-        "let ds=Object.getOwnPropertyDescriptors(globalThis),p=ds.Proxy,n=ds.undefined,d=Object.getOwnPropertyDescriptor(ds,'Proxy');Reflect.ownKeys(ds).length===62 && p.value===Proxy && p.writable && !p.enumerable && p.configurable && n.value===undefined && !n.writable && !n.enumerable && !n.configurable && d.value===p && d.writable && d.enumerable && d.configurable",
+        r#"
+            let ds = Object.getOwnPropertyDescriptors(globalThis),
+                p = ds.Proxy,
+                n = ds.undefined,
+                d = Object.getOwnPropertyDescriptor(ds, 'Proxy');
+            Reflect.ownKeys(ds).length === 62 && p.value === Proxy && p.writable && !p.enumerable && p
+                .configurable && n.value === undefined && !n.writable && !n.enumerable && !n
+                .configurable && d.value === p && d.writable && d.enumerable && d.configurable
+        "#,
     );
     assert_true("Reflect.ownKeys(Object.assign({},Array)).length===0");
 }
@@ -147,7 +330,11 @@ fn descriptor_results_define_data_properties_even_over_inherited_setters_and_pro
 fn metadata_and_copied_edges_remain_valid_after_collection() {
     for (name, length) in [("assign", 2), ("getOwnPropertyDescriptors", 1)] {
         assert_true(&format!(
-            "let d=Object.getOwnPropertyDescriptor(Object,'{name}');d.writable && !d.enumerable && d.configurable && d.value.name==='{name}' && d.value.length==={length}"
+            r#"
+                let d = Object.getOwnPropertyDescriptor(Object, '{name}');
+                d.writable && !d.enumerable && d.configurable && d.value.name === '{name}' && d.value
+                    .length === {length}
+            "#
         ));
         assert!(matches!(
             Realm::default().eval(&format!("new Object.{name}()")),
@@ -158,7 +345,21 @@ fn metadata_and_copied_edges_remain_valid_after_collection() {
         ));
     }
     let mut realm = Realm::default();
-    realm.eval("let C=Object;let o=C.assign({},{x:{value:7}});let ds=C.getOwnPropertyDescriptors(o);o=null;delete globalThis.Object").unwrap();
+    realm
+        .eval(
+            r#"
+                let C = Object;
+                let o = C.assign({}, {
+                    x: {
+                        value: 7
+                    }
+                });
+                let ds = C.getOwnPropertyDescriptors(o);
+                o = null;
+                delete globalThis.Object
+            "#,
+        )
+        .unwrap();
     realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval(

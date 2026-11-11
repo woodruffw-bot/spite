@@ -51,10 +51,77 @@ fn raw_boxes_template_and_raw_values_and_ignores_its_this_value() {
 #[test]
 fn raw_reads_length_once_and_observes_each_conversion_in_order() {
     assert_true(
-        "let log='',t={},r={};Object.defineProperty(t,'raw',{get:function(){if(this!==t)throw 1;log+='r';return r;}});Object.defineProperty(r,'length',{get:function(){if(this!==r)throw 2;log+='l';return {valueOf:()=>{log+='n';return 2;}};}});Object.defineProperty(r,'0',{get:()=>{log+='0';return {toString:()=>{log+='a';return 'A';}};}});Object.defineProperty(r,'1',{get:()=>{log+='1';return {toString:()=>{log+='b';return 'B';}};}});String.raw(t,{toString:()=>{log+='s';return '-';}})==='A-B' && log==='rln0as1b'",
+        r#"
+            let log = '',
+                t = {},
+                r = {};
+            Object.defineProperty(t, 'raw', {
+                get: function() {
+                    if (this !== t) throw 1;
+                    log += 'r';
+                    return r;
+                }
+            });
+            Object.defineProperty(r, 'length', {
+                get: function() {
+                    if (this !== r) throw 2;
+                    log += 'l';
+                    return {
+                        valueOf: () => {
+                            log += 'n';
+                            return 2;
+                        }
+                    };
+                }
+            });
+            Object.defineProperty(r, '0', {
+                get: () => {
+                    log += '0';
+                    return {
+                        toString: () => {
+                            log += 'a';
+                            return 'A';
+                        }
+                    };
+                }
+            });
+            Object.defineProperty(r, '1', {
+                get: () => {
+                    log += '1';
+                    return {
+                        toString: () => {
+                            log += 'b';
+                            return 'B';
+                        }
+                    };
+                }
+            });
+            String.raw(t, {
+                toString: () => {
+                    log += 's';
+                    return '-';
+                }
+            }) === 'A-B' && log === 'rln0as1b'
+        "#,
     );
     assert_true(
-        "let r={0:'A',1:'B',length:2},sub={toString:()=>{r.length=0;r[1]='Z';return '-';}};String.raw({raw:r},sub)==='A-Z'",
+        r#"
+            let r = {
+                    0: 'A',
+                    1: 'B',
+                    length: 2
+                },
+                sub = {
+                    toString: () => {
+                        r.length = 0;
+                        r[1] = 'Z';
+                        return '-';
+                    }
+                };
+            String.raw({
+                raw: r
+            }, sub) === 'A-Z'
+        "#,
     );
     for length in [
         "undefined",
@@ -67,7 +134,23 @@ fn raw_reads_length_once_and_observes_each_conversion_in_order() {
         "0.9",
     ] {
         assert_true(&format!(
-            "let r={{length:{length}}};Object.defineProperty(r,'0',{{get:()=>{{throw 1;}}}});String.raw({{raw:r}},{{toString:()=>{{throw 2;}}}})===''"
+            r#"
+                let r = {{
+                    length: {length}
+                }};
+                Object.defineProperty(r, '0', {{
+                    get: () => {{
+                        throw 1;
+                    }}
+                }});
+                String.raw({{
+                    raw: r
+                }}, {{
+                    toString: () => {{
+                        throw 2;
+                    }}
+                }}) === ''
+            "#
         ));
     }
     assert_true("String.raw({raw:{0:'A',1:'B',length:'2.9'}},'-')==='A-B'");
@@ -80,7 +163,34 @@ fn only_needed_substitutions_are_converted_but_all_arguments_are_evaluated() {
     );
     assert_true("String.raw({raw:{0:'A',1:'B',length:2}},'-',{toString:()=>{throw 1;}})==='A-B'");
     let mut realm = Realm::default();
-    realm.eval("let log='',r={length:3};Object.defineProperty(r,'0',{get:()=>{log+='0';return 'A';}});Object.defineProperty(r,'1',{get:()=>{log+='1';throw 7;}});Object.defineProperty(r,'2',{get:()=>{log+='2';return 'C';}})").unwrap();
+    realm
+        .eval(
+            r#"
+                let log = '',
+                    r = {
+                        length: 3
+                    };
+                Object.defineProperty(r, '0', {
+                    get: () => {
+                        log += '0';
+                        return 'A';
+                    }
+                });
+                Object.defineProperty(r, '1', {
+                    get: () => {
+                        log += '1';
+                        throw 7;
+                    }
+                });
+                Object.defineProperty(r, '2', {
+                    get: () => {
+                        log += '2';
+                        return 'C';
+                    }
+                })
+            "#,
+        )
+        .unwrap();
     assert_eq!(realm.eval("String.raw({raw:r},{toString:()=>{log+='s';return '-';}},{toString:()=>{log+='t';return '-';}})"),Err(Error::Thrown(Value::Number(7.0))));
     assert_eq!(realm.eval("log==='0s1'"), Ok(Value::Boolean(true)));
     assert_eq!(
@@ -98,7 +208,11 @@ fn only_needed_substitutions_are_converted_but_all_arguments_are_evaluated() {
 #[test]
 fn constructor_static_properties_can_be_reflected_and_frozen() {
     assert_true(
-        "let d=Object.getOwnPropertyDescriptor(String,'raw');d.writable && !d.enumerable && d.configurable && d.value.name==='raw' && d.value.length===1 && !Object.hasOwn(d.value,'prototype')",
+        r#"
+            let d = Object.getOwnPropertyDescriptor(String, 'raw');
+            d.writable && !d.enumerable && d.configurable && d.value.name === 'raw' && d.value.length ===
+                1 && !Object.hasOwn(d.value, 'prototype')
+        "#,
     );
     assert!(matches!(
         Realm::default().eval("new String.raw()"),
@@ -133,10 +247,21 @@ fn constructor_static_properties_can_be_reflected_and_frozen() {
         .map(spite_core::PropertyKey::from)
     );
     assert_true(
-        "Object.freeze(String)===String && Object.isFrozen(String) && String.raw({raw:'a'})==='a' && !Object.isFrozen(String.prototype)",
+        r#"
+            Object.freeze(String) === String && Object.isFrozen(String) && String.raw({
+                raw: 'a'
+            }) === 'a' && !Object.isFrozen(String.prototype)
+        "#,
     );
     assert_true(
-        "let r=String.raw;delete String.raw;String.raw===undefined && !Object.hasOwn(String,'raw') && !Object.hasOwn(Object.getOwnPropertyDescriptors(String),'raw') && r({raw:'a'})==='a'",
+        r#"
+            let r = String.raw;
+            delete String.raw;
+            String.raw === undefined && !Object.hasOwn(String, 'raw') && !Object.hasOwn(Object
+                .getOwnPropertyDescriptors(String), 'raw') && r({
+                raw: 'a'
+            }) === 'a'
+        "#,
     );
     realm
         .eval("let r=String.raw;delete globalThis.String")

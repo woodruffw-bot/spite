@@ -23,9 +23,30 @@ fn collect(realm: &mut Realm) {
 #[test]
 fn for_of_defaults_use_fresh_mutable_cells_and_skip_defined_values() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let effects=0,closures=[],result;async function f(){for(let [x=await(effects++,7)] of [[],[9],[]]){closures.push(()=>x);x++;await 0}return closures.map(f=>f()).join(',')}f().then(value=>{result=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let effects = 0,
+                    closures = [],
+                    result;
+                async function f() {
+                    for (let [x = await (effects++, 7)] of [
+                            [],
+                            [9],
+                            []
+                        ]) {
+                        closures.push(() => x);
+                        x++;
+                        await 0
+                    }
+                    return closures.map(f => f()).join(',')
+                }
+                f().then(value => {
+                    result = value
+                });
+            "#,
+        )
+        .unwrap();
     check(&mut realm, "effects===1&&result===undefined");
     drain(&mut realm);
     check(
@@ -37,11 +58,43 @@ fn for_of_defaults_use_fresh_mutable_cells_and_skip_defined_values() {
 #[test]
 fn for_await_waits_for_binding_defaults_before_advancing_the_outer_iterator() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let release,gate=new Promise(resolve=>{release=resolve}),calls=0,values=[],result;
-        let source={[Symbol.asyncIterator](){return this},next(){return ++calls===1?{done:false,value:[]}:calls===2?{done:false,value:[9]}:{done:true}}};
-        async function f(){for await(const [x=await gate] of source){values.push(x)}return values.join(',')}f().then(value=>{result=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let release, gate = new Promise(resolve => {
+                        release = resolve
+                    }),
+                    calls = 0,
+                    values = [],
+                    result;
+                let source = {
+                    [Symbol.asyncIterator]() {
+                        return this
+                    },
+                    next() {
+                        return ++calls === 1 ? {
+                            done: false,
+                            value: []
+                        } : calls === 2 ? {
+                            done: false,
+                            value: [9]
+                        } : {
+                            done: true
+                        }
+                    }
+                };
+                async function f() {
+                    for await (const [x = await gate] of source) {
+                        values.push(x)
+                    }
+                    return values.join(',')
+                }
+                f().then(value => {
+                    result = value
+                });
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     check(
         &mut realm,
@@ -55,9 +108,28 @@ fn for_await_waits_for_binding_defaults_before_advancing_the_outer_iterator() {
 #[test]
 fn for_in_destructures_selected_string_keys_with_awaited_defaults() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let effects=0,values=[],result;async function f(){for(const [x=await(effects++,7)] in {'':1,a:2}){values.push(x);await 0}return values.join(',')}f().then(value=>{result=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let effects = 0,
+                    values = [],
+                    result;
+                async function f() {
+                    for (const [x = await (effects++, 7)] in {
+                            '': 1,
+                            a: 2
+                        }) {
+                        values.push(x);
+                        await 0
+                    }
+                    return values.join(',')
+                }
+                f().then(value => {
+                    result = value
+                });
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     check(
         &mut realm,
@@ -68,12 +140,68 @@ fn for_in_destructures_selected_string_keys_with_awaited_defaults() {
 #[test]
 fn binding_close_precedes_body_finalizers_and_labelled_outer_close() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let events=[],result,calls=0;
-        function inner(){return{[Symbol.iterator](){return this},next(){return{done:false,value:undefined}},return(){events.push('inner');return{done:true}}}}
-        let source={[Symbol.asyncIterator](){return this},next(){calls++;return{done:false,value:inner()}},return(){events.push('outer');return Promise.resolve({done:true})}};
-        async function f(){outer:for await(const [x=await 7] of source){try{events.push('body'+calls);if(calls===1)continue outer;break outer}finally{await 0;events.push('finally')}}return events.join(',')}f().then(value=>{result=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let events = [],
+                    result, calls = 0;
+
+                function inner() {
+                    return {
+                        [Symbol.iterator]() {
+                            return this
+                        },
+                        next() {
+                            return {
+                                done: false,
+                                value: undefined
+                            }
+                        },
+                        return () {
+                            events.push('inner');
+                            return {
+                                done: true
+                            }
+                        }
+                    }
+                }
+                let source = {
+                    [Symbol.asyncIterator]() {
+                        return this
+                    },
+                    next() {
+                        calls++;
+                        return {
+                            done: false,
+                            value: inner()
+                        }
+                    },
+                    return () {
+                        events.push('outer');
+                        return Promise.resolve({
+                            done: true
+                        })
+                    }
+                };
+                async function f() {
+                    outer: for await (const [x = await 7] of source) {
+                        try {
+                            events.push('body' + calls);
+                            if (calls === 1) continue outer;
+                            break outer
+                        } finally {
+                            await 0;
+                            events.push('finally')
+                        }
+                    }
+                    return events.join(',')
+                }
+                f().then(value => {
+                    result = value
+                });
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     check(
         &mut realm,
@@ -100,8 +228,30 @@ fn default_rejection_closes_binding_iterators_before_sync_or_async_outer_iterato
 fn const_defaults_preserve_names_immutability_method_and_dynamic_contexts() {
     let mut realm = Realm::default();
     realm.eval(r#"
-        let names=[],readonly=false,result,dynamic;class C{async f(){for(const [callback=function(){},x=await 7] of [[]]){names.push(callback.name);try{x=2}catch(error){readonly=error instanceof TypeError}return x}}}new C().f().then(value=>{result=value});
-        (async function(){}).constructor('for(const [x=await 13] of [[]])return x')().then(value=>{dynamic=value});
+        let names = [],
+            readonly = false,
+            result, dynamic;
+        class C {
+            async f() {
+                for (const [callback = function() {}, x = await 7] of [
+                        []
+                    ]) {
+                    names.push(callback.name);
+                    try {
+                        x = 2
+                    } catch (error) {
+                        readonly = error instanceof TypeError
+                    }
+                    return x
+                }
+            }
+        }
+        new C().f().then(value => {
+            result = value
+        });
+        (async function() {}).constructor('for(const [x=await 13] of [[]])return x')().then(value => {
+            dynamic = value
+        });
     "#).unwrap();
     drain(&mut realm);
     check(
@@ -134,7 +284,22 @@ fn host_abort_in_a_head_default_skips_inner_and_outer_close_and_root_cleanup() {
                 max_steps: limited.then_some(10_000),
                 ..Default::default()
             });
-            realm.eval("let state={},innerClosed=0,outerClosed=0,disposed=0,finalized=0,caught=false,proceed,gate=new Promise(resolve=>{proceed=resolve});const dispose=Symbol.dispose;").unwrap();
+            realm
+                .eval(
+                    r#"
+                        let state = {},
+                            innerClosed = 0,
+                            outerClosed = 0,
+                            disposed = 0,
+                            finalized = 0,
+                            caught = false,
+                            proceed, gate = new Promise(resolve => {
+                                proceed = resolve
+                            });
+                        const dispose = Symbol.dispose;
+                    "#,
+                )
+                .unwrap();
             realm.eval("let resource={[dispose](){disposed++}};state.weak=new WeakRef(resource[dispose]);function spin(){while(true){}};let inner={[Symbol.iterator](){return this},next(){return{done:false,value:undefined}},return(){innerClosed++;return{done:true}}};let outer={[Symbol.iterator](){return this},[Symbol.asyncIterator](){return this},next(){return{done:false,value:inner}},return(){outerClosed++;return{done:true}}}").unwrap();
             let tail = if limited {
                 "spin()"

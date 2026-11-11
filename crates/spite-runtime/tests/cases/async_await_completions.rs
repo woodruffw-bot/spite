@@ -25,12 +25,12 @@ fn setup(realm: &mut Realm) {
     realm
         .eval(
             r#"
-        let state={},result;
-        state.first=new Promise(resolve=>{state.releaseFirst=resolve});
-        state.second=new Promise(resolve=>{state.releaseSecond=resolve});
-        state.third=new Promise(resolve=>{state.releaseThird=resolve});
-        function make(){const value={x:7};state.weak=new WeakRef(value);return value}
-    "#,
+                let state={},result;
+                state.first=new Promise(resolve=>{state.releaseFirst=resolve});
+                state.second=new Promise(resolve=>{state.releaseSecond=resolve});
+                state.third=new Promise(resolve=>{state.releaseThird=resolve});
+                function make(){const value={x:7};state.weak=new WeakRef(value);return value}
+            "#,
         )
         .unwrap();
 }
@@ -39,7 +39,22 @@ fn setup(realm: &mut Realm) {
 fn root_statement_values_survive_empty_declarations_and_release_when_replaced() {
     let mut realm = Realm::default();
     setup(&mut realm);
-    realm.eval("async function f(){make();const x=await state.first;0;const y=await state.second;return 7}f().then(value=>{result=value})").unwrap();
+    realm
+        .eval(
+            r#"
+                async function f() {
+                    make();
+                    const x = await state.first;
+                    0;
+                    const y = await state.second;
+                    return 7
+                }
+                f().then(value => {
+                    result = value
+                })
+            "#,
+        )
+        .unwrap();
     collect(&mut realm);
     check(
         &mut realm,

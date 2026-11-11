@@ -7,10 +7,25 @@ use crate::common::assert_true;
 #[test]
 fn remaining_arguments_form_fresh_dense_intrinsic_arrays() {
     assert_true(
-        "function f(a,...rest){return rest;}let a=f(1,undefined,3),b=f(1);Array.isArray(a) && a.length===2 && Object.hasOwn(a,'0') && a[0]===undefined && a[1]===3 && Array.isArray(b) && b.length===0 && a!==b && f(1)!==b && Object.getPrototypeOf(a)===Array.prototype",
+        r#"
+            function f(a, ...rest) {
+                return rest;
+            }
+            let a = f(1, undefined, 3),
+                b = f(1);
+            Array.isArray(a) && a.length === 2 && Object.hasOwn(a, '0') && a[0] === undefined && a[1] ===
+                3 && Array.isArray(b) && b.length === 0 && a !== b && f(1) !== b && Object.getPrototypeOf(
+                    a) === Array.prototype
+        "#,
     );
     assert_true(
-        "let marker={},f=(...r)=>r,a=f(marker,null,undefined);a.length===3 && a[0]===marker && a[1]===null && a[2]===undefined && Object.keys(a).join(',')==='0,1,2'",
+        r#"
+            let marker = {},
+                f = (...r) => r,
+                a = f(marker, null, undefined);
+            a.length === 3 && a[0] === marker && a[1] === null && a[2] === undefined && Object.keys(a)
+                .join(',') === '0,1,2'
+        "#,
     );
     assert_true(
         "let f=(a,b,...r)=>r;f().length===0 && f(1).length===0 && f(1,2).length===0 && f(1,2,3)[0]===3",
@@ -20,13 +35,29 @@ fn remaining_arguments_form_fresh_dense_intrinsic_arrays() {
 #[test]
 fn defaults_initialize_before_rest_and_rest_remains_in_tdz_during_defaults() {
     assert_true(
-        "let calls=0;function f(a=(calls++,1),...r){return [a,r];}let a=f(undefined,2,3),b=f(7);calls===1 && a[0]===1 && a[1].join(',')==='2,3' && b[0]===7 && b[1].length===0",
+        r#"
+            let calls = 0;
+
+            function f(a = (calls++, 1), ...r) {
+                return [a, r];
+            }
+            let a = f(undefined, 2, 3),
+                b = f(7);
+            calls === 1 && a[0] === 1 && a[1].join(',') === '2,3' && b[0] === 7 && b[1].length === 0
+        "#,
     );
     assert_true(
         "let caught=false;try{((a=r,...r)=>r)();}catch(e){caught=e instanceof ReferenceError;}caught",
     );
     assert_true(
-        "function f(a=()=>r,...r){return a;}let f1=f(undefined,1,2),f2=f(undefined,3);f1().join(',')==='1,2' && f2().join(',')==='3'",
+        r#"
+            function f(a = () => r, ...r) {
+                return a;
+            }
+            let f1 = f(undefined, 1, 2),
+                f2 = f(undefined, 3);
+            f1().join(',') === '1,2' && f2().join(',') === '3'
+        "#,
     );
     assert_true("function f(a=()=>r,...r){var r=7;return a;}f(undefined,1)()[0]===1");
 }
@@ -43,7 +74,18 @@ fn rest_lists_use_unmapped_arguments_in_non_strict_and_strict_functions() {
         "'use strict';function f(a,...r){a=8;r[0]=9;return arguments[0]===1 && arguments[1]===2;}f(1,2)",
     );
     assert_true(
-        "function f(...r){let caught=false;try{arguments.callee;}catch(e){caught=e instanceof TypeError;}return caught && Object.getOwnPropertyDescriptor(arguments,'callee').get!==undefined;}f(1)",
+        r#"
+            function f(...r) {
+                let caught = false;
+                try {
+                    arguments.callee;
+                } catch (e) {
+                    caught = e instanceof TypeError;
+                }
+                return caught && Object.getOwnPropertyDescriptor(arguments, 'callee').get !== undefined;
+            }
+            f(1)
+        "#,
     );
     assert_true(
         "function f(...arguments){return Array.isArray(arguments) && arguments.join(',')==='1,2';}f(1,2)",
@@ -69,10 +111,23 @@ fn rest_in_arrows_methods_constructors_and_bound_functions() {
         "let obj={x:7,m(a,...r){return this.x+a+r[0];}};obj.m(1,2)===10 && !Object.hasOwn(obj.m,'prototype')",
     );
     assert_true(
-        "function F(x,...r){this.x=x;this.r=r;this.target=new.target;}let Bound=F.bind(null,1,2),a=new Bound(3);a.x===1 && a.r.join(',')==='2,3' && a.target===F && a instanceof F",
+        r#"
+            function F(x, ...r) {
+                this.x = x;
+                this.r = r;
+                this.target = new.target;
+            }
+            let Bound = F.bind(null, 1, 2),
+                a = new Bound(3);
+            a.x === 1 && a.r.join(',') === '2,3' && a.target === F && a instanceof F
+        "#,
     );
     assert_true(
-        "let f=(a,...r)=>r.join(',');f.bind(null,1,2)(3)==='2,3' && f.call(null,1,2,3)==='2,3' && f.apply(null,[1,2,3])==='2,3'",
+        r#"
+            let f = (a, ...r) => r.join(',');
+            f.bind(null, 1, 2)(3) === '2,3' && f.call(null, 1, 2, 3) === '2,3' && f.apply(null, [1, 2,
+                3]) === '2,3'
+        "#,
     );
 }
 
@@ -92,13 +147,44 @@ fn length_source_and_property_attributes_include_rest_semantics() {
 #[test]
 fn rest_array_creation_bypasses_setters_species_and_replaced_globals() {
     assert_true(
-        "let calls=0;Object.defineProperty(Array.prototype,'0',{set(v){calls++;},configurable:true});let source=[1,2];Object.defineProperty(source,'constructor',{get(){throw 7;}});let a=((...r)=>r)(...source);a.length===2 && a[0]===1 && calls===0 && Object.hasOwn(a,'0')",
+        r#"
+            let calls = 0;
+            Object.defineProperty(Array.prototype, '0', {
+                set(v) {
+                    calls++;
+                },
+                configurable: true
+            });
+            let source = [1, 2];
+            Object.defineProperty(source, 'constructor', {
+                get() {
+                    throw 7;
+                }
+            });
+            let a = ((...r) => r)(...source);
+            a.length === 2 && a[0] === 1 && calls === 0 && Object.hasOwn(a, '0')
+        "#,
     );
     assert_true(
-        "let proto=Array.prototype;Array=()=>{throw 7;};let a=((...r)=>r)(1);Object.getPrototypeOf(a)===proto && a[0]===1",
+        r#"
+            let proto = Array.prototype;
+            Array = () => {
+                throw 7;
+            };
+            let a = ((...r) => r)(1);
+            Object.getPrototypeOf(a) === proto && a[0] === 1
+        "#,
     );
     assert_true(
-        "let calls=0;Array.prototype[Symbol.iterator]=function(){calls++;throw 7;};let a=((...r)=>r)(1,2);a.length===2 && a[1]===2 && calls===0",
+        r#"
+            let calls = 0;
+            Array.prototype[Symbol.iterator] = function() {
+                calls++;
+                throw 7;
+            };
+            let a = ((...r) => r)(1, 2);
+            a.length === 2 && a[1] === 2 && calls === 0
+        "#,
     );
 }
 
@@ -115,7 +201,25 @@ fn rest_arrays_and_defaults_survive_explicit_collection() {
 #[test]
 fn default_failures_skip_body_and_restore_caller_scopes() {
     assert_true(
-        "let marker={},calls=0,flag=0;function f(a=(()=>{calls++;throw marker;})(),...r){flag++;}let caught=false;try{f(undefined,1);}catch(e){caught=e===marker;}caught && calls===1 && flag===0 && typeof r==='undefined'",
+        r#"
+            let marker = {},
+                calls = 0,
+                flag = 0;
+
+            function f(a = (() => {
+                calls++;
+                throw marker;
+            })(), ...r) {
+                flag++;
+            }
+            let caught = false;
+            try {
+                f(undefined, 1);
+            } catch (e) {
+                caught = e === marker;
+            }
+            caught && calls === 1 && flag === 0 && typeof r === 'undefined'
+        "#,
     );
 }
 

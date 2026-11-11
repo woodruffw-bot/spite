@@ -19,14 +19,42 @@ fn drain(realm: &mut Realm) {
 #[test]
 fn constructor_lookup_precedes_arguments_and_replacement_does_not_change_new_target() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let state={},events=[],result;
-        function C(a,b,c){events.push('construct');this.sum=a+b+c;this.target=new.target}
-        let holder={get C(){events.push('get');return C}};
-        state.gate=new Promise(resolve=>{state.release=resolve});
-        async function f(){return new holder.C((events.push('first'),1),await state.gate,(events.push('last'),3))}
-        f().then(value=>{result=value});Object.defineProperty(holder,'C',{value(){throw 1}});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let state = {},
+                    events = [],
+                    result;
+
+                function C(a, b, c) {
+                    events.push('construct');
+                    this.sum = a + b + c;
+                    this.target = new.target
+                }
+                let holder = {
+                    get C() {
+                        events.push('get');
+                        return C
+                    }
+                };
+                state.gate = new Promise(resolve => {
+                    state.release = resolve
+                });
+                async function f() {
+                    return new holder.C((events.push('first'), 1), await state.gate, (events.push('last'),
+                        3))
+                }
+                f().then(value => {
+                    result = value
+                });
+                Object.defineProperty(holder, 'C', {
+                    value() {
+                        throw 1
+                    }
+                });
+            "#,
+        )
+        .unwrap();
     check(
         &mut realm,
         "events.join(',')==='get,first'&&result===undefined",
@@ -37,7 +65,10 @@ fn constructor_lookup_precedes_arguments_and_replacement_does_not_change_new_tar
     drain(&mut realm);
     check(
         &mut realm,
-        "events.join(',')==='get,first,last,construct'&&result.sum===6&&result.target===C&&result.marker===true&&result instanceof C",
+        r#"
+            events.join(',') === 'get,first,last,construct' && result.sum === 6 && result.target === C &&
+                result.marker === true && result instanceof C
+        "#,
     );
 }
 
@@ -47,19 +78,22 @@ fn awaited_constructor_values_and_member_callees_construct_with_and_without_argu
     realm
         .eval(
             r#"
-        let result,noArgs;
-        function C(value=17){this.value=value;this.target=new.target}
-        let holder={C};
-        async function f(){return new ((await holder)[await 'C'])(await 7)}
-        let g=async()=>new (await C);
-        f().then(value=>{result=value});g().then(value=>{noArgs=value});
-    "#,
+                let result,noArgs;
+                function C(value=17){this.value=value;this.target=new.target}
+                let holder={C};
+                async function f(){return new ((await holder)[await 'C'])(await 7)}
+                let g=async()=>new (await C);
+                f().then(value=>{result=value});g().then(value=>{noArgs=value});
+            "#,
         )
         .unwrap();
     drain(&mut realm);
     check(
         &mut realm,
-        "result!==holder&&result.value===7&&result.target===C&&result instanceof C&&noArgs.value===17&&noArgs.target===C",
+        r#"
+            result !== holder && result.value === 7 && result.target === C && result instanceof C && noArgs
+                .value === 17 && noArgs.target === C
+        "#,
     );
 }
 
@@ -92,10 +126,10 @@ fn awaited_constructor_spread_uses_sync_iteration_without_awaiting_yielded_promi
     realm
         .eval(
             r#"
-        let result,promise=Promise.resolve(9);function C(...values){this.values=values}
-        async function f(){return new C(...await [1,promise],await 3)}
-        f().then(value=>{result=value});
-    "#,
+                let result,promise=Promise.resolve(9);function C(...values){this.values=values}
+                async function f(){return new C(...await [1,promise],await 3)}
+                f().then(value=>{result=value});
+            "#,
         )
         .unwrap();
     drain(&mut realm);
@@ -152,12 +186,34 @@ fn resumed_constructor_argument_limit_failure_bypasses_rejection_and_resource_cl
         max_arguments: Some(2),
         ..Default::default()
     });
-    realm.eval(r#"
-        let state={},called=false,caught=false,disposed=0;
-        state.gate=new Promise(resolve=>{state.release=resolve});function C(){called=true}
-        async function f(){using resource={[Symbol.dispose](){disposed++}};return new C(1,await state.gate,3)}
-        f().catch(()=>{caught=true});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let state = {},
+                    called = false,
+                    caught = false,
+                    disposed = 0;
+                state.gate = new Promise(resolve => {
+                    state.release = resolve
+                });
+
+                function C() {
+                    called = true
+                }
+                async function f() {
+                    using resource = {
+                        [Symbol.dispose]() {
+                            disposed++
+                        }
+                    };
+                    return new C(1, await state.gate, 3)
+                }
+                f().catch(() => {
+                    caught = true
+                });
+            "#,
+        )
+        .unwrap();
     realm.eval("state.release(2)").unwrap();
     let mut reported = false;
     loop {
@@ -175,13 +231,38 @@ fn resumed_constructor_argument_limit_failure_bypasses_rejection_and_resource_cl
 #[test]
 fn proxy_constructor_prototype_lookup_follows_completed_argument_evaluation() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let state={},events=[],result;
-        let C=new Proxy(function(value){events.push('construct');this.value=value;this.target=new.target},{get(target,key,receiver){if(key==='prototype')events.push('prototype');return Reflect.get(target,key,receiver)}}),saved=C;
-        state.gate=new Promise(resolve=>{state.release=resolve});
-        async function f(){return new C((events.push('arg'),await state.gate))}
-        f().then(value=>{result=value});C=function(){throw 1};
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let state = {},
+                    events = [],
+                    result;
+                let C = new Proxy(function(value) {
+                        events.push('construct');
+                        this.value = value;
+                        this.target = new.target
+                    }, {
+                        get(target, key, receiver) {
+                            if (key === 'prototype') events.push('prototype');
+                            return Reflect.get(target, key, receiver)
+                        }
+                    }),
+                    saved = C;
+                state.gate = new Promise(resolve => {
+                    state.release = resolve
+                });
+                async function f() {
+                    return new C((events.push('arg'), await state.gate))
+                }
+                f().then(value => {
+                    result = value
+                });
+                C = function() {
+                    throw 1
+                };
+            "#,
+        )
+        .unwrap();
     check(&mut realm, "events.join(',')==='arg'&&result===undefined");
     realm.eval("state.release(7)").unwrap();
     drain(&mut realm);

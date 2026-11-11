@@ -20,23 +20,73 @@ fn type_error(source: &str) {
 #[test]
 fn keys_use_identity_and_same_value_zero_without_coercion() {
     assert_true(
-        "let a={},b={},x=Symbol('x'),y=Symbol('x'),m=new Map();m.set(a,1).set(b,2).set(x,3).set(y,4).set(1,5).set(1n,6).set('1',7).set(undefined,8).set(null,9).set(false,10).set(true,11);m.size===11 && m.get(a)===1 && m.get(b)===2 && m.get(x)===3 && m.get(y)===4 && m.get(1)===5 && m.get(1n)===6 && m.get('1')===7 && m.get(undefined)===8 && m.get(null)===9 && m.get(false)===10 && m.get(true)===11 && !m.has({}) && !m.has(Symbol('x'))",
+        r#"
+            let a = {},
+                b = {},
+                x = Symbol('x'),
+                y = Symbol('x'),
+                m = new Map();
+            m.set(a, 1).set(b, 2).set(x, 3).set(y, 4).set(1, 5).set(1n, 6).set('1', 7).set(undefined, 8)
+                .set(null, 9).set(false, 10).set(true, 11);
+            m.size === 11 && m.get(a) === 1 && m.get(b) === 2 && m.get(x) === 3 && m.get(y) === 4 && m.get(
+                1) === 5 && m.get(1n) === 6 && m.get('1') === 7 && m.get(undefined) === 8 && m.get(
+                null) === 9 && m.get(false) === 10 && m.get(true) === 11 && !m.has({}) && !m.has(
+                Symbol('x'))
+        "#,
     );
     assert_true(
-        "let m=new Map();m.set(NaN,1).set(0/0,2).set(-0,3).set(+0,4);let keys=[...m.keys()];m.size===2 && m.get(NaN)===2 && m.get(-0)===4 && Number.isNaN(keys[0]) && Object.is(keys[1],0) && m.delete(NaN) && !m.delete(NaN) && m.size===1",
+        r#"
+            let m = new Map();
+            m.set(NaN, 1).set(0 / 0, 2).set(-0, 3).set(+0, 4);
+            let keys = [...m.keys()];
+            m.size === 2 && m.get(NaN) === 2 && m.get(-0) === 4 && Number.isNaN(keys[0]) && Object.is(keys[
+                1], 0) && m.delete(NaN) && !m.delete(NaN) && m.size === 1
+        "#,
     );
     assert_true(
-        "let key={toString(){throw 7;},valueOf(){throw 8;},get [Symbol.toPrimitive](){throw 9;}},m=new Map();m.set(key,undefined);m.has(key) && m.get(key)===undefined && !m.has({}) && m.delete(key)",
+        r#"
+            let key = {
+                    toString() {
+                        throw 7;
+                    },
+                    valueOf() {
+                        throw 8;
+                    },
+                    get [Symbol.toPrimitive]() {
+                        throw 9;
+                    }
+                },
+                m = new Map();
+            m.set(key, undefined);
+            m.has(key) && m.get(key) === undefined && !m.has({}) && m.delete(key)
+        "#,
     );
     assert_true(
-        "let m=new Map();m.set(BigInt('18446744073709551616'),1);m.get(18446744073709551616n)===1 && !m.has(18446744073709551617n) && (m.set('\\ud800',2),m.get('\\ud800')===2)",
+        r#"
+            let m = new Map();
+            m.set(BigInt('18446744073709551616'), 1);
+            m.get(18446744073709551616n) === 1 && !m.has(18446744073709551617n) && (m.set('\ud800', 2), m
+                .get('\ud800') === 2)
+        "#,
     );
 }
 
 #[test]
 fn insertion_update_deletion_and_reinsertion_preserve_order() {
     assert_true(
-        "let m=new Map([[2,'a'],[1,'b'],[2,'c']]);m.set(2,'d');let first=JSON.stringify([...m])==='[[2,\"d\"],[1,\"b\"]]';m.delete(2);m.set(2,'e');first && JSON.stringify([...m])==='[[1,\"b\"],[2,\"e\"]]' && m.clear()===undefined && m.size===0 && m.get(1)===undefined",
+        r#"
+            let m = new Map([
+                [2, 'a'],
+                [1, 'b'],
+                [2, 'c']
+            ]);
+            m.set(2, 'd');
+            let first = JSON.stringify([...m]) === '[[2,"d"],[1,"b"]]';
+            m.delete(2);
+            m.set(2, 'e');
+            first && JSON.stringify([...m]) === '[[1,"b"],[2,"e"]]' && m.clear() === undefined && m
+                .size === 0 && m.get(1) === undefined
+        "#,
     );
     assert_true(
         "let m=new Map();Object.freeze(m);m.set(1,2);m.size===1 && m.delete(1) && m.size===0 && Object.isFrozen(m)",
@@ -47,19 +97,118 @@ fn insertion_update_deletion_and_reinsertion_preserve_order() {
 fn constructor_checks_new_target_and_orders_prototype_adder_and_iterator() {
     type_error("Map()");
     assert_true(
-        "let trace='',p=Object.create(Map.prototype);Object.defineProperty(p,'set',{get(){trace+='s';return function(k,v){trace+='a';Map.prototype.set.call(this,k,v);};}});function C(){}C.prototype=p;let items={[Symbol.iterator](){trace+='i';let used=false;return {get next(){trace+='n';return function(){if(used)return {done:true};used=true;return {value:{get 0(){trace+='k';return 1;},get 1(){trace+='v';return 2;}}};};}};}};let m=Reflect.construct(Map,[items],C);trace==='sinkva' && Object.getPrototypeOf(m)===p && m.get(1)===2",
+        r#"
+            let trace = '',
+                p = Object.create(Map.prototype);
+            Object.defineProperty(p, 'set', {
+                get() {
+                    trace += 's';
+                    return function(k, v) {
+                        trace += 'a';
+                        Map.prototype.set.call(this, k, v);
+                    };
+                }
+            });
+
+            function C() {}
+            C.prototype = p;
+            let items = {
+                [Symbol.iterator]() {
+                    trace += 'i';
+                    let used = false;
+                    return {
+                        get next() {
+                            trace += 'n';
+                            return function() {
+                                if (used) return {
+                                    done: true
+                                };
+                                used = true;
+                                return {
+                                    value: {
+                                        get 0() {
+                                            trace += 'k';
+                                            return 1;
+                                        },
+                                        get 1() {
+                                            trace += 'v';
+                                            return 2;
+                                        }
+                                    }
+                                };
+                            };
+                        }
+                    };
+                }
+            };
+            let m = Reflect.construct(Map, [items], C);
+            trace === 'sinkva' && Object.getPrototypeOf(m) === p && m.get(1) === 2
+        "#,
     );
     assert_true(
-        "let p=Object.create(Map.prototype);Object.defineProperty(p,'set',{get(){throw 7;}});function C(){}C.prototype=p;Reflect.construct(Map,[null],C).size===0 && Reflect.construct(Map,[undefined],C).size===0",
+        r#"
+            let p = Object.create(Map.prototype);
+            Object.defineProperty(p, 'set', {
+                get() {
+                    throw 7;
+                }
+            });
+
+            function C() {}
+            C.prototype = p;
+            Reflect.construct(Map, [null], C).size === 0 && Reflect.construct(Map, [undefined], C).size ===
+                0
+        "#,
     );
     assert_true(
-        "let touched=false,p=Object.create(Map.prototype);p.set=null;function C(){}C.prototype=p;let items={get [Symbol.iterator](){touched=true;throw 7;}},caught=false;try{Reflect.construct(Map,[items],C);}catch(e){caught=e instanceof TypeError;}caught && !touched",
+        r#"
+            let touched = false,
+                p = Object.create(Map.prototype);
+            p.set = null;
+
+            function C() {}
+            C.prototype = p;
+            let items = {
+                    get [Symbol.iterator]() {
+                        touched = true;
+                        throw 7;
+                    }
+                },
+                caught = false;
+            try {
+                Reflect.construct(Map, [items], C);
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && !touched
+        "#,
     );
     assert_true(
-        "function C(){}C.prototype=1;Object.getPrototypeOf(Reflect.construct(Map,[],C))===Map.prototype && new (Map.bind(null,[[1,2]]))().get(1)===2",
+        r#"
+            function C() {}
+            C.prototype = 1;
+            Object.getPrototypeOf(Reflect.construct(Map, [], C)) === Map.prototype && new(Map.bind(null, [
+                [1, 2]
+            ]))().get(1) === 2
+        "#,
     );
     assert_true(
-        "let count=0,set=Map.prototype.set;Map.prototype.set=function(k,v){count++;if(count===1)Map.prototype.set=function(){throw 7;};return set.call(this,k,v);};let m=new Map([[1,2],[3,4]]);count===2 && m.size===2",
+        r#"
+            let count = 0,
+                set = Map.prototype.set;
+            Map.prototype.set = function(k, v) {
+                count++;
+                if (count === 1) Map.prototype.set = function() {
+                    throw 7;
+                };
+                return set.call(this, k, v);
+            };
+            let m = new Map([
+                [1, 2],
+                [3, 4]
+            ]);
+            count === 2 && m.size === 2
+        "#,
     );
 }
 
@@ -76,7 +225,32 @@ fn entry_failures_close_but_step_failures_do_not_and_throw_precedence_is_exact()
             "e===marker"
         };
         assert_true(&format!(
-            "let marker={{}},closed=0,i={{next(){{return {{value:{entry}}};}},return(){{closed++;throw 9;}}}},caught=false;try{{new Map({{[Symbol.iterator](){{return i;}}}});}}catch(e){{caught={expected};}}caught && closed===1"
+            r#"
+                let marker = {{}},
+                    closed = 0,
+                    i = {{
+                        next() {{
+                            return {{
+                                value: {entry}
+                            }};
+                        }},
+                        return () {{
+                            closed++;
+                            throw 9;
+                        }}
+                    }},
+                    caught = false;
+                try {{
+                    new Map({{
+                        [Symbol.iterator]() {{
+                            return i;
+                        }}
+                    }});
+                }} catch (e) {{
+                    caught = {expected};
+                }}
+                caught && closed === 1
+            "#
         ));
     }
     for step in [
@@ -85,11 +259,62 @@ fn entry_failures_close_but_step_failures_do_not_and_throw_precedence_is_exact()
         "return {get value(){throw marker;}};",
     ] {
         assert_true(&format!(
-            "let marker={{}},closed=0,i={{next(){{{step}}},return(){{closed++;return {{}};}}}},caught=false;try{{new Map({{[Symbol.iterator](){{return i;}}}});}}catch(e){{caught=e===marker;}}caught && closed===0"
+            r#"
+                let marker = {{}},
+                    closed = 0,
+                    i = {{
+                        next() {{
+                            {step}
+                        }},
+                        return () {{
+                            closed++;
+                            return {{}};
+                        }}
+                    }},
+                    caught = false;
+                try {{
+                    new Map({{
+                        [Symbol.iterator]() {{
+                            return i;
+                        }}
+                    }});
+                }} catch (e) {{
+                    caught = e === marker;
+                }}
+                caught && closed === 0
+            "#
         ));
     }
     assert_true(
-        "let marker={},closed=0;Map.prototype.set=function(){throw marker;};let i={next(){return {value:[1,2]};},return(){closed++;return 7;}},caught=false;try{new Map({[Symbol.iterator](){return i;}});}catch(e){caught=e===marker;}caught && closed===1",
+        r#"
+            let marker = {},
+                closed = 0;
+            Map.prototype.set = function() {
+                throw marker;
+            };
+            let i = {
+                    next() {
+                        return {
+                            value: [1, 2]
+                        };
+                    },
+                    return () {
+                        closed++;
+                        return 7;
+                    }
+                },
+                caught = false;
+            try {
+                new Map({
+                    [Symbol.iterator]() {
+                        return i;
+                    }
+                });
+            } catch (e) {
+                caught = e === marker;
+            }
+            caught && closed === 1
+        "#,
     );
 }
 
@@ -126,20 +351,64 @@ fn brands_are_own_internal_slots_and_public_properties_do_not_control_storage() 
         ));
     }
     assert_true(
-        "let m=new Map(),set=m.set,get=m.get;Object.setPrototypeOf(m,null);Object.freeze(m);set.call(m,1,2)===m && get.call(m,1)===2",
+        r#"
+            let m = new Map(),
+                set = m.set,
+                get = m.get;
+            Object.setPrototypeOf(m, null);
+            Object.freeze(m);
+            set.call(m, 1, 2) === m && get.call(m, 1) === 2
+        "#,
     );
 }
 
 #[test]
 fn iterators_observe_live_mutation_and_stay_completed() {
     assert_true(
-        "let m=new Map([[1,'a'],[2,'b']]),i=m.entries();let a=i.next();m.set(2,'B');m.delete(1);m.set(3,'c');let b=i.next();m.clear();m.set(4,'d');let c=i.next(),end=i.next();m.set(5,'e');a.value[0]===1 && a.value[1]==='a' && b.value[0]===2 && b.value[1]==='B' && c.value[0]===4 && c.value[1]==='d' && end.done && i.next().done && Reflect.ownKeys(a).join(',')==='value,done' && Object.getPrototypeOf(a.value)===Array.prototype",
+        r#"
+            let m = new Map([
+                    [1, 'a'],
+                    [2, 'b']
+                ]),
+                i = m.entries();
+            let a = i.next();
+            m.set(2, 'B');
+            m.delete(1);
+            m.set(3, 'c');
+            let b = i.next();
+            m.clear();
+            m.set(4, 'd');
+            let c = i.next(),
+                end = i.next();
+            m.set(5, 'e');
+            a.value[0] === 1 && a.value[1] === 'a' && b.value[0] === 2 && b.value[1] === 'B' && c.value[
+                0] === 4 && c.value[1] === 'd' && end.done && i.next().done && Reflect.ownKeys(a).join(
+                ',') === 'value,done' && Object.getPrototypeOf(a.value) === Array.prototype
+        "#,
     );
     assert_true(
-        "let m=new Map([[1,2]]),i=m.keys();m.clear();m.set(3,4);i.next().value===3 && i.next().done && m[Symbol.iterator]===m.entries && Iterator.from(m.values()).toArray()[0]===4",
+        r#"
+            let m = new Map([
+                    [1, 2]
+                ]),
+                i = m.keys();
+            m.clear();
+            m.set(3, 4);
+            i.next().value === 3 && i.next().done && m[Symbol.iterator] === m.entries && Iterator.from(m
+                .values()).toArray()[0] === 4
+        "#,
     );
     assert_true(
-        "let m=new Map([[1,2]]),i=m.keys();let first=i.next().value;m.delete(1);m.set(1,3);first===1 && i.next().value===1 && i.next().done",
+        r#"
+            let m = new Map([
+                    [1, 2]
+                ]),
+                i = m.keys();
+            let first = i.next().value;
+            m.delete(1);
+            m.set(1, 3);
+            first === 1 && i.next().value === 1 && i.next().done
+        "#,
     );
     for receiver in [
         "{}",
@@ -155,23 +424,97 @@ fn iterators_observe_live_mutation_and_stay_completed() {
 #[test]
 fn foreach_has_exact_arguments_this_and_live_order_with_nested_calls() {
     assert_true(
-        "let m=new Map([[1,'a'],[2,'b'],[3,'c']]),seen=[],context={};let result=m.forEach(function(v,k,o){'use strict';if(this!==context || o!==m || arguments.length!==3)throw 7;seen.push(k+v);if(k===1){m.delete(2);m.set(3,'C');m.set(4,'d');}if(k===3){m.delete(1);m.set(1,'A');}},context);result===undefined && seen.join(',')==='1a,3C,4d,1A'",
+        r#"
+            let m = new Map([
+                    [1, 'a'],
+                    [2, 'b'],
+                    [3, 'c']
+                ]),
+                seen = [],
+                context = {};
+            let result = m.forEach(function(v, k, o) {
+                'use strict';
+                if (this !== context || o !== m || arguments.length !== 3) throw 7;
+                seen.push(k + v);
+                if (k === 1) {
+                    m.delete(2);
+                    m.set(3, 'C');
+                    m.set(4, 'd');
+                }
+                if (k === 3) {
+                    m.delete(1);
+                    m.set(1, 'A');
+                }
+            }, context);
+            result === undefined && seen.join(',') === '1a,3C,4d,1A'
+        "#,
     );
     assert_true(
-        "let m=new Map([[1,2]]),seen=[];m.forEach(function(v,k){'use strict';if(this!==undefined)throw 7;seen.push(k);if(seen.length===1){m.clear();m.set(3,4);}});seen.join(',')==='1,3'",
+        r#"
+            let m = new Map([
+                    [1, 2]
+                ]),
+                seen = [];
+            m.forEach(function(v, k) {
+                'use strict';
+                if (this !== undefined) throw 7;
+                seen.push(k);
+                if (seen.length === 1) {
+                    m.clear();
+                    m.set(3, 4);
+                }
+            });
+            seen.join(',') === '1,3'
+        "#,
     );
     assert_true(
-        "let m=new Map([[1,2],[3,4]]),count=0,marker={},caught=false;try{m.forEach(()=>{count++;throw marker;});}catch(e){caught=e===marker;}caught && count===1",
+        r#"
+            let m = new Map([
+                    [1, 2],
+                    [3, 4]
+                ]),
+                count = 0,
+                marker = {},
+                caught = false;
+            try {
+                m.forEach(() => {
+                    count++;
+                    throw marker;
+                });
+            } catch (e) {
+                caught = e === marker;
+            }
+            caught && count === 1
+        "#,
     );
     assert_true(
-        "let m=new Map([[1,2],[3,4]]),seen=[];m.forEach((v,k)=>{m.forEach((w,j)=>seen.push(k,j));});seen.join(',')==='1,1,1,3,3,1,3,3'",
+        r#"
+            let m = new Map([
+                    [1, 2],
+                    [3, 4]
+                ]),
+                seen = [];
+            m.forEach((v, k) => {
+                m.forEach((w, j) => seen.push(k, j));
+            });
+            seen.join(',') === '1,1,1,3,3,1,3,3'
+        "#,
     );
 }
 
 #[test]
 fn get_or_insert_computed_validates_before_lookup_and_rechecks_after_mutation() {
     assert_true(
-        "let m=new Map([[1,undefined]]),called=false;m.getOrInsert(1,2)===undefined && m.getOrInsertComputed(1,()=>{called=true;return 3;})===undefined && !called && m.getOrInsert(2,4)===4 && m.get(2)===4",
+        r#"
+            let m = new Map([
+                    [1, undefined]
+                ]),
+                called = false;
+            m.getOrInsert(1, 2) === undefined && m.getOrInsertComputed(1, () => {
+                called = true;
+                return 3;
+            }) === undefined && !called && m.getOrInsert(2, 4) === 4 && m.get(2) === 4
+        "#,
     );
     type_error("new Map([[1,2]]).getOrInsertComputed(1,null)");
     // IsCallable tests [[Call]], including class constructors and revoked
@@ -183,36 +526,185 @@ fn get_or_insert_computed_validates_before_lookup_and_rechecks_after_mutation() 
         "(()=>{let {proxy,revoke}=Proxy.revocable(class{},{});revoke();return proxy})()",
     ] {
         assert_true(&format!(
-            "let callback={callback},m=new Map([[1,undefined]]);let hit=m.getOrInsertComputed(1,callback)===undefined,failed=false;try{{m.getOrInsertComputed(2,callback)}}catch(error){{failed=error instanceof TypeError}}hit&&failed&&m.has(1)&&!m.has(2)&&m.size===1"
+            r#"
+                let callback = {callback},
+                    m = new Map([
+                        [1, undefined]
+                    ]);
+                let hit = m.getOrInsertComputed(1, callback) === undefined,
+                    failed = false;
+                try {{
+                    m.getOrInsertComputed(2, callback)
+                }} catch (error) {{
+                    failed = error instanceof TypeError
+                }}
+                hit && failed && m.has(1) && !m.has(2) && m.size === 1
+            "#
         ));
     }
     assert_true(
-        "let m=new Map(),key,argc,receiver;let value=m.getOrInsertComputed(-0,function(k){'use strict';key=k;argc=arguments.length;receiver=this;m.set(k,3);m.set(2,4);return 5;});value===5 && m.get(0)===5 && [...m.keys()].join(',')==='0,2' && Object.is(key,0) && argc===1 && receiver===undefined",
+        r#"
+            let m = new Map(),
+                key, argc, receiver;
+            let value = m.getOrInsertComputed(-0, function(k) {
+                'use strict';
+                key = k;
+                argc = arguments.length;
+                receiver = this;
+                m.set(k, 3);
+                m.set(2, 4);
+                return 5;
+            });
+            value === 5 && m.get(0) === 5 && [...m.keys()].join(',') === '0,2' && Object.is(key, 0) &&
+                argc === 1 && receiver === undefined
+        "#,
     );
     assert_true(
-        "let m=new Map([[1,2]]);m.getOrInsertComputed(3,()=>{m.clear();m.set(4,5);m.set(3,6);return 7;})===7 && JSON.stringify([...m])==='[[4,5],[3,7]]'",
+        r#"
+            let m = new Map([
+                [1, 2]
+            ]);
+            m.getOrInsertComputed(3, () => {
+                m.clear();
+                m.set(4, 5);
+                m.set(3, 6);
+                return 7;
+            }) === 7 && JSON.stringify([...m]) === '[[4,5],[3,7]]'
+        "#,
     );
     assert_true(
-        "let m=new Map(),marker={},caught=false;try{m.getOrInsertComputed(1,()=>{m.set(2,3);throw marker;});}catch(e){caught=e===marker;}caught && !m.has(1) && m.get(2)===3",
+        r#"
+            let m = new Map(),
+                marker = {},
+                caught = false;
+            try {
+                m.getOrInsertComputed(1, () => {
+                    m.set(2, 3);
+                    throw marker;
+                });
+            } catch (e) {
+                caught = e === marker;
+            }
+            caught && !m.has(1) && m.get(2) === 3
+        "#,
     );
 }
 
 #[test]
 fn grouping_uses_collection_keys_and_intrinsic_map_and_arrays() {
     assert_true(
-        "let key={},a=Symbol('x'),b=Symbol('x'),items=[key,key,a,b,NaN,NaN,-0,+0,1n,1,'1'];let m=Map.groupBy(items,function(v,i){'use strict';if(this!==undefined || arguments.length!==2 || items[i]!==v && !Number.isNaN(v))throw 7;return v;});m.size===8 && m.get(key).length===2 && m.get(a).length===1 && m.get(b).length===1 && m.get(NaN).length===2 && m.get(0).length===2 && Object.is([...m.keys()][4],0) && m.get(1n)[0]===1n && m.get(1)[0]===1 && m.get('1')[0]==='1'",
+        r#"
+            let key = {},
+                a = Symbol('x'),
+                b = Symbol('x'),
+                items = [key, key, a, b, NaN, NaN, -0, +0, 1n, 1, '1'];
+            let m = Map.groupBy(items, function(v, i) {
+                'use strict';
+                if (this !== undefined || arguments.length !== 2 || items[i] !== v && !Number
+                    .isNaN(v)) throw 7;
+                return v;
+            });
+            m.size === 8 && m.get(key).length === 2 && m.get(a).length === 1 && m.get(b).length === 1 && m
+                .get(NaN).length === 2 && m.get(0).length === 2 && Object.is([...m.keys()][4], 0) && m.get(
+                    1n)[0] === 1n && m.get(1)[0] === 1 && m.get('1')[0] === '1'
+        "#,
     );
     assert_true(
-        "let groupBy=Map.groupBy,M=Map,A=Array;Map.prototype.set=function(){throw 7;};globalThis.Map=function(){throw 8;};globalThis.Array=function(){throw 9;};let m=groupBy.call(null,[1,2,3],v=>v%2);Object.getPrototypeOf(m)===M.prototype && Object.getPrototypeOf(m.get(1))===A.prototype && m.get(1).join(',')==='1,3' && [...m.keys()].join(',')==='1,0'",
+        r#"
+            let groupBy = Map.groupBy,
+                M = Map,
+                A = Array;
+            Map.prototype.set = function() {
+                throw 7;
+            };
+            globalThis.Map = function() {
+                throw 8;
+            };
+            globalThis.Array = function() {
+                throw 9;
+            };
+            let m = groupBy.call(null, [1, 2, 3], v => v % 2);
+            Object.getPrototypeOf(m) === M.prototype && Object.getPrototypeOf(m.get(1)) === A.prototype &&
+                m.get(1).join(',') === '1,3' && [...m.keys()].join(',') === '1,0'
+        "#,
     );
     assert_true(
-        "let touched=false,items={get [Symbol.iterator](){touched=true;throw 7;}},caught=false;try{Map.groupBy(items,null);}catch(e){caught=e instanceof TypeError;}caught && !touched",
+        r#"
+            let touched = false,
+                items = {
+                    get [Symbol.iterator]() {
+                        touched = true;
+                        throw 7;
+                    }
+                },
+                caught = false;
+            try {
+                Map.groupBy(items, null);
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && !touched
+        "#,
     );
     assert_true(
-        "let marker={},closed=0,i={next(){return {value:7};},return(){closed++;throw 8;}},caught=false;try{Map.groupBy({[Symbol.iterator](){return i;}},()=>{throw marker;});}catch(e){caught=e===marker;}caught && closed===1",
+        r#"
+            let marker = {},
+                closed = 0,
+                i = {
+                    next() {
+                        return {
+                            value: 7
+                        };
+                    },
+                    return () {
+                        closed++;
+                        throw 8;
+                    }
+                },
+                caught = false;
+            try {
+                Map.groupBy({
+                    [Symbol.iterator]() {
+                        return i;
+                    }
+                }, () => {
+                    throw marker;
+                });
+            } catch (e) {
+                caught = e === marker;
+            }
+            caught && closed === 1
+        "#,
     );
     assert_true(
-        "let marker={},closed=0,i={next(){return {get value(){throw marker;}};},return(){closed++;return {};}},caught=false;try{Map.groupBy({[Symbol.iterator](){return i;}},v=>v);}catch(e){caught=e===marker;}caught && closed===0",
+        r#"
+            let marker = {},
+                closed = 0,
+                i = {
+                    next() {
+                        return {
+                            get value() {
+                                throw marker;
+                            }
+                        };
+                    },
+                    return () {
+                        closed++;
+                        return {};
+                    }
+                },
+                caught = false;
+            try {
+                Map.groupBy({
+                    [Symbol.iterator]() {
+                        return i;
+                    }
+                }, v => v);
+            } catch (e) {
+                caught = e === marker;
+            }
+            caught && closed === 0
+        "#,
     );
 }
 
@@ -251,7 +743,24 @@ fn full_metadata_and_species_and_iterator_prototypes_are_standard() {
 #[test]
 fn maps_and_paused_iterators_keep_keys_and_values_alive_after_public_deletion() {
     let mut realm = Realm::default();
-    realm.eval("let m=new Map(),key={},value={x:7};m.set(key,value);let i=m.entries(),get=m.get;delete globalThis.Map;delete m.get;key=null;value=null;").unwrap();
+    realm
+        .eval(
+            r#"
+                let m = new Map(),
+                    key = {},
+                    value = {
+                        x: 7
+                    };
+                m.set(key, value);
+                let i = m.entries(),
+                    get = m.get;
+                delete globalThis.Map;
+                delete m.get;
+                key = null;
+                value = null;
+            "#,
+        )
+        .unwrap();
     realm.collect(usize::MAX).unwrap();
     assert_eq!(
         realm.eval("let entry=i.next().value;get.call(m,entry[0])===entry[1] && entry[1].x===7"),
@@ -265,7 +774,13 @@ fn maps_and_paused_iterators_keep_keys_and_values_alive_after_public_deletion() 
 #[test]
 fn default_large_maps_and_opted_in_abort_keep_language_and_host_errors_separate() {
     assert_true(
-        "let m=new Map();for(let i=0;i<20000;i++)m.set(i,i*2);let ok=m.size===20000;for(let i=0;i<20000;i++)ok=ok && m.get(i)===i*2;ok",
+        r#"
+            let m = new Map();
+            for (let i = 0; i < 20000; i++) m.set(i, i * 2);
+            let ok = m.size === 20000;
+            for (let i = 0; i < 20000; i++) ok = ok && m.get(i) === i * 2;
+            ok
+        "#,
     );
     let mut realm = Realm::new(Limits {
         max_steps: Some(10000),

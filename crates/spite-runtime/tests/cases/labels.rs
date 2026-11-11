@@ -33,7 +33,18 @@ fn break_exits_the_target_statement() {
 #[test]
 fn labelled_continue_resumes_the_target_loop() {
     result(
-        "let i = 0; let count = 0; outer: while ((i = i + 1) < 4) { do { count = count + 1; continue outer; } while (missing); throw 99; } count",
+        r#"
+            let i = 0;
+            let count = 0;
+            outer: while ((i = i + 1) < 4) {
+                do {
+                    count = count + 1;
+                    continue outer;
+                } while (missing);
+                throw 99;
+            }
+            count
+        "#,
         Value::Number(3.0),
     );
     result(
@@ -63,7 +74,20 @@ fn inner_control_does_not_exit_an_outer_loop() {
         Value::Number(3.0),
     );
     result(
-        "let i = 0; let count = 0; a: while (i < 3) { i = i + 1; let j = 0; b: do { j = j + 1; continue b; } while (j < 2); count = count + j; } count",
+        r#"
+            let i = 0;
+            let count = 0;
+            a: while (i < 3) {
+                i = i + 1;
+                let j = 0;
+                b: do {
+                    j = j + 1;
+                    continue b;
+                } while (j < 2);
+                count = count + j;
+            }
+            count
+        "#,
         Value::Number(6.0),
     );
     result(

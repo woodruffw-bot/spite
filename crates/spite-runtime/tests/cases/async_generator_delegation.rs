@@ -18,16 +18,71 @@ fn drain(realm: &mut Realm) {
 #[test]
 fn async_results_are_awaited_cached_next_receives_one_argument_and_values_stay_raw() {
     let mut realm = Realm::default();
-    realm.eval("let events=[],results=[],count=0,raw=Promise.resolve(7),release;let inner={get next(){events.push('get-next');return function(value){events.push([this===inner,arguments.length,value].join(':'));return new Promise(r=>release=r)}},[Symbol.asyncIterator](){events.push('async');return this},[Symbol.iterator](){throw 99}};async function*g(){return yield*inner}let iterator=g();iterator.next(99).then(r=>results.push(r));iterator.next(4).then(r=>results.push(r))").unwrap();
+    realm
+        .eval(
+            r#"
+                let events = [],
+                    results = [],
+                    count = 0,
+                    raw = Promise.resolve(7),
+                    release;
+                let inner = {
+                    get next() {
+                        events.push('get-next');
+                        return function(value) {
+                            events.push([this === inner, arguments.length, value].join(':'));
+                            return new Promise(r => release = r)
+                        }
+                    },
+                    [Symbol.asyncIterator]() {
+                        events.push('async');
+                        return this
+                    },
+                    [Symbol.iterator]() {
+                        throw 99
+                    }
+                };
+                async function* g() {
+                    return yield* inner
+                }
+                let iterator = g();
+                iterator.next(99).then(r => results.push(r));
+                iterator.next(4).then(r => results.push(r))
+            "#,
+        )
+        .unwrap();
     check(
         &mut realm,
         "events.join(',')==='async,get-next,true:1:'&&results.length===0",
     );
-    realm.eval("Object.defineProperty(inner,'next',{value(){throw 98}});release({get done(){events.push('done');return false},get value(){events.push('value');return raw}})").unwrap();
+    realm
+        .eval(
+            r#"
+                Object.defineProperty(inner, 'next', {
+                    value() {
+                        throw 98
+                    }
+                });
+                release({
+                    get done() {
+                        events.push('done');
+                        return false
+                    },
+                    get value() {
+                        events.push('value');
+                        return raw
+                    }
+                })
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     check(
         &mut realm,
-        "results.length===1&&results[0].value===raw&&!results[0].done&&events.join(',')==='async,get-next,true:1:,done,value,true:1:4'",
+        r#"
+            results.length === 1 && results[0].value === raw && !results[0].done && events.join(',') ===
+                'async,get-next,true:1:,done,value,true:1:4'
+        "#,
     );
     realm.eval("release({done:true,value:8})").unwrap();
     drain(&mut realm);
@@ -40,7 +95,29 @@ fn async_results_are_awaited_cached_next_receives_one_argument_and_values_stay_r
 #[test]
 fn sync_fallback_unwraps_values_and_nested_async_delegation_serves_consumers() {
     let mut realm = Realm::default();
-    realm.eval("let results=[],array,events=[];async function*g(){try{return yield*[Promise.resolve(1),2]}finally{events.push('finally')}}async function*h(){yield*g()}let iterator=h();iterator.next().then(r=>results.push(r.value));iterator.next().then(r=>results.push(r.value));iterator.next().then(r=>results.push(r.done));Array.fromAsync(h()).then(a=>array=a)").unwrap();
+    realm
+        .eval(
+            r#"
+                let results = [],
+                    array, events = [];
+                async function* g() {
+                    try {
+                        return yield*[Promise.resolve(1), 2]
+                    } finally {
+                        events.push('finally')
+                    }
+                }
+                async function* h() {
+                    yield* g()
+                }
+                let iterator = h();
+                iterator.next().then(r => results.push(r.value));
+                iterator.next().then(r => results.push(r.value));
+                iterator.next().then(r => results.push(r.done));
+                Array.fromAsync(h()).then(a => array = a)
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     check(
         &mut realm,
@@ -51,15 +128,70 @@ fn sync_fallback_unwraps_values_and_nested_async_delegation_serves_consumers() {
 #[test]
 fn live_throw_and_return_methods_await_results_and_return_can_keep_delegating() {
     let mut realm = Realm::default();
-    realm.eval("let events=[],results=[],count=0;let inner={[Symbol.asyncIterator](){return this},next(value){events.push('next:'+value);return {done:false,value:++count}}};async function*g(){try{return yield*inner}finally{events.push('finally')}}let iterator=g();iterator.next().then(r=>results.push(r))").unwrap();
+    realm
+        .eval(
+            r#"
+                let events = [],
+                    results = [],
+                    count = 0;
+                let inner = {
+                    [Symbol.asyncIterator]() {
+                        return this
+                    },
+                    next(value) {
+                        events.push('next:' + value);
+                        return {
+                            done: false,
+                            value: ++count
+                        }
+                    }
+                };
+                async function* g() {
+                    try {
+                        return yield* inner
+                    } finally {
+                        events.push('finally')
+                    }
+                }
+                let iterator = g();
+                iterator.next().then(r => results.push(r))
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
-    realm.eval("inner.return=function(value){events.push('return:'+value+':'+arguments.length);return Promise.resolve({done:false,value:9})};iterator.return(Promise.resolve(4)).then(r=>results.push(r))").unwrap();
+    realm
+        .eval(
+            r#"
+                inner.return = function(value) {
+                    events.push('return:' + value + ':' + arguments.length);
+                    return Promise.resolve({
+                        done: false,
+                        value: 9
+                    })
+                };
+                iterator.return(Promise.resolve(4)).then(r => results.push(r))
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     check(
         &mut realm,
         "results[1].value===9&&!results[1].done&&events.join(',')==='next:undefined,return:4:1'",
     );
-    realm.eval("inner.throw=function(value){events.push('throw:'+value+':'+arguments.length);return Promise.resolve({done:true,value:10})};iterator.throw(7).then(r=>results.push(r))").unwrap();
+    realm
+        .eval(
+            r#"
+                inner.throw = function(value) {
+                    events.push('throw:' + value + ':' + arguments.length);
+                    return Promise.resolve({
+                        done: true,
+                        value: 10
+                    })
+                };
+                iterator.throw(7).then(r => results.push(r))
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     check(
         &mut realm,
@@ -111,9 +243,56 @@ fn live_throw_and_return_methods_await_results_and_return_can_keep_delegating() 
         ),
     ] {
         let mut realm = Realm::default();
-        realm.eval(&format!(
-            "let events=[],outcomes=[],reason={{}},inner={{[Symbol.iterator](){{return this}},next(){{return {{done:false,value:1}}}},return(){{events.push('close');return {{done:true}}}},{method}}};async function*g(){{try{{yield*inner}}finally{{events.push('finally')}}}}let iterator=g(),first=iterator.next(),failed=iterator.throw(7),last=iterator.next();first.then(result=>{{events.push('first');outcomes.push(result.value===1&&!result.done)}});failed.catch(error=>{{events.push('rejected');outcomes.push({expected})}});last.then(result=>{{events.push('last');outcomes.push(result.done)}})"
-        )).unwrap();
+        realm
+            .eval(&format!(
+                r#"
+                    let events = [],
+                        outcomes = [],
+                        reason = {{}},
+                        inner = {{
+                            [Symbol.iterator]() {{
+                                return this
+                            }},
+                            next() {{
+                                return {{
+                                    done: false,
+                                    value: 1
+                                }}
+                            }},
+                            return () {{
+                                events.push('close');
+                                return {{
+                                    done: true
+                                }}
+                            }},
+                            {method}
+                        }};
+                    async function* g() {{
+                        try {{
+                            yield* inner
+                        }} finally {{
+                            events.push('finally')
+                        }}
+                    }}
+                    let iterator = g(),
+                        first = iterator.next(),
+                        failed = iterator.throw(7),
+                        last = iterator.next();
+                    first.then(result => {{
+                        events.push('first');
+                        outcomes.push(result.value === 1 && !result.done)
+                    }});
+                    failed.catch(error => {{
+                        events.push('rejected');
+                        outcomes.push({expected})
+                    }});
+                    last.then(result => {{
+                        events.push('last');
+                        outcomes.push(result.done)
+                    }})
+                "#
+            ))
+            .unwrap();
         realm.collect(usize::MAX).unwrap();
         loop {
             match realm.run_next_promise_job().unwrap() {
@@ -144,7 +323,41 @@ fn missing_throw_awaits_close_without_reading_done_or_value_and_cleanup_failure_
         ("resolve(1)", "error instanceof TypeError"),
     ] {
         let mut realm = Realm::default();
-        realm.eval("let events=[],error,resolve,reject;let inner={[Symbol.asyncIterator](){return this},next(){return {done:false,value:1}},return(){events.push(arguments.length);return new Promise((r,j)=>{resolve=r;reject=j})}};async function*g(){try{yield*inner}finally{events.push('finally')}}let iterator=g();iterator.next()").unwrap();
+        realm
+            .eval(
+                r#"
+                    let events = [],
+                        error, resolve, reject;
+                    let inner = {
+                        [Symbol.asyncIterator]() {
+                            return this
+                        },
+                        next() {
+                            return {
+                                done: false,
+                                value: 1
+                            }
+                        },
+                        return () {
+                            events.push(arguments.length);
+                            return new Promise((r, j) => {
+                                resolve = r;
+                                reject = j
+                            })
+                        }
+                    };
+                    async function* g() {
+                        try {
+                            yield* inner
+                        } finally {
+                            events.push('finally')
+                        }
+                    }
+                    let iterator = g();
+                    iterator.next()
+                "#,
+            )
+            .unwrap();
         drain(&mut realm);
         realm.eval("iterator.throw(7).catch(e=>error=e)").unwrap();
         check(&mut realm, "events.join(',')==='0'&&error===undefined");
@@ -160,7 +373,36 @@ fn missing_throw_awaits_close_without_reading_done_or_value_and_cleanup_failure_
 #[test]
 fn rejected_method_results_reach_outer_catch_instead_of_delegate_throw() {
     let mut realm = Realm::default();
-    realm.eval("let results=[],forwarded=0;let inner={[Symbol.asyncIterator](){return this},next(){return Promise.reject(7)},throw(){forwarded++;throw 99}};async function*g(){try{yield*inner}catch(e){yield e}}let iterator=g();iterator.next().then(r=>results.push(r));iterator.next().then(r=>results.push(r))").unwrap();
+    realm
+        .eval(
+            r#"
+                let results = [],
+                    forwarded = 0;
+                let inner = {
+                    [Symbol.asyncIterator]() {
+                        return this
+                    },
+                    next() {
+                        return Promise.reject(7)
+                    },
+                    throw () {
+                        forwarded++;
+                        throw 99
+                    }
+                };
+                async function* g() {
+                    try {
+                        yield* inner
+                    } catch (e) {
+                        yield e
+                    }
+                }
+                let iterator = g();
+                iterator.next().then(r => results.push(r));
+                iterator.next().then(r => results.push(r))
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     check(
         &mut realm,
@@ -187,12 +429,45 @@ fn failed_next_propagates_without_closing_sync_or_async_delegates() {
     ] {
         let mut realm = Realm::default();
         realm.eval(&format!(
-            "let events=[],results,reason={{}},calls=0,inner={{[Symbol.{protocol}](){{return this}},next(){{events.push('next');if(calls++===0)return{{value:1,done:false}};{failure}}},get return(){{events.push('return');throw 99}}}};async function*outer(){{try{{yield*inner}}catch(e){{yield e===reason}}}}let iterator=outer();Promise.all([iterator.next(),iterator.next(),iterator.next()]).then(value=>results=value)"
+            r#"
+                let events = [],
+                    results, reason = {{}},
+                    calls = 0,
+                    inner = {{
+                        [Symbol.{protocol}]() {{
+                            return this
+                        }},
+                        next() {{
+                            events.push('next');
+                            if (calls++ === 0) return {{
+                                value: 1,
+                                done: false
+                            }};
+                            {failure}
+                        }},
+                        get return() {{
+                            events.push('return');
+                            throw 99
+                        }}
+                    }};
+                async function* outer() {{
+                    try {{
+                        yield* inner
+                    }} catch (e) {{
+                        yield e === reason
+                    }}
+                }}
+                let iterator = outer();
+                Promise.all([iterator.next(), iterator.next(), iterator.next()]).then(value => results = value)
+            "#
         )).unwrap();
         drain(&mut realm);
         check(
             &mut realm,
-            "events.join(',')==='next,next'&&results[0].value===1&&!results[0].done&&results[1].value===true&&!results[1].done&&results[2].done&&results[2].value===undefined",
+            r#"
+                events.join(',') === 'next,next' && results[0].value === 1 && !results[0].done && results[1]
+                    .value === true && !results[1].done && results[2].done && results[2].value === undefined
+            "#,
         );
     }
 }
@@ -200,14 +475,69 @@ fn failed_next_propagates_without_closing_sync_or_async_delegates() {
 #[test]
 fn completed_return_preserves_raw_value_while_missing_return_performs_its_own_await() {
     let mut realm = Realm::default();
-    realm.eval("let results=[],raw=Promise.resolve(7);let inner={[Symbol.asyncIterator](){return this},next(){return {done:false,value:1}},return(){return {done:true,value:raw}}};async function*g(){try{yield*inner}finally{}}let iterator=g();iterator.next()").unwrap();
+    realm
+        .eval(
+            r#"
+                let results = [],
+                    raw = Promise.resolve(7);
+                let inner = {
+                    [Symbol.asyncIterator]() {
+                        return this
+                    },
+                    next() {
+                        return {
+                            done: false,
+                            value: 1
+                        }
+                    },
+                    return () {
+                        return {
+                            done: true,
+                            value: raw
+                        }
+                    }
+                };
+                async function* g() {
+                    try {
+                        yield* inner
+                    } finally {}
+                }
+                let iterator = g();
+                iterator.next()
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     realm
         .eval("iterator.return(4).then(r=>results.push(r))")
         .unwrap();
     drain(&mut realm);
     check(&mut realm, "results[0].done&&results[0].value===raw");
-    realm.eval("let events=[],other=(async function*(){try{yield*{[Symbol.asyncIterator](){return this},next(){return {done:false,value:1}}}}finally{events.push('finally')}})();other.next()").unwrap();
+    realm
+        .eval(
+            r#"
+                let events = [],
+                    other = (async function*() {
+                        try {
+                            yield*{
+                                [Symbol.asyncIterator]() {
+                                    return this
+                                },
+                                next() {
+                                    return {
+                                        done: false,
+                                        value: 1
+                                    }
+                                }
+                            }
+                        } finally {
+                            events.push('finally')
+                        }
+                    })();
+                other.next()
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     realm.eval("other.return(5).then(r=>events.push(r.value));Promise.resolve().then(()=>events.push('tick'))").unwrap();
     drain(&mut realm);
@@ -217,7 +547,32 @@ fn completed_return_preserves_raw_value_while_missing_return_performs_its_own_aw
 #[test]
 fn delegation_records_keep_iterators_and_cached_next_alive_then_release_them() {
     let mut realm = Realm::default();
-    realm.eval("let iterator,weakIterator,weakNext,release;(()=>{let held=Symbol(),next=function(){return new Promise(r=>release=r)},inner={[Symbol.asyncIterator](){return this},next};next.held=held;weakIterator=new WeakRef(inner);weakNext=new WeakRef(held);iterator=(async function*(){yield*inner})()})();iterator.next()").unwrap();
+    realm
+        .eval(
+            r#"
+                let iterator, weakIterator, weakNext, release;
+                (() => {
+                    let held = Symbol(),
+                        next = function() {
+                            return new Promise(r => release = r)
+                        },
+                        inner = {
+                            [Symbol.asyncIterator]() {
+                                return this
+                            },
+                            next
+                        };
+                    next.held = held;
+                    weakIterator = new WeakRef(inner);
+                    weakNext = new WeakRef(held);
+                    iterator = (async function*() {
+                        yield* inner
+                    })()
+                })();
+                iterator.next()
+            "#,
+        )
+        .unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
     check(
@@ -233,7 +588,39 @@ fn delegation_records_keep_iterators_and_cached_next_alive_then_release_them() {
         "weakIterator.deref()===undefined&&weakNext.deref()===undefined",
     );
 
-    realm.eval("let weakQueued,queuedSeen=false,queuedPromise;let queuedInner={[Symbol.asyncIterator](){return this},next(){return new Promise(r=>release=r)},throw(value){queuedSeen=value===weakQueued.deref();return {done:true,value:7}}};let queued=(async function*(){return yield*queuedInner})();queued.next();(()=>{let held={};weakQueued=new WeakRef(held);queuedPromise=queued.throw(held)})();queuedPromise.then(result=>queuedSeen=queuedSeen&&result.done&&result.value===7)").unwrap();
+    realm
+        .eval(
+            r#"
+                let weakQueued, queuedSeen = false,
+                    queuedPromise;
+                let queuedInner = {
+                    [Symbol.asyncIterator]() {
+                        return this
+                    },
+                    next() {
+                        return new Promise(r => release = r)
+                    },
+                    throw (value) {
+                        queuedSeen = value === weakQueued.deref();
+                        return {
+                            done: true,
+                            value: 7
+                        }
+                    }
+                };
+                let queued = (async function*() {
+                    return yield* queuedInner
+                })();
+                queued.next();
+                (() => {
+                    let held = {};
+                    weakQueued = new WeakRef(held);
+                    queuedPromise = queued.throw(held)
+                })();
+                queuedPromise.then(result => queuedSeen = queuedSeen && result.done && result.value === 7)
+            "#,
+        )
+        .unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
     check(&mut realm, "weakQueued.deref()!==undefined");

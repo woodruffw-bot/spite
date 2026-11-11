@@ -32,11 +32,19 @@ fn parameters_initialize_at_call_and_bodies_wait_until_first_next() {
     realm.eval("let events=[];function*g(x=(events.push('parameter'),7)){events.push('body');return x}let iterator=g();").unwrap();
     check(
         &mut realm,
-        "events.join(',')==='parameter'&&iterator[Symbol.iterator]()===iterator&&iterator instanceof Iterator&&iterator instanceof g",
+        r#"
+            events.join(',') === 'parameter' && iterator[Symbol.iterator]() === iterator &&
+                iterator instanceof Iterator && iterator instanceof g
+        "#,
     );
     check(
         &mut realm,
-        "let first=iterator.next(99),second=iterator.next(100);first.done&&first.value===7&&second.done&&second.value===undefined&&events.join(',')==='parameter,body'",
+        r#"
+            let first = iterator.next(99),
+                second = iterator.next(100);
+            first.done && first.value === 7 && second.done && second.value === undefined && events.join(
+                ',') === 'parameter,body'
+        "#,
     );
     check(&mut realm, "(function*(){7})().next().value===undefined");
 }
@@ -47,12 +55,50 @@ fn parameter_errors_are_synchronous_and_close_binding_iterators_before_creation(
     check(
         &mut realm,
         r#"
-        let reason={},events=[],body=0,result=false;function fail(){events.push('default');throw reason}
-        let source={[Symbol.iterator](){return this},next(){events.push('next');return{done:false,value:undefined}},return(){events.push('close');return{}}};
-        function*g([x=fail()]){body++}try{g(source)}catch(error){result=error===reason}
-        let tdz=false;function*h(x=x){}try{h()}catch(error){tdz=error instanceof ReferenceError}
-        result&&tdz&&body===0&&events.join(',')==='next,default,close'
-    "#,
+            let reason = {},
+                events = [],
+                body = 0,
+                result = false;
+
+            function fail() {
+                events.push('default');
+                throw reason
+            }
+            let source = {
+                [Symbol.iterator]() {
+                    return this
+                },
+                next() {
+                    events.push('next');
+                    return {
+                        done: false,
+                        value: undefined
+                    }
+                },
+                return () {
+                    events.push('close');
+                    return {}
+                }
+            };
+
+            function* g([x = fail()]) {
+                body++
+            }
+            try {
+                g(source)
+            } catch (error) {
+                result = error === reason
+            }
+            let tdz = false;
+
+            function* h(x = x) {}
+            try {
+                h()
+            } catch (error) {
+                tdz = error instanceof ReferenceError
+            }
+            result && tdz && body === 0 && events.join(',') === 'next,default,close'
+        "#,
     );
 }
 
@@ -62,11 +108,32 @@ fn mapped_arguments_this_and_new_target_keep_the_original_call_context() {
     check(
         &mut realm,
         r#"
-        function*a(x){x=7;return arguments[0]}function*b(x){'use strict';x=9;return arguments[0]}function*c(x=3){x=11;return arguments[0]}
-        function*d(){return [typeof this,this.valueOf(),new.target===undefined]}
-        a(1).next().value===7&&b(1).next().value===1&&c(1).next().value===1&&d.call(5).next().value.join(',')==='object,5,true'&&
-        (function*(){'use strict';return this}).call(5).next().value===5
-    "#,
+            function* a(x) {
+                x = 7;
+                return arguments[0]
+            }
+
+            function* b(x) {
+                'use strict';
+                x = 9;
+                return arguments[0]
+            }
+
+            function* c(x = 3) {
+                x = 11;
+                return arguments[0]
+            }
+
+            function* d() {
+                return [typeof this, this.valueOf(), new.target === undefined]
+            }
+            a(1).next().value === 7 && b(1).next().value === 1 && c(1).next().value === 1 && d.call(5)
+                .next().value.join(',') === 'object,5,true' &&
+                (function*() {
+                    'use strict';
+                    return this
+                }).call(5).next().value === 5
+        "#,
     );
 }
 
@@ -76,11 +143,40 @@ fn return_and_throw_before_start_skip_the_body_and_completed_resumes_keep_identi
     check(
         &mut realm,
         r#"
-        let body=0,finalized=0,reason={};function*g(){body++;try{return 7}finally{finalized++}}
-        let a=g(),returned=a.return(reason),b=g(),thrown=false;try{b.throw(reason)}catch(error){thrown=error===reason}
-        let c=g(),first=c.next(),later=c.return(reason),again=false;try{c.throw(reason)}catch(error){again=error===reason}
-        returned.done&&returned.value===reason&&thrown&&a.next().done&&b.next().done&&first.done&&first.value===7&&later.done&&later.value===reason&&again&&c.next().value===undefined&&body===1&&finalized===1
-    "#,
+            let body = 0,
+                finalized = 0,
+                reason = {};
+
+            function* g() {
+                body++;
+                try {
+                    return 7
+                } finally {
+                    finalized++
+                }
+            }
+            let a = g(),
+                returned = a.return(reason),
+                b = g(),
+                thrown = false;
+            try {
+                b.throw(reason)
+            } catch (error) {
+                thrown = error === reason
+            }
+            let c = g(),
+                first = c.next(),
+                later = c.return(reason),
+                again = false;
+            try {
+                c.throw(reason)
+            } catch (error) {
+                again = error === reason
+            }
+            returned.done && returned.value === reason && thrown && a.next().done && b.next().done && first
+                .done && first.value === 7 && later.done && later.value === reason && again && c.next()
+                .value === undefined && body === 1 && finalized === 1
+        "#,
     );
 }
 
@@ -90,11 +186,33 @@ fn prototype_methods_reject_incompatible_receivers_and_all_reentrant_resumes() {
     check(
         &mut realm,
         r#"
-        let GP=Object.getPrototypeOf(function*(){}).prototype,count=0;
-        for(const name of ['next','return','throw'])for(const value of [undefined,null,0,{},GP,[],new Proxy((function*(){})(),{})]){try{GP[name].call(value)}catch(error){if(error instanceof TypeError)count++}}
-        let current,seen=[];function*g(){for(const name of ['next','return','throw']){try{GP[name].call(current,1)}catch(error){seen.push(error instanceof TypeError)}}return 7}
-        current=g();let result=current.next();count===21&&result.done&&result.value===7&&seen.length===3&&seen.every(x=>x===true)
-    "#,
+            let GP = Object.getPrototypeOf(function*() {}).prototype,
+                count = 0;
+            for (const name of ['next', 'return', 'throw'])
+                for (const value of [undefined, null, 0, {}, GP, [], new Proxy((function*() {})(), {})]) {
+                    try {
+                        GP[name].call(value)
+                    } catch (error) {
+                        if (error instanceof TypeError) count++
+                    }
+                }
+            let current, seen = [];
+
+            function* g() {
+                for (const name of ['next', 'return', 'throw']) {
+                    try {
+                        GP[name].call(current, 1)
+                    } catch (error) {
+                        seen.push(error instanceof TypeError)
+                    }
+                }
+                return 7
+            }
+            current = g();
+            let result = current.next();
+            count === 21 && result.done && result.value === 7 && seen.length === 3 && seen.every(x => x ===
+                true)
+        "#,
     );
 }
 
@@ -104,12 +222,42 @@ fn generator_methods_keep_live_home_objects_private_brands_and_receivers() {
     check(
         &mut realm,
         r#"
-        let object={__proto__:{x:7},*g(){return super.x+this.y}},iterator=object.g.call({y:2});Object.setPrototypeOf(object,{x:11});
-        class C{#x=17;*g(){return this.#x}static marker=19;static *h(){return this.marker}}
-        let c=new C,privateIterator=c.g(),method=object.g,p=Object.getOwnPropertyDescriptor(method,'prototype'),notConstructor=false;
-        try{new method()}catch(error){notConstructor=error instanceof TypeError}
-        iterator.next().value===13&&privateIterator.next().value===17&&C.h().next().value===19&&p.writable&&!p.enumerable&&!p.configurable&&notConstructor
-    "#,
+            let object = {
+                    __proto__: {
+                        x: 7
+                    },
+                    * g() {
+                        return super.x + this.y
+                    }
+                },
+                iterator = object.g.call({
+                    y: 2
+                });
+            Object.setPrototypeOf(object, {
+                x: 11
+            });
+            class C {
+                #x = 17;* g() {
+                    return this.#x
+                }
+                static marker = 19;
+                static * h() {
+                    return this.marker
+                }
+            }
+            let c = new C,
+                privateIterator = c.g(),
+                method = object.g,
+                p = Object.getOwnPropertyDescriptor(method, 'prototype'),
+                notConstructor = false;
+            try {
+                new method()
+            } catch (error) {
+                notConstructor = error instanceof TypeError
+            }
+            iterator.next().value === 13 && privateIterator.next().value === 17 && C.h().next().value ===
+                19 && p.writable && !p.enumerable && !p.configurable && notConstructor
+        "#,
     );
 }
 
@@ -136,11 +284,45 @@ fn native_body_completions_run_finalizers_and_resource_disposal_once() {
     check(
         &mut realm,
         r#"
-        let reason={},events=[],resource={[Symbol.dispose](){events.push('dispose')}};
-        function*g(){using r=resource;try{return 7}finally{events.push('finally')}}let iterator=g();let before=events.length;let result=iterator.next();iterator.return(9);
-        function*h(){using r=resource;try{throw reason}finally{events.push('throw-finally')}}let other=h(),thrown=false;try{other.next()}catch(error){thrown=error===reason}
-        before===0&&result.done&&result.value===7&&thrown&&other.next().done&&events.join(',')==='finally,dispose,throw-finally,dispose'
-    "#,
+            let reason = {},
+                events = [],
+                resource = {
+                    [Symbol.dispose]() {
+                        events.push('dispose')
+                    }
+                };
+
+            function* g() {
+                using r = resource;
+                try {
+                    return 7
+                } finally {
+                    events.push('finally')
+                }
+            }
+            let iterator = g();
+            let before = events.length;
+            let result = iterator.next();
+            iterator.return(9);
+
+            function* h() {
+                using r = resource;
+                try {
+                    throw reason
+                } finally {
+                    events.push('throw-finally')
+                }
+            }
+            let other = h(),
+                thrown = false;
+            try {
+                other.next()
+            } catch (error) {
+                thrown = error === reason
+            }
+            before === 0 && result.done && result.value === 7 && thrown && other.next().done && events
+                .join(',') === 'finally,dispose,throw-finally,dispose'
+        "#,
     );
 }
 
@@ -148,7 +330,38 @@ fn native_body_completions_run_finalizers_and_resource_disposal_once() {
 fn host_aborts_complete_generators_release_captures_and_skip_javascript_cleanup() {
     let mut resumed = Realm::default();
     resumed.reserve_unsupported_global("unsupportedHost");
-    resumed.eval("let before=0,operand=0,disposed=0,finalized=0,caught=0;let resource={[Symbol.dispose](){disposed++}},weak=new WeakRef(resource[Symbol.dispose]);function*g(){using r=resource;delete resource[Symbol.dispose];try{before++;yield(operand++)}catch{caught++}finally{finalized++}}let iterator=g();iterator.next()").unwrap();
+    resumed
+        .eval(
+            r#"
+                let before = 0,
+                    operand = 0,
+                    disposed = 0,
+                    finalized = 0,
+                    caught = 0;
+                let resource = {
+                        [Symbol.dispose]() {
+                            disposed++
+                        }
+                    },
+                    weak = new WeakRef(resource[Symbol.dispose]);
+
+                function* g() {
+                    using r = resource;
+                    delete resource[Symbol.dispose];
+                    try {
+                        before++;
+                        yield(operand++)
+                    } catch {
+                        caught++
+                    } finally {
+                        finalized++
+                    }
+                }
+                let iterator = g();
+                iterator.next()
+            "#,
+        )
+        .unwrap();
     collect(&mut resumed);
     check(
         &mut resumed,
@@ -162,11 +375,45 @@ fn host_aborts_complete_generators_release_captures_and_skip_javascript_cleanup(
     check(&mut resumed, "weak.deref()===undefined");
     let mut delegated = Realm::default();
     delegated.reserve_unsupported_global("unsupportedHost");
-    delegated.eval("let before=0,operand=0,disposed=0,finalized=0,caught=0;let resource={[Symbol.dispose](){disposed++}},weak=new WeakRef(resource[Symbol.dispose]);function*g(){using r=resource;delete resource[Symbol.dispose];try{before++;yield*(operand++)}catch(error){if(error instanceof TypeError)caught++}finally{finalized++}}let iterator=g();iterator.next()").unwrap();
+    delegated
+        .eval(
+            r#"
+                let before = 0,
+                    operand = 0,
+                    disposed = 0,
+                    finalized = 0,
+                    caught = 0;
+                let resource = {
+                        [Symbol.dispose]() {
+                            disposed++
+                        }
+                    },
+                    weak = new WeakRef(resource[Symbol.dispose]);
+
+                function* g() {
+                    using r = resource;
+                    delete resource[Symbol.dispose];
+                    try {
+                        before++;
+                        yield*(operand++)
+                    } catch (error) {
+                        if (error instanceof TypeError) caught++
+                    } finally {
+                        finalized++
+                    }
+                }
+                let iterator = g();
+                iterator.next()
+            "#,
+        )
+        .unwrap();
     collect(&mut delegated);
     check(
         &mut delegated,
-        "before===1&&operand===1&&disposed===1&&finalized===1&&caught===1&&iterator.next().done&&weak.deref()===undefined",
+        r#"
+            before === 1 && operand === 1 && disposed === 1 && finalized === 1 && caught === 1 && iterator
+                .next().done && weak.deref() === undefined
+        "#,
     );
     for limited in [false, true] {
         let mut realm = Realm::new(Limits {
@@ -191,7 +438,10 @@ fn host_aborts_complete_generators_release_captures_and_skip_javascript_cleanup(
         collect(&mut realm);
         check(
             &mut realm,
-            "before===1&&operand===0&&disposed===0&&finalized===0&&caught===0&&iterator.next().done&&weak.deref()===undefined",
+            r#"
+                before === 1 && operand === 0 && disposed === 0 && finalized === 0 && caught === 0 && iterator
+                    .next().done && weak.deref() === undefined
+            "#,
         );
     }
 }
@@ -199,9 +449,24 @@ fn host_aborts_complete_generators_release_captures_and_skip_javascript_cleanup(
 #[test]
 fn suspended_start_retains_the_callee_and_environment_then_releases_them_on_completion() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let weak,calleeWeak,iterator=(()=>{let kept={};weak=new WeakRef(kept);let f=function*(arguments){kept;return arguments};calleeWeak=new WeakRef(f);let result=f(7);f=null;return result})();
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let weak, calleeWeak, iterator = (() => {
+                    let kept = {};
+                    weak = new WeakRef(kept);
+                    let f = function*(arguments) {
+                        kept;
+                        return arguments
+                    };
+                    calleeWeak = new WeakRef(f);
+                    let result = f(7);
+                    f = null;
+                    return result
+                })();
+            "#,
+        )
+        .unwrap();
     collect(&mut realm);
     check(
         &mut realm,
@@ -218,10 +483,31 @@ fn suspended_start_retains_the_callee_and_environment_then_releases_them_on_comp
 #[test]
 fn synchronous_and_async_consumers_observe_completion_and_early_return_without_body_replay() {
     let mut realm = Realm::default();
-    realm.eval(r#"
-        let count=0,result;function*g(){count++;return 7}let skipped=g();let values=Iterator.from(skipped).take(0).toArray();
-        let direct=[...g()],from=Array.from(g());async function f(){let seen=0;for await(const x of g())seen++;return seen}f().then(value=>{result=value});
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                let count = 0,
+                    result;
+
+                function* g() {
+                    count++;
+                    return 7
+                }
+                let skipped = g();
+                let values = Iterator.from(skipped).take(0).toArray();
+                let direct = [...g()],
+                    from = Array.from(g());
+                async function f() {
+                    let seen = 0;
+                    for await (const x of g()) seen++;
+                    return seen
+                }
+                f().then(value => {
+                    result = value
+                });
+            "#,
+        )
+        .unwrap();
     loop {
         match realm.run_next_promise_job().unwrap() {
             PromiseJobOutcome::NoJob => break,

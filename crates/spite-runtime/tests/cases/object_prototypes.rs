@@ -20,16 +20,51 @@ fn type_error(source: &str) {
 #[test]
 fn inspection_and_mutation_use_internal_prototypes_without_user_conversion() {
     assert_true(
-        "Object.getPrototypeOf({})===Object.prototype && Object.getPrototypeOf(Object.prototype)===null && Object.getPrototypeOf(true)===Boolean.prototype && Object.getPrototypeOf(1)===Number.prototype",
+        r#"
+            Object.getPrototypeOf({}) === Object.prototype && Object.getPrototypeOf(Object.prototype) ===
+                null && Object.getPrototypeOf(true) === Boolean.prototype && Object.getPrototypeOf(1) ===
+                Number.prototype
+        "#,
     );
     assert_true(
-        "let p={x:3,valueOf:()=>{throw 1;}},o={valueOf:()=>{throw 2;}};Object.setPrototypeOf(o,p)===o && o.x===3 && Object.getPrototypeOf(o)===p && p.isPrototypeOf(o)",
+        r#"
+            let p = {
+                    x: 3,
+                    valueOf: () => {
+                        throw 1;
+                    }
+                },
+                o = {
+                    valueOf: () => {
+                        throw 2;
+                    }
+                };
+            Object.setPrototypeOf(o, p) === o && o.x === 3 && Object.getPrototypeOf(o) === p && p
+                .isPrototypeOf(o)
+        "#,
     );
     assert_true(
-        "let o={};Object.defineProperty(o,'__proto__',{get:()=>{throw 1;},set:()=>{throw 2;}});Object.setPrototypeOf(o,null);Object.getPrototypeOf(o)===null",
+        r#"
+            let o = {};
+            Object.defineProperty(o, '__proto__', {
+                get: () => {
+                    throw 1;
+                },
+                set: () => {
+                    throw 2;
+                }
+            });
+            Object.setPrototypeOf(o, null);
+            Object.getPrototypeOf(o) === null
+        "#,
     );
     assert_true(
-        "let F=function(){},p={};Object.setPrototypeOf(F,p);Object.getPrototypeOf(F)===p && typeof F==='function' && new F instanceof F",
+        r#"
+            let F = function() {},
+                p = {};
+            Object.setPrototypeOf(F, p);
+            Object.getPrototypeOf(F) === p && typeof F === 'function' && new F instanceof F
+        "#,
     );
     for target in ["null", "undefined"] {
         type_error(&format!("Object.getPrototypeOf({target})"));
@@ -68,26 +103,76 @@ fn cycle_and_immutable_prototype_rejections_leave_existing_chains_intact() {
             "{source}"
         );
     }
-    assert_eq!(realm.eval("Object.getPrototypeOf(a)===Object.prototype && Object.getPrototypeOf(b)===a && Object.getPrototypeOf(c)===b && Object.getPrototypeOf(Object.prototype)===null"),Ok(Value::Boolean(true)));
+    assert_eq!(
+        realm.eval(
+            r#"
+                Object.getPrototypeOf(a) === Object.prototype && Object.getPrototypeOf(b) === a && Object
+                    .getPrototypeOf(c) === b && Object.getPrototypeOf(Object.prototype) === null
+            "#
+        ),
+        Ok(Value::Boolean(true))
+    );
     assert_true("Object.setPrototypeOf(Object.prototype,null)===Object.prototype");
     assert_true(
-        "let a={},b={__proto__:a};Object.setPrototypeOf(b,null);Object.setPrototypeOf(a,b);Object.getPrototypeOf(a)===b && Object.getPrototypeOf(b)===null",
+        r#"
+            let a = {},
+                b = {
+                    __proto__: a
+                };
+            Object.setPrototypeOf(b, null);
+            Object.setPrototypeOf(a, b);
+            Object.getPrototypeOf(a) === b && Object.getPrototypeOf(b) === null
+        "#,
     );
 }
 
 #[test]
 fn non_extensible_objects_keep_mutable_existing_properties_and_prototype_identity() {
     assert_true(
-        "let p={},o={__proto__:p,x:1};Object.isExtensible(o) && Object.preventExtensions(o)===o && !Object.isExtensible(o) && Object.preventExtensions(o)===o && Object.setPrototypeOf(o,p)===o",
+        r#"
+            let p = {},
+                o = {
+                    __proto__: p,
+                    x: 1
+                };
+            Object.isExtensible(o) && Object.preventExtensions(o) === o && !Object.isExtensible(o) &&
+                Object.preventExtensions(o) === o && Object.setPrototypeOf(o, p) === o
+        "#,
     );
     type_error("let o={};Object.preventExtensions(o);Object.setPrototypeOf(o,null)");
     type_error("let o={};Object.preventExtensions(o);Object.defineProperty(o,'x',{value:1})");
     type_error("'use strict';let o={};Object.preventExtensions(o);o.x=1");
     assert_true(
-        "let o={x:1};Object.preventExtensions(o);o.x=2;o.y=3;Object.defineProperty(o,'x',{enumerable:false});o.x===2 && !Object.hasOwn(o,'y') && !o.propertyIsEnumerable('x') && delete o.x && !Object.hasOwn(o,'x') && !Object.isExtensible(o)",
+        r#"
+            let o = {
+                x: 1
+            };
+            Object.preventExtensions(o);
+            o.x = 2;
+            o.y = 3;
+            Object.defineProperty(o, 'x', {
+                enumerable: false
+            });
+            o.x === 2 && !Object.hasOwn(o, 'y') && !o.propertyIsEnumerable('x') && delete o.x && !Object
+                .hasOwn(o, 'x') && !Object.isExtensible(o)
+        "#,
     );
     assert_true(
-        "let stored=0,p={};Object.defineProperty(p,'x',{set:function(v){stored=v;}});let o={__proto__:p};Object.preventExtensions(o);o.x=7;stored===7 && !Object.hasOwn(o,'x')",
+        r#"
+            let stored = 0,
+                p = {};
+            Object.defineProperty(p, 'x', {
+                set: function(v) {
+                    stored = v;
+                }
+            });
+            let o = {
+                __proto__: p
+            };
+            Object.preventExtensions(o);
+            o.x = 7;
+            stored === 7 && !Object.hasOwn(o, 'x')
+        "#,
     );
     for primitive in ["undefined", "null", "true", "1", "-0", "NaN", "1n", "'x'"] {
         assert_true(&format!(
@@ -126,7 +211,11 @@ fn prototype_and_extensibility_method_metadata_is_standard() {
         ("preventExtensions", 1),
     ] {
         assert_true(&format!(
-            "let d=Object.getOwnPropertyDescriptor(Object,'{name}');d.value.name==='{name}' && d.value.length==={length} && d.writable && !d.enumerable && d.configurable"
+            r#"
+                let d = Object.getOwnPropertyDescriptor(Object, '{name}');
+                d.value.name === '{name}' && d.value.length === {length} && d.writable && !d
+                    .enumerable && d.configurable
+            "#
         ));
         type_error(&format!("new Object.{name}()"));
     }

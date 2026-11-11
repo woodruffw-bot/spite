@@ -10,7 +10,33 @@ use crate::common::assert_true;
 fn receiver_validation_precedes_conversion_and_conversion_precedes_eager_next_capture() {
     for method in ["take", "drop"] {
         assert_true(&format!(
-            "let effects=[],n=0,i={{get next(){{effects.push('next');return ()=>{{n++;return {{done:true}};}};}}}},limit={{valueOf(){{effects.push('limit');return 0;}}}},h=Iterator.prototype.{method}.call(i,limit,{{valueOf(){{throw 7;}}}});effects.join(',')==='limit,next' && n===0 && h instanceof Iterator"
+            r#"
+                let effects = [],
+                    n = 0,
+                    i = {{
+                        get next() {{
+                            effects.push('next');
+                            return () => {{
+                                n++;
+                                return {{
+                                    done: true
+                                }};
+                            }};
+                        }}
+                    }},
+                    limit = {{
+                        valueOf() {{
+                            effects.push('limit');
+                            return 0;
+                        }}
+                    }},
+                    h = Iterator.prototype.{method}.call(i, limit, {{
+                        valueOf() {{
+                            throw 7;
+                        }}
+                    }});
+                effects.join(',') === 'limit,next' && n === 0 && h instanceof Iterator
+            "#
         ));
         for receiver in ["undefined", "null", "true", "1", "1n", "'x'", "Symbol()"] {
             assert!(
@@ -27,7 +53,25 @@ fn receiver_validation_precedes_conversion_and_conversion_precedes_eager_next_ca
             );
         }
         assert_true(&format!(
-            "let effects=[],limit={{[Symbol.toPrimitive](hint){{effects.push(hint);return '1.9';}}}},i={{get next(){{effects.push('next');return ()=>({{done:true}});}}}};Iterator.prototype.{method}.call(i,limit);effects.join(',')==='number,next'"
+            r#"
+                let effects = [],
+                    limit = {{
+                        [Symbol.toPrimitive](hint) {{
+                            effects.push(hint);
+                            return '1.9';
+                        }}
+                    }},
+                    i = {{
+                        get next() {{
+                            effects.push('next');
+                            return () => ({{
+                                done: true
+                            }});
+                        }}
+                    }};
+                Iterator.prototype.{method}.call(i, limit);
+                effects.join(',') === 'number,next'
+            "#
         ));
     }
 }
@@ -38,20 +82,97 @@ fn conversion_validation_errors_close_before_next_and_keep_incoming_error_identi
         for limit in ["undefined", "NaN", "'x'", "-1", "-1.5", "-Infinity"] {
             for ret in ["return {};", "return 7;", "throw 8;"] {
                 assert_true(&format!(
-                    "let closed=0,i={{get next(){{throw 9;}},return(){{closed++;{ret}}}}},caught=false;try{{Iterator.prototype.{method}.call(i,{limit});}}catch(e){{caught=e instanceof RangeError;}}caught && closed===1"
+                    r#"
+                        let closed = 0,
+                            i = {{
+                                get next() {{
+                                    throw 9;
+                                }},
+                                return () {{
+                                    closed++;
+                                    {ret}
+                                }}
+                            }},
+                            caught = false;
+                        try {{
+                            Iterator.prototype.{method}.call(i, {limit});
+                        }} catch (e) {{
+                            caught = e instanceof RangeError;
+                        }}
+                        caught && closed === 1
+                    "#
                 ));
             }
         }
         for limit in ["1n", "Symbol()"] {
             assert_true(&format!(
-                "let closed=0,i={{get next(){{throw 7;}},return(){{closed++;throw 8;}}}},caught=false;try{{Iterator.prototype.{method}.call(i,{limit});}}catch(e){{caught=e instanceof TypeError;}}caught && closed===1"
+                r#"
+                    let closed = 0,
+                        i = {{
+                            get next() {{
+                                throw 7;
+                            }},
+                            return () {{
+                                closed++;
+                                throw 8;
+                            }}
+                        }},
+                        caught = false;
+                    try {{
+                        Iterator.prototype.{method}.call(i, {limit});
+                    }} catch (e) {{
+                        caught = e instanceof TypeError;
+                    }}
+                    caught && closed === 1
+                "#
             ));
         }
         assert_true(&format!(
-            "let sentinel={{}},closed=0,i={{get next(){{throw 7;}},get return(){{closed++;throw 8;}}}},caught=false;try{{Iterator.prototype.{method}.call(i,{{valueOf(){{throw sentinel;}}}});}}catch(e){{caught=e===sentinel;}}caught && closed===1"
+            r#"
+                let sentinel = {{}},
+                    closed = 0,
+                    i = {{
+                        get next() {{
+                            throw 7;
+                        }},
+                        get return() {{
+                            closed++;
+                            throw 8;
+                        }}
+                    }},
+                    caught = false;
+                try {{
+                    Iterator.prototype.{method}.call(i, {{
+                        valueOf() {{
+                            throw sentinel;
+                        }}
+                    }});
+                }} catch (e) {{
+                    caught = e === sentinel;
+                }}
+                caught && closed === 1
+            "#
         ));
         assert_true(&format!(
-            "let closed=0,i={{get next(){{throw 7;}},return(){{closed++;return {{}};}}}},caught=false;try{{Iterator.prototype.{method}.call(i,0);}}catch(e){{caught=e===7;}}caught && closed===0"
+            r#"
+                let closed = 0,
+                    i = {{
+                        get next() {{
+                            throw 7;
+                        }},
+                        return () {{
+                            closed++;
+                            return {{}};
+                        }}
+                    }},
+                    caught = false;
+                try {{
+                    Iterator.prototype.{method}.call(i, 0);
+                }} catch (e) {{
+                    caught = e === 7;
+                }}
+                caught && closed === 0
+            "#
         ));
     }
 }
@@ -92,43 +213,224 @@ fn finite_counts_truncate_and_large_counts_and_infinity_follow_the_published_bas
 #[test]
 fn cached_direct_next_uses_zero_arguments_and_drop_never_reads_discarded_values() {
     assert_true(
-        "let gets=0,n=0,receiver,argc,i={get next(){gets++;return function(){'use strict';receiver=this;argc=arguments.length;return {done:false,value:n++};};}},h=Iterator.prototype.take.call(i,2);Object.defineProperty(i,'next',{value:()=>{throw 7;}});Object.defineProperty(i,Symbol.iterator,{get(){throw 8;}});h.next(9).value===0 && h.next().value===1 && h.next().done && gets===1 && n===2 && receiver===i && argc===0",
+        r#"
+            let gets = 0,
+                n = 0,
+                receiver, argc, i = {
+                    get next() {
+                        gets++;
+                        return function() {
+                            'use strict';
+                            receiver = this;
+                            argc = arguments.length;
+                            return {
+                                done: false,
+                                value: n++
+                            };
+                        };
+                    }
+                },
+                h = Iterator.prototype.take.call(i, 2);
+            Object.defineProperty(i, 'next', {
+                value: () => {
+                    throw 7;
+                }
+            });
+            Object.defineProperty(i, Symbol.iterator, {
+                get() {
+                    throw 8;
+                }
+            });
+            h.next(9).value === 0 && h.next().value === 1 && h.next().done && gets === 1 && n === 2 &&
+                receiver === i && argc === 0
+        "#,
     );
     assert_true(
-        "let gets=0,n=0,values=0,receiver,argc,i={get next(){gets++;return function(){'use strict';receiver=this;argc=arguments.length;let value=n++;return {done:value===4,get value(){values++;if(value<2)throw 7;return value;}};};}},h=Iterator.prototype.drop.call(i,2);Object.defineProperty(i,'next',{value:()=>{throw 8;}});Object.defineProperty(i,Symbol.iterator,{get(){throw 9;}});h.next().value===2 && h.next().value===3 && h.next().done && gets===1 && values===2 && receiver===i && argc===0",
+        r#"
+            let gets = 0,
+                n = 0,
+                values = 0,
+                receiver, argc, i = {
+                    get next() {
+                        gets++;
+                        return function() {
+                            'use strict';
+                            receiver = this;
+                            argc = arguments.length;
+                            let value = n++;
+                            return {
+                                done: value === 4,
+                                get value() {
+                                    values++;
+                                    if (value < 2) throw 7;
+                                    return value;
+                                }
+                            };
+                        };
+                    }
+                },
+                h = Iterator.prototype.drop.call(i, 2);
+            Object.defineProperty(i, 'next', {
+                value: () => {
+                    throw 8;
+                }
+            });
+            Object.defineProperty(i, Symbol.iterator, {
+                get() {
+                    throw 9;
+                }
+            });
+            h.next().value === 2 && h.next().value === 3 && h.next().done && gets === 1 && values === 2 &&
+                receiver === i && argc === 0
+        "#,
     );
     assert_true(
-        "let n=0,values=0,h=Iterator.prototype.drop.call({next:()=>({done:n++===3,get value(){values++;throw 7;}})},Infinity);h.next().done && values===0",
+        r#"
+            let n = 0,
+                values = 0,
+                h = Iterator.prototype.drop.call({
+                    next: () => ({
+                        done: n++ === 3,
+                        get value() {
+                            values++;
+                            throw 7;
+                        }
+                    })
+                }, Infinity);
+            h.next().done && values === 0
+        "#,
     );
     assert_true(
-        "let source=[0,1,2,3].values(),h=source.drop(1);source.next();h.next().value===2 && h.next().value===3 && h.next().done",
+        r#"
+            let source = [0, 1, 2, 3].values(),
+                h = source.drop(1);
+            source.next();
+            h.next().value === 2 && h.next().value === 3 && h.next().done
+        "#,
     );
     assert_true(
-        "let source=[0,1,2,3].values(),h=source.take(1);source.next();h.next().value===1 && h.next().done && source.next().value===2",
+        r#"
+            let source = [0, 1, 2, 3].values(),
+                h = source.take(1);
+            source.next();
+            h.next().value === 1 && h.next().done && source.next().value === 2
+        "#,
     );
 }
 
 #[test]
 fn take_closes_exactly_when_count_is_exhausted_and_drop_only_closes_on_return() {
     assert_true(
-        "let closed=0,n=0,i={next:()=>({done:false,value:n++}),return(){closed++;return {};}},h=Iterator.prototype.take.call(i,2);let a=h.next(),b=h.next(),before=closed;let end=h.next();a.value===0 && b.value===1 && before===0 && end.done && end.value===undefined && closed===1 && n===2 && h.next().done && h.return().done && closed===1",
+        r#"
+            let closed = 0,
+                n = 0,
+                i = {
+                    next: () => ({
+                        done: false,
+                        value: n++
+                    }),
+                    return () {
+                        closed++;
+                        return {};
+                    }
+                },
+                h = Iterator.prototype.take.call(i, 2);
+            let a = h.next(),
+                b = h.next(),
+                before = closed;
+            let end = h.next();
+            a.value === 0 && b.value === 1 && before === 0 && end.done && end.value === undefined &&
+                closed === 1 && n === 2 && h.next().done && h.return().done && closed === 1
+        "#,
     );
     assert_true(
-        "let closed=0,n=0,h=Iterator.prototype.take.call({next:()=>{n++;throw 7;},return(){closed++;return {};}},0);h.next().done && closed===1 && n===0 && h.return().done && closed===1",
+        r#"
+            let closed = 0,
+                n = 0,
+                h = Iterator.prototype.take.call({
+                    next: () => {
+                        n++;
+                        throw 7;
+                    },
+                    return () {
+                        closed++;
+                        return {};
+                    }
+                }, 0);
+            h.next().done && closed === 1 && n === 0 && h.return().done && closed === 1
+        "#,
     );
     assert_true(
-        "let n=0,h=Iterator.prototype.take.call({next:()=>({done:n++===1,value:7}),get return(){throw 8;}},2);h.next().value===7 && h.next().done && h.return().done",
+        r#"
+            let n = 0,
+                h = Iterator.prototype.take.call({
+                    next: () => ({
+                        done: n++ === 1,
+                        value: 7
+                    }),
+                    get return() {
+                        throw 8;
+                    }
+                }, 2);
+            h.next().value === 7 && h.next().done && h.return().done
+        "#,
     );
     assert_true(
-        "let n=0,h=Iterator.prototype.drop.call({next:()=>({done:n++===1,get value(){throw 7;}}),get return(){throw 8;}},2);h.next().done && h.return().done",
+        r#"
+            let n = 0,
+                h = Iterator.prototype.drop.call({
+                    next: () => ({
+                        done: n++ === 1,
+                        get value() {
+                            throw 7;
+                        }
+                    }),
+                    get return() {
+                        throw 8;
+                    }
+                }, 2);
+            h.next().done && h.return().done
+        "#,
     );
     assert_true(
-        "let closed=0,h=Iterator.prototype.drop.call({next:()=>({done:false,value:7}),return(){closed++;return {};}},1);h.next().value===7 && closed===0 && h.return().done && closed===1 && h.next().done",
+        r#"
+            let closed = 0,
+                h = Iterator.prototype.drop.call({
+                    next: () => ({
+                        done: false,
+                        value: 7
+                    }),
+                    return () {
+                        closed++;
+                        return {};
+                    }
+                }, 1);
+            h.next().value === 7 && closed === 0 && h.return().done && closed === 1 && h.next().done
+        "#,
     );
     assert_true("let h=Iterator.prototype.take.call({next:7},0);h.next().done");
     for ret in ["return 7;", "throw sentinel;"] {
         assert_true(&format!(
-            "let sentinel={{}},closed=0,h=Iterator.prototype.take.call({{next:()=>{{throw 8;}},return(){{closed++;{ret}}}}},0),caught=false;try{{h.next();}}catch(e){{caught=e===sentinel || e instanceof TypeError;}}caught && closed===1 && h.next().done && h.return().done && closed===1"
+            r#"
+                let sentinel = {{}},
+                    closed = 0,
+                    h = Iterator.prototype.take.call({{
+                        next: () => {{
+                            throw 8;
+                        }},
+                        return () {{
+                            closed++;
+                            {ret}
+                        }}
+                    }}, 0),
+                    caught = false;
+                try {{
+                    h.next();
+                }} catch (e) {{
+                    caught = e === sentinel || e instanceof TypeError;
+                }}
+                caught && closed === 1 && h.next().done && h.return().done && closed === 1
+            "#
         ));
     }
 }
@@ -138,7 +440,23 @@ fn early_return_completes_before_cleanup_yielded_closing_rejects_reentry_and_ste
  {
     for method in ["take", "drop"] {
         assert_true(&format!(
-            "let nexts=0,closed=0,reentered=false,h=Iterator.prototype.{method}.call({{next:()=>{{nexts++;throw 7;}},return(){{closed++;reentered=h.next().done && h.return().done;return {{}};}}}},1);h.return(8).done && nexts===0 && closed===1 && reentered && h.next().done"
+            r#"
+                let nexts = 0,
+                    closed = 0,
+                    reentered = false,
+                    h = Iterator.prototype.{method}.call({{
+                        next: () => {{
+                            nexts++;
+                            throw 7;
+                        }},
+                        return () {{
+                            closed++;
+                            reentered = h.next().done && h.return().done;
+                            return {{}};
+                        }}
+                    }}, 1);
+                h.return(8).done && nexts === 0 && closed === 1 && reentered && h.next().done
+            "#
         ));
         for next in [
             "()=>{throw 7;}",
@@ -147,21 +465,108 @@ fn early_return_completes_before_cleanup_yielded_closing_rejects_reentry_and_ste
             "7",
         ] {
             assert_true(&format!(
-                "let closed=0,h=Iterator.prototype.{method}.call({{next:{next},return(){{closed++;throw 8;}}}},1),caught=false;try{{h.next();}}catch(e){{caught=e===7 || e instanceof TypeError;}}caught && closed===0 && h.next().done && h.return().done"
+                r#"
+                    let closed = 0,
+                        h = Iterator.prototype.{method}.call({{
+                            next: {next},
+                            return () {{
+                                closed++;
+                                throw 8;
+                            }}
+                        }}, 1),
+                        caught = false;
+                    try {{
+                        h.next();
+                    }} catch (e) {{
+                        caught = e === 7 || e instanceof TypeError;
+                    }}
+                    caught && closed === 0 && h.next().done && h.return().done
+                "#
             ));
         }
         assert_true(&format!(
-            "let closed=0,h=Iterator.prototype.{method}.call({{next:()=>({{done:false,get value(){{throw 7;}}}}),return(){{closed++;throw 8;}}}},0.5+1),caught=false;try{{h.next();}}catch(e){{caught=e===7;}}caught && closed===0 && h.next().done"
+            r#"
+                let closed = 0,
+                    h = Iterator.prototype.{method}.call({{
+                        next: () => ({{
+                            done: false,
+                            get value() {{
+                                throw 7;
+                            }}
+                        }}),
+                        return () {{
+                            closed++;
+                            throw 8;
+                        }}
+                    }}, 0.5 + 1),
+                    caught = false;
+                try {{
+                    h.next();
+                }} catch (e) {{
+                    caught = e === 7;
+                }}
+                caught && closed === 0 && h.next().done
+            "#
         ));
         assert_true(&format!(
-            "let h,closed=0;h=Iterator.prototype.{method}.call({{next:()=>h.next(),return(){{closed++;return {{}};}}}},1);let caught=false;try{{h.next();}}catch(e){{caught=e instanceof TypeError;}}caught && closed===0 && h.next().done"
+            r#"
+                let h, closed = 0;
+                h = Iterator.prototype.{method}.call({{
+                    next: () => h.next(),
+                    return () {{
+                        closed++;
+                        return {{}};
+                    }}
+                }}, 1);
+                let caught = false;
+                try {{
+                    h.next();
+                }} catch (e) {{
+                    caught = e instanceof TypeError;
+                }}
+                caught && closed === 0 && h.next().done
+            "#
         ));
     }
     assert_true(
-        "let h,reentries=0;h=Iterator.prototype.take.call({next:()=>{throw 7;},return(){try{h.next();}catch(e){if(e instanceof TypeError)reentries++;}try{h.return();}catch(e){if(e instanceof TypeError)reentries++;}return {};}},0);h.next().done && reentries===2",
+        r#"
+            let h, reentries = 0;
+            h = Iterator.prototype.take.call({
+                next: () => {
+                    throw 7;
+                },
+                return () {
+                    try {
+                        h.next();
+                    } catch (e) {
+                        if (e instanceof TypeError) reentries++;
+                    }
+                    try {
+                        h.return();
+                    } catch (e) {
+                        if (e instanceof TypeError) reentries++;
+                    }
+                    return {};
+                }
+            }, 0);
+            h.next().done && reentries === 2
+        "#,
     );
     assert_true(
-        "let closed=0,h=Iterator.prototype.take.call({next:()=>({done:false,value:7}),return(){closed++;return {}; }},1).drop(0).map(value=>value+1).take(1);h.toArray().join(',')==='8' && closed===1",
+        r#"
+            let closed = 0,
+                h = Iterator.prototype.take.call({
+                    next: () => ({
+                        done: false,
+                        value: 7
+                    }),
+                    return () {
+                        closed++;
+                        return {};
+                    }
+                }, 1).drop(0).map(value => value + 1).take(1);
+            h.toArray().join(',') === '8' && closed === 1
+        "#,
     );
 }
 
@@ -217,10 +622,29 @@ fn captured_sources_and_cached_next_survive_collection_and_release_after_return(
 #[test]
 fn large_default_inputs_and_internal_counts_work_without_bigint_value_quotas() {
     assert_true(
-        "let n=0,i=Iterator.prototype.take.call({next:()=>({done:false,value:n++})},10000),a=i.toArray();a.length===10000 && a[9999]===9999 && n===10000",
+        r#"
+            let n = 0,
+                i = Iterator.prototype.take.call({
+                    next: () => ({
+                        done: false,
+                        value: n++
+                    })
+                }, 10000),
+                a = i.toArray();
+            a.length === 10000 && a[9999] === 9999 && n === 10000
+        "#,
     );
     assert_true(
-        "let n=0,h=Iterator.prototype.drop.call({next:()=>({done:n===10001,value:n++})},10000);h.next().value===10000 && h.next().done",
+        r#"
+            let n = 0,
+                h = Iterator.prototype.drop.call({
+                    next: () => ({
+                        done: n === 10001,
+                        value: n++
+                    })
+                }, 10000);
+            h.next().value === 10000 && h.next().done
+        "#,
     );
     let mut realm = Realm::new(Limits {
         max_bigint_bits: Some(0),
@@ -253,7 +677,20 @@ fn opted_in_work_and_unsupported_failures_complete_resumes_without_javascript_cl
         );
         let mut realm = Realm::default();
         realm.reserve_unsupported_global("unsupportedHost");
-        realm.eval(&format!("let flag=0,h=Iterator.prototype.{method}.call({{next:()=>Function('unsupportedHost')(),return:()=>{{flag=3;return {{}};}}}},1);")).unwrap();
+        realm
+            .eval(&format!(
+                r#"
+                    let flag = 0,
+                        h = Iterator.prototype.{method}.call({{
+                            next: () => Function('unsupportedHost')(),
+                            return: () => {{
+                                flag = 3;
+                                return {{}};
+                            }}
+                        }}, 1);
+                "#
+            ))
+            .unwrap();
         assert!(matches!(
             realm.eval("try{h.next();}catch{flag=1;}finally{flag=2;}"),
             Err(Error::Unsupported { .. })
@@ -267,7 +704,22 @@ fn opted_in_work_and_unsupported_failures_complete_resumes_without_javascript_cl
         realm
             .eval("let flag=0,i={get next(){flag=4;throw 7;},return(){flag=3;return {};}}")
             .unwrap();
-        assert!(matches!(realm.eval(&format!("try{{Iterator.prototype.{method}.call(i,{{valueOf:()=>Function('unsupportedHost')()}});}}catch{{flag=1;}}finally{{flag=2;}}")),Err(Error::Unsupported{..})));
+        assert!(matches!(
+            realm.eval(&format!(
+                r#"
+                    try {{
+                        Iterator.prototype.{method}.call(i, {{
+                            valueOf: () => Function('unsupportedHost')()
+                        }});
+                    }} catch {{
+                        flag = 1;
+                    }} finally {{
+                        flag = 2;
+                    }}
+                "#
+            )),
+            Err(Error::Unsupported { .. })
+        ));
         assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     }
 }

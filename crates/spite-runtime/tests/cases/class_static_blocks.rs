@@ -7,17 +7,70 @@ use crate::common::assert_true;
 #[test]
 fn computed_names_and_methods_precede_ordered_static_fields_and_blocks() {
     assert_true(
-        "let log='';class C{static[(log+='K','x')]=(log+='F',1);static{log+='B';this.y=this.m();}static y=(log+='Y',this.y+1);static[(log+='M','m')](){return 6;}static{log+='C';this.z=this.x+this.y;}}log==='KMFBYC' && C.z===8",
+        r#"
+            let log = '';
+            class C {
+                static[(log += 'K', 'x')] = (log += 'F', 1);
+                static {
+                    log += 'B';
+                    this.y = this.m();
+                }
+                static y = (log += 'Y', this.y + 1);
+                static[(log += 'M', 'm')]() {
+                    return 6;
+                }
+                static {
+                    log += 'C';
+                    this.z = this.x + this.y;
+                }
+            }
+            log === 'KMFBYC' && C.z === 8
+        "#,
     );
     assert_true(
-        "let log='';class C{static x=(log+='A',1);static{log+='B';}static y=(log+='C',2);static{log+='D';}}log==='ABCD'",
+        r#"
+            let log = '';
+            class C {
+                static x = (log += 'A', 1);
+                static {
+                    log += 'B';
+                }
+                static y = (log += 'C', 2);
+                static {
+                    log += 'D';
+                }
+            }
+            log === 'ABCD'
+        "#,
     );
 }
 
 #[test]
 fn each_block_has_its_own_hoisted_variable_and_lexical_scope() {
     assert_true(
-        "let x=7;class C{static{this.before=x;var x=1;let y=2;this.f=()=>x+y;function f(){return 3;}this.v=f();}static{this.before2=x;var x=4;this.g=()=>x;}}C.before===undefined && C.before2===undefined && C.f()===3 && C.g()===4 && C.v===3 && x===7 && typeof y==='undefined' && typeof f==='undefined'",
+        r#"
+            let x = 7;
+            class C {
+                static {
+                    this.before = x;
+                    var x = 1;
+                    let y = 2;
+                    this.f = () => x + y;
+
+                    function f() {
+                        return 3;
+                    }
+                    this.v = f();
+                }
+                static {
+                    this.before2 = x;
+                    var x = 4;
+                    this.g = () => x;
+                }
+            }
+            C.before === undefined && C.before2 === undefined && C.f() === 3 && C.g() === 4 && C.v === 3 &&
+                x === 7 && typeof y === 'undefined' && typeof f === 'undefined'
+        "#,
     );
     assert_true(
         "class C{static{this.x=f();function f(){return 1;}function f(){return 2;}}}C.x===2",
@@ -27,7 +80,26 @@ fn each_block_has_its_own_hoisted_variable_and_lexical_scope() {
 #[test]
 fn this_super_and_new_target_use_the_synthetic_function_context() {
     assert_true(
-        "class B{static get x(){return this.v+1;}static m(){return this.v+2;}}class C extends B{static v=6;static{this.result=super.x;this.y=super.m();this.target=new.target;this.f=()=>this;}}C.result===7 && C.y===8 && C.target===undefined && C.f()===C",
+        r#"
+            class B {
+                static get x() {
+                    return this.v + 1;
+                }
+                static m() {
+                    return this.v + 2;
+                }
+            }
+            class C extends B {
+                static v = 6;
+                static {
+                    this.result = super.x;
+                    this.y = super.m();
+                    this.target = new.target;
+                    this.f = () => this;
+                }
+            }
+            C.result === 7 && C.y === 8 && C.target === undefined && C.f() === C
+        "#,
     );
     assert_true("class C{static{this.f=()=>super.x;}}Object.setPrototypeOf(C,{x:7});C.f()===7");
 }
@@ -35,20 +107,86 @@ fn this_super_and_new_target_use_the_synthetic_function_context() {
 #[test]
 fn direct_eval_observes_strictness_and_ordinary_static_function_arguments() {
     assert_true(
-        "let x=7;class B{static x=8;}class C extends B{static{this.x=eval('super.x');this.target=eval('new.target');this.args=eval('arguments.length');this.f=()=>eval('arguments.length');eval('var x=9;');this.outer=x;}}C.x===8 && C.target===undefined && C.args===0 && C.f()===0 && C.outer===7 && x===7",
+        r#"
+            let x = 7;
+            class B {
+                static x = 8;
+            }
+            class C extends B {
+                static {
+                    this.x = eval('super.x');
+                    this.target = eval('new.target');
+                    this.args = eval('arguments.length');
+                    this.f = () => eval('arguments.length');
+                    eval('var x=9;');
+                    this.outer = x;
+                }
+            }
+            C.x === 8 && C.target === undefined && C.args === 0 && C.f() === 0 && C.outer === 7 && x === 7
+        "#,
     );
     assert_true(
-        "class C{static{this.x=(function(x){return arguments[0];})(7);let caught=false;try{eval('super()');}catch(e){caught=e instanceof SyntaxError;}this.caught=caught;}}C.x===7 && C.caught",
+        r#"
+            class C {
+                static {
+                    this.x = (function(x) {
+                        return arguments[0];
+                    })(7);
+                    let caught = false;
+                    try {
+                        eval('super()');
+                    } catch (e) {
+                        caught = e instanceof SyntaxError;
+                    }
+                    this.caught = caught;
+                }
+            }
+            C.x === 7 && C.caught
+        "#,
     );
     assert_true(
-        "let await=7;class C{static{this.x=eval('await');this.y=(()=>await)();this.z=(()=>{let await=8;return await;})();}}C.x===7 && C.y===7 && C.z===8",
+        r#"
+            let await = 7;
+            class C {
+                static {
+                    this.x = eval('await');
+                    this.y = (() => await)();
+                    this.z = (() => {
+                        let await = 8;
+                        return await;
+                    })();
+                }
+            }
+            C.x === 7 && C.y === 7 && C.z === 8
+        "#,
     );
 }
 
 #[test]
 fn block_control_flow_is_local_and_normal_statement_values_are_discarded() {
     assert_true(
-        "class C{static{let n=0;label:for(let i=0;i<4;i++){if(i===1)continue;if(i===3)break label;n+=i;}try{throw 7;}catch(e){n+=e;}finally{n++;}this.n=n;123;}}C.n===10 && typeof C==='function'",
+        r#"
+            class C {
+                static {
+                    let n = 0;
+                    label: for (let i = 0; i < 4; i++) {
+                        if (i === 1) continue;
+                        if (i === 3) break label;
+                        n += i;
+                    }
+                    try {
+                        throw 7;
+                    } catch (e) {
+                        n += e;
+                    } finally {
+                        n++;
+                    }
+                    this.n = n;
+                    123;
+                }
+            }
+            C.n === 10 && typeof C === 'function'
+        "#,
     );
 }
 
@@ -58,9 +196,26 @@ fn arguments_labels_are_valid_in_static_blocks_and_field_initializer_arrows() {
     // and break/continue targets do not make class initialization contain one.
     for label in ["arguments", r"arg\u0075ments"] {
         assert_true(&format!(
-            "class C{{static{{let n=0;{label}:for(let i=0;i<4;i++){{\
-             if(i===1)continue {label};if(i===3)break {label};n+=i}}this.n=n}}\
-             x=(()=>{{{label}:{{break {label};}}return 7}})()}}C.n===2&&new C().x===7"
+            r#"
+                class C {{
+                    static {{
+                        let n = 0;
+                        {label}: for (let i = 0; i < 4; i++) {{
+                            if (i === 1) continue {label};
+                            if (i === 3) break {label};
+                            n += i
+                        }}
+                        this.n = n
+                    }}
+                    x = (() => {{
+                        {label}: {{
+                            break {label};
+                        }}
+                        return 7
+                    }})()
+                }}
+                C.n === 2 && new C().x === 7
+            "#
         ));
     }
 }
@@ -68,10 +223,49 @@ fn arguments_labels_are_valid_in_static_blocks_and_field_initializer_arrows() {
 #[test]
 fn thrown_blocks_preserve_completed_elements_and_the_internal_class_name() {
     assert_true(
-        "let saved,log='',caught=false;try{class C{static x=(log+='A',1);static{saved=()=>C;log+='B';throw 7;}static y=(log+='Y',2);static m(){return 3;}}}catch(e){caught=e===7;}let D=saved();caught && log==='AB' && D.x===1 && !Object.hasOwn(D,'y') && D.m()===3",
+        r#"
+            let saved, log = '',
+                caught = false;
+            try {
+                class C {
+                    static x = (log += 'A', 1);
+                    static {
+                        saved = () => C;
+                        log += 'B';
+                        throw 7;
+                    }
+                    static y = (log += 'Y', 2);
+                    static m() {
+                        return 3;
+                    }
+                }
+            } catch (e) {
+                caught = e === 7;
+            }
+            let D = saved();
+            caught && log === 'AB' && D.x === 1 && !Object.hasOwn(D, 'y') && D.m() === 3
+        "#,
     );
     assert_true(
-        "let outer,saved;try{outer=()=>C;class C{static{saved=()=>C;throw 7;}}}catch(e){}let caught=false;try{outer();}catch(e){caught=e instanceof ReferenceError;}caught && typeof saved()==='function'",
+        r#"
+            let outer, saved;
+            try {
+                outer = () => C;
+                class C {
+                    static {
+                        saved = () => C;
+                        throw 7;
+                    }
+                }
+            } catch (e) {}
+            let caught = false;
+            try {
+                outer();
+            } catch (e) {
+                caught = e instanceof ReferenceError;
+            }
+            caught && typeof saved() === 'function'
+        "#,
     );
     let mut realm = Realm::default();
     realm
@@ -106,7 +300,25 @@ fn class_names_remain_immutable_and_class_source_retains_static_blocks() {
 #[test]
 fn escaped_block_closures_keep_block_bindings_home_objects_and_this_alive() {
     let mut realm = Realm::default();
-    realm.eval("let f;(function(){class B{static v=7;}class C extends B{static{let x=1;f=()=>super.v+x+this.extra;this.extra=2;}}})();").unwrap();
+    realm
+        .eval(
+            r#"
+                let f;
+                (function() {
+                    class B {
+                        static v = 7;
+                    }
+                    class C extends B {
+                        static {
+                            let x = 1;
+                            f = () => super.v + x + this.extra;
+                            this.extra = 2;
+                        }
+                    }
+                })();
+            "#,
+        )
+        .unwrap();
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("f()"), Ok(Value::Number(10.0)));
     realm.eval("f=undefined").unwrap();
