@@ -14,18 +14,9 @@ fn tagged_template_syntax_snapshot() {
     );
 }
 
-#[test_case(
-    "tag`a`=1", Span::new(0, 6), "invalid assignment target";
-    "assignment"
-)]
-#[test_case(
-    "tag`a`++", Span::new(0, 6), "invalid update target";
-    "postfix_update"
-)]
-#[test_case(
-    "tag`${}`", Span::new(6, 8), "expected an expression";
-    "missing_substitution"
-)]
+#[test_case("tag`a`=1", Span::new(0, 6), "invalid assignment target"; "assignment")]
+#[test_case("tag`a`++", Span::new(0, 6), "invalid update target"; "postfix_update")]
+#[test_case("tag`${}`", Span::new(6, 8), "expected an expression"; "missing_substitution")]
 #[test_case(
     "a++`x`",
     Span::new(3, 6),

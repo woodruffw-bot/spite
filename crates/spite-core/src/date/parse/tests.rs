@@ -412,18 +412,9 @@ fn utc_range_checks_follow_offset_adjustment_at_both_endpoints() {
     }
 }
 
-#[test_case(
-    "1970T00:00";
-    "epoch_time_without_zone"
-)]
-#[test_case(
-    "2000-02-29T12:34:56.789";
-    "leap_day_with_fractional_seconds"
-)]
-#[test_case(
-    "+275760-09-13T00:00";
-    "expanded_year_without_zone"
-)]
+#[test_case("1970T00:00"; "epoch_time_without_zone")]
+#[test_case("2000-02-29T12:34:56.789"; "leap_day_with_fractional_seconds")]
+#[test_case("+275760-09-13T00:00"; "expanded_year_without_zone")]
 fn local_forms_require_time_zone_resolution(source: &str) {
     assert_eq!(parsed(source).utc_time_value(), None);
 }

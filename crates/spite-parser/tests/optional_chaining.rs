@@ -9,18 +9,9 @@ fn optional_chain_syntax_snapshot() {
     insta::assert_debug_snapshot!(parse_script("obj?.a[key]?.(x,...ys).b; (obj?.a)(x); delete obj?.[key]; new (obj?.Ctor)(x); true?.30:false;").unwrap());
 }
 
-#[test_case(
-    "a?.b=1", Span::new(0, 4), "invalid assignment target";
-    "assignment"
-)]
-#[test_case(
-    "a?.b++", Span::new(0, 4), "invalid update target";
-    "postfix_update"
-)]
-#[test_case(
-    "--a?.b", Span::new(2, 6), "invalid update target";
-    "prefix_update"
-)]
+#[test_case("a?.b=1", Span::new(0, 4), "invalid assignment target"; "assignment")]
+#[test_case("a?.b++", Span::new(0, 4), "invalid update target"; "postfix_update")]
+#[test_case("--a?.b", Span::new(2, 6), "invalid update target"; "prefix_update")]
 #[test_case(
     "new a?.b()",
     Span::new(4, 8),
