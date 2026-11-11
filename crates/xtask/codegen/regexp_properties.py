@@ -11,7 +11,7 @@ SOURCES = {
     "PropertyAliases.txt": "83b8df695f9da543dba02b0be2b8bd72f0b52836ad264be113c6d285021ef025",
     "PropertyValueAliases.txt": "06c4c8eaf7b0bf34abe73b113da1215bd784ac254d4c223600b90267caa4bbbd",
 }
-OUTPUT = Path(__file__).resolve().parents[3] / "crates/spite-parser/src/regexp/property_data.rs"
+OUTPUT = Path(__file__).resolve().parents[3] / "crates/spite-regexp/src/pattern/property_data.rs"
 
 # ECMA-262 edition 17's table-binary-unicode-properties is an explicit whitelist.
 # Do not import other UCD aliases or properties. In particular, WSpace is excluded.

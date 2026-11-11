@@ -26,11 +26,14 @@ extensions and provide no evidence of edition-17 conformance.
 | --- | --- |
 | `spite-bigint` | Arbitrary-precision integer arithmetic and numeric conversion |
 | `spite-heap` | Generational handles, roots, weak edges and tracing |
-| `spite-core` | Source locations, diagnostics, UTF-16 strings, symbols, Unicode and shared language algorithms |
+| `spite-core` | Source locations, diagnostics, UTF-16 strings, symbols and shared language algorithms |
+| `spite-unicode` | Pinned character properties, casing, normalization and character folding |
+| `spite-regexp` | Pattern validation, metadata, UTF-16 matching, escaping and replacement syntax |
 | `spite-parser` | Lexical goals, syntax trees, early errors and JSON grammar |
 | `spite-runtime` | Values, environments, objects, built-ins, evaluation and host jobs |
 | `spite` | Embedding facade and command-line host |
 | `spite-test262` | Test metadata, harness loading, execution modes and outcome reporting |
+| `xtask` | Development-only integrity checks and data maintenance |
 
 Use separate crates for independently reusable abstractions. Keep code that
 shares object identity, environments and execution state together in Runtime.
@@ -130,7 +133,8 @@ view witnesses according to the relevant internal method.
 
 ## Regular expressions
 
-The regress backend matches the complete original UTF-16 input. Ordinary mode
+`spite-regexp` owns Pattern validation, capture metadata and the regress adapter.
+The backend matches the complete original UTF-16 input. Ordinary mode
 uses code units; Unicode modes decode valid pairs and preserve lone surrogates.
 The adapter retains original source, flags, capture ranges and undefined captures.
 It never slices input to simulate anchors, boundaries or lookaround.

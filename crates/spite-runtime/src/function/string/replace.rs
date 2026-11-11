@@ -1,7 +1,8 @@
 //! String replace/replaceAll (22.1.3.19–20) and uncaptured GetSubstitution.
 
 use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
-use spite_core::{JsString, ReplacementPart, Span, WellKnownSymbol, replacement_parts};
+use spite_core::{JsString, Span, WellKnownSymbol};
+use spite_regexp::{ReplacementPart, replacement_parts};
 
 enum Replacement {
     Function(Value),

@@ -12,7 +12,7 @@ SOURCES = {
     "DerivedCoreProperties.txt": "09c928886a178fcafd93c29e4bd59073a058e5a100b716d425cb563ab50f68c9",
     "CaseFolding.txt": "a004797658a457bec4dc11683e39f69249ea3b595b752dbea6721c4c9f587b0d",
 }
-OUTPUT = Path(__file__).resolve().parents[3] / "crates/spite-core/src/case_data.rs"
+OUTPUT = Path(__file__).resolve().parents[3] / "crates/spite-unicode/src/case_data.rs"
 LEGACY_OUTPUT = OUTPUT.parents[3] / "vendor/regress/src/legacy_case_expansions.rs"
 
 

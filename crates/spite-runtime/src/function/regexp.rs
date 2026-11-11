@@ -10,7 +10,8 @@ use super::{Builtin, Callable};
 use crate::iterator_count::Counter;
 use crate::object::{DataDescriptor, DescriptorKind, PropertyDescriptor};
 use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
-use spite_core::{JsString, Span, WellKnownSymbol, regexp_escape_units};
+use spite_core::{JsString, Span, WellKnownSymbol};
+use spite_regexp::regexp_escape_units;
 
 #[derive(Clone, Copy, Debug)]
 pub(crate) enum Member {

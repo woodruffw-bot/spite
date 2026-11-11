@@ -1,6 +1,6 @@
 # Unicode identifier, case, normalization, and RegExp property data
 
-`crates/spite-core/src/unicode_data.rs` contains ID_Start and ID_Continue ranges
+`crates/spite-unicode/src/unicode_data.rs` contains ID_Start and ID_Continue ranges
 from Unicode 18.0.0. The source URL and SHA-256 are recorded in that file and in
 `cargo xtask generate unicode`. The Unicode license is included here.
 
@@ -9,7 +9,7 @@ ECMA-262 edition 17 refers to the latest Unicode standard in sections 2, 3, and
 The version is explicit so Rust toolchain updates cannot change identifier syntax
 or String transforms.
 
-`crates/spite-core/src/case_data.rs` contains full lower/uppercase mappings and
+`crates/spite-unicode/src/case_data.rs` contains full lower/uppercase mappings and
 Cased/Case_Ignorable ranges used for contextual final sigma, plus simple/common
 case folding for RegExp. Its generator,
 `cargo xtask generate case-mappings`, pins UnicodeData.txt, SpecialCasing.txt,
@@ -25,7 +25,7 @@ The CaseFolding.txt source is https://www.unicode.org/Public/18.0.0/ucd/CaseFold
 and its SHA-256 is
 `a004797658a457bec4dc11683e39f69249ea3b595b752dbea6721c4c9f587b0d`.
 
-`crates/spite-core/src/normalization_data.rs` contains decomposition mappings,
+`crates/spite-unicode/src/normalization_data.rs` contains decomposition mappings,
 combining classes, and canonical compositions after full composition exclusions.
 `cargo xtask generate normalization` pins UnicodeData.txt and
 DerivedNormalizationProps.txt and validates the decomposition graph before emitting
@@ -42,7 +42,7 @@ The generator merges adjacent ranges without changing membership. It verifies th
 source digest before reading properties. Regeneration requires Python's standard
 library and is not part of a Rust build.
 
-`crates/spite-parser/src/regexp/property_data.rs` contains exact Unicode 18
+`crates/spite-regexp/src/pattern/property_data.rs` contains exact Unicode 18
 general-category and script value aliases for RegExp property early errors.
 `cargo xtask generate regexp-properties` pins PropertyAliases.txt and
 PropertyValueAliases.txt by SHA-256 and verifies the edition-17 binary property

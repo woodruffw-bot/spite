@@ -1,7 +1,8 @@
 //! EscapeRegExpPattern preserves the shared Pattern grammar and literal boundary.
 
-use spite_core::{DiagnosticKind, JsString, Span, regexp_pattern_source_units};
+use spite_core::{DiagnosticKind, JsString, Span};
 use spite_parser::{parse_script_utf16, validate_regexp_pattern};
+use spite_regexp::regexp_pattern_source_units;
 
 #[test]
 fn serialized_constructor_patterns_validate_with_the_same_capture_count_as_literals() {

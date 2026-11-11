@@ -1,6 +1,6 @@
 //! Allocation-free GetSubstitution template scanning (22.1.3.19.1).
 
-use crate::JsString;
+use spite_core::JsString;
 
 /// One literal or reference in an ECMAScript replacement template.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]

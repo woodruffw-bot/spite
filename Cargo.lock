@@ -397,8 +397,8 @@ name = "spite-core"
 version = "0.1.0"
 dependencies = [
  "insta",
- "regress",
  "spite-bigint",
+ "spite-unicode",
 ]
 
 [[package]]
@@ -411,6 +411,17 @@ version = "0.1.0"
 dependencies = [
  "insta",
  "spite-core",
+ "spite-regexp",
+]
+
+[[package]]
+name = "spite-regexp"
+version = "0.1.0"
+dependencies = [
+ "insta",
+ "regress",
+ "spite-core",
+ "spite-unicode",
 ]
 
 [[package]]
@@ -424,6 +435,7 @@ dependencies = [
  "spite-core",
  "spite-heap",
  "spite-parser",
+ "spite-regexp",
 ]
 
 [[package]]
@@ -434,6 +446,13 @@ dependencies = [
  "spite-core",
  "spite-parser",
  "spite-runtime",
+]
+
+[[package]]
+name = "spite-unicode"
+version = "0.1.0"
+dependencies = [
+ "insta",
 ]
 
 [[package]]

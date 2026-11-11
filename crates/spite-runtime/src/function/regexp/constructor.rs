@@ -2,8 +2,9 @@
 
 use crate::object::{DataDescriptor, RegExpData, RegExpMatcher, RegExpNamedGroup};
 use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
-use spite_core::{DiagnosticKind, JsString, RegExpProgram, Span};
+use spite_core::{DiagnosticKind, JsString, Span};
 use spite_parser::parse_regexp_pattern;
+use spite_regexp::RegExpProgram;
 use std::collections::HashMap;
 use std::sync::Arc;
 

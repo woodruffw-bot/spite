@@ -1,5 +1,5 @@
 ---
-source: crates/spite-core/src/regexp_canonicalize.rs
+source: crates/spite-unicode/src/regexp_canonicalize.rs
 expression: "rows.join(\"\\n\")"
 ---
 000000  exact=000000  i=000000  iu/iv=000000

@@ -1,5 +1,5 @@
 ---
-source: crates/spite-core/src/replacement.rs
+source: crates/spite-regexp/src/replacement.rs
 expression: snapshot
 ---
 captures=0 template="" => <empty>

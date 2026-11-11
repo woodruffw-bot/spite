@@ -1,5 +1,5 @@
 ---
-source: crates/spite-core/src/regexp_escape.rs
+source: crates/spite-regexp/src/escape.rs
 expression: table
 ---
 00 leading="\u0000" later="_\u0000"

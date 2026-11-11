@@ -10,15 +10,28 @@ pub(crate) fn update(root: &Path, check: bool) -> Result<()> {
         ("spite-parser", "", ""),
         ("spite-runtime", "cases", "mod common;\n\n"),
     ] {
-        let tests = root.join("crates").join(package).join("tests");
+        let crate_root = root.join("crates").join(package);
+        verify_target(&crate_root, package)?;
+        let tests = crate_root.join("tests");
         let mut names = Vec::new();
         for entry in fs::read_dir(tests.join(subdirectory))? {
             let entry = entry?;
             let path = entry.path();
-            if path.extension().is_some_and(|extension| extension == "rs")
-                && path.file_stem().is_some_and(|stem| stem != "integration")
+            let kind = entry.file_type()?;
+            if kind.is_symlink()
+                || (kind.is_dir()
+                    && !matches!(entry.file_name().to_str(), Some("fixtures" | "snapshots")))
             {
-                if !entry.file_type()?.is_file() {
+                return Err(invalid(format!(
+                    "keep Rust case files flat and regular: {}",
+                    path.display()
+                ))
+                .into());
+            }
+            let is_manifest = subdirectory.is_empty()
+                && path.file_stem().is_some_and(|stem| stem == "integration");
+            if path.extension().is_some_and(|extension| extension == "rs") && !is_manifest {
+                if !kind.is_file() {
                     return Err(invalid(format!(
                         "case must be a regular file: {}",
                         path.display()
@@ -68,6 +81,44 @@ pub(crate) fn update(root: &Path, check: bool) -> Result<()> {
         } else {
             fs::write(destination, source)?;
         }
+    }
+    Ok(())
+}
+
+fn verify_target(crate_root: &Path, package: &str) -> Result<()> {
+    let manifest: toml::Value =
+        toml::from_str(&fs::read_to_string(crate_root.join("Cargo.toml"))?)?;
+    let automatic = manifest
+        .get("package")
+        .and_then(|package| package.get("autotests"));
+    let targets = manifest.get("test").and_then(toml::Value::as_array);
+    let valid = if package == "spite-parser" {
+        let target = targets.and_then(|targets| match targets.as_slice() {
+            [target] => target.as_table(),
+            _ => None,
+        });
+        automatic.and_then(toml::Value::as_bool) == Some(false)
+            && target.is_some_and(|target| {
+                target.get("name").and_then(toml::Value::as_str) == Some("parser_integration")
+                    && target.get("path").and_then(toml::Value::as_str)
+                        == Some("tests/integration.rs")
+                    && ["harness", "test"].iter().all(|key| {
+                        target
+                            .get(*key)
+                            .is_none_or(|value| value.as_bool() == Some(true))
+                    })
+                    && target
+                        .keys()
+                        .all(|key| matches!(key.as_str(), "name" | "path" | "harness" | "test"))
+            })
+    } else {
+        automatic.is_none_or(|value| value.as_bool() == Some(true)) && targets.is_none()
+    };
+    if !valid {
+        return Err(invalid(format!(
+            "{package}: grouped integration target must run by default"
+        ))
+        .into());
     }
     Ok(())
 }

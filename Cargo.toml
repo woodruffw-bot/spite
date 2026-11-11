@@ -11,19 +11,37 @@ repository = "https://github.com/woodruffw-bot/spite"
 publish = false
 
 [workspace.dependencies]
-regress = { version = "=0.12.0", default-features = false, features = ["std", "utf16", "prohibit-unsafe", "index-positions"] }
-jiff = { version = "0.2.37", default-features = false, features = ["std", "tz-system", "tzdb-zoneinfo", "tzdb-concatenated", "tzdb-bundle-always"] }
 jiff-tzdb = "=0.1.8"
 spite-bigint = { path = "crates/spite-bigint" }
 spite-core = { path = "crates/spite-core" }
 spite-heap = { path = "crates/spite-heap" }
 spite-parser = { path = "crates/spite-parser" }
+spite-regexp = { path = "crates/spite-regexp" }
 spite-runtime = { path = "crates/spite-runtime" }
+spite-unicode = { path = "crates/spite-unicode" }
+
+# Test and maintenance dependencies stay outside the engine dependency graph.
 insta = { version = "1.43", default-features = false }
 serde_json = "1.0"
 sha1 = "0.10"
 sha2 = "0.10"
 toml = "0.9"
+
+[workspace.dependencies.jiff]
+version = "0.2.37"
+default-features = false
+features = [
+    "std",
+    "tz-system",
+    "tzdb-zoneinfo",
+    "tzdb-concatenated",
+    "tzdb-bundle-always",
+]
+
+[workspace.dependencies.regress]
+version = "=0.12.0"
+default-features = false
+features = ["std", "utf16", "prohibit-unsafe", "index-positions"]
 
 [workspace.lints.rust]
 unsafe_code = "forbid"
@@ -51,6 +69,12 @@ debug-assertions = true
 overflow-checks = true
 
 [profile.test.package.spite-core]
+opt-level = 1
+
+[profile.test.package.spite-unicode]
+opt-level = 1
+
+[profile.test.package.spite-regexp]
 opt-level = 1
 
 # Optimize exhaustive interpreter tests while retaining debug and overflow checks.

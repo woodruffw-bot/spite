@@ -8,7 +8,7 @@ import urllib.request
 VERSION = "18.0.0"
 URL = f"https://www.unicode.org/Public/{VERSION}/ucd/DerivedCoreProperties.txt"
 SHA256 = "09c928886a178fcafd93c29e4bd59073a058e5a100b716d425cb563ab50f68c9"
-OUTPUT = Path(__file__).resolve().parents[3] / "crates/spite-core/src/unicode_data.rs"
+OUTPUT = Path(__file__).resolve().parents[3] / "crates/spite-unicode/src/unicode_data.rs"
 
 
 def generate(data):

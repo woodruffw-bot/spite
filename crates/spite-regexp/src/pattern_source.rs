@@ -1,6 +1,6 @@
 //! EscapeRegExpPattern (22.2.6.11.1, edition 17).
 
-use crate::JsString;
+use spite_core::JsString;
 
 /// Streams a validated Pattern's UTF-16 source for use between literal delimiters.
 ///

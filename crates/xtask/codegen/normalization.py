@@ -11,7 +11,7 @@ SOURCES = {
     "DerivedNormalizationProps.txt": "98ac7f67d985fe781e317f6182e885e94cabb0c314769e6dd73e48b226931ccd",
 }
 ROOT = Path(__file__).resolve().parents[3]
-OUTPUT = ROOT / "crates/spite-core/src/normalization_data.rs"
+OUTPUT = ROOT / "crates/spite-unicode/src/normalization_data.rs"
 TEST_FILE = ROOT / "crates/spite-runtime/tests/fixtures/NormalizationTest-18.0.0.txt"
 TEST_SHA256 = "25a50d816764b04abfb4a646d3eb2b2a803284c3873d9a06757b94fe4513dde3"
 

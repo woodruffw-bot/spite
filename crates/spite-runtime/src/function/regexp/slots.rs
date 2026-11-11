@@ -3,7 +3,8 @@
 use super::Member;
 use crate::object::RegExpData;
 use crate::{Error, ExceptionKind, Realm, Value};
-use spite_core::{JsString, Span, regexp_pattern_source_units};
+use spite_core::{JsString, Span};
+use spite_regexp::regexp_pattern_source_units;
 
 impl Realm {
     #[inline(never)]

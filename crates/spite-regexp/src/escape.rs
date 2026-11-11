@@ -1,6 +1,7 @@
 //! RegExp.escape and EncodeForRegExpEscape (22.2.5.1, edition 17).
 
-use crate::{JsString, is_line_terminator, is_whitespace};
+use spite_core::JsString;
+use spite_unicode::{is_line_terminator, is_whitespace};
 
 /// Streams the UTF-16 result of RegExp.escape for a String argument.
 ///

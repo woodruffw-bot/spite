@@ -1,5 +1,5 @@
 ---
-source: crates/spite-core/src/regexp_pattern_source.rs
+source: crates/spite-regexp/src/pattern_source.rs
 expression: table
 ---
 "/" -> "\u005c/"

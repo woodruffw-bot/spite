@@ -2,8 +2,9 @@
 
 use super::store::Budget;
 use super::{Error, Objects};
-use spite_core::{JsString, RegExpProgram, RegExpProgramResult};
+use spite_core::JsString;
 use spite_heap::Handle;
+use spite_regexp::{RegExpProgram, RegExpProgramResult};
 use std::ops::Range;
 use std::sync::Arc;
 

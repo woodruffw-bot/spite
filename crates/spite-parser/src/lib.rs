@@ -22,7 +22,7 @@ mod object;
 mod optional_chain;
 mod prefix;
 mod private;
-mod regexp;
+use spite_regexp as regexp;
 mod source;
 mod statement;
 mod template;

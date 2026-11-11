@@ -7,12 +7,13 @@ repository.workspace = true
 publish.workspace = true
 
 [dependencies]
-jiff.workspace = true
 jiff-tzdb.workspace = true
+jiff.workspace = true
 spite-bigint.workspace = true
 spite-core.workspace = true
 spite-heap.workspace = true
 spite-parser.workspace = true
+spite-regexp.workspace = true
 
 [dev-dependencies]
 insta.workspace = true

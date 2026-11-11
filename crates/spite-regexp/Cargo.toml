@@ -1,0 +1,18 @@
+[package]
+name = "spite-regexp"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+spite-core.workspace = true
+spite-unicode.workspace = true
+regress.workspace = true
+
+[dev-dependencies]
+insta.workspace = true
+
+[lints]
+workspace = true

@@ -9,6 +9,7 @@ autotests = false
 
 [dependencies]
 spite-core.workspace = true
+spite-regexp.workspace = true
 
 [dev-dependencies]
 insta.workspace = true

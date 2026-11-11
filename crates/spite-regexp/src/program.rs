@@ -1,6 +1,6 @@
 //! Shared UTF-16 adapter for the regress ECMAScript matching engine.
 
-use crate::JsString;
+use spite_core::JsString;
 use std::ops::Range;
 use std::sync::Arc;
 
@@ -109,5 +109,5 @@ impl RegExpProgram {
 }
 
 #[cfg(test)]
-#[path = "regexp_program_tests.rs"]
+#[path = "program_tests.rs"]
 mod tests;
