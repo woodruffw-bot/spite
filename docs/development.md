@@ -73,14 +73,12 @@ Generators live in [crates/xtask/codegen](../crates/xtask/codegen/README.md).
 Run them through Cargo:
 
 ```sh
-cargo xtask generate unicode --check
-cargo xtask generate number-radix --check
-cargo xtask generate number-sum --check
 cargo xtask generate all --check
 ```
 
-The generators verify pinned source identities before comparing output.
-Unicode inputs and licenses are described in the
+Replace `all` with a generator name, such as `unicode`, to run a focused check.
+Unicode generators verify their pinned inputs before comparing output; sources
+and licenses are described in the
 [Unicode data notes](../third-party/unicode/README.md). Numeric fixtures use
 independent reference calculations. Capturing RegExp results from another engine
 is an explicit maintenance step; see the generator guide for the command and

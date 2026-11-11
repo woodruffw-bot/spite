@@ -23,14 +23,8 @@ Each invocation creates a fresh realm and prints the script's completion value.
 Strings are quoted, with escapes that preserve lone surrogates. Input must be
 UTF-8. There is no `console` or `process` global.
 
-Before printing the result, the runner drains queued Promise jobs:
-
-```sh
-./target/release/spite --eval 'Promise.resolve().then(() => { globalThis.answer = 42; }); "done"'
-```
-
-This prints `"done"` after the callback runs. An idle pending Promise does not keep
-a script running.
+Before printing the result, the runner drains queued Promise jobs. An idle pending
+Promise does not keep a script running.
 
 ## Modules and imports
 
@@ -65,7 +59,7 @@ import { answer } from "./answer.js";
 if (answer !== 42) throw new Error("unexpected answer");
 ```
 
-Run `spite --module main.js` to load and evaluate both modules.
+Run `./target/release/spite --module main.js` to load and evaluate both modules.
 
 ### JSON modules
 

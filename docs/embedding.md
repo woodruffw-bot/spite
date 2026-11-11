@@ -124,8 +124,8 @@ dropped. Cloning the inner `Value` alone does not retain that root. The
 
 Call `clear_kept_objects` only after a whole synchronous host sequence, including
 its callbacks, has finished. This releases temporary roots created by
-`WeakRef.deref`; it does not release explicit root tokens. Collection can queue
-finalization work, which the host may later run with
+`WeakRef.prototype.deref`; it does not release explicit root tokens. Collection
+can queue finalization work, which the host may later run with
 `run_finalization_cleanup_job`.
 
 ## Resource limits
