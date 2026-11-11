@@ -151,7 +151,7 @@ parsed separately before evaluation, use the parser's source-limit API as well.
 
 Native stack guards and platform capacity checks always apply. The runtime
 allows up to 32 active call/construct frames and requires at least a 2 MiB native
-stack. See [native constraints](coverage.md#native-constraints) for the parser
+stack. See [native constraints](compatibility.md#native-constraints) for the parser
 guards and collection constraints.
 
 ## Modules

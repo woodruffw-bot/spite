@@ -1,63 +1,80 @@
-//! A safe Rust ECMAScript parser and interpreter under development.
+//! A JavaScript parser and interpreter targeting ECMAScript 2026.
 //!
-//! Embedders must provide at least a 2 MiB native thread stack. The cleanup
-//! example below shows how to create an explicit host thread with that stack.
+//! This facade re-exports the parser, runtime, and their supporting types.
+//! A [`Realm`] retains JavaScript state between evaluations. Resource quotas
+//! are optional; see [`Limits`]. Language exceptions and host failures have
+//! distinct [`Error`] variants.
 //!
-//! # Example
+//! Embedders must provide a native thread stack of at least 2 MiB. The
+//! [embedding guide](https://github.com/woodruffw-bot/spite/blob/main/docs/embedding.md)
+//! covers job scheduling, rooting, collection, and module loading.
+//!
+//! # Evaluate JavaScript
 //!
 //! ```
 //! use spite::{Realm, Value};
-//!
-//! let mut realm = Realm::default();
-//! assert_eq!(realm.eval("let x = 6; x * 7").unwrap(), Value::Number(42.0));
-//! assert_eq!(realm.eval("x = x + 1; x").unwrap(), Value::Number(7.0));
-//! ```
-//!
-//! # Lossless UTF-16 source
-//!
-//! A host can parse source containing an unpaired surrogate and evaluate the
-//! validated Script through the same Realm entry point.
-//!
-//! ```
-//! use spite::{JsString, Realm, Value, parse_module_utf16_with_source_limit,
-//!             parse_script_utf16, parse_script_utf16_with_source_limit};
-//!
-//! let source = JsString::from_code_units(vec![0x22, 0xd800, 0x22]);
-//! let script = parse_script_utf16_with_source_limit(&source, 5).unwrap();
-//! assert_eq!(script, parse_script_utf16(&source).unwrap());
-//! assert!(parse_module_utf16_with_source_limit(&source, 5).unwrap().body().is_strict());
-//! assert_eq!(Realm::default().evaluate(&script).unwrap(),
-//!            Value::String(JsString::from([0xd800])));
-//! ```
-//!
-//! # Explicit cleanup turns
-//!
-//! The host ends its synchronous sequence, collects, and chooses when to run a
-//! queued FinalizationRegistry cleanup job.
-//!
-//! ```
-//! use spite::{FinalizationCleanupOutcome, Realm, Value};
 //!
 //! std::thread::Builder::new()
 //!     .stack_size(2 * 1024 * 1024)
 //!     .spawn(|| {
 //!         let mut realm = Realm::default();
-//!         realm.eval("let finalized=0, registry=new FinalizationRegistry(v=>finalized=v); registry.register({},7)").unwrap();
-//!         realm.clear_kept_objects().unwrap();
-//!         realm.collect(usize::MAX).unwrap();
-//!         assert!(matches!(realm.run_finalization_cleanup_job().unwrap(),
-//!                          FinalizationCleanupOutcome::Completed));
-//!         assert_eq!(realm.eval("finalized").unwrap(), Value::Number(7.0));
-//!         assert!(matches!(realm.run_finalization_cleanup_job().unwrap(),
-//!                          FinalizationCleanupOutcome::NoJob));
+//!         realm.eval("let answer = 40").expect("initialize answer");
+//!         let value = realm.eval("answer += 2").expect("evaluate expression");
+//!         assert_eq!(value, Value::Number(42.0));
 //!     })
-//!     .unwrap()
+//!     .expect("create interpreter thread")
 //!     .join()
-//!     .unwrap();
+//!     .expect("interpreter thread panicked");
 //! ```
 //!
-//! Implementation status, conformance evidence and constraints are documented in the
-//! repository. Unsupported features are not treated as JavaScript exceptions.
+//! # Preserve UTF-16 source
+//!
+//! JavaScript strings can contain unpaired surrogates, which Rust strings cannot
+//! represent. Parse a [`JsString`] directly to preserve those code units:
+//!
+//! ```
+//! use spite::{JsString, Realm, Value, parse_script_utf16};
+//!
+//! # std::thread::Builder::new().stack_size(2 * 1024 * 1024).spawn(|| {
+//! // A string literal containing one unpaired surrogate.
+//! let source = JsString::from_code_units(vec![0x0022, 0xd800, 0x0022]);
+//! let script = parse_script_utf16(&source).expect("parse UTF-16 source");
+//! let value = Realm::default().evaluate(&script).expect("evaluate script");
+//! assert_eq!(value, Value::String(JsString::from([0xd800])));
+//! # }).unwrap().join().unwrap();
+//! ```
+//!
+//! # Run finalization work
+//!
+//! Collection and finalization are explicit host operations. End the synchronous
+//! host sequence, collect unreachable objects, then run a queued cleanup job:
+//!
+//! ```
+//! use spite::{FinalizationCleanupOutcome, Realm, Value};
+//!
+//! # std::thread::Builder::new().stack_size(2 * 1024 * 1024).spawn(|| {
+//! let mut realm = Realm::default();
+//! realm
+//!     .eval(
+//!         r#"
+//!         let finalized = 0;
+//!         let registry = new FinalizationRegistry(value => { finalized = value; });
+//!         registry.register({}, 7);
+//!         "#,
+//!     )
+//!     .expect("register finalization callback");
+//!
+//! realm.clear_kept_objects().expect("finish host sequence");
+//! realm.collect(usize::MAX).expect("collect garbage");
+//!
+//! let outcome = realm.run_finalization_cleanup_job().expect("run cleanup job");
+//! assert!(matches!(outcome, FinalizationCleanupOutcome::Completed));
+//! assert_eq!(realm.eval("finalized").unwrap(), Value::Number(7.0));
+//! # }).unwrap().join().unwrap();
+//! ```
+//!
+//! Before collecting, retain any object-valued results with [`Realm::root_value`].
+//! Cloning a [`Value`] alone does not register a root.
 
 pub use spite_core::{Diagnostic, DiagnosticKind, JsString, Span};
 pub use spite_parser::{

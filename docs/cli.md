@@ -126,7 +126,7 @@ readers stop after at most one byte beyond the limit. Sizes use UTF-8 encoding;
 an unpaired surrogate in generated source counts as three bytes.
 
 Native stack and platform capacity checks remain active with no quotas selected.
-See [native constraints](coverage.md#native-constraints).
+See [native constraints](compatibility.md#native-constraints).
 
 ## Diagnostics and exit codes
 

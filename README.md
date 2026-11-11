@@ -6,8 +6,9 @@ The language target is [ECMAScript 2026 (ECMA-262, 17th edition)](https://262.ec
 
 The runtime supplies ECMAScript built-ins. Browser APIs, Node.js APIs such as
 `console` and `process`, and internationalization APIs from ECMA-402 are outside
-its scope. See [compatibility](docs/coverage.md) for host choices, native resource
-constraints, and conformance evidence. All workspace crates forbid unsafe Rust.
+its scope. See [compatibility](docs/compatibility.md) for host choices, native
+resource constraints, and conformance evidence. All workspace crates forbid unsafe
+Rust.
 
 ## Run JavaScript
 
@@ -64,7 +65,7 @@ tests. See the [development guide](docs/development.md) for setup and focused ch
 | --- | --- |
 | [CLI](docs/cli.md) | Run scripts and modules from the command line |
 | [Embedding](docs/embedding.md) | Use the Rust API and manage a realm |
-| [Compatibility](docs/coverage.md) | Language scope, host choices, and constraints |
+| [Compatibility](docs/compatibility.md) | Language scope, host choices, and constraints |
 | [Architecture](docs/design.md) | Crate boundaries and interpreter design |
 | [Development](docs/development.md) | Build, test, and maintain generated data |
 | [Test262](tests/test262/README.md) | Corpus selection and conformance testing |

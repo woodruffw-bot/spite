@@ -64,5 +64,5 @@ independently of incompatible originals. Resource-stress records retain their
 nonpassing outcomes and external diagnostic conditions. A scope partition is
 not a conformance percentage.
 
-See [coverage](../../docs/coverage.md) for implementation limits and
-[the specification review](../../docs/spec-review.md) for the target's qualifications.
+See [compatibility](../../docs/compatibility.md) for host choices, implementation
+constraints, and specification interpretations.
