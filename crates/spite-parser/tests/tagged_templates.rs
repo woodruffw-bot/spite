@@ -14,11 +14,30 @@ fn tagged_template_syntax_snapshot() {
     );
 }
 
-#[test_case("tag`a`=1", Span::new(0, 6), "invalid assignment target"; "assignment")]
-#[test_case("tag`a`++", Span::new(0, 6), "invalid update target"; "postfix_update")]
-#[test_case("tag`${}`", Span::new(6, 8), "expected an expression"; "missing_substitution")]
-#[test_case("a++`x`", Span::new(3, 6), "tagged template requires a left-hand-side expression"; "update_as_tag")]
-#[test_case("'use strict'; tag`${arguments=1}`", Span::new(20, 31), "invalid assignment in strict mode"; "strict_assignment_in_substitution")]
+#[test_case(
+    "tag`a`=1", Span::new(0, 6), "invalid assignment target";
+    "assignment"
+)]
+#[test_case(
+    "tag`a`++", Span::new(0, 6), "invalid update target";
+    "postfix_update"
+)]
+#[test_case(
+    "tag`${}`", Span::new(6, 8), "expected an expression";
+    "missing_substitution"
+)]
+#[test_case(
+    "a++`x`",
+    Span::new(3, 6),
+    "tagged template requires a left-hand-side expression";
+    "update_as_tag"
+)]
+#[test_case(
+    "'use strict'; tag`${arguments=1}`",
+    Span::new(20, 31),
+    "invalid assignment in strict mode";
+    "strict_assignment_in_substitution"
+)]
 fn invalid_tagged_template_syntax(source: &str, expected_span: Span, expected_message: &str) {
     let diagnostic = parse_script(source).expect_err("invalid syntax must fail parsing");
     assert_eq!(diagnostic.kind, DiagnosticKind::Syntax);

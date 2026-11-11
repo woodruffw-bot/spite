@@ -99,15 +99,42 @@ fn construction_requires_new_and_an_array_buffer_before_offset_conversion() {
     );
 }
 
-#[test_case("undefined", 0.0; "undefined_defaults_to_zero")]
-#[test_case("null", 0.0; "null")]
-#[test_case("false", 0.0; "false")]
-#[test_case("true", 1.0; "true")]
-#[test_case("NaN", 0.0; "nan")]
-#[test_case("-0", 0.0; "negative_zero_becomes_positive_zero")]
-#[test_case("-0.9", 0.0; "negative_fraction_truncates_to_zero")]
-#[test_case("2.9", 2.0; "positive_fraction_truncates")]
-#[test_case("'3'", 3.0; "numeric_string")]
+#[test_case(
+    "undefined", 0.0;
+    "undefined_defaults_to_zero"
+)]
+#[test_case(
+    "null", 0.0;
+    "null"
+)]
+#[test_case(
+    "false", 0.0;
+    "false"
+)]
+#[test_case(
+    "true", 1.0;
+    "true"
+)]
+#[test_case(
+    "NaN", 0.0;
+    "nan"
+)]
+#[test_case(
+    "-0", 0.0;
+    "negative_zero_becomes_positive_zero"
+)]
+#[test_case(
+    "-0.9", 0.0;
+    "negative_fraction_truncates_to_zero"
+)]
+#[test_case(
+    "2.9", 2.0;
+    "positive_fraction_truncates"
+)]
+#[test_case(
+    "'3'", 3.0;
+    "numeric_string"
+)]
 fn constructor_converts_the_byte_offset(input: &str, expected: f64) {
     let mut realm = Realm::default();
     realm
@@ -124,13 +151,34 @@ fn constructor_converts_the_byte_offset(input: &str, expected: f64) {
     assert_value(&mut realm, "view.buffer === buffer", Value::Boolean(true));
 }
 
-#[test_case("null", 0.0; "null")]
-#[test_case("false", 0.0; "false")]
-#[test_case("true", 1.0; "true")]
-#[test_case("NaN", 0.0; "nan")]
-#[test_case("-0.9", 0.0; "negative_fraction_truncates_to_zero")]
-#[test_case("2.9", 2.0; "positive_fraction_truncates")]
-#[test_case("'3'", 3.0; "numeric_string")]
+#[test_case(
+    "null", 0.0;
+    "null"
+)]
+#[test_case(
+    "false", 0.0;
+    "false"
+)]
+#[test_case(
+    "true", 1.0;
+    "true"
+)]
+#[test_case(
+    "NaN", 0.0;
+    "nan"
+)]
+#[test_case(
+    "-0.9", 0.0;
+    "negative_fraction_truncates_to_zero"
+)]
+#[test_case(
+    "2.9", 2.0;
+    "positive_fraction_truncates"
+)]
+#[test_case(
+    "'3'", 3.0;
+    "numeric_string"
+)]
 fn constructor_converts_the_byte_length(input: &str, expected: f64) {
     let mut realm = Realm::default();
     realm
@@ -145,13 +193,34 @@ fn constructor_converts_the_byte_length(input: &str, expected: f64) {
     assert_value(&mut realm, "view.byteOffset", Value::Number(1.0));
 }
 
-#[test_case("-1", ExceptionKind::RangeError; "negative_index")]
-#[test_case("Infinity", ExceptionKind::RangeError; "positive_infinity")]
-#[test_case("-Infinity", ExceptionKind::RangeError; "negative_infinity")]
-#[test_case("9007199254740992", ExceptionKind::RangeError; "above_maximum_safe_integer")]
-#[test_case("6", ExceptionKind::RangeError; "past_buffer_end")]
-#[test_case("1n", ExceptionKind::TypeError; "bigint")]
-#[test_case("Symbol()", ExceptionKind::TypeError; "symbol")]
+#[test_case(
+    "-1", ExceptionKind::RangeError;
+    "negative_index"
+)]
+#[test_case(
+    "Infinity", ExceptionKind::RangeError;
+    "positive_infinity"
+)]
+#[test_case(
+    "-Infinity", ExceptionKind::RangeError;
+    "negative_infinity"
+)]
+#[test_case(
+    "9007199254740992", ExceptionKind::RangeError;
+    "above_maximum_safe_integer"
+)]
+#[test_case(
+    "6", ExceptionKind::RangeError;
+    "past_buffer_end"
+)]
+#[test_case(
+    "1n", ExceptionKind::TypeError;
+    "bigint"
+)]
+#[test_case(
+    "Symbol()", ExceptionKind::TypeError;
+    "symbol"
+)]
 fn constructor_rejects_invalid_indices(input: &str, expected: ExceptionKind) {
     exception(
         &format!("new DataView(new ArrayBuffer(5), {input})"),

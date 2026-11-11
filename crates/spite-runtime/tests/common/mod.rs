@@ -5,6 +5,7 @@ use spite_runtime::{Realm, Value};
 mod realm_entries;
 pub use realm_entries::REALM_ENTRIES;
 
+pub mod regexp_captures;
 pub mod regexp_oracle;
 
 /// Evaluates a behavioral assertion in a fresh Realm and reports its source.
