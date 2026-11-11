@@ -83,7 +83,7 @@ fn generic_consumers_advance_empty_matches_and_preserve_callback_capture_argumen
 }
 
 #[test]
-fn optional_assertion_search_aborts_bypass_handlers_and_other_group_features_stay_unsupported() {
+fn composition_results_match_reference() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(100000),
         ..Limits::default()

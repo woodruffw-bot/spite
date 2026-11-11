@@ -1,5 +1,6 @@
 //! Delete distinguishes references from values without reading binding values.
 
+use crate::common::assert_true;
 use spite_core::{DiagnosticKind, JsString};
 use spite_runtime::{Error, ExceptionKind, Realm, Value};
 
@@ -23,10 +24,7 @@ fn lexical_references_and_restricted_globals_cannot_be_deleted() {
         Realm::default().eval("let x = 1; delete x; x"),
         Ok(Value::Number(1.0))
     );
-    assert_eq!(
-        Realm::default().eval("delete (missing)"),
-        Ok(Value::Boolean(true))
-    );
+    assert_true("delete (missing)");
 }
 
 #[test]
@@ -91,8 +89,7 @@ fn strict_delete_is_an_early_error_before_any_side_effects() {
 
 #[test]
 fn configurable_standard_objects_can_be_deleted_without_running_their_bodies() {
-    assert_eq!(
-        Realm::default().eval("let caught=0,finalized=0;try{if(!delete Proxy)throw 1;}catch{caught=1;}finally{finalized=1;}caught===0 && finalized===1 && typeof Proxy==='undefined' && !('Proxy' in this) && Object.getOwnPropertyDescriptor(this,'Proxy')===undefined"),
-        Ok(Value::Boolean(true))
+    assert_true(
+        "let caught=0,finalized=0;try{if(!delete Proxy)throw 1;}catch{caught=1;}finally{finalized=1;}caught===0 && finalized===1 && typeof Proxy==='undefined' && !('Proxy' in this) && Object.getOwnPropertyDescriptor(this,'Proxy')===undefined",
     );
 }

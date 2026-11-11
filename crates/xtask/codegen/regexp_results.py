@@ -36,8 +36,8 @@ def main():
             if expected != '["throw","RangeError"]':
                 rows[source] = expected
     output = (
-        "// Native results for previously unsupported RegExp compositions.\n"
-        "// Generated with Node 24.19; see docs/coverage.md for review policy.\n"
+        "// Reviewed native RegExp reference results.\n"
+        "// Generated with Node 24.19; see crates/xtask/codegen/README.md for review policy.\n"
         "const EXPECTATIONS: &[(&str, &str)] = &[\n"
     )
     output += "".join(

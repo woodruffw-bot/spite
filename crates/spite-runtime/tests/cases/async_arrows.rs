@@ -1,6 +1,7 @@
 //! Async lexical closures, intrinsic metadata and Promise-returning arrow calls.
 
 use crate::common::UnavailableHostRealm;
+use crate::common::assert_true;
 use spite_runtime::{Error, PromiseJobOutcome, Realm, Value};
 
 fn drain(realm: &mut Realm) {
@@ -15,7 +16,9 @@ fn drain(realm: &mut Realm) {
 
 #[test]
 fn async_arrows_have_standard_metadata_source_and_no_construction_capability() {
-    assert_eq!(Realm::default().eval("let f=async /*keep*/ (a,b=1)=>a+b,AF=(async function(){}).constructor,caught=false;try{new f()}catch(e){caught=e instanceof TypeError}caught&&f.name==='f'&&f.length===1&&!Object.hasOwn(f,'prototype')&&Object.getPrototypeOf(f)===AF.prototype&&f.toString()==='async /*keep*/ (a,b=1)=>a+b'&&Object.prototype.toString.call(f)==='[object AsyncFunction]'"),Ok(Value::Boolean(true)));
+    assert_true(
+        "let f=async /*keep*/ (a,b=1)=>a+b,AF=(async function(){}).constructor,caught=false;try{new f()}catch(e){caught=e instanceof TypeError}caught&&f.name==='f'&&f.length===1&&!Object.hasOwn(f,'prototype')&&Object.getPrototypeOf(f)===AF.prototype&&f.toString()==='async /*keep*/ (a,b=1)=>a+b'&&Object.prototype.toString.call(f)==='[object AsyncFunction]'",
+    );
 }
 
 #[test]

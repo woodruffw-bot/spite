@@ -1,6 +1,7 @@
 //! Arrow closure capture, call environments, function metadata, and limits.
 
 use crate::common;
+use crate::common::assert_true;
 use common::REALM_ENTRIES;
 
 use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
@@ -32,14 +33,8 @@ fn arguments_bind_in_order_and_expression_bodies_return_their_value() {
     number("((x,y)=>x-y).apply(null, {0:7, 1:2, length:2})", 5.0);
     number("((x,y)=>x-y).bind(null, 7)(2)", 5.0);
     number("let f = x=>x=3; let x=9; f(1)+x", 12.0);
-    assert_eq!(
-        Realm::default().eval("((x,y)=>x===1 && y===undefined)(1)"),
-        Ok(Value::Boolean(true))
-    );
-    assert_eq!(
-        Realm::default().eval("let o={}; (x=>x)(o)===o"),
-        Ok(Value::Boolean(true))
-    );
+    assert_true("((x,y)=>x===1 && y===undefined)(1)");
+    assert_true("let o={}; (x=>x)(o)===o");
     number("((x)=>({value:x}))(7).value", 7.0);
     number("let flag=0; let f=()=>flag=1; flag", 0.0);
 }

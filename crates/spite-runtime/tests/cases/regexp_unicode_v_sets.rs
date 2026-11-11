@@ -5168,10 +5168,7 @@ fn flat_v_set_class_literal_state_context_and_consumers() {
     assert_true(
         r#"let r=/[a]b[c]/v,m=r.exec('abc');m!==null&&Array.isArray(m)&&m.length===1&&m[0]==='abc'&&m.index===0&&m.input==='abc'&&m.groups===undefined&&m.indices===undefined&&r.source==='[a]b[c]'&&r.lastIndex===0&&r.exec('xbc')===null&&r.exec('axc')===null&&r.exec('abd')===null&&r.exec('ab')===null&&r.exec('xabc').index===1&&r.exec('abcx')[0]==='abc'"#,
     );
-    assert_eq!(
-        Realm::default().eval(r#"/[\q{a}]b/v.test('ab')"#),
-        Ok(Value::Boolean(true))
-    );
+    assert_true(r#"/[\q{a}]b/v.test('ab')"#);
     for source in [
         r#"/[a]\bb/v.test('ab')"#,
         r#"/[a]^b/v.test('ab')"#,
@@ -5383,10 +5380,7 @@ fn flat_v_set_class_literal_word_state_context_and_consumers() {
     assert_true(
         r#"let r=/\b[a]b[c]\b/v,m=r.exec('abc');m!==null&&Array.isArray(m)&&m.length===1&&m[0]==='abc'&&m.index===0&&m.input==='abc'&&m.groups===undefined&&m.indices===undefined&&r.source==='\\b[a]b[c]\\b'&&r.lastIndex===0&&r.exec('xbc')===null&&r.exec('axc')===null&&r.exec('abd')===null&&r.exec('ab')===null&&r.exec('xabc')===null&&r.exec('abcx')===null&&r.exec('!abc!').index===1"#,
     );
-    assert_eq!(
-        Realm::default().eval(r#"/\b[\q{a}]b\b/v.test('ab')"#),
-        Ok(Value::Boolean(true))
-    );
+    assert_true(r#"/\b[\q{a}]b\b/v.test('ab')"#);
     for source in [
         r#"/\b[a]bc\b/v.test('abc')"#,
         r#"/\bx[a]b\b/v.test('xab')"#,
@@ -8053,14 +8047,8 @@ fn single_character_v_strings_state_context_and_consumers() {
         );
     }
     assert_true(r#"/[\q{a|b}]+/v.test('ab')"#);
-    assert_eq!(
-        Realm::default().eval(r#"/[\q{a}]b/v.test('ab')"#),
-        Ok(Value::Boolean(true))
-    );
-    assert_eq!(
-        Realm::default().eval(r#"/[\q{a}][b]/v.test('ab')"#),
-        Ok(Value::Boolean(true))
-    );
+    assert_true(r#"/[\q{a}]b/v.test('ab')"#);
+    assert_true(r#"/[\q{a}][b]/v.test('ab')"#);
     for (source, expected) in [
         (r#"/[\q{}]/v.test('')"#, true),
         (r#"/[\q{a|}]/v.test('a')"#, true),
@@ -8550,9 +8538,15 @@ for(var input of ['ab!','','\n','x\nab']){r.lastIndex=0;var m=r.exec(input),resu
 return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"\"],\"indices\":[[0,0]],\"index\":0},0],[false,\"\",{\"values\":[\"\"],\"indices\":[[0,0]],\"index\":0},0],[false,\"\\n\",{\"values\":[\"\"],\"indices\":[[0,0]],\"index\":0},0],[false,\"x\\nab\",{\"values\":[\"\"],\"indices\":[[0,0]],\"index\":0},0],[true,\"ab!\",{\"values\":[\"\"],\"indices\":[[0,0]],\"index\":0},0],[true,\"\",{\"values\":[\"\"],\"indices\":[[0,0]],\"index\":0},0],[true,\"\\n\",{\"values\":[\"\"],\"indices\":[[0,0]],\"index\":0},0],[true,\"x\\nab\",{\"values\":[\"\"],\"indices\":[[0,0]],\"index\":0},0]]"})();}finally{marker=3}ok&&marker===3"#,
     );
 
-    assert_eq!(Realm::default().eval(r####"var pattern="[[\\q{}]&&\\p{RGI_Emoji}]{0}",input="a😀b",r=new RegExp(pattern,"dgvy");r.lastIndex=2;var m=r.exec(input);r.source===pattern&&r.flags==="dgvy"&&m.input===input&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&(m.groups===undefined||Object.getPrototypeOf(m.groups)===null&&Object.getPrototypeOf(m.indices.groups)===null)&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex,m.groups===undefined?null:Object.keys(m.groups).map(k=>[k,m.groups[k]===undefined?"<undefined>":m.groups[k]]),m.indices.groups===undefined?null:Object.keys(m.indices.groups).map(k=>[k,m.indices.groups[k]===undefined?"<undefined>":m.indices.groups[k]])])==="[[\"\"],[[1,1]],1,1,null,null]""####),Ok(Value::Boolean(true)));
-    assert_eq!(Realm::default().eval(r####"var pattern="[[\\q{a|bc}]&&\\p{RGI_Emoji}]{0}",input="a😀b",r=new RegExp(pattern,"dgvy");r.lastIndex=2;var m=r.exec(input);r.source===pattern&&r.flags==="dgvy"&&m.input===input&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&(m.groups===undefined||Object.getPrototypeOf(m.groups)===null&&Object.getPrototypeOf(m.indices.groups)===null)&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex,m.groups===undefined?null:Object.keys(m.groups).map(k=>[k,m.groups[k]===undefined?"<undefined>":m.groups[k]]),m.indices.groups===undefined?null:Object.keys(m.indices.groups).map(k=>[k,m.indices.groups[k]===undefined?"<undefined>":m.indices.groups[k]])])==="[[\"\"],[[1,1]],1,1,null,null]""####),Ok(Value::Boolean(true)));
-    assert_eq!(Realm::default().eval(r####"var pattern="[\\q{a}--a--\\p{RGI_Emoji}]{0}",input="a😀b",r=new RegExp(pattern,"dgvy");r.lastIndex=2;var m=r.exec(input);r.source===pattern&&r.flags==="dgvy"&&m.input===input&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&(m.groups===undefined||Object.getPrototypeOf(m.groups)===null&&Object.getPrototypeOf(m.indices.groups)===null)&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex,m.groups===undefined?null:Object.keys(m.groups).map(k=>[k,m.groups[k]===undefined?"<undefined>":m.groups[k]]),m.indices.groups===undefined?null:Object.keys(m.indices.groups).map(k=>[k,m.indices.groups[k]===undefined?"<undefined>":m.indices.groups[k]])])==="[[\"\"],[[1,1]],1,1,null,null]""####),Ok(Value::Boolean(true)));
+    assert_true(
+        r####"var pattern="[[\\q{}]&&\\p{RGI_Emoji}]{0}",input="a😀b",r=new RegExp(pattern,"dgvy");r.lastIndex=2;var m=r.exec(input);r.source===pattern&&r.flags==="dgvy"&&m.input===input&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&(m.groups===undefined||Object.getPrototypeOf(m.groups)===null&&Object.getPrototypeOf(m.indices.groups)===null)&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex,m.groups===undefined?null:Object.keys(m.groups).map(k=>[k,m.groups[k]===undefined?"<undefined>":m.groups[k]]),m.indices.groups===undefined?null:Object.keys(m.indices.groups).map(k=>[k,m.indices.groups[k]===undefined?"<undefined>":m.indices.groups[k]])])==="[[\"\"],[[1,1]],1,1,null,null]""####,
+    );
+    assert_true(
+        r####"var pattern="[[\\q{a|bc}]&&\\p{RGI_Emoji}]{0}",input="a😀b",r=new RegExp(pattern,"dgvy");r.lastIndex=2;var m=r.exec(input);r.source===pattern&&r.flags==="dgvy"&&m.input===input&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&(m.groups===undefined||Object.getPrototypeOf(m.groups)===null&&Object.getPrototypeOf(m.indices.groups)===null)&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex,m.groups===undefined?null:Object.keys(m.groups).map(k=>[k,m.groups[k]===undefined?"<undefined>":m.groups[k]]),m.indices.groups===undefined?null:Object.keys(m.indices.groups).map(k=>[k,m.indices.groups[k]===undefined?"<undefined>":m.indices.groups[k]])])==="[[\"\"],[[1,1]],1,1,null,null]""####,
+    );
+    assert_true(
+        r####"var pattern="[\\q{a}--a--\\p{RGI_Emoji}]{0}",input="a😀b",r=new RegExp(pattern,"dgvy");r.lastIndex=2;var m=r.exec(input);r.source===pattern&&r.flags==="dgvy"&&m.input===input&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&(m.groups===undefined||Object.getPrototypeOf(m.groups)===null&&Object.getPrototypeOf(m.indices.groups)===null)&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex,m.groups===undefined?null:Object.keys(m.groups).map(k=>[k,m.groups[k]===undefined?"<undefined>":m.groups[k]]),m.indices.groups===undefined?null:Object.keys(m.indices.groups).map(k=>[k,m.indices.groups[k]===undefined?"<undefined>":m.indices.groups[k]])])==="[[\"\"],[[1,1]],1,1,null,null]""####,
+    );
     for source in [
         r"/[[\q{a|}]&&\p{RGI_Emoji}]*/v.test('a')",
         r"/[\q{a}]+b/v.test('ab')",
@@ -8990,9 +8984,15 @@ for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));me
 for(var input of ['ab!','','\n','x\nab']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
 return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"\",\"<undefined>\"],\"indices\":[[0,0],\"<undefined>\"],\"index\":0},0],[false,\"\",{\"values\":[\"\",\"<undefined>\"],\"indices\":[[0,0],\"<undefined>\"],\"index\":0},0],[false,\"\\n\",{\"values\":[\"\",\"<undefined>\"],\"indices\":[[0,0],\"<undefined>\"],\"index\":0},0],[false,\"x\\nab\",{\"values\":[\"\",\"<undefined>\"],\"indices\":[[0,0],\"<undefined>\"],\"index\":0},0],[true,\"ab!\",{\"values\":[\"\",\"<undefined>\"],\"indices\":[[0,0],\"<undefined>\"],\"index\":0},0],[true,\"\",{\"values\":[\"\",\"<undefined>\"],\"indices\":[[0,0],\"<undefined>\"],\"index\":0},0],[true,\"\\n\",{\"values\":[\"\",\"<undefined>\"],\"indices\":[[0,0],\"<undefined>\"],\"index\":0},0],[true,\"x\\nab\",{\"values\":[\"\",\"<undefined>\"],\"indices\":[[0,0],\"<undefined>\"],\"index\":0},0]]"})();}finally{marker=3}ok&&marker===3"#,
     );
-    assert_eq!(Realm::default().eval(r####"var pattern="([[\\q{}]&&\\p{RGI_Emoji}]){0}",input="a😀b",r=new RegExp(pattern,"dgvy");r.lastIndex=2;var m=r.exec(input);r.source===pattern&&r.flags==="dgvy"&&m.input===input&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&(m.groups===undefined||Object.getPrototypeOf(m.groups)===null&&Object.getPrototypeOf(m.indices.groups)===null)&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex,m.groups===undefined?null:Object.keys(m.groups).map(k=>[k,m.groups[k]===undefined?"<undefined>":m.groups[k]]),m.indices.groups===undefined?null:Object.keys(m.indices.groups).map(k=>[k,m.indices.groups[k]===undefined?"<undefined>":m.indices.groups[k]])])==="[[\"\",\"<undefined>\"],[[1,1],\"<undefined>\"],1,1,null,null]""####),Ok(Value::Boolean(true)));
-    assert_eq!(Realm::default().eval(r####"var pattern="([[\\q{a|bc}]&&\\p{RGI_Emoji}]){0}",input="a😀b",r=new RegExp(pattern,"dgvy");r.lastIndex=2;var m=r.exec(input);r.source===pattern&&r.flags==="dgvy"&&m.input===input&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&(m.groups===undefined||Object.getPrototypeOf(m.groups)===null&&Object.getPrototypeOf(m.indices.groups)===null)&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex,m.groups===undefined?null:Object.keys(m.groups).map(k=>[k,m.groups[k]===undefined?"<undefined>":m.groups[k]]),m.indices.groups===undefined?null:Object.keys(m.indices.groups).map(k=>[k,m.indices.groups[k]===undefined?"<undefined>":m.indices.groups[k]])])==="[[\"\",\"<undefined>\"],[[1,1],\"<undefined>\"],1,1,null,null]""####),Ok(Value::Boolean(true)));
-    assert_eq!(Realm::default().eval(r####"var pattern="([\\q{a}--a--\\p{RGI_Emoji}]){0}",input="a😀b",r=new RegExp(pattern,"dgvy");r.lastIndex=2;var m=r.exec(input);r.source===pattern&&r.flags==="dgvy"&&m.input===input&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&(m.groups===undefined||Object.getPrototypeOf(m.groups)===null&&Object.getPrototypeOf(m.indices.groups)===null)&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex,m.groups===undefined?null:Object.keys(m.groups).map(k=>[k,m.groups[k]===undefined?"<undefined>":m.groups[k]]),m.indices.groups===undefined?null:Object.keys(m.indices.groups).map(k=>[k,m.indices.groups[k]===undefined?"<undefined>":m.indices.groups[k]])])==="[[\"\",\"<undefined>\"],[[1,1],\"<undefined>\"],1,1,null,null]""####),Ok(Value::Boolean(true)));
+    assert_true(
+        r####"var pattern="([[\\q{}]&&\\p{RGI_Emoji}]){0}",input="a😀b",r=new RegExp(pattern,"dgvy");r.lastIndex=2;var m=r.exec(input);r.source===pattern&&r.flags==="dgvy"&&m.input===input&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&(m.groups===undefined||Object.getPrototypeOf(m.groups)===null&&Object.getPrototypeOf(m.indices.groups)===null)&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex,m.groups===undefined?null:Object.keys(m.groups).map(k=>[k,m.groups[k]===undefined?"<undefined>":m.groups[k]]),m.indices.groups===undefined?null:Object.keys(m.indices.groups).map(k=>[k,m.indices.groups[k]===undefined?"<undefined>":m.indices.groups[k]])])==="[[\"\",\"<undefined>\"],[[1,1],\"<undefined>\"],1,1,null,null]""####,
+    );
+    assert_true(
+        r####"var pattern="([[\\q{a|bc}]&&\\p{RGI_Emoji}]){0}",input="a😀b",r=new RegExp(pattern,"dgvy");r.lastIndex=2;var m=r.exec(input);r.source===pattern&&r.flags==="dgvy"&&m.input===input&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&(m.groups===undefined||Object.getPrototypeOf(m.groups)===null&&Object.getPrototypeOf(m.indices.groups)===null)&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex,m.groups===undefined?null:Object.keys(m.groups).map(k=>[k,m.groups[k]===undefined?"<undefined>":m.groups[k]]),m.indices.groups===undefined?null:Object.keys(m.indices.groups).map(k=>[k,m.indices.groups[k]===undefined?"<undefined>":m.indices.groups[k]])])==="[[\"\",\"<undefined>\"],[[1,1],\"<undefined>\"],1,1,null,null]""####,
+    );
+    assert_true(
+        r####"var pattern="([\\q{a}--a--\\p{RGI_Emoji}]){0}",input="a😀b",r=new RegExp(pattern,"dgvy");r.lastIndex=2;var m=r.exec(input);r.source===pattern&&r.flags==="dgvy"&&m.input===input&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&(m.groups===undefined||Object.getPrototypeOf(m.groups)===null&&Object.getPrototypeOf(m.indices.groups)===null)&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex,m.groups===undefined?null:Object.keys(m.groups).map(k=>[k,m.groups[k]===undefined?"<undefined>":m.groups[k]]),m.indices.groups===undefined?null:Object.keys(m.indices.groups).map(k=>[k,m.indices.groups[k]===undefined?"<undefined>":m.indices.groups[k]])])==="[[\"\",\"<undefined>\"],[[1,1],\"<undefined>\"],1,1,null,null]""####,
+    );
     for source in [
         r"/([\q{a}]b)+/v.test('ab')",
         r"/(a[\q{b}])+/v.test('ab')",

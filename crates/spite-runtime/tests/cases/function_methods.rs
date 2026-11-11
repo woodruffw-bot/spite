@@ -1,5 +1,6 @@
 //! Function.prototype call and the host's native source representation.
 
+use crate::common::assert_true;
 use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
 
 fn string(source: &str, expected: &str) {
@@ -32,10 +33,7 @@ fn call_passes_receivers_without_boxing_or_global_substitution() {
         "({}).toString.call.call(({}).toString, null)",
         "[object Null]",
     );
-    assert_eq!(
-        Realm::default().eval("let o = {}; ({}).valueOf.call(o) === o"),
-        Ok(Value::Boolean(true))
-    );
+    assert_true("let o = {}; ({}).valueOf.call(o) === o");
     for receiver in ["null", "undefined"] {
         assert!(matches!(
             Realm::default().eval(&format!("({{}}).valueOf.call({receiver})")),
@@ -45,10 +43,7 @@ fn call_passes_receivers_without_boxing_or_global_substitution() {
             })
         ));
     }
-    assert_eq!(
-        Realm::default().eval("({}).valueOf.call(1n).valueOf()===1n"),
-        Ok(Value::Boolean(true))
-    );
+    assert_true("({}).valueOf.call(1n).valueOf()===1n");
 }
 
 #[test]
@@ -70,10 +65,7 @@ fn borrowed_call_checks_callability_after_arguments_and_preserves_callee_identit
         "[object Null]",
     );
     string("let o = {}; (o.toString.call)(o)", "[object Object]");
-    assert_eq!(
-        Realm::default().eval("let f = ({}).valueOf; let o = {}; f.call(o, f = null) === o"),
-        Ok(Value::Boolean(true))
-    );
+    assert_true("let f = ({}).valueOf; let o = {}; f.call(o, f = null) === o");
 }
 
 #[test]

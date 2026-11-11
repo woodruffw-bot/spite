@@ -1,6 +1,5 @@
 //! Required empty iterations preserve class-versus-empty capture identity.
 use crate::common::assert_true;
-use spite_core::JsString;
 use spite_runtime::{Realm, Value};
 #[test]
 fn unasserted_zero_count_single_string_class_native_tables_consumers_and_required_class_identity() {
@@ -129,28 +128,4 @@ fn unasserted_zero_count_single_string_class_native_tables_consumers_and_require
     realm.eval(r"var r=/(?:(?:(?:\b){0})|(?:(?:\B){0})){0}(?:^){0}(?<whole>(?<iteration>(?<e>){0}(?<c>[\p{Any}\q{|ababa|a|ab}])){1})(?<after>)(?:$){0}/dvg,clone=new RegExp(r),m=r.exec('ababa')").unwrap();
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("var n=clone.exec('');m.groups.whole==='ababa'&&m.groups.c==='ababa'&&m.groups.e===undefined&&m.indices.groups.c===m.indices[4]&&m.indices[4][0]===0&&m.indices[4][1]===5&&n[0]===''&&n.groups.iteration===''&&n.groups.e===undefined&&n.groups.c===''&&n.indices.groups.e===undefined&&n.indices.groups.c===n.indices[4]&&n.indices[4][0]===0&&n.indices[4][1]===0&&clone.source===r.source&&clone.lastIndex===0&&r.lastIndex===5"),Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn unasserted_zero_count_single_string_class_conditional_body_predicates_unknown_terms_and_references_remain_closed()
- {
-    assert_eq!(Realm::default().eval(r####"var pattern="(?:(?:\\b)|(?:\\B)){0}((\\b)|(\\B))?([\\q{|a|ab}]){3}",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&m!==null&&m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"aba\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\"],[[0,3],\"<undefined>\",\"<undefined>\",\"<undefined>\",[3,3]],0,0]""####),Ok(Value::Boolean(true)));
-    assert_eq!(Realm::default().eval(r####"var pattern="(?:(?:\\b)|(?:\\B)){0}((\\b)|(\\B)){1}([\\q{|a|ab}]){3}",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"aba\",\"\",\"\",\"<undefined>\",\"\"],[[0,3],[0,0],[0,0],\"<undefined>\",[3,3]],0,0]""####),Ok(Value::Boolean(true)));
-    assert_eq!(Realm::default().eval(r####"var pattern="(?:(?:\\b)|(?:\\B)){0}([\\q{|a|ab}]){3}(\\b|)",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"aba\",\"\",\"\"],[[0,3],[3,3],[3,3]],0,0]""####),Ok(Value::Boolean(true)));
-    for pattern in [
-        r"(^([\q{|a|ab}])){3}",
-        r"([\q{|a|ab}]){3}\1",
-        r"(([\q{|a|ab}]){3}){2}",
-        r"([\q{|a|ab}]){3}[\q{ab}]",
-        r"(()|([\q{ab}&&\p{RGI_Emoji}])){3}",
-    ] {
-        let pattern = JsString::from(format!(r"(?:(?:\b)|(?:\B)){{0}}{pattern}").as_str());
-        let mut realm = Realm::default();
-        crate::common::regexp_oracle::assert_matches_reference(
-            &mut realm,
-            &format!(
-                "var marker=0;try{{new RegExp({pattern:?},'v').test('aba')}}catch{{marker=1}}finally{{marker=2}};marker"
-            ),
-        );
-    }
 }

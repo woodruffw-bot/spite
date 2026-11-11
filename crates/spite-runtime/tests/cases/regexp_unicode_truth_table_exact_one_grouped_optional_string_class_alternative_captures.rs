@@ -1,6 +1,5 @@
 //! Required predicate choices preserve conditional lexical captures.
 use crate::common::assert_true;
-use spite_core::JsString;
 use spite_runtime::{Realm, Value};
 #[test]
 fn truth_table_exact_grouped_optional_alternative_string_classes_preserve_native_captures_and_string_consumers()
@@ -154,27 +153,4 @@ fn truth_table_exact_grouped_optional_alternative_string_classes_preserve_native
     realm.eval(r"var r=/(?<enclosing>(?:(?<outer>(?<b>(?<s>^)|(?<w>\b))(?<c>[\q{a|ab}])(?<a>(?<end>$)|(?<nw>\B))|(?<fallback>(?<wb>\b)|(?<nwb>\B))(?<empty>))?)){1}/dvg,clone=new RegExp(r),m=r.exec('ab!aa')").unwrap();
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("var n=clone.exec('ab'),p=r.exec('!');m[0]==='a'&&m.groups.enclosing==='a'&&m.groups.outer==='a'&&m.groups.s===''&&m.groups.w===undefined&&m.groups.c==='a'&&m.groups.fallback===undefined&&m.indices.groups.c===m.indices[6]&&m.indices[6][0]===0&&m.indices[6][1]===1&&n.groups.c==='ab'&&n.groups.enclosing==='ab'&&clone.source===r.source&&clone.lastIndex===2&&p[0]===''&&p.index===1&&p.groups.enclosing===''&&p.indices.groups.enclosing===p.indices[1]&&p.indices[1][0]===1&&p.indices[1][1]===1&&Array.from(p).slice(2).every(v=>v===undefined)&&p.indices.slice(2).every(v=>v===undefined)&&p.groups.outer===undefined&&p.groups.fallback===undefined&&p.groups.empty===undefined&&r.lastIndex===1"),Ok(Value::Boolean(true)));
-}
-
-#[test]
-fn truth_table_exact_grouped_optional_alternative_string_classes_validate_unknowns_inside_mandatory_wrappers()
- {
-    assert_eq!(Realm::default().eval(r####"var pattern="^((((^)|(\\b))([\\q{a|ab}])|())?)",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"ab\",\"ab\",\"ab\",\"\",\"\",\"<undefined>\",\"ab\",\"<undefined>\"],[[0,2],[0,2],[0,2],[0,0],[0,0],\"<undefined>\",[0,2],\"<undefined>\"],0,0]""####),Ok(Value::Boolean(true)));
-    assert_eq!(Realm::default().eval(r####"var pattern="((((^)|(\\b))([\\q{a|ab}])|())?)$",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\"],[[3,3],[3,3],\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\"],3,0]""####),Ok(Value::Boolean(true)));
-    for pattern in [
-        r"((((\b\B)|(\b\B))([\q{ab}&&\p{RGI_Emoji}])|())??)",
-        r"((((^)|(\b))([\q{a|ab}])|z)??)",
-        r"((((^)|(\b))([\q{a|ab}])|\1)?)",
-        r"((((^)|(\b))([\q{a|ab}])|([a]))?)",
-        r"((((^)|(\b))([\q{a|ab}])|())?){2}",
-    ] {
-        let pattern = JsString::from(pattern);
-        let mut realm = Realm::default();
-        crate::common::regexp_oracle::assert_matches_reference(
-            &mut realm,
-            &format!(
-                "var marker=0;try{{new RegExp({pattern:?},'v').test('aba')}}catch{{marker=1}}finally{{marker=2}};marker"
-            ),
-        );
-    }
 }

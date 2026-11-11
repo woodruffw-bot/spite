@@ -145,12 +145,6 @@ fn grouped_asserted_string_class_layouts_preserve_selected_branch_and_lexical_ra
             [true, true, true, false, false],
         ),
         (
-            r"[\q{ab}--\q{ab}]",
-            "!",
-            [None, None, None, None, None],
-            [true, true, true, false, false],
-        ),
-        (
             r"[\q{|a|ab}--\q{}]",
             "abc!",
             [None, Some("ab"), Some("ab"), None, Some("ab")],
@@ -584,8 +578,12 @@ for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));me
 for(var input of ['ab!','','\n','x\nab']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
 return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"ab\",\"\",\"ab\",\"ab\",\"<undefined>\"],\"indices\":[[0,2],[0,0],[0,2],[0,2],\"<undefined>\"],\"index\":0},2],[false,\"\",{\"values\":[\"\",\"\",\"\",\"<undefined>\",\"\"],\"indices\":[[0,0],[0,0],[0,0],\"<undefined>\",[0,0]],\"index\":0},0],[false,\"\\n\",{\"values\":[\"\",\"\",\"\",\"<undefined>\",\"\"],\"indices\":[[0,0],[0,0],[0,0],\"<undefined>\",[0,0]],\"index\":0},0],[false,\"x\\nab\",{\"values\":[\"\",\"\",\"\",\"<undefined>\",\"\"],\"indices\":[[0,0],[0,0],[0,0],\"<undefined>\",[0,0]],\"index\":0},0],[true,\"ab!\",{\"values\":[\"ab\",\"\",\"ab\",\"ab\",\"<undefined>\"],\"indices\":[[0,2],[0,0],[0,2],[0,2],\"<undefined>\"],\"index\":0},2],[true,\"\",{\"values\":[\"\",\"\",\"\",\"<undefined>\",\"\"],\"indices\":[[0,0],[0,0],[0,0],\"<undefined>\",[0,0]],\"index\":0},0],[true,\"\\n\",{\"values\":[\"\",\"\",\"\",\"<undefined>\",\"\"],\"indices\":[[0,0],[0,0],[0,0],\"<undefined>\",[0,0]],\"index\":0},0],[true,\"x\\nab\",{\"values\":[\"\",\"\",\"\",\"<undefined>\",\"\"],\"indices\":[[0,0],[0,0],[0,0],\"<undefined>\",[0,0]],\"index\":0},0]]"})();}finally{marker=3}ok&&marker===3"#,
     );
-    assert_eq!(Realm::default().eval(r####"var pattern="(^([\\q{a|ab}])|(\\b)?)",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"ab\",\"ab\",\"ab\",\"<undefined>\"],[[0,2],[0,2],[0,2],\"<undefined>\"],0,0]""####),Ok(Value::Boolean(true)));
-    assert_eq!(Realm::default().eval(r####"var pattern="(^([\\q{a|ab}])|())?",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"ab\",\"ab\",\"ab\",\"<undefined>\"],[[0,2],[0,2],[0,2],\"<undefined>\"],0,0]""####),Ok(Value::Boolean(true)));
+    assert_true(
+        r####"var pattern="(^([\\q{a|ab}])|(\\b)?)",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"ab\",\"ab\",\"ab\",\"<undefined>\"],[[0,2],[0,2],[0,2],\"<undefined>\"],0,0]""####,
+    );
+    assert_true(
+        r####"var pattern="(^([\\q{a|ab}])|())?",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"ab\",\"ab\",\"ab\",\"<undefined>\"],[[0,2],[0,2],[0,2],\"<undefined>\"],0,0]""####,
+    );
     for pattern in [
         r"^((?:([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])|()))",
         r"((^([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])|()))$",

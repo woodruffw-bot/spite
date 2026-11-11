@@ -1,6 +1,7 @@
 //! Builtin function identity, metadata, receivers, coercion, and collection.
 
 use crate::common;
+use crate::common::assert_true;
 use common::REALM_ENTRIES;
 
 use spite_core::JsString;
@@ -115,18 +116,12 @@ fn ordinary_object_conversion_calls_builtin_methods() {
     string("({}) + 1", "[object Object]1");
     string("1n + {}", "1[object Object]");
     string("`${{}}`", "[object Object]");
-    assert_eq!(
-        Realm::default().eval("({}) == '[object Object]'"),
-        Ok(Value::Boolean(true))
-    );
+    assert_true("({}) == '[object Object]'");
     assert_eq!(
         Realm::default().eval("({[{}]: 7})[{}]"),
         Ok(Value::Number(7.0))
     );
-    assert_eq!(
-        Realm::default().eval("({}) in {'[object Object]': 1}"),
-        Ok(Value::Boolean(true))
-    );
+    assert_true("({}) in {'[object Object]': 1}");
     let Value::Number(number) = Realm::default().eval("+{}").unwrap() else {
         panic!("Number")
     };
@@ -162,22 +157,13 @@ fn function_metadata_is_readonly_but_configurable() {
         })
     ));
     string("let f = ({}).toString; delete f.name; f.name", ""); // inherited Function.prototype.name
-    assert_eq!(
-        Realm::default().eval("let f = ({}).toString; delete f.length"),
-        Ok(Value::Boolean(true))
-    );
+    assert_true("let f = ({}).toString; delete f.length");
 }
 
 #[test]
 fn function_constructor_identity_is_exposed_and_compiles_ordinary_bodies() {
-    assert_eq!(
-        Realm::default().eval("'constructor' in ({}).toString"),
-        Ok(Value::Boolean(true))
-    );
-    assert_eq!(
-        Realm::default().eval("({}).toString.constructor===Function"),
-        Ok(Value::Boolean(true))
-    );
+    assert_true("'constructor' in ({}).toString");
+    assert_true("({}).toString.constructor===Function");
     assert_eq!(
         Realm::default().eval("Function('return 1;')()"),
         Ok(Value::Number(1.0))

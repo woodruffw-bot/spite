@@ -83,7 +83,7 @@ fn generic_consumers_callbacks_and_intrinsic_results_keep_iteration_and_sequel_s
 }
 
 #[test]
-fn optional_full_suffix_work_aborts_and_other_group_compositions_stay_unsupported() {
+fn work_limits_and_composition_results() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(100000),
         ..Limits::default()

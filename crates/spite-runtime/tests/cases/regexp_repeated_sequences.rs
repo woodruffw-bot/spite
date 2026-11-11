@@ -90,7 +90,7 @@ fn generic_callbacks_consumers_and_intrinsic_arrays_keep_fixed_group_capture_slo
 }
 
 #[test]
-fn optional_host_work_covers_full_sticky_runs_and_remaining_group_features_stay_unsupported() {
+fn work_limits_and_composition_results() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(300000),
         ..Limits::default()

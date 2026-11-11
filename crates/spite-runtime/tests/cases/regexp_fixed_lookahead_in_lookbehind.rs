@@ -126,7 +126,7 @@ fn explicit_work_aborts_keep_last_index_and_bypass_handlers() {
 }
 
 #[test]
-fn capture_dependent_variable_width_and_unicode_lookahead_stay_unsupported() {
+fn composition_results_match_reference() {
     for source in [
         r"/(?<=a(?=(b+)))b/.exec('ab')",
         r"/(?<=a(?=b+))b/.exec('ab')",

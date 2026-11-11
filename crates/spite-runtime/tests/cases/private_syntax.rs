@@ -1,5 +1,6 @@
 //! Generator and async-generator private method objects share class early errors.
 
+use crate::common::assert_true;
 use spite_runtime::{Realm, Value};
 
 #[test]
@@ -17,8 +18,7 @@ fn private_generator_function_kinds_instantiate_and_keep_early_errors() {
         assert_eq!(realm.eval("flag"), Ok(Value::Number(2.0)), "{source}");
         assert_eq!(realm.eval("after=3"), Ok(Value::Number(3.0)));
     }
-    assert_eq!(
-        Realm::default().eval("let caught=false;try{eval('class C{#constructor;}');}catch(e){caught=e instanceof SyntaxError;}caught"),
-        Ok(Value::Boolean(true)),
+    assert_true(
+        "let caught=false;try{eval('class C{#constructor;}');}catch(e){caught=e instanceof SyntaxError;}caught",
     );
 }

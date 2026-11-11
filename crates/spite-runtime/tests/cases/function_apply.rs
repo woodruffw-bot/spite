@@ -1,5 +1,6 @@
 //! Function.prototype.apply and ordered, bounded CreateListFromArrayLike.
 
+use crate::common::assert_true;
 use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
 
 fn string(source: &str, expected: &str) {
@@ -22,10 +23,7 @@ fn nullish_lists_are_empty_and_receivers_pass_through_unchanged() {
     }
     string("({}).toString.apply(null, {})", "[object Null]");
     string("({}).toString.apply(1n, {length: 0})", "[object BigInt]");
-    assert_eq!(
-        Realm::default().eval("let o = {}; ({}).valueOf.apply(o, {}) === o"),
-        Ok(Value::Boolean(true))
-    );
+    assert_true("let o = {}; ({}).valueOf.apply(o, {}) === o");
 }
 
 #[test]
@@ -140,9 +138,8 @@ fn nonobjects_are_rejected_and_callable_check_precedes_list_inspection() {
 
 #[test]
 fn unlimited_argument_lists_preserve_full_width_getter_failures() {
-    assert_eq!(
-        Realm::default().eval("let reads=0,o={length:Infinity,get 0(){reads++;throw 17;}};let caught=false;try{Boolean.apply(null,o);}catch(e){caught=e===17;}caught && reads===1"),
-        Ok(Value::Boolean(true))
+    assert_true(
+        "let reads=0,o={length:Infinity,get 0(){reads++;throw 17;}};let caught=false;try{Boolean.apply(null,o);}catch(e){caught=e===17;}caught && reads===1",
     );
     // CreateListFromArrayLike reads each index before appending its value:
     // https://262.ecma-international.org/17.0/#sec-createlistfromarraylike
@@ -198,7 +195,9 @@ fn list_lengths_and_direct_calls_have_explicit_host_argument_limits() {
 
 #[test]
 fn apply_metadata_and_native_source_are_standard() {
-    assert_eq!(Realm::default().eval("let a = ({}).toString.apply; a.name === 'apply' && a.length === 2 && typeof a === 'function' && !('prototype' in a)"), Ok(Value::Boolean(true)));
+    assert_true(
+        "let a = ({}).toString.apply; a.name === 'apply' && a.length === 2 && typeof a === 'function' && !('prototype' in a)",
+    );
     string(
         "({}).toString.apply.toString()",
         "function apply() { [native code] }",

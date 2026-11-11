@@ -1,6 +1,7 @@
 //! Async method metadata, receivers, home objects, private brands and collection.
 
 use crate::common::UnavailableHostRealm;
+use crate::common::assert_true;
 use spite_runtime::{Error, PromiseJobOutcome, Realm, Value};
 fn drain(realm: &mut Realm) {
     loop {
@@ -14,7 +15,9 @@ fn drain(realm: &mut Realm) {
 
 #[test]
 fn object_and_class_methods_have_async_metadata_standard_descriptors_and_no_construct() {
-    assert_eq!(Realm::default().eval("let key=Symbol('k'),o={async m(a,b=1){return a},async[key](){return 1}},AF=(async function(){}).constructor;class C{async m(){return 1}static async n(){return 2}}let caught=0;for(const f of[o.m,o[key],C.prototype.m,C.n]){try{new f()}catch(e){if(e instanceof TypeError)caught++}}let a=Object.getOwnPropertyDescriptor(o,'m'),b=Object.getOwnPropertyDescriptor(C.prototype,'m');caught===4&&a.writable&&a.enumerable&&a.configurable&&b.writable&&!b.enumerable&&b.configurable&&o.m.name==='m'&&o.m.length===1&&o[key].name==='[k]'&&Object.getPrototypeOf(o.m)===AF.prototype&&!Object.hasOwn(o.m,'prototype')&&o.m.toString()==='async m(a,b=1){return a}'"),Ok(Value::Boolean(true)));
+    assert_true(
+        "let key=Symbol('k'),o={async m(a,b=1){return a},async[key](){return 1}},AF=(async function(){}).constructor;class C{async m(){return 1}static async n(){return 2}}let caught=0;for(const f of[o.m,o[key],C.prototype.m,C.n]){try{new f()}catch(e){if(e instanceof TypeError)caught++}}let a=Object.getOwnPropertyDescriptor(o,'m'),b=Object.getOwnPropertyDescriptor(C.prototype,'m');caught===4&&a.writable&&a.enumerable&&a.configurable&&b.writable&&!b.enumerable&&b.configurable&&o.m.name==='m'&&o.m.length===1&&o[key].name==='[k]'&&Object.getPrototypeOf(o.m)===AF.prototype&&!Object.hasOwn(o.m,'prototype')&&o.m.toString()==='async m(a,b=1){return a}'",
+    );
 }
 
 #[test]

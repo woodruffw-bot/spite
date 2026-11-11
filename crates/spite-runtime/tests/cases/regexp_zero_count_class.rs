@@ -52,7 +52,7 @@ fn erased_class_string_consumers_and_clones_retain_empty_match_metadata() {
 }
 
 #[test]
-fn syntax_errors_still_precede_class_erasure_and_other_shapes_stay_unsupported() {
+fn composition_results_match_reference() {
     assert_true(
         r#"
         var invalid=[

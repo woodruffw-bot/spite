@@ -1,5 +1,5 @@
-// Native results for previously unsupported RegExp compositions.
-// Generated with Node 24.19; see docs/coverage.md for review policy.
+// Reviewed native RegExp reference results.
+// Generated with Node 24.19; see crates/xtask/codegen/README.md for review policy.
 const EXPECTATIONS: &[(&str, &str)] = &[
     (r########"'abc'.match('(?:(?:(?:(?:x(x|yz)){2}){2})|){2,3}')"########, r########"["array",[["string",""],["undefined"]],["number",0],["string","abc"],["undefined"],["undefined"]]"########),
     (r########"'abc'.matchAll('(?:(?:(?:(?:x(x|yz)){2}){2})|){2,3}').next()"########, r########"["object",[["value",["array",[["string",""],["undefined"]],["number",0],["string","abc"],["undefined"],["undefined"]]],["done",["boolean",false]]]]"########),

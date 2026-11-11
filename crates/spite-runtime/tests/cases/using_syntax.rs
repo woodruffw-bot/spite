@@ -1,6 +1,7 @@
 //! Resource early errors and remaining await-using host boundaries.
 
 use crate::common::UnavailableHostRealm;
+use crate::common::assert_true;
 use spite_runtime::{Error, Realm, Value};
 
 #[test]
@@ -32,5 +33,7 @@ fn actual_using_early_errors_are_catchable_in_eval_and_dynamic_functions() {
 
 #[test]
 fn ordinary_using_identifiers_and_unexecuted_resource_bodies_are_preserved() {
-    assert_eq!(Realm::default().eval("let using=1;{using\nusing=2;}var of=[[9],[8],[7]],result=[];for(using of of[0,1,2])result.push(using);function f(){using x=null;}let g=Function('using x=null;');using===7&&result.join(',')==='7'&&typeof f==='function'&&g.toString().includes('using x=null;')"),Ok(Value::Boolean(true)));
+    assert_true(
+        "let using=1;{using\nusing=2;}var of=[[9],[8],[7]],result=[];for(using of of[0,1,2])result.push(using);function f(){using x=null;}let g=Function('using x=null;');using===7&&result.join(',')==='7'&&typeof f==='function'&&g.toString().includes('using x=null;')",
+    );
 }
