@@ -226,12 +226,12 @@ impl OrdinaryObject {
     }
 
     /// Returns the unrooted prototype handle, or `None` for a null prototype.
-    /// This is physical inspection, not a Proxy's [[GetPrototypeOf]] operation.
+    /// This is physical inspection, not a Proxy's `[[GetPrototypeOf]]` operation.
     pub fn prototype(&self) -> Option<&Handle> {
         self.prototype.as_ref()
     }
 
-    /// Returns whether the object has a [[Call]] internal method.
+    /// Returns whether the object has a `[[Call]]` internal method.
     pub fn is_callable(&self) -> bool {
         self.callable.is_some() || self.proxy.as_ref().is_some_and(|proxy| proxy.callable)
     }
@@ -252,7 +252,7 @@ impl OrdinaryObject {
         }
     }
 
-    /// Returns whether the object has a [[Construct]] internal method.
+    /// Returns whether the object has a `[[Construct]]` internal method.
     pub fn is_constructor(&self) -> bool {
         self.constructible
     }
@@ -407,7 +407,7 @@ impl OrdinaryObject {
     }
 
     /// Returns the physical record's extensibility bit.
-    /// Proxy [[IsExtensible]] requires the Realm rather than this inspection.
+    /// Proxy `[[IsExtensible]]` requires the Realm rather than this inspection.
     pub fn is_extensible(&self) -> bool {
         self.extensible
     }

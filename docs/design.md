@@ -39,6 +39,11 @@ Use separate crates for independently reusable abstractions. Keep code that
 shares object identity, environments and execution state together in Runtime.
 Public facade types are reexports rather than parallel implementations.
 
+Parser separates grammar state, Script/eval entry points, directives, operators
+and early-error validation. Runtime separates Realm storage and host entry points
+from conversions, declarations, statements, expressions, Reference operations
+and completion records. Crate roots declare modules and expose their APIs.
+
 All workspace crates forbid unsafe Rust. Production dependencies are workspace
 crates plus the approved RegExp and time-zone libraries. The standard library's
 internal implementation is outside this prohibition. Prefer clear ownership and

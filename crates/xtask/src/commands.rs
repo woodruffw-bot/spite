@@ -37,6 +37,7 @@ pub(crate) fn run(root: &Path, args: Vec<String>) -> Result<()> {
                     "warnings",
                 ],
             )?;
+            documentation(root)?;
             policy::check(root)?;
             fixtures::check(&root.join("tests/test262"))?;
             test_modules::update(root, true)?;
@@ -66,7 +67,7 @@ pub(crate) fn run(root: &Path, args: Vec<String>) -> Result<()> {
         "help" | "--help" | "-h" => {
             println!(
                 "Repository maintenance:\n\
-                      cargo xtask check                 Format, lint and verify repository data\n\
+                      cargo xtask check                 Check code, API docs and repository data\n\
                       cargo xtask verify                Verify dependencies and Test262 provenance\n\
                       cargo xtask verify-spec [FILE]     Verify a local or downloaded specification\n\
                       cargo xtask test262               Run the optimized conformance target\n\
@@ -82,6 +83,18 @@ pub(crate) fn run(root: &Path, args: Vec<String>) -> Result<()> {
 fn cargo(root: &Path, args: &[&str]) -> Result<()> {
     let cargo = env::var_os("CARGO").unwrap_or_else(|| OsString::from("cargo"));
     execute(Command::new(cargo).current_dir(root).args(args))
+}
+
+fn documentation(root: &Path) -> Result<()> {
+    let cargo = env::var_os("CARGO").unwrap_or_else(|| OsString::from("cargo"));
+    let mut flags = env::var_os("RUSTDOCFLAGS").unwrap_or_default();
+    flags.push(" -Dwarnings");
+    execute(
+        Command::new(cargo)
+            .current_dir(root)
+            .env("RUSTDOCFLAGS", flags)
+            .args(["doc", "--workspace", "--no-deps", "--locked"]),
+    )
 }
 
 pub(crate) fn execute(command: &mut Command) -> Result<()> {

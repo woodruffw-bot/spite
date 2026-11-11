@@ -1,5 +1,7 @@
 //! References share ordinary GetValue/PutValue and can own names through suspension.
 
+mod evaluation;
+
 use crate::environment::EnvironmentHandle;
 use crate::{Error, ObjectHandle, Value, private};
 use spite_core::{JsString, JsSymbol, Span};

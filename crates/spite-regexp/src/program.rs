@@ -65,7 +65,7 @@ impl RegExpProgram {
     ///
     /// Sticky searches probe exactly the supplied Unicode boundary. Unicode
     /// starts inside a valid pair rewind to its leading boundary, following the
-    /// approved edition-17 RegExpBuiltinExec resolution. No limit is imposed
+    /// documented edition-17 RegExpBuiltinExec resolution. No limit is imposed
     /// when `work_limit` is `None`. The second result is consumed host work.
     pub fn find(
         &self,

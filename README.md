@@ -73,8 +73,8 @@ Test262 corpus is an explicit target, run separately through `cargo xtask test26
 Both test profiles keep debug assertions and overflow checks enabled; exhaustive
 Unicode checks and the interpreter use optimization to keep execution practical.
 
-`cargo xtask check` checks formatting, Clippy, dependency policy, fixture provenance,
-and generated data. It requires Python 3 and network access for pinned source
+`cargo xtask check` checks formatting, Clippy, API docs, dependency policy, fixture
+provenance and generated data. It requires Python 3 and network access for pinned source
 verification. `cargo xtask verify` checks local inventories and provenance offline.
 See [data generation](crates/xtask/codegen/README.md) for maintenance commands.
 
