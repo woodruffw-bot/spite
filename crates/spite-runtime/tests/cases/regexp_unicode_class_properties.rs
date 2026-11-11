@@ -45,26 +45,46 @@ fn unicode_class_property_results_snapshot() {
 #[test]
 fn unicode_class_property_unions_inversion_and_complement_order() {
     assert_true(
-        r"let p=/[\p{ASCII}]/iv,n=/[\P{ASCII}]/iv;p.test('ſ')&&p.test('K')&&!n.test('ſ')&&!n.test('K')&&!n.test('S')&&n.test('😀')",
+        r#"
+            let p = /[\p{ASCII}]/iv,
+                n = /[\P{ASCII}]/iv;
+            p.test('ſ') && p.test('K') && !n.test('ſ') && !n.test('K') && !n.test('S') && n.test('😀')
+        "#,
     );
     assert_true(
-        r"let r=/[\P{ASCII}K]/iv;r.test('K')&&r.test('k')&&r.test('K')&&!r.test('S')&&!r.test('s')&&!r.test('ſ')&&r.test('😀')",
+        r#"
+            let r = /[\P{ASCII}K]/iv;
+            r.test('K') && r.test('k') && r.test('K') && !r.test('S') && !r.test('s') && !r.test('ſ') && r
+                .test('😀')
+        "#,
     );
     assert_true(
-        r"let r=/[\P{ASCII}K]/iu;r.test('K')&&r.test('k')&&r.test('K')&&r.test('S')&&r.test('s')&&r.test('ſ')&&r.test('😀')",
+        r#"
+            let r = /[\P{ASCII}K]/iu;
+            r.test('K') && r.test('k') && r.test('K') && r.test('S') && r.test('s') && r.test('ſ') && r
+                .test('😀')
+        "#,
     );
     for mode in ["u", "v"] {
         assert_true(&format!(
             r"let r=/[\p{{ASCII}}\P{{ASCII}}]/i{mode};r.test('A')&&r.test('ſ')&&r.test('K')&&r.test('😀')&&r.test('\uD800')"
         ));
         assert_true(&format!(
-            r"let r=/[\P{{Any}}K]/i{mode};r.test('K')&&r.test('k')&&r.test('K')&&!r.test('S')&&!r.test('😀')&&!r.test('\uD800')"
+            r#"
+                let r = /[\P{{Any}}K]/i{mode};
+                r.test('K') && r.test('k') && r.test('K') && !r.test('S') && !r.test('😀') && !r.test('\uD800')
+            "#
         ));
         assert_true(&format!(
             r"let r=/[\P{{ASCII}}\w]/i{mode};r.test('A')&&r.test('ſ')&&r.test('K')&&r.test('😀')&&!r.test('!')"
         ));
         assert_true(&format!(
-            r"let r=/[^\P{{Any}}]/{mode},n=/[^\p{{Any}}]/{mode};r.test('A')&&r.test('😀')&&r.test('\n')&&r.test('\uD800')&&!n.test('A')&&!n.test('😀')"
+            r#"
+                let r = /[^\P{{Any}}]/{mode},
+                    n = /[^\p{{Any}}]/{mode};
+                r.test('A') && r.test('😀') && r.test('\n') && r.test('\uD800') && !n.test('A') && !n.test(
+                    '😀')
+            "#
         ));
     }
 }
@@ -73,13 +93,30 @@ fn unicode_class_property_unions_inversion_and_complement_order() {
 fn unicode_class_property_original_captures_names_context_and_widths() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/(?<x>^[\P{{ASCII}}K]$)/dim{mode}g,m=r.exec('xx\r\nK\u2028A\u2029');m.index===4&&m[1]==='K'&&m.groups.x==='K'&&m.indices.groups.x===m.indices[1]&&m.indices[1][1]===5&&r.lastIndex===5"
+            r#"
+                let r = /(?<x>^[\P{{ASCII}}K]$)/dim{mode}g,
+                    m = r.exec('xx\r\nK\u2028A\u2029');
+                m.index === 4 && m[1] === 'K' && m.groups.x === 'K' && m.indices.groups.x === m.indices[1] && m
+                    .indices[1][1] === 5 && r.lastIndex === 5
+            "#
         ));
         assert_true(&format!(
-            r"let r=/(?<__proto__>([\p{{Any}}]))/d{mode}y;r.lastIndex=1;let m=r.exec('😀');m.index===0&&m[1]==='😀'&&m[2]==='😀'&&m.indices[2][1]===2&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]&&r.lastIndex===2"
+            r#"
+                let r = /(?<__proto__>([\p{{Any}}]))/d{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('😀');
+                m.index === 0 && m[1] === '😀' && m[2] === '😀' && m.indices[2][1] === 2 && Object
+                    .getPrototypeOf(m.groups) === null && m.indices.groups.__proto__ === m.indices[1] && r
+                    .lastIndex === 2
+            "#
         ));
         assert_true(&format!(
-            r"let r=/((^[\p{{Any}}]$))/dm{mode},m=r.exec('xx\n😀\n');m.index===3&&m[1]==='😀'&&m[2]==='😀'&&m.indices[1][1]===5&&!/^[\p{{ASCII}}]$/{mode}.test('A\n')"
+            r#"
+                let r = /((^[\p{{Any}}]$))/dm{mode},
+                    m = r.exec('xx\n😀\n');
+                m.index === 3 && m[1] === '😀' && m[2] === '😀' && m.indices[1][1] === 5 && !
+                    /^[\p{{ASCII}}]$/{mode}.test('A\n')
+            "#
         ));
     }
 }
@@ -88,7 +125,11 @@ fn unicode_class_property_original_captures_names_context_and_widths() {
 fn unicode_class_property_consumers_original_substrings_and_indices() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=[...'A😀\uD800'.matchAll(/(?<x>[\p{{Any}}])/d{mode}g)];a.length===3&&a[0][1]==='A'&&a[1][1]==='😀'&&a[1].index===1&&a[1].indices[1][1]===3&&a[2][1]==='\uD800'"
+            r#"
+                let a = [...'A😀\uD800'.matchAll(/(?<x>[\p{{Any}}])/d{mode}g)];
+                a.length === 3 && a[0][1] === 'A' && a[1][1] === '😀' && a[1].index === 1 && a[1].indices[1][
+                    1] === 3 && a[2][1] === '\uD800'
+            "#
         ));
         assert_true(&format!(
             r"'A😀\uD800'.replace(/(?<x>[\p{{Any}}])/{mode}g,'<$1:$<x>>')==='<A:A><😀:😀><\uD800:\uD800>'"
@@ -105,16 +146,63 @@ fn unicode_class_property_consumers_original_substrings_and_indices() {
 #[test]
 fn unicode_class_property_metadata_mode_clones_coercions_and_writes() {
     assert_true(
-        r"let r=/(?<x>[\P{ASCII}K])/diug,c=new RegExp(r,'divy');c.source==='(?<x>[\\P{ASCII}K])'&&c.ignoreCase&&c.unicodeSets&&!c.unicode&&r.exec('S')[1]==='S'&&c.exec('S')===null&&c.exec('K').groups.x==='K'&&c.lastIndex===1",
+        r#"
+            let r = /(?<x>[\P{ASCII}K])/diug,
+                c = new RegExp(r, 'divy');
+            c.source === '(?<x>[\\P{ASCII}K])' && c.ignoreCase && c.unicodeSets && !c.unicode && r.exec(
+                    'S')[1] === 'S' && c.exec('S') === null && c.exec('K').groups.x === 'K' && c
+                .lastIndex === 1
+        "#,
     );
     assert_true(
-        r"let t='',r=/([\p{Any}])/uy;r.lastIndex={valueOf(){t+='i';return 0}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m[1]==='😀'&&r.lastIndex===2",
+        r#"
+            let t = '',
+                r = /([\p{Any}])/uy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 0
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return '😀'
+                }
+            });
+            t === 'si' && m[1] === '😀' && r.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let r=/[\p{Any}]/uy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            let r = /[\p{Any}]/uy;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/[\P{Any}]/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /[\P{Any}]/vy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 

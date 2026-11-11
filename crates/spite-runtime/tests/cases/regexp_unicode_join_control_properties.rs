@@ -49,16 +49,39 @@ fn unicode_join_control_property_results_snapshot() {
 fn unicode_join_control_properties_aliases_complements_and_unions() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=/\p{{Join_Control}}/{mode},b=/\p{{Join_C}}/i{mode},n=/\P{{Join_C}}/i{mode};a.test('\u200C')&&a.test('\u200D')&&b.test('\u200C')&&!a.test('\u200B')&&!b.test('\u200E')&&!b.test('ſ')&&!b.test('K')&&!n.test('\u200C')&&n.test('😀')&&n.test('\uD800')&&n.test('\uFEFF')"
+            r#"
+                let a = /\p{{Join_Control}}/{mode},
+                    b = /\p{{Join_C}}/i{mode},
+                    n = /\P{{Join_C}}/i{mode};
+                a.test('\u200C') && a.test('\u200D') && b.test('\u200C') && !a.test('\u200B') && !b.test(
+                        '\u200E') && !b.test('ſ') && !b.test('K') && !n.test('\u200C') && n.test('😀') && n
+                    .test('\uD800') && n.test('\uFEFF')
+            "#
         ));
         assert_true(&format!(
-            r"let p=/\p{{Join_Control}}/{mode},s=/\s/{mode};p.test('\u200C')&&p.test('\u200D')&&!s.test('\u200C')&&!s.test('\u200D')&&!p.test('\uFEFF')&&s.test('\uFEFF')"
+            r#"
+                let p = /\p{{Join_Control}}/{mode},
+                    s = /\s/{mode};
+                p.test('\u200C') && p.test('\u200D') && !s.test('\u200C') && !s.test('\u200D') && !p.test(
+                    '\uFEFF') && s.test('\uFEFF')
+            "#
         ));
         assert_true(&format!(
-            r"let a=/[\p{{Join_C}}K]/i{mode},b=/[^\P{{Join_Control}}K]/i{mode},c=/[\p{{Join_C}}\P{{Join_Control}}]/{mode};a.test('K')&&a.test('k')&&a.test('\u200C')&&!a.test('ſ')&&b.test('\u200D')&&!b.test('K')&&c.test('😀')&&c.test('A')&&c.test('\uD800')"
+            r#"
+                let a = /[\p{{Join_C}}K]/i{mode},
+                    b = /[^\P{{Join_Control}}K]/i{mode},
+                    c = /[\p{{Join_C}}\P{{Join_Control}}]/{mode};
+                a.test('K') && a.test('k') && a.test('\u200C') && !a.test('ſ') && b.test('\u200D') && !b.test(
+                    'K') && c.test('😀') && c.test('A') && c.test('\uD800')
+            "#
         ));
         assert_true(&format!(
-            r"let a=/^\p{{Join_C}}$/{mode},b=/^\P{{Join_C}}$/{mode};a.test('\u200C')&&!a.test('\u200D\n')&&!a.test('')&&!a.test('\n')&&b.test('😀')&&!b.test('AA')"
+            r#"
+                let a = /^\p{{Join_C}}$/{mode},
+                    b = /^\P{{Join_C}}$/{mode};
+                a.test('\u200C') && !a.test('\u200D\n') && !a.test('') && !a.test('\n') && b.test('😀') && !b
+                    .test('AA')
+            "#
         ));
     }
 }
@@ -67,13 +90,29 @@ fn unicode_join_control_properties_aliases_complements_and_unions() {
 fn unicode_join_control_properties_captures_context_and_pair_starts() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/^(?<x>([\p{{Join_C}}K]))$/dim{mode}g,m=r.exec('x\r\nK\u2028');m.index===3&&m[1]==='K'&&m[2]==='K'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===4&&r.lastIndex===4"
+            r#"
+                let r = /^(?<x>([\p{{Join_C}}K]))$/dim{mode}g,
+                    m = r.exec('x\r\nK\u2028');
+                m.index === 3 && m[1] === 'K' && m[2] === 'K' && m.indices.groups.x === m.indices[1] && m
+                    .indices[2][1] === 4 && r.lastIndex === 4
+            "#
         ));
         assert_true(&format!(
-            r"let r=/(?<__proto__>\P{{Join_C}})/d{mode}y;r.lastIndex=1;let m=r.exec('😀\u200c');m.index===0&&m[1]==='😀'&&m.indices[1][1]===2&&r.lastIndex===2&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]"
+            r#"
+                let r = /(?<__proto__>\P{{Join_C}})/d{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('😀\u200c');
+                m.index === 0 && m[1] === '😀' && m.indices[1][1] === 2 && r.lastIndex === 2 && Object
+                    .getPrototypeOf(m.groups) === null && m.indices.groups.__proto__ === m.indices[1]
+            "#
         ));
         assert_true(&format!(
-            r"let r=/\p{{Join_C}}/d{mode}g;r.lastIndex=1;let m=r.exec('😀\u200c');m.index===2&&m[0]==='\u200c'&&r.lastIndex===3"
+            r#"
+                let r = /\p{{Join_C}}/d{mode}g;
+                r.lastIndex = 1;
+                let m = r.exec('😀\u200c');
+                m.index === 2 && m[0] === '\u200c' && r.lastIndex === 3
+            "#
         ));
         assert_true(&format!(
             r"let r=/\p{{Join_C}}/{mode}y;r.lastIndex=1;r.exec('😀\u200c')===null&&r.lastIndex===0"
@@ -85,7 +124,11 @@ fn unicode_join_control_properties_captures_context_and_pair_starts() {
 fn unicode_join_control_properties_consumers_original_text() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=[...'\u200d😀\u200cG'.matchAll(/(?<x>\P{{Join_C}})/d{mode}g)];a.length===2&&a[0][1]==='😀'&&a[0].index===1&&a[0].indices[1][1]===3&&a[1][1]==='G'"
+            r#"
+                let a = [...'\u200d😀\u200cG'.matchAll(/(?<x>\P{{Join_C}})/d{mode}g)];
+                a.length === 2 && a[0][1] === '😀' && a[0].index === 1 && a[0].indices[1][1] === 3 && a[1][
+                    1] === 'G'
+            "#
         ));
         assert_true(&format!(
             r"'\u200d\u200c😀X'.replace(/(?<x>\p{{Join_Control}})/{mode}g,'<$1:$<x>>')==='<\u200d:\u200d><\u200c:\u200c>😀X'"
@@ -94,7 +137,14 @@ fn unicode_join_control_properties_consumers_original_text() {
             r"'😀\u200d\u200cG'.split(/(\p{{Join_C}})/{mode}).join('|')==='😀|\u200d||\u200c|G'&&'😀\u200c'.search(/\p{{Join_C}}/{mode})===2&&'\u200d\u200c😀'.match(/\p{{Join_C}}/{mode}g).join('')==='\u200d\u200c'"
         ));
         assert_true(&format!(
-            r"let t='';let x='\u200c\u200d😀\u200c'.replace(/(\p{{Join_C}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__😀_'&&t==='014'"
+            r#"
+                let t = '';
+                let x = '\u200c\u200d😀\u200c'.replace(/(\p{{Join_C}})/{mode}g, (m, c, p) => {{
+                    t += p;
+                    return '_'
+                }});
+                x === '__😀_' && t === '014'
+            "#
         ));
     }
 }
@@ -102,16 +152,62 @@ fn unicode_join_control_properties_consumers_original_text() {
 #[test]
 fn unicode_join_control_properties_clones_coercions_and_strict_writes() {
     assert_true(
-        r"let r=/^(?<x>\p{Join_Control})$/dmu,c=new RegExp(r,'divy');c.source==='^(?<x>\\p{Join_Control})$'&&c.unicodeSets&&!c.unicode&&!c.multiline&&c.exec('\u200c').groups.x==='\u200c'&&c.lastIndex===1",
+        r#"
+            let r = /^(?<x>\p{Join_Control})$/dmu,
+                c = new RegExp(r, 'divy');
+            c.source === '^(?<x>\\p{Join_Control})$' && c.unicodeSets && !c.unicode && !c.multiline && c
+                .exec('\u200c').groups.x === '\u200c' && c.lastIndex === 1
+        "#,
     );
     assert_true(
-        r"let t='',r=/\P{Join_C}/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m[0]==='😀'&&m.index===0&&r.lastIndex===2",
+        r#"
+            let t = '',
+                r = /\P{Join_C}/uy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 1
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return '😀'
+                }
+            });
+            t === 'si' && m[0] === '😀' && m.index === 0 && r.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let r=/\p{Join_C}/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('\u200c')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            let r = /\p{Join_C}/vy;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('\u200c')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/\p{Join_C}/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀\u200c')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /\p{Join_C}/vy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀\u200c')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 

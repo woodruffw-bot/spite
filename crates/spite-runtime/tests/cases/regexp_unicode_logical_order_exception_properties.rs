@@ -49,16 +49,39 @@ fn unicode_logical_order_exception_property_results_snapshot() {
 fn unicode_logical_order_exception_properties_aliases_complements_and_unions() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=/\p{{Logical_Order_Exception}}/{mode},b=/\p{{LOE}}/i{mode},n=/\P{{LOE}}/i{mode};a.test('\u0E40')&&a.test('\u0E41')&&b.test('\u0E40')&&!a.test('\u200D')&&!b.test('\u2010')&&!b.test('ſ')&&!b.test('K')&&!n.test('\u0E40')&&n.test('😀')&&n.test('\uD800')&&n.test('\uFEFF')"
+            r#"
+                let a = /\p{{Logical_Order_Exception}}/{mode},
+                    b = /\p{{LOE}}/i{mode},
+                    n = /\P{{LOE}}/i{mode};
+                a.test('\u0E40') && a.test('\u0E41') && b.test('\u0E40') && !a.test('\u200D') && !b.test(
+                        '\u2010') && !b.test('ſ') && !b.test('K') && !n.test('\u0E40') && n.test('😀') && n
+                    .test('\uD800') && n.test('\uFEFF')
+            "#
         ));
         assert_true(&format!(
-            r"let p=/\p{{Logical_Order_Exception}}/{mode},s=/\s/{mode};p.test('\u0E40')&&p.test('\u0E41')&&!s.test('\u0E40')&&!s.test('\u0E41')&&!p.test('\uFEFF')&&s.test('\uFEFF')"
+            r#"
+                let p = /\p{{Logical_Order_Exception}}/{mode},
+                    s = /\s/{mode};
+                p.test('\u0E40') && p.test('\u0E41') && !s.test('\u0E40') && !s.test('\u0E41') && !p.test(
+                    '\uFEFF') && s.test('\uFEFF')
+            "#
         ));
         assert_true(&format!(
-            r"let a=/[\p{{LOE}}K]/i{mode},b=/[^\P{{Logical_Order_Exception}}K]/i{mode},c=/[\p{{LOE}}\P{{Logical_Order_Exception}}]/{mode};a.test('K')&&a.test('k')&&a.test('\u0E40')&&!a.test('ſ')&&b.test('\u0E41')&&!b.test('K')&&c.test('😀')&&c.test('A')&&c.test('\uD800')"
+            r#"
+                let a = /[\p{{LOE}}K]/i{mode},
+                    b = /[^\P{{Logical_Order_Exception}}K]/i{mode},
+                    c = /[\p{{LOE}}\P{{Logical_Order_Exception}}]/{mode};
+                a.test('K') && a.test('k') && a.test('\u0E40') && !a.test('ſ') && b.test('\u0E41') && !b.test(
+                    'K') && c.test('😀') && c.test('A') && c.test('\uD800')
+            "#
         ));
         assert_true(&format!(
-            r"let a=/^\p{{LOE}}$/{mode},b=/^\P{{LOE}}$/{mode};a.test('\u0E40')&&!a.test('\u0E41\n')&&!a.test('')&&!a.test('\n')&&b.test('😀')&&!b.test('AA')"
+            r#"
+                let a = /^\p{{LOE}}$/{mode},
+                    b = /^\P{{LOE}}$/{mode};
+                a.test('\u0E40') && !a.test('\u0E41\n') && !a.test('') && !a.test('\n') && b.test('😀') && !b
+                    .test('AA')
+            "#
         ));
     }
 }
@@ -67,10 +90,21 @@ fn unicode_logical_order_exception_properties_aliases_complements_and_unions() {
 fn unicode_logical_order_exception_properties_captures_context_and_pair_starts() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/^(?<x>([\p{{LOE}}K]))$/dim{mode}g,m=r.exec('x\r\nK\u2028');m.index===3&&m[1]==='K'&&m[2]==='K'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===4&&r.lastIndex===4"
+            r#"
+                let r = /^(?<x>([\p{{LOE}}K]))$/dim{mode}g,
+                    m = r.exec('x\r\nK\u2028');
+                m.index === 3 && m[1] === 'K' && m[2] === 'K' && m.indices.groups.x === m.indices[1] && m
+                    .indices[2][1] === 4 && r.lastIndex === 4
+            "#
         ));
         assert_true(&format!(
-            r"let r=/(?<__proto__>\P{{LOE}})/d{mode}y;r.lastIndex=1;let m=r.exec('😀\u0e40');m.index===0&&m[1]==='😀'&&m.indices[1][1]===2&&r.lastIndex===2&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]"
+            r#"
+                let r = /(?<__proto__>\P{{LOE}})/d{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('😀\u0e40');
+                m.index === 0 && m[1] === '😀' && m.indices[1][1] === 2 && r.lastIndex === 2 && Object
+                    .getPrototypeOf(m.groups) === null && m.indices.groups.__proto__ === m.indices[1]
+            "#
         ));
         assert_true(&format!(
             r"let r=/\p{{LOE}}/d{mode}g;r.lastIndex=1;let m=r.exec('😀\u0e40');m.index===2&&m[0]==='\u0e40'&&r.lastIndex===3"
@@ -85,7 +119,11 @@ fn unicode_logical_order_exception_properties_captures_context_and_pair_starts()
 fn unicode_logical_order_exception_properties_consumers_original_text() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=[...'\u0e41😀\u0e40G'.matchAll(/(?<x>\P{{LOE}})/d{mode}g)];a.length===2&&a[0][1]==='😀'&&a[0].index===1&&a[0].indices[1][1]===3&&a[1][1]==='G'"
+            r#"
+                let a = [...'\u0e41😀\u0e40G'.matchAll(/(?<x>\P{{LOE}})/d{mode}g)];
+                a.length === 2 && a[0][1] === '😀' && a[0].index === 1 && a[0].indices[1][1] === 3 && a[1][
+                    1] === 'G'
+            "#
         ));
         assert_true(&format!(
             r"'\u0e41\u0e40😀X'.replace(/(?<x>\p{{Logical_Order_Exception}})/{mode}g,'<$1:$<x>>')==='<\u0e41:\u0e41><\u0e40:\u0e40>😀X'"
@@ -94,7 +132,14 @@ fn unicode_logical_order_exception_properties_consumers_original_text() {
             r"'😀\u0e41\u0e40G'.split(/(\p{{LOE}})/{mode}).join('|')==='😀|\u0e41||\u0e40|G'&&'😀\u0e40'.search(/\p{{LOE}}/{mode})===2&&'\u0e41\u0e40😀'.match(/\p{{LOE}}/{mode}g).join('')==='\u0e41\u0e40'"
         ));
         assert_true(&format!(
-            r"let t='';let x='\u0e40\u0e41😀\u0e40'.replace(/(\p{{LOE}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__😀_'&&t==='014'"
+            r#"
+                let t = '';
+                let x = '\u0e40\u0e41😀\u0e40'.replace(/(\p{{LOE}})/{mode}g, (m, c, p) => {{
+                    t += p;
+                    return '_'
+                }});
+                x === '__😀_' && t === '014'
+            "#
         ));
     }
 }
@@ -102,16 +147,62 @@ fn unicode_logical_order_exception_properties_consumers_original_text() {
 #[test]
 fn unicode_logical_order_exception_properties_clones_coercions_and_strict_writes() {
     assert_true(
-        r"let r=/^(?<x>\p{Logical_Order_Exception})$/dmu,c=new RegExp(r,'divy');c.source==='^(?<x>\\p{Logical_Order_Exception})$'&&c.unicodeSets&&!c.unicode&&!c.multiline&&c.exec('\u0e40').groups.x==='\u0e40'&&c.lastIndex===1",
+        r#"
+            let r = /^(?<x>\p{Logical_Order_Exception})$/dmu,
+                c = new RegExp(r, 'divy');
+            c.source === '^(?<x>\\p{Logical_Order_Exception})$' && c.unicodeSets && !c.unicode && !c
+                .multiline && c.exec('\u0e40').groups.x === '\u0e40' && c.lastIndex === 1
+        "#,
     );
     assert_true(
-        r"let t='',r=/\P{LOE}/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m[0]==='😀'&&m.index===0&&r.lastIndex===2",
+        r#"
+            let t = '',
+                r = /\P{LOE}/uy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 1
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return '😀'
+                }
+            });
+            t === 'si' && m[0] === '😀' && m.index === 0 && r.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let r=/\p{LOE}/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('\u0e40')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            let r = /\p{LOE}/vy;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('\u0e40')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/\p{LOE}/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀\u0e40')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /\p{LOE}/vy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀\u0e40')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 
@@ -149,7 +240,12 @@ fn unicode_logical_order_exception_properties_opted_work_and_remaining_sets() {
 fn unicode_logical_order_exception_repetitions_retain_last_capture_and_outside_words() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/\B(?<x>\p{{LOE}})+\B/d{mode}g,m=r.exec('😀\u0e40\u0e41\u0ec0!');m.index===2&&m[0]==='\u0e40\u0e41\u0ec0'&&m.groups.x==='\u0ec0'&&m.indices.groups.x[0]===4&&m.indices.groups.x[1]===5&&r.lastIndex===5"
+            r#"
+                let r = /\B(?<x>\p{{LOE}})+\B/d{mode}g,
+                    m = r.exec('😀\u0e40\u0e41\u0ec0!');
+                m.index === 2 && m[0] === '\u0e40\u0e41\u0ec0' && m.groups.x === '\u0ec0' && m.indices.groups
+                    .x[0] === 4 && m.indices.groups.x[1] === 5 && r.lastIndex === 5
+            "#
         ));
     }
 }

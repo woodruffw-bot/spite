@@ -49,16 +49,39 @@ fn unicode_emoji_presentation_property_results_snapshot() {
 fn unicode_emoji_presentation_properties_aliases_complements_and_unions() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=/\p{{Emoji_Presentation}}/{mode},b=/\p{{EPres}}/i{mode},n=/\P{{EPres}}/i{mode};a.test('\u231A')&&a.test('\u23F3')&&b.test('\u231A')&&!a.test('\u005f')&&!b.test('\u005f')&&!b.test('ſ')&&!b.test('K')&&!n.test('\u231A')&&n.test('\uDB40\uDC01')&&n.test('\uD800')&&n.test('\u0020')"
+            r#"
+                let a = /\p{{Emoji_Presentation}}/{mode},
+                    b = /\p{{EPres}}/i{mode},
+                    n = /\P{{EPres}}/i{mode};
+                a.test('\u231A') && a.test('\u23F3') && b.test('\u231A') && !a.test('\u005f') && !b.test(
+                    '\u005f') && !b.test('ſ') && !b.test('K') && !n.test('\u231A') && n.test(
+                    '\uDB40\uDC01') && n.test('\uD800') && n.test('\u0020')
+            "#
         ));
         assert_true(&format!(
-            r"let p=/\p{{Emoji_Presentation}}/{mode},s=/\s/{mode};p.test('\u231A')&&p.test('\u23F3')&&!s.test('\u231A')&&!s.test('\u23F3')&&!p.test('\u0020')&&s.test('\u0020')"
+            r#"
+                let p = /\p{{Emoji_Presentation}}/{mode},
+                    s = /\s/{mode};
+                p.test('\u231A') && p.test('\u23F3') && !s.test('\u231A') && !s.test('\u23F3') && !p.test(
+                    '\u0020') && s.test('\u0020')
+            "#
         ));
         assert_true(&format!(
-            r"let a=/[\p{{EPres}}K]/i{mode},b=/[^\P{{Emoji_Presentation}}K]/i{mode},c=/[\p{{EPres}}\P{{Emoji_Presentation}}]/{mode};a.test('K')&&a.test('k')&&a.test('\u231A')&&!a.test('ſ')&&b.test('\u23F3')&&!b.test('K')&&c.test('\uDB40\uDC01')&&c.test('A')&&c.test('\uD800')"
+            r#"
+                let a = /[\p{{EPres}}K]/i{mode},
+                    b = /[^\P{{Emoji_Presentation}}K]/i{mode},
+                    c = /[\p{{EPres}}\P{{Emoji_Presentation}}]/{mode};
+                a.test('K') && a.test('k') && a.test('\u231A') && !a.test('ſ') && b.test('\u23F3') && !b.test(
+                    'K') && c.test('\uDB40\uDC01') && c.test('A') && c.test('\uD800')
+            "#
         ));
         assert_true(&format!(
-            r"let a=/^\p{{EPres}}$/{mode},b=/^\P{{EPres}}$/{mode};a.test('\u231A')&&!a.test('\u23F3\n')&&!a.test('')&&!a.test('\n')&&b.test('\uDB40\uDC01')&&!b.test('AA')"
+            r#"
+                let a = /^\p{{EPres}}$/{mode},
+                    b = /^\P{{EPres}}$/{mode};
+                a.test('\u231A') && !a.test('\u23F3\n') && !a.test('') && !a.test('\n') && b.test(
+                    '\uDB40\uDC01') && !b.test('AA')
+            "#
         ));
     }
 }
@@ -67,19 +90,41 @@ fn unicode_emoji_presentation_properties_aliases_complements_and_unions() {
 fn unicode_emoji_presentation_properties_captures_context_and_pair_starts() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/(?<x>\p{{EPres}})/d{mode}y;r.lastIndex=1;let m=r.exec('\uD83D\uDE00');m.index===0&&m[0]==='\uD83D\uDE00'&&m.groups.x===m[0]&&m.indices[1][0]===0&&m.indices[1][1]===2&&r.lastIndex===2"
+            r#"
+                let r = /(?<x>\p{{EPres}})/d{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('\uD83D\uDE00');
+                m.index === 0 && m[0] === '\uD83D\uDE00' && m.groups.x === m[0] && m.indices[1][0] === 0 && m
+                    .indices[1][1] === 2 && r.lastIndex === 2
+            "#
         ));
     }
 
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/^(?<x>([\p{{EPres}}K]))$/dim{mode}g,m=r.exec('x\r\nK\u2028');m.index===3&&m[1]==='K'&&m[2]==='K'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===4&&r.lastIndex===4"
+            r#"
+                let r = /^(?<x>([\p{{EPres}}K]))$/dim{mode}g,
+                    m = r.exec('x\r\nK\u2028');
+                m.index === 3 && m[1] === 'K' && m[2] === 'K' && m.indices.groups.x === m.indices[1] && m
+                    .indices[2][1] === 4 && r.lastIndex === 4
+            "#
         ));
         assert_true(&format!(
-            r"let r=/(?<__proto__>\P{{EPres}})/d{mode}y;r.lastIndex=1;let m=r.exec('\uDB40\uDC01\u231A');m.index===0&&m[1]==='\uDB40\uDC01'&&m.indices[1][1]===2&&r.lastIndex===2&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]"
+            r#"
+                let r = /(?<__proto__>\P{{EPres}})/d{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('\uDB40\uDC01\u231A');
+                m.index === 0 && m[1] === '\uDB40\uDC01' && m.indices[1][1] === 2 && r.lastIndex === 2 &&
+                    Object.getPrototypeOf(m.groups) === null && m.indices.groups.__proto__ === m.indices[1]
+            "#
         ));
         assert_true(&format!(
-            r"let r=/\p{{EPres}}/d{mode}g;r.lastIndex=1;let m=r.exec('\uDB40\uDC01\u231A');m.index===2&&m[0]==='\u231A'&&r.lastIndex===3"
+            r#"
+                let r = /\p{{EPres}}/d{mode}g;
+                r.lastIndex = 1;
+                let m = r.exec('\uDB40\uDC01\u231A');
+                m.index === 2 && m[0] === '\u231A' && r.lastIndex === 3
+            "#
         ));
         assert_true(&format!(
             r"let r=/\p{{EPres}}/{mode}y;r.lastIndex=1;r.exec('\uDB40\uDC01\u231A')===null&&r.lastIndex===0"
@@ -91,7 +136,11 @@ fn unicode_emoji_presentation_properties_captures_context_and_pair_starts() {
 fn unicode_emoji_presentation_properties_consumers_original_text() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=[...'\u23F3\uDB40\uDC01\u231AG'.matchAll(/(?<x>\P{{EPres}})/d{mode}g)];a.length===2&&a[0][1]==='\uDB40\uDC01'&&a[0].index===1&&a[0].indices[1][1]===3&&a[1][1]==='G'"
+            r#"
+                let a = [...'\u23F3\uDB40\uDC01\u231AG'.matchAll(/(?<x>\P{{EPres}})/d{mode}g)];
+                a.length === 2 && a[0][1] === '\uDB40\uDC01' && a[0].index === 1 && a[0].indices[1][1] === 3 &&
+                    a[1][1] === 'G'
+            "#
         ));
         assert_true(&format!(
             r"'\u23F3\u231A\uDB40\uDC01X'.replace(/(?<x>\p{{Emoji_Presentation}})/{mode}g,'<$1:$<x>>')==='<\u23F3:\u23F3><\u231A:\u231A>\uDB40\uDC01X'"
@@ -100,7 +149,14 @@ fn unicode_emoji_presentation_properties_consumers_original_text() {
             r"'\uDB40\uDC01\u23F3\u231AG'.split(/(\p{{EPres}})/{mode}).join('|')==='\uDB40\uDC01|\u23F3||\u231A|G'&&'\uDB40\uDC01\u231A'.search(/\p{{EPres}}/{mode})===2&&'\u23F3\u231A\uDB40\uDC01'.match(/\p{{EPres}}/{mode}g).join('')==='\u23F3\u231A'"
         ));
         assert_true(&format!(
-            r"let t='';let x='\u231A\u23F3\uDB40\uDC01\u231A'.replace(/(\p{{EPres}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__\uDB40\uDC01_'&&t==='014'"
+            r#"
+                let t = '';
+                let x = '\u231A\u23F3\uDB40\uDC01\u231A'.replace(/(\p{{EPres}})/{mode}g, (m, c, p) => {{
+                    t += p;
+                    return '_'
+                }});
+                x === '__\uDB40\uDC01_' && t === '014'
+            "#
         ));
     }
 }
@@ -108,16 +164,62 @@ fn unicode_emoji_presentation_properties_consumers_original_text() {
 #[test]
 fn unicode_emoji_presentation_properties_clones_coercions_and_strict_writes() {
     assert_true(
-        r"let r=/^(?<x>\p{Emoji_Presentation})$/dmu,c=new RegExp(r,'divy');c.source==='^(?<x>\\p{Emoji_Presentation})$'&&c.unicodeSets&&!c.unicode&&!c.multiline&&c.exec('\u231A').groups.x==='\u231A'&&c.lastIndex===1",
+        r#"
+            let r = /^(?<x>\p{Emoji_Presentation})$/dmu,
+                c = new RegExp(r, 'divy');
+            c.source === '^(?<x>\\p{Emoji_Presentation})$' && c.unicodeSets && !c.unicode && !c
+                .multiline && c.exec('\u231A').groups.x === '\u231A' && c.lastIndex === 1
+        "#,
     );
     assert_true(
-        r"let t='',r=/\P{EPres}/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '\uDB40\uDC01'}});t==='si'&&m[0]==='\uDB40\uDC01'&&m.index===0&&r.lastIndex===2",
+        r#"
+            let t = '',
+                r = /\P{EPres}/uy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 1
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return '\uDB40\uDC01'
+                }
+            });
+            t === 'si' && m[0] === '\uDB40\uDC01' && m.index === 0 && r.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let r=/\p{EPres}/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('\u231A')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            let r = /\p{EPres}/vy;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('\u231A')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/\p{EPres}/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('\uDB40\uDC01\u231A')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /\p{EPres}/vy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('\uDB40\uDC01\u231A')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 
@@ -155,7 +257,12 @@ fn unicode_emoji_presentation_properties_opted_work_and_remaining_sets() {
 fn unicode_emoji_presentation_repetitions_retain_last_capture_and_outside_words() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/\B(?<x>\p{{EPres}})+\B/d{mode}g,m=r.exec('\uDB40\uDC01\u231A\u23F3\u23F3\u0020');m.index===2&&m[0]==='\u231A\u23F3\u23F3'&&m.groups.x==='\u23F3'&&m.indices.groups.x[0]===4&&m.indices.groups.x[1]===5&&r.lastIndex===5"
+            r#"
+                let r = /\B(?<x>\p{{EPres}})+\B/d{mode}g,
+                    m = r.exec('\uDB40\uDC01\u231A\u23F3\u23F3\u0020');
+                m.index === 2 && m[0] === '\u231A\u23F3\u23F3' && m.groups.x === '\u23F3' && m.indices.groups
+                    .x[0] === 4 && m.indices.groups.x[1] === 5 && r.lastIndex === 5
+            "#
         ));
     }
 }
@@ -163,219 +270,507 @@ fn unicode_emoji_presentation_repetitions_retain_last_capture_and_outside_words(
 #[test]
 fn unicode_emoji_presentation_property_unicode18_addition() {
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','u'),n=new RegExp('^\\P{Emoji_Presentation}$','u');p.test('\uD83D\uDED9')===true&&n.test('\uD83D\uDED9')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'u'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'u');
+            p.test('\uD83D\uDED9') === true && n.test('\uD83D\uDED9') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','ui'),n=new RegExp('^\\P{Emoji_Presentation}$','ui');p.test('\uD83D\uDED9')===true&&n.test('\uD83D\uDED9')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'ui'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'ui');
+            p.test('\uD83D\uDED9') === true && n.test('\uD83D\uDED9') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','v'),n=new RegExp('^\\P{Emoji_Presentation}$','v');p.test('\uD83D\uDED9')===true&&n.test('\uD83D\uDED9')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'v'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'v');
+            p.test('\uD83D\uDED9') === true && n.test('\uD83D\uDED9') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','vi'),n=new RegExp('^\\P{Emoji_Presentation}$','vi');p.test('\uD83D\uDED9')===true&&n.test('\uD83D\uDED9')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'vi'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'vi');
+            p.test('\uD83D\uDED9') === true && n.test('\uD83D\uDED9') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','u'),n=new RegExp('^\\P{EPres}$','u');p.test('\uD83D\uDED9')===true&&n.test('\uD83D\uDED9')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'u'),
+                n = new RegExp('^\\P{EPres}$', 'u');
+            p.test('\uD83D\uDED9') === true && n.test('\uD83D\uDED9') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','ui'),n=new RegExp('^\\P{EPres}$','ui');p.test('\uD83D\uDED9')===true&&n.test('\uD83D\uDED9')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'ui'),
+                n = new RegExp('^\\P{EPres}$', 'ui');
+            p.test('\uD83D\uDED9') === true && n.test('\uD83D\uDED9') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','v'),n=new RegExp('^\\P{EPres}$','v');p.test('\uD83D\uDED9')===true&&n.test('\uD83D\uDED9')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'v'),
+                n = new RegExp('^\\P{EPres}$', 'v');
+            p.test('\uD83D\uDED9') === true && n.test('\uD83D\uDED9') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','vi'),n=new RegExp('^\\P{EPres}$','vi');p.test('\uD83D\uDED9')===true&&n.test('\uD83D\uDED9')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'vi'),
+                n = new RegExp('^\\P{EPres}$', 'vi');
+            p.test('\uD83D\uDED9') === true && n.test('\uD83D\uDED9') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','u'),n=new RegExp('^\\P{Emoji_Presentation}$','u');p.test('\uD83E\uDE8B')===true&&n.test('\uD83E\uDE8B')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'u'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'u');
+            p.test('\uD83E\uDE8B') === true && n.test('\uD83E\uDE8B') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','ui'),n=new RegExp('^\\P{Emoji_Presentation}$','ui');p.test('\uD83E\uDE8B')===true&&n.test('\uD83E\uDE8B')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'ui'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'ui');
+            p.test('\uD83E\uDE8B') === true && n.test('\uD83E\uDE8B') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','v'),n=new RegExp('^\\P{Emoji_Presentation}$','v');p.test('\uD83E\uDE8B')===true&&n.test('\uD83E\uDE8B')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'v'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'v');
+            p.test('\uD83E\uDE8B') === true && n.test('\uD83E\uDE8B') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','vi'),n=new RegExp('^\\P{Emoji_Presentation}$','vi');p.test('\uD83E\uDE8B')===true&&n.test('\uD83E\uDE8B')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'vi'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'vi');
+            p.test('\uD83E\uDE8B') === true && n.test('\uD83E\uDE8B') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','u'),n=new RegExp('^\\P{EPres}$','u');p.test('\uD83E\uDE8B')===true&&n.test('\uD83E\uDE8B')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'u'),
+                n = new RegExp('^\\P{EPres}$', 'u');
+            p.test('\uD83E\uDE8B') === true && n.test('\uD83E\uDE8B') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','ui'),n=new RegExp('^\\P{EPres}$','ui');p.test('\uD83E\uDE8B')===true&&n.test('\uD83E\uDE8B')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'ui'),
+                n = new RegExp('^\\P{EPres}$', 'ui');
+            p.test('\uD83E\uDE8B') === true && n.test('\uD83E\uDE8B') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','v'),n=new RegExp('^\\P{EPres}$','v');p.test('\uD83E\uDE8B')===true&&n.test('\uD83E\uDE8B')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'v'),
+                n = new RegExp('^\\P{EPres}$', 'v');
+            p.test('\uD83E\uDE8B') === true && n.test('\uD83E\uDE8B') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','vi'),n=new RegExp('^\\P{EPres}$','vi');p.test('\uD83E\uDE8B')===true&&n.test('\uD83E\uDE8B')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'vi'),
+                n = new RegExp('^\\P{EPres}$', 'vi');
+            p.test('\uD83E\uDE8B') === true && n.test('\uD83E\uDE8B') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','u'),n=new RegExp('^\\P{Emoji_Presentation}$','u');p.test('\uD83E\uDE8C')===true&&n.test('\uD83E\uDE8C')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'u'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'u');
+            p.test('\uD83E\uDE8C') === true && n.test('\uD83E\uDE8C') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','ui'),n=new RegExp('^\\P{Emoji_Presentation}$','ui');p.test('\uD83E\uDE8C')===true&&n.test('\uD83E\uDE8C')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'ui'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'ui');
+            p.test('\uD83E\uDE8C') === true && n.test('\uD83E\uDE8C') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','v'),n=new RegExp('^\\P{Emoji_Presentation}$','v');p.test('\uD83E\uDE8C')===true&&n.test('\uD83E\uDE8C')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'v'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'v');
+            p.test('\uD83E\uDE8C') === true && n.test('\uD83E\uDE8C') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','vi'),n=new RegExp('^\\P{Emoji_Presentation}$','vi');p.test('\uD83E\uDE8C')===true&&n.test('\uD83E\uDE8C')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'vi'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'vi');
+            p.test('\uD83E\uDE8C') === true && n.test('\uD83E\uDE8C') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','u'),n=new RegExp('^\\P{EPres}$','u');p.test('\uD83E\uDE8C')===true&&n.test('\uD83E\uDE8C')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'u'),
+                n = new RegExp('^\\P{EPres}$', 'u');
+            p.test('\uD83E\uDE8C') === true && n.test('\uD83E\uDE8C') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','ui'),n=new RegExp('^\\P{EPres}$','ui');p.test('\uD83E\uDE8C')===true&&n.test('\uD83E\uDE8C')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'ui'),
+                n = new RegExp('^\\P{EPres}$', 'ui');
+            p.test('\uD83E\uDE8C') === true && n.test('\uD83E\uDE8C') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','v'),n=new RegExp('^\\P{EPres}$','v');p.test('\uD83E\uDE8C')===true&&n.test('\uD83E\uDE8C')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'v'),
+                n = new RegExp('^\\P{EPres}$', 'v');
+            p.test('\uD83E\uDE8C') === true && n.test('\uD83E\uDE8C') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','vi'),n=new RegExp('^\\P{EPres}$','vi');p.test('\uD83E\uDE8C')===true&&n.test('\uD83E\uDE8C')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'vi'),
+                n = new RegExp('^\\P{EPres}$', 'vi');
+            p.test('\uD83E\uDE8C') === true && n.test('\uD83E\uDE8C') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','u'),n=new RegExp('^\\P{Emoji_Presentation}$','u');p.test('\uD83E\uDE8D')===true&&n.test('\uD83E\uDE8D')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'u'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'u');
+            p.test('\uD83E\uDE8D') === true && n.test('\uD83E\uDE8D') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','ui'),n=new RegExp('^\\P{Emoji_Presentation}$','ui');p.test('\uD83E\uDE8D')===true&&n.test('\uD83E\uDE8D')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'ui'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'ui');
+            p.test('\uD83E\uDE8D') === true && n.test('\uD83E\uDE8D') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','v'),n=new RegExp('^\\P{Emoji_Presentation}$','v');p.test('\uD83E\uDE8D')===true&&n.test('\uD83E\uDE8D')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'v'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'v');
+            p.test('\uD83E\uDE8D') === true && n.test('\uD83E\uDE8D') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','vi'),n=new RegExp('^\\P{Emoji_Presentation}$','vi');p.test('\uD83E\uDE8D')===true&&n.test('\uD83E\uDE8D')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'vi'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'vi');
+            p.test('\uD83E\uDE8D') === true && n.test('\uD83E\uDE8D') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','u'),n=new RegExp('^\\P{EPres}$','u');p.test('\uD83E\uDE8D')===true&&n.test('\uD83E\uDE8D')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'u'),
+                n = new RegExp('^\\P{EPres}$', 'u');
+            p.test('\uD83E\uDE8D') === true && n.test('\uD83E\uDE8D') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','ui'),n=new RegExp('^\\P{EPres}$','ui');p.test('\uD83E\uDE8D')===true&&n.test('\uD83E\uDE8D')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'ui'),
+                n = new RegExp('^\\P{EPres}$', 'ui');
+            p.test('\uD83E\uDE8D') === true && n.test('\uD83E\uDE8D') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','v'),n=new RegExp('^\\P{EPres}$','v');p.test('\uD83E\uDE8D')===true&&n.test('\uD83E\uDE8D')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'v'),
+                n = new RegExp('^\\P{EPres}$', 'v');
+            p.test('\uD83E\uDE8D') === true && n.test('\uD83E\uDE8D') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','vi'),n=new RegExp('^\\P{EPres}$','vi');p.test('\uD83E\uDE8D')===true&&n.test('\uD83E\uDE8D')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'vi'),
+                n = new RegExp('^\\P{EPres}$', 'vi');
+            p.test('\uD83E\uDE8D') === true && n.test('\uD83E\uDE8D') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','u'),n=new RegExp('^\\P{Emoji_Presentation}$','u');p.test('\uD83E\uDECC')===true&&n.test('\uD83E\uDECC')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'u'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'u');
+            p.test('\uD83E\uDECC') === true && n.test('\uD83E\uDECC') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','ui'),n=new RegExp('^\\P{Emoji_Presentation}$','ui');p.test('\uD83E\uDECC')===true&&n.test('\uD83E\uDECC')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'ui'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'ui');
+            p.test('\uD83E\uDECC') === true && n.test('\uD83E\uDECC') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','v'),n=new RegExp('^\\P{Emoji_Presentation}$','v');p.test('\uD83E\uDECC')===true&&n.test('\uD83E\uDECC')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'v'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'v');
+            p.test('\uD83E\uDECC') === true && n.test('\uD83E\uDECC') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','vi'),n=new RegExp('^\\P{Emoji_Presentation}$','vi');p.test('\uD83E\uDECC')===true&&n.test('\uD83E\uDECC')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'vi'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'vi');
+            p.test('\uD83E\uDECC') === true && n.test('\uD83E\uDECC') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','u'),n=new RegExp('^\\P{EPres}$','u');p.test('\uD83E\uDECC')===true&&n.test('\uD83E\uDECC')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'u'),
+                n = new RegExp('^\\P{EPres}$', 'u');
+            p.test('\uD83E\uDECC') === true && n.test('\uD83E\uDECC') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','ui'),n=new RegExp('^\\P{EPres}$','ui');p.test('\uD83E\uDECC')===true&&n.test('\uD83E\uDECC')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'ui'),
+                n = new RegExp('^\\P{EPres}$', 'ui');
+            p.test('\uD83E\uDECC') === true && n.test('\uD83E\uDECC') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','v'),n=new RegExp('^\\P{EPres}$','v');p.test('\uD83E\uDECC')===true&&n.test('\uD83E\uDECC')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'v'),
+                n = new RegExp('^\\P{EPres}$', 'v');
+            p.test('\uD83E\uDECC') === true && n.test('\uD83E\uDECC') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','vi'),n=new RegExp('^\\P{EPres}$','vi');p.test('\uD83E\uDECC')===true&&n.test('\uD83E\uDECC')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'vi'),
+                n = new RegExp('^\\P{EPres}$', 'vi');
+            p.test('\uD83E\uDECC') === true && n.test('\uD83E\uDECC') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','u'),n=new RegExp('^\\P{Emoji_Presentation}$','u');p.test('\uD83E\uDEDD')===true&&n.test('\uD83E\uDEDD')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'u'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'u');
+            p.test('\uD83E\uDEDD') === true && n.test('\uD83E\uDEDD') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','ui'),n=new RegExp('^\\P{Emoji_Presentation}$','ui');p.test('\uD83E\uDEDD')===true&&n.test('\uD83E\uDEDD')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'ui'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'ui');
+            p.test('\uD83E\uDEDD') === true && n.test('\uD83E\uDEDD') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','v'),n=new RegExp('^\\P{Emoji_Presentation}$','v');p.test('\uD83E\uDEDD')===true&&n.test('\uD83E\uDEDD')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'v'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'v');
+            p.test('\uD83E\uDEDD') === true && n.test('\uD83E\uDEDD') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','vi'),n=new RegExp('^\\P{Emoji_Presentation}$','vi');p.test('\uD83E\uDEDD')===true&&n.test('\uD83E\uDEDD')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'vi'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'vi');
+            p.test('\uD83E\uDEDD') === true && n.test('\uD83E\uDEDD') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','u'),n=new RegExp('^\\P{EPres}$','u');p.test('\uD83E\uDEDD')===true&&n.test('\uD83E\uDEDD')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'u'),
+                n = new RegExp('^\\P{EPres}$', 'u');
+            p.test('\uD83E\uDEDD') === true && n.test('\uD83E\uDEDD') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','ui'),n=new RegExp('^\\P{EPres}$','ui');p.test('\uD83E\uDEDD')===true&&n.test('\uD83E\uDEDD')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'ui'),
+                n = new RegExp('^\\P{EPres}$', 'ui');
+            p.test('\uD83E\uDEDD') === true && n.test('\uD83E\uDEDD') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','v'),n=new RegExp('^\\P{EPres}$','v');p.test('\uD83E\uDEDD')===true&&n.test('\uD83E\uDEDD')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'v'),
+                n = new RegExp('^\\P{EPres}$', 'v');
+            p.test('\uD83E\uDEDD') === true && n.test('\uD83E\uDEDD') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','vi'),n=new RegExp('^\\P{EPres}$','vi');p.test('\uD83E\uDEDD')===true&&n.test('\uD83E\uDEDD')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'vi'),
+                n = new RegExp('^\\P{EPres}$', 'vi');
+            p.test('\uD83E\uDEDD') === true && n.test('\uD83E\uDEDD') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','u'),n=new RegExp('^\\P{Emoji_Presentation}$','u');p.test('\uD83E\uDEEB')===true&&n.test('\uD83E\uDEEB')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'u'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'u');
+            p.test('\uD83E\uDEEB') === true && n.test('\uD83E\uDEEB') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','ui'),n=new RegExp('^\\P{Emoji_Presentation}$','ui');p.test('\uD83E\uDEEB')===true&&n.test('\uD83E\uDEEB')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'ui'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'ui');
+            p.test('\uD83E\uDEEB') === true && n.test('\uD83E\uDEEB') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','v'),n=new RegExp('^\\P{Emoji_Presentation}$','v');p.test('\uD83E\uDEEB')===true&&n.test('\uD83E\uDEEB')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'v'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'v');
+            p.test('\uD83E\uDEEB') === true && n.test('\uD83E\uDEEB') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','vi'),n=new RegExp('^\\P{Emoji_Presentation}$','vi');p.test('\uD83E\uDEEB')===true&&n.test('\uD83E\uDEEB')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'vi'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'vi');
+            p.test('\uD83E\uDEEB') === true && n.test('\uD83E\uDEEB') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','u'),n=new RegExp('^\\P{EPres}$','u');p.test('\uD83E\uDEEB')===true&&n.test('\uD83E\uDEEB')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'u'),
+                n = new RegExp('^\\P{EPres}$', 'u');
+            p.test('\uD83E\uDEEB') === true && n.test('\uD83E\uDEEB') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','ui'),n=new RegExp('^\\P{EPres}$','ui');p.test('\uD83E\uDEEB')===true&&n.test('\uD83E\uDEEB')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'ui'),
+                n = new RegExp('^\\P{EPres}$', 'ui');
+            p.test('\uD83E\uDEEB') === true && n.test('\uD83E\uDEEB') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','v'),n=new RegExp('^\\P{EPres}$','v');p.test('\uD83E\uDEEB')===true&&n.test('\uD83E\uDEEB')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'v'),
+                n = new RegExp('^\\P{EPres}$', 'v');
+            p.test('\uD83E\uDEEB') === true && n.test('\uD83E\uDEEB') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','vi'),n=new RegExp('^\\P{EPres}$','vi');p.test('\uD83E\uDEEB')===true&&n.test('\uD83E\uDEEB')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'vi'),
+                n = new RegExp('^\\P{EPres}$', 'vi');
+            p.test('\uD83E\uDEEB') === true && n.test('\uD83E\uDEEB') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','u'),n=new RegExp('^\\P{Emoji_Presentation}$','u');p.test('\uD83E\uDEF9')===true&&n.test('\uD83E\uDEF9')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'u'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'u');
+            p.test('\uD83E\uDEF9') === true && n.test('\uD83E\uDEF9') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','ui'),n=new RegExp('^\\P{Emoji_Presentation}$','ui');p.test('\uD83E\uDEF9')===true&&n.test('\uD83E\uDEF9')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'ui'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'ui');
+            p.test('\uD83E\uDEF9') === true && n.test('\uD83E\uDEF9') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','v'),n=new RegExp('^\\P{Emoji_Presentation}$','v');p.test('\uD83E\uDEF9')===true&&n.test('\uD83E\uDEF9')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'v'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'v');
+            p.test('\uD83E\uDEF9') === true && n.test('\uD83E\uDEF9') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','vi'),n=new RegExp('^\\P{Emoji_Presentation}$','vi');p.test('\uD83E\uDEF9')===true&&n.test('\uD83E\uDEF9')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'vi'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'vi');
+            p.test('\uD83E\uDEF9') === true && n.test('\uD83E\uDEF9') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','u'),n=new RegExp('^\\P{EPres}$','u');p.test('\uD83E\uDEF9')===true&&n.test('\uD83E\uDEF9')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'u'),
+                n = new RegExp('^\\P{EPres}$', 'u');
+            p.test('\uD83E\uDEF9') === true && n.test('\uD83E\uDEF9') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','ui'),n=new RegExp('^\\P{EPres}$','ui');p.test('\uD83E\uDEF9')===true&&n.test('\uD83E\uDEF9')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'ui'),
+                n = new RegExp('^\\P{EPres}$', 'ui');
+            p.test('\uD83E\uDEF9') === true && n.test('\uD83E\uDEF9') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','v'),n=new RegExp('^\\P{EPres}$','v');p.test('\uD83E\uDEF9')===true&&n.test('\uD83E\uDEF9')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'v'),
+                n = new RegExp('^\\P{EPres}$', 'v');
+            p.test('\uD83E\uDEF9') === true && n.test('\uD83E\uDEF9') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','vi'),n=new RegExp('^\\P{EPres}$','vi');p.test('\uD83E\uDEF9')===true&&n.test('\uD83E\uDEF9')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'vi'),
+                n = new RegExp('^\\P{EPres}$', 'vi');
+            p.test('\uD83E\uDEF9') === true && n.test('\uD83E\uDEF9') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','u'),n=new RegExp('^\\P{Emoji_Presentation}$','u');p.test('\uD83E\uDEFA')===true&&n.test('\uD83E\uDEFA')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'u'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'u');
+            p.test('\uD83E\uDEFA') === true && n.test('\uD83E\uDEFA') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','ui'),n=new RegExp('^\\P{Emoji_Presentation}$','ui');p.test('\uD83E\uDEFA')===true&&n.test('\uD83E\uDEFA')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'ui'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'ui');
+            p.test('\uD83E\uDEFA') === true && n.test('\uD83E\uDEFA') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','v'),n=new RegExp('^\\P{Emoji_Presentation}$','v');p.test('\uD83E\uDEFA')===true&&n.test('\uD83E\uDEFA')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'v'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'v');
+            p.test('\uD83E\uDEFA') === true && n.test('\uD83E\uDEFA') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{Emoji_Presentation}$','vi'),n=new RegExp('^\\P{Emoji_Presentation}$','vi');p.test('\uD83E\uDEFA')===true&&n.test('\uD83E\uDEFA')===false",
+        r#"
+            let p = new RegExp('^\\p{Emoji_Presentation}$', 'vi'),
+                n = new RegExp('^\\P{Emoji_Presentation}$', 'vi');
+            p.test('\uD83E\uDEFA') === true && n.test('\uD83E\uDEFA') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','u'),n=new RegExp('^\\P{EPres}$','u');p.test('\uD83E\uDEFA')===true&&n.test('\uD83E\uDEFA')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'u'),
+                n = new RegExp('^\\P{EPres}$', 'u');
+            p.test('\uD83E\uDEFA') === true && n.test('\uD83E\uDEFA') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','ui'),n=new RegExp('^\\P{EPres}$','ui');p.test('\uD83E\uDEFA')===true&&n.test('\uD83E\uDEFA')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'ui'),
+                n = new RegExp('^\\P{EPres}$', 'ui');
+            p.test('\uD83E\uDEFA') === true && n.test('\uD83E\uDEFA') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','v'),n=new RegExp('^\\P{EPres}$','v');p.test('\uD83E\uDEFA')===true&&n.test('\uD83E\uDEFA')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'v'),
+                n = new RegExp('^\\P{EPres}$', 'v');
+            p.test('\uD83E\uDEFA') === true && n.test('\uD83E\uDEFA') === false
+        "#,
     );
     assert_true(
-        r"let p=new RegExp('^\\p{EPres}$','vi'),n=new RegExp('^\\P{EPres}$','vi');p.test('\uD83E\uDEFA')===true&&n.test('\uD83E\uDEFA')===false",
+        r#"
+            let p = new RegExp('^\\p{EPres}$', 'vi'),
+                n = new RegExp('^\\P{EPres}$', 'vi');
+            p.test('\uD83E\uDEFA') === true && n.test('\uD83E\uDEFA') === false
+        "#,
     );
 }

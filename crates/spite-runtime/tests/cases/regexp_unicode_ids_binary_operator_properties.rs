@@ -49,16 +49,39 @@ fn unicode_ids_binary_operator_property_results_snapshot() {
 fn unicode_ids_binary_operator_properties_aliases_complements_and_unions() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=/\p{{IDS_Binary_Operator}}/{mode},b=/\p{{IDSB}}/i{mode},n=/\P{{IDSB}}/i{mode};a.test('\u2FF0')&&a.test('\u2FF4')&&b.test('\u2FF0')&&!a.test('\u200D')&&!b.test('\u005f')&&!b.test('ſ')&&!b.test('K')&&!n.test('\u2FF0')&&n.test('😀')&&n.test('\uD800')&&n.test('\uFEFF')"
+            r#"
+                let a = /\p{{IDS_Binary_Operator}}/{mode},
+                    b = /\p{{IDSB}}/i{mode},
+                    n = /\P{{IDSB}}/i{mode};
+                a.test('\u2FF0') && a.test('\u2FF4') && b.test('\u2FF0') && !a.test('\u200D') && !b.test(
+                        '\u005f') && !b.test('ſ') && !b.test('K') && !n.test('\u2FF0') && n.test('😀') && n
+                    .test('\uD800') && n.test('\uFEFF')
+            "#
         ));
         assert_true(&format!(
-            r"let p=/\p{{IDS_Binary_Operator}}/{mode},s=/\s/{mode};p.test('\u2FF0')&&p.test('\u2FF4')&&!s.test('\u2FF0')&&!s.test('\u2FF4')&&!p.test('\uFEFF')&&s.test('\uFEFF')"
+            r#"
+                let p = /\p{{IDS_Binary_Operator}}/{mode},
+                    s = /\s/{mode};
+                p.test('\u2FF0') && p.test('\u2FF4') && !s.test('\u2FF0') && !s.test('\u2FF4') && !p.test(
+                    '\uFEFF') && s.test('\uFEFF')
+            "#
         ));
         assert_true(&format!(
-            r"let a=/[\p{{IDSB}}K]/i{mode},b=/[^\P{{IDS_Binary_Operator}}K]/i{mode},c=/[\p{{IDSB}}\P{{IDS_Binary_Operator}}]/{mode};a.test('K')&&a.test('k')&&a.test('\u2FF0')&&!a.test('ſ')&&b.test('\u2FF4')&&!b.test('K')&&c.test('😀')&&c.test('A')&&c.test('\uD800')"
+            r#"
+                let a = /[\p{{IDSB}}K]/i{mode},
+                    b = /[^\P{{IDS_Binary_Operator}}K]/i{mode},
+                    c = /[\p{{IDSB}}\P{{IDS_Binary_Operator}}]/{mode};
+                a.test('K') && a.test('k') && a.test('\u2FF0') && !a.test('ſ') && b.test('\u2FF4') && !b.test(
+                    'K') && c.test('😀') && c.test('A') && c.test('\uD800')
+            "#
         ));
         assert_true(&format!(
-            r"let a=/^\p{{IDSB}}$/{mode},b=/^\P{{IDSB}}$/{mode};a.test('\u2FF0')&&!a.test('\u2FF4\n')&&!a.test('')&&!a.test('\n')&&b.test('😀')&&!b.test('AA')"
+            r#"
+                let a = /^\p{{IDSB}}$/{mode},
+                    b = /^\P{{IDSB}}$/{mode};
+                a.test('\u2FF0') && !a.test('\u2FF4\n') && !a.test('') && !a.test('\n') && b.test('😀') && !b
+                    .test('AA')
+            "#
         ));
     }
 }
@@ -67,13 +90,29 @@ fn unicode_ids_binary_operator_properties_aliases_complements_and_unions() {
 fn unicode_ids_binary_operator_properties_captures_context_and_pair_starts() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/^(?<x>([\p{{IDSB}}K]))$/dim{mode}g,m=r.exec('x\r\nK\u2028');m.index===3&&m[1]==='K'&&m[2]==='K'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===4&&r.lastIndex===4"
+            r#"
+                let r = /^(?<x>([\p{{IDSB}}K]))$/dim{mode}g,
+                    m = r.exec('x\r\nK\u2028');
+                m.index === 3 && m[1] === 'K' && m[2] === 'K' && m.indices.groups.x === m.indices[1] && m
+                    .indices[2][1] === 4 && r.lastIndex === 4
+            "#
         ));
         assert_true(&format!(
-            r"let r=/(?<__proto__>\P{{IDSB}})/d{mode}y;r.lastIndex=1;let m=r.exec('😀\u2FF0');m.index===0&&m[1]==='😀'&&m.indices[1][1]===2&&r.lastIndex===2&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]"
+            r#"
+                let r = /(?<__proto__>\P{{IDSB}})/d{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('😀\u2FF0');
+                m.index === 0 && m[1] === '😀' && m.indices[1][1] === 2 && r.lastIndex === 2 && Object
+                    .getPrototypeOf(m.groups) === null && m.indices.groups.__proto__ === m.indices[1]
+            "#
         ));
         assert_true(&format!(
-            r"let r=/\p{{IDSB}}/d{mode}g;r.lastIndex=1;let m=r.exec('😀\u2FF0');m.index===2&&m[0]==='\u2FF0'&&r.lastIndex===3"
+            r#"
+                let r = /\p{{IDSB}}/d{mode}g;
+                r.lastIndex = 1;
+                let m = r.exec('😀\u2FF0');
+                m.index === 2 && m[0] === '\u2FF0' && r.lastIndex === 3
+            "#
         ));
         assert_true(&format!(
             r"let r=/\p{{IDSB}}/{mode}y;r.lastIndex=1;r.exec('😀\u2FF0')===null&&r.lastIndex===0"
@@ -85,7 +124,11 @@ fn unicode_ids_binary_operator_properties_captures_context_and_pair_starts() {
 fn unicode_ids_binary_operator_properties_consumers_original_text() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=[...'\u2FF4😀\u2FF0G'.matchAll(/(?<x>\P{{IDSB}})/d{mode}g)];a.length===2&&a[0][1]==='😀'&&a[0].index===1&&a[0].indices[1][1]===3&&a[1][1]==='G'"
+            r#"
+                let a = [...'\u2FF4😀\u2FF0G'.matchAll(/(?<x>\P{{IDSB}})/d{mode}g)];
+                a.length === 2 && a[0][1] === '😀' && a[0].index === 1 && a[0].indices[1][1] === 3 && a[1][
+                    1] === 'G'
+            "#
         ));
         assert_true(&format!(
             r"'\u2FF4\u2FF0😀X'.replace(/(?<x>\p{{IDS_Binary_Operator}})/{mode}g,'<$1:$<x>>')==='<\u2FF4:\u2FF4><\u2FF0:\u2FF0>😀X'"
@@ -94,7 +137,14 @@ fn unicode_ids_binary_operator_properties_consumers_original_text() {
             r"'😀\u2FF4\u2FF0G'.split(/(\p{{IDSB}})/{mode}).join('|')==='😀|\u2FF4||\u2FF0|G'&&'😀\u2FF0'.search(/\p{{IDSB}}/{mode})===2&&'\u2FF4\u2FF0😀'.match(/\p{{IDSB}}/{mode}g).join('')==='\u2FF4\u2FF0'"
         ));
         assert_true(&format!(
-            r"let t='';let x='\u2FF0\u2FF4😀\u2FF0'.replace(/(\p{{IDSB}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__😀_'&&t==='014'"
+            r#"
+                let t = '';
+                let x = '\u2FF0\u2FF4😀\u2FF0'.replace(/(\p{{IDSB}})/{mode}g, (m, c, p) => {{
+                    t += p;
+                    return '_'
+                }});
+                x === '__😀_' && t === '014'
+            "#
         ));
     }
 }
@@ -102,16 +152,62 @@ fn unicode_ids_binary_operator_properties_consumers_original_text() {
 #[test]
 fn unicode_ids_binary_operator_properties_clones_coercions_and_strict_writes() {
     assert_true(
-        r"let r=/^(?<x>\p{IDS_Binary_Operator})$/dmu,c=new RegExp(r,'divy');c.source==='^(?<x>\\p{IDS_Binary_Operator})$'&&c.unicodeSets&&!c.unicode&&!c.multiline&&c.exec('\u2FF0').groups.x==='\u2FF0'&&c.lastIndex===1",
+        r#"
+            let r = /^(?<x>\p{IDS_Binary_Operator})$/dmu,
+                c = new RegExp(r, 'divy');
+            c.source === '^(?<x>\\p{IDS_Binary_Operator})$' && c.unicodeSets && !c.unicode && !c
+                .multiline && c.exec('\u2FF0').groups.x === '\u2FF0' && c.lastIndex === 1
+        "#,
     );
     assert_true(
-        r"let t='',r=/\P{IDSB}/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m[0]==='😀'&&m.index===0&&r.lastIndex===2",
+        r#"
+            let t = '',
+                r = /\P{IDSB}/uy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 1
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return '😀'
+                }
+            });
+            t === 'si' && m[0] === '😀' && m.index === 0 && r.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let r=/\p{IDSB}/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('\u2FF0')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            let r = /\p{IDSB}/vy;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('\u2FF0')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/\p{IDSB}/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀\u2FF0')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /\p{IDSB}/vy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀\u2FF0')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 
@@ -149,7 +245,12 @@ fn unicode_ids_binary_operator_properties_opted_work_and_remaining_sets() {
 fn unicode_ids_binary_operator_repetitions_retain_last_capture_and_outside_words() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/\B(?<x>\p{{IDSB}})+\B/d{mode}g,m=r.exec('😀\u2FF0\u2FF4\u31EF\uFEFF');m.index===2&&m[0]==='\u2FF0\u2FF4\u31EF'&&m.groups.x==='\u31EF'&&m.indices.groups.x[0]===4&&m.indices.groups.x[1]===5&&r.lastIndex===5"
+            r#"
+                let r = /\B(?<x>\p{{IDSB}})+\B/d{mode}g,
+                    m = r.exec('😀\u2FF0\u2FF4\u31EF\uFEFF');
+                m.index === 2 && m[0] === '\u2FF0\u2FF4\u31EF' && m.groups.x === '\u31EF' && m.indices.groups
+                    .x[0] === 4 && m.indices.groups.x[1] === 5 && r.lastIndex === 5
+            "#
         ));
     }
 }

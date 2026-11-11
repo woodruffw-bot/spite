@@ -75,13 +75,31 @@ fn unicode_han_script_property_results_snapshot() {
 fn unicode_han_script_aliases_complements_and_unions() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=/\p{{Script=Han}}/{mode},b=/\p{{Script=Hani}}/i{mode},c=/\p{{sc=Han}}/{mode},d=/\p{{sc=Hani}}/i{mode},n=/\P{{sc=Han}}/i{mode};a.test('𠮷')&&b.test('一')&&c.test('々')&&d.test('〇')&&!a.test('〆')&&!b.test('ſ')&&!c.test('K')&&!n.test('𠮷')&&n.test('😀')&&n.test('\uD800')&&n.test('A')"
+            r#"
+                let a = /\p{{Script=Han}}/{mode},
+                    b = /\p{{Script=Hani}}/i{mode},
+                    c = /\p{{sc=Han}}/{mode},
+                    d = /\p{{sc=Hani}}/i{mode},
+                    n = /\P{{sc=Han}}/i{mode};
+                a.test('𠮷') && b.test('一') && c.test('々') && d.test('〇') && !a.test('〆') && !b.test('ſ') && !c
+                    .test('K') && !n.test('𠮷') && n.test('😀') && n.test('\uD800') && n.test('A')
+            "#
         ));
         assert_true(&format!(
-            r"let a=/[\p{{sc=Han}}K]/i{mode},b=/[^\P{{Script=Hani}}K]/i{mode},c=/[\p{{Script=Han}}\P{{sc=Hani}}]/{mode};a.test('K')&&a.test('k')&&a.test('𠮷')&&!a.test('ſ')&&b.test('一')&&!b.test('K')&&c.test('😀')&&c.test('A')&&c.test('\uD800')"
+            r#"
+                let a = /[\p{{sc=Han}}K]/i{mode},
+                    b = /[^\P{{Script=Hani}}K]/i{mode},
+                    c = /[\p{{Script=Han}}\P{{sc=Hani}}]/{mode};
+                a.test('K') && a.test('k') && a.test('𠮷') && !a.test('ſ') && b.test('一') && !b.test('K') && c
+                    .test('😀') && c.test('A') && c.test('\uD800')
+            "#
         ));
         assert_true(&format!(
-            r"let a=/^\p{{sc=Han}}$/{mode},b=/^\P{{sc=Hani}}$/{mode};a.test('𠮷')&&!a.test('一\n')&&!a.test('')&&!a.test('\n')&&b.test('😀')&&!b.test('AA')"
+            r#"
+                let a = /^\p{{sc=Han}}$/{mode},
+                    b = /^\P{{sc=Hani}}$/{mode};
+                a.test('𠮷') && !a.test('一\n') && !a.test('') && !a.test('\n') && b.test('😀') && !b.test('AA')
+            "#
         ));
     }
 }
@@ -90,10 +108,21 @@ fn unicode_han_script_aliases_complements_and_unions() {
 fn unicode_han_script_captures_context_and_pair_starts() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/^(?<x>([\p{{sc=Han}}K]))$/dim{mode}g,m=r.exec('x\r\n𠮷\u2028');m.index===3&&m[1]==='𠮷'&&m[2]==='𠮷'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===5&&r.lastIndex===5"
+            r#"
+                let r = /^(?<x>([\p{{sc=Han}}K]))$/dim{mode}g,
+                    m = r.exec('x\r\n𠮷\u2028');
+                m.index === 3 && m[1] === '𠮷' && m[2] === '𠮷' && m.indices.groups.x === m.indices[1] && m
+                    .indices[2][1] === 5 && r.lastIndex === 5
+            "#
         ));
         assert_true(&format!(
-            r"let r=/(?<__proto__>\p{{Script=Han}})/d{mode}y;r.lastIndex=1;let m=r.exec('𠮷a');m.index===0&&m[1]==='𠮷'&&m.indices[1][1]===2&&r.lastIndex===2&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]"
+            r#"
+                let r = /(?<__proto__>\p{{Script=Han}})/d{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('𠮷a');
+                m.index === 0 && m[1] === '𠮷' && m.indices[1][1] === 2 && r.lastIndex === 2 && Object
+                    .getPrototypeOf(m.groups) === null && m.indices.groups.__proto__ === m.indices[1]
+            "#
         ));
         assert_true(&format!(
             r"let r=/\p{{sc=Hani}}/d{mode}g;r.lastIndex=1;let m=r.exec('😀𠮷');m.index===2&&m[0]==='𠮷'&&r.lastIndex===4"
@@ -108,7 +137,11 @@ fn unicode_han_script_captures_context_and_pair_starts() {
 fn unicode_han_script_consumers_original_text() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=[...'一😀𠮷G'.matchAll(/(?<x>\P{{sc=Han}})/d{mode}g)];a.length===2&&a[0][1]==='😀'&&a[0].index===1&&a[0].indices[1][1]===3&&a[1][1]==='G'"
+            r#"
+                let a = [...'一😀𠮷G'.matchAll(/(?<x>\P{{sc=Han}})/d{mode}g)];
+                a.length === 2 && a[0][1] === '😀' && a[0].index === 1 && a[0].indices[1][1] === 3 && a[1][
+                    1] === 'G'
+            "#
         ));
         assert_true(&format!(
             r"'一𠮷😀X'.replace(/(?<x>\p{{Script=Han}})/{mode}g,'<$1:$<x>>')==='<一:一><𠮷:𠮷>😀X'"
@@ -125,16 +158,62 @@ fn unicode_han_script_consumers_original_text() {
 #[test]
 fn unicode_han_script_clones_coercions_and_strict_writes() {
     assert_true(
-        r"let r=/^(?<x>\p{Script=Han})$/dmu,c=new RegExp(r,'divy');c.source==='^(?<x>\\p{Script=Han})$'&&c.unicodeSets&&!c.unicode&&!c.multiline&&c.exec('𠮷').groups.x==='𠮷'&&c.lastIndex===2",
+        r#"
+            let r = /^(?<x>\p{Script=Han})$/dmu,
+                c = new RegExp(r, 'divy');
+            c.source === '^(?<x>\\p{Script=Han})$' && c.unicodeSets && !c.unicode && !c.multiline && c
+                .exec('𠮷').groups.x === '𠮷' && c.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let t='',r=/\p{sc=Han}/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '𠮷'}});t==='si'&&m[0]==='𠮷'&&m.index===0&&r.lastIndex===2",
+        r#"
+            let t = '',
+                r = /\p{sc=Han}/uy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 1
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return '𠮷'
+                }
+            });
+            t === 'si' && m[0] === '𠮷' && m.index === 0 && r.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let r=/\p{sc=Hani}/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('𠮷')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            let r = /\p{sc=Hani}/vy;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('𠮷')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/\p{Script=Hani}/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀𠮷')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /\p{Script=Hani}/vy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀𠮷')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 
@@ -178,7 +257,12 @@ fn unicode_han_script_opted_work_and_remaining_sets() {
 fn unicode_han_script_repetition_captures_and_unicode18_member() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/\B(?<x>\p{{sc=Han}})+\B/d{mode}g,m=r.exec('😀一𠮷〇!');m.index===2&&m[0]==='一𠮷〇'&&m.groups.x==='〇'&&m.indices.groups.x[0]===5&&m.indices.groups.x[1]===6&&r.lastIndex===6"
+            r#"
+                let r = /\B(?<x>\p{{sc=Han}})+\B/d{mode}g,
+                    m = r.exec('😀一𠮷〇!');
+                m.index === 2 && m[0] === '一𠮷〇' && m.groups.x === '〇' && m.indices.groups.x[0] === 5 && m
+                    .indices.groups.x[1] === 6 && r.lastIndex === 6
+            "#
         ));
         // Unicode 18 extends Han by U+2B81E; older Node data excludes it.
         assert_true(&format!(

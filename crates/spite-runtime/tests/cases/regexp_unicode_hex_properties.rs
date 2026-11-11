@@ -49,13 +49,31 @@ fn unicode_hex_property_results_snapshot() {
 fn unicode_hex_properties_aliases_complements_and_unions() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=/\p{{Hex_Digit}}/{mode},b=/\p{{Hex}}/i{mode},n=/\P{{Hex}}/i{mode};a.test('0')&&a.test('9')&&a.test('A')&&a.test('F')&&a.test('a')&&a.test('f')&&b.test('F')&&!a.test('G')&&!b.test('ſ')&&!b.test('K')&&b.test('Ｆ')&&b.test('０')&&b.test('ｆ')&&!b.test('Ｇ')&&!n.test('A')&&n.test('😀')&&n.test('\uD800')&&n.test('\n')"
+            r#"
+                let a = /\p{{Hex_Digit}}/{mode},
+                    b = /\p{{Hex}}/i{mode},
+                    n = /\P{{Hex}}/i{mode};
+                a.test('0') && a.test('9') && a.test('A') && a.test('F') && a.test('a') && a.test('f') && b
+                    .test('F') && !a.test('G') && !b.test('ſ') && !b.test('K') && b.test('Ｆ') && b.test('０') &&
+                    b.test('ｆ') && !b.test('Ｇ') && !n.test('A') && n.test('😀') && n.test('\uD800') && n.test(
+                        '\n')
+            "#
         ));
         assert_true(&format!(
-            r"let a=/[\p{{Hex}}K]/i{mode},b=/[^\P{{Hex_Digit}}K]/i{mode},c=/[\p{{Hex}}\P{{Hex_Digit}}]/{mode};a.test('K')&&a.test('k')&&a.test('F')&&!a.test('ſ')&&b.test('F')&&!b.test('K')&&c.test('😀')&&c.test('A')&&c.test('\uD800')"
+            r#"
+                let a = /[\p{{Hex}}K]/i{mode},
+                    b = /[^\P{{Hex_Digit}}K]/i{mode},
+                    c = /[\p{{Hex}}\P{{Hex_Digit}}]/{mode};
+                a.test('K') && a.test('k') && a.test('F') && !a.test('ſ') && b.test('F') && !b.test('K') && c
+                    .test('😀') && c.test('A') && c.test('\uD800')
+            "#
         ));
         assert_true(&format!(
-            r"let a=/^\p{{Hex}}$/{mode},b=/^\P{{Hex}}$/{mode};a.test('A')&&!a.test('A\n')&&!a.test('')&&b.test('\n')&&b.test('😀')&&!b.test('AA')"
+            r#"
+                let a = /^\p{{Hex}}$/{mode},
+                    b = /^\P{{Hex}}$/{mode};
+                a.test('A') && !a.test('A\n') && !a.test('') && b.test('\n') && b.test('😀') && !b.test('AA')
+            "#
         ));
     }
 }
@@ -64,10 +82,21 @@ fn unicode_hex_properties_aliases_complements_and_unions() {
 fn unicode_hex_properties_captures_context_and_pair_starts() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/^(?<x>([\p{{Hex}}K]))$/dim{mode}g,m=r.exec('x\r\nK\u2028');m.index===3&&m[1]==='K'&&m[2]==='K'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===4&&r.lastIndex===4"
+            r#"
+                let r = /^(?<x>([\p{{Hex}}K]))$/dim{mode}g,
+                    m = r.exec('x\r\nK\u2028');
+                m.index === 3 && m[1] === 'K' && m[2] === 'K' && m.indices.groups.x === m.indices[1] && m
+                    .indices[2][1] === 4 && r.lastIndex === 4
+            "#
         ));
         assert_true(&format!(
-            r"let r=/(?<__proto__>\P{{Hex}})/d{mode}y;r.lastIndex=1;let m=r.exec('😀A');m.index===0&&m[1]==='😀'&&m.indices[1][1]===2&&r.lastIndex===2&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]"
+            r#"
+                let r = /(?<__proto__>\P{{Hex}})/d{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('😀A');
+                m.index === 0 && m[1] === '😀' && m.indices[1][1] === 2 && r.lastIndex === 2 && Object
+                    .getPrototypeOf(m.groups) === null && m.indices.groups.__proto__ === m.indices[1]
+            "#
         ));
         assert_true(&format!(
             r"let r=/\p{{Hex}}/d{mode}g;r.lastIndex=1;let m=r.exec('😀A');m.index===2&&m[0]==='A'&&r.lastIndex===3"
@@ -82,7 +111,11 @@ fn unicode_hex_properties_captures_context_and_pair_starts() {
 fn unicode_hex_properties_consumers_original_text() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=[...'A😀fG'.matchAll(/(?<x>\P{{Hex}})/d{mode}g)];a.length===2&&a[0][1]==='😀'&&a[0].index===1&&a[0].indices[1][1]===3&&a[1][1]==='G'"
+            r#"
+                let a = [...'A😀fG'.matchAll(/(?<x>\P{{Hex}})/d{mode}g)];
+                a.length === 2 && a[0][1] === '😀' && a[0].index === 1 && a[0].indices[1][1] === 3 && a[1][
+                    1] === 'G'
+            "#
         ));
         assert_true(&format!(
             r"'A😀fG'.replace(/(?<x>\p{{Hex}})/{mode}g,'<$1:$<x>>')==='<A:A>😀<f:f>G'"
@@ -91,7 +124,14 @@ fn unicode_hex_properties_consumers_original_text() {
             r"'😀A0G'.split(/(\p{{Hex}})/{mode}).join('|')==='😀|A||0|G'&&'😀F'.search(/\p{{Hex}}/{mode})===2&&'A😀f'.match(/\p{{Hex}}/{mode}g).join('')==='Af'"
         ));
         assert_true(&format!(
-            r"let t='';let x='A😀f'.replace(/(\p{{Hex}})/{mode}g,(m,c,p)=>{{t+=p;return c.toLowerCase()}});x==='a😀f'&&t==='03'"
+            r#"
+                let t = '';
+                let x = 'A😀f'.replace(/(\p{{Hex}})/{mode}g, (m, c, p) => {{
+                    t += p;
+                    return c.toLowerCase()
+                }});
+                x === 'a😀f' && t === '03'
+            "#
         ));
     }
 }
@@ -99,16 +139,62 @@ fn unicode_hex_properties_consumers_original_text() {
 #[test]
 fn unicode_hex_properties_clones_coercions_and_strict_writes() {
     assert_true(
-        r"let r=/^(?<x>\p{Hex_Digit})$/dmu,c=new RegExp(r,'divy');c.source==='^(?<x>\\p{Hex_Digit})$'&&c.unicodeSets&&!c.unicode&&!c.multiline&&c.exec('F').groups.x==='F'&&c.lastIndex===1",
+        r#"
+            let r = /^(?<x>\p{Hex_Digit})$/dmu,
+                c = new RegExp(r, 'divy');
+            c.source === '^(?<x>\\p{Hex_Digit})$' && c.unicodeSets && !c.unicode && !c.multiline && c.exec(
+                'F').groups.x === 'F' && c.lastIndex === 1
+        "#,
     );
     assert_true(
-        r"let t='',r=/\P{Hex}/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m[0]==='😀'&&m.index===0&&r.lastIndex===2",
+        r#"
+            let t = '',
+                r = /\P{Hex}/uy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 1
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return '😀'
+                }
+            });
+            t === 'si' && m[0] === '😀' && m.index === 0 && r.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let r=/\p{Hex}/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('A')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            let r = /\p{Hex}/vy;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('A')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/\p{Hex}/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀A')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /\p{Hex}/vy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀A')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 

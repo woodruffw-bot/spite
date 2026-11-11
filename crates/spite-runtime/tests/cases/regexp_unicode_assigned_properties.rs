@@ -49,16 +49,38 @@ fn unicode_assigned_property_results_snapshot() {
 fn unicode_assigned_properties_members_complements_and_unions() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let p=/^\p{{Assigned}}$/i{mode},n=/^\P{{Assigned}}$/i{mode};p.test('A')&&p.test('K')&&p.test('😀')&&p.test('\uD800')&&p.test('\uE000')&&p.test('\uFEFF')&&!p.test('\u0378')&&!p.test('\uFFFF')&&n.test('\u0378')&&n.test('\uFFFF')&&!n.test('A')&&!n.test('\uD800')"
+            r#"
+                let p = /^\p{{Assigned}}$/i{mode},
+                    n = /^\P{{Assigned}}$/i{mode};
+                p.test('A') && p.test('K') && p.test('😀') && p.test('\uD800') && p.test('\uE000') && p.test(
+                    '\uFEFF') && !p.test('\u0378') && !p.test('\uFFFF') && n.test('\u0378') && n.test(
+                    '\uFFFF') && !n.test('A') && !n.test('\uD800')
+            "#
         ));
         assert_true(&format!(
-            r"let p=/[\p{{Assigned}}K]/i{mode},n=/[^\P{{Assigned}}K]/i{mode},all=/[\p{{Assigned}}\P{{Assigned}}]/{mode};p.test('k')&&p.test('ſ')&&p.test('😀')&&!p.test('\u0378')&&n.test('😀')&&!n.test('K')&&all.test('\u0378')&&all.test('\uD800')"
+            r#"
+                let p = /[\p{{Assigned}}K]/i{mode},
+                    n = /[^\P{{Assigned}}K]/i{mode},
+                    all = /[\p{{Assigned}}\P{{Assigned}}]/{mode};
+                p.test('k') && p.test('ſ') && p.test('😀') && !p.test('\u0378') && n.test('😀') && !n.test(
+                    'K') && all.test('\u0378') && all.test('\uD800')
+            "#
         ));
         assert_true(&format!(
-            r"let p=/^\p{{Assigned}}$/{mode},n=/^\P{{Assigned}}$/{mode};p.test('\n')&&!p.test('')&&!p.test('AA')&&!p.test('😀\n')&&n.test('\uFFFF')&&!n.test('AA')"
+            r#"
+                let p = /^\p{{Assigned}}$/{mode},
+                    n = /^\P{{Assigned}}$/{mode};
+                p.test('\n') && !p.test('') && !p.test('AA') && !p.test('😀\n') && n.test('\uFFFF') && !n.test(
+                    'AA')
+            "#
         ));
         assert_true(&format!(
-            r"let p=/[\p{{Assigned}}]/i{mode},n=/[^\p{{Assigned}}]/i{mode};p.test('ſ')&&p.test('K')&&!p.test('\u0378')&&n.test('\u0378')&&!n.test('ſ')&&!n.test('K')"
+            r#"
+                let p = /[\p{{Assigned}}]/i{mode},
+                    n = /[^\p{{Assigned}}]/i{mode};
+                p.test('ſ') && p.test('K') && !p.test('\u0378') && n.test('\u0378') && !n.test('ſ') && !n.test(
+                    'K')
+            "#
         ));
     }
 }
@@ -67,13 +89,29 @@ fn unicode_assigned_properties_members_complements_and_unions() {
 fn unicode_assigned_properties_captures_context_and_pair_starts() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/^(?<x>([\p{{Assigned}}K]))$/dim{mode}g,m=r.exec('\u0378\r\nK\u2028');m.index===3&&m[1]==='K'&&m[2]==='K'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===4&&r.lastIndex===4"
+            r#"
+                let r = /^(?<x>([\p{{Assigned}}K]))$/dim{mode}g,
+                    m = r.exec('\u0378\r\nK\u2028');
+                m.index === 3 && m[1] === 'K' && m[2] === 'K' && m.indices.groups.x === m.indices[1] && m
+                    .indices[2][1] === 4 && r.lastIndex === 4
+            "#
         ));
         assert_true(&format!(
-            r"let r=/(?<__proto__>\p{{Assigned}})/d{mode}y;r.lastIndex=1;let m=r.exec('😀A');m.index===0&&m[1]==='😀'&&m.indices[1][1]===2&&r.lastIndex===2&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]"
+            r#"
+                let r = /(?<__proto__>\p{{Assigned}})/d{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('😀A');
+                m.index === 0 && m[1] === '😀' && m.indices[1][1] === 2 && r.lastIndex === 2 && Object
+                    .getPrototypeOf(m.groups) === null && m.indices.groups.__proto__ === m.indices[1]
+            "#
         ));
         assert_true(&format!(
-            r"let r=/\P{{Assigned}}/d{mode}g;r.lastIndex=1;let m=r.exec('😀\u0378');m.index===2&&m[0]==='\u0378'&&r.lastIndex===3"
+            r#"
+                let r = /\P{{Assigned}}/d{mode}g;
+                r.lastIndex = 1;
+                let m = r.exec('😀\u0378');
+                m.index === 2 && m[0] === '\u0378' && r.lastIndex === 3
+            "#
         ));
         assert_true(&format!(
             r"let r=/\P{{Assigned}}/{mode}y;r.lastIndex=1;r.exec('😀\u0378')===null&&r.lastIndex===0"
@@ -85,7 +123,10 @@ fn unicode_assigned_properties_captures_context_and_pair_starts() {
 fn unicode_assigned_properties_consumers_original_text() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=[...'A😀\u0378B'.matchAll(/(?<x>\P{{Assigned}})/d{mode}g)];a.length===1&&a[0][1]==='\u0378'&&a[0].index===3&&a[0].indices[1][1]===4"
+            r#"
+                let a = [...'A😀\u0378B'.matchAll(/(?<x>\P{{Assigned}})/d{mode}g)];
+                a.length === 1 && a[0][1] === '\u0378' && a[0].index === 3 && a[0].indices[1][1] === 4
+            "#
         ));
         assert_true(&format!(
             r"'AB\u0378'.replace(/(?<x>\p{{Assigned}})/{mode}g,'<$1:$<x>>')==='<A:A><B:B>\u0378'"
@@ -94,7 +135,14 @@ fn unicode_assigned_properties_consumers_original_text() {
             r"'\u0378AB\u0378'.split(/(\p{{Assigned}})/{mode}).join('|')==='\u0378|A||B|\u0378'&&'\u0378😀'.search(/\p{{Assigned}}/{mode})===1&&'AB\u0378'.match(/\p{{Assigned}}/{mode}g).join('')==='AB'"
         ));
         assert_true(&format!(
-            r"let t='',x='AB\u0378A'.replace(/(\p{{Assigned}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__\u0378_'&&t==='013'"
+            r#"
+                let t = '',
+                    x = 'AB\u0378A'.replace(/(\p{{Assigned}})/{mode}g, (m, c, p) => {{
+                        t += p;
+                        return '_'
+                    }});
+                x === '__\u0378_' && t === '013'
+            "#
         ));
     }
 }
@@ -102,16 +150,62 @@ fn unicode_assigned_properties_consumers_original_text() {
 #[test]
 fn unicode_assigned_properties_clones_coercions_and_strict_writes() {
     assert_true(
-        r"let r=/^(?<x>\p{Assigned})$/dmu,c=new RegExp(r,'divy');c.source==='^(?<x>\\p{Assigned})$'&&c.unicodeSets&&!c.unicode&&!c.multiline&&c.exec('A').groups.x==='A'&&c.lastIndex===1",
+        r#"
+            let r = /^(?<x>\p{Assigned})$/dmu,
+                c = new RegExp(r, 'divy');
+            c.source === '^(?<x>\\p{Assigned})$' && c.unicodeSets && !c.unicode && !c.multiline && c.exec(
+                'A').groups.x === 'A' && c.lastIndex === 1
+        "#,
     );
     assert_true(
-        r"let t='',r=/\p{Assigned}/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m[0]==='😀'&&m.index===0&&r.lastIndex===2",
+        r#"
+            let t = '',
+                r = /\p{Assigned}/uy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 1
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return '😀'
+                }
+            });
+            t === 'si' && m[0] === '😀' && m.index === 0 && r.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let r=/\p{Assigned}/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('A')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            let r = /\p{Assigned}/vy;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('A')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/\P{Assigned}/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀\u0378')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /\P{Assigned}/vy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀\u0378')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 
@@ -154,7 +248,12 @@ fn unicode_assigned_properties_opted_work_and_remaining_sets() {
 fn unicode_assigned_repetitions_retain_last_capture_and_outside_words() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/\B(?<x>\p{{Assigned}})+\B/d{mode}g,m=r.exec('\u0378😀😀😀\u0378');m.index===1&&m[0]==='😀😀😀'&&m.groups.x==='😀'&&m.indices.groups.x[0]===5&&m.indices.groups.x[1]===7&&r.lastIndex===7"
+            r#"
+                let r = /\B(?<x>\p{{Assigned}})+\B/d{mode}g,
+                    m = r.exec('\u0378😀😀😀\u0378');
+                m.index === 1 && m[0] === '😀😀😀' && m.groups.x === '😀' && m.indices.groups.x[0] === 5 && m
+                    .indices.groups.x[1] === 7 && r.lastIndex === 7
+            "#
         ));
     }
 }
@@ -163,7 +262,12 @@ fn unicode_assigned_repetitions_retain_last_capture_and_outside_words() {
 fn unicode_assigned_property_lone_surrogates_private_use_and_noncharacters() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let p=/^\p{{Assigned}}$/{mode},n=/^\P{{Assigned}}$/{mode};p.test('\uD800')&&p.test('\uDC00')&&p.test('\uE000')&&p.test('\u{{F0000}}')&&!p.test('\uFDD0')&&!p.test('\u{{10FFFF}}')&&n.test('\uFDD0')&&n.test('\u{{10FFFF}}')"
+            r#"
+                let p = /^\p{{Assigned}}$/{mode},
+                    n = /^\P{{Assigned}}$/{mode};
+                p.test('\uD800') && p.test('\uDC00') && p.test('\uE000') && p.test('\u{{F0000}}') && !p.test(
+                    '\uFDD0') && !p.test('\u{{10FFFF}}') && n.test('\uFDD0') && n.test('\u{{10FFFF}}')
+            "#
         ));
     }
 }

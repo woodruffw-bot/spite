@@ -49,16 +49,39 @@ fn unicode_deprecated_property_results_snapshot() {
 fn unicode_deprecated_properties_aliases_complements_and_unions() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=/\p{{Deprecated}}/{mode},b=/\p{{Dep}}/i{mode},n=/\P{{Dep}}/i{mode};a.test('\u0673')&&a.test('\u17A3')&&b.test('\u0673')&&!a.test('\u200D')&&!b.test('\u005f')&&!b.test('ſ')&&!b.test('K')&&!n.test('\u0673')&&n.test('😀')&&n.test('\uD800')&&n.test('\uFEFF')"
+            r#"
+                let a = /\p{{Deprecated}}/{mode},
+                    b = /\p{{Dep}}/i{mode},
+                    n = /\P{{Dep}}/i{mode};
+                a.test('\u0673') && a.test('\u17A3') && b.test('\u0673') && !a.test('\u200D') && !b.test(
+                        '\u005f') && !b.test('ſ') && !b.test('K') && !n.test('\u0673') && n.test('😀') && n
+                    .test('\uD800') && n.test('\uFEFF')
+            "#
         ));
         assert_true(&format!(
-            r"let p=/\p{{Deprecated}}/{mode},s=/\s/{mode};p.test('\u0673')&&p.test('\u17A3')&&!s.test('\u0673')&&!s.test('\u17A3')&&!p.test('\uFEFF')&&s.test('\uFEFF')"
+            r#"
+                let p = /\p{{Deprecated}}/{mode},
+                    s = /\s/{mode};
+                p.test('\u0673') && p.test('\u17A3') && !s.test('\u0673') && !s.test('\u17A3') && !p.test(
+                    '\uFEFF') && s.test('\uFEFF')
+            "#
         ));
         assert_true(&format!(
-            r"let a=/[\p{{Dep}}K]/i{mode},b=/[^\P{{Deprecated}}K]/i{mode},c=/[\p{{Dep}}\P{{Deprecated}}]/{mode};a.test('K')&&a.test('k')&&a.test('\u0673')&&!a.test('ſ')&&b.test('\u17A3')&&!b.test('K')&&c.test('😀')&&c.test('A')&&c.test('\uD800')"
+            r#"
+                let a = /[\p{{Dep}}K]/i{mode},
+                    b = /[^\P{{Deprecated}}K]/i{mode},
+                    c = /[\p{{Dep}}\P{{Deprecated}}]/{mode};
+                a.test('K') && a.test('k') && a.test('\u0673') && !a.test('ſ') && b.test('\u17A3') && !b.test(
+                    'K') && c.test('😀') && c.test('A') && c.test('\uD800')
+            "#
         ));
         assert_true(&format!(
-            r"let a=/^\p{{Dep}}$/{mode},b=/^\P{{Dep}}$/{mode};a.test('\u0673')&&!a.test('\u17A3\n')&&!a.test('')&&!a.test('\n')&&b.test('😀')&&!b.test('AA')"
+            r#"
+                let a = /^\p{{Dep}}$/{mode},
+                    b = /^\P{{Dep}}$/{mode};
+                a.test('\u0673') && !a.test('\u17A3\n') && !a.test('') && !a.test('\n') && b.test('😀') && !b
+                    .test('AA')
+            "#
         ));
     }
 }
@@ -67,16 +90,33 @@ fn unicode_deprecated_properties_aliases_complements_and_unions() {
 fn unicode_deprecated_properties_captures_context_and_pair_starts() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/(?<x>\p{{Dep}})/d{mode}y;r.lastIndex=1;let m=r.exec('\uDB40\uDC01');m.index===0&&m[0]==='\uDB40\uDC01'&&m.groups.x===m[0]&&m.indices[1][0]===0&&m.indices[1][1]===2&&r.lastIndex===2"
+            r#"
+                let r = /(?<x>\p{{Dep}})/d{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('\uDB40\uDC01');
+                m.index === 0 && m[0] === '\uDB40\uDC01' && m.groups.x === m[0] && m.indices[1][0] === 0 && m
+                    .indices[1][1] === 2 && r.lastIndex === 2
+            "#
         ));
     }
 
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/^(?<x>([\p{{Dep}}K]))$/dim{mode}g,m=r.exec('x\r\nK\u2028');m.index===3&&m[1]==='K'&&m[2]==='K'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===4&&r.lastIndex===4"
+            r#"
+                let r = /^(?<x>([\p{{Dep}}K]))$/dim{mode}g,
+                    m = r.exec('x\r\nK\u2028');
+                m.index === 3 && m[1] === 'K' && m[2] === 'K' && m.indices.groups.x === m.indices[1] && m
+                    .indices[2][1] === 4 && r.lastIndex === 4
+            "#
         ));
         assert_true(&format!(
-            r"let r=/(?<__proto__>\P{{Dep}})/d{mode}y;r.lastIndex=1;let m=r.exec('😀\u0673');m.index===0&&m[1]==='😀'&&m.indices[1][1]===2&&r.lastIndex===2&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]"
+            r#"
+                let r = /(?<__proto__>\P{{Dep}})/d{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('😀\u0673');
+                m.index === 0 && m[1] === '😀' && m.indices[1][1] === 2 && r.lastIndex === 2 && Object
+                    .getPrototypeOf(m.groups) === null && m.indices.groups.__proto__ === m.indices[1]
+            "#
         ));
         assert_true(&format!(
             r"let r=/\p{{Dep}}/d{mode}g;r.lastIndex=1;let m=r.exec('😀\u0673');m.index===2&&m[0]==='\u0673'&&r.lastIndex===3"
@@ -91,7 +131,11 @@ fn unicode_deprecated_properties_captures_context_and_pair_starts() {
 fn unicode_deprecated_properties_consumers_original_text() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=[...'\u17A3😀\u0673G'.matchAll(/(?<x>\P{{Dep}})/d{mode}g)];a.length===2&&a[0][1]==='😀'&&a[0].index===1&&a[0].indices[1][1]===3&&a[1][1]==='G'"
+            r#"
+                let a = [...'\u17A3😀\u0673G'.matchAll(/(?<x>\P{{Dep}})/d{mode}g)];
+                a.length === 2 && a[0][1] === '😀' && a[0].index === 1 && a[0].indices[1][1] === 3 && a[1][
+                    1] === 'G'
+            "#
         ));
         assert_true(&format!(
             r"'\u17A3\u0673😀X'.replace(/(?<x>\p{{Deprecated}})/{mode}g,'<$1:$<x>>')==='<\u17A3:\u17A3><\u0673:\u0673>😀X'"
@@ -100,7 +144,14 @@ fn unicode_deprecated_properties_consumers_original_text() {
             r"'😀\u17A3\u0673G'.split(/(\p{{Dep}})/{mode}).join('|')==='😀|\u17A3||\u0673|G'&&'😀\u0673'.search(/\p{{Dep}}/{mode})===2&&'\u17A3\u0673😀'.match(/\p{{Dep}}/{mode}g).join('')==='\u17A3\u0673'"
         ));
         assert_true(&format!(
-            r"let t='';let x='\u0673\u17A3😀\u0673'.replace(/(\p{{Dep}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__😀_'&&t==='014'"
+            r#"
+                let t = '';
+                let x = '\u0673\u17A3😀\u0673'.replace(/(\p{{Dep}})/{mode}g, (m, c, p) => {{
+                    t += p;
+                    return '_'
+                }});
+                x === '__😀_' && t === '014'
+            "#
         ));
     }
 }
@@ -108,16 +159,62 @@ fn unicode_deprecated_properties_consumers_original_text() {
 #[test]
 fn unicode_deprecated_properties_clones_coercions_and_strict_writes() {
     assert_true(
-        r"let r=/^(?<x>\p{Deprecated})$/dmu,c=new RegExp(r,'divy');c.source==='^(?<x>\\p{Deprecated})$'&&c.unicodeSets&&!c.unicode&&!c.multiline&&c.exec('\u0673').groups.x==='\u0673'&&c.lastIndex===1",
+        r#"
+            let r = /^(?<x>\p{Deprecated})$/dmu,
+                c = new RegExp(r, 'divy');
+            c.source === '^(?<x>\\p{Deprecated})$' && c.unicodeSets && !c.unicode && !c.multiline && c
+                .exec('\u0673').groups.x === '\u0673' && c.lastIndex === 1
+        "#,
     );
     assert_true(
-        r"let t='',r=/\P{Dep}/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m[0]==='😀'&&m.index===0&&r.lastIndex===2",
+        r#"
+            let t = '',
+                r = /\P{Dep}/uy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 1
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return '😀'
+                }
+            });
+            t === 'si' && m[0] === '😀' && m.index === 0 && r.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let r=/\p{Dep}/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('\u0673')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            let r = /\p{Dep}/vy;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('\u0673')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/\p{Dep}/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀\u0673')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /\p{Dep}/vy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀\u0673')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 
@@ -155,7 +252,12 @@ fn unicode_deprecated_properties_opted_work_and_remaining_sets() {
 fn unicode_deprecated_repetitions_retain_last_capture_and_outside_words() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/\B(?<x>\p{{Dep}})+\B/d{mode}g,m=r.exec('😀\u0673\u17A3\u17A3\uFEFF');m.index===2&&m[0]==='\u0673\u17A3\u17A3'&&m.groups.x==='\u17A3'&&m.indices.groups.x[0]===4&&m.indices.groups.x[1]===5&&r.lastIndex===5"
+            r#"
+                let r = /\B(?<x>\p{{Dep}})+\B/d{mode}g,
+                    m = r.exec('😀\u0673\u17A3\u17A3\uFEFF');
+                m.index === 2 && m[0] === '\u0673\u17A3\u17A3' && m.groups.x === '\u17A3' && m.indices.groups
+                    .x[0] === 4 && m.indices.groups.x[1] === 5 && r.lastIndex === 5
+            "#
         ));
     }
 }

@@ -8,52 +8,276 @@ use crate::common::assert_true;
 #[test]
 fn unicode_cyrillic_script_aliases_complements_and_fold_modes() {
     assert_true(
-        r#"let patterns=["^\\p{Script=Cyrl}$", "^\\P{Script=Cyrl}$", "^[\\p{Script=Cyrl}]$", "^[\\P{Script=Cyrl}]$", "^[^\\p{Script=Cyrl}]$", "^[^\\P{Script=Cyrl}]$"],points=[0, 10, 32, 65, 97, 181, 837, 888, 931, 1024, 1025, 1040, 1072, 1105, 1327, 1328, 7296, 7305, 7306, 7467, 8192, 55296, 56320, 57344, 64976, 122928, 122989, 128512, 1114111],flags="u";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="00000000011111101111000001100|11111111100000010000111110011|00000000011111101111000001100|11111111100000010000111110011|11111111100000010000111110011|00000000011111101111000001100""#,
+        r#"
+            let patterns = ["^\\p{Script=Cyrl}$", "^\\P{Script=Cyrl}$", "^[\\p{Script=Cyrl}]$",
+                    "^[\\P{Script=Cyrl}]$", "^[^\\p{Script=Cyrl}]$", "^[^\\P{Script=Cyrl}]$"
+                ],
+                points = [0, 10, 32, 65, 97, 181, 837, 888, 931, 1024, 1025, 1040, 1072, 1105, 1327, 1328,
+                    7296, 7305, 7306, 7467, 8192, 55296, 56320, 57344, 64976, 122928, 122989, 128512,
+                    1114111
+                ],
+                flags = "u";
+            patterns.map(pattern => {
+                    let r = new RegExp(pattern, flags);
+                    return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+                }).join('|') ===
+                "00000000011111101111000001100|11111111100000010000111110011|00000000011111101111000001100|11111111100000010000111110011|11111111100000010000111110011|00000000011111101111000001100"
+        "#,
     );
     assert_true(
-        r#"let patterns=["^\\p{Script=Cyrl}$", "^\\P{Script=Cyrl}$", "^[\\p{Script=Cyrl}]$", "^[\\P{Script=Cyrl}]$", "^[^\\p{Script=Cyrl}]$", "^[^\\P{Script=Cyrl}]$"],points=[0, 10, 32, 65, 97, 181, 837, 888, 931, 1024, 1025, 1040, 1072, 1105, 1327, 1328, 7296, 7305, 7306, 7467, 8192, 55296, 56320, 57344, 64976, 122928, 122989, 128512, 1114111],flags="ui";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="00000000011111101111000001100|11111111100000010000111110011|00000000011111101111000001100|11111111100000010000111110011|11111111100000010000111110011|00000000011111101111000001100""#,
+        r#"
+            let patterns = ["^\\p{Script=Cyrl}$", "^\\P{Script=Cyrl}$", "^[\\p{Script=Cyrl}]$",
+                    "^[\\P{Script=Cyrl}]$", "^[^\\p{Script=Cyrl}]$", "^[^\\P{Script=Cyrl}]$"
+                ],
+                points = [0, 10, 32, 65, 97, 181, 837, 888, 931, 1024, 1025, 1040, 1072, 1105, 1327, 1328,
+                    7296, 7305, 7306, 7467, 8192, 55296, 56320, 57344, 64976, 122928, 122989, 128512,
+                    1114111
+                ],
+                flags = "ui";
+            patterns.map(pattern => {
+                    let r = new RegExp(pattern, flags);
+                    return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+                }).join('|') ===
+                "00000000011111101111000001100|11111111100000010000111110011|00000000011111101111000001100|11111111100000010000111110011|11111111100000010000111110011|00000000011111101111000001100"
+        "#,
     );
     assert_true(
-        r#"let patterns=["^\\p{Script=Cyrl}$", "^\\P{Script=Cyrl}$", "^[\\p{Script=Cyrl}]$", "^[\\P{Script=Cyrl}]$", "^[^\\p{Script=Cyrl}]$", "^[^\\P{Script=Cyrl}]$"],points=[0, 10, 32, 65, 97, 181, 837, 888, 931, 1024, 1025, 1040, 1072, 1105, 1327, 1328, 7296, 7305, 7306, 7467, 8192, 55296, 56320, 57344, 64976, 122928, 122989, 128512, 1114111],flags="v";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="00000000011111101111000001100|11111111100000010000111110011|00000000011111101111000001100|11111111100000010000111110011|11111111100000010000111110011|00000000011111101111000001100""#,
+        r#"
+            let patterns = ["^\\p{Script=Cyrl}$", "^\\P{Script=Cyrl}$", "^[\\p{Script=Cyrl}]$",
+                    "^[\\P{Script=Cyrl}]$", "^[^\\p{Script=Cyrl}]$", "^[^\\P{Script=Cyrl}]$"
+                ],
+                points = [0, 10, 32, 65, 97, 181, 837, 888, 931, 1024, 1025, 1040, 1072, 1105, 1327, 1328,
+                    7296, 7305, 7306, 7467, 8192, 55296, 56320, 57344, 64976, 122928, 122989, 128512,
+                    1114111
+                ],
+                flags = "v";
+            patterns.map(pattern => {
+                    let r = new RegExp(pattern, flags);
+                    return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+                }).join('|') ===
+                "00000000011111101111000001100|11111111100000010000111110011|00000000011111101111000001100|11111111100000010000111110011|11111111100000010000111110011|00000000011111101111000001100"
+        "#,
     );
     assert_true(
-        r#"let patterns=["^\\p{Script=Cyrl}$", "^\\P{Script=Cyrl}$", "^[\\p{Script=Cyrl}]$", "^[\\P{Script=Cyrl}]$", "^[^\\p{Script=Cyrl}]$", "^[^\\P{Script=Cyrl}]$"],points=[0, 10, 32, 65, 97, 181, 837, 888, 931, 1024, 1025, 1040, 1072, 1105, 1327, 1328, 7296, 7305, 7306, 7467, 8192, 55296, 56320, 57344, 64976, 122928, 122989, 128512, 1114111],flags="vi";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="00000000011111101111000001100|11111111100000010000111110011|00000000011111101111000001100|11111111100000010000111110011|11111111100000010000111110011|00000000011111101111000001100""#,
+        r#"
+            let patterns = ["^\\p{Script=Cyrl}$", "^\\P{Script=Cyrl}$", "^[\\p{Script=Cyrl}]$",
+                    "^[\\P{Script=Cyrl}]$", "^[^\\p{Script=Cyrl}]$", "^[^\\P{Script=Cyrl}]$"
+                ],
+                points = [0, 10, 32, 65, 97, 181, 837, 888, 931, 1024, 1025, 1040, 1072, 1105, 1327, 1328,
+                    7296, 7305, 7306, 7467, 8192, 55296, 56320, 57344, 64976, 122928, 122989, 128512,
+                    1114111
+                ],
+                flags = "vi";
+            patterns.map(pattern => {
+                    let r = new RegExp(pattern, flags);
+                    return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+                }).join('|') ===
+                "00000000011111101111000001100|11111111100000010000111110011|00000000011111101111000001100|11111111100000010000111110011|11111111100000010000111110011|00000000011111101111000001100"
+        "#,
     );
     assert_true(
-        r#"let patterns=["^\\p{Script=Cyrillic}$", "^\\P{Script=Cyrillic}$", "^[\\p{Script=Cyrillic}]$", "^[\\P{Script=Cyrillic}]$", "^[^\\p{Script=Cyrillic}]$", "^[^\\P{Script=Cyrillic}]$"],points=[0, 10, 32, 65, 97, 181, 837, 888, 931, 1024, 1025, 1040, 1072, 1105, 1327, 1328, 7296, 7305, 7306, 7467, 8192, 55296, 56320, 57344, 64976, 122928, 122989, 128512, 1114111],flags="u";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="00000000011111101111000001100|11111111100000010000111110011|00000000011111101111000001100|11111111100000010000111110011|11111111100000010000111110011|00000000011111101111000001100""#,
+        r#"
+            let patterns = ["^\\p{Script=Cyrillic}$", "^\\P{Script=Cyrillic}$", "^[\\p{Script=Cyrillic}]$",
+                    "^[\\P{Script=Cyrillic}]$", "^[^\\p{Script=Cyrillic}]$", "^[^\\P{Script=Cyrillic}]$"
+                ],
+                points = [0, 10, 32, 65, 97, 181, 837, 888, 931, 1024, 1025, 1040, 1072, 1105, 1327, 1328,
+                    7296, 7305, 7306, 7467, 8192, 55296, 56320, 57344, 64976, 122928, 122989, 128512,
+                    1114111
+                ],
+                flags = "u";
+            patterns.map(pattern => {
+                    let r = new RegExp(pattern, flags);
+                    return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+                }).join('|') ===
+                "00000000011111101111000001100|11111111100000010000111110011|00000000011111101111000001100|11111111100000010000111110011|11111111100000010000111110011|00000000011111101111000001100"
+        "#,
     );
     assert_true(
-        r#"let patterns=["^\\p{Script=Cyrillic}$", "^\\P{Script=Cyrillic}$", "^[\\p{Script=Cyrillic}]$", "^[\\P{Script=Cyrillic}]$", "^[^\\p{Script=Cyrillic}]$", "^[^\\P{Script=Cyrillic}]$"],points=[0, 10, 32, 65, 97, 181, 837, 888, 931, 1024, 1025, 1040, 1072, 1105, 1327, 1328, 7296, 7305, 7306, 7467, 8192, 55296, 56320, 57344, 64976, 122928, 122989, 128512, 1114111],flags="ui";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="00000000011111101111000001100|11111111100000010000111110011|00000000011111101111000001100|11111111100000010000111110011|11111111100000010000111110011|00000000011111101111000001100""#,
+        r#"
+            let patterns = ["^\\p{Script=Cyrillic}$", "^\\P{Script=Cyrillic}$", "^[\\p{Script=Cyrillic}]$",
+                    "^[\\P{Script=Cyrillic}]$", "^[^\\p{Script=Cyrillic}]$", "^[^\\P{Script=Cyrillic}]$"
+                ],
+                points = [0, 10, 32, 65, 97, 181, 837, 888, 931, 1024, 1025, 1040, 1072, 1105, 1327, 1328,
+                    7296, 7305, 7306, 7467, 8192, 55296, 56320, 57344, 64976, 122928, 122989, 128512,
+                    1114111
+                ],
+                flags = "ui";
+            patterns.map(pattern => {
+                    let r = new RegExp(pattern, flags);
+                    return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+                }).join('|') ===
+                "00000000011111101111000001100|11111111100000010000111110011|00000000011111101111000001100|11111111100000010000111110011|11111111100000010000111110011|00000000011111101111000001100"
+        "#,
     );
     assert_true(
-        r#"let patterns=["^\\p{Script=Cyrillic}$", "^\\P{Script=Cyrillic}$", "^[\\p{Script=Cyrillic}]$", "^[\\P{Script=Cyrillic}]$", "^[^\\p{Script=Cyrillic}]$", "^[^\\P{Script=Cyrillic}]$"],points=[0, 10, 32, 65, 97, 181, 837, 888, 931, 1024, 1025, 1040, 1072, 1105, 1327, 1328, 7296, 7305, 7306, 7467, 8192, 55296, 56320, 57344, 64976, 122928, 122989, 128512, 1114111],flags="v";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="00000000011111101111000001100|11111111100000010000111110011|00000000011111101111000001100|11111111100000010000111110011|11111111100000010000111110011|00000000011111101111000001100""#,
+        r#"
+            let patterns = ["^\\p{Script=Cyrillic}$", "^\\P{Script=Cyrillic}$", "^[\\p{Script=Cyrillic}]$",
+                    "^[\\P{Script=Cyrillic}]$", "^[^\\p{Script=Cyrillic}]$", "^[^\\P{Script=Cyrillic}]$"
+                ],
+                points = [0, 10, 32, 65, 97, 181, 837, 888, 931, 1024, 1025, 1040, 1072, 1105, 1327, 1328,
+                    7296, 7305, 7306, 7467, 8192, 55296, 56320, 57344, 64976, 122928, 122989, 128512,
+                    1114111
+                ],
+                flags = "v";
+            patterns.map(pattern => {
+                    let r = new RegExp(pattern, flags);
+                    return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+                }).join('|') ===
+                "00000000011111101111000001100|11111111100000010000111110011|00000000011111101111000001100|11111111100000010000111110011|11111111100000010000111110011|00000000011111101111000001100"
+        "#,
     );
     assert_true(
-        r#"let patterns=["^\\p{Script=Cyrillic}$", "^\\P{Script=Cyrillic}$", "^[\\p{Script=Cyrillic}]$", "^[\\P{Script=Cyrillic}]$", "^[^\\p{Script=Cyrillic}]$", "^[^\\P{Script=Cyrillic}]$"],points=[0, 10, 32, 65, 97, 181, 837, 888, 931, 1024, 1025, 1040, 1072, 1105, 1327, 1328, 7296, 7305, 7306, 7467, 8192, 55296, 56320, 57344, 64976, 122928, 122989, 128512, 1114111],flags="vi";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="00000000011111101111000001100|11111111100000010000111110011|00000000011111101111000001100|11111111100000010000111110011|11111111100000010000111110011|00000000011111101111000001100""#,
+        r#"
+            let patterns = ["^\\p{Script=Cyrillic}$", "^\\P{Script=Cyrillic}$", "^[\\p{Script=Cyrillic}]$",
+                    "^[\\P{Script=Cyrillic}]$", "^[^\\p{Script=Cyrillic}]$", "^[^\\P{Script=Cyrillic}]$"
+                ],
+                points = [0, 10, 32, 65, 97, 181, 837, 888, 931, 1024, 1025, 1040, 1072, 1105, 1327, 1328,
+                    7296, 7305, 7306, 7467, 8192, 55296, 56320, 57344, 64976, 122928, 122989, 128512,
+                    1114111
+                ],
+                flags = "vi";
+            patterns.map(pattern => {
+                    let r = new RegExp(pattern, flags);
+                    return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+                }).join('|') ===
+                "00000000011111101111000001100|11111111100000010000111110011|00000000011111101111000001100|11111111100000010000111110011|11111111100000010000111110011|00000000011111101111000001100"
+        "#,
     );
     assert_true(
-        r#"let patterns=["^\\p{sc=Cyrl}$", "^\\P{sc=Cyrl}$", "^[\\p{sc=Cyrl}]$", "^[\\P{sc=Cyrl}]$", "^[^\\p{sc=Cyrl}]$", "^[^\\P{sc=Cyrl}]$"],points=[0, 10, 32, 65, 97, 181, 837, 888, 931, 1024, 1025, 1040, 1072, 1105, 1327, 1328, 7296, 7305, 7306, 7467, 8192, 55296, 56320, 57344, 64976, 122928, 122989, 128512, 1114111],flags="u";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="00000000011111101111000001100|11111111100000010000111110011|00000000011111101111000001100|11111111100000010000111110011|11111111100000010000111110011|00000000011111101111000001100""#,
+        r#"
+            let patterns = ["^\\p{sc=Cyrl}$", "^\\P{sc=Cyrl}$", "^[\\p{sc=Cyrl}]$", "^[\\P{sc=Cyrl}]$",
+                    "^[^\\p{sc=Cyrl}]$", "^[^\\P{sc=Cyrl}]$"
+                ],
+                points = [0, 10, 32, 65, 97, 181, 837, 888, 931, 1024, 1025, 1040, 1072, 1105, 1327, 1328,
+                    7296, 7305, 7306, 7467, 8192, 55296, 56320, 57344, 64976, 122928, 122989, 128512,
+                    1114111
+                ],
+                flags = "u";
+            patterns.map(pattern => {
+                    let r = new RegExp(pattern, flags);
+                    return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+                }).join('|') ===
+                "00000000011111101111000001100|11111111100000010000111110011|00000000011111101111000001100|11111111100000010000111110011|11111111100000010000111110011|00000000011111101111000001100"
+        "#,
     );
     assert_true(
-        r#"let patterns=["^\\p{sc=Cyrl}$", "^\\P{sc=Cyrl}$", "^[\\p{sc=Cyrl}]$", "^[\\P{sc=Cyrl}]$", "^[^\\p{sc=Cyrl}]$", "^[^\\P{sc=Cyrl}]$"],points=[0, 10, 32, 65, 97, 181, 837, 888, 931, 1024, 1025, 1040, 1072, 1105, 1327, 1328, 7296, 7305, 7306, 7467, 8192, 55296, 56320, 57344, 64976, 122928, 122989, 128512, 1114111],flags="ui";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="00000000011111101111000001100|11111111100000010000111110011|00000000011111101111000001100|11111111100000010000111110011|11111111100000010000111110011|00000000011111101111000001100""#,
+        r#"
+            let patterns = ["^\\p{sc=Cyrl}$", "^\\P{sc=Cyrl}$", "^[\\p{sc=Cyrl}]$", "^[\\P{sc=Cyrl}]$",
+                    "^[^\\p{sc=Cyrl}]$", "^[^\\P{sc=Cyrl}]$"
+                ],
+                points = [0, 10, 32, 65, 97, 181, 837, 888, 931, 1024, 1025, 1040, 1072, 1105, 1327, 1328,
+                    7296, 7305, 7306, 7467, 8192, 55296, 56320, 57344, 64976, 122928, 122989, 128512,
+                    1114111
+                ],
+                flags = "ui";
+            patterns.map(pattern => {
+                    let r = new RegExp(pattern, flags);
+                    return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+                }).join('|') ===
+                "00000000011111101111000001100|11111111100000010000111110011|00000000011111101111000001100|11111111100000010000111110011|11111111100000010000111110011|00000000011111101111000001100"
+        "#,
     );
     assert_true(
-        r#"let patterns=["^\\p{sc=Cyrl}$", "^\\P{sc=Cyrl}$", "^[\\p{sc=Cyrl}]$", "^[\\P{sc=Cyrl}]$", "^[^\\p{sc=Cyrl}]$", "^[^\\P{sc=Cyrl}]$"],points=[0, 10, 32, 65, 97, 181, 837, 888, 931, 1024, 1025, 1040, 1072, 1105, 1327, 1328, 7296, 7305, 7306, 7467, 8192, 55296, 56320, 57344, 64976, 122928, 122989, 128512, 1114111],flags="v";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="00000000011111101111000001100|11111111100000010000111110011|00000000011111101111000001100|11111111100000010000111110011|11111111100000010000111110011|00000000011111101111000001100""#,
+        r#"
+            let patterns = ["^\\p{sc=Cyrl}$", "^\\P{sc=Cyrl}$", "^[\\p{sc=Cyrl}]$", "^[\\P{sc=Cyrl}]$",
+                    "^[^\\p{sc=Cyrl}]$", "^[^\\P{sc=Cyrl}]$"
+                ],
+                points = [0, 10, 32, 65, 97, 181, 837, 888, 931, 1024, 1025, 1040, 1072, 1105, 1327, 1328,
+                    7296, 7305, 7306, 7467, 8192, 55296, 56320, 57344, 64976, 122928, 122989, 128512,
+                    1114111
+                ],
+                flags = "v";
+            patterns.map(pattern => {
+                    let r = new RegExp(pattern, flags);
+                    return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+                }).join('|') ===
+                "00000000011111101111000001100|11111111100000010000111110011|00000000011111101111000001100|11111111100000010000111110011|11111111100000010000111110011|00000000011111101111000001100"
+        "#,
     );
     assert_true(
-        r#"let patterns=["^\\p{sc=Cyrl}$", "^\\P{sc=Cyrl}$", "^[\\p{sc=Cyrl}]$", "^[\\P{sc=Cyrl}]$", "^[^\\p{sc=Cyrl}]$", "^[^\\P{sc=Cyrl}]$"],points=[0, 10, 32, 65, 97, 181, 837, 888, 931, 1024, 1025, 1040, 1072, 1105, 1327, 1328, 7296, 7305, 7306, 7467, 8192, 55296, 56320, 57344, 64976, 122928, 122989, 128512, 1114111],flags="vi";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="00000000011111101111000001100|11111111100000010000111110011|00000000011111101111000001100|11111111100000010000111110011|11111111100000010000111110011|00000000011111101111000001100""#,
+        r#"
+            let patterns = ["^\\p{sc=Cyrl}$", "^\\P{sc=Cyrl}$", "^[\\p{sc=Cyrl}]$", "^[\\P{sc=Cyrl}]$",
+                    "^[^\\p{sc=Cyrl}]$", "^[^\\P{sc=Cyrl}]$"
+                ],
+                points = [0, 10, 32, 65, 97, 181, 837, 888, 931, 1024, 1025, 1040, 1072, 1105, 1327, 1328,
+                    7296, 7305, 7306, 7467, 8192, 55296, 56320, 57344, 64976, 122928, 122989, 128512,
+                    1114111
+                ],
+                flags = "vi";
+            patterns.map(pattern => {
+                    let r = new RegExp(pattern, flags);
+                    return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+                }).join('|') ===
+                "00000000011111101111000001100|11111111100000010000111110011|00000000011111101111000001100|11111111100000010000111110011|11111111100000010000111110011|00000000011111101111000001100"
+        "#,
     );
     assert_true(
-        r#"let patterns=["^\\p{sc=Cyrillic}$", "^\\P{sc=Cyrillic}$", "^[\\p{sc=Cyrillic}]$", "^[\\P{sc=Cyrillic}]$", "^[^\\p{sc=Cyrillic}]$", "^[^\\P{sc=Cyrillic}]$"],points=[0, 10, 32, 65, 97, 181, 837, 888, 931, 1024, 1025, 1040, 1072, 1105, 1327, 1328, 7296, 7305, 7306, 7467, 8192, 55296, 56320, 57344, 64976, 122928, 122989, 128512, 1114111],flags="u";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="00000000011111101111000001100|11111111100000010000111110011|00000000011111101111000001100|11111111100000010000111110011|11111111100000010000111110011|00000000011111101111000001100""#,
+        r#"
+            let patterns = ["^\\p{sc=Cyrillic}$", "^\\P{sc=Cyrillic}$", "^[\\p{sc=Cyrillic}]$",
+                    "^[\\P{sc=Cyrillic}]$", "^[^\\p{sc=Cyrillic}]$", "^[^\\P{sc=Cyrillic}]$"
+                ],
+                points = [0, 10, 32, 65, 97, 181, 837, 888, 931, 1024, 1025, 1040, 1072, 1105, 1327, 1328,
+                    7296, 7305, 7306, 7467, 8192, 55296, 56320, 57344, 64976, 122928, 122989, 128512,
+                    1114111
+                ],
+                flags = "u";
+            patterns.map(pattern => {
+                    let r = new RegExp(pattern, flags);
+                    return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+                }).join('|') ===
+                "00000000011111101111000001100|11111111100000010000111110011|00000000011111101111000001100|11111111100000010000111110011|11111111100000010000111110011|00000000011111101111000001100"
+        "#,
     );
     assert_true(
-        r#"let patterns=["^\\p{sc=Cyrillic}$", "^\\P{sc=Cyrillic}$", "^[\\p{sc=Cyrillic}]$", "^[\\P{sc=Cyrillic}]$", "^[^\\p{sc=Cyrillic}]$", "^[^\\P{sc=Cyrillic}]$"],points=[0, 10, 32, 65, 97, 181, 837, 888, 931, 1024, 1025, 1040, 1072, 1105, 1327, 1328, 7296, 7305, 7306, 7467, 8192, 55296, 56320, 57344, 64976, 122928, 122989, 128512, 1114111],flags="ui";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="00000000011111101111000001100|11111111100000010000111110011|00000000011111101111000001100|11111111100000010000111110011|11111111100000010000111110011|00000000011111101111000001100""#,
+        r#"
+            let patterns = ["^\\p{sc=Cyrillic}$", "^\\P{sc=Cyrillic}$", "^[\\p{sc=Cyrillic}]$",
+                    "^[\\P{sc=Cyrillic}]$", "^[^\\p{sc=Cyrillic}]$", "^[^\\P{sc=Cyrillic}]$"
+                ],
+                points = [0, 10, 32, 65, 97, 181, 837, 888, 931, 1024, 1025, 1040, 1072, 1105, 1327, 1328,
+                    7296, 7305, 7306, 7467, 8192, 55296, 56320, 57344, 64976, 122928, 122989, 128512,
+                    1114111
+                ],
+                flags = "ui";
+            patterns.map(pattern => {
+                    let r = new RegExp(pattern, flags);
+                    return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+                }).join('|') ===
+                "00000000011111101111000001100|11111111100000010000111110011|00000000011111101111000001100|11111111100000010000111110011|11111111100000010000111110011|00000000011111101111000001100"
+        "#,
     );
     assert_true(
-        r#"let patterns=["^\\p{sc=Cyrillic}$", "^\\P{sc=Cyrillic}$", "^[\\p{sc=Cyrillic}]$", "^[\\P{sc=Cyrillic}]$", "^[^\\p{sc=Cyrillic}]$", "^[^\\P{sc=Cyrillic}]$"],points=[0, 10, 32, 65, 97, 181, 837, 888, 931, 1024, 1025, 1040, 1072, 1105, 1327, 1328, 7296, 7305, 7306, 7467, 8192, 55296, 56320, 57344, 64976, 122928, 122989, 128512, 1114111],flags="v";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="00000000011111101111000001100|11111111100000010000111110011|00000000011111101111000001100|11111111100000010000111110011|11111111100000010000111110011|00000000011111101111000001100""#,
+        r#"
+            let patterns = ["^\\p{sc=Cyrillic}$", "^\\P{sc=Cyrillic}$", "^[\\p{sc=Cyrillic}]$",
+                    "^[\\P{sc=Cyrillic}]$", "^[^\\p{sc=Cyrillic}]$", "^[^\\P{sc=Cyrillic}]$"
+                ],
+                points = [0, 10, 32, 65, 97, 181, 837, 888, 931, 1024, 1025, 1040, 1072, 1105, 1327, 1328,
+                    7296, 7305, 7306, 7467, 8192, 55296, 56320, 57344, 64976, 122928, 122989, 128512,
+                    1114111
+                ],
+                flags = "v";
+            patterns.map(pattern => {
+                    let r = new RegExp(pattern, flags);
+                    return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+                }).join('|') ===
+                "00000000011111101111000001100|11111111100000010000111110011|00000000011111101111000001100|11111111100000010000111110011|11111111100000010000111110011|00000000011111101111000001100"
+        "#,
     );
     assert_true(
-        r#"let patterns=["^\\p{sc=Cyrillic}$", "^\\P{sc=Cyrillic}$", "^[\\p{sc=Cyrillic}]$", "^[\\P{sc=Cyrillic}]$", "^[^\\p{sc=Cyrillic}]$", "^[^\\P{sc=Cyrillic}]$"],points=[0, 10, 32, 65, 97, 181, 837, 888, 931, 1024, 1025, 1040, 1072, 1105, 1327, 1328, 7296, 7305, 7306, 7467, 8192, 55296, 56320, 57344, 64976, 122928, 122989, 128512, 1114111],flags="vi";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="00000000011111101111000001100|11111111100000010000111110011|00000000011111101111000001100|11111111100000010000111110011|11111111100000010000111110011|00000000011111101111000001100""#,
+        r#"
+            let patterns = ["^\\p{sc=Cyrillic}$", "^\\P{sc=Cyrillic}$", "^[\\p{sc=Cyrillic}]$",
+                    "^[\\P{sc=Cyrillic}]$", "^[^\\p{sc=Cyrillic}]$", "^[^\\P{sc=Cyrillic}]$"
+                ],
+                points = [0, 10, 32, 65, 97, 181, 837, 888, 931, 1024, 1025, 1040, 1072, 1105, 1327, 1328,
+                    7296, 7305, 7306, 7467, 8192, 55296, 56320, 57344, 64976, 122928, 122989, 128512,
+                    1114111
+                ],
+                flags = "vi";
+            patterns.map(pattern => {
+                    let r = new RegExp(pattern, flags);
+                    return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+                }).join('|') ===
+                "00000000011111101111000001100|11111111100000010000111110011|00000000011111101111000001100|11111111100000010000111110011|11111111100000010000111110011|00000000011111101111000001100"
+        "#,
     );
 }
 
@@ -93,13 +317,29 @@ fn unicode_cyrillic_script_results_snapshot() {
 fn unicode_cyrillic_script_captures_context_and_pair_starts() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/^(?<x>([\p{{sc=Cyrl}}K]))$/dim{mode}g,m=r.exec('A\r\nЁ\u2028');m.index===3&&m[1]==='Ё'&&m[2]==='Ё'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===4&&r.lastIndex===4"
+            r#"
+                let r = /^(?<x>([\p{{sc=Cyrl}}K]))$/dim{mode}g,
+                    m = r.exec('A\r\nЁ\u2028');
+                m.index === 3 && m[1] === 'Ё' && m[2] === 'Ё' && m.indices.groups.x === m.indices[1] && m
+                    .indices[2][1] === 4 && r.lastIndex === 4
+            "#
         ));
         assert_true(&format!(
-            r"let r=/(?<__proto__>\p{{Script=Cyrillic}})/d{mode}y;r.lastIndex=1;let m=r.exec('𞀰A');m.index===0&&m[1]==='𞀰'&&m.indices[1][1]===2&&r.lastIndex===2&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]"
+            r#"
+                let r = /(?<__proto__>\p{{Script=Cyrillic}})/d{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('𞀰A');
+                m.index === 0 && m[1] === '𞀰' && m.indices[1][1] === 2 && r.lastIndex === 2 && Object
+                    .getPrototypeOf(m.groups) === null && m.indices.groups.__proto__ === m.indices[1]
+            "#
         ));
         assert_true(&format!(
-            r"let r=/\P{{sc=Cyrillic}}/d{mode}g;r.lastIndex=1;let m=r.exec('𞀰\uD800');m.index===2&&m[0]==='\uD800'&&r.lastIndex===3"
+            r#"
+                let r = /\P{{sc=Cyrillic}}/d{mode}g;
+                r.lastIndex = 1;
+                let m = r.exec('𞀰\uD800');
+                m.index === 2 && m[0] === '\uD800' && r.lastIndex === 3
+            "#
         ));
         assert_true(&format!(
             r"let r=/\P{{Script=Cyrl}}/{mode}y;r.lastIndex=1;r.exec('𞀰\uD800')===null&&r.lastIndex===0"
@@ -111,7 +351,11 @@ fn unicode_cyrillic_script_captures_context_and_pair_starts() {
 fn unicode_cyrillic_script_consumers_preserve_original_text() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=[...'А😀AБ'.matchAll(/(?<x>\P{{sc=Cyrillic}})/d{mode}g)];a.length===2&&a[0][1]==='😀'&&a[0].index===1&&a[0].indices[1][1]===3&&a[1][1]==='A'&&a[1].index===3"
+            r#"
+                let a = [...'А😀AБ'.matchAll(/(?<x>\P{{sc=Cyrillic}})/d{mode}g)];
+                a.length === 2 && a[0][1] === '😀' && a[0].index === 1 && a[0].indices[1][1] === 3 && a[1][
+                    1] === 'A' && a[1].index === 3
+            "#
         ));
         assert_true(&format!(
             r"'АБA'.replace(/(?<x>\p{{sc=Cyrl}})/{mode}g,'<$1:$<x>>')==='<А:А><Б:Б>A'"
@@ -128,16 +372,62 @@ fn unicode_cyrillic_script_consumers_preserve_original_text() {
 #[test]
 fn unicode_cyrillic_script_clones_coercions_and_strict_writes() {
     assert_true(
-        r"let r=/^(?<x>\p{sc=Cyrl})$/dmu,c=new RegExp(r,'divy');c.source==='^(?<x>\\p{sc=Cyrl})$'&&c.unicodeSets&&!c.unicode&&!c.multiline&&c.exec('а').groups.x==='а'&&c.lastIndex===1",
+        r#"
+            let r = /^(?<x>\p{sc=Cyrl})$/dmu,
+                c = new RegExp(r, 'divy');
+            c.source === '^(?<x>\\p{sc=Cyrl})$' && c.unicodeSets && !c.unicode && !c.multiline && c.exec(
+                'а').groups.x === 'а' && c.lastIndex === 1
+        "#,
     );
     assert_true(
-        r"let t='',r=/\p{Script=Cyrillic}/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '𞀰'}});t==='si'&&m[0]==='𞀰'&&m.index===0&&r.lastIndex===2",
+        r#"
+            let t = '',
+                r = /\p{Script=Cyrillic}/uy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 1
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return '𞀰'
+                }
+            });
+            t === 'si' && m[0] === '𞀰' && m.index === 0 && r.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let r=/\p{sc=Cyrillic}/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('А')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            let r = /\p{sc=Cyrillic}/vy;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('А')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/\P{Script=Cyrl}/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('𞀰\uD800')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /\P{Script=Cyrl}/vy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('𞀰\uD800')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 
@@ -176,7 +466,12 @@ fn unicode_cyrillic_script_opted_work_and_remaining_sets() {
 fn unicode_cyrillic_script_repetitions_retain_last_capture_and_outside_words() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/\B(?<x>\p{{sc=Cyrl}})+\B/d{mode}g,m=r.exec('µ𞀰𞀰𞀰µ');m.index===1&&m[0]==='𞀰𞀰𞀰'&&m.groups.x==='𞀰'&&m.indices.groups.x[0]===5&&m.indices.groups.x[1]===7&&r.lastIndex===7"
+            r#"
+                let r = /\B(?<x>\p{{sc=Cyrl}})+\B/d{mode}g,
+                    m = r.exec('µ𞀰𞀰𞀰µ');
+                m.index === 1 && m[0] === '𞀰𞀰𞀰' && m.groups.x === '𞀰' && m.indices.groups.x[0] === 5 && m
+                    .indices.groups.x[1] === 7 && r.lastIndex === 7
+            "#
         ));
     }
 }
@@ -184,6 +479,17 @@ fn unicode_cyrillic_script_repetitions_retain_last_capture_and_outside_words() {
 #[test]
 fn unicode_cyrillic_script_former_direct_eval_context_executes_normally() {
     assert_true(
-        r#"let marker=0,result;try{result=eval("marker=1; /\\p{Script=Cyrillic}/u.test('а');")}catch{marker=2}finally{marker=3}marker===3&&result===true"#,
+        r#"
+            let marker = 0,
+                result;
+            try {
+                result = eval("marker=1; /\\p{Script=Cyrillic}/u.test('а');")
+            } catch {
+                marker = 2
+            } finally {
+                marker = 3
+            }
+            marker === 3 && result === true
+        "#,
     );
 }

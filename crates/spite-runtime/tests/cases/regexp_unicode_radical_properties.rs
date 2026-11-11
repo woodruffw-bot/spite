@@ -49,16 +49,39 @@ fn unicode_radical_property_results_snapshot() {
 fn unicode_radical_properties_aliases_complements_and_unions() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=/\p{{Radical}}/{mode},b=/\p{{Radical}}/i{mode},n=/\P{{Radical}}/i{mode};a.test('\u2E80')&&a.test('\u2FD5')&&b.test('\u2E80')&&!a.test('\u200D')&&!b.test('\u005f')&&!b.test('ſ')&&!b.test('K')&&!n.test('\u2E80')&&n.test('😀')&&n.test('\uD800')&&n.test('\uFEFF')"
+            r#"
+                let a = /\p{{Radical}}/{mode},
+                    b = /\p{{Radical}}/i{mode},
+                    n = /\P{{Radical}}/i{mode};
+                a.test('\u2E80') && a.test('\u2FD5') && b.test('\u2E80') && !a.test('\u200D') && !b.test(
+                        '\u005f') && !b.test('ſ') && !b.test('K') && !n.test('\u2E80') && n.test('😀') && n
+                    .test('\uD800') && n.test('\uFEFF')
+            "#
         ));
         assert_true(&format!(
-            r"let p=/\p{{Radical}}/{mode},s=/\s/{mode};p.test('\u2E80')&&p.test('\u2FD5')&&!s.test('\u2E80')&&!s.test('\u2FD5')&&!p.test('\uFEFF')&&s.test('\uFEFF')"
+            r#"
+                let p = /\p{{Radical}}/{mode},
+                    s = /\s/{mode};
+                p.test('\u2E80') && p.test('\u2FD5') && !s.test('\u2E80') && !s.test('\u2FD5') && !p.test(
+                    '\uFEFF') && s.test('\uFEFF')
+            "#
         ));
         assert_true(&format!(
-            r"let a=/[\p{{Radical}}K]/i{mode},b=/[^\P{{Radical}}K]/i{mode},c=/[\p{{Radical}}\P{{Radical}}]/{mode};a.test('K')&&a.test('k')&&a.test('\u2E80')&&!a.test('ſ')&&b.test('\u2FD5')&&!b.test('K')&&c.test('😀')&&c.test('A')&&c.test('\uD800')"
+            r#"
+                let a = /[\p{{Radical}}K]/i{mode},
+                    b = /[^\P{{Radical}}K]/i{mode},
+                    c = /[\p{{Radical}}\P{{Radical}}]/{mode};
+                a.test('K') && a.test('k') && a.test('\u2E80') && !a.test('ſ') && b.test('\u2FD5') && !b.test(
+                    'K') && c.test('😀') && c.test('A') && c.test('\uD800')
+            "#
         ));
         assert_true(&format!(
-            r"let a=/^\p{{Radical}}$/{mode},b=/^\P{{Radical}}$/{mode};a.test('\u2E80')&&!a.test('\u2FD5\n')&&!a.test('')&&!a.test('\n')&&b.test('😀')&&!b.test('AA')"
+            r#"
+                let a = /^\p{{Radical}}$/{mode},
+                    b = /^\P{{Radical}}$/{mode};
+                a.test('\u2E80') && !a.test('\u2FD5\n') && !a.test('') && !a.test('\n') && b.test('😀') && !b
+                    .test('AA')
+            "#
         ));
     }
 }
@@ -67,13 +90,29 @@ fn unicode_radical_properties_aliases_complements_and_unions() {
 fn unicode_radical_properties_captures_context_and_pair_starts() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/^(?<x>([\p{{Radical}}K]))$/dim{mode}g,m=r.exec('x\r\nK\u2028');m.index===3&&m[1]==='K'&&m[2]==='K'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===4&&r.lastIndex===4"
+            r#"
+                let r = /^(?<x>([\p{{Radical}}K]))$/dim{mode}g,
+                    m = r.exec('x\r\nK\u2028');
+                m.index === 3 && m[1] === 'K' && m[2] === 'K' && m.indices.groups.x === m.indices[1] && m
+                    .indices[2][1] === 4 && r.lastIndex === 4
+            "#
         ));
         assert_true(&format!(
-            r"let r=/(?<__proto__>\P{{Radical}})/d{mode}y;r.lastIndex=1;let m=r.exec('😀\u2E80');m.index===0&&m[1]==='😀'&&m.indices[1][1]===2&&r.lastIndex===2&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]"
+            r#"
+                let r = /(?<__proto__>\P{{Radical}})/d{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('😀\u2E80');
+                m.index === 0 && m[1] === '😀' && m.indices[1][1] === 2 && r.lastIndex === 2 && Object
+                    .getPrototypeOf(m.groups) === null && m.indices.groups.__proto__ === m.indices[1]
+            "#
         ));
         assert_true(&format!(
-            r"let r=/\p{{Radical}}/d{mode}g;r.lastIndex=1;let m=r.exec('😀\u2E80');m.index===2&&m[0]==='\u2E80'&&r.lastIndex===3"
+            r#"
+                let r = /\p{{Radical}}/d{mode}g;
+                r.lastIndex = 1;
+                let m = r.exec('😀\u2E80');
+                m.index === 2 && m[0] === '\u2E80' && r.lastIndex === 3
+            "#
         ));
         assert_true(&format!(
             r"let r=/\p{{Radical}}/{mode}y;r.lastIndex=1;r.exec('😀\u2E80')===null&&r.lastIndex===0"
@@ -85,7 +124,11 @@ fn unicode_radical_properties_captures_context_and_pair_starts() {
 fn unicode_radical_properties_consumers_original_text() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=[...'\u2FD5😀\u2E80G'.matchAll(/(?<x>\P{{Radical}})/d{mode}g)];a.length===2&&a[0][1]==='😀'&&a[0].index===1&&a[0].indices[1][1]===3&&a[1][1]==='G'"
+            r#"
+                let a = [...'\u2FD5😀\u2E80G'.matchAll(/(?<x>\P{{Radical}})/d{mode}g)];
+                a.length === 2 && a[0][1] === '😀' && a[0].index === 1 && a[0].indices[1][1] === 3 && a[1][
+                    1] === 'G'
+            "#
         ));
         assert_true(&format!(
             r"'\u2FD5\u2E80😀X'.replace(/(?<x>\p{{Radical}})/{mode}g,'<$1:$<x>>')==='<\u2FD5:\u2FD5><\u2E80:\u2E80>😀X'"
@@ -94,7 +137,14 @@ fn unicode_radical_properties_consumers_original_text() {
             r"'😀\u2FD5\u2E80G'.split(/(\p{{Radical}})/{mode}).join('|')==='😀|\u2FD5||\u2E80|G'&&'😀\u2E80'.search(/\p{{Radical}}/{mode})===2&&'\u2FD5\u2E80😀'.match(/\p{{Radical}}/{mode}g).join('')==='\u2FD5\u2E80'"
         ));
         assert_true(&format!(
-            r"let t='';let x='\u2E80\u2FD5😀\u2E80'.replace(/(\p{{Radical}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__😀_'&&t==='014'"
+            r#"
+                let t = '';
+                let x = '\u2E80\u2FD5😀\u2E80'.replace(/(\p{{Radical}})/{mode}g, (m, c, p) => {{
+                    t += p;
+                    return '_'
+                }});
+                x === '__😀_' && t === '014'
+            "#
         ));
     }
 }
@@ -102,16 +152,62 @@ fn unicode_radical_properties_consumers_original_text() {
 #[test]
 fn unicode_radical_properties_clones_coercions_and_strict_writes() {
     assert_true(
-        r"let r=/^(?<x>\p{Radical})$/dmu,c=new RegExp(r,'divy');c.source==='^(?<x>\\p{Radical})$'&&c.unicodeSets&&!c.unicode&&!c.multiline&&c.exec('\u2E80').groups.x==='\u2E80'&&c.lastIndex===1",
+        r#"
+            let r = /^(?<x>\p{Radical})$/dmu,
+                c = new RegExp(r, 'divy');
+            c.source === '^(?<x>\\p{Radical})$' && c.unicodeSets && !c.unicode && !c.multiline && c.exec(
+                '\u2E80').groups.x === '\u2E80' && c.lastIndex === 1
+        "#,
     );
     assert_true(
-        r"let t='',r=/\P{Radical}/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m[0]==='😀'&&m.index===0&&r.lastIndex===2",
+        r#"
+            let t = '',
+                r = /\P{Radical}/uy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 1
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return '😀'
+                }
+            });
+            t === 'si' && m[0] === '😀' && m.index === 0 && r.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let r=/\p{Radical}/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('\u2E80')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            let r = /\p{Radical}/vy;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('\u2E80')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/\p{Radical}/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀\u2E80')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /\p{Radical}/vy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀\u2E80')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 
@@ -152,7 +248,12 @@ fn unicode_radical_properties_opted_work_and_remaining_sets() {
 fn unicode_radical_repetitions_retain_last_capture_and_outside_words() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/\B(?<x>\p{{Radical}})+\B/d{mode}g,m=r.exec('😀\u2E80\u2FD5\u2FD5\uFEFF');m.index===2&&m[0]==='\u2E80\u2FD5\u2FD5'&&m.groups.x==='\u2FD5'&&m.indices.groups.x[0]===4&&m.indices.groups.x[1]===5&&r.lastIndex===5"
+            r#"
+                let r = /\B(?<x>\p{{Radical}})+\B/d{mode}g,
+                    m = r.exec('😀\u2E80\u2FD5\u2FD5\uFEFF');
+                m.index === 2 && m[0] === '\u2E80\u2FD5\u2FD5' && m.groups.x === '\u2FD5' && m.indices.groups
+                    .x[0] === 4 && m.indices.groups.x[1] === 5 && r.lastIndex === 5
+            "#
         ));
     }
 }

@@ -49,16 +49,39 @@ fn unicode_variation_selector_property_results_snapshot() {
 fn unicode_variation_selector_properties_aliases_complements_and_unions() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=/\p{{Variation_Selector}}/{mode},b=/\p{{VS}}/i{mode},n=/\P{{VS}}/i{mode};a.test('\uFE00')&&a.test('\uFE01')&&b.test('\uFE00')&&!a.test('\u200D')&&!b.test('\u2010')&&!b.test('ſ')&&!b.test('K')&&!n.test('\uFE00')&&n.test('😀')&&n.test('\uD800')&&n.test('\uFEFF')"
+            r#"
+                let a = /\p{{Variation_Selector}}/{mode},
+                    b = /\p{{VS}}/i{mode},
+                    n = /\P{{VS}}/i{mode};
+                a.test('\uFE00') && a.test('\uFE01') && b.test('\uFE00') && !a.test('\u200D') && !b.test(
+                        '\u2010') && !b.test('ſ') && !b.test('K') && !n.test('\uFE00') && n.test('😀') && n
+                    .test('\uD800') && n.test('\uFEFF')
+            "#
         ));
         assert_true(&format!(
-            r"let p=/\p{{Variation_Selector}}/{mode},s=/\s/{mode};p.test('\uFE00')&&p.test('\uFE01')&&!s.test('\uFE00')&&!s.test('\uFE01')&&!p.test('\uFEFF')&&s.test('\uFEFF')"
+            r#"
+                let p = /\p{{Variation_Selector}}/{mode},
+                    s = /\s/{mode};
+                p.test('\uFE00') && p.test('\uFE01') && !s.test('\uFE00') && !s.test('\uFE01') && !p.test(
+                    '\uFEFF') && s.test('\uFEFF')
+            "#
         ));
         assert_true(&format!(
-            r"let a=/[\p{{VS}}K]/i{mode},b=/[^\P{{Variation_Selector}}K]/i{mode},c=/[\p{{VS}}\P{{Variation_Selector}}]/{mode};a.test('K')&&a.test('k')&&a.test('\uFE00')&&!a.test('ſ')&&b.test('\uFE01')&&!b.test('K')&&c.test('😀')&&c.test('A')&&c.test('\uD800')"
+            r#"
+                let a = /[\p{{VS}}K]/i{mode},
+                    b = /[^\P{{Variation_Selector}}K]/i{mode},
+                    c = /[\p{{VS}}\P{{Variation_Selector}}]/{mode};
+                a.test('K') && a.test('k') && a.test('\uFE00') && !a.test('ſ') && b.test('\uFE01') && !b.test(
+                    'K') && c.test('😀') && c.test('A') && c.test('\uD800')
+            "#
         ));
         assert_true(&format!(
-            r"let a=/^\p{{VS}}$/{mode},b=/^\P{{VS}}$/{mode};a.test('\uFE00')&&!a.test('\uFE01\n')&&!a.test('')&&!a.test('\n')&&b.test('😀')&&!b.test('AA')"
+            r#"
+                let a = /^\p{{VS}}$/{mode},
+                    b = /^\P{{VS}}$/{mode};
+                a.test('\uFE00') && !a.test('\uFE01\n') && !a.test('') && !a.test('\n') && b.test('😀') && !b
+                    .test('AA')
+            "#
         ));
     }
 }
@@ -67,15 +90,32 @@ fn unicode_variation_selector_properties_aliases_complements_and_unions() {
 fn unicode_variation_selector_properties_captures_context_and_pair_starts() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/(?<x>\p{{VS}})/d{mode}y;r.lastIndex=1;let m=r.exec('\uDB40\uDD00');m.index===0&&m[0]==='\uDB40\uDD00'&&m.groups.x===m[0]&&m.indices[1][0]===0&&m.indices[1][1]===2&&r.lastIndex===2"
+            r#"
+                let r = /(?<x>\p{{VS}})/d{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('\uDB40\uDD00');
+                m.index === 0 && m[0] === '\uDB40\uDD00' && m.groups.x === m[0] && m.indices[1][0] === 0 && m
+                    .indices[1][1] === 2 && r.lastIndex === 2
+            "#
         ));
     }
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/^(?<x>([\p{{VS}}K]))$/dim{mode}g,m=r.exec('x\r\nK\u2028');m.index===3&&m[1]==='K'&&m[2]==='K'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===4&&r.lastIndex===4"
+            r#"
+                let r = /^(?<x>([\p{{VS}}K]))$/dim{mode}g,
+                    m = r.exec('x\r\nK\u2028');
+                m.index === 3 && m[1] === 'K' && m[2] === 'K' && m.indices.groups.x === m.indices[1] && m
+                    .indices[2][1] === 4 && r.lastIndex === 4
+            "#
         ));
         assert_true(&format!(
-            r"let r=/(?<__proto__>\P{{VS}})/d{mode}y;r.lastIndex=1;let m=r.exec('😀\ufe00');m.index===0&&m[1]==='😀'&&m.indices[1][1]===2&&r.lastIndex===2&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]"
+            r#"
+                let r = /(?<__proto__>\P{{VS}})/d{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('😀\ufe00');
+                m.index === 0 && m[1] === '😀' && m.indices[1][1] === 2 && r.lastIndex === 2 && Object
+                    .getPrototypeOf(m.groups) === null && m.indices.groups.__proto__ === m.indices[1]
+            "#
         ));
         assert_true(&format!(
             r"let r=/\p{{VS}}/d{mode}g;r.lastIndex=1;let m=r.exec('😀\ufe00');m.index===2&&m[0]==='\ufe00'&&r.lastIndex===3"
@@ -90,7 +130,11 @@ fn unicode_variation_selector_properties_captures_context_and_pair_starts() {
 fn unicode_variation_selector_properties_consumers_original_text() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=[...'\ufe01😀\ufe00G'.matchAll(/(?<x>\P{{VS}})/d{mode}g)];a.length===2&&a[0][1]==='😀'&&a[0].index===1&&a[0].indices[1][1]===3&&a[1][1]==='G'"
+            r#"
+                let a = [...'\ufe01😀\ufe00G'.matchAll(/(?<x>\P{{VS}})/d{mode}g)];
+                a.length === 2 && a[0][1] === '😀' && a[0].index === 1 && a[0].indices[1][1] === 3 && a[1][
+                    1] === 'G'
+            "#
         ));
         assert_true(&format!(
             r"'\ufe01\ufe00😀X'.replace(/(?<x>\p{{Variation_Selector}})/{mode}g,'<$1:$<x>>')==='<\ufe01:\ufe01><\ufe00:\ufe00>😀X'"
@@ -99,7 +143,14 @@ fn unicode_variation_selector_properties_consumers_original_text() {
             r"'😀\ufe01\ufe00G'.split(/(\p{{VS}})/{mode}).join('|')==='😀|\ufe01||\ufe00|G'&&'😀\ufe00'.search(/\p{{VS}}/{mode})===2&&'\ufe01\ufe00😀'.match(/\p{{VS}}/{mode}g).join('')==='\ufe01\ufe00'"
         ));
         assert_true(&format!(
-            r"let t='';let x='\ufe00\ufe01😀\ufe00'.replace(/(\p{{VS}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__😀_'&&t==='014'"
+            r#"
+                let t = '';
+                let x = '\ufe00\ufe01😀\ufe00'.replace(/(\p{{VS}})/{mode}g, (m, c, p) => {{
+                    t += p;
+                    return '_'
+                }});
+                x === '__😀_' && t === '014'
+            "#
         ));
     }
 }
@@ -107,16 +158,62 @@ fn unicode_variation_selector_properties_consumers_original_text() {
 #[test]
 fn unicode_variation_selector_properties_clones_coercions_and_strict_writes() {
     assert_true(
-        r"let r=/^(?<x>\p{Variation_Selector})$/dmu,c=new RegExp(r,'divy');c.source==='^(?<x>\\p{Variation_Selector})$'&&c.unicodeSets&&!c.unicode&&!c.multiline&&c.exec('\ufe00').groups.x==='\ufe00'&&c.lastIndex===1",
+        r#"
+            let r = /^(?<x>\p{Variation_Selector})$/dmu,
+                c = new RegExp(r, 'divy');
+            c.source === '^(?<x>\\p{Variation_Selector})$' && c.unicodeSets && !c.unicode && !c
+                .multiline && c.exec('\ufe00').groups.x === '\ufe00' && c.lastIndex === 1
+        "#,
     );
     assert_true(
-        r"let t='',r=/\P{VS}/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m[0]==='😀'&&m.index===0&&r.lastIndex===2",
+        r#"
+            let t = '',
+                r = /\P{VS}/uy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 1
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return '😀'
+                }
+            });
+            t === 'si' && m[0] === '😀' && m.index === 0 && r.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let r=/\p{VS}/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('\ufe00')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            let r = /\p{VS}/vy;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('\ufe00')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/\p{VS}/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀\ufe00')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /\p{VS}/vy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀\ufe00')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 
@@ -154,7 +251,12 @@ fn unicode_variation_selector_properties_opted_work_and_remaining_sets() {
 fn unicode_variation_selector_repetitions_retain_last_capture_and_outside_words() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/\B(?<x>\p{{VS}})+\B/d{mode}g,m=r.exec('😀\ufe00\ufe01\ufe0f!');m.index===2&&m[0]==='\ufe00\ufe01\ufe0f'&&m.groups.x==='\ufe0f'&&m.indices.groups.x[0]===4&&m.indices.groups.x[1]===5&&r.lastIndex===5"
+            r#"
+                let r = /\B(?<x>\p{{VS}})+\B/d{mode}g,
+                    m = r.exec('😀\ufe00\ufe01\ufe0f!');
+                m.index === 2 && m[0] === '\ufe00\ufe01\ufe0f' && m.groups.x === '\ufe0f' && m.indices.groups
+                    .x[0] === 4 && m.indices.groups.x[1] === 5 && r.lastIndex === 5
+            "#
         ));
     }
 }

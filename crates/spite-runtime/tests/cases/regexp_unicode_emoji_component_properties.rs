@@ -49,16 +49,39 @@ fn unicode_emoji_component_property_results_snapshot() {
 fn unicode_emoji_component_properties_aliases_complements_and_unions() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=/\p{{Emoji_Component}}/{mode},b=/\p{{EComp}}/i{mode},n=/\P{{EComp}}/i{mode};a.test('\u200D')&&a.test('\uFE0F')&&b.test('\u200D')&&!a.test('\u005f')&&!b.test('\u005f')&&!b.test('ſ')&&!b.test('K')&&!n.test('\u200D')&&n.test('😀')&&n.test('\uD800')&&n.test('\u0020')"
+            r#"
+                let a = /\p{{Emoji_Component}}/{mode},
+                    b = /\p{{EComp}}/i{mode},
+                    n = /\P{{EComp}}/i{mode};
+                a.test('\u200D') && a.test('\uFE0F') && b.test('\u200D') && !a.test('\u005f') && !b.test(
+                        '\u005f') && !b.test('ſ') && !b.test('K') && !n.test('\u200D') && n.test('😀') && n
+                    .test('\uD800') && n.test('\u0020')
+            "#
         ));
         assert_true(&format!(
-            r"let p=/\p{{Emoji_Component}}/{mode},s=/\s/{mode};p.test('\u200D')&&p.test('\uFE0F')&&!s.test('\u200D')&&!s.test('\uFE0F')&&!p.test('\u0020')&&s.test('\u0020')"
+            r#"
+                let p = /\p{{Emoji_Component}}/{mode},
+                    s = /\s/{mode};
+                p.test('\u200D') && p.test('\uFE0F') && !s.test('\u200D') && !s.test('\uFE0F') && !p.test(
+                    '\u0020') && s.test('\u0020')
+            "#
         ));
         assert_true(&format!(
-            r"let a=/[\p{{EComp}}K]/i{mode},b=/[^\P{{Emoji_Component}}K]/i{mode},c=/[\p{{EComp}}\P{{Emoji_Component}}]/{mode};a.test('K')&&a.test('k')&&a.test('\u200D')&&!a.test('ſ')&&b.test('\uFE0F')&&!b.test('K')&&c.test('😀')&&c.test('A')&&c.test('\uD800')"
+            r#"
+                let a = /[\p{{EComp}}K]/i{mode},
+                    b = /[^\P{{Emoji_Component}}K]/i{mode},
+                    c = /[\p{{EComp}}\P{{Emoji_Component}}]/{mode};
+                a.test('K') && a.test('k') && a.test('\u200D') && !a.test('ſ') && b.test('\uFE0F') && !b.test(
+                    'K') && c.test('😀') && c.test('A') && c.test('\uD800')
+            "#
         ));
         assert_true(&format!(
-            r"let a=/^\p{{EComp}}$/{mode},b=/^\P{{EComp}}$/{mode};a.test('\u200D')&&!a.test('\uFE0F\n')&&!a.test('')&&!a.test('\n')&&b.test('😀')&&!b.test('AA')"
+            r#"
+                let a = /^\p{{EComp}}$/{mode},
+                    b = /^\P{{EComp}}$/{mode};
+                a.test('\u200D') && !a.test('\uFE0F\n') && !a.test('') && !a.test('\n') && b.test('😀') && !b
+                    .test('AA')
+            "#
         ));
     }
 }
@@ -67,19 +90,41 @@ fn unicode_emoji_component_properties_aliases_complements_and_unions() {
 fn unicode_emoji_component_properties_captures_context_and_pair_starts() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/(?<x>\p{{EComp}})/d{mode}y;r.lastIndex=1;let m=r.exec('\uD83C\uDFFB');m.index===0&&m[0]==='\uD83C\uDFFB'&&m.groups.x===m[0]&&m.indices[1][0]===0&&m.indices[1][1]===2&&r.lastIndex===2"
+            r#"
+                let r = /(?<x>\p{{EComp}})/d{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('\uD83C\uDFFB');
+                m.index === 0 && m[0] === '\uD83C\uDFFB' && m.groups.x === m[0] && m.indices[1][0] === 0 && m
+                    .indices[1][1] === 2 && r.lastIndex === 2
+            "#
         ));
     }
 
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/^(?<x>([\p{{EComp}}K]))$/dim{mode}g,m=r.exec('x\r\nK\u2028');m.index===3&&m[1]==='K'&&m[2]==='K'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===4&&r.lastIndex===4"
+            r#"
+                let r = /^(?<x>([\p{{EComp}}K]))$/dim{mode}g,
+                    m = r.exec('x\r\nK\u2028');
+                m.index === 3 && m[1] === 'K' && m[2] === 'K' && m.indices.groups.x === m.indices[1] && m
+                    .indices[2][1] === 4 && r.lastIndex === 4
+            "#
         ));
         assert_true(&format!(
-            r"let r=/(?<__proto__>\P{{EComp}})/d{mode}y;r.lastIndex=1;let m=r.exec('😀\u200D');m.index===0&&m[1]==='😀'&&m.indices[1][1]===2&&r.lastIndex===2&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]"
+            r#"
+                let r = /(?<__proto__>\P{{EComp}})/d{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('😀\u200D');
+                m.index === 0 && m[1] === '😀' && m.indices[1][1] === 2 && r.lastIndex === 2 && Object
+                    .getPrototypeOf(m.groups) === null && m.indices.groups.__proto__ === m.indices[1]
+            "#
         ));
         assert_true(&format!(
-            r"let r=/\p{{EComp}}/d{mode}g;r.lastIndex=1;let m=r.exec('😀\u200D');m.index===2&&m[0]==='\u200D'&&r.lastIndex===3"
+            r#"
+                let r = /\p{{EComp}}/d{mode}g;
+                r.lastIndex = 1;
+                let m = r.exec('😀\u200D');
+                m.index === 2 && m[0] === '\u200D' && r.lastIndex === 3
+            "#
         ));
         assert_true(&format!(
             r"let r=/\p{{EComp}}/{mode}y;r.lastIndex=1;r.exec('😀\u200D')===null&&r.lastIndex===0"
@@ -91,7 +136,11 @@ fn unicode_emoji_component_properties_captures_context_and_pair_starts() {
 fn unicode_emoji_component_properties_consumers_original_text() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=[...'\uFE0F😀\u200DG'.matchAll(/(?<x>\P{{EComp}})/d{mode}g)];a.length===2&&a[0][1]==='😀'&&a[0].index===1&&a[0].indices[1][1]===3&&a[1][1]==='G'"
+            r#"
+                let a = [...'\uFE0F😀\u200DG'.matchAll(/(?<x>\P{{EComp}})/d{mode}g)];
+                a.length === 2 && a[0][1] === '😀' && a[0].index === 1 && a[0].indices[1][1] === 3 && a[1][
+                    1] === 'G'
+            "#
         ));
         assert_true(&format!(
             r"'\uFE0F\u200D😀X'.replace(/(?<x>\p{{Emoji_Component}})/{mode}g,'<$1:$<x>>')==='<\uFE0F:\uFE0F><\u200D:\u200D>😀X'"
@@ -100,7 +149,14 @@ fn unicode_emoji_component_properties_consumers_original_text() {
             r"'😀\uFE0F\u200DG'.split(/(\p{{EComp}})/{mode}).join('|')==='😀|\uFE0F||\u200D|G'&&'😀\u200D'.search(/\p{{EComp}}/{mode})===2&&'\uFE0F\u200D😀'.match(/\p{{EComp}}/{mode}g).join('')==='\uFE0F\u200D'"
         ));
         assert_true(&format!(
-            r"let t='';let x='\u200D\uFE0F😀\u200D'.replace(/(\p{{EComp}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__😀_'&&t==='014'"
+            r#"
+                let t = '';
+                let x = '\u200D\uFE0F😀\u200D'.replace(/(\p{{EComp}})/{mode}g, (m, c, p) => {{
+                    t += p;
+                    return '_'
+                }});
+                x === '__😀_' && t === '014'
+            "#
         ));
     }
 }
@@ -108,16 +164,62 @@ fn unicode_emoji_component_properties_consumers_original_text() {
 #[test]
 fn unicode_emoji_component_properties_clones_coercions_and_strict_writes() {
     assert_true(
-        r"let r=/^(?<x>\p{Emoji_Component})$/dmu,c=new RegExp(r,'divy');c.source==='^(?<x>\\p{Emoji_Component})$'&&c.unicodeSets&&!c.unicode&&!c.multiline&&c.exec('\u200D').groups.x==='\u200D'&&c.lastIndex===1",
+        r#"
+            let r = /^(?<x>\p{Emoji_Component})$/dmu,
+                c = new RegExp(r, 'divy');
+            c.source === '^(?<x>\\p{Emoji_Component})$' && c.unicodeSets && !c.unicode && !c.multiline && c
+                .exec('\u200D').groups.x === '\u200D' && c.lastIndex === 1
+        "#,
     );
     assert_true(
-        r"let t='',r=/\P{EComp}/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m[0]==='😀'&&m.index===0&&r.lastIndex===2",
+        r#"
+            let t = '',
+                r = /\P{EComp}/uy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 1
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return '😀'
+                }
+            });
+            t === 'si' && m[0] === '😀' && m.index === 0 && r.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let r=/\p{EComp}/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('\u200D')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            let r = /\p{EComp}/vy;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('\u200D')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/\p{EComp}/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀\u200D')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /\p{EComp}/vy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀\u200D')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 
@@ -155,7 +257,12 @@ fn unicode_emoji_component_properties_opted_work_and_remaining_sets() {
 fn unicode_emoji_component_repetitions_retain_last_capture_and_outside_words() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/\B(?<x>\p{{EComp}})+\B/d{mode}g,m=r.exec('😀\u200D\uFE0F\uFE0F\u0020');m.index===2&&m[0]==='\u200D\uFE0F\uFE0F'&&m.groups.x==='\uFE0F'&&m.indices.groups.x[0]===4&&m.indices.groups.x[1]===5&&r.lastIndex===5"
+            r#"
+                let r = /\B(?<x>\p{{EComp}})+\B/d{mode}g,
+                    m = r.exec('😀\u200D\uFE0F\uFE0F\u0020');
+                m.index === 2 && m[0] === '\u200D\uFE0F\uFE0F' && m.groups.x === '\uFE0F' && m.indices.groups
+                    .x[0] === 4 && m.indices.groups.x[1] === 5 && r.lastIndex === 5
+            "#
         ));
     }
 }

@@ -49,16 +49,39 @@ fn unicode_default_ignorable_property_results_snapshot() {
 fn unicode_default_ignorable_properties_aliases_complements_and_unions() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=/\p{{Default_Ignorable_Code_Point}}/{mode},b=/\p{{DI}}/i{mode},n=/\P{{DI}}/i{mode};a.test('\u200C')&&a.test('\u200D')&&b.test('\u200C')&&!a.test('\u005f')&&!b.test('\u005f')&&!b.test('ſ')&&!b.test('K')&&!n.test('\u200C')&&n.test('😀')&&n.test('\uD800')&&n.test('\u0020')"
+            r#"
+                let a = /\p{{Default_Ignorable_Code_Point}}/{mode},
+                    b = /\p{{DI}}/i{mode},
+                    n = /\P{{DI}}/i{mode};
+                a.test('\u200C') && a.test('\u200D') && b.test('\u200C') && !a.test('\u005f') && !b.test(
+                        '\u005f') && !b.test('ſ') && !b.test('K') && !n.test('\u200C') && n.test('😀') && n
+                    .test('\uD800') && n.test('\u0020')
+            "#
         ));
         assert_true(&format!(
-            r"let p=/\p{{Default_Ignorable_Code_Point}}/{mode},s=/\s/{mode};p.test('\u200C')&&p.test('\u200D')&&!s.test('\u200C')&&!s.test('\u200D')&&!p.test('\u0020')&&s.test('\u0020')"
+            r#"
+                let p = /\p{{Default_Ignorable_Code_Point}}/{mode},
+                    s = /\s/{mode};
+                p.test('\u200C') && p.test('\u200D') && !s.test('\u200C') && !s.test('\u200D') && !p.test(
+                    '\u0020') && s.test('\u0020')
+            "#
         ));
         assert_true(&format!(
-            r"let a=/[\p{{DI}}K]/i{mode},b=/[^\P{{Default_Ignorable_Code_Point}}K]/i{mode},c=/[\p{{DI}}\P{{Default_Ignorable_Code_Point}}]/{mode};a.test('K')&&a.test('k')&&a.test('\u200C')&&!a.test('ſ')&&b.test('\u200D')&&!b.test('K')&&c.test('😀')&&c.test('A')&&c.test('\uD800')"
+            r#"
+                let a = /[\p{{DI}}K]/i{mode},
+                    b = /[^\P{{Default_Ignorable_Code_Point}}K]/i{mode},
+                    c = /[\p{{DI}}\P{{Default_Ignorable_Code_Point}}]/{mode};
+                a.test('K') && a.test('k') && a.test('\u200C') && !a.test('ſ') && b.test('\u200D') && !b.test(
+                    'K') && c.test('😀') && c.test('A') && c.test('\uD800')
+            "#
         ));
         assert_true(&format!(
-            r"let a=/^\p{{DI}}$/{mode},b=/^\P{{DI}}$/{mode};a.test('\u200C')&&!a.test('\u200D\n')&&!a.test('')&&!a.test('\n')&&b.test('😀')&&!b.test('AA')"
+            r#"
+                let a = /^\p{{DI}}$/{mode},
+                    b = /^\P{{DI}}$/{mode};
+                a.test('\u200C') && !a.test('\u200D\n') && !a.test('') && !a.test('\n') && b.test('😀') && !b
+                    .test('AA')
+            "#
         ));
     }
 }
@@ -67,16 +90,33 @@ fn unicode_default_ignorable_properties_aliases_complements_and_unions() {
 fn unicode_default_ignorable_properties_captures_context_and_pair_starts() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/(?<x>\p{{DI}})/d{mode}y;r.lastIndex=1;let m=r.exec('\uDB40\uDC01');m.index===0&&m[0]==='\uDB40\uDC01'&&m.groups.x===m[0]&&m.indices[1][0]===0&&m.indices[1][1]===2&&r.lastIndex===2"
+            r#"
+                let r = /(?<x>\p{{DI}})/d{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('\uDB40\uDC01');
+                m.index === 0 && m[0] === '\uDB40\uDC01' && m.groups.x === m[0] && m.indices[1][0] === 0 && m
+                    .indices[1][1] === 2 && r.lastIndex === 2
+            "#
         ));
     }
 
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/^(?<x>([\p{{DI}}K]))$/dim{mode}g,m=r.exec('x\r\nK\u2028');m.index===3&&m[1]==='K'&&m[2]==='K'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===4&&r.lastIndex===4"
+            r#"
+                let r = /^(?<x>([\p{{DI}}K]))$/dim{mode}g,
+                    m = r.exec('x\r\nK\u2028');
+                m.index === 3 && m[1] === 'K' && m[2] === 'K' && m.indices.groups.x === m.indices[1] && m
+                    .indices[2][1] === 4 && r.lastIndex === 4
+            "#
         ));
         assert_true(&format!(
-            r"let r=/(?<__proto__>\P{{DI}})/d{mode}y;r.lastIndex=1;let m=r.exec('😀\u200C');m.index===0&&m[1]==='😀'&&m.indices[1][1]===2&&r.lastIndex===2&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]"
+            r#"
+                let r = /(?<__proto__>\P{{DI}})/d{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('😀\u200C');
+                m.index === 0 && m[1] === '😀' && m.indices[1][1] === 2 && r.lastIndex === 2 && Object
+                    .getPrototypeOf(m.groups) === null && m.indices.groups.__proto__ === m.indices[1]
+            "#
         ));
         assert_true(&format!(
             r"let r=/\p{{DI}}/d{mode}g;r.lastIndex=1;let m=r.exec('😀\u200C');m.index===2&&m[0]==='\u200C'&&r.lastIndex===3"
@@ -91,7 +131,11 @@ fn unicode_default_ignorable_properties_captures_context_and_pair_starts() {
 fn unicode_default_ignorable_properties_consumers_original_text() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=[...'\u200D😀\u200CG'.matchAll(/(?<x>\P{{DI}})/d{mode}g)];a.length===2&&a[0][1]==='😀'&&a[0].index===1&&a[0].indices[1][1]===3&&a[1][1]==='G'"
+            r#"
+                let a = [...'\u200D😀\u200CG'.matchAll(/(?<x>\P{{DI}})/d{mode}g)];
+                a.length === 2 && a[0][1] === '😀' && a[0].index === 1 && a[0].indices[1][1] === 3 && a[1][
+                    1] === 'G'
+            "#
         ));
         assert_true(&format!(
             r"'\u200D\u200C😀X'.replace(/(?<x>\p{{Default_Ignorable_Code_Point}})/{mode}g,'<$1:$<x>>')==='<\u200D:\u200D><\u200C:\u200C>😀X'"
@@ -100,7 +144,14 @@ fn unicode_default_ignorable_properties_consumers_original_text() {
             r"'😀\u200D\u200CG'.split(/(\p{{DI}})/{mode}).join('|')==='😀|\u200D||\u200C|G'&&'😀\u200C'.search(/\p{{DI}}/{mode})===2&&'\u200D\u200C😀'.match(/\p{{DI}}/{mode}g).join('')==='\u200D\u200C'"
         ));
         assert_true(&format!(
-            r"let t='';let x='\u200C\u200D😀\u200C'.replace(/(\p{{DI}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__😀_'&&t==='014'"
+            r#"
+                let t = '';
+                let x = '\u200C\u200D😀\u200C'.replace(/(\p{{DI}})/{mode}g, (m, c, p) => {{
+                    t += p;
+                    return '_'
+                }});
+                x === '__😀_' && t === '014'
+            "#
         ));
     }
 }
@@ -108,16 +159,62 @@ fn unicode_default_ignorable_properties_consumers_original_text() {
 #[test]
 fn unicode_default_ignorable_properties_clones_coercions_and_strict_writes() {
     assert_true(
-        r"let r=/^(?<x>\p{Default_Ignorable_Code_Point})$/dmu,c=new RegExp(r,'divy');c.source==='^(?<x>\\p{Default_Ignorable_Code_Point})$'&&c.unicodeSets&&!c.unicode&&!c.multiline&&c.exec('\u200C').groups.x==='\u200C'&&c.lastIndex===1",
+        r#"
+            let r = /^(?<x>\p{Default_Ignorable_Code_Point})$/dmu,
+                c = new RegExp(r, 'divy');
+            c.source === '^(?<x>\\p{Default_Ignorable_Code_Point})$' && c.unicodeSets && !c.unicode && !c
+                .multiline && c.exec('\u200C').groups.x === '\u200C' && c.lastIndex === 1
+        "#,
     );
     assert_true(
-        r"let t='',r=/\P{DI}/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m[0]==='😀'&&m.index===0&&r.lastIndex===2",
+        r#"
+            let t = '',
+                r = /\P{DI}/uy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 1
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return '😀'
+                }
+            });
+            t === 'si' && m[0] === '😀' && m.index === 0 && r.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let r=/\p{DI}/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('\u200C')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            let r = /\p{DI}/vy;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('\u200C')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/\p{DI}/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀\u200C')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /\p{DI}/vy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀\u200C')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 
@@ -155,7 +252,12 @@ fn unicode_default_ignorable_properties_opted_work_and_remaining_sets() {
 fn unicode_default_ignorable_repetitions_retain_last_capture_and_outside_words() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/\B(?<x>\p{{DI}})+\B/d{mode}g,m=r.exec('😀\u200C\u200D\u200D\u0020');m.index===2&&m[0]==='\u200C\u200D\u200D'&&m.groups.x==='\u200D'&&m.indices.groups.x[0]===4&&m.indices.groups.x[1]===5&&r.lastIndex===5"
+            r#"
+                let r = /\B(?<x>\p{{DI}})+\B/d{mode}g,
+                    m = r.exec('😀\u200C\u200D\u200D\u0020');
+                m.index === 2 && m[0] === '\u200C\u200D\u200D' && m.groups.x === '\u200D' && m.indices.groups
+                    .x[0] === 4 && m.indices.groups.x[1] === 5 && r.lastIndex === 5
+            "#
         ));
     }
 }

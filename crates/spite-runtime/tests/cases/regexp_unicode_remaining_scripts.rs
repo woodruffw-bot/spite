@@ -179,7 +179,20 @@ fn remaining_scripts_all_exact_aliases_positive_and_complement_modes() {
         }
         for flags in ["u", "v"] {
             assert_true(&format!(
-                r#"let names={names:?},points={points:?},raw={raw:?},flags={flags:?};names.every(name=>{{let forms=["\\p{{"+name+"}}","\\P{{"+name+"}}"];return forms.every((body,k)=>{{let r=new RegExp('^'+body+'$',flags);return points.every((cp,j)=>r.test(String.fromCodePoint(cp))===(raw[j]!==[false,true][k]))}})}})"#,
+                r#"
+                    let names = {names:?},
+                        points = {points:?},
+                        raw = {raw:?},
+                        flags = {flags:?};
+                    names.every(name => {{
+                        let forms = ["\\p{{" + name + "}}", "\\P{{" + name + "}}"];
+                        return forms.every((body, k) => {{
+                            let r = new RegExp('^' + body + '$', flags);
+                            return points.every((cp, j) => r.test(String.fromCodePoint(cp)) === (
+                                raw[j] !== [false, true][k]))
+                        }})
+                    }})
+                "#,
             ));
         }
     }
@@ -200,15 +213,32 @@ fn remaining_scripts_unknown_includes_default_surrogates_private_use_and_nonchar
     );
     for flags in ["u", "ui", "v", "vi"] {
         assert_true(&format!(
-            r"let points={points:?};points.every(cp=>{{let s=String.fromCodePoint(cp);return /^\p{{sc=Zzzz}}$/{flags}.test(s)&&!/^\P{{Script=Unknown}}$/{flags}.test(s)&&/^[^\P{{sc=Unknown}}]$/{flags}.test(s)&&!/^[^\p{{Script=Zzzz}}]$/{flags}.test(s)}})&&!/^\p{{sc=Unknown}}$/{flags}.test('A')&&!/^\p{{sc=Unknown}}$/{flags}.test('😀')"
+            r#"
+                let points = {points:?};
+                points.every(cp => {{
+                    let s = String.fromCodePoint(cp);
+                    return /^\p{{sc=Zzzz}}$/{flags}.test(s) && !/^\P{{Script=Unknown}}$/{flags}
+                        .test(s) && /^[^\P{{sc=Unknown}}]$/{flags}.test(s) && !
+                        /^[^\p{{Script=Zzzz}}]$/{flags}.test(s)
+                }}) && !/^\p{{sc=Unknown}}$/{flags}.test('A') && !/^\p{{sc=Unknown}}$/{flags}.test(
+                    '😀')
+            "#
         ));
         assert_true(&format!(
-            r"/^\p{{sc=Unknown}}$/{flags}.test('\uE000')&&!/^\p{{Cn}}$/{flags}.test('\uE000')&&/^\p{{sc=Unknown}}$/{flags}.test('\uD800')&&!/^\p{{Cn}}$/{flags}.test('\uD800')"
+            r#"
+                /^\p{{sc=Unknown}}$/{flags}.test('\uE000') && !/^\p{{Cn}}$/{flags}.test('\uE000') &&
+                    /^\p{{sc=Unknown}}$/{flags}.test('\uD800') && !/^\p{{Cn}}$/{flags}.test('\uD800')
+            "#
         ));
     }
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/(?<x>\p{{sc=Zzzz}})/d{mode}g,m=r.exec('😀\uD800\uE000\u0378');m.index===2&&m[0]==='\uD800'&&m.indices.groups.x[0]===2&&m.indices.groups.x[1]===3&&r.lastIndex===3&&r.exec('😀\uD800\uE000\u0378')[0]==='\uE000'"
+            r#"
+                let r = /(?<x>\p{{sc=Zzzz}})/d{mode}g,
+                    m = r.exec('😀\uD800\uE000\u0378');
+                m.index === 2 && m[0] === '\uD800' && m.indices.groups.x[0] === 2 && m.indices.groups.x[1] ===
+                    3 && r.lastIndex === 3 && r.exec('😀\uD800\uE000\u0378')[0] === '\uE000'
+            "#
         ));
     }
 }
@@ -217,10 +247,22 @@ fn remaining_scripts_unknown_includes_default_surrogates_private_use_and_nonchar
 fn remaining_scripts_empty_hrkt_is_an_empty_character_set() {
     for mode in ["u", "v", "ui", "vi"] {
         assert_true(&format!(
-            r"let r=/\p{{sc=Hrkt}}/{mode}g;r.lastIndex=1;r.exec('あア😀\uD800')===null&&r.lastIndex===0&&'あア😀\uD800'.match(/\p{{Script=Katakana_Or_Hiragana}}/{mode}g)===null&&'あア😀\uD800'.replace(/\p{{sc=Hrkt}}/{mode}g,'x')==='あア😀\uD800'"
+            r#"
+                let r = /\p{{sc=Hrkt}}/{mode}g;
+                r.lastIndex = 1;
+                r.exec('あア😀\uD800') === null && r.lastIndex === 0 && 'あア😀\uD800'.match(
+                    /\p{{Script=Katakana_Or_Hiragana}}/{mode}g) === null && 'あア😀\uD800'.replace(
+                    /\p{{sc=Hrkt}}/{mode}g, 'x') === 'あア😀\uD800'
+            "#
         ));
         assert_true(&format!(
-            r"let a=[...'あア😀\uD800'.matchAll(/(?<x>\P{{sc=Hrkt}})/d{mode}g)];a.length===4&&a[0][1]==='あ'&&a[1][1]==='ア'&&a[2][1]==='😀'&&a[2].index===2&&a[2].indices[1][1]===4&&a[3][1]==='\uD800'&&a[3].index===4&&a[3].indices[1][1]===5&&/^[^\p{{sc=Hrkt}}]$/{mode}.test('😀')&&!/^[^\P{{sc=Hrkt}}]$/{mode}.test('😀')"
+            r#"
+                let a = [...'あア😀\uD800'.matchAll(/(?<x>\P{{sc=Hrkt}})/d{mode}g)];
+                a.length === 4 && a[0][1] === 'あ' && a[1][1] === 'ア' && a[2][1] === '😀' && a[2].index === 2 &&
+                    a[2].indices[1][1] === 4 && a[3][1] === '\uD800' && a[3].index === 4 && a[3].indices[1][
+                    1] === 5 && /^[^\p{{sc=Hrkt}}]$/{mode}.test('😀') && !/^[^\P{{sc=Hrkt}}]$/{mode}
+                    .test('😀')
+            "#
         ));
     }
 }
@@ -231,7 +273,23 @@ fn remaining_scripts_cased_captures_and_positive_consumers_keep_original_text() 
         let (source, target) = reference().fold_pair(name);
         for flags in ["u", "ui", "v", "vi"] {
             assert_true(&format!(
-                r#"let a=String.fromCodePoint({source}),b=String.fromCodePoint({target}),w=a.length,text=a+b+'😀A',r=/(?<x>(\p{{sc={name}}}))/d{flags}g,m=r.exec(text),n=r.exec(text);m[0]===a&&m[1]===a&&m[2]===a&&m.index===0&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===w&&n[0]===b&&n[1]===b&&n.index===w&&n.indices[1][0]===w&&n.indices[1][1]===2*w&&r.lastIndex===2*w&&r.exec(text)===null&&r.lastIndex===0&&text.replace(/(?<x>\p{{Script={name}}})/{flags}g,'<$1:$<x>>')==='<'+a+':'+a+'><'+b+':'+b+'>😀A'&&('A'+a+b+'A').split(/(\p{{sc={name}}})/{flags}).join('|')==='A|'+a+'||'+b+'|A'&&('😀'+a).search(/\p{{sc={name}}}/{flags})===2&&text.match(/\p{{sc={name}}}/{flags}g).join('')===a+b"#,
+                r#"
+                    let a = String.fromCodePoint({source}),
+                        b = String.fromCodePoint({target}),
+                        w = a.length,
+                        text = a + b + '😀A',
+                        r = /(?<x>(\p{{sc={name}}}))/d{flags}g,
+                        m = r.exec(text),
+                        n = r.exec(text);
+                    m[0] === a && m[1] === a && m[2] === a && m.index === 0 && m.indices.groups.x === m.indices[
+                        1] && m.indices[2][1] === w && n[0] === b && n[1] === b && n.index === w && n.indices[1][
+                        0] === w && n.indices[1][1] === 2 * w && r.lastIndex === 2 * w && r.exec(text) === null &&
+                        r.lastIndex === 0 && text.replace(/(?<x>\p{{Script={name}}})/{flags}g,
+                            '<$1:$<x>>') === '<' + a + ':' + a + '><' + b + ':' + b + '>😀A' && ('A' + a + b + 'A')
+                        .split(/(\p{{sc={name}}})/{flags}).join('|') === 'A|' + a + '||' + b + '|A' && (
+                            '😀' + a).search(/\p{{sc={name}}}/{flags}) === 2 && text.match(
+                            /\p{{sc={name}}}/{flags}g).join('') === a + b
+                "#,
             ));
         }
     }
@@ -243,10 +301,31 @@ fn remaining_scripts_complement_and_outer_inversion_consumers_keep_widths() {
         let (source, target) = reference().fold_pair(name);
         for flags in ["u", "ui", "v", "vi"] {
             assert_true(&format!(
-                r#"let a=String.fromCodePoint({source}),b=String.fromCodePoint({target}),w=a.length,text=a+'😀'+b+'A',p=[...text.matchAll(/(?<x>[^\P{{sc={name}}}])/d{flags}g)],n=[...text.matchAll(/(?<x>[^\p{{sc={name}}}])/d{flags}g)];p.length===2&&p[0][1]===a&&p[0].index===0&&p[1][1]===b&&p[1].index===w+2&&p[1].indices[1][1]===2*w+2&&n.length===2&&n[0][1]==='😀'&&n[0].index===w&&n[0].indices[1][1]===w+2&&n[1][1]==='A'&&n[1].index===2*w+2&&text.replace(/(\P{{sc={name}}})/{flags}g,'<$1>')===a+'<😀>'+b+'<A>'&&text.split(/(\P{{sc={name}}})/{flags}).join('|')===a+'|😀|'+b+'|A|'"#,
+                r#"
+                    let a = String.fromCodePoint({source}),
+                        b = String.fromCodePoint({target}),
+                        w = a.length,
+                        text = a + '😀' + b + 'A',
+                        p = [...text.matchAll(/(?<x>[^\P{{sc={name}}}])/d{flags}g)],
+                        n = [...text.matchAll(/(?<x>[^\p{{sc={name}}}])/d{flags}g)];
+                    p.length === 2 && p[0][1] === a && p[0].index === 0 && p[1][1] === b && p[1].index === w + 2 &&
+                        p[1].indices[1][1] === 2 * w + 2 && n.length === 2 && n[0][1] === '😀' && n[0].index ===
+                        w && n[0].indices[1][1] === w + 2 && n[1][1] === 'A' && n[1].index === 2 * w + 2 && text
+                        .replace(/(\P{{sc={name}}})/{flags}g, '<$1>') === a + '<😀>' + b + '<A>' && text
+                        .split(/(\P{{sc={name}}})/{flags}).join('|') === a + '|😀|' + b + '|A|'
+                "#,
             ));
             assert_true(&format!(
-                r#"let a=String.fromCodePoint({source}),b=String.fromCodePoint({target}),t='',x=(a+'😀'+b).replace(/(?<x>\p{{sc={name}}})/{flags}g,(m,c,p)=>{{t+=p+':'+c+';';return '_'}});x==='_😀_'&&t==='0:'+a+';'+(a.length+2)+':'+b+';'"#,
+                r#"
+                    let a = String.fromCodePoint({source}),
+                        b = String.fromCodePoint({target}),
+                        t = '',
+                        x = (a + '😀' + b).replace(/(?<x>\p{{sc={name}}})/{flags}g, (m, c, p) => {{
+                            t += p + ':' + c + ';';
+                            return '_'
+                        }});
+                    x === '_😀_' && t === '0:' + a + ';' + (a.length + 2) + ':' + b + ';'
+                "#,
             ));
         }
     }
@@ -268,11 +347,21 @@ fn remaining_scripts_high_mask_words_mix_with_old_properties() {
         let b = reference.members[reference.index(right)].unwrap();
         for flags in ["u", "ui", "v", "vi"] {
             assert_true(&format!(
-                r"let points=[65,55296,{a},{b},128512],want=[true,true,true,true,false],r=/^[\p{{ASCII}}\p{{Cs}}\p{{sc=Latn}}\p{{sc={left}}}\p{{sc={right}}}]$/{flags};points.every((cp,i)=>r.test(String.fromCodePoint(cp))===want[i])"
+                r#"
+                    let points = [65, 55296, {a}, {b}, 128512],
+                        want = [true, true, true, true, false],
+                        r = /^[\p{{ASCII}}\p{{Cs}}\p{{sc=Latn}}\p{{sc={left}}}\p{{sc={right}}}]$/{flags};
+                    points.every((cp, i) => r.test(String.fromCodePoint(cp)) === want[i])
+                "#
             ));
             for (name, member, other) in [(left, a, b), (right, b, a)] {
                 assert_true(&format!(
-                    r"let points=[{member},{other},65,128512],want=[true,false,false,false],r=/^[^\P{{sc={name}}}]$/{flags};points.every((cp,i)=>r.test(String.fromCodePoint(cp))===want[i])"
+                    r#"
+                        let points = [{member}, {other}, 65, 128512],
+                            want = [true, false, false, false],
+                            r = /^[^\P{{sc={name}}}]$/{flags};
+                        points.every((cp, i) => r.test(String.fromCodePoint(cp)) === want[i])
+                    "#
                 ));
             }
         }
@@ -283,16 +372,34 @@ fn remaining_scripts_high_mask_words_mix_with_old_properties() {
 fn remaining_scripts_pair_starts_context_and_original_capture_indices() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/(?<__proto__>\p{{Script=Adlam}})/di{mode}y;r.lastIndex=1;let m=r.exec('\u{{1E900}}A');m.index===0&&m[0]==='\u{{1E900}}'&&m[1]==='\u{{1E900}}'&&m.indices[1][0]===0&&m.indices[1][1]===2&&r.lastIndex===2&&Object.getPrototypeOf(m.groups)===null&&Object.getPrototypeOf(m.indices.groups)===null&&m.indices.groups.__proto__===m.indices[1]"
+            r#"
+                let r = /(?<__proto__>\p{{Script=Adlam}})/di{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('\u{{1E900}}A');
+                m.index === 0 && m[0] === '\u{{1E900}}' && m[1] === '\u{{1E900}}' && m.indices[1][0] === 0 && m
+                    .indices[1][1] === 2 && r.lastIndex === 2 && Object.getPrototypeOf(m.groups) === null &&
+                    Object.getPrototypeOf(m.indices.groups) === null && m.indices.groups.__proto__ === m
+                    .indices[1]
+            "#
         ));
         assert_true(&format!(
-            r"let r=/\P{{sc=Adlam}}/d{mode}g;r.lastIndex=1;let m=r.exec('\u{{1E900}}\uD800');m.index===2&&m[0]==='\uD800'&&m.indices[0][1]===3&&r.lastIndex===3"
+            r#"
+                let r = /\P{{sc=Adlam}}/d{mode}g;
+                r.lastIndex = 1;
+                let m = r.exec('\u{{1E900}}\uD800');
+                m.index === 2 && m[0] === '\uD800' && m.indices[0][1] === 3 && r.lastIndex === 3
+            "#
         ));
         assert_true(&format!(
             r"let r=/\P{{sc=Adlam}}/{mode}y;r.lastIndex=1;r.exec('\u{{1E900}}A')===null&&r.lastIndex===0"
         ));
         assert_true(&format!(
-            r"let r=/^(?<x>([\p{{sc=Coptic}}K]))$/dim{mode}g,m=r.exec('A\r\nⲀ\u2028');m.index===3&&m[1]==='Ⲁ'&&m[2]==='Ⲁ'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===4&&r.lastIndex===4"
+            r#"
+                let r = /^(?<x>([\p{{sc=Coptic}}K]))$/dim{mode}g,
+                    m = r.exec('A\r\nⲀ\u2028');
+                m.index === 3 && m[1] === 'Ⲁ' && m[2] === 'Ⲁ' && m.indices.groups.x === m.indices[1] && m
+                    .indices[2][1] === 4 && r.lastIndex === 4
+            "#
         ));
     }
 }
@@ -300,16 +407,62 @@ fn remaining_scripts_pair_starts_context_and_original_capture_indices() {
 #[test]
 fn remaining_scripts_clones_reflection_coercions_and_strict_last_index() {
     assert_true(
-        r"let r=/^(?<x>\p{sc=Qaac})$/dmu,c=new RegExp(r,'divy');c.source==='^(?<x>\\p{sc=Qaac})$'&&c.flags==='divy'&&c.unicodeSets&&!c.unicode&&!c.multiline&&c.exec('Ⲁ').groups.x==='Ⲁ'&&c.lastIndex===1&&r.lastIndex===0",
+        r#"
+            let r = /^(?<x>\p{sc=Qaac})$/dmu,
+                c = new RegExp(r, 'divy');
+            c.source === '^(?<x>\\p{sc=Qaac})$' && c.flags === 'divy' && c.unicodeSets && !c.unicode && !c
+                .multiline && c.exec('Ⲁ').groups.x === 'Ⲁ' && c.lastIndex === 1 && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let t='',r=/\P{Script=Katakana_Or_Hiragana}/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m[0]==='😀'&&m.index===0&&r.lastIndex===2",
+        r#"
+            let t = '',
+                r = /\P{Script=Katakana_Or_Hiragana}/uy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 1
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return '😀'
+                }
+            });
+            t === 'si' && m[0] === '😀' && m.index === 0 && r.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let r=/\p{sc=Cypriot}/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('\u{10800}')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            let r = /\p{sc=Cypriot}/vy;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('\u{10800}')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/\p{sc=Unknown}/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀A')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /\p{sc=Unknown}/vy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀A')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 
@@ -317,7 +470,12 @@ fn remaining_scripts_clones_reflection_coercions_and_strict_last_index() {
 fn remaining_scripts_qaac_and_qaai_retain_distinct_coptic_and_inherited_sets() {
     for flags in ["u", "ui", "v", "vi"] {
         assert_true(&format!(
-            r"/^\p{{sc=Qaac}}$/{flags}.test('Ⲁ')&&/^\p{{Script=Qaac}}$/{flags}.test('ⲁ')&&!/^\p{{sc=Qaac}}$/{flags}.test('\u0300')&&/^\p{{sc=Qaai}}$/{flags}.test('\u0300')&&/^\p{{Script=Qaai}}$/{flags}.test('\u0300')&&!/^\p{{sc=Qaai}}$/{flags}.test('Ⲁ')"
+            r#"
+                /^\p{{sc=Qaac}}$/{flags}.test('Ⲁ') && /^\p{{Script=Qaac}}$/{flags}.test('ⲁ') && !
+                    /^\p{{sc=Qaac}}$/{flags}.test('\u0300') && /^\p{{sc=Qaai}}$/{flags}.test(
+                    '\u0300') && /^\p{{Script=Qaai}}$/{flags}.test('\u0300') && !
+                    /^\p{{sc=Qaai}}$/{flags}.test('Ⲁ')
+            "#
         ));
     }
 }
@@ -328,7 +486,15 @@ fn remaining_scripts_repetitions_keep_last_capture_and_outside_words() {
         let (source, target) = reference().fold_pair(name);
         for mode in ["u", "v"] {
             assert_true(&format!(
-                r#"let a=String.fromCodePoint({source}),b=String.fromCodePoint({target}),w=a.length,r=/\B(?<x>\p{{sc={name}}})+\B/di{mode}g,m=r.exec('µ'+a+b+'µ');m.index===1&&m[0]===a+b&&m.groups.x===b&&m.indices.groups.x[0]===1+w&&m.indices.groups.x[1]===1+2*w&&r.lastIndex===1+2*w"#,
+                r#"
+                    let a = String.fromCodePoint({source}),
+                        b = String.fromCodePoint({target}),
+                        w = a.length,
+                        r = /\B(?<x>\p{{sc={name}}})+\B/di{mode}g,
+                        m = r.exec('µ' + a + b + 'µ');
+                    m.index === 1 && m[0] === a + b && m.groups.x === b && m.indices.groups.x[0] === 1 + w && m
+                        .indices.groups.x[1] === 1 + 2 * w && r.lastIndex === 1 + 2 * w
+                "#,
             ));
         }
     }
@@ -342,7 +508,11 @@ fn remaining_scripts_repeated_high_aliases_and_clones_survive_collection() {
     realm.eval(r"let p='^'+'('.repeat(128)+'['+'\\p{sc=Cypriot}\\p{Script=Cprt}\\p{sc=Zanb}\\p{Cs}'.repeat(256)+']'+')'.repeat(128)+'$',r=new RegExp(p,'dmvg'),c=new RegExp(r),text='A'.repeat(10000)+'\n\u{10800}'").unwrap();
     realm.collect(usize::MAX).unwrap();
     assert_eq!(
-        realm.eval(r"let m=c.exec(text);m.length===129&&m[1]==='\u{10800}'&&m[128]==='\u{10800}'&&m.indices[128][0]===10001&&m.indices[128][1]===10003&&c.lastIndex===10003&&c.source===p"),
+        realm.eval(r#"
+            let m = c.exec(text);
+            m.length === 129 && m[1] === '\u{10800}' && m[128] === '\u{10800}' && m.indices[128][0] ===
+                10001 && m.indices[128][1] === 10003 && c.lastIndex === 10003 && c.source === p
+        "#),
         Ok(Value::Boolean(true))
     );
     realm.eval("p=null;r=null;c=null;text=null;m=null").unwrap();
@@ -373,7 +543,18 @@ fn remaining_scripts_regexp_handles_and_execution_stay_in_their_realm() {
     );
     drop(root);
     assert_true(
-        r#"let marker=0,result;try{result=eval("marker=1; /\\p{Script=Coptic}/u.test('Ⲁ');")}catch{marker=2}finally{marker=3}marker===3&&result===true"#,
+        r#"
+            let marker = 0,
+                result;
+            try {
+                result = eval("marker=1; /\\p{Script=Coptic}/u.test('Ⲁ');")
+            } catch {
+                marker = 2
+            } finally {
+                marker = 3
+            }
+            marker === 3 && result === true
+        "#,
     );
 }
 
@@ -427,7 +608,11 @@ fn remaining_scripts_exact_names_and_unadmitted_set_operations() {
     assert_true(r"/[\p{sc=Coptic}&&A]/v.exec('A')===null");
     assert_true(r"/[\p{sc=Unknown}--A]/v.exec('A')===null");
     assert_true(
-        r"let s=String.fromCodePoint(0xe000),m=/[\p{sc=Unknown}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+        r#"
+            let s = String.fromCodePoint(0xe000),
+                m = /[\p{sc=Unknown}--A]/v.exec(s);
+            m !== null && m.length === 1 && m[0] === s && m.index === 0 && m.input === s
+        "#,
     );
 }
 

@@ -49,16 +49,39 @@ fn unicode_sentence_terminal_property_results_snapshot() {
 fn unicode_sentence_terminal_properties_aliases_complements_and_unions() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=/\p{{Sentence_Terminal}}/{mode},b=/\p{{STerm}}/i{mode},n=/\P{{STerm}}/i{mode};a.test('\u0021')&&a.test('\u003F')&&b.test('\u0021')&&!a.test('\u200D')&&!b.test('\u005f')&&!b.test('ſ')&&!b.test('K')&&!n.test('\u0021')&&n.test('😀')&&n.test('\uD800')&&n.test('\uFEFF')"
+            r#"
+                let a = /\p{{Sentence_Terminal}}/{mode},
+                    b = /\p{{STerm}}/i{mode},
+                    n = /\P{{STerm}}/i{mode};
+                a.test('\u0021') && a.test('\u003F') && b.test('\u0021') && !a.test('\u200D') && !b.test(
+                        '\u005f') && !b.test('ſ') && !b.test('K') && !n.test('\u0021') && n.test('😀') && n
+                    .test('\uD800') && n.test('\uFEFF')
+            "#
         ));
         assert_true(&format!(
-            r"let p=/\p{{Sentence_Terminal}}/{mode},s=/\s/{mode};p.test('\u0021')&&p.test('\u003F')&&!s.test('\u0021')&&!s.test('\u003F')&&!p.test('\uFEFF')&&s.test('\uFEFF')"
+            r#"
+                let p = /\p{{Sentence_Terminal}}/{mode},
+                    s = /\s/{mode};
+                p.test('\u0021') && p.test('\u003F') && !s.test('\u0021') && !s.test('\u003F') && !p.test(
+                    '\uFEFF') && s.test('\uFEFF')
+            "#
         ));
         assert_true(&format!(
-            r"let a=/[\p{{STerm}}K]/i{mode},b=/[^\P{{Sentence_Terminal}}K]/i{mode},c=/[\p{{STerm}}\P{{Sentence_Terminal}}]/{mode};a.test('K')&&a.test('k')&&a.test('\u0021')&&!a.test('ſ')&&b.test('\u003F')&&!b.test('K')&&c.test('😀')&&c.test('A')&&c.test('\uD800')"
+            r#"
+                let a = /[\p{{STerm}}K]/i{mode},
+                    b = /[^\P{{Sentence_Terminal}}K]/i{mode},
+                    c = /[\p{{STerm}}\P{{Sentence_Terminal}}]/{mode};
+                a.test('K') && a.test('k') && a.test('\u0021') && !a.test('ſ') && b.test('\u003F') && !b.test(
+                    'K') && c.test('😀') && c.test('A') && c.test('\uD800')
+            "#
         ));
         assert_true(&format!(
-            r"let a=/^\p{{STerm}}$/{mode},b=/^\P{{STerm}}$/{mode};a.test('\u0021')&&!a.test('\u003F\n')&&!a.test('')&&!a.test('\n')&&b.test('😀')&&!b.test('AA')"
+            r#"
+                let a = /^\p{{STerm}}$/{mode},
+                    b = /^\P{{STerm}}$/{mode};
+                a.test('\u0021') && !a.test('\u003F\n') && !a.test('') && !a.test('\n') && b.test('😀') && !b
+                    .test('AA')
+            "#
         ));
     }
 }
@@ -67,13 +90,29 @@ fn unicode_sentence_terminal_properties_aliases_complements_and_unions() {
 fn unicode_sentence_terminal_properties_captures_context_and_pair_starts() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/^(?<x>([\p{{STerm}}K]))$/dim{mode}g,m=r.exec('x\r\nK\u2028');m.index===3&&m[1]==='K'&&m[2]==='K'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===4&&r.lastIndex===4"
+            r#"
+                let r = /^(?<x>([\p{{STerm}}K]))$/dim{mode}g,
+                    m = r.exec('x\r\nK\u2028');
+                m.index === 3 && m[1] === 'K' && m[2] === 'K' && m.indices.groups.x === m.indices[1] && m
+                    .indices[2][1] === 4 && r.lastIndex === 4
+            "#
         ));
         assert_true(&format!(
-            r"let r=/(?<__proto__>\P{{STerm}})/d{mode}y;r.lastIndex=1;let m=r.exec('😀\u0021');m.index===0&&m[1]==='😀'&&m.indices[1][1]===2&&r.lastIndex===2&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]"
+            r#"
+                let r = /(?<__proto__>\P{{STerm}})/d{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('😀\u0021');
+                m.index === 0 && m[1] === '😀' && m.indices[1][1] === 2 && r.lastIndex === 2 && Object
+                    .getPrototypeOf(m.groups) === null && m.indices.groups.__proto__ === m.indices[1]
+            "#
         ));
         assert_true(&format!(
-            r"let r=/\p{{STerm}}/d{mode}g;r.lastIndex=1;let m=r.exec('😀\u0021');m.index===2&&m[0]==='\u0021'&&r.lastIndex===3"
+            r#"
+                let r = /\p{{STerm}}/d{mode}g;
+                r.lastIndex = 1;
+                let m = r.exec('😀\u0021');
+                m.index === 2 && m[0] === '\u0021' && r.lastIndex === 3
+            "#
         ));
         assert_true(&format!(
             r"let r=/\p{{STerm}}/{mode}y;r.lastIndex=1;r.exec('😀\u0021')===null&&r.lastIndex===0"
@@ -85,7 +124,11 @@ fn unicode_sentence_terminal_properties_captures_context_and_pair_starts() {
 fn unicode_sentence_terminal_properties_consumers_original_text() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=[...'\u003F😀\u0021G'.matchAll(/(?<x>\P{{STerm}})/d{mode}g)];a.length===2&&a[0][1]==='😀'&&a[0].index===1&&a[0].indices[1][1]===3&&a[1][1]==='G'"
+            r#"
+                let a = [...'\u003F😀\u0021G'.matchAll(/(?<x>\P{{STerm}})/d{mode}g)];
+                a.length === 2 && a[0][1] === '😀' && a[0].index === 1 && a[0].indices[1][1] === 3 && a[1][
+                    1] === 'G'
+            "#
         ));
         assert_true(&format!(
             r"'\u003F\u0021😀X'.replace(/(?<x>\p{{Sentence_Terminal}})/{mode}g,'<$1:$<x>>')==='<\u003F:\u003F><\u0021:\u0021>😀X'"
@@ -94,7 +137,14 @@ fn unicode_sentence_terminal_properties_consumers_original_text() {
             r"'😀\u003F\u0021G'.split(/(\p{{STerm}})/{mode}).join('|')==='😀|\u003F||\u0021|G'&&'😀\u0021'.search(/\p{{STerm}}/{mode})===2&&'\u003F\u0021😀'.match(/\p{{STerm}}/{mode}g).join('')==='\u003F\u0021'"
         ));
         assert_true(&format!(
-            r"let t='';let x='\u0021\u003F😀\u0021'.replace(/(\p{{STerm}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__😀_'&&t==='014'"
+            r#"
+                let t = '';
+                let x = '\u0021\u003F😀\u0021'.replace(/(\p{{STerm}})/{mode}g, (m, c, p) => {{
+                    t += p;
+                    return '_'
+                }});
+                x === '__😀_' && t === '014'
+            "#
         ));
     }
 }
@@ -102,16 +152,62 @@ fn unicode_sentence_terminal_properties_consumers_original_text() {
 #[test]
 fn unicode_sentence_terminal_properties_clones_coercions_and_strict_writes() {
     assert_true(
-        r"let r=/^(?<x>\p{Sentence_Terminal})$/dmu,c=new RegExp(r,'divy');c.source==='^(?<x>\\p{Sentence_Terminal})$'&&c.unicodeSets&&!c.unicode&&!c.multiline&&c.exec('\u0021').groups.x==='\u0021'&&c.lastIndex===1",
+        r#"
+            let r = /^(?<x>\p{Sentence_Terminal})$/dmu,
+                c = new RegExp(r, 'divy');
+            c.source === '^(?<x>\\p{Sentence_Terminal})$' && c.unicodeSets && !c.unicode && !c.multiline &&
+                c.exec('\u0021').groups.x === '\u0021' && c.lastIndex === 1
+        "#,
     );
     assert_true(
-        r"let t='',r=/\P{STerm}/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m[0]==='😀'&&m.index===0&&r.lastIndex===2",
+        r#"
+            let t = '',
+                r = /\P{STerm}/uy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 1
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return '😀'
+                }
+            });
+            t === 'si' && m[0] === '😀' && m.index === 0 && r.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let r=/\p{STerm}/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('\u0021')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            let r = /\p{STerm}/vy;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('\u0021')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/\p{STerm}/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀\u0021')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /\p{STerm}/vy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀\u0021')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 
@@ -149,7 +245,12 @@ fn unicode_sentence_terminal_properties_opted_work_and_remaining_sets() {
 fn unicode_sentence_terminal_repetitions_retain_last_capture_and_outside_words() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/\B(?<x>\p{{STerm}})+\B/d{mode}g,m=r.exec('😀\u0021\u003F\u3002\uFEFF');m.index===2&&m[0]==='\u0021\u003F\u3002'&&m.groups.x==='\u3002'&&m.indices.groups.x[0]===4&&m.indices.groups.x[1]===5&&r.lastIndex===5"
+            r#"
+                let r = /\B(?<x>\p{{STerm}})+\B/d{mode}g,
+                    m = r.exec('😀\u0021\u003F\u3002\uFEFF');
+                m.index === 2 && m[0] === '\u0021\u003F\u3002' && m.groups.x === '\u3002' && m.indices.groups
+                    .x[0] === 4 && m.indices.groups.x[1] === 5 && r.lastIndex === 5
+            "#
         ));
     }
 }
@@ -162,7 +263,11 @@ fn unicode_sentence_terminal_property_unicode18_addition() {
         for name in ["Sentence_Terminal", "STerm"] {
             for flags in ["u", "ui", "v", "vi"] {
                 assert_true(&format!(
-                    r"let p=new RegExp('^\\p{{{name}}}$','{flags}'),n=new RegExp('^\\P{{{name}}}$','{flags}');p.test({text:?})&&!n.test({text:?})"
+                    r#"
+                        let p = new RegExp('^\\p{{{name}}}$', '{flags}'),
+                            n = new RegExp('^\\P{{{name}}}$', '{flags}');
+                        p.test({text:?}) && !n.test({text:?})
+                    "#
                 ));
                 comparisons += 1;
             }

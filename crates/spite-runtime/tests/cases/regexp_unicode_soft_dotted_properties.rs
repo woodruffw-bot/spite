@@ -49,25 +49,62 @@ fn unicode_soft_dotted_property_results_snapshot() {
 fn unicode_soft_dotted_properties_aliases_complements_and_unions() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let p=/^\p{{SD}}$/i{mode},n=/^\P{{SD}}$/i{mode};'\u{{49}}\u{{4a}}\u{{69}}\u{{6a}}\u{{12e}}\u{{12f}}\u{{197}}\u{{248}}\u{{249}}\u{{268}}\u{{29d}}\u{{37f}}\u{{3f3}}\u{{406}}\u{{408}}\u{{456}}\u{{458}}\u{{1e2c}}\u{{1e2d}}\u{{1eca}}\u{{1ecb}}\u{{a7b2}}'.split('').every(c=>p.test(c)&&n.test(c)===('{mode}'==='u'))"
+            r#"
+                let p = /^\p{{SD}}$/i{mode},
+                    n = /^\P{{SD}}$/i{mode};
+                '\u{{49}}\u{{4a}}\u{{69}}\u{{6a}}\u{{12e}}\u{{12f}}\u{{197}}\u{{248}}\u{{249}}\u{{268}}\u{{29d}}\u{{37f}}\u{{3f3}}\u{{406}}\u{{408}}\u{{456}}\u{{458}}\u{{1e2c}}\u{{1e2d}}\u{{1eca}}\u{{1ecb}}\u{{a7b2}}'
+                .split('').every(c => p.test(c) && n.test(c) === ('{mode}' === 'u'))
+            "#
         ));
         assert_true(&format!(
-            r"let p=/[\p{{SD}}K]/i{mode},n=/[\P{{SD}}K]/i{mode},x=/[^\P{{SD}}K]/i{mode};p.test('K')&&n.test('K')&&!x.test('K')&&'\u{{49}}\u{{4a}}\u{{69}}\u{{6a}}\u{{12e}}\u{{12f}}\u{{197}}\u{{248}}\u{{249}}\u{{268}}\u{{29d}}\u{{37f}}\u{{3f3}}\u{{406}}\u{{408}}\u{{456}}\u{{458}}\u{{1e2c}}\u{{1e2d}}\u{{1eca}}\u{{1ecb}}\u{{a7b2}}'.split('').every(c=>p.test(c)&&n.test(c)===('{mode}'==='u')&&x.test(c)===('{mode}'==='v'))"
+            r#"
+                let p = /[\p{{SD}}K]/i{mode},
+                    n = /[\P{{SD}}K]/i{mode},
+                    x = /[^\P{{SD}}K]/i{mode};
+                p.test('K') && n.test('K') && !x.test('K') &&
+                    '\u{{49}}\u{{4a}}\u{{69}}\u{{6a}}\u{{12e}}\u{{12f}}\u{{197}}\u{{248}}\u{{249}}\u{{268}}\u{{29d}}\u{{37f}}\u{{3f3}}\u{{406}}\u{{408}}\u{{456}}\u{{458}}\u{{1e2c}}\u{{1e2d}}\u{{1eca}}\u{{1ecb}}\u{{a7b2}}'
+                    .split('').every(c => p.test(c) && n.test(c) === ('{mode}' === 'u') && x.test(c) ===
+                        ('{mode}' === 'v'))
+            "#
         ));
     }
 
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=/\p{{Soft_Dotted}}/{mode},b=/\p{{SD}}/i{mode},n=/\P{{SD}}/i{mode};a.test('\u0069')&&a.test('\u006A')&&b.test('\u0069')&&!a.test('\u200D')&&!b.test('\u005f')&&!b.test('ſ')&&!b.test('K')&&n.test('\u0069')===('{mode}'==='u')&&n.test('😀')&&n.test('\uD800')&&n.test('\uFEFF')"
+            r#"
+                let a = /\p{{Soft_Dotted}}/{mode},
+                    b = /\p{{SD}}/i{mode},
+                    n = /\P{{SD}}/i{mode};
+                a.test('\u0069') && a.test('\u006A') && b.test('\u0069') && !a.test('\u200D') && !b.test(
+                    '\u005f') && !b.test('ſ') && !b.test('K') && n.test('\u0069') === ('{mode}' ===
+                    'u') && n.test('😀') && n.test('\uD800') && n.test('\uFEFF')
+            "#
         ));
         assert_true(&format!(
-            r"let p=/\p{{Soft_Dotted}}/{mode},s=/\s/{mode};p.test('\u0069')&&p.test('\u006A')&&!s.test('\u0069')&&!s.test('\u006A')&&!p.test('\uFEFF')&&s.test('\uFEFF')"
+            r#"
+                let p = /\p{{Soft_Dotted}}/{mode},
+                    s = /\s/{mode};
+                p.test('\u0069') && p.test('\u006A') && !s.test('\u0069') && !s.test('\u006A') && !p.test(
+                    '\uFEFF') && s.test('\uFEFF')
+            "#
         ));
         assert_true(&format!(
-            r"let a=/[\p{{SD}}K]/i{mode},b=/[^\P{{Soft_Dotted}}K]/i{mode},c=/[\p{{SD}}\P{{Soft_Dotted}}]/{mode};a.test('K')&&a.test('k')&&a.test('\u0069')&&!a.test('ſ')&&b.test('\u006A')===('{mode}'==='v')&&!b.test('K')&&c.test('😀')&&c.test('A')&&c.test('\uD800')"
+            r#"
+                let a = /[\p{{SD}}K]/i{mode},
+                    b = /[^\P{{Soft_Dotted}}K]/i{mode},
+                    c = /[\p{{SD}}\P{{Soft_Dotted}}]/{mode};
+                a.test('K') && a.test('k') && a.test('\u0069') && !a.test('ſ') && b.test('\u006A') === (
+                    '{mode}' === 'v') && !b.test('K') && c.test('😀') && c.test('A') && c.test(
+                    '\uD800')
+            "#
         ));
         assert_true(&format!(
-            r"let a=/^\p{{SD}}$/{mode},b=/^\P{{SD}}$/{mode};a.test('\u0069')&&!a.test('\u006A\n')&&!a.test('')&&!a.test('\n')&&b.test('😀')&&!b.test('AA')"
+            r#"
+                let a = /^\p{{SD}}$/{mode},
+                    b = /^\P{{SD}}$/{mode};
+                a.test('\u0069') && !a.test('\u006A\n') && !a.test('') && !a.test('\n') && b.test('😀') && !b
+                    .test('AA')
+            "#
         ));
     }
 }
@@ -76,16 +113,33 @@ fn unicode_soft_dotted_properties_aliases_complements_and_unions() {
 fn unicode_soft_dotted_properties_captures_context_and_pair_starts() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/(?<x>\p{{SD}})/d{mode}y;r.lastIndex=1;let m=r.exec('\uD835\uDC22');m.index===0&&m[0]==='\uD835\uDC22'&&m.groups.x===m[0]&&m.indices[1][0]===0&&m.indices[1][1]===2&&r.lastIndex===2"
+            r#"
+                let r = /(?<x>\p{{SD}})/d{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('\uD835\uDC22');
+                m.index === 0 && m[0] === '\uD835\uDC22' && m.groups.x === m[0] && m.indices[1][0] === 0 && m
+                    .indices[1][1] === 2 && r.lastIndex === 2
+            "#
         ));
     }
 
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/^(?<x>([\p{{SD}}K]))$/dim{mode}g,m=r.exec('x\r\nK\u2028');m.index===3&&m[1]==='K'&&m[2]==='K'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===4&&r.lastIndex===4"
+            r#"
+                let r = /^(?<x>([\p{{SD}}K]))$/dim{mode}g,
+                    m = r.exec('x\r\nK\u2028');
+                m.index === 3 && m[1] === 'K' && m[2] === 'K' && m.indices.groups.x === m.indices[1] && m
+                    .indices[2][1] === 4 && r.lastIndex === 4
+            "#
         ));
         assert_true(&format!(
-            r"let r=/(?<__proto__>\P{{SD}})/d{mode}y;r.lastIndex=1;let m=r.exec('😀\u0069');m.index===0&&m[1]==='😀'&&m.indices[1][1]===2&&r.lastIndex===2&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]"
+            r#"
+                let r = /(?<__proto__>\P{{SD}})/d{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('😀\u0069');
+                m.index === 0 && m[1] === '😀' && m.indices[1][1] === 2 && r.lastIndex === 2 && Object
+                    .getPrototypeOf(m.groups) === null && m.indices.groups.__proto__ === m.indices[1]
+            "#
         ));
         assert_true(&format!(
             r"let r=/\p{{SD}}/d{mode}g;r.lastIndex=1;let m=r.exec('😀\u0069');m.index===2&&m[0]==='\u0069'&&r.lastIndex===3"
@@ -100,7 +154,11 @@ fn unicode_soft_dotted_properties_captures_context_and_pair_starts() {
 fn unicode_soft_dotted_properties_consumers_original_text() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=[...'\u006A😀\u0069G'.matchAll(/(?<x>\P{{SD}})/d{mode}g)];a.length===2&&a[0][1]==='😀'&&a[0].index===1&&a[0].indices[1][1]===3&&a[1][1]==='G'"
+            r#"
+                let a = [...'\u006A😀\u0069G'.matchAll(/(?<x>\P{{SD}})/d{mode}g)];
+                a.length === 2 && a[0][1] === '😀' && a[0].index === 1 && a[0].indices[1][1] === 3 && a[1][
+                    1] === 'G'
+            "#
         ));
         assert_true(&format!(
             r"'\u006A\u0069😀X'.replace(/(?<x>\p{{Soft_Dotted}})/{mode}g,'<$1:$<x>>')==='<\u006A:\u006A><\u0069:\u0069>😀X'"
@@ -109,7 +167,14 @@ fn unicode_soft_dotted_properties_consumers_original_text() {
             r"'😀\u006A\u0069G'.split(/(\p{{SD}})/{mode}).join('|')==='😀|\u006A||\u0069|G'&&'😀\u0069'.search(/\p{{SD}}/{mode})===2&&'\u006A\u0069😀'.match(/\p{{SD}}/{mode}g).join('')==='\u006A\u0069'"
         ));
         assert_true(&format!(
-            r"let t='';let x='\u0069\u006A😀\u0069'.replace(/(\p{{SD}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__😀_'&&t==='014'"
+            r#"
+                let t = '';
+                let x = '\u0069\u006A😀\u0069'.replace(/(\p{{SD}})/{mode}g, (m, c, p) => {{
+                    t += p;
+                    return '_'
+                }});
+                x === '__😀_' && t === '014'
+            "#
         ));
     }
 }
@@ -117,16 +182,62 @@ fn unicode_soft_dotted_properties_consumers_original_text() {
 #[test]
 fn unicode_soft_dotted_properties_clones_coercions_and_strict_writes() {
     assert_true(
-        r"let r=/^(?<x>\p{Soft_Dotted})$/dmu,c=new RegExp(r,'divy');c.source==='^(?<x>\\p{Soft_Dotted})$'&&c.unicodeSets&&!c.unicode&&!c.multiline&&c.exec('\u0069').groups.x==='\u0069'&&c.lastIndex===1",
+        r#"
+            let r = /^(?<x>\p{Soft_Dotted})$/dmu,
+                c = new RegExp(r, 'divy');
+            c.source === '^(?<x>\\p{Soft_Dotted})$' && c.unicodeSets && !c.unicode && !c.multiline && c
+                .exec('\u0069').groups.x === '\u0069' && c.lastIndex === 1
+        "#,
     );
     assert_true(
-        r"let t='',r=/\P{SD}/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m[0]==='😀'&&m.index===0&&r.lastIndex===2",
+        r#"
+            let t = '',
+                r = /\P{SD}/uy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 1
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return '😀'
+                }
+            });
+            t === 'si' && m[0] === '😀' && m.index === 0 && r.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let r=/\p{SD}/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('\u0069')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            let r = /\p{SD}/vy;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('\u0069')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/\p{SD}/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀\u0069')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /\p{SD}/vy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀\u0069')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 
@@ -164,7 +275,12 @@ fn unicode_soft_dotted_properties_opted_work_and_remaining_sets() {
 fn unicode_soft_dotted_repetitions_retain_last_capture_and_outside_words() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/\b(?<x>\p{{SD}})+\b/d{mode}g,m=r.exec('😀\u0069\u006A\u006A\uFEFF');m.index===2&&m[0]==='\u0069\u006A\u006A'&&m.groups.x==='\u006A'&&m.indices.groups.x[0]===4&&m.indices.groups.x[1]===5&&r.lastIndex===5"
+            r#"
+                let r = /\b(?<x>\p{{SD}})+\b/d{mode}g,
+                    m = r.exec('😀\u0069\u006A\u006A\uFEFF');
+                m.index === 2 && m[0] === '\u0069\u006A\u006A' && m.groups.x === '\u006A' && m.indices.groups
+                    .x[0] === 4 && m.indices.groups.x[1] === 5 && r.lastIndex === 5
+            "#
         ));
     }
 }
@@ -177,7 +293,13 @@ fn unicode_soft_dotted_property_unicode18_addition() {
         for name in ["Soft_Dotted", "SD"] {
             for flags in ["u", "ui", "v", "vi"] {
                 assert_true(&format!(
-                    r"let p=new RegExp('^\\p{{{name}}}$','{flags}'),n=new RegExp('^\\P{{{name}}}$','{flags}');p.test({text:?})===({point}!==122734||'{flags}'.includes('i'))&&n.test({text:?})===({point}===122734?'{flags}'!=='vi':('{flags}'==='ui'&&{point}===122735))"
+                    r#"
+                        let p = new RegExp('^\\p{{{name}}}$', '{flags}'),
+                            n = new RegExp('^\\P{{{name}}}$', '{flags}');
+                        p.test({text:?}) === ({point} !== 122734 || '{flags}'.includes('i')) && n
+                            .test({text:?}) === ({point} === 122734 ? '{flags}' !== 'vi' : (
+                                '{flags}' === 'ui' && {point} === 122735))
+                    "#
                 ));
                 comparisons += 1;
             }

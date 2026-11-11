@@ -49,16 +49,39 @@ fn unicode_ideographic_property_results_snapshot() {
 fn unicode_ideographic_properties_aliases_complements_and_unions() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=/\p{{Ideographic}}/{mode},b=/\p{{Ideo}}/i{mode},n=/\P{{Ideo}}/i{mode};a.test('\u4E00')&&a.test('\u4E8C')&&b.test('\u4E00')&&!a.test('\u200D')&&!b.test('\u005f')&&!b.test('ſ')&&!b.test('K')&&!n.test('\u4E00')&&n.test('😀')&&n.test('\uD800')&&n.test('\uFEFF')"
+            r#"
+                let a = /\p{{Ideographic}}/{mode},
+                    b = /\p{{Ideo}}/i{mode},
+                    n = /\P{{Ideo}}/i{mode};
+                a.test('\u4E00') && a.test('\u4E8C') && b.test('\u4E00') && !a.test('\u200D') && !b.test(
+                        '\u005f') && !b.test('ſ') && !b.test('K') && !n.test('\u4E00') && n.test('😀') && n
+                    .test('\uD800') && n.test('\uFEFF')
+            "#
         ));
         assert_true(&format!(
-            r"let p=/\p{{Ideographic}}/{mode},s=/\s/{mode};p.test('\u4E00')&&p.test('\u4E8C')&&!s.test('\u4E00')&&!s.test('\u4E8C')&&!p.test('\uFEFF')&&s.test('\uFEFF')"
+            r#"
+                let p = /\p{{Ideographic}}/{mode},
+                    s = /\s/{mode};
+                p.test('\u4E00') && p.test('\u4E8C') && !s.test('\u4E00') && !s.test('\u4E8C') && !p.test(
+                    '\uFEFF') && s.test('\uFEFF')
+            "#
         ));
         assert_true(&format!(
-            r"let a=/[\p{{Ideo}}K]/i{mode},b=/[^\P{{Ideographic}}K]/i{mode},c=/[\p{{Ideo}}\P{{Ideographic}}]/{mode};a.test('K')&&a.test('k')&&a.test('\u4E00')&&!a.test('ſ')&&b.test('\u4E8C')&&!b.test('K')&&c.test('😀')&&c.test('A')&&c.test('\uD800')"
+            r#"
+                let a = /[\p{{Ideo}}K]/i{mode},
+                    b = /[^\P{{Ideographic}}K]/i{mode},
+                    c = /[\p{{Ideo}}\P{{Ideographic}}]/{mode};
+                a.test('K') && a.test('k') && a.test('\u4E00') && !a.test('ſ') && b.test('\u4E8C') && !b.test(
+                    'K') && c.test('😀') && c.test('A') && c.test('\uD800')
+            "#
         ));
         assert_true(&format!(
-            r"let a=/^\p{{Ideo}}$/{mode},b=/^\P{{Ideo}}$/{mode};a.test('\u4E00')&&!a.test('\u4E8C\n')&&!a.test('')&&!a.test('\n')&&b.test('😀')&&!b.test('AA')"
+            r#"
+                let a = /^\p{{Ideo}}$/{mode},
+                    b = /^\P{{Ideo}}$/{mode};
+                a.test('\u4E00') && !a.test('\u4E8C\n') && !a.test('') && !a.test('\n') && b.test('😀') && !b
+                    .test('AA')
+            "#
         ));
     }
 }
@@ -67,13 +90,29 @@ fn unicode_ideographic_properties_aliases_complements_and_unions() {
 fn unicode_ideographic_properties_captures_context_and_pair_starts() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/^(?<x>([\p{{Ideo}}K]))$/dim{mode}g,m=r.exec('x\r\nK\u2028');m.index===3&&m[1]==='K'&&m[2]==='K'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===4&&r.lastIndex===4"
+            r#"
+                let r = /^(?<x>([\p{{Ideo}}K]))$/dim{mode}g,
+                    m = r.exec('x\r\nK\u2028');
+                m.index === 3 && m[1] === 'K' && m[2] === 'K' && m.indices.groups.x === m.indices[1] && m
+                    .indices[2][1] === 4 && r.lastIndex === 4
+            "#
         ));
         assert_true(&format!(
-            r"let r=/(?<__proto__>\P{{Ideo}})/d{mode}y;r.lastIndex=1;let m=r.exec('😀\u4E00');m.index===0&&m[1]==='😀'&&m.indices[1][1]===2&&r.lastIndex===2&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]"
+            r#"
+                let r = /(?<__proto__>\P{{Ideo}})/d{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('😀\u4E00');
+                m.index === 0 && m[1] === '😀' && m.indices[1][1] === 2 && r.lastIndex === 2 && Object
+                    .getPrototypeOf(m.groups) === null && m.indices.groups.__proto__ === m.indices[1]
+            "#
         ));
         assert_true(&format!(
-            r"let r=/\p{{Ideo}}/d{mode}g;r.lastIndex=1;let m=r.exec('😀\u4E00');m.index===2&&m[0]==='\u4E00'&&r.lastIndex===3"
+            r#"
+                let r = /\p{{Ideo}}/d{mode}g;
+                r.lastIndex = 1;
+                let m = r.exec('😀\u4E00');
+                m.index === 2 && m[0] === '\u4E00' && r.lastIndex === 3
+            "#
         ));
         assert_true(&format!(
             r"let r=/\p{{Ideo}}/{mode}y;r.lastIndex=1;r.exec('😀\u4E00')===null&&r.lastIndex===0"
@@ -85,7 +124,11 @@ fn unicode_ideographic_properties_captures_context_and_pair_starts() {
 fn unicode_ideographic_properties_consumers_original_text() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=[...'\u4E8C😀\u4E00G'.matchAll(/(?<x>\P{{Ideo}})/d{mode}g)];a.length===2&&a[0][1]==='😀'&&a[0].index===1&&a[0].indices[1][1]===3&&a[1][1]==='G'"
+            r#"
+                let a = [...'\u4E8C😀\u4E00G'.matchAll(/(?<x>\P{{Ideo}})/d{mode}g)];
+                a.length === 2 && a[0][1] === '😀' && a[0].index === 1 && a[0].indices[1][1] === 3 && a[1][
+                    1] === 'G'
+            "#
         ));
         assert_true(&format!(
             r"'\u4E8C\u4E00😀X'.replace(/(?<x>\p{{Ideographic}})/{mode}g,'<$1:$<x>>')==='<\u4E8C:\u4E8C><\u4E00:\u4E00>😀X'"
@@ -94,7 +137,14 @@ fn unicode_ideographic_properties_consumers_original_text() {
             r"'😀\u4E8C\u4E00G'.split(/(\p{{Ideo}})/{mode}).join('|')==='😀|\u4E8C||\u4E00|G'&&'😀\u4E00'.search(/\p{{Ideo}}/{mode})===2&&'\u4E8C\u4E00😀'.match(/\p{{Ideo}}/{mode}g).join('')==='\u4E8C\u4E00'"
         ));
         assert_true(&format!(
-            r"let t='';let x='\u4E00\u4E8C😀\u4E00'.replace(/(\p{{Ideo}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__😀_'&&t==='014'"
+            r#"
+                let t = '';
+                let x = '\u4E00\u4E8C😀\u4E00'.replace(/(\p{{Ideo}})/{mode}g, (m, c, p) => {{
+                    t += p;
+                    return '_'
+                }});
+                x === '__😀_' && t === '014'
+            "#
         ));
     }
 }
@@ -102,16 +152,62 @@ fn unicode_ideographic_properties_consumers_original_text() {
 #[test]
 fn unicode_ideographic_properties_clones_coercions_and_strict_writes() {
     assert_true(
-        r"let r=/^(?<x>\p{Ideographic})$/dmu,c=new RegExp(r,'divy');c.source==='^(?<x>\\p{Ideographic})$'&&c.unicodeSets&&!c.unicode&&!c.multiline&&c.exec('\u4E00').groups.x==='\u4E00'&&c.lastIndex===1",
+        r#"
+            let r = /^(?<x>\p{Ideographic})$/dmu,
+                c = new RegExp(r, 'divy');
+            c.source === '^(?<x>\\p{Ideographic})$' && c.unicodeSets && !c.unicode && !c.multiline && c
+                .exec('\u4E00').groups.x === '\u4E00' && c.lastIndex === 1
+        "#,
     );
     assert_true(
-        r"let t='',r=/\P{Ideo}/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m[0]==='😀'&&m.index===0&&r.lastIndex===2",
+        r#"
+            let t = '',
+                r = /\P{Ideo}/uy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 1
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return '😀'
+                }
+            });
+            t === 'si' && m[0] === '😀' && m.index === 0 && r.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let r=/\p{Ideo}/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('\u4E00')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            let r = /\p{Ideo}/vy;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('\u4E00')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/\p{Ideo}/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀\u4E00')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /\p{Ideo}/vy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀\u4E00')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 
@@ -149,7 +245,12 @@ fn unicode_ideographic_properties_opted_work_and_remaining_sets() {
 fn unicode_ideographic_repetitions_retain_last_capture_and_outside_words() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/\B(?<x>\p{{Ideo}})+\B/d{mode}g,m=r.exec('😀\u4E00\u4E8C\u4E09\uFEFF');m.index===2&&m[0]==='\u4E00\u4E8C\u4E09'&&m.groups.x==='\u4E09'&&m.indices.groups.x[0]===4&&m.indices.groups.x[1]===5&&r.lastIndex===5"
+            r#"
+                let r = /\B(?<x>\p{{Ideo}})+\B/d{mode}g,
+                    m = r.exec('😀\u4E00\u4E8C\u4E09\uFEFF');
+                m.index === 2 && m[0] === '\u4E00\u4E8C\u4E09' && m.groups.x === '\u4E09' && m.indices.groups
+                    .x[0] === 4 && m.indices.groups.x[1] === 5 && r.lastIndex === 5
+            "#
         ));
     }
 }
@@ -166,7 +267,11 @@ fn unicode_ideographic_property_unicode18_addition() {
         for name in ["Ideographic", "Ideo"] {
             for flags in ["u", "ui", "v", "vi"] {
                 assert_true(&format!(
-                    r"let p=new RegExp('^\\p{{{name}}}$','{flags}'),n=new RegExp('^\\P{{{name}}}$','{flags}');p.test({text:?})&&!n.test({text:?})"
+                    r#"
+                        let p = new RegExp('^\\p{{{name}}}$', '{flags}'),
+                            n = new RegExp('^\\P{{{name}}}$', '{flags}');
+                        p.test({text:?}) && !n.test({text:?})
+                    "#
                 ));
                 comparisons += 1;
             }

@@ -8,68 +8,316 @@ use crate::common::assert_true;
 #[test]
 fn unicode_hebrew_script_aliases_complements_and_fold_modes() {
     assert_true(
-        r#"let patterns=["^\\p{Script=Hebr}$", "^\\P{Script=Hebr}$", "^[\\p{Script=Hebr}]$", "^[\\P{Script=Hebr}]$", "^[^\\p{Script=Hebr}]$", "^[^\\P{Script=Hebr}]$"],points=[0, 10, 32, 65, 97, 181, 837, 888, 931, 1025, 1425, 1469, 1470, 1472, 1479, 1488, 1489, 1514, 1520, 1524, 64285, 64286, 64335, 55296, 56320, 126464, 128512, 1114111],flags="u";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="0000000000111111111111100000|1111111111000000000000011111|0000000000111111111111100000|1111111111000000000000011111|1111111111000000000000011111|0000000000111111111111100000""#,
+        r#"
+            let patterns = ["^\\p{Script=Hebr}$", "^\\P{Script=Hebr}$", "^[\\p{Script=Hebr}]$",
+                    "^[\\P{Script=Hebr}]$", "^[^\\p{Script=Hebr}]$", "^[^\\P{Script=Hebr}]$"
+                ],
+                points = [0, 10, 32, 65, 97, 181, 837, 888, 931, 1025, 1425, 1469, 1470, 1472, 1479, 1488,
+                    1489, 1514, 1520, 1524, 64285, 64286, 64335, 55296, 56320, 126464, 128512, 1114111
+                ],
+                flags = "u";
+            patterns.map(pattern => {
+                    let r = new RegExp(pattern, flags);
+                    return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+                }).join('|') ===
+                "0000000000111111111111100000|1111111111000000000000011111|0000000000111111111111100000|1111111111000000000000011111|1111111111000000000000011111|0000000000111111111111100000"
+        "#,
     );
     assert_true(
-        r#"let patterns=["^\\p{Script=Hebr}$", "^\\P{Script=Hebr}$", "^[\\p{Script=Hebr}]$", "^[\\P{Script=Hebr}]$", "^[^\\p{Script=Hebr}]$", "^[^\\P{Script=Hebr}]$"],points=[0, 10, 32, 65, 97, 181, 837, 888, 931, 1025, 1425, 1469, 1470, 1472, 1479, 1488, 1489, 1514, 1520, 1524, 64285, 64286, 64335, 55296, 56320, 126464, 128512, 1114111],flags="ui";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="0000000000111111111111100000|1111111111000000000000011111|0000000000111111111111100000|1111111111000000000000011111|1111111111000000000000011111|0000000000111111111111100000""#,
+        r#"
+            let patterns = ["^\\p{Script=Hebr}$", "^\\P{Script=Hebr}$", "^[\\p{Script=Hebr}]$",
+                    "^[\\P{Script=Hebr}]$", "^[^\\p{Script=Hebr}]$", "^[^\\P{Script=Hebr}]$"
+                ],
+                points = [0, 10, 32, 65, 97, 181, 837, 888, 931, 1025, 1425, 1469, 1470, 1472, 1479, 1488,
+                    1489, 1514, 1520, 1524, 64285, 64286, 64335, 55296, 56320, 126464, 128512, 1114111
+                ],
+                flags = "ui";
+            patterns.map(pattern => {
+                    let r = new RegExp(pattern, flags);
+                    return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+                }).join('|') ===
+                "0000000000111111111111100000|1111111111000000000000011111|0000000000111111111111100000|1111111111000000000000011111|1111111111000000000000011111|0000000000111111111111100000"
+        "#,
     );
     assert_true(
-        r#"let patterns=["^\\p{Script=Hebr}$", "^\\P{Script=Hebr}$", "^[\\p{Script=Hebr}]$", "^[\\P{Script=Hebr}]$", "^[^\\p{Script=Hebr}]$", "^[^\\P{Script=Hebr}]$"],points=[0, 10, 32, 65, 97, 181, 837, 888, 931, 1025, 1425, 1469, 1470, 1472, 1479, 1488, 1489, 1514, 1520, 1524, 64285, 64286, 64335, 55296, 56320, 126464, 128512, 1114111],flags="v";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="0000000000111111111111100000|1111111111000000000000011111|0000000000111111111111100000|1111111111000000000000011111|1111111111000000000000011111|0000000000111111111111100000""#,
+        r#"
+            let patterns = ["^\\p{Script=Hebr}$", "^\\P{Script=Hebr}$", "^[\\p{Script=Hebr}]$",
+                    "^[\\P{Script=Hebr}]$", "^[^\\p{Script=Hebr}]$", "^[^\\P{Script=Hebr}]$"
+                ],
+                points = [0, 10, 32, 65, 97, 181, 837, 888, 931, 1025, 1425, 1469, 1470, 1472, 1479, 1488,
+                    1489, 1514, 1520, 1524, 64285, 64286, 64335, 55296, 56320, 126464, 128512, 1114111
+                ],
+                flags = "v";
+            patterns.map(pattern => {
+                    let r = new RegExp(pattern, flags);
+                    return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+                }).join('|') ===
+                "0000000000111111111111100000|1111111111000000000000011111|0000000000111111111111100000|1111111111000000000000011111|1111111111000000000000011111|0000000000111111111111100000"
+        "#,
     );
     assert_true(
-        r#"let patterns=["^\\p{Script=Hebr}$", "^\\P{Script=Hebr}$", "^[\\p{Script=Hebr}]$", "^[\\P{Script=Hebr}]$", "^[^\\p{Script=Hebr}]$", "^[^\\P{Script=Hebr}]$"],points=[0, 10, 32, 65, 97, 181, 837, 888, 931, 1025, 1425, 1469, 1470, 1472, 1479, 1488, 1489, 1514, 1520, 1524, 64285, 64286, 64335, 55296, 56320, 126464, 128512, 1114111],flags="vi";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="0000000000111111111111100000|1111111111000000000000011111|0000000000111111111111100000|1111111111000000000000011111|1111111111000000000000011111|0000000000111111111111100000""#,
+        r#"
+            let patterns = ["^\\p{Script=Hebr}$", "^\\P{Script=Hebr}$", "^[\\p{Script=Hebr}]$",
+                    "^[\\P{Script=Hebr}]$", "^[^\\p{Script=Hebr}]$", "^[^\\P{Script=Hebr}]$"
+                ],
+                points = [0, 10, 32, 65, 97, 181, 837, 888, 931, 1025, 1425, 1469, 1470, 1472, 1479, 1488,
+                    1489, 1514, 1520, 1524, 64285, 64286, 64335, 55296, 56320, 126464, 128512, 1114111
+                ],
+                flags = "vi";
+            patterns.map(pattern => {
+                    let r = new RegExp(pattern, flags);
+                    return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+                }).join('|') ===
+                "0000000000111111111111100000|1111111111000000000000011111|0000000000111111111111100000|1111111111000000000000011111|1111111111000000000000011111|0000000000111111111111100000"
+        "#,
     );
     assert_true(
-        r#"let patterns=["^\\p{Script=Hebrew}$", "^\\P{Script=Hebrew}$", "^[\\p{Script=Hebrew}]$", "^[\\P{Script=Hebrew}]$", "^[^\\p{Script=Hebrew}]$", "^[^\\P{Script=Hebrew}]$"],points=[0, 10, 32, 65, 97, 181, 837, 888, 931, 1025, 1425, 1469, 1470, 1472, 1479, 1488, 1489, 1514, 1520, 1524, 64285, 64286, 64335, 55296, 56320, 126464, 128512, 1114111],flags="u";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="0000000000111111111111100000|1111111111000000000000011111|0000000000111111111111100000|1111111111000000000000011111|1111111111000000000000011111|0000000000111111111111100000""#,
+        r#"
+            let patterns = ["^\\p{Script=Hebrew}$", "^\\P{Script=Hebrew}$", "^[\\p{Script=Hebrew}]$",
+                    "^[\\P{Script=Hebrew}]$", "^[^\\p{Script=Hebrew}]$", "^[^\\P{Script=Hebrew}]$"
+                ],
+                points = [0, 10, 32, 65, 97, 181, 837, 888, 931, 1025, 1425, 1469, 1470, 1472, 1479, 1488,
+                    1489, 1514, 1520, 1524, 64285, 64286, 64335, 55296, 56320, 126464, 128512, 1114111
+                ],
+                flags = "u";
+            patterns.map(pattern => {
+                    let r = new RegExp(pattern, flags);
+                    return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+                }).join('|') ===
+                "0000000000111111111111100000|1111111111000000000000011111|0000000000111111111111100000|1111111111000000000000011111|1111111111000000000000011111|0000000000111111111111100000"
+        "#,
     );
     assert_true(
-        r#"let patterns=["^\\p{Script=Hebrew}$", "^\\P{Script=Hebrew}$", "^[\\p{Script=Hebrew}]$", "^[\\P{Script=Hebrew}]$", "^[^\\p{Script=Hebrew}]$", "^[^\\P{Script=Hebrew}]$"],points=[0, 10, 32, 65, 97, 181, 837, 888, 931, 1025, 1425, 1469, 1470, 1472, 1479, 1488, 1489, 1514, 1520, 1524, 64285, 64286, 64335, 55296, 56320, 126464, 128512, 1114111],flags="ui";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="0000000000111111111111100000|1111111111000000000000011111|0000000000111111111111100000|1111111111000000000000011111|1111111111000000000000011111|0000000000111111111111100000""#,
+        r#"
+            let patterns = ["^\\p{Script=Hebrew}$", "^\\P{Script=Hebrew}$", "^[\\p{Script=Hebrew}]$",
+                    "^[\\P{Script=Hebrew}]$", "^[^\\p{Script=Hebrew}]$", "^[^\\P{Script=Hebrew}]$"
+                ],
+                points = [0, 10, 32, 65, 97, 181, 837, 888, 931, 1025, 1425, 1469, 1470, 1472, 1479, 1488,
+                    1489, 1514, 1520, 1524, 64285, 64286, 64335, 55296, 56320, 126464, 128512, 1114111
+                ],
+                flags = "ui";
+            patterns.map(pattern => {
+                    let r = new RegExp(pattern, flags);
+                    return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+                }).join('|') ===
+                "0000000000111111111111100000|1111111111000000000000011111|0000000000111111111111100000|1111111111000000000000011111|1111111111000000000000011111|0000000000111111111111100000"
+        "#,
     );
     assert_true(
-        r#"let patterns=["^\\p{Script=Hebrew}$", "^\\P{Script=Hebrew}$", "^[\\p{Script=Hebrew}]$", "^[\\P{Script=Hebrew}]$", "^[^\\p{Script=Hebrew}]$", "^[^\\P{Script=Hebrew}]$"],points=[0, 10, 32, 65, 97, 181, 837, 888, 931, 1025, 1425, 1469, 1470, 1472, 1479, 1488, 1489, 1514, 1520, 1524, 64285, 64286, 64335, 55296, 56320, 126464, 128512, 1114111],flags="v";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="0000000000111111111111100000|1111111111000000000000011111|0000000000111111111111100000|1111111111000000000000011111|1111111111000000000000011111|0000000000111111111111100000""#,
+        r#"
+            let patterns = ["^\\p{Script=Hebrew}$", "^\\P{Script=Hebrew}$", "^[\\p{Script=Hebrew}]$",
+                    "^[\\P{Script=Hebrew}]$", "^[^\\p{Script=Hebrew}]$", "^[^\\P{Script=Hebrew}]$"
+                ],
+                points = [0, 10, 32, 65, 97, 181, 837, 888, 931, 1025, 1425, 1469, 1470, 1472, 1479, 1488,
+                    1489, 1514, 1520, 1524, 64285, 64286, 64335, 55296, 56320, 126464, 128512, 1114111
+                ],
+                flags = "v";
+            patterns.map(pattern => {
+                    let r = new RegExp(pattern, flags);
+                    return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+                }).join('|') ===
+                "0000000000111111111111100000|1111111111000000000000011111|0000000000111111111111100000|1111111111000000000000011111|1111111111000000000000011111|0000000000111111111111100000"
+        "#,
     );
     assert_true(
-        r#"let patterns=["^\\p{Script=Hebrew}$", "^\\P{Script=Hebrew}$", "^[\\p{Script=Hebrew}]$", "^[\\P{Script=Hebrew}]$", "^[^\\p{Script=Hebrew}]$", "^[^\\P{Script=Hebrew}]$"],points=[0, 10, 32, 65, 97, 181, 837, 888, 931, 1025, 1425, 1469, 1470, 1472, 1479, 1488, 1489, 1514, 1520, 1524, 64285, 64286, 64335, 55296, 56320, 126464, 128512, 1114111],flags="vi";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="0000000000111111111111100000|1111111111000000000000011111|0000000000111111111111100000|1111111111000000000000011111|1111111111000000000000011111|0000000000111111111111100000""#,
+        r#"
+            let patterns = ["^\\p{Script=Hebrew}$", "^\\P{Script=Hebrew}$", "^[\\p{Script=Hebrew}]$",
+                    "^[\\P{Script=Hebrew}]$", "^[^\\p{Script=Hebrew}]$", "^[^\\P{Script=Hebrew}]$"
+                ],
+                points = [0, 10, 32, 65, 97, 181, 837, 888, 931, 1025, 1425, 1469, 1470, 1472, 1479, 1488,
+                    1489, 1514, 1520, 1524, 64285, 64286, 64335, 55296, 56320, 126464, 128512, 1114111
+                ],
+                flags = "vi";
+            patterns.map(pattern => {
+                    let r = new RegExp(pattern, flags);
+                    return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+                }).join('|') ===
+                "0000000000111111111111100000|1111111111000000000000011111|0000000000111111111111100000|1111111111000000000000011111|1111111111000000000000011111|0000000000111111111111100000"
+        "#,
     );
     assert_true(
-        r#"let patterns=["^\\p{sc=Hebr}$", "^\\P{sc=Hebr}$", "^[\\p{sc=Hebr}]$", "^[\\P{sc=Hebr}]$", "^[^\\p{sc=Hebr}]$", "^[^\\P{sc=Hebr}]$"],points=[0, 10, 32, 65, 97, 181, 837, 888, 931, 1025, 1425, 1469, 1470, 1472, 1479, 1488, 1489, 1514, 1520, 1524, 64285, 64286, 64335, 55296, 56320, 126464, 128512, 1114111],flags="u";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="0000000000111111111111100000|1111111111000000000000011111|0000000000111111111111100000|1111111111000000000000011111|1111111111000000000000011111|0000000000111111111111100000""#,
+        r#"
+            let patterns = ["^\\p{sc=Hebr}$", "^\\P{sc=Hebr}$", "^[\\p{sc=Hebr}]$", "^[\\P{sc=Hebr}]$",
+                    "^[^\\p{sc=Hebr}]$", "^[^\\P{sc=Hebr}]$"
+                ],
+                points = [0, 10, 32, 65, 97, 181, 837, 888, 931, 1025, 1425, 1469, 1470, 1472, 1479, 1488,
+                    1489, 1514, 1520, 1524, 64285, 64286, 64335, 55296, 56320, 126464, 128512, 1114111
+                ],
+                flags = "u";
+            patterns.map(pattern => {
+                    let r = new RegExp(pattern, flags);
+                    return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+                }).join('|') ===
+                "0000000000111111111111100000|1111111111000000000000011111|0000000000111111111111100000|1111111111000000000000011111|1111111111000000000000011111|0000000000111111111111100000"
+        "#,
     );
     assert_true(
-        r#"let patterns=["^\\p{sc=Hebr}$", "^\\P{sc=Hebr}$", "^[\\p{sc=Hebr}]$", "^[\\P{sc=Hebr}]$", "^[^\\p{sc=Hebr}]$", "^[^\\P{sc=Hebr}]$"],points=[0, 10, 32, 65, 97, 181, 837, 888, 931, 1025, 1425, 1469, 1470, 1472, 1479, 1488, 1489, 1514, 1520, 1524, 64285, 64286, 64335, 55296, 56320, 126464, 128512, 1114111],flags="ui";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="0000000000111111111111100000|1111111111000000000000011111|0000000000111111111111100000|1111111111000000000000011111|1111111111000000000000011111|0000000000111111111111100000""#,
+        r#"
+            let patterns = ["^\\p{sc=Hebr}$", "^\\P{sc=Hebr}$", "^[\\p{sc=Hebr}]$", "^[\\P{sc=Hebr}]$",
+                    "^[^\\p{sc=Hebr}]$", "^[^\\P{sc=Hebr}]$"
+                ],
+                points = [0, 10, 32, 65, 97, 181, 837, 888, 931, 1025, 1425, 1469, 1470, 1472, 1479, 1488,
+                    1489, 1514, 1520, 1524, 64285, 64286, 64335, 55296, 56320, 126464, 128512, 1114111
+                ],
+                flags = "ui";
+            patterns.map(pattern => {
+                    let r = new RegExp(pattern, flags);
+                    return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+                }).join('|') ===
+                "0000000000111111111111100000|1111111111000000000000011111|0000000000111111111111100000|1111111111000000000000011111|1111111111000000000000011111|0000000000111111111111100000"
+        "#,
     );
     assert_true(
-        r#"let patterns=["^\\p{sc=Hebr}$", "^\\P{sc=Hebr}$", "^[\\p{sc=Hebr}]$", "^[\\P{sc=Hebr}]$", "^[^\\p{sc=Hebr}]$", "^[^\\P{sc=Hebr}]$"],points=[0, 10, 32, 65, 97, 181, 837, 888, 931, 1025, 1425, 1469, 1470, 1472, 1479, 1488, 1489, 1514, 1520, 1524, 64285, 64286, 64335, 55296, 56320, 126464, 128512, 1114111],flags="v";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="0000000000111111111111100000|1111111111000000000000011111|0000000000111111111111100000|1111111111000000000000011111|1111111111000000000000011111|0000000000111111111111100000""#,
+        r#"
+            let patterns = ["^\\p{sc=Hebr}$", "^\\P{sc=Hebr}$", "^[\\p{sc=Hebr}]$", "^[\\P{sc=Hebr}]$",
+                    "^[^\\p{sc=Hebr}]$", "^[^\\P{sc=Hebr}]$"
+                ],
+                points = [0, 10, 32, 65, 97, 181, 837, 888, 931, 1025, 1425, 1469, 1470, 1472, 1479, 1488,
+                    1489, 1514, 1520, 1524, 64285, 64286, 64335, 55296, 56320, 126464, 128512, 1114111
+                ],
+                flags = "v";
+            patterns.map(pattern => {
+                    let r = new RegExp(pattern, flags);
+                    return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+                }).join('|') ===
+                "0000000000111111111111100000|1111111111000000000000011111|0000000000111111111111100000|1111111111000000000000011111|1111111111000000000000011111|0000000000111111111111100000"
+        "#,
     );
     assert_true(
-        r#"let patterns=["^\\p{sc=Hebr}$", "^\\P{sc=Hebr}$", "^[\\p{sc=Hebr}]$", "^[\\P{sc=Hebr}]$", "^[^\\p{sc=Hebr}]$", "^[^\\P{sc=Hebr}]$"],points=[0, 10, 32, 65, 97, 181, 837, 888, 931, 1025, 1425, 1469, 1470, 1472, 1479, 1488, 1489, 1514, 1520, 1524, 64285, 64286, 64335, 55296, 56320, 126464, 128512, 1114111],flags="vi";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="0000000000111111111111100000|1111111111000000000000011111|0000000000111111111111100000|1111111111000000000000011111|1111111111000000000000011111|0000000000111111111111100000""#,
+        r#"
+            let patterns = ["^\\p{sc=Hebr}$", "^\\P{sc=Hebr}$", "^[\\p{sc=Hebr}]$", "^[\\P{sc=Hebr}]$",
+                    "^[^\\p{sc=Hebr}]$", "^[^\\P{sc=Hebr}]$"
+                ],
+                points = [0, 10, 32, 65, 97, 181, 837, 888, 931, 1025, 1425, 1469, 1470, 1472, 1479, 1488,
+                    1489, 1514, 1520, 1524, 64285, 64286, 64335, 55296, 56320, 126464, 128512, 1114111
+                ],
+                flags = "vi";
+            patterns.map(pattern => {
+                    let r = new RegExp(pattern, flags);
+                    return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+                }).join('|') ===
+                "0000000000111111111111100000|1111111111000000000000011111|0000000000111111111111100000|1111111111000000000000011111|1111111111000000000000011111|0000000000111111111111100000"
+        "#,
     );
     assert_true(
-        r#"let patterns=["^\\p{sc=Hebrew}$", "^\\P{sc=Hebrew}$", "^[\\p{sc=Hebrew}]$", "^[\\P{sc=Hebrew}]$", "^[^\\p{sc=Hebrew}]$", "^[^\\P{sc=Hebrew}]$"],points=[0, 10, 32, 65, 97, 181, 837, 888, 931, 1025, 1425, 1469, 1470, 1472, 1479, 1488, 1489, 1514, 1520, 1524, 64285, 64286, 64335, 55296, 56320, 126464, 128512, 1114111],flags="u";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="0000000000111111111111100000|1111111111000000000000011111|0000000000111111111111100000|1111111111000000000000011111|1111111111000000000000011111|0000000000111111111111100000""#,
+        r#"
+            let patterns = ["^\\p{sc=Hebrew}$", "^\\P{sc=Hebrew}$", "^[\\p{sc=Hebrew}]$",
+                    "^[\\P{sc=Hebrew}]$", "^[^\\p{sc=Hebrew}]$", "^[^\\P{sc=Hebrew}]$"
+                ],
+                points = [0, 10, 32, 65, 97, 181, 837, 888, 931, 1025, 1425, 1469, 1470, 1472, 1479, 1488,
+                    1489, 1514, 1520, 1524, 64285, 64286, 64335, 55296, 56320, 126464, 128512, 1114111
+                ],
+                flags = "u";
+            patterns.map(pattern => {
+                    let r = new RegExp(pattern, flags);
+                    return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+                }).join('|') ===
+                "0000000000111111111111100000|1111111111000000000000011111|0000000000111111111111100000|1111111111000000000000011111|1111111111000000000000011111|0000000000111111111111100000"
+        "#,
     );
     assert_true(
-        r#"let patterns=["^\\p{sc=Hebrew}$", "^\\P{sc=Hebrew}$", "^[\\p{sc=Hebrew}]$", "^[\\P{sc=Hebrew}]$", "^[^\\p{sc=Hebrew}]$", "^[^\\P{sc=Hebrew}]$"],points=[0, 10, 32, 65, 97, 181, 837, 888, 931, 1025, 1425, 1469, 1470, 1472, 1479, 1488, 1489, 1514, 1520, 1524, 64285, 64286, 64335, 55296, 56320, 126464, 128512, 1114111],flags="ui";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="0000000000111111111111100000|1111111111000000000000011111|0000000000111111111111100000|1111111111000000000000011111|1111111111000000000000011111|0000000000111111111111100000""#,
+        r#"
+            let patterns = ["^\\p{sc=Hebrew}$", "^\\P{sc=Hebrew}$", "^[\\p{sc=Hebrew}]$",
+                    "^[\\P{sc=Hebrew}]$", "^[^\\p{sc=Hebrew}]$", "^[^\\P{sc=Hebrew}]$"
+                ],
+                points = [0, 10, 32, 65, 97, 181, 837, 888, 931, 1025, 1425, 1469, 1470, 1472, 1479, 1488,
+                    1489, 1514, 1520, 1524, 64285, 64286, 64335, 55296, 56320, 126464, 128512, 1114111
+                ],
+                flags = "ui";
+            patterns.map(pattern => {
+                    let r = new RegExp(pattern, flags);
+                    return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+                }).join('|') ===
+                "0000000000111111111111100000|1111111111000000000000011111|0000000000111111111111100000|1111111111000000000000011111|1111111111000000000000011111|0000000000111111111111100000"
+        "#,
     );
     assert_true(
-        r#"let patterns=["^\\p{sc=Hebrew}$", "^\\P{sc=Hebrew}$", "^[\\p{sc=Hebrew}]$", "^[\\P{sc=Hebrew}]$", "^[^\\p{sc=Hebrew}]$", "^[^\\P{sc=Hebrew}]$"],points=[0, 10, 32, 65, 97, 181, 837, 888, 931, 1025, 1425, 1469, 1470, 1472, 1479, 1488, 1489, 1514, 1520, 1524, 64285, 64286, 64335, 55296, 56320, 126464, 128512, 1114111],flags="v";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="0000000000111111111111100000|1111111111000000000000011111|0000000000111111111111100000|1111111111000000000000011111|1111111111000000000000011111|0000000000111111111111100000""#,
+        r#"
+            let patterns = ["^\\p{sc=Hebrew}$", "^\\P{sc=Hebrew}$", "^[\\p{sc=Hebrew}]$",
+                    "^[\\P{sc=Hebrew}]$", "^[^\\p{sc=Hebrew}]$", "^[^\\P{sc=Hebrew}]$"
+                ],
+                points = [0, 10, 32, 65, 97, 181, 837, 888, 931, 1025, 1425, 1469, 1470, 1472, 1479, 1488,
+                    1489, 1514, 1520, 1524, 64285, 64286, 64335, 55296, 56320, 126464, 128512, 1114111
+                ],
+                flags = "v";
+            patterns.map(pattern => {
+                    let r = new RegExp(pattern, flags);
+                    return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+                }).join('|') ===
+                "0000000000111111111111100000|1111111111000000000000011111|0000000000111111111111100000|1111111111000000000000011111|1111111111000000000000011111|0000000000111111111111100000"
+        "#,
     );
     assert_true(
-        r#"let patterns=["^\\p{sc=Hebrew}$", "^\\P{sc=Hebrew}$", "^[\\p{sc=Hebrew}]$", "^[\\P{sc=Hebrew}]$", "^[^\\p{sc=Hebrew}]$", "^[^\\P{sc=Hebrew}]$"],points=[0, 10, 32, 65, 97, 181, 837, 888, 931, 1025, 1425, 1469, 1470, 1472, 1479, 1488, 1489, 1514, 1520, 1524, 64285, 64286, 64335, 55296, 56320, 126464, 128512, 1114111],flags="vi";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="0000000000111111111111100000|1111111111000000000000011111|0000000000111111111111100000|1111111111000000000000011111|1111111111000000000000011111|0000000000111111111111100000""#,
+        r#"
+            let patterns = ["^\\p{sc=Hebrew}$", "^\\P{sc=Hebrew}$", "^[\\p{sc=Hebrew}]$",
+                    "^[\\P{sc=Hebrew}]$", "^[^\\p{sc=Hebrew}]$", "^[^\\P{sc=Hebrew}]$"
+                ],
+                points = [0, 10, 32, 65, 97, 181, 837, 888, 931, 1025, 1425, 1469, 1470, 1472, 1479, 1488,
+                    1489, 1514, 1520, 1524, 64285, 64286, 64335, 55296, 56320, 126464, 128512, 1114111
+                ],
+                flags = "vi";
+            patterns.map(pattern => {
+                    let r = new RegExp(pattern, flags);
+                    return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+                }).join('|') ===
+                "0000000000111111111111100000|1111111111000000000000011111|0000000000111111111111100000|1111111111000000000000011111|1111111111000000000000011111|0000000000111111111111100000"
+        "#,
     );
 }
 
 #[test]
 fn unicode_hebrew_script_unicode18_additions() {
     assert_true(
-        r#"let patterns=["^\\p{sc=Hebr}$", "^\\P{sc=Hebr}$", "^[\\p{sc=Hebr}]$", "^[\\P{sc=Hebr}]$", "^[^\\p{sc=Hebr}]$", "^[^\\P{sc=Hebr}]$"],points=[1480, 1481],flags="u";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="11|00|11|00|00|11""#,
+        r#"
+            let patterns = ["^\\p{sc=Hebr}$", "^\\P{sc=Hebr}$", "^[\\p{sc=Hebr}]$", "^[\\P{sc=Hebr}]$",
+                    "^[^\\p{sc=Hebr}]$", "^[^\\P{sc=Hebr}]$"
+                ],
+                points = [1480, 1481],
+                flags = "u";
+            patterns.map(pattern => {
+                let r = new RegExp(pattern, flags);
+                return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+            }).join('|') === "11|00|11|00|00|11"
+        "#,
     );
     assert_true(
-        r#"let patterns=["^\\p{sc=Hebr}$", "^\\P{sc=Hebr}$", "^[\\p{sc=Hebr}]$", "^[\\P{sc=Hebr}]$", "^[^\\p{sc=Hebr}]$", "^[^\\P{sc=Hebr}]$"],points=[1480, 1481],flags="ui";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="11|00|11|00|00|11""#,
+        r#"
+            let patterns = ["^\\p{sc=Hebr}$", "^\\P{sc=Hebr}$", "^[\\p{sc=Hebr}]$", "^[\\P{sc=Hebr}]$",
+                    "^[^\\p{sc=Hebr}]$", "^[^\\P{sc=Hebr}]$"
+                ],
+                points = [1480, 1481],
+                flags = "ui";
+            patterns.map(pattern => {
+                let r = new RegExp(pattern, flags);
+                return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+            }).join('|') === "11|00|11|00|00|11"
+        "#,
     );
     assert_true(
-        r#"let patterns=["^\\p{sc=Hebr}$", "^\\P{sc=Hebr}$", "^[\\p{sc=Hebr}]$", "^[\\P{sc=Hebr}]$", "^[^\\p{sc=Hebr}]$", "^[^\\P{sc=Hebr}]$"],points=[1480, 1481],flags="v";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="11|00|11|00|00|11""#,
+        r#"
+            let patterns = ["^\\p{sc=Hebr}$", "^\\P{sc=Hebr}$", "^[\\p{sc=Hebr}]$", "^[\\P{sc=Hebr}]$",
+                    "^[^\\p{sc=Hebr}]$", "^[^\\P{sc=Hebr}]$"
+                ],
+                points = [1480, 1481],
+                flags = "v";
+            patterns.map(pattern => {
+                let r = new RegExp(pattern, flags);
+                return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+            }).join('|') === "11|00|11|00|00|11"
+        "#,
     );
     assert_true(
-        r#"let patterns=["^\\p{sc=Hebr}$", "^\\P{sc=Hebr}$", "^[\\p{sc=Hebr}]$", "^[\\P{sc=Hebr}]$", "^[^\\p{sc=Hebr}]$", "^[^\\P{sc=Hebr}]$"],points=[1480, 1481],flags="vi";patterns.map(pattern=>{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}).join('|')==="11|00|11|00|00|11""#,
+        r#"
+            let patterns = ["^\\p{sc=Hebr}$", "^\\P{sc=Hebr}$", "^[\\p{sc=Hebr}]$", "^[\\P{sc=Hebr}]$",
+                    "^[^\\p{sc=Hebr}]$", "^[^\\P{sc=Hebr}]$"
+                ],
+                points = [1480, 1481],
+                flags = "vi";
+            patterns.map(pattern => {
+                let r = new RegExp(pattern, flags);
+                return points.map(cp => r.test(String.fromCodePoint(cp)) ? '1' : '0').join('')
+            }).join('|') === "11|00|11|00|00|11"
+        "#,
     );
 }
 
@@ -109,13 +357,29 @@ fn unicode_hebrew_script_results_snapshot() {
 fn unicode_hebrew_script_captures_context_and_pair_starts() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/^(?<x>([\p{{sc=Hebr}}K]))$/dim{mode}g,m=r.exec('A\r\nא\u2028');m.index===3&&m[1]==='א'&&m[2]==='א'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===4&&r.lastIndex===4"
+            r#"
+                let r = /^(?<x>([\p{{sc=Hebr}}K]))$/dim{mode}g,
+                    m = r.exec('A\r\nא\u2028');
+                m.index === 3 && m[1] === 'א' && m[2] === 'א' && m.indices.groups.x === m.indices[1] && m
+                    .indices[2][1] === 4 && r.lastIndex === 4
+            "#
         ));
         assert_true(&format!(
-            r"let r=/(?<__proto__>\P{{Script=Hebrew}})/d{mode}y;r.lastIndex=1;let m=r.exec('😀A');m.index===0&&m[1]==='😀'&&m.indices[1][1]===2&&r.lastIndex===2&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]"
+            r#"
+                let r = /(?<__proto__>\P{{Script=Hebrew}})/d{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('😀A');
+                m.index === 0 && m[1] === '😀' && m.indices[1][1] === 2 && r.lastIndex === 2 && Object
+                    .getPrototypeOf(m.groups) === null && m.indices.groups.__proto__ === m.indices[1]
+            "#
         ));
         assert_true(&format!(
-            r"let r=/\p{{sc=Hebrew}}/d{mode}g;r.lastIndex=1;let m=r.exec('😀\uD800א');m.index===3&&m[0]==='א'&&r.lastIndex===4"
+            r#"
+                let r = /\p{{sc=Hebrew}}/d{mode}g;
+                r.lastIndex = 1;
+                let m = r.exec('😀\uD800א');
+                m.index === 3 && m[0] === 'א' && r.lastIndex === 4
+            "#
         ));
         assert_true(&format!(
             r"let r=/\p{{Script=Hebr}}/{mode}y;r.lastIndex=1;r.exec('😀א')===null&&r.lastIndex===0"
@@ -127,7 +391,11 @@ fn unicode_hebrew_script_captures_context_and_pair_starts() {
 fn unicode_hebrew_script_consumers_preserve_original_text() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=[...'א😀Aב'.matchAll(/(?<x>\P{{sc=Hebrew}})/d{mode}g)];a.length===2&&a[0][1]==='😀'&&a[0].index===1&&a[0].indices[1][1]===3&&a[1][1]==='A'&&a[1].index===3"
+            r#"
+                let a = [...'א😀Aב'.matchAll(/(?<x>\P{{sc=Hebrew}})/d{mode}g)];
+                a.length === 2 && a[0][1] === '😀' && a[0].index === 1 && a[0].indices[1][1] === 3 && a[1][
+                    1] === 'A' && a[1].index === 3
+            "#
         ));
         assert_true(&format!(
             r"'אבA'.replace(/(?<x>\p{{sc=Hebr}})/{mode}g,'<$1:$<x>>')==='<א:א><ב:ב>A'"
@@ -144,16 +412,62 @@ fn unicode_hebrew_script_consumers_preserve_original_text() {
 #[test]
 fn unicode_hebrew_script_clones_coercions_and_strict_writes() {
     assert_true(
-        r"let r=/^(?<x>\p{sc=Hebr})$/dmu,c=new RegExp(r,'divy');c.source==='^(?<x>\\p{sc=Hebr})$'&&c.unicodeSets&&!c.unicode&&!c.multiline&&c.exec('א').groups.x==='א'&&c.lastIndex===1",
+        r#"
+            let r = /^(?<x>\p{sc=Hebr})$/dmu,
+                c = new RegExp(r, 'divy');
+            c.source === '^(?<x>\\p{sc=Hebr})$' && c.unicodeSets && !c.unicode && !c.multiline && c.exec(
+                'א').groups.x === 'א' && c.lastIndex === 1
+        "#,
     );
     assert_true(
-        r"let t='',r=/\P{Script=Hebrew}/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m[0]==='😀'&&m.index===0&&r.lastIndex===2",
+        r#"
+            let t = '',
+                r = /\P{Script=Hebrew}/uy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 1
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return '😀'
+                }
+            });
+            t === 'si' && m[0] === '😀' && m.index === 0 && r.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let r=/\p{sc=Hebrew}/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('א')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            let r = /\p{sc=Hebrew}/vy;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('א')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/\P{Script=Hebr}/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀\uD800')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /\P{Script=Hebr}/vy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀\uD800')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 
@@ -192,7 +506,12 @@ fn unicode_hebrew_script_opted_work_and_remaining_sets() {
 fn unicode_hebrew_script_repetitions_retain_last_capture_and_outside_words() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/\B(?<x>\p{{sc=Hebr}})+\B/d{mode}g,m=r.exec('µאאאµ');m.index===1&&m[0]==='אאא'&&m.groups.x==='א'&&m.indices.groups.x[0]===3&&m.indices.groups.x[1]===4&&r.lastIndex===4"
+            r#"
+                let r = /\B(?<x>\p{{sc=Hebr}})+\B/d{mode}g,
+                    m = r.exec('µאאאµ');
+                m.index === 1 && m[0] === 'אאא' && m.groups.x === 'א' && m.indices.groups.x[0] === 3 && m
+                    .indices.groups.x[1] === 4 && r.lastIndex === 4
+            "#
         ));
     }
 }
@@ -200,6 +519,17 @@ fn unicode_hebrew_script_repetitions_retain_last_capture_and_outside_words() {
 #[test]
 fn unicode_hebrew_script_former_direct_eval_context_executes_normally() {
     assert_true(
-        r#"let marker=0,result;try{result=eval("marker=1; /\\p{Script=Hebrew}/u.test('א');")}catch{marker=2}finally{marker=3}marker===3&&result===true"#,
+        r#"
+            let marker = 0,
+                result;
+            try {
+                result = eval("marker=1; /\\p{Script=Hebrew}/u.test('א');")
+            } catch {
+                marker = 2
+            } finally {
+                marker = 3
+            }
+            marker === 3 && result === true
+        "#,
     );
 }
