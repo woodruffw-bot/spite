@@ -127,7 +127,7 @@ fn explicit_empty_count_lookbehind_work_aborts_before_last_index_and_handlers() 
 }
 
 #[test]
-fn variable_counts_nested_lookaround_repeated_choices_references_and_counts_match_reference_results() {
+fn variable_counts_and_empty_compositions_match_reference() {
     for source in [
         r"/(?<=((?=a+)){1,2})a/.exec('a')",
         r"/(?<=((?=a+)){2})a/.exec('a')",

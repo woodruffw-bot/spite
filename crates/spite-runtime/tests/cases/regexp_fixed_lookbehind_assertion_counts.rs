@@ -127,7 +127,7 @@ fn explicit_counted_lookbehind_assertion_work_aborts_before_last_index_and_handl
 }
 
 #[test]
-fn variable_counts_nested_lookahead_repeated_choices_empty_and_nested_counts_match_reference_results() {
+fn variable_counts_and_nested_assertions_match_reference() {
     for source in [
         r"/(?<=(?:a\B){1,2})b/.exec('aab')",
         r"/(?<=(?:(?=a+)){2})a/.exec('a')",

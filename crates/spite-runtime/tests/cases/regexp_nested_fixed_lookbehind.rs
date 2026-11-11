@@ -117,7 +117,7 @@ fn explicit_nested_fixed_lookbehind_work_aborts_before_last_index_and_handlers()
 }
 
 #[test]
-fn captures_choices_variable_counts_references_inner_lookahead_and_unicode_match_reference_results() {
+fn nested_captures_and_unicode_match_reference() {
     for source in [
         r"/(?<=(?<=(a+)))b/.exec('ab')",
         r"/(?<=(?<=a|bb))c/.exec('ac')",
