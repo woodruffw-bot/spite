@@ -8,13 +8,27 @@ use crate::common::assert_true;
 #[test]
 fn scalar_membership_keeps_complete_characters_and_never_prefixes_or_empty_words() {
     assert_true(
-        r"let a=/[\q{|a|ab|abc|5|😀}&&\p{Any}]/dv.exec('abc'),b=/[\q{|a|ab|abc|5|😀}--\p{Any}]/v.exec('abc');a[0]==='a' && a.indices[0][1]===1 && b[0]==='abc' && !/[\q{ab}&&\p{Any}]/v.test('ab') && /[\q{ab}--\p{Any}]/v.exec('ab')[0]==='ab' && !/[\q{a|ab}--\p{Any}]/v.test('a')",
+        r#"
+            let a = /[\q{|a|ab|abc|5|😀}&&\p{Any}]/dv.exec('abc'),
+                b = /[\q{|a|ab|abc|5|😀}--\p{Any}]/v.exec('abc');
+            a[0] === 'a' && a.indices[0][1] === 1 && b[0] === 'abc' && !/[\q{ab}&&\p{Any}]/v.test('ab') &&
+                /[\q{ab}--\p{Any}]/v.exec('ab')[0] === 'ab' && !/[\q{a|ab}--\p{Any}]/v.test('a')
+        "#,
     );
     assert_true(
-        r"let a=/[[a\q{ab|abc}]--[a-z]--[\q{abc}]]/v.exec('abc'),b=/[\q{a|b|ab}&&[a-z]&&\q{b|ab}]/v.exec('ab');a[0]==='ab' && b[0]==='b' && b.index===1 && /[\q{a|ab|}--[a-z]--[]]/v.exec('!')[0]==='' && !/[\q{a|ab|}&&\p{Any}&&[^a]]/v.test('ab')",
+        r#"
+            let a = /[[a\q{ab|abc}]--[a-z]--[\q{abc}]]/v.exec('abc'),
+                b = /[\q{a|b|ab}&&[a-z]&&\q{b|ab}]/v.exec('ab');
+            a[0] === 'ab' && b[0] === 'b' && b.index === 1 && /[\q{a|ab|}--[a-z]--[]]/v.exec('!')[0] ===
+                '' && !/[\q{a|ab|}&&\p{Any}&&[^a]]/v.test('ab')
+        "#,
     );
     assert_true(
-        r"/[\q{a|b|ab|5}&&[[a-z]--[aeiou]]]/v.exec('ab5')[0]==='b' && /[\q{a|ab|5}--\d]/v.exec('5ab')[0]==='ab' && /[\q{a|ab|5}&&\D]/v.exec('5ab')[0]==='a' && !/[\q{ab}&&\w]/v.test('ab')",
+        r#"
+            /[\q{a|b|ab|5}&&[[a-z]--[aeiou]]]/v.exec('ab5')[0] === 'b' && /[\q{a|ab|5}--\d]/v.exec('5ab')[
+                0] === 'ab' && /[\q{a|ab|5}&&\D]/v.exec('5ab')[0] === 'a' && !/[\q{ab}&&\w]/v.test(
+                'ab')
+        "#,
     );
 }
 
@@ -22,40 +36,94 @@ fn scalar_membership_keeps_complete_characters_and_never_prefixes_or_empty_words
 fn property_folding_complements_and_space_sets_apply_before_word_equality() {
     // CompileToCharSet and MaybeSimpleCaseFolding close the scalar set first.
     assert_true(
-        r"let r=/[[Kſ\q{sK|}]&&\p{ASCII}]/iv;r.exec('K')[0]==='K' && r.exec('ſK')[0]==='ſ' && !/[[Kſ\q{sK|}]&&\P{ASCII}]/iv.test('ſK') && /[[Kſ\q{sK|}]--\P{ASCII}]/iv.exec('ſK')[0]==='ſK' && /[\q{K|ab}&&[a-z]]/iv.exec('K')[0]==='K'",
+        r#"
+            let r = /[[Kſ\q{sK|}]&&\p{ASCII}]/iv;
+            r.exec('K')[0] === 'K' && r.exec('ſK')[0] === 'ſ' && !/[[Kſ\q{sK|}]&&\P{ASCII}]/iv.test(
+                'ſK') && /[[Kſ\q{sK|}]--\P{ASCII}]/iv.exec('ſK')[0] === 'ſK' && /[\q{K|ab}&&[a-z]]/iv.exec(
+                    'K')[0] === 'K'
+        "#,
     );
     assert_true(
-        r"/[[μ\q{ab}]&&\p{Script=Greek}]/iv.exec('µ')[0]==='µ' && !/[[μ\q{ab}]&&\p{Script=Greek}]/v.test('µ') && /[[μ\q{ab}]&&\p{Script=Greek}]/v.exec('μ')[0]==='μ' && !/[\q{ab}&&\P{Any}]/v.test('ab') && /[\q{|ab}--\P{Any}]/v.exec('ab')[0]==='ab'",
+        r#"
+            /[[μ\q{ab}]&&\p{Script=Greek}]/iv.exec('µ')[0] === 'µ' && !/[[μ\q{ab}]&&\p{Script=Greek}]/v
+                .test('µ') && /[[μ\q{ab}]&&\p{Script=Greek}]/v.exec('μ')[0] === 'μ' && !
+                /[\q{ab}&&\P{Any}]/v.test('ab') && /[\q{|ab}--\P{Any}]/v.exec('ab')[0] === 'ab'
+        "#,
     );
     assert_true(
-        r"/[\q{\uFEFF|\u0085|ab}&&\s]/v.exec('\uFEFF')[0]==='\uFEFF' && !/[\q{\uFEFF|\u0085|ab}&&\s]/v.test('\u0085') && /[\q{\uFEFF|\u0085|ab}&&\p{White_Space}]/v.exec('\u0085')[0]==='\u0085' && !/[\q{\uFEFF|\u0085|ab}&&\p{White_Space}]/v.test('\uFEFF')",
+        r#"
+            /[\q{\uFEFF|\u0085|ab}&&\s]/v.exec('\uFEFF')[0] === '\uFEFF' && !/[\q{\uFEFF|\u0085|ab}&&\s]/v
+                .test('\u0085') && /[\q{\uFEFF|\u0085|ab}&&\p{White_Space}]/v.exec('\u0085')[0] ===
+                '\u0085' && !/[\q{\uFEFF|\u0085|ab}&&\p{White_Space}]/v.test('\uFEFF')
+        "#,
     );
 }
 
 #[test]
 fn captures_assertions_and_surrogates_use_original_character_boundaries() {
     assert_true(
-        r"let r=/(?<whole>(^\b[\q{a|ab|abc}&&[a-z]]\b$))/dmv,m=r.exec('!\r\na\u2028!');m.index===3 && m[0]==='a' && m[1]==='a' && m[2]==='a' && m.groups.whole==='a' && m.indices[0][0]===3 && m.indices[2][1]===4 && m.indices.groups.whole===m.indices[1]",
+        r#"
+            let r = /(?<whole>(^\b[\q{a|ab|abc}&&[a-z]]\b$))/dmv,
+                m = r.exec('!\r\na\u2028!');
+            m.index === 3 && m[0] === 'a' && m[1] === 'a' && m[2] === 'a' && m.groups.whole === 'a' && m
+                .indices[0][0] === 3 && m.indices[2][1] === 4 && m.indices.groups.whole === m.indices[1]
+        "#,
     );
     assert_true(
-        r"let r=/(?<whole>([\q{😀|😀x}&&[\u{0}-\u{10FFFF}]]))/dvgy;r.lastIndex=2;let m=r.exec('A😀x');m.index===1 && m[0]==='😀' && m.groups.whole==='😀' && m.indices[2][0]===1 && m.indices[2][1]===3 && r.lastIndex===3",
+        r#"
+            let r = /(?<whole>([\q{😀|😀x}&&[\u{0}-\u{10FFFF}]]))/dvgy;
+            r.lastIndex = 2;
+            let m = r.exec('A😀x');
+            m.index === 1 && m[0] === '😀' && m.groups.whole === '😀' && m.indices[2][0] === 1 && m
+                .indices[2][1] === 3 && r.lastIndex === 3
+        "#,
     );
     assert_true(
-        r"let r=/[\q{\uD800a|\uD800|\u{D800}\u{DC00}}&&\p{Any}]/v;r.exec('\uD800a')[0].length===1 && r.exec('\uD800a')[0].charCodeAt(0)===0xd800 && !r.test('𐀀') && /[\q{\u{D800}\u{DC00}|ab}--\p{Any}]/v.exec('ab')[0]==='ab' && !/[\q{\u{D800}\u{DC00}|ab}--\p{Any}]/v.test('𐀀')",
+        r#"
+            let r = /[\q{\uD800a|\uD800|\u{D800}\u{DC00}}&&\p{Any}]/v;
+            r.exec('\uD800a')[0].length === 1 && r.exec('\uD800a')[0].charCodeAt(0) === 0xd800 && !r.test(
+                    '𐀀') && /[\q{\u{D800}\u{DC00}|ab}--\p{Any}]/v.exec('ab')[0] === 'ab' && !
+                /[\q{\u{D800}\u{DC00}|ab}--\p{Any}]/v.test('𐀀')
+        "#,
     );
 }
 
 #[test]
 fn scalar_empty_results_and_surviving_empty_members_keep_last_index_contracts() {
     assert_true(
-        r"let r=/[\q{ab|}&&\p{Any}]/vg;r.lastIndex=1;let m=r.exec('ab');m===null && r.lastIndex===0 && !r.test('') && !/[[]&&\p{Any}&&\q{ab}]/v.test('')",
+        r#"
+            let r = /[\q{ab|}&&\p{Any}]/vg;
+            r.lastIndex = 1;
+            let m = r.exec('ab');
+            m === null && r.lastIndex === 0 && !r.test('') && !/[[]&&\p{Any}&&\q{ab}]/v.test('')
+        "#,
     );
     assert_true(
-        r"let r=/(?<whole>([\q{}--\p{Any}]))/dvy;r.lastIndex=1;let m=r.exec('😀');m.index===0 && m[0]==='' && m.groups.whole==='' && m.indices[2][0]===0 && m.indices[2][1]===0 && r.lastIndex===0",
+        r#"
+            let r = /(?<whole>([\q{}--\p{Any}]))/dvy;
+            r.lastIndex = 1;
+            let m = r.exec('😀');
+            m.index === 0 && m[0] === '' && m.groups.whole === '' && m.indices[2][0] === 0 && m.indices[2][
+                1
+            ] === 0 && r.lastIndex === 0
+        "#,
     );
     for pattern in [r"[\q{}--\p{Any}]", r"[\q{ab|}&&\p{Any}]"] {
         assert_true(&format!(
-            "let r=/{pattern}/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{{writable:false}});let caught=false;try{{r.exec('😀')}}catch(e){{caught=e instanceof TypeError}}caught && r.lastIndex===1"
+            r#"
+                let r = /{pattern}/vy;
+                r.lastIndex = 1;
+                Object.defineProperty(r, 'lastIndex', {{
+                    writable: false
+                }});
+                let caught = false;
+                try {{
+                    r.exec('😀')
+                }} catch (e) {{
+                    caught = e instanceof TypeError
+                }}
+                caught && r.lastIndex === 1
+            "#
         ));
     }
 }
@@ -63,13 +131,29 @@ fn scalar_empty_results_and_surviving_empty_members_keep_last_index_contracts() 
 #[test]
 fn string_consumers_clones_and_collection_share_the_filtered_member_plan() {
     assert_true(
-        r"let r=/(?<whole>([\q{a|ab|}--[a-z]]))/dvg,a=[...'ab😀'.matchAll(r)];a.length===3 && a[0][0]==='ab' && a[1].index===2 && a[1][0]==='' && a[2].index===4 && a[2].indices[2][1]===4 && 'ab😀'.replace(r,'#')==='##😀#' && 'ab😀'.split(/[\q{a|ab|}--[a-z]]/v).join('|')==='|😀'",
+        r#"
+            let r = /(?<whole>([\q{a|ab|}--[a-z]]))/dvg,
+                a = [...'ab😀'.matchAll(r)];
+            a.length === 3 && a[0][0] === 'ab' && a[1].index === 2 && a[1][0] === '' && a[2].index === 4 &&
+                a[2].indices[2][1] === 4 && 'ab😀'.replace(r, '#') === '##😀#' && 'ab😀'.split(
+                    /[\q{a|ab|}--[a-z]]/v).join('|') === '|😀'
+        "#,
     );
     assert_true(
-        r"let r=/[\q{a|ab|abc}--[a-z]]/vg;r.lastIndex=8;'xabc!'.search(r)===1 && r.lastIndex===8 && 'ababc'.match(r).join('|')==='ab|abc' && r.lastIndex===0 && 'ababc'.replace(r,'#')==='##'",
+        r#"
+            let r = /[\q{a|ab|abc}--[a-z]]/vg;
+            r.lastIndex = 8;
+            'xabc!'.search(r) === 1 && r.lastIndex === 8 && 'ababc'.match(r).join('|') === 'ab|abc' && r
+                .lastIndex === 0 && 'ababc'.replace(r, '#') === '##'
+        "#,
     );
     assert_true(
-        r"let r=/[[K\q{sK}]--\P{ASCII}]/iv;r.lastIndex=7;let c=new RegExp(r,'dvy');c.exec('K')===null && c.lastIndex===0 && r.exec('ſK')[0]==='ſK' && r.lastIndex===7",
+        r#"
+            let r = /[[K\q{sK}]--\P{ASCII}]/iv;
+            r.lastIndex = 7;
+            let c = new RegExp(r, 'dvy');
+            c.exec('K') === null && c.lastIndex === 0 && r.exec('ſK')[0] === 'ſK' && r.lastIndex === 7
+        "#,
     );
     let mut realm = Realm::default();
     realm

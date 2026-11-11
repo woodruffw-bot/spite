@@ -45,13 +45,30 @@ fn unicode_atom_outer_assertion_results_snapshot() {
 fn unicode_atom_outer_assertion_original_named_captures_context_and_widths() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/^(?<x>(.))$/dm{mode}g,m=r.exec('xx\r\n😀\u2028A\u2029');m.index===4&&m[1]==='😀'&&m[2]==='😀'&&m.groups.x==='😀'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===6&&r.lastIndex===6"
+            r#"
+                let r = /^(?<x>(.))$/dm{mode}g,
+                    m = r.exec('xx\r\n😀\u2028A\u2029');
+                m.index === 4 && m[1] === '😀' && m[2] === '😀' && m.groups.x === '😀' && m.indices.groups
+                    .x === m.indices[1] && m.indices[2][1] === 6 && r.lastIndex === 6
+            "#
         ));
         assert_true(&format!(
-            r"let r=/^(?<__proto__>(\p{{Any}}))$/d{mode}y;r.lastIndex=1;let m=r.exec('😀');m.index===0&&m[1]==='😀'&&m[2]==='😀'&&m.indices[2][1]===2&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]&&r.lastIndex===2"
+            r#"
+                let r = /^(?<__proto__>(\p{{Any}}))$/d{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('😀');
+                m.index === 0 && m[1] === '😀' && m[2] === '😀' && m.indices[2][1] === 2 && Object
+                    .getPrototypeOf(m.groups) === null && m.indices.groups.__proto__ === m.indices[1] && r
+                    .lastIndex === 2
+            "#
         ));
         assert_true(&format!(
-            r"let r=/^((\w))$/dim{mode}g,m=r.exec('xx\nſ\n');m.index===3&&m[1]==='ſ'&&m[2]==='ſ'&&m.indices[1][1]===4&&!/^((\w))$/{mode}.test('ſ')"
+            r#"
+                let r = /^((\w))$/dim{mode}g,
+                    m = r.exec('xx\nſ\n');
+                m.index === 3 && m[1] === 'ſ' && m[2] === 'ſ' && m.indices[1][1] === 4 && !
+                    /^((\w))$/{mode}.test('ſ')
+            "#
         ));
         assert_true(&format!(
             r"let r=/^(\uD800)$/d{mode},m=r.exec('\uD800');m[1]==='\uD800'&&m.indices[1][1]===1&&!r.test('\uD800\uDC00')"
@@ -81,7 +98,11 @@ fn unicode_atom_outer_assertion_dollar_escape_parity_and_dot_all() {
 fn unicode_atom_outer_assertion_consumers_original_substrings_and_indices() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=[...'A\n😀\n\uD800'.matchAll(/^(?<x>.)$/dm{mode}g)];a.length===3&&a[0][1]==='A'&&a[1][1]==='😀'&&a[1].index===2&&a[1].indices[1][1]===4&&a[2][1]==='\uD800'"
+            r#"
+                let a = [...'A\n😀\n\uD800'.matchAll(/^(?<x>.)$/dm{mode}g)];
+                a.length === 3 && a[0][1] === 'A' && a[1][1] === '😀' && a[1].index === 2 && a[1].indices[1][
+                    1] === 4 && a[2][1] === '\uD800'
+            "#
         ));
         assert_true(&format!(
             r"'A\n😀'.replace(/^(?<x>.)$/m{mode}g,'<$1:$<x>>')==='<A:A>\n<😀:😀>'"
@@ -98,16 +119,62 @@ fn unicode_atom_outer_assertion_consumers_original_substrings_and_indices() {
 #[test]
 fn unicode_atom_outer_assertion_metadata_mode_clones_coercions_and_writes() {
     assert_true(
-        r"let r=/^(?<x>\p{Any})$/dmu,c=new RegExp(r,'dvy');c.source==='^(?<x>\\p{Any})$'&&!c.multiline&&c.unicodeSets&&!c.unicode&&c.exec('😀').groups.x==='😀'&&c.lastIndex===2",
+        r#"
+            let r = /^(?<x>\p{Any})$/dmu,
+                c = new RegExp(r, 'dvy');
+            c.source === '^(?<x>\\p{Any})$' && !c.multiline && c.unicodeSets && !c.unicode && c.exec('😀')
+                .groups.x === '😀' && c.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let t='',r=/^(.)$/uy;r.lastIndex={valueOf(){t+='i';return 0}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m[1]==='😀'&&r.lastIndex===2",
+        r#"
+            let t = '',
+                r = /^(.)$/uy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 0
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return '😀'
+                }
+            });
+            t === 'si' && m[1] === '😀' && r.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let r=/^(.)$/uy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            let r = /^(.)$/uy;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/^([A])$/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('xA')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /^([A])$/vy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('xA')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 

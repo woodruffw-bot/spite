@@ -59,7 +59,10 @@ fn unicode_repeated_atom_alternatives_counts_and_branch_scopes() {
             r"let m=/(a|b)+/{mode}.exec('abba');m[0]==='abba'&&m[1]==='a'&&m.index===0"
         ));
         assert_true(&format!(
-            r"let m=/(\ba|b\b)+/{mode}.exec('aaa bbb');m[0]==='a'&&m[1]==='a'&&/(\ba|b\b){{2}}/{mode}.exec('aaa bbb')===null"
+            r#"
+                let m = /(\ba|b\b)+/{mode}.exec('aaa bbb');
+                m[0] === 'a' && m[1] === 'a' && /(\ba|b\b){{2}}/{mode}.exec('aaa bbb') === null
+            "#
         ));
         assert_true(&format!(
             r"let m=/(^a|b$)+/{mode}m.exec('aa\nbb');m[0]==='a'&&m[1]==='a'&&m.index===0"
@@ -68,7 +71,10 @@ fn unicode_repeated_atom_alternatives_counts_and_branch_scopes() {
             r"let m=/((a|b))*?/{mode}.exec('ab');m[0]===''&&m[1]===undefined&&m[2]===undefined"
         ));
         assert_true(&format!(
-            r"let m=/(a|b){{2,3}}/{mode}.exec('abba');m[0]==='abb'&&m[1]==='b'&&/(a|b){{2,3}}?/{mode}.exec('abba')[0]==='ab'"
+            r#"
+                let m = /(a|b){{2,3}}/{mode}.exec('abba');
+                m[0] === 'abb' && m[1] === 'b' && /(a|b){{2,3}}?/{mode}.exec('abba')[0] === 'ab'
+            "#
         ));
         assert_true(&format!(
             r"let m=/([a\|]|b)+/{mode}.exec('a|b');m[0]==='a|b'&&m[1]==='b'"
@@ -84,19 +90,38 @@ fn unicode_repeated_atom_alternatives_counts_and_branch_scopes() {
 #[test]
 fn unicode_repeated_atom_alternatives_fold_surrogates_and_names() {
     assert_true(
-        r"let m=/(?<whole>(?<__proto__>ſ|K)+)/dvi.exec('Sk');m[0]==='Sk'&&m[1]==='Sk'&&m[2]==='k'&&m.groups.__proto__==='k'&&m.indices.groups.__proto__[0]===1&&m.indices.groups.__proto__[1]===2",
+        r#"
+            let m = /(?<whole>(?<__proto__>ſ|K)+)/dvi.exec('Sk');
+            m[0] === 'Sk' && m[1] === 'Sk' && m[2] === 'k' && m.groups.__proto__ === 'k' && m.indices
+                .groups.__proto__[0] === 1 && m.indices.groups.__proto__[1] === 2
+        "#,
     );
     assert_true(
-        r"let m=/(?<whole>(?<last>😀|a)+)/dvg.exec('😀a😀');m[0]==='😀a😀'&&m.groups.last==='😀'&&m.indices.groups.last[0]===3&&m.indices.groups.last[1]===5",
+        r#"
+            let m = /(?<whole>(?<last>😀|a)+)/dvg.exec('😀a😀');
+            m[0] === '😀a😀' && m.groups.last === '😀' && m.indices.groups.last[0] === 3 && m.indices
+                .groups.last[1] === 5
+        "#,
     );
     assert_true(
-        r"let r=/(😀|a)+/duy;r.lastIndex=1;let m=r.exec('😀a');m.index===0&&m[0]==='😀a'&&m.indices[1][0]===2&&r.lastIndex===3",
+        r#"
+            let r = /(😀|a)+/duy;
+            r.lastIndex = 1;
+            let m = r.exec('😀a');
+            m.index === 0 && m[0] === '😀a' && m.indices[1][0] === 2 && r.lastIndex === 3
+        "#,
     );
     assert_true(
-        r"let m=/(?<x>a|b){0}/dv.exec('ab');m[0]===''&&m[1]===undefined&&m.groups.x===undefined&&m.indices[1]===undefined",
+        r#"
+            let m = /(?<x>a|b){0}/dv.exec('ab');
+            m[0] === '' && m[1] === undefined && m.groups.x === undefined && m.indices[1] === undefined
+        "#,
     );
     assert_true(
-        r"let m=/(\uD800|\uDC00)+/du.exec('\uD800x\uDC00');m[0]==='\uD800'&&m.indices[1][1]===1&&/(\uD83D|\uDE00)+/u.exec('😀')===null",
+        r#"
+            let m = /(\uD800|\uDC00)+/du.exec('\uD800x\uDC00');
+            m[0] === '\uD800' && m.indices[1][1] === 1 && /(\uD83D|\uDE00)+/u.exec('😀') === null
+        "#,
     );
 }
 #[test]
@@ -105,19 +130,60 @@ fn unicode_repeated_atom_alternatives_string_consumers() {
     assert_true(r"'ab ba'.replace(/(a|b)+/vg,'<$1>')==='<b> <a>'&&'Xab'.search(/(a|b)+/v)===1");
     assert_true(r"let a='ab ba'.split(/(a|b)+/u);a.length===5&&a.join('|')==='|b| |a|'");
     assert_true(
-        r"let a=[...'ab ba'.matchAll(/(?<x>a|b)+/dvg)];a.length===2&&a[0].index===0&&a[1].index===3&&a[1].groups.x==='a'&&a[1].indices.groups.x[0]===4",
+        r#"
+            let a = [...'ab ba'.matchAll(/(?<x>a|b)+/dvg)];
+            a.length === 2 && a[0].index === 0 && a[1].index === 3 && a[1].groups.x === 'a' && a[1].indices
+                .groups.x[0] === 4
+        "#,
     );
 }
 #[test]
 fn unicode_repeated_atom_alternatives_coercions_and_last_index() {
     assert_true(
-        r"let log='',r=/(a|b)+/vgy;r.lastIndex={valueOf(){log+='i';return 1}};let m=r.exec({toString(){log+='s';return 'Xab'}});log==='si'&&m.index===1&&r.lastIndex===3",
+        r#"
+            let log = '',
+                r = /(a|b)+/vgy;
+            r.lastIndex = {
+                valueOf() {
+                    log += 'i';
+                    return 1
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    log += 's';
+                    return 'Xab'
+                }
+            });
+            log === 'si' && m.index === 1 && r.lastIndex === 3
+        "#,
     );
     assert_true(
-        r"let r=/(a|b)+/ug;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('Xab')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /(a|b)+/ug;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('Xab')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
     assert_true(
-        r"let r=/(a|b)+/v;Object.defineProperty(r,'lastIndex',{value:100,writable:false});let m=r.exec('Xab');m.index===1&&r.lastIndex===100",
+        r#"
+            let r = /(a|b)+/v;
+            Object.defineProperty(r, 'lastIndex', {
+                value: 100,
+                writable: false
+            });
+            let m = r.exec('Xab');
+            m.index === 1 && r.lastIndex === 100
+        "#,
     );
 }
 

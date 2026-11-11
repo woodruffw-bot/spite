@@ -52,14 +52,33 @@ fn unicode_braced_bmp_character_consumers_and_literal_punctuation() {
     ));
     assert_true(r"'😀a😀b'.match(/[\u{61}-\u{62}]/ug).join('|')==='a|b'");
     assert_true(
-        r"let a=[...'😀a😀b'.matchAll(/[\u{61}-\u{62}]/dvg)];a.length===2&&a[0].index===2&&a[1].index===5&&a[0].indices[0][1]===3",
+        r#"
+            let a = [...'😀a😀b'.matchAll(/[\u{61}-\u{62}]/dvg)];
+            a.length === 2 && a[0].index === 2 && a[1].index === 5 && a[0].indices[0][1] === 3
+        "#,
     );
     assert_true(r"'😀a😀b'.split(/[\u{61}-\u{62}]/u).join('|')==='😀|😀|'");
     assert_true(
-        r"let seen=[];let s='😀a😀b'.replace(/[\u{61}-\u{62}]/vg,(m,i)=>{seen.push(i);return '_'});s==='😀_😀_'&&seen.join(',')==='2,5'",
+        r#"
+            let seen = [];
+            let s = '😀a😀b'.replace(/[\u{61}-\u{62}]/vg, (m, i) => {
+                seen.push(i);
+                return '_'
+            });
+            s === '😀_😀_' && seen.join(',') === '2,5'
+        "#,
     );
     assert_true(
-        r"let ok=true;for(let n of [94,36,92,46,42,43,63,40,41,91,93,123,125,124,47,38,45]){let c=String.fromCharCode(n),p='[\\u{'+n.toString(16)+'}]',m=new RegExp(p,'v').exec(c);if(m===null||m.length!==1||m[0]!==c)ok=false;}ok",
+        r#"
+            let ok = true;
+            for (let n of [94, 36, 92, 46, 42, 43, 63, 40, 41, 91, 93, 123, 125, 124, 47, 38, 45]) {
+                let c = String.fromCharCode(n),
+                    p = '[\\u{' + n.toString(16) + '}]',
+                    m = new RegExp(p, 'v').exec(c);
+                if (m === null || m.length !== 1 || m[0] !== c) ok = false;
+            }
+            ok
+        "#,
     );
     assert_true(r"/[\u{26}\u{26}]/v.exec('&')[0]==='&'&&/[\u{2d}-a]/v.exec('_')[0]==='_'");
 }
@@ -67,29 +86,113 @@ fn unicode_braced_bmp_character_consumers_and_literal_punctuation() {
 #[test]
 fn unicode_braced_bmp_character_boundaries_sources_flags_and_state() {
     assert_true(
-        r"let r=/[\u{61}-\u{62}]/dvg,c=new RegExp(r,'uy');c.unicode&&!c.unicodeSets&&c.source===r.source&&c.exec('a')[0]==='a'&&c.lastIndex===1",
+        r#"
+            let r = /[\u{61}-\u{62}]/dvg,
+                c = new RegExp(r, 'uy');
+            c.unicode && !c.unicodeSets && c.source === r.source && c.exec('a')[0] === 'a' && c
+                .lastIndex === 1
+        "#,
     );
     assert_true(r"let r=/[\u{61}]/duy;r.lastIndex=1;r.exec('😀a')===null&&r.lastIndex===0");
     assert_true(r"/[\u{61}]/v.exec('\uDC00a').index===1&&/[\u{61}]/u.exec('\uD800a').index===1");
     assert_true(r"let r=/[\u{61}]/vg;r.lastIndex=1;'😀a'.search(r)===2&&r.lastIndex===1");
     assert_true(
-        r"let r=/[\u{61}]/uy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('ba')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /[\u{61}]/uy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('ba')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
     assert_true(
-        r"let r=/[\u{61}]/vy;r.lastIndex=2;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('ba')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===2",
+        r#"
+            let r = /[\u{61}]/vy;
+            r.lastIndex = 2;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('ba')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 2
+        "#,
     );
 }
 
 #[test]
 fn unicode_braced_bmp_character_ordered_and_abrupt_coercions() {
     assert_true(
-        r"let t='',r=/[\u{61}]/vy;r.lastIndex={valueOf(){t+='i';return 2;}};let m=r.exec({toString(){t+='s';return '😀a';}});t==='si'&&m.index===2&&r.lastIndex===3",
+        r#"
+            let t = '',
+                r = /[\u{61}]/vy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 2;
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return '😀a';
+                }
+            });
+            t === 'si' && m.index === 2 && r.lastIndex === 3
+        "#,
     );
     assert_true(
-        r"let t='',r=/[\u{61}]/u;r.lastIndex={valueOf(){t+='i';return 1;}};let m=r.exec({toString(){t+='s';return 'a';}});t==='si'&&m.index===0&&typeof r.lastIndex==='object'",
+        r#"
+            let t = '',
+                r = /[\u{61}]/u;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 1;
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return 'a';
+                }
+            });
+            t === 'si' && m.index === 0 && typeof r.lastIndex === 'object'
+        "#,
     );
     assert_true(
-        r"let r=/[\u{61}]/v,n=0,e={};r.lastIndex={valueOf(){n++;return 0;}};let caught=false;try{r.exec({toString(){throw e;}})}catch(x){caught=x===e}caught&&n===0&&typeof r.lastIndex==='object'",
+        r#"
+            let r = /[\u{61}]/v,
+                n = 0,
+                e = {};
+            r.lastIndex = {
+                valueOf() {
+                    n++;
+                    return 0;
+                }
+            };
+            let caught = false;
+            try {
+                r.exec({
+                    toString() {
+                        throw e;
+                    }
+                })
+            } catch (x) {
+                caught = x === e
+            }
+            caught && n === 0 && typeof r.lastIndex === 'object'
+        "#,
     );
 }
 

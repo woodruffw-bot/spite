@@ -7,10 +7,23 @@ use crate::common::assert_true;
 #[test]
 fn sequences_keep_earliest_start_global_state_and_sticky_failure() {
     assert_true(
-        "let r=/[Nn]evermore/g,s='x Nevermore nevermore';let a=r.exec(s),b=r.exec(s);a[0]==='Nevermore'&&a.index===2&&b[0]==='nevermore'&&b.index===12&&r.lastIndex===21&&r.exec(s)===null&&r.lastIndex===0",
+        r#"
+            let r = /[Nn]evermore/g,
+                s = 'x Nevermore nevermore';
+            let a = r.exec(s),
+                b = r.exec(s);
+            a[0] === 'Nevermore' && a.index === 2 && b[0] === 'nevermore' && b.index === 12 && r
+                .lastIndex === 21 && r.exec(s) === null && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        "let r=/a[ab]b/y;r.lastIndex=1;let m=r.exec('xaabb');m[0]==='aab'&&m.index===1&&r.lastIndex===4&&r.exec('xaabb')===null&&r.lastIndex===0",
+        r#"
+            let r = /a[ab]b/y;
+            r.lastIndex = 1;
+            let m = r.exec('xaabb');
+            m[0] === 'aab' && m.index === 1 && r.lastIndex === 4 && r.exec('xaabb') === null && r
+                .lastIndex === 0
+        "#,
     );
     assert_true(
         "let r=/a[ab]b/;r.lastIndex=99;let m=r.exec('xxaabb');m.index===2&&m[0]==='aab'&&r.lastIndex===99",
@@ -20,7 +33,15 @@ fn sequences_keep_earliest_start_global_state_and_sticky_failure() {
 #[test]
 fn nested_and_empty_groups_have_fixed_capture_and_indices_ranges() {
     assert_true(
-        "let m=/([a](b))()([c])/d.exec('xabc');m.length===5&&m[0]==='abc'&&m[1]==='ab'&&m[2]==='b'&&m[3]===''&&m[4]==='c'&&m.index===1&&m.groups===undefined&&m.indices.length===5&&m.indices[0][0]===1&&m.indices[0][1]===4&&m.indices[1][0]===1&&m.indices[1][1]===3&&m.indices[2][0]===2&&m.indices[2][1]===3&&m.indices[3][0]===3&&m.indices[3][1]===3&&m.indices[4][0]===3&&m.indices[4][1]===4&&m.indices.groups===undefined",
+        r#"
+            let m = /([a](b))()([c])/d.exec('xabc');
+            m.length === 5 && m[0] === 'abc' && m[1] === 'ab' && m[2] === 'b' && m[3] === '' && m[4] ===
+                'c' && m.index === 1 && m.groups === undefined && m.indices.length === 5 && m.indices[0][
+                0] === 1 && m.indices[0][1] === 4 && m.indices[1][0] === 1 && m.indices[1][1] === 3 && m
+                .indices[2][0] === 2 && m.indices[2][1] === 3 && m.indices[3][0] === 3 && m.indices[3][
+                1] === 3 && m.indices[4][0] === 3 && m.indices[4][1] === 4 && m.indices.groups ===
+                undefined
+        "#,
     );
     assert_true(
         "let m=/(?:[a])([b])/d.exec('ab');m.length===2&&m[1]==='b'&&m.indices[1][0]===1&&m.indices[1][1]===2",
@@ -30,7 +51,10 @@ fn nested_and_empty_groups_have_fixed_capture_and_indices_ranges() {
 #[test]
 fn dot_class_escapes_and_ordinary_case_folding_apply_per_atom() {
     assert_true(
-        r"/[A]b/i.test('aB')&&/[µ]a/i.test('ΜA')&&!/[ſ]a/i.test('sA')&&!/[K]a/i.test('kA')&&/\d\w\s/.test('x1a ')&&/a[^b]c/.test('aac')&&!/a[^b]c/.test('abc')",
+        r#"
+            /[A]b/i.test('aB') && /[µ]a/i.test('ΜA') && !/[ſ]a/i.test('sA') && !/[K]a/i.test('kA') &&
+                /\d\w\s/.test('x1a ') && /a[^b]c/.test('aac') && !/a[^b]c/.test('abc')
+        "#,
     );
     assert_true(
         r"!/a.b/.test('a\nb')&&/a.b/s.test('a\nb')&&/a.b/s.test('a\u2028b')&&!/[]a/.test('a')&&/[^]a/.test('\na')",
@@ -40,7 +64,12 @@ fn dot_class_escapes_and_ordinary_case_folding_apply_per_atom() {
 #[test]
 fn ordinary_sequences_consume_surrogate_units_without_pair_reinterpretation() {
     assert_true(
-        r"let s='\uD800\uDC00',m=/([\uD800])([\uDC00])/d.exec(s);m[0]===s&&m[1].length===1&&m[2].length===1&&m.indices[1][0]===0&&m.indices[1][1]===1&&m.indices[2][0]===1&&m.indices[2][1]===2",
+        r#"
+            let s = '\uD800\uDC00',
+                m = /([\uD800])([\uDC00])/d.exec(s);
+            m[0] === s && m[1].length === 1 && m[2].length === 1 && m.indices[1][0] === 0 && m.indices[1][
+                1] === 1 && m.indices[2][0] === 1 && m.indices[2][1] === 2
+        "#,
     );
     assert_true(
         r"/[\uD800]./.test('\uD800\uDC00')&&/.[\uDC00]/.test('\uD800\uDC00')&&/[\uD800]x/.test('\uD800x')",
@@ -50,13 +79,31 @@ fn ordinary_sequences_consume_surrogate_units_without_pair_reinterpretation() {
 #[test]
 fn string_consumers_share_native_fixed_sequence_execution() {
     assert_true(
-        "'aa ab'.match(/[a][ab]/g).join(',')==='aa,ab'&&'xaa'.search(/[a]a/)===1&&'aa ab'.replace(/([a])([ab])/g,'$2$1')==='aa ba'&&'xaaYabZ'.split(/[a][ab]/).join(',')==='x,Y,Z'",
+        r#"
+            'aa ab'.match(/[a][ab]/g).join(',') === 'aa,ab' && 'xaa'.search(/[a]a/) === 1 && 'aa ab'
+                .replace(/([a])([ab])/g, '$2$1') === 'aa ba' && 'xaaYabZ'.split(/[a][ab]/).join(',') ===
+                'x,Y,Z'
+        "#,
     );
     assert_true(
-        "let trace=[];let s='aa ab'.replace(/([a])([ab])/g,function(m,a,b,i){trace.push(m+':'+a+':'+b+':'+i);return b+a});s==='aa ba'&&trace.join(',')==='aa:a:a:0,ab:a:b:3'",
+        r#"
+            let trace = [];
+            let s = 'aa ab'.replace(/([a])([ab])/g, function(m, a, b, i) {
+                trace.push(m + ':' + a + ':' + b + ':' + i);
+                return b + a
+            });
+            s === 'aa ba' && trace.join(',') === 'aa:a:a:0,ab:a:b:3'
+        "#,
     );
     assert_true(
-        "let r=/([a])([ab])/dg,it='aa ab'.matchAll(r),a=it.next().value,b=it.next().value; a[1]==='a'&&a[2]==='a'&&a.indices[2][0]===1&&b.index===3&&b[2]==='b'&&b.indices[2][0]===4&&it.next().done&&r.lastIndex===0",
+        r#"
+            let r = /([a])([ab])/dg,
+                it = 'aa ab'.matchAll(r),
+                a = it.next().value,
+                b = it.next().value;
+            a[1] === 'a' && a[2] === 'a' && a.indices[2][0] === 1 && b.index === 3 && b[2] === 'b' && b
+                .indices[2][0] === 4 && it.next().done && r.lastIndex === 0
+        "#,
     );
 }
 
@@ -64,10 +111,30 @@ fn string_consumers_share_native_fixed_sequence_execution() {
 fn original_plans_survive_copy_collection_and_own_slot_shadowing() {
     let mut realm = Realm::default();
     realm
-        .eval("let r=/([a])b/dg,c=new RegExp(r);Object.defineProperty(r,'source',{value:'wrong'});r.exec=function(){return null};")
+        .eval(
+            r#"
+                let r = /([a])b/dg,
+                    c = new RegExp(r);
+                Object.defineProperty(r, 'source', {
+                    value: 'wrong'
+                });
+                r.exec = function() {
+                    return null
+                };
+            "#,
+        )
         .unwrap();
     realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let a=RegExp.prototype.exec.call(r,'ab'),b=c.exec('ab');a[1]==='a'&&b[1]==='a'&&a.indices[1][1]===1&&c.lastIndex===2"), Ok(Value::Boolean(true)));
+    assert_eq!(
+        realm.eval(
+            r#"
+                let a = RegExp.prototype.exec.call(r, 'ab'),
+                    b = c.exec('ab');
+                a[1] === 'a' && b[1] === 'a' && a.indices[1][1] === 1 && c.lastIndex === 2
+            "#
+        ),
+        Ok(Value::Boolean(true))
+    );
 }
 
 #[test]

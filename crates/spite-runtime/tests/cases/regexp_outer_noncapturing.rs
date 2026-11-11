@@ -7,13 +7,26 @@ use crate::common::assert_true;
 #[test]
 fn repeated_continuations_choices_and_assertions_reuse_complete_body_semantics() {
     assert_true(
-        "let a=/(?:a+b)/.exec('xaaab'),b=/(?:(?:a+|b))/.exec('baa'),c=/(?:(?:a+?|aa))/.exec('aaa');a[0]==='aaab'&&a.index===1&&b[0]==='b'&&c[0]==='a'",
+        r#"
+            let a = /(?:a+b)/.exec('xaaab'),
+                b = /(?:(?:a+|b))/.exec('baa'),
+                c = /(?:(?:a+?|aa))/.exec('aaa');
+            a[0] === 'aaab' && a.index === 1 && b[0] === 'b' && c[0] === 'a'
+        "#,
     );
     assert_true(
-        r"let a=/(?:^a+$)/m.exec('x\naaa\ny'),b=/(?:(?:^a+?aa$))/.exec('aaaa');a.index===2&&a[0]==='aaa'&&b[0]==='aaaa'&&/(?:^a+$)/.exec('aaa\n')===null",
+        r#"
+            let a = /(?:^a+$)/m.exec('x\naaa\ny'),
+                b = /(?:(?:^a+?aa$))/.exec('aaaa');
+            a.index === 2 && a[0] === 'aaa' && b[0] === 'aaaa' && /(?:^a+$)/.exec('aaa\n') === null
+        "#,
     );
     assert_true(
-        "let a=/(?:(?:a)(?:b))/.exec('xab'),b=/(?:(?:a)(b))/.exec('ab');a[0]==='ab'&&b[1]==='b'&&/(?:a)+(?:b)/.exec('aaab')[0]==='aaab'",
+        r#"
+            let a = /(?:(?:a)(?:b))/.exec('xab'),
+                b = /(?:(?:a)(b))/.exec('ab');
+            a[0] === 'ab' && b[1] === 'b' && /(?:a)+(?:b)/.exec('aaab')[0] === 'aaab'
+        "#,
     );
 }
 
@@ -33,13 +46,37 @@ fn captures_indices_and_unselected_alternative_slots_preserve_source_order() {
 #[test]
 fn global_sticky_state_and_strict_lastindex_writes_remain_ordered() {
     assert_true(
-        "let r=/(?:a+b)/g,a=r.exec('aab xaab'),b=r.exec('aab xaab');a.index===0&&b.index===5&&r.lastIndex===8&&r.exec('aab xaab')===null&&r.lastIndex===0",
+        r#"
+            let r = /(?:a+b)/g,
+                a = r.exec('aab xaab'),
+                b = r.exec('aab xaab');
+            a.index === 0 && b.index === 5 && r.lastIndex === 8 && r.exec('aab xaab') === null && r
+                .lastIndex === 0
+        "#,
     );
     assert_true(
-        "let r=/(?:(a)+(b))/y;r.lastIndex=1;let a=r.exec('xaab');a.index===1&&a[2]==='b'&&r.lastIndex===4&&r.exec('xaab')===null&&r.lastIndex===0",
+        r#"
+            let r = /(?:(a)+(b))/y;
+            r.lastIndex = 1;
+            let a = r.exec('xaab');
+            a.index === 1 && a[2] === 'b' && r.lastIndex === 4 && r.exec('xaab') === null && r
+                .lastIndex === 0
+        "#,
     );
     assert_true(
-        "let r=/(?:a+b)/g;Object.defineProperty(r,'lastIndex',{writable:false});let failed=false;try{r.exec('aab')}catch(e){failed=e instanceof TypeError}failed",
+        r#"
+            let r = /(?:a+b)/g;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let failed = false;
+            try {
+                r.exec('aab')
+            } catch (e) {
+                failed = e instanceof TypeError
+            }
+            failed
+        "#,
     );
 }
 
@@ -57,7 +94,12 @@ fn original_source_flags_and_constructor_copying_survive_unwrapping() {
 #[test]
 fn escapes_classes_surrogates_and_original_case_are_preserved() {
     assert_true(
-        r"let a=/(?:\(\))/.exec('x()'),b=/(?:[()|]+)/.exec('x(|)'),c=/(?:(?:[[]))/.exec('x[');a[0]==='()'&&b[0]==='(|)'&&c[0]==='['",
+        r#"
+            let a = /(?:\(\))/.exec('x()'),
+                b = /(?:[()|]+)/.exec('x(|)'),
+                c = /(?:(?:[[]))/.exec('x[');
+            a[0] === '()' && b[0] === '(|)' && c[0] === '['
+        "#,
     );
     assert_true(
         r"let m=/(?:(.)+(\uD800))/sd.exec('a\n\uD800');m[1]==='\n'&&m[2]==='\uD800'&&m.indices[2][0]===2",
@@ -73,10 +115,22 @@ fn generic_string_consumers_use_the_same_capture_results() {
         "'aaab'.replace(/(?:(a)+(b))/,'$1-$2')==='a-b'&&'aabxaab'.split(/(?:(a)+(b))/).join(',')===',a,b,x,a,b,'",
     );
     assert_true(
-        "let seen;let s='aaab'.replace(/(?:(a)+(b))/,(whole,a,b,index,input)=>{seen=[whole,a,b,index,input];return 'x'});s==='x'&&seen.join(',')==='aaab,a,b,0,aaab'",
+        r#"
+            let seen;
+            let s = 'aaab'.replace(/(?:(a)+(b))/, (whole, a, b, index, input) => {
+                seen = [whole, a, b, index, input];
+                return 'x'
+            });
+            s === 'x' && seen.join(',') === 'aaab,a,b,0,aaab'
+        "#,
     );
     assert_true(
-        "let r=/(?:(a)+(b))/dg,m=[...'aaab aab'.matchAll(r)];m.length===2&&m[1][2]==='b'&&m[1].indices[2][0]===7&&r.lastIndex===0&&'a'.match(/(?:a*())/g).length===2&&'xaaab'.search(/(?:a+b)/)===1",
+        r#"
+            let r = /(?:(a)+(b))/dg,
+                m = [...'aaab aab'.matchAll(r)];
+            m.length === 2 && m[1][2] === 'b' && m[1].indices[2][0] === 7 && r.lastIndex === 0 && 'a'
+                .match(/(?:a*())/g).length === 2 && 'xaaab'.search(/(?:a+b)/) === 1
+        "#,
     );
 }
 

@@ -62,25 +62,45 @@ fn unicode_class_consumers_and_complete_character_boundaries() {
             r"'😀9\uD800'.match(/[\D]/{mode}g).join('|')==='😀|\uD800'"
         ));
         assert_true(&format!(
-            r"let a=[...'😀a\uDC00'.matchAll(/[^a]/d{mode}g)];a.length===2&&a[0].indices[0][1]===2&&a[1].index===3&&a[1][0]==='\uDC00'"
+            r#"
+                let a = [...'😀a\uDC00'.matchAll(/[^a]/d{mode}g)];
+                a.length === 2 && a[0].indices[0][1] === 2 && a[1].index === 3 && a[1][0] === '\uDC00'
+            "#
         ));
         assert_true(&format!(
             r"'😀9\uD800'.split(/[\D]/{mode}).join('|')==='|9|'"
         ));
         assert_true(&format!(
-            r"let seen=[];let s='😀9\uD800'.replace(/[\D]/{mode}g,(m,i)=>{{seen.push(i);return '_'}});s==='_9_'&&seen.join(',')==='0,3'"
+            r#"
+                let seen = [];
+                let s = '😀9\uD800'.replace(/[\D]/{mode}g, (m, i) => {{
+                    seen.push(i);
+                    return '_'
+                }});
+                s === '_9_' && seen.join(',') === '0,3'
+            "#
         ));
         assert_true(&format!(
             r"let r=/[😀]/{mode}g;r.lastIndex=1;'a😀'.search(r)===1&&r.lastIndex===1"
         ));
         assert_true(&format!(
-            r"let r=/[😀]/d{mode}y;r.lastIndex=1;let m=r.exec('😀');m.index===0&&m[0]==='😀'&&m.indices[0][1]===2&&r.lastIndex===2"
+            r#"
+                let r = /[😀]/d{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('😀');
+                m.index === 0 && m[0] === '😀' && m.indices[0][1] === 2 && r.lastIndex === 2
+            "#
         ));
         assert_true(&format!(
             r"let r=/[\uD800-\uDFFF]/{mode}y;r.lastIndex=1;r.exec('😀')===null&&r.lastIndex===0"
         ));
         assert_true(&format!(
-            r"let r=/[\uD800-\uDFFF]/{mode}g;r.lastIndex=1;let m=r.exec('😀\uD800');m.index===2&&m[0]==='\uD800'&&r.lastIndex===3"
+            r#"
+                let r = /[\uD800-\uDFFF]/{mode}g;
+                r.lastIndex = 1;
+                let m = r.exec('😀\uD800');
+                m.index === 2 && m[0] === '\uD800' && r.lastIndex === 3
+            "#
         ));
     }
 }
@@ -101,22 +121,85 @@ fn unicode_class_source_atoms_and_reserved_punctuation_remain_data() {
 #[test]
 fn unicode_class_metadata_clones_coercions_and_strict_writes() {
     assert_true(
-        r"let r=/[^a]/dsv,c=new RegExp(r,'duy');c.source==='[^a]'&&c.unicode&&!c.unicodeSets&&!c.dotAll&&c.exec('😀')[0]==='😀'&&c.lastIndex===2",
+        r#"
+            let r = /[^a]/dsv,
+                c = new RegExp(r, 'duy');
+            c.source === '[^a]' && c.unicode && !c.unicodeSets && !c.dotAll && c.exec('😀')[0] === '😀' &&
+                c.lastIndex === 2
+        "#,
     );
     assert_true(
         r"let r=/[\D]/dvg,m=r.exec('😀');m.length===1&&m.groups===undefined&&m.indices.groups===undefined",
     );
     assert_true(
-        r"let t='',r=/[^a]/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m.index===0&&r.lastIndex===2",
+        r#"
+            let t = '',
+                r = /[^a]/uy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 1
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return '😀'
+                }
+            });
+            t === 'si' && m.index === 0 && r.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let t='',r=/[^a]/v;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m.index===0&&typeof r.lastIndex==='object'",
+        r#"
+            let t = '',
+                r = /[^a]/v;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 1
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return '😀'
+                }
+            });
+            t === 'si' && m.index === 0 && typeof r.lastIndex === 'object'
+        "#,
     );
     assert_true(
-        r"let r=/[^a]/uy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /[^a]/uy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
     assert_true(
-        r"let r=/[\uD800]/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /[\uD800]/vy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 

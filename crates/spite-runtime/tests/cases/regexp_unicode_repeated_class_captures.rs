@@ -97,20 +97,35 @@ fn consuming_point_capture_count_families_keep_last_character_and_undefined_slot
                 };
                 assert_true(&format!(
                     r#"
-                    var r=new RegExp({pattern:?},'dvg'),m=r.exec('aaa'),keys=Object.keys(m.groups);
-                    var before='{before}'.split(','),after='{after}'.split(','),never='{never}'.split(','),ok=true;
-                    for(var name of keys){{
-                        var slot=keys.indexOf(name)+1,expected=name==='whole'?{whole:?}:name==='each'||name==='part'?{each}:undefined;
-                        var point=-1;
-                        if({participating}&&before.indexOf(name)!==-1){{expected='';point={length}-1}}
-                        if({participating}&&after.indexOf(name)!==-1){{expected='';point={length}}}
-                        if(never.indexOf(name)!==-1)expected=undefined;
-                        ok=ok&&m[slot]===expected&&m.groups[name]===expected&&Object.hasOwn(m.indices.groups,name)&&m.indices.groups[name]===m.indices[slot];
-                        if(expected===undefined)ok=ok&&m.indices[slot]===undefined;
-                        if(point!==-1)ok=ok&&m.indices[slot][0]===point&&m.indices[slot][1]===point;
-                    }}
-                    ok&&m[0]==={whole:?}&&m.index===0&&m.length===keys.length+1&&{range}&&r.lastIndex==={length}&&r.source==={pattern:?}
-                "#,
+                        var r = new RegExp({pattern:?}, 'dvg'),
+                            m = r.exec('aaa'),
+                            keys = Object.keys(m.groups);
+                        var before = '{before}'.split(','),
+                            after = '{after}'.split(','),
+                            never = '{never}'.split(','),
+                            ok = true;
+                        for (var name of keys) {{
+                            var slot = keys.indexOf(name) + 1,
+                                expected = name === 'whole' ? {whole:?} : name === 'each' || name === 'part' ?
+                                {each} : undefined;
+                            var point = -1;
+                            if ({participating} && before.indexOf(name) !== -1) {{
+                                expected = '';
+                                point = {length} - 1
+                            }}
+                            if ({participating} && after.indexOf(name) !== -1) {{
+                                expected = '';
+                                point = {length}
+                            }}
+                            if (never.indexOf(name) !== -1) expected = undefined;
+                            ok = ok && m[slot] === expected && m.groups[name] === expected && Object.hasOwn(m.indices
+                                .groups, name) && m.indices.groups[name] === m.indices[slot];
+                            if (expected === undefined) ok = ok && m.indices[slot] === undefined;
+                            if (point !== -1) ok = ok && m.indices[slot][0] === point && m.indices[slot][1] === point;
+                        }}
+                        ok && m[0] === {whole:?} && m.index === 0 && m.length === keys.length + 1 &&
+                            {range} && r.lastIndex === {length} && r.source === {pattern:?}
+                    "#,
                     whole = JsString::from(whole)
                 ));
             }
@@ -121,40 +136,103 @@ fn consuming_point_capture_count_families_keep_last_character_and_undefined_slot
 #[test]
 fn consuming_point_captures_use_supplementary_boundaries_folding_gates_and_original_metadata() {
     assert_true(
-        r"var r=/(?<whole>(?<each>(?<before>)(?<part>[\q{😀}])(?<after>))+)/dvgy;r.lastIndex=1;var m=r.exec('😀😀!');m[0]==='😀😀'&&m.groups.each==='😀'&&m.groups.before===''&&m.indices.groups.before[0]===2&&m.indices.groups.after[0]===4&&m.indices.groups.part[0]===2&&r.lastIndex===4",
+        r#"
+            var r = /(?<whole>(?<each>(?<before>)(?<part>[\q{😀}])(?<after>))+)/dvgy;
+            r.lastIndex = 1;
+            var m = r.exec('😀😀!');
+            m[0] === '😀😀' && m.groups.each === '😀' && m.groups.before === '' && m.indices.groups.before[
+                    0] === 2 && m.indices.groups.after[0] === 4 && m.indices.groups.part[0] === 2 && r
+                .lastIndex === 4
+        "#,
     );
     assert_true(
-        r"var r=/(?<each>(?<\u{1D49C}>)(?<part>[\q{s|k}])(?<after>))+/dvi;var m=r.exec('ſK!');m[0]==='ſK'&&m.groups.part==='K'&&m.groups.𝒜===''&&m.indices.groups.𝒜[0]===1&&m.indices.groups.after[0]===2&&r.source.indexOf('1D49C')!==-1",
+        r#"
+            var r = /(?<each>(?<\u{1D49C}>)(?<part>[\q{s|k}])(?<after>))+/dvi;
+            var m = r.exec('ſK!');
+            m[0] === 'ſK' && m.groups.part === 'K' && m.groups.𝒜 === '' && m.indices.groups.𝒜[0] === 1 &&
+                m.indices.groups.after[0] === 2 && r.source.indexOf('1D49C') !== -1
+        "#,
     );
     assert_true(
-        r"var m=/(?:(?<before>)(?<part>[^\q{ab}&&a])(?<after>)){1}/dv.exec('\ud800');m.groups.part==='\ud800'&&m.indices.groups.before[0]===0&&m.indices.groups.after[0]===1",
+        r#"
+            var m = /(?:(?<before>)(?<part>[^\q{ab}&&a])(?<after>)){1}/dv.exec('\ud800');
+            m.groups.part === '\ud800' && m.indices.groups.before[0] === 0 && m.indices.groups.after[0] ===
+                1
+        "#,
     );
     assert_true(
-        r"var r=/^\b(?:(?<before>)(?<part>[\q{a|b}])(?<after>)){2,3}?\b$/dvm;var m=r.exec('!\r\naaa\u2028!');m[0]==='aaa'&&m.index===3&&m.indices.groups.before[0]===5&&m.indices.groups.after[0]===6",
+        r#"
+            var r = /^\b(?:(?<before>)(?<part>[\q{a|b}])(?<after>)){2,3}?\b$/dvm;
+            var m = r.exec('!\r\naaa\u2028!');
+            m[0] === 'aaa' && m.index === 3 && m.indices.groups.before[0] === 5 && m.indices.groups.after[
+                0] === 6
+        "#,
     );
     assert_true(
-        r"var r=/(?:()[\q{a}]())+/vg;Object.defineProperty(r,'lastIndex',{writable:false});var threw=false;try{r.exec('aaa')}catch(e){threw=e instanceof TypeError}threw&&r.lastIndex===0",
+        r#"
+            var r = /(?:()[\q{a}]())+/vg;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            var threw = false;
+            try {
+                r.exec('aaa')
+            } catch (e) {
+                threw = e instanceof TypeError
+            }
+            threw && r.lastIndex === 0
+        "#,
     );
 }
 
 #[test]
 fn consuming_point_captures_survive_string_consumers_callbacks_clones_and_collection() {
     assert_true(
-        r"var r=/(?:(?<before>)(?<part>[\q{a}])(?<after>))+?/dvg;var all=Array.from('aa!a'.matchAll(r));all.length===3&&all[1].index===1&&all[1].groups.before===''&&all[1].indices.groups.after[0]===2&&r.lastIndex===0",
+        r#"
+            var r = /(?:(?<before>)(?<part>[\q{a}])(?<after>))+?/dvg;
+            var all = Array.from('aa!a'.matchAll(r));
+            all.length === 3 && all[1].index === 1 && all[1].groups.before === '' && all[1].indices.groups
+                .after[0] === 2 && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"var calls=0;var out='aaa!a'.replace(/(?<each>(?<before>)(?<part>[\q{a}])(?<after>))+/vg,function(whole,each,before,part,after,offset,input,groups){calls++;return arguments.length===8&&each==='a'&&before===''&&part==='a'&&after===''&&groups.before===''&&input==='aaa!a'?String(offset):'bad'});out==='0!4'&&calls===2",
+        r#"
+            var calls = 0;
+            var out = 'aaa!a'.replace(/(?<each>(?<before>)(?<part>[\q{a}])(?<after>))+/vg, function(whole,
+                each, before, part, after, offset, input, groups) {
+                calls++;
+                return arguments.length === 8 && each === 'a' && before === '' && part === 'a' &&
+                    after === '' && groups.before === '' && input === 'aaa!a' ? String(offset) :
+                    'bad'
+            });
+            out === '0!4' && calls === 2
+        "#,
     );
     assert_true(
         r"'aa!a'.replace(/(?:(?<before>)(?<part>[\q{a}])(?<after>))+/vg,'[$<before>$<part>$<after>]')==='[a]![a]'&&'aaa'.match(/(?:()[\q{a}]())+/vg)[0]==='aaa'",
     );
     assert_true(
-        r"var r=/(?:()[\q{a}]())+/vg;r.lastIndex=9;var index='!aaa'.search(r);var parts='!aa!'.split(r);index===1&&r.lastIndex===9&&parts.length===4&&parts[0]==='!'&&parts[1]===''&&parts[2]===''&&parts[3]==='!'",
+        r#"
+            var r = /(?:()[\q{a}]())+/vg;
+            r.lastIndex = 9;
+            var index = '!aaa'.search(r);
+            var parts = '!aa!'.split(r);
+            index === 1 && r.lastIndex === 9 && parts.length === 4 && parts[0] === '!' && parts[1] ===
+                '' && parts[2] === '' && parts[3] === '!'
+        "#,
     );
     let mut realm = Realm::default();
     assert_eq!(realm.eval(r"var r=/(?:(?<before>)(?<part>[\q{a}])(?<after>))+/dvg;var clone=new RegExp(r);var m=r.exec('aaa');true"),Ok(Value::Boolean(true)));
     realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("m.groups.before===''&&m.indices.groups.before[0]===2&&m.indices.groups.after[0]===3&&clone.exec('aa').groups.part==='a'&&r.lastIndex===3"),Ok(Value::Boolean(true)));
+    assert_eq!(
+        realm.eval(
+            r#"
+                m.groups.before === '' && m.indices.groups.before[0] === 2 && m.indices.groups.after[0] ===
+                    3 && clone.exec('aa').groups.part === 'a' && r.lastIndex === 3
+            "#
+        ),
+        Ok(Value::Boolean(true))
+    );
 }
 
 #[test]

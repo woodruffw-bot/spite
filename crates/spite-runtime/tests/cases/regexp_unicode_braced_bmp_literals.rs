@@ -50,14 +50,34 @@ fn unicode_braced_bmp_consumers_and_ordinary_escape_semantics() {
         })
     ));
     assert_true(
-        r"let ok=true;for(let n of [94,36,92,46,42,43,63,40,41,91,93,123,125,124,47]){let c=String.fromCharCode(n),p='\\u{'+n.toString(16)+'}',m=new RegExp(p,'v').exec(c);if(m===null||m.length!==1||m[0]!==c)ok=false;}ok",
+        r#"
+            let ok = true;
+            for (let n of [94, 36, 92, 46, 42, 43, 63, 40, 41, 91, 93, 123, 125, 124, 47]) {
+                let c = String.fromCharCode(n),
+                    p = '\\u{' + n.toString(16) + '}',
+                    m = new RegExp(p, 'v').exec(c);
+                if (m === null || m.length !== 1 || m[0] !== c) ok = false;
+            }
+            ok
+        "#,
     );
     assert_true(
-        r"let a=[...'😀ab😀ab'.matchAll(/(?<x>\u{61}())\u{62}/dvg)];a.length===2&&a[0].index===2&&a[1].index===6&&a[0].groups.x==='a'&&a[0].indices.groups.x===a[0].indices[1]",
+        r#"
+            let a = [...'😀ab😀ab'.matchAll(/(?<x>\u{61}())\u{62}/dvg)];
+            a.length === 2 && a[0].index === 2 && a[1].index === 6 && a[0].groups.x === 'a' && a[0].indices
+                .groups.x === a[0].indices[1]
+        "#,
     );
     assert_true(r"'😀ab'.split(/(\u{61}())\u{62}/u).join('|')==='😀|a||'");
     assert_true(
-        r"let seen=[];let x='😀ab😀ab'.replace(/(\u{61}())\u{62}/vg,(m,a,b,i)=>{seen.push(i);return '_'});x==='😀_😀_'&&seen.join(',')==='2,6'",
+        r#"
+            let seen = [];
+            let x = '😀ab😀ab'.replace(/(\u{61}())\u{62}/vg, (m, a, b, i) => {
+                seen.push(i);
+                return '_'
+            });
+            x === '😀_😀_' && seen.join(',') === '2,6'
+        "#,
     );
     assert_true(r"'😀aa'.match(/\u{61}/ug).join('|')==='a|a'");
     assert_true(r"let r=/\u{61}/vg;r.lastIndex=1;'😀a'.search(r)===2&&r.lastIndex===1");
@@ -67,17 +87,76 @@ fn unicode_braced_bmp_consumers_and_ordinary_escape_semantics() {
 #[test]
 fn unicode_braced_bmp_coercions_strict_state_and_names() {
     assert_true(
-        r"let t='',r=/(?<x>\u{61})/dvy;r.lastIndex={valueOf(){t+='i';return 2;}};let m=r.exec({toString(){t+='s';return '😀a'}});t==='si'&&m.index===2&&m.groups.x==='a'&&m.indices.groups.x===m.indices[1]&&r.lastIndex===3",
+        r#"
+            let t = '',
+                r = /(?<x>\u{61})/dvy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 2;
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return '😀a'
+                }
+            });
+            t === 'si' && m.index === 2 && m.groups.x === 'a' && m.indices.groups.x === m.indices[1] && r
+                .lastIndex === 3
+        "#,
     );
     assert_true(
-        r"let r=/\u{61}/u,t='';r.lastIndex={valueOf(){t+='i';return 1;}};let m=r.exec({toString(){t+='s';return 'a'}});t==='si'&&m.index===0&&typeof r.lastIndex==='object'",
+        r#"
+            let r = /\u{61}/u,
+                t = '';
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 1;
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return 'a'
+                }
+            });
+            t === 'si' && m.index === 0 && typeof r.lastIndex === 'object'
+        "#,
     );
     assert_true(
-        r"let r=/\u{61}/uy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('ba')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /\u{61}/uy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('ba')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
     assert_true(r"let r=/\u{61}/vy;r.lastIndex=1;r.exec('😀a')===null&&r.lastIndex===0");
     assert_true(
-        r"let r=/\u{61}/vy;r.lastIndex=2;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('ba')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===2",
+        r#"
+            let r = /\u{61}/vy;
+            r.lastIndex = 2;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('ba')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 2
+        "#,
     );
 }
 

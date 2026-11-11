@@ -21,7 +21,13 @@ fn groups_preserve_original_source_and_produce_no_captures() {
 #[test]
 fn empty_groups_match_without_advancing_native_lastindex() {
     assert_true(
-        "let r=/(?:)/dg;r.lastIndex=2;let m=r.exec('ab');m[0]==='' && m.index===2 && m.indices[0][0]===2 && m.indices[0][1]===2 && r.lastIndex===2",
+        r#"
+            let r = /(?:)/dg;
+            r.lastIndex = 2;
+            let m = r.exec('ab');
+            m[0] === '' && m.index === 2 && m.indices[0][0] === 2 && m.indices[0][1] === 2 && r
+                .lastIndex === 2
+        "#,
     );
     assert_true("let r=/(?:)/y;r.lastIndex=3;r.exec('ab')===null && r.lastIndex===0");
     assert_true("let r=/(?:a(?:)b)/;r.exec('xab')[0]==='ab' && /(?:(?:))/.exec('')[0]===''");
@@ -30,7 +36,10 @@ fn empty_groups_match_without_advancing_native_lastindex() {
 #[test]
 fn generic_consumers_advance_empty_group_matches_and_use_grouped_literals() {
     assert_true(
-        "'ab'.match(/(?:)/g).length===3 && [...'ab'.matchAll(/(?:)/g)].map(m=>m.index).join(',')==='0,1,2' && 'ab'.replace(/(?:)/g,'-')==='-a-b-' && 'ab'.split(/(?:)/).join(',')==='a,b'",
+        r#"
+            'ab'.match(/(?:)/g).length === 3 && [...'ab'.matchAll(/(?:)/g)].map(m => m.index).join(',') ===
+                '0,1,2' && 'ab'.replace(/(?:)/g, '-') === '-a-b-' && 'ab'.split(/(?:)/).join(',') === 'a,b'
+        "#,
     );
     assert_true(
         "'xab'.search(/(?:ab)/)===1 && 'abab'.match(/(?:ab)/g).join(',')==='ab,ab' && 'abab'.replaceAll(/(?:ab)/g,'x')==='xx'",

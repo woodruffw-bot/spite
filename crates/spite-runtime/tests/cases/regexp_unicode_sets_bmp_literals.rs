@@ -160,32 +160,109 @@ fn unicode_sets_bmp_names_lone_surrogates_and_matching_boundaries_are_exact() {
 #[test]
 fn unicode_sets_bmp_consumers_callbacks_species_and_copies_keep_code_unit_indices() {
     assert_true(
-        r"let r=/(a())b/vg;r.lastIndex=1;let a=[...'\uD83D\uDE00ab\uD83D\uDE00ab'.matchAll(r)];a.length===2&&a[0].index===2&&a[1].index===6&&a[0][1]==='a'&&a[0][2]===''&&r.lastIndex===1",
+        r#"
+            let r = /(a())b/vg;
+            r.lastIndex = 1;
+            let a = [...'\uD83D\uDE00ab\uD83D\uDE00ab'.matchAll(r)];
+            a.length === 2 && a[0].index === 2 && a[1].index === 6 && a[0][1] === 'a' && a[0][2] === '' &&
+                r.lastIndex === 1
+        "#,
     );
     assert_true(
-        r"let seen=[];let s='\uD83D\uDE00ab\uD83D\uDE00ab'.replace(/(a())b/vg,(m,x,y,i)=>{seen.push(i);return '_'});s==='\uD83D\uDE00_\uD83D\uDE00_'&&seen.join(',')==='2,6'",
+        r#"
+            let seen = [];
+            let s = '\uD83D\uDE00ab\uD83D\uDE00ab'.replace(/(a())b/vg, (m, x, y, i) => {
+                seen.push(i);
+                return '_'
+            });
+            s === '\uD83D\uDE00_\uD83D\uDE00_' && seen.join(',') === '2,6'
+        "#,
     );
     assert_true(r"'\uD83D\uDE00ab\uD83D\uDE00ab'.match(/ab/vg).join('|')==='ab|ab'");
     assert_true(r"'\uD83D\uDE00ab'.split(/(a())b/v).join('|')==='\uD83D\uDE00|a||'");
     assert_true(r"let r=/ab/vg;r.lastIndex=1;'\uD83D\uDE00ab'.search(r)===2&&r.lastIndex===1");
     assert_true(
-        r"let r=/(?<x>ab)/dvg,c=new RegExp(r);let a=c.exec('\uD83D\uDE00ab');a.groups.x==='ab'&&a.indices.groups.x===a.indices[1]&&r.lastIndex===0&&c.lastIndex===4",
+        r#"
+            let r = /(?<x>ab)/dvg,
+                c = new RegExp(r);
+            let a = c.exec('\uD83D\uDE00ab');
+            a.groups.x === 'ab' && a.indices.groups.x === a.indices[1] && r.lastIndex === 0 && c
+                .lastIndex === 4
+        "#,
     );
 }
 
 #[test]
 fn unicode_sets_bmp_input_index_coercion_and_strict_writes_remain_ordered() {
     assert_true(
-        "let r=/a/v,t='';r.lastIndex={valueOf(){t+='i';return 2;}};let a=r.exec({toString(){t+='s';return 'ba'}});t==='si'&&a.index===1&&typeof r.lastIndex==='object'",
+        r#"
+            let r = /a/v,
+                t = '';
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 2;
+                }
+            };
+            let a = r.exec({
+                toString() {
+                    t += 's';
+                    return 'ba'
+                }
+            });
+            t === 'si' && a.index === 1 && typeof r.lastIndex === 'object'
+        "#,
     );
     assert_true(
-        "let r=/a/vg,t='';r.lastIndex={valueOf(){t+='i';return 1;}};let a=r.exec({toString(){t+='s';return 'ba'}});t==='si'&&a.index===1&&r.lastIndex===2",
+        r#"
+            let r = /a/vg,
+                t = '';
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 1;
+                }
+            };
+            let a = r.exec({
+                toString() {
+                    t += 's';
+                    return 'ba'
+                }
+            });
+            t === 'si' && a.index === 1 && r.lastIndex === 2
+        "#,
     );
     assert_true(
-        "let r=/a/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('ba')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /a/vy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('ba')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
     assert_true(
-        "let r=/a/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('bb')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /a/vy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('bb')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 

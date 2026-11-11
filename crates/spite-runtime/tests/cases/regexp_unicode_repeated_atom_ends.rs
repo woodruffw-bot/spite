@@ -54,10 +54,19 @@ fn unicode_repeated_atom_end_results_snapshot() {
 fn unicode_repeated_atom_ends_greedy_lazy_bounds_and_actual_endpoint() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"/a+$/{mode}.exec('Baaaa')[0]==='aaaa'&&/a+?$/{mode}.exec('Baaaa')[0]==='aaaa'&&/a*?$/{mode}.exec('Baaaa')[0]==='aaaa'&&/a??$/{mode}.exec('Baaaa')[0]==='a'"
+            r#"
+                /a+$/{mode}.exec('Baaaa')[0] === 'aaaa' && /a+?$/{mode}.exec('Baaaa')[0] ===
+                    'aaaa' && /a*?$/{mode}.exec('Baaaa')[0] === 'aaaa' && /a??$/{mode}.exec(
+                        'Baaaa')[0] === 'a'
+            "#
         ));
         assert_true(&format!(
-            r"let a=/a{{2,3}}$/{mode}.exec('aaaa'),b=/a{{2,3}}?$/{mode}.exec('aaaa');a.index===1&&a[0]==='aaa'&&b.index===1&&b[0]==='aaa'&&/^a{{2,3}}$/{mode}.exec('aaaa')===null"
+            r#"
+                let a = /a{{2,3}}$/{mode}.exec('aaaa'),
+                    b = /a{{2,3}}?$/{mode}.exec('aaaa');
+                a.index === 1 && a[0] === 'aaa' && b.index === 1 && b[0] === 'aaa' && /^a{{2,3}}$/{mode}
+                    .exec('aaaa') === null
+            "#
         ));
         assert_true(&format!(
             r"['\n','\r','\u2028','\u2029'].every(t=>/a+$/{mode}.exec('aaa'+t)===null)&&/^a+$/{mode}.exec('aaa')[0]==='aaa'"
@@ -78,19 +87,44 @@ fn unicode_repeated_atom_ends_greedy_lazy_bounds_and_actual_endpoint() {
 fn unicode_repeated_atom_ends_complete_captures_sticky_and_original_pairs() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/^(?<__proto__>(😀+))$/d{mode}y;r.lastIndex=1;let m=r.exec('😀😀');m.index===0&&m[0]==='😀😀'&&m[2]==='😀😀'&&m.indices[2][1]===4&&m.indices.groups.__proto__===m.indices[1]&&r.lastIndex===4"
+            r#"
+                let r = /^(?<__proto__>(😀+))$/d{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('😀😀');
+                m.index === 0 && m[0] === '😀😀' && m[2] === '😀😀' && m.indices[2][1] === 4 && m.indices
+                    .groups.__proto__ === m.indices[1] && r.lastIndex === 4
+            "#
         ));
         assert_true(&format!(
-            r"let r=/(?<x>a{{0}}$)/d{mode}g;r.lastIndex=1;let m=r.exec('😀');m.index===2&&m.groups.x===''&&m.indices.groups.x[0]===2&&r.lastIndex===2"
+            r#"
+                let r = /(?<x>a{{0}}$)/d{mode}g;
+                r.lastIndex = 1;
+                let m = r.exec('😀');
+                m.index === 2 && m.groups.x === '' && m.indices.groups.x[0] === 2 && r.lastIndex === 2
+            "#
         ));
         assert_true(&format!(
-            r"let r=/a{{2,3}}$/{mode}y;r.exec('aaaa')===null&&r.lastIndex===0&&(r.lastIndex=1,r.exec('aaaa')[0]==='aaa')&&r.lastIndex===4"
+            r#"
+                let r = /a{{2,3}}$/{mode}y;
+                r.exec('aaaa') === null && r.lastIndex === 0 && (r.lastIndex = 1, r.exec('aaaa')[0] ===
+                    'aaa') && r.lastIndex === 4
+            "#
         ));
         assert_true(&format!(
-            r"let r=/\uD800+$/{mode}g,m=r.exec('B\uD800\uD800');m.index===1&&m[0]==='\uD800\uD800'&&r.lastIndex===3&&!/\uD800+$/{mode}.test('😀')"
+            r#"
+                let r = /\uD800+$/{mode}g,
+                    m = r.exec('B\uD800\uD800');
+                m.index === 1 && m[0] === '\uD800\uD800' && r.lastIndex === 3 && !/\uD800+$/{mode}.test(
+                    '😀')
+            "#
         ));
         assert_true(&format!(
-            r"let r=/a{{0}}$/{mode}y;r.lastIndex=1;r.exec('😀')===null&&r.lastIndex===0&&/^a{{0}}$/{mode}.exec('')[0]===''&&/^a{{0}}$/{mode}.exec('a')===null"
+            r#"
+                let r = /a{{0}}$/{mode}y;
+                r.lastIndex = 1;
+                r.exec('😀') === null && r.lastIndex === 0 && /^a{{0}}$/{mode}.exec('')[0] === '' &&
+                    /^a{{0}}$/{mode}.exec('a') === null
+            "#
         ));
     }
 }
@@ -99,7 +133,11 @@ fn unicode_repeated_atom_ends_complete_captures_sticky_and_original_pairs() {
 fn unicode_repeated_atom_end_consumers_and_empty_advance() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=[...'A😀B'.matchAll(/(?<x>a{{0}}$)/d{mode}g)];a.length===1&&a[0].index===4&&a[0].groups.x===''&&a[0].indices.groups.x===a[0].indices[1]"
+            r#"
+                let a = [...'A😀B'.matchAll(/(?<x>a{{0}}$)/d{mode}g)];
+                a.length === 1 && a[0].index === 4 && a[0].groups.x === '' && a[0].indices.groups.x === a[0]
+                    .indices[1]
+            "#
         ));
         assert_true(&format!(
             r"'Baa'.replace(/(?<x>a+$)/{mode}g,'<$1:$<x>>')==='B<aa:aa>'"
@@ -108,7 +146,14 @@ fn unicode_repeated_atom_end_consumers_and_empty_advance() {
             r"'Baaa'.split(/(a+$)/{mode}).join('|')==='B|aaa|'&&'Baaa'.search(/a+$/{mode})===1&&'aa aaaa'.match(/a+$/g{mode}).join(',')==='aaaa'"
         ));
         assert_true(&format!(
-            r"let t='',a='B😀😀'.replace(/(?<x>😀+?$)/{mode}g,(m,c,p,text,g)=>{{t+=p;return '['+g.x+']'}});a==='B[😀😀]'&&t==='1'"
+            r#"
+                let t = '',
+                    a = 'B😀😀'.replace(/(?<x>😀+?$)/{mode}g, (m, c, p, text, g) => {{
+                        t += p;
+                        return '[' + g.x + ']'
+                    }});
+                a === 'B[😀😀]' && t === '1'
+            "#
         ));
     }
 }
@@ -116,16 +161,63 @@ fn unicode_repeated_atom_end_consumers_and_empty_advance() {
 #[test]
 fn unicode_repeated_atom_end_clones_coercions_and_strict_writes() {
     assert_true(
-        r"let r=/^(?<x>a+)$/diug,c=new RegExp(r,'dvy'),b=new RegExp(c,'diuy');c.unicodeSets&&!c.ignoreCase&&c.exec('AA')===null&&b.exec('AA').groups.x==='AA'&&b.lastIndex===2",
+        r#"
+            let r = /^(?<x>a+)$/diug,
+                c = new RegExp(r, 'dvy'),
+                b = new RegExp(c, 'diuy');
+            c.unicodeSets && !c.ignoreCase && c.exec('AA') === null && b.exec('AA').groups.x === 'AA' && b
+                .lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let t='',r=/^😀+$/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀😀'}});t==='si'&&m.index===0&&m[0]==='😀😀'&&r.lastIndex===4",
+        r#"
+            let t = '',
+                r = /^😀+$/uy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 1
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return '😀😀'
+                }
+            });
+            t === 'si' && m.index === 0 && m[0] === '😀😀' && r.lastIndex === 4
+        "#,
     );
     assert_true(
-        r"let r=/^a*$/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            let r = /^a*$/vy;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/a+$/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('BBB')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /a+$/vy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('BBB')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 

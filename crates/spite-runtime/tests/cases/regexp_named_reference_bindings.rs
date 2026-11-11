@@ -73,35 +73,67 @@ fn named_binding_result_snapshot() {
 #[test]
 fn duplicate_names_select_active_slots_and_preserve_indices_and_forward_state() {
     assert_true(
-        r"let a=/(?<x>a)\k<x>c|(?<x>b)\k<x>/d.exec('aabb');a.index===2&&a[0]==='bb'&&a[1]===undefined&&a[2]==='b'&&a.groups.x==='b'&&a.indices.groups.x===a.indices[2]&&a.indices[2][0]===2&&a.indices[2][1]===3",
+        r#"
+            let a = /(?<x>a)\k<x>c|(?<x>b)\k<x>/d.exec('aabb');
+            a.index === 2 && a[0] === 'bb' && a[1] === undefined && a[2] === 'b' && a.groups.x === 'b' && a
+                .indices.groups.x === a.indices[2] && a.indices[2][0] === 2 && a.indices[2][1] === 3
+        "#,
     );
     assert_true(
-        r"let a=/(?<x>a)(?<y>b)\k<x>\k<y>|(?<x>b)(?<y>a)\k<x>\k<y>/d.exec('baba');a[1]===undefined&&a[2]===undefined&&a.groups.x==='b'&&a.groups.y==='a'&&a.indices.groups.x===a.indices[3]&&a.indices.groups.y===a.indices[4]&&Object.getOwnPropertyNames(a.groups).join(',')==='x,y'",
+        r#"
+            let a = /(?<x>a)(?<y>b)\k<x>\k<y>|(?<x>b)(?<y>a)\k<x>\k<y>/d.exec('baba');
+            a[1] === undefined && a[2] === undefined && a.groups.x === 'b' && a.groups.y === 'a' && a
+                .indices.groups.x === a.indices[3] && a.indices.groups.y === a.indices[4] && Object
+                .getOwnPropertyNames(a.groups).join(',') === 'x,y'
+        "#,
     );
     assert_true(
         r"/(?<x>a)|(?<x>\k<x>b)\k<x>/.exec('bb').groups.x==='b'&&/\k<x>(?<x>a)|(?<x>b)\k<x>/.exec('aa')[0]==='a'&&/(?<x>a)\k<x>0|(?<x>b)\k<x>0/.exec('bb0')[0]==='bb0'",
     );
     assert_true(
-        r"let a=/(?<__proto__>a)\k<__proto__>|(?<__proto__>b)\k<__proto__>/d.exec('bb');Object.getPrototypeOf(a.groups)===null&&a.groups.__proto__==='b'&&a.indices.groups.__proto__===a.indices[2]",
+        r#"
+            let a = /(?<__proto__>a)\k<__proto__>|(?<__proto__>b)\k<__proto__>/d.exec('bb');
+            Object.getPrototypeOf(a.groups) === null && a.groups.__proto__ === 'b' && a.indices.groups
+                .__proto__ === a.indices[2]
+        "#,
     );
     assert_true(
-        r"let a=/(?<x>a)\k<x>|\B(?<x>.)\k<x>\B/d.exec('\uD800\uD800');a.groups.x.charCodeAt(0)===0xD800&&a.indices.groups.x===a.indices[2]&&a.indices[2][1]===1",
+        r#"
+            let a = /(?<x>a)\k<x>|\B(?<x>.)\k<x>\B/d.exec('\uD800\uD800');
+            a.groups.x.charCodeAt(0) === 0xD800 && a.indices.groups.x === a.indices[2] && a.indices[2][
+                1] === 1
+        "#,
     );
 }
 
 #[test]
 fn consumers_and_sticky_copies_keep_original_sources_and_named_results() {
     assert_true(
-        r"let r=/(?<x>a)\k<x>|(?<x>b)\k<x>/dgi,a=[...'aa bB aa'.matchAll(r)];a.length===3&&a[1].groups.x==='b'&&a[1].indices.groups.x===a[1].indices[2]&&r.lastIndex===0",
+        r#"
+            let r = /(?<x>a)\k<x>|(?<x>b)\k<x>/dgi,
+                a = [...'aa bB aa'.matchAll(r)];
+            a.length === 3 && a[1].groups.x === 'b' && a[1].indices.groups.x === a[1].indices[2] && r
+                .lastIndex === 0
+        "#,
     );
     assert_true(
         r"'bb'.replace(/(?<x>a)\k<x>|(?<x>b)\k<x>/,'<$<x>>')==='<b>'&&'qbb'.search(/(?<x>a)\k<x>|(?<x>b)\k<x>/)===1&&'qbbz'.split(/(?<x>a)\k<x>|(?<x>b)\k<x>/).join(',')==='q,,b,z'",
     );
     assert_true(
-        r"let r=/(?<x>a)\k<x>|(?<x>b)\k<x>/dy;r.lastIndex=1;let copy=new RegExp(r);copy.source===r.source&&copy.lastIndex===0&&r.exec('qbb').groups.x==='b'&&r.lastIndex===3&&r.exec('qbb')===null&&r.lastIndex===0",
+        r#"
+            let r = /(?<x>a)\k<x>|(?<x>b)\k<x>/dy;
+            r.lastIndex = 1;
+            let copy = new RegExp(r);
+            copy.source === r.source && copy.lastIndex === 0 && r.exec('qbb').groups.x === 'b' && r
+                .lastIndex === 3 && r.exec('qbb') === null && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let a=[...'qa'.matchAll(/(?<x>)\k<x>|(?<x>a)\k<x>/dg)];a.length===3&&a[2].index===2&&a[0].groups.x===''&&a[0].indices.groups.x===a[0].indices[1]",
+        r#"
+            let a = [...'qa'.matchAll(/(?<x>)\k<x>|(?<x>a)\k<x>/dg)];
+            a.length === 3 && a[2].index === 2 && a[0].groups.x === '' && a[0].indices.groups.x === a[0]
+                .indices[1]
+        "#,
     );
 }
 

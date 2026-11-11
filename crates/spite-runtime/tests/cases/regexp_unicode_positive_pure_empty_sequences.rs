@@ -52,10 +52,19 @@ fn unicode_positive_pure_empty_results_snapshot() {
 #[test]
 fn unicode_positive_pure_empty_names_indices_and_consumers() {
     assert_true(
-        "let m=/(?<first>(?:|)*)+(?<__proto__>){3}/du.exec('😀');m.length===3&&m[1]===''&&m[2]===''&&m.groups.first===''&&m.groups.__proto__===''&&m.indices.groups.first===m.indices[1]&&m.indices.groups.__proto__===m.indices[2]&&m.indices[1]!==m.indices[2]&&Object.getPrototypeOf(m.groups)===null",
+        r#"
+            let m = /(?<first>(?:|)*)+(?<__proto__>){3}/du.exec('😀');
+            m.length === 3 && m[1] === '' && m[2] === '' && m.groups.first === '' && m.groups.__proto__ ===
+                '' && m.indices.groups.first === m.indices[1] && m.indices.groups.__proto__ === m.indices[
+                    2] && m.indices[1] !== m.indices[2] && Object.getPrototypeOf(m.groups) === null
+        "#,
     );
     assert_true(
-        "let a=[...'😀a'.matchAll(/(?<x>(?:|)+?)+?()/dvg)];a.length===3&&a[0].index===0&&a[1].index===2&&a[2].index===3&&a[1][2]===''&&a[1].groups.x===''&&a[1].indices.groups.x===a[1].indices[1]",
+        r#"
+            let a = [...'😀a'.matchAll(/(?<x>(?:|)+?)+?()/dvg)];
+            a.length === 3 && a[0].index === 0 && a[1].index === 2 && a[2].index === 3 && a[1][2] === '' &&
+                a[1].groups.x === '' && a[1].indices.groups.x === a[1].indices[1]
+        "#,
     );
     assert_true(
         "JSON.stringify('😀a'.split(/((?:|){3,}){2,4}()/u))===JSON.stringify(['😀','','','a'])",
@@ -65,23 +74,82 @@ fn unicode_positive_pure_empty_names_indices_and_consumers() {
     );
     assert_true("'😀a'.search(/((?:|)?){1,3}()/v)===0&&/((?:|)+)+()/u.test('')");
     assert_true(
-        "let r=/(?<x>(?:|)*)+()/dvy;r.lastIndex=1;let m=r.exec('😀');m.index===0&&m.indices[2][0]===0&&m.indices.groups.x===m.indices[1]&&r.lastIndex===0",
+        r#"
+            let r = /(?<x>(?:|)*)+()/dvy;
+            r.lastIndex = 1;
+            let m = r.exec('😀');
+            m.index === 0 && m.indices[2][0] === 0 && m.indices.groups.x === m.indices[1] && r
+                .lastIndex === 0
+        "#,
     );
 }
 
 #[test]
 fn unicode_positive_pure_empty_coercion_and_strict_last_index() {
     assert_true(
-        "let log='',r=/((?:|){3,}){2,4}()/uy;r.lastIndex={valueOf(){log+='i';return 1}};let m=r.exec({toString(){log+='s';return '😀'}});log==='si'&&m.index===0&&m[1]===''&&m[2]===''&&r.lastIndex===0",
+        r#"
+            let log = '',
+                r = /((?:|){3,}){2,4}()/uy;
+            r.lastIndex = {
+                valueOf() {
+                    log += 'i';
+                    return 1
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    log += 's';
+                    return '😀'
+                }
+            });
+            log === 'si' && m.index === 0 && m[1] === '' && m[2] === '' && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        "let log='',r=/((?:|)+)+()/vi,i={valueOf(){log+='i';return 1}};r.lastIndex=i;let m=r.exec({toString(){log+='s';return '😀'}});log==='si'&&m[2]===''&&r.lastIndex===i",
+        r#"
+            let log = '',
+                r = /((?:|)+)+()/vi,
+                i = {
+                    valueOf() {
+                        log += 'i';
+                        return 1
+                    }
+                };
+            r.lastIndex = i;
+            let m = r.exec({
+                toString() {
+                    log += 's';
+                    return '😀'
+                }
+            });
+            log === 'si' && m[2] === '' && r.lastIndex === i
+        "#,
     );
     assert_true(
-        "let r=/((?:|)*){3,}()/uy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.test('😀')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /((?:|)*){3,}()/uy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.test('😀')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
     assert_true(
-        "let r=/((?:|)+)+()/v;r.lastIndex=99;Object.defineProperty(r,'lastIndex',{writable:false});r.test('😀')&&r.lastIndex===99",
+        r#"
+            let r = /((?:|)+)+()/v;
+            r.lastIndex = 99;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            r.test('😀') && r.lastIndex === 99
+        "#,
     );
     assert_true("let r=/((?:|)+)+()/uy;r.lastIndex=3;r.exec('😀')===null&&r.lastIndex===0");
 }

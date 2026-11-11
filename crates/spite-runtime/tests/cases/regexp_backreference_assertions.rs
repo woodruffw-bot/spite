@@ -79,20 +79,38 @@ fn asserted_reference_result_snapshot() {
 #[test]
 fn input_line_and_word_context_preserve_captures_and_sticky_search_positions() {
     assert_true(
-        r"let r=/^(?<x>\w)\k<x>$/dmiy;r.lastIndex=2;let a=r.exec('q\nAa\nz');a.index===2&&a.groups.x==='A'&&a.indices.groups.x===a.indices[1]&&a.indices[1][0]===2&&a.indices[1][1]===3&&r.lastIndex===4&&r.exec('q\nAa\nz')===null&&r.lastIndex===0",
+        r#"
+            let r = /^(?<x>\w)\k<x>$/dmiy;
+            r.lastIndex = 2;
+            let a = r.exec('q\nAa\nz');
+            a.index === 2 && a.groups.x === 'A' && a.indices.groups.x === a.indices[1] && a.indices[1][
+                0] === 2 && a.indices[1][1] === 3 && r.lastIndex === 4 && r.exec('q\nAa\nz') === null && r
+                .lastIndex === 0
+        "#,
     );
     assert_true(r"let r=/\b(\w)\1\b/dy;r.lastIndex=1;r.exec('qaa')===null&&r.lastIndex===0");
     assert_true(
         r"let r=/\b(\w)\1\b/dy;r.lastIndex=1;let a=r.exec(' aa ');a.index===1&&a[1]==='a'&&r.lastIndex===3",
     );
     assert_true(
-        r"/^(a)\1$/.exec('aa\n')===null&&/^(a)\1$/m.exec('aa\n')[0]==='aa'&&/\b(\w)\1\b/i.exec('ſſ')===null&&/\B(.)\1\B/i.exec('µΜ')[1]==='µ'",
+        r#"
+            /^(a)\1$/.exec('aa\n') === null && /^(a)\1$/m.exec('aa\n')[0] === 'aa' && /\b(\w)\1\b/i.exec(
+                'ſſ') === null && /\B(.)\1\B/i.exec('µΜ')[1] === 'µ'
+        "#,
     );
     assert_true(
-        r"let a=/\B(.)\1\B/d.exec('\uD800\uD800');a[0].length===2&&a[1].charCodeAt(0)===0xD800&&a.indices[1][0]===0&&a.indices[1][1]===1",
+        r#"
+            let a = /\B(.)\1\B/d.exec('\uD800\uD800');
+            a[0].length === 2 && a[1].charCodeAt(0) === 0xD800 && a.indices[1][0] === 0 && a.indices[1][
+                1] === 1
+        "#,
     );
     assert_true(
-        r"let a=/(\b)\1\w/d.exec(' a');a[1]===''&&a.index===1&&a.indices[1][0]===1&&a.indices[1][1]===1&&/(\1^a)\1/.exec('aa')[1]==='a'",
+        r#"
+            let a = /(\b)\1\w/d.exec(' a');
+            a[1] === '' && a.index === 1 && a.indices[1][0] === 1 && a.indices[1][1] === 1 && /(\1^a)\1/
+                .exec('aa')[1] === 'a'
+        "#,
     );
     assert_true(r"/([\b])\1/.exec('\b\b')[0]==='\b\b'&&/(\^)(\$)\1\2/.exec('^$^$')[0]==='^$^$'");
 }
@@ -100,13 +118,23 @@ fn input_line_and_word_context_preserve_captures_and_sticky_search_positions() {
 #[test]
 fn generic_consumers_use_asserted_references_and_advance_empty_matches() {
     assert_true(
-        r"let r=/^(?<x>\w)\k<x>$/dgmi,a=[...'aa\nbB\ncc'.matchAll(r)];a.length===3&&a[1].index===3&&a[1].groups.x==='b'&&a[1].indices.groups.x===a[1].indices[1]&&r.lastIndex===0",
+        r#"
+            let r = /^(?<x>\w)\k<x>$/dgmi,
+                a = [...'aa\nbB\ncc'.matchAll(r)];
+            a.length === 3 && a[1].index === 3 && a[1].groups.x === 'b' && a[1].indices.groups.x === a[1]
+                .indices[1] && r.lastIndex === 0
+        "#,
     );
     assert_true(
         r"'q\naa\nz'.replace(/^(?<x>\w)\k<x>$/m,'<$<x>>')==='q\n<a>\nz'&&'q\naa\nz'.search(/^(\w)\1$/m)===2&&'q aa z'.split(/\b(\w)\1\b/).join(',')==='q ,a, z'",
     );
     assert_true(
-        r"let r=/\b(?<x>)\k<x>\b/dg,a=[...' a '.matchAll(r)];a.length===2&&a[0].index===1&&a[1].index===2&&a[0].groups.x===''&&a[0].indices.groups.x===a[0].indices[1]&&r.lastIndex===0",
+        r#"
+            let r = /\b(?<x>)\k<x>\b/dg,
+                a = [...' a '.matchAll(r)];
+            a.length === 2 && a[0].index === 1 && a[1].index === 2 && a[0].groups.x === '' && a[0].indices
+                .groups.x === a[0].indices[1] && r.lastIndex === 0
+        "#,
     );
 }
 

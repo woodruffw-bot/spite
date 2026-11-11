@@ -77,19 +77,38 @@ fn nested_alternative_reference_result_snapshot() {
 #[test]
 fn nested_failure_restores_prior_names_and_enclosing_capture_slots() {
     assert_true(
-        r"let a=/(?:(?:(?<x>a)|(?<x>ab))|(?<x>b))\k<x>/d.exec('qabab');a.index===1&&a.groups.x==='ab'&&a[1]===undefined&&a[3]===undefined&&a.indices.groups.x===a.indices[2]&&a.indices[2][0]===1&&a.indices[2][1]===3",
+        r#"
+            let a = /(?:(?:(?<x>a)|(?<x>ab))|(?<x>b))\k<x>/d.exec('qabab');
+            a.index === 1 && a.groups.x === 'ab' && a[1] === undefined && a[3] === undefined && a.indices
+                .groups.x === a.indices[2] && a.indices[2][0] === 1 && a.indices[2][1] === 3
+        "#,
     );
     assert_true(
-        r"let a=/(?<q>q)(?:(?:(?<x>a)|(?<x>ab))|(?<x>b))\k<q>\k<x>/d.exec('qabqab');a[0]==='qabqab'&&a.groups.q==='q'&&a.groups.x==='ab'&&a.indices.groups.q===a.indices[1]&&a.indices.groups.x===a.indices[3]",
+        r#"
+            let a = /(?<q>q)(?:(?:(?<x>a)|(?<x>ab))|(?<x>b))\k<q>\k<x>/d.exec('qabqab');
+            a[0] === 'qabqab' && a.groups.q === 'q' && a.groups.x === 'ab' && a.indices.groups.q === a
+                .indices[1] && a.indices.groups.x === a.indices[3]
+        "#,
     );
     assert_true(
-        r"let a=/((a|ab)(c|)|e)\1/d.exec('ee');a[0]==='ee'&&a[1]==='e'&&a[2]===undefined&&a[3]===undefined&&a.indices[2]===undefined&&a.indices[1][1]===1",
+        r#"
+            let a = /((a|ab)(c|)|e)\1/d.exec('ee');
+            a[0] === 'ee' && a[1] === 'e' && a[2] === undefined && a[3] === undefined && a.indices[2] ===
+                undefined && a.indices[1][1] === 1
+        "#,
     );
     assert_true(
-        r"let a=/(?:(?:(?<x>a)|(?<x>b))|z)\k<x>/d.exec('z');a[0]==='z'&&a.groups.x===undefined&&a.indices.groups.x===undefined",
+        r#"
+            let a = /(?:(?:(?<x>a)|(?<x>b))|z)\k<x>/d.exec('z');
+            a[0] === 'z' && a.groups.x === undefined && a.indices.groups.x === undefined
+        "#,
     );
     assert_true(
-        r"let a=/(?:(a)|(?:(?<x>b)|(?<x>.)))\k<x>/d.exec('\uD800\uD800');a.groups.x.charCodeAt(0)===0xD800&&a.indices.groups.x===a.indices[3]&&a.indices[1]===undefined",
+        r#"
+            let a = /(?:(a)|(?:(?<x>b)|(?<x>.)))\k<x>/d.exec('\uD800\uD800');
+            a.groups.x.charCodeAt(0) === 0xD800 && a.indices.groups.x === a.indices[3] && a.indices[1] ===
+                undefined
+        "#,
     );
 }
 

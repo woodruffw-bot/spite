@@ -104,10 +104,17 @@ fn previous_gap_programs_snapshot() {
 #[test]
 fn local_open_future_named_ranges_imports_negative_commit_and_surrogates_are_exact() {
     assert_true(
-        r"let a=/(?<=a(?=(?<x>b)\k<x>))b/d.exec('abb');a.groups.x==='b'&&a.indices.groups.x===a.indices[1]&&a.indices[1][0]===1",
+        r#"
+            let a = /(?<=a(?=(?<x>b)\k<x>))b/d.exec('abb');
+            a.groups.x === 'b' && a.indices.groups.x === a.indices[1] && a.indices[1][0] === 1
+        "#,
     );
     assert_true(
-        r"let a=/(?<=(?<x>\k<y>)(?<y>b))c/d.exec('bbc');a.groups.x==='b'&&a.groups.y==='b'&&a.indices.groups.x[0]===0&&a.indices.groups.y[0]===1",
+        r#"
+            let a = /(?<=(?<x>\k<y>)(?<y>b))c/d.exec('bbc');
+            a.groups.x === 'b' && a.groups.y === 'b' && a.indices.groups.x[0] === 0 && a.indices.groups.y[
+                0] === 1
+        "#,
     );
     assert_true(
         r"let a=/(?<=(?<x>\k<x>))a/d.exec('a');a.groups.x===''&&a.indices.groups.x[0]===0&&a.indices.groups.x[1]===0",
@@ -119,7 +126,10 @@ fn local_open_future_named_ranges_imports_negative_commit_and_surrogates_are_exa
         r"let a=/(?<!(\2)(b))c|c/d.exec('bbc');a[1]===undefined&&a[2]===undefined&&a.indices[1]===undefined",
     );
     assert_true(
-        r"let a=/(ab)(?<=b(?=(\1)\2))a/d.exec('ababab');a[1]==='ab'&&a[2]==='ab'&&a.indices[1][0]===0&&a.indices[2][0]===2",
+        r#"
+            let a = /(ab)(?<=b(?=(\1)\2))a/d.exec('ababab');
+            a[1] === 'ab' && a[2] === 'ab' && a.indices[1][0] === 0 && a.indices[2][0] === 2
+        "#,
     );
     assert_true(
         r"let a=/(?<=a(?=([\uD800])\1))[\uD800]/d.exec('a\uD800\uD800\uDC00');a.index===1&&a.indices[1][0]===1",
@@ -128,16 +138,35 @@ fn local_open_future_named_ranges_imports_negative_commit_and_surrogates_are_exa
 #[test]
 fn consumers_global_sticky_empty_advance_and_callbacks_preserve_reference_positions() {
     assert_true(
-        r"let r=/(?<=a(?=(b)\1))b/dy;r.lastIndex=1;let a=r.exec('abb');a.index===1&&r.lastIndex===2&&r.exec('abb')===null&&r.lastIndex===0",
+        r#"
+            let r = /(?<=a(?=(b)\1))b/dy;
+            r.lastIndex = 1;
+            let a = r.exec('abb');
+            a.index === 1 && r.lastIndex === 2 && r.exec('abb') === null && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/(?<=a(?=(b)\1))b/dg,a=[...'abb abb'.matchAll(r)];a.length===2&&a[1].index===5&&a[1].indices[1][0]===5&&r.lastIndex===0",
+        r#"
+            let r = /(?<=a(?=(b)\1))b/dg,
+                a = [...'abb abb'.matchAll(r)];
+            a.length === 2 && a[1].index === 5 && a[1].indices[1][0] === 5 && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let a=[...'abb'.matchAll(/(?<=a(?=(b)\1))/dg)];a.length===1&&a[0].index===1&&a[0][0]===''&&a[0].indices[1][0]===1",
+        r#"
+            let a = [...'abb'.matchAll(/(?<=a(?=(b)\1))/dg)];
+            a.length === 1 && a[0].index === 1 && a[0][0] === '' && a[0].indices[1][0] === 1
+        "#,
     );
     assert_true(
-        r"let seen=[];let s='abb abb'.replace(/(?<=a(?=(b)\1))b/g,(m,x,i)=>{seen.push(x,i);return '_'});s==='a_b a_b'&&seen.join('|')==='b|1|b|5'",
+        r#"
+            let seen = [];
+            let s = 'abb abb'.replace(/(?<=a(?=(b)\1))b/g, (m, x, i) => {
+                seen.push(x, i);
+                return '_'
+            });
+            s === 'a_b a_b' && seen.join('|') === 'b|1|b|5'
+        "#,
     );
     assert_true(
         r"'abb'.search(/(?<=a(?=(b)\1))b/)===1&&'abb'.split(/(?<=a(?=(b)\1))b/).join('|')==='a|b|b'",

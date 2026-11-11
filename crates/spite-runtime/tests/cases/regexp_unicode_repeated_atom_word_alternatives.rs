@@ -78,19 +78,38 @@ fn unicode_repeated_atom_word_alternatives_counts_and_scopes() {
 #[test]
 fn unicode_repeated_atom_word_alternatives_fold_surrogates_and_names() {
     assert_true(
-        r"let m=/(?<whole>\B(?<__proto__>ſ|K)+\b)/dvi.exec('XSk');m[0]==='Sk'&&m[1]==='Sk'&&m[2]==='k'&&m.groups.__proto__==='k'&&m.indices.groups.__proto__[0]===2&&m.indices.groups.__proto__[1]===3",
+        r#"
+            let m = /(?<whole>\B(?<__proto__>ſ|K)+\b)/dvi.exec('XSk');
+            m[0] === 'Sk' && m[1] === 'Sk' && m[2] === 'k' && m.groups.__proto__ === 'k' && m.indices
+                .groups.__proto__[0] === 2 && m.indices.groups.__proto__[1] === 3
+        "#,
     );
     assert_true(
-        r"let m=/(?<whole>\B(?<last>😀|a)+\B)/dvg.exec('😀😀');m[0]==='😀😀'&&m.groups.last==='😀'&&m.indices.groups.last[0]===2&&m.indices.groups.last[1]===4",
+        r#"
+            let m = /(?<whole>\B(?<last>😀|a)+\B)/dvg.exec('😀😀');
+            m[0] === '😀😀' && m.groups.last === '😀' && m.indices.groups.last[0] === 2 && m.indices.groups
+                .last[1] === 4
+        "#,
     );
     assert_true(
-        r"let r=/\B(😀|a)+\B/duy;r.lastIndex=1;let m=r.exec('😀😀');m.index===0&&m[0]==='😀😀'&&m.indices[1][0]===2&&r.lastIndex===4",
+        r#"
+            let r = /\B(😀|a)+\B/duy;
+            r.lastIndex = 1;
+            let m = r.exec('😀😀');
+            m.index === 0 && m[0] === '😀😀' && m.indices[1][0] === 2 && r.lastIndex === 4
+        "#,
     );
     assert_true(
-        r"let m=/\b(?<x>a|b){0}\b/dv.exec('ab');m[0]===''&&m[1]===undefined&&m.groups.x===undefined&&m.indices[1]===undefined",
+        r#"
+            let m = /\b(?<x>a|b){0}\b/dv.exec('ab');
+            m[0] === '' && m[1] === undefined && m.groups.x === undefined && m.indices[1] === undefined
+        "#,
     );
     assert_true(
-        r"let m=/\B(\uD800|\uDC00)+/du.exec('\uD800x\uDC00');m[0]==='\uD800'&&m.indices[1][1]===1&&/\B(\uD83D|\uDE00)+/u.exec('😀')===null",
+        r#"
+            let m = /\B(\uD800|\uDC00)+/du.exec('\uD800x\uDC00');
+            m[0] === '\uD800' && m.indices[1][1] === 1 && /\B(\uD83D|\uDE00)+/u.exec('😀') === null
+        "#,
     );
 }
 #[test]
@@ -101,19 +120,60 @@ fn unicode_repeated_atom_word_alternatives_string_consumers() {
     );
     assert_true(r"let a='ab ba'.split(/\b(a|b)+\B/u);a.length===5&&a.join('|')==='|a|b |b|a'");
     assert_true(
-        r"let a=[...'ab ba'.matchAll(/\B(?<x>a|b)+\b/dvg)];a.length===2&&a[0].index===1&&a[1].index===4&&a[1].groups.x==='a'&&a[1].indices.groups.x[0]===4",
+        r#"
+            let a = [...'ab ba'.matchAll(/\B(?<x>a|b)+\b/dvg)];
+            a.length === 2 && a[0].index === 1 && a[1].index === 4 && a[1].groups.x === 'a' && a[1].indices
+                .groups.x[0] === 4
+        "#,
     );
 }
 #[test]
 fn unicode_repeated_atom_word_alternatives_coercions_and_last_index() {
     assert_true(
-        r"let log='',r=/\B(a|b)+\b/vgy;r.lastIndex={valueOf(){log+='i';return 1}};let m=r.exec({toString(){log+='s';return 'Xab'}});log==='si'&&m.index===1&&r.lastIndex===3",
+        r#"
+            let log = '',
+                r = /\B(a|b)+\b/vgy;
+            r.lastIndex = {
+                valueOf() {
+                    log += 'i';
+                    return 1
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    log += 's';
+                    return 'Xab'
+                }
+            });
+            log === 'si' && m.index === 1 && r.lastIndex === 3
+        "#,
     );
     assert_true(
-        r"let r=/\B(a|b)+\b/ug;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('Xab')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /\B(a|b)+\b/ug;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('Xab')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
     assert_true(
-        r"let r=/\B(a|b)+\b/v;Object.defineProperty(r,'lastIndex',{value:100,writable:false});let m=r.exec('Xab');m.index===1&&r.lastIndex===100",
+        r#"
+            let r = /\B(a|b)+\b/v;
+            Object.defineProperty(r, 'lastIndex', {
+                value: 100,
+                writable: false
+            });
+            let m = r.exec('Xab');
+            m.index === 1 && r.lastIndex === 100
+        "#,
     );
 }
 

@@ -83,38 +83,83 @@ fn middle_empty_capture_result_snapshot() {
 #[test]
 fn middle_empty_captures_restore_named_positions_on_greedy_and_lazy_retries() {
     assert_true(
-        r"let a=/(?<x>a)(?<y>b)(?<last>(?<before>)\k<x>(?<mid>)\k<y>(?<after>))*ab$/d.exec('ababab');a[0]==='ababab'&&a.groups.last==='ab'&&a.indices.groups.last===a.indices[3]&&a.indices[3][0]===2&&a.indices[3][1]===4&&a.indices.groups.before[0]===2&&a.indices.groups.mid===a.indices[5]&&a.indices[5][0]===3&&a.indices[5][1]===3&&a.indices.groups.after[0]===4",
+        r#"
+            let a = /(?<x>a)(?<y>b)(?<last>(?<before>)\k<x>(?<mid>)\k<y>(?<after>))*ab$/d.exec('ababab');
+            a[0] === 'ababab' && a.groups.last === 'ab' && a.indices.groups.last === a.indices[3] && a
+                .indices[3][0] === 2 && a.indices[3][1] === 4 && a.indices.groups.before[0] === 2 && a
+                .indices.groups.mid === a.indices[5] && a.indices[5][0] === 3 && a.indices[5][1] === 3 && a
+                .indices.groups.after[0] === 4
+        "#,
     );
     assert_true(
-        r"let a=/((?<x>a)(?<y>b)(?<last>\k<x>(?<mid>)\k<y>)+?)\1/d.exec('abababab');a[0]==='abababab'&&a[1]==='abab'&&a.groups.last==='ab'&&a.indices.groups.mid===a.indices[5]&&a.indices[5][0]===3",
+        r#"
+            let a = /((?<x>a)(?<y>b)(?<last>\k<x>(?<mid>)\k<y>)+?)\1/d.exec('abababab');
+            a[0] === 'abababab' && a[1] === 'abab' && a.groups.last === 'ab' && a.indices.groups.mid === a
+                .indices[5] && a.indices[5][0] === 3
+        "#,
     );
     assert_true(
-        r"let a=/(?<x>a)(?<y>bb)(?<last>\k<y>(?<mid>)\k<x>)+$/d.exec('abbbbabba');a[0]==='abbbbabba'&&a.groups.last==='bba'&&a.indices.groups.last[0]===6&&a.indices.groups.mid===a.indices[4]&&a.indices[4][0]===8",
+        r#"
+            let a = /(?<x>a)(?<y>bb)(?<last>\k<y>(?<mid>)\k<x>)+$/d.exec('abbbbabba');
+            a[0] === 'abbbbabba' && a.groups.last === 'bba' && a.indices.groups.last[0] === 6 && a.indices
+                .groups.mid === a.indices[4] && a.indices[4][0] === 8
+        "#,
     );
     assert_true(
-        r"let a=/(?:(?<x>a)|(?<x>b))(?<last>\1(?<mid>)\2)+c/d.exec('bbc');a[0]==='bbc'&&a[1]===undefined&&a.groups.x==='b'&&a.groups.mid===''&&a.indices.groups.mid===a.indices[4]&&a.indices[4][0]===1",
+        r#"
+            let a = /(?:(?<x>a)|(?<x>b))(?<last>\1(?<mid>)\2)+c/d.exec('bbc');
+            a[0] === 'bbc' && a[1] === undefined && a.groups.x === 'b' && a.groups.mid === '' && a.indices
+                .groups.mid === a.indices[4] && a.indices[4][0] === 1
+        "#,
     );
     assert_true(
-        r"let a=/(?<x>a)(?<last>\1(?<mid>)\k<x>)+/d.exec('aaaaa');a[0]==='aaaaa'&&a.groups.last==='aa'&&a.indices.groups.mid===a.indices[3]&&a.indices[3][0]===4",
+        r#"
+            let a = /(?<x>a)(?<last>\1(?<mid>)\k<x>)+/d.exec('aaaaa');
+            a[0] === 'aaaaa' && a.groups.last === 'aa' && a.indices.groups.mid === a.indices[3] && a
+                .indices[3][0] === 4
+        "#,
     );
     assert_true(
-        r"let a=/(?<x>.)(?<y>a)(?<last>\k<x>(?<mid>)\k<y>)+/d.exec('\uD800a\uD800a');a[0].length===4&&a.groups.last.charCodeAt(0)===0xD800&&a.indices.groups.mid===a.indices[4]&&a.indices[4][0]===3",
+        r#"
+            let a = /(?<x>.)(?<y>a)(?<last>\k<x>(?<mid>)\k<y>)+/d.exec('\uD800a\uD800a');
+            a[0].length === 4 && a.groups.last.charCodeAt(0) === 0xD800 && a.indices.groups.mid === a
+                .indices[4] && a.indices[4][0] === 3
+        "#,
     );
 }
 
 #[test]
 fn middle_capture_consumers_and_empty_iterations_keep_original_numbering() {
     assert_true(
-        r"let r=/(?<x>a)(?<y>b)(?<last>\k<x>(?<mid>)\k<y>)+/dg,a=[...'abab ababab'.matchAll(r)];a.length===2&&a[0].groups.mid===''&&a[0].indices.groups.mid===a[0].indices[4]&&a[0].indices[4][0]===3&&a[1].indices[4][0]===10&&r.lastIndex===0",
+        r#"
+            let r = /(?<x>a)(?<y>b)(?<last>\k<x>(?<mid>)\k<y>)+/dg,
+                a = [...'abab ababab'.matchAll(r)];
+            a.length === 2 && a[0].groups.mid === '' && a[0].indices.groups.mid === a[0].indices[4] && a[0]
+                .indices[4][0] === 3 && a[1].indices[4][0] === 10 && r.lastIndex === 0
+        "#,
     );
     assert_true(
         r"'qababab'.replace(/(?<x>a)(?<y>b)(?<last>\k<x>(?<mid>)\k<y>)+/,'<$<last>:$<mid>>')==='q<ab:>'&&'qababab'.search(/(a)(b)(\1()\2)+/)===1&&'qabababZ'.split(/(a)(b)(\1()\2)+/).join(',')==='q,a,b,ab,,Z'",
     );
     assert_true(
-        r"let r=/(?<x>a)(?<y>b)(?<last>\k<x>(?<mid>)\k<y>)+/dy;r.lastIndex=1;let copy=new RegExp(r),a=r.exec('qababab');a[0]==='ababab'&&a.indices.groups.mid[0]===6&&r.lastIndex===7&&r.exec('qababab')===null&&r.lastIndex===0&&copy.source===r.source&&copy.lastIndex===0",
+        r#"
+            let r = /(?<x>a)(?<y>b)(?<last>\k<x>(?<mid>)\k<y>)+/dy;
+            r.lastIndex = 1;
+            let copy = new RegExp(r),
+                a = r.exec('qababab');
+            a[0] === 'ababab' && a.indices.groups.mid[0] === 6 && r.lastIndex === 7 && r.exec(
+                'qababab') === null && r.lastIndex === 0 && copy.source === r.source && copy.lastIndex ===
+                0
+        "#,
     );
     assert_true(
-        r"let a=[...'q'.matchAll(/(?<x>)(?<y>)(?<last>\k<x>(?<mid>)\k<y>)*/dg)],b=/(?<x>(\k<x>(?<mid>)\k<y>)+a)(?<y>b)/d.exec('ab');a.length===2&&a[0].groups.last===undefined&&a[0].groups.mid===undefined&&a[0].indices.groups.mid===undefined&&a[1].index===1&&b.groups.mid===''&&b.indices.groups.mid[0]===0",
+        r#"
+            let a = [...'q'.matchAll(/(?<x>)(?<y>)(?<last>\k<x>(?<mid>)\k<y>)*/dg)],
+                b = /(?<x>(\k<x>(?<mid>)\k<y>)+a)(?<y>b)/d.exec('ab');
+            a.length === 2 && a[0].groups.last === undefined && a[0].groups.mid === undefined && a[0]
+                .indices.groups.mid === undefined && a[1].index === 1 && b.groups.mid === '' && b.indices
+                .groups.mid[0] === 0
+        "#,
     );
 }
 

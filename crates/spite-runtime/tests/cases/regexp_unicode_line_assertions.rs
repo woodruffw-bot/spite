@@ -40,7 +40,11 @@ fn unicode_line_assertion_results_snapshot() {
 fn unicode_line_assertions_empty_endpoints_and_multiline_context() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"/^$/{mode}.test('')&&!/^$/{mode}.test('A')&&!/^$/{mode}.test('\n')&&/^$/m{mode}.test('\n')&&/^$/m{mode}.test('\r\n')&&/^$/m{mode}.test('\u2028')&&/^$/m{mode}.test('\u2029')"
+            r#"
+                /^$/{mode}.test('') && !/^$/{mode}.test('A') && !/^$/{mode}.test('\n') &&
+                    /^$/m{mode}.test('\n') && /^$/m{mode}.test('\r\n') && /^$/m{mode}
+                    .test('\u2028') && /^$/m{mode}.test('\u2029')
+            "#
         ));
         assert_true(&format!(
             r"let r=/$/{mode}g,m=r.exec('A\n');m.index===2&&m[0]===''&&r.lastIndex===2&&r.exec('A\n').index===2"
@@ -61,10 +65,22 @@ fn unicode_line_assertions_empty_endpoints_and_multiline_context() {
 fn unicode_line_assertions_original_empty_captures_and_pair_starts() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/(?<__proto__>(^))/d{mode}y;r.lastIndex=1;let m=r.exec('😀');m.index===0&&m[0]===''&&m[1]===''&&m[2]===''&&m.indices[1][0]===0&&m.indices[1][1]===0&&m.indices.groups.__proto__===m.indices[1]&&r.lastIndex===0"
+            r#"
+                let r = /(?<__proto__>(^))/d{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('😀');
+                m.index === 0 && m[0] === '' && m[1] === '' && m[2] === '' && m.indices[1][0] === 0 && m
+                    .indices[1][1] === 0 && m.indices.groups.__proto__ === m.indices[1] && r.lastIndex === 0
+            "#
         ));
         assert_true(&format!(
-            r"let r=/(?<x>$)/d{mode}g;r.lastIndex=1;let m=r.exec('😀');m.index===2&&m.indices.groups.x[0]===2&&m.indices.groups.x[1]===2&&r.lastIndex===2"
+            r#"
+                let r = /(?<x>$)/d{mode}g;
+                r.lastIndex = 1;
+                let m = r.exec('😀');
+                m.index === 2 && m.indices.groups.x[0] === 2 && m.indices.groups.x[1] === 2 && r.lastIndex ===
+                    2
+            "#
         ));
         assert_true(&format!(
             r"let r=/$/{mode}y;r.lastIndex=1;r.exec('😀')===null&&r.lastIndex===0"
@@ -85,7 +101,11 @@ fn unicode_line_assertions_original_empty_captures_and_pair_starts() {
 fn unicode_line_assertion_consumers_advance_after_original_empty_matches() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=[...'A\r\n😀\n'.matchAll(/(?<x>^)/dm{mode}g)];a.map(m=>m.index).join(',')==='0,2,3,6'&&a.every(m=>m[0]===''&&m[1]===''&&m.indices.groups.x===m.indices[1])"
+            r#"
+                let a = [...'A\r\n😀\n'.matchAll(/(?<x>^)/dm{mode}g)];
+                a.map(m => m.index).join(',') === '0,2,3,6' && a.every(m => m[0] === '' && m[1] === '' && m
+                    .indices.groups.x === m.indices[1])
+            "#
         ));
         assert_true(&format!(
             r"'A\n😀'.replace(/(?<x>^)/m{mode}g,'<$1$<x>>')==='<>A\n<>😀'"
@@ -105,16 +125,63 @@ fn unicode_line_assertion_consumers_advance_after_original_empty_matches() {
 #[test]
 fn unicode_line_assertion_clones_coercions_and_strict_writes() {
     assert_true(
-        r"let r=/(?<x>^$)/dimug,c=new RegExp(r,'dvy'),b=new RegExp(c,'dimuy');c.source==='(?<x>^$)'&&!c.multiline&&c.unicodeSets&&c.exec('\n')===null&&b.exec('\n').groups.x===''&&b.lastIndex===0",
+        r#"
+            let r = /(?<x>^$)/dimug,
+                c = new RegExp(r, 'dvy'),
+                b = new RegExp(c, 'dimuy');
+            c.source === '(?<x>^$)' && !c.multiline && c.unicodeSets && c.exec('\n') === null && b.exec(
+                '\n').groups.x === '' && b.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let t='',r=/^/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m[0]===''&&m.index===0&&r.lastIndex===0",
+        r#"
+            let t = '',
+                r = /^/uy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 1
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return '😀'
+                }
+            });
+            t === 'si' && m[0] === '' && m.index === 0 && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/^$/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            let r = /^$/vy;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/$/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /$/vy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 

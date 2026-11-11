@@ -7,65 +7,129 @@ use crate::common::assert_true;
 #[test]
 fn earliest_overlapping_starts_precede_greedy_lazy_and_bounded_endpoint_selection() {
     assert_true(
-        r"let a=/([ab][ab])+$/.exec('aaaaa'),b=/([ab][ab])*$/.exec('aaaaa');a.index===1&&a[0]==='aaaa'&&b.index===1&&b[0]==='aaaa'",
+        r#"
+            let a = /([ab][ab])+$/.exec('aaaaa'),
+                b = /([ab][ab])*$/.exec('aaaaa');
+            a.index === 1 && a[0] === 'aaaa' && b.index === 1 && b[0] === 'aaaa'
+        "#,
     );
     assert_true(
-        r"let a=/([ab][ab]){1,2}$/d.exec('aaaaaa'),b=/([ab][ab]){1,2}?$/d.exec('aaaaaa');a.index===2&&a[0]==='aaaa'&&a.indices[1][0]===4&&b.index===2&&b[0]==='aaaa'",
+        r#"
+            let a = /([ab][ab]){1,2}$/d.exec('aaaaaa'),
+                b = /([ab][ab]){1,2}?$/d.exec('aaaaaa');
+            a.index === 2 && a[0] === 'aaaa' && a.indices[1][0] === 4 && b.index === 2 && b[0] === 'aaaa'
+        "#,
     );
     assert_true(
-        r"let a=/([ab][ab])*?$/d.exec('aaaa');a.index===0&&a[0]==='aaaa'&&a.indices[1][0]===2&&/^(ab)+$/.exec('abab')[1]==='ab'&&/^(ab)+$/.exec('ababa')===null",
+        r#"
+            let a = /([ab][ab])*?$/d.exec('aaaa');
+            a.index === 0 && a[0] === 'aaaa' && a.indices[1][0] === 2 && /^(ab)+$/.exec('abab')[1] ===
+                'ab' && /^(ab)+$/.exec('ababa') === null
+        "#,
     );
 }
 
 #[test]
 fn word_assertions_choose_complete_iterations_and_preserve_earliest_empty_matches() {
     assert_true(
-        r"let a=/\b([ab][ab])*\b/d.exec('aaaaa'),b=/\b([ab][ab])*?\b/d.exec('aaaa');a.index===0&&a[0]===''&&a[1]===undefined&&a.indices[1]===undefined&&b[0]===''",
+        r#"
+            let a = /\b([ab][ab])*\b/d.exec('aaaaa'),
+                b = /\b([ab][ab])*?\b/d.exec('aaaa');
+            a.index === 0 && a[0] === '' && a[1] === undefined && a.indices[1] === undefined && b[0] === ''
+        "#,
     );
     assert_true(
-        r"let a=/\B([ab][ab])+\b/d.exec('aaaaa'),b=/\b([ab][ab])+\B/d.exec('aaaaa');a.index===1&&a[0]==='aaaa'&&a.indices[1][0]===3&&b.index===0&&b[0]==='aaaa'&&/\b\B(ab)*$/.exec('ab')===null",
+        r#"
+            let a = /\B([ab][ab])+\b/d.exec('aaaaa'),
+                b = /\b([ab][ab])+\B/d.exec('aaaaa');
+            a.index === 1 && a[0] === 'aaaa' && a.indices[1][0] === 3 && b.index === 0 && b[0] ===
+                'aaaa' && /\b\B(ab)*$/.exec('ab') === null
+        "#,
     );
     assert_true(
-        r"let a=/\b(a\B)*\B/d.exec('aaaa');a.index===0&&a[0]==='aaa'&&a.indices[1][0]===2&&/\b(\Ba)+\b/.exec('aaa')===null",
+        r#"
+            let a = /\b(a\B)*\B/d.exec('aaaa');
+            a.index === 0 && a[0] === 'aaa' && a.indices[1][0] === 2 && /\b(\Ba)+\b/.exec('aaa') === null
+        "#,
     );
 }
 
 #[test]
 fn multiline_outer_and_iteration_assertions_keep_crlf_and_complete_input_positions() {
     assert_true(
-        r"let a=/^((^a$\n)+)$/dm.exec('x\na\na\n');a.index===2&&a[1]==='a\na\n'&&a[2]==='a\n'&&a.indices[2][0]===4&&/^((^a$\n)+)$/.exec('a\n')===null",
+        r#"
+            let a = /^((^a$\n)+)$/dm.exec('x\na\na\n');
+            a.index === 2 && a[1] === 'a\na\n' && a[2] === 'a\n' && a.indices[2][0] === 4 && /^((^a$\n)+)$/
+                .exec('a\n') === null
+        "#,
     );
     assert_true(
         r"let a=/(a$\r$\n)+$/dm.exec('a\r\na\r\n');a[0]==='a\r\na\r\n'&&a[1]==='a\r\n'&&a.indices[1][0]===3",
     );
     assert_true(
-        r"let a=/^(ab)+$/dm.exec('x\u2028abab\u2029y');a.index===2&&a[0]==='abab'&&a.indices[1][0]===4&&/^(ab)+$/.exec('abab\n')===null",
+        r#"
+            let a = /^(ab)+$/dm.exec('x\u2028abab\u2029y');
+            a.index === 2 && a[0] === 'abab' && a.indices[1][0] === 4 && /^(ab)+$/.exec('abab\n') === null
+        "#,
     );
 }
 
 #[test]
 fn enclosing_alternative_and_zero_iteration_captures_keep_specified_slots() {
     assert_true(
-        r"let a=/^((a())*)$/d.exec('aaa'),b=/^((a())*)$/d.exec('');a[1]==='aaa'&&a[2]==='a'&&a[3]===''&&a.indices[2][0]===2&&b[1]===''&&b[2]===undefined&&b[3]===undefined&&Object.hasOwn(b,'3')&&Object.hasOwn(b.indices,'3')",
+        r#"
+            let a = /^((a())*)$/d.exec('aaa'),
+                b = /^((a())*)$/d.exec('');
+            a[1] === 'aaa' && a[2] === 'a' && a[3] === '' && a.indices[2][0] === 2 && b[1] === '' && b[
+                2] === undefined && b[3] === undefined && Object.hasOwn(b, '3') && Object.hasOwn(b.indices,
+                    '3')
+        "#,
     );
     assert_true(
-        r"let a=/((ab)+$)|(a+)$/d.exec('abab'),b=/((ab)+$)|(a+)$/d.exec('aaa');a[1]==='abab'&&a[2]==='ab'&&a[3]===undefined&&a.indices[2][0]===2&&b[1]===undefined&&b[2]===undefined&&b[3]==='aaa'",
+        r#"
+            let a = /((ab)+$)|(a+)$/d.exec('abab'),
+                b = /((ab)+$)|(a+)$/d.exec('aaa');
+            a[1] === 'abab' && a[2] === 'ab' && a[3] === undefined && a.indices[2][0] === 2 && b[1] ===
+                undefined && b[2] === undefined && b[3] === 'aaa'
+        "#,
     );
     assert_true(
-        r"let a=/(ab)+$|b+$/d.exec('abb'),b=/b+$|(ab)+$/d.exec('abab');a.index===1&&a[0]==='bb'&&a[1]===undefined&&b.index===0&&b[0]==='abab'&&b[1]==='ab'",
+        r#"
+            let a = /(ab)+$|b+$/d.exec('abb'),
+                b = /b+$|(ab)+$/d.exec('abab');
+            a.index === 1 && a[0] === 'bb' && a[1] === undefined && b.index === 0 && b[0] === 'abab' && b[
+                1] === 'ab'
+        "#,
     );
 }
 
 #[test]
 fn global_sticky_original_flags_and_utf16_positions_survive_asserted_group_search() {
     assert_true(
-        r"let r=/(ab)+$/dgm,a=r.exec('abab\nab'),b=r.exec('abab\nab');a.index===0&&a.indices[1][0]===2&&b.index===5&&r.lastIndex===7&&r.exec('abab\nab')===null&&r.lastIndex===0",
+        r#"
+            let r = /(ab)+$/dgm,
+                a = r.exec('abab\nab'),
+                b = r.exec('abab\nab');
+            a.index === 0 && a.indices[1][0] === 2 && b.index === 5 && r.lastIndex === 7 && r.exec(
+                'abab\nab') === null && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/([ab][ab])+$/dy;r.lastIndex=1;let a=r.exec('aaaaa');a.index===1&&a.indices[1][0]===3&&r.lastIndex===5&&r.exec('aaaaa')===null&&r.lastIndex===0&&r.exec('aaaaa')===null",
+        r#"
+            let r = /([ab][ab])+$/dy;
+            r.lastIndex = 1;
+            let a = r.exec('aaaaa');
+            a.index === 1 && a.indices[1][0] === 3 && r.lastIndex === 5 && r.exec('aaaaa') === null && r
+                .lastIndex === 0 && r.exec('aaaaa') === null
+        "#,
     );
     assert_true(
-        r"let a=/^([µ][µ])+$/di.exec('Μµ'),b=/(\uDCA9\B)+$/d.exec('💩');a[0]==='Μµ'&&a[1]==='Μµ'&&b.index===1&&b.indices[1][0]===1&&/^(.\n)+$/.exec('\n\n')===null&&/^(.\n)+$/s.exec('\n\n')[0]==='\n\n'",
+        r#"
+            let a = /^([µ][µ])+$/di.exec('Μµ'),
+                b = /(\uDCA9\B)+$/d.exec('💩');
+            a[0] === 'Μµ' && a[1] === 'Μµ' && b.index === 1 && b.indices[1][0] === 1 && /^(.\n)+$/.exec(
+                '\n\n') === null && /^(.\n)+$/s.exec('\n\n')[0] === '\n\n'
+        "#,
     );
 }
 
@@ -75,13 +139,41 @@ fn generic_consumers_callbacks_and_intrinsic_arrays_use_final_iteration_captures
         r"'abab'.replace(/(ab)+$/,'<$1>')==='<ab>'&&'xabab'.search(/(ab)+$/)===1&&'abab'.split(/(ab)+$/).join(',')===',ab,'",
     );
     assert_true(
-        r"let seen;let s='xaaa'.replace(/^(a())+$/m,(whole,last,empty,index,input)=>{seen=[whole,last,empty,index,input];return 'q'});s==='xaaa'&&seen===undefined;let t='x\naaa'.replace(/^(a())+$/m,(whole,last,empty,index,input)=>{seen=[whole,last,empty,index,input];return 'q'});t==='x\nq'&&seen[0]==='aaa'&&seen[1]==='a'&&seen[2]===''&&seen[3]===2&&seen[4]==='x\naaa'",
+        r#"
+            let seen;
+            let s = 'xaaa'.replace(/^(a())+$/m, (whole, last, empty, index, input) => {
+                seen = [whole, last, empty, index, input];
+                return 'q'
+            });
+            s === 'xaaa' && seen === undefined;
+            let t = 'x\naaa'.replace(/^(a())+$/m, (whole, last, empty, index, input) => {
+                seen = [whole, last, empty, index, input];
+                return 'q'
+            });
+            t === 'x\nq' && seen[0] === 'aaa' && seen[1] === 'a' && seen[2] === '' && seen[3] === 2 &&
+                seen[4] === 'x\naaa'
+        "#,
     );
     assert_true(
-        r"let r=/(ab)+$/dgm,a=[...'abab\nab'.matchAll(r)];a.length===2&&a[0].indices[1][0]===2&&a[1].indices[1][0]===5&&r.lastIndex===0",
+        r#"
+            let r = /(ab)+$/dgm,
+                a = [...'abab\nab'.matchAll(r)];
+            a.length === 2 && a[0].indices[1][0] === 2 && a[1].indices[1][0] === 5 && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let calls=0;Object.defineProperty(Array.prototype,'1',{set(){calls++},configurable:true});let a=/^((a())*)$/d.exec('');calls===0&&a[1]===''&&a[2]===undefined&&a[3]===undefined&&Object.hasOwn(a,'3')&&Object.hasOwn(a.indices,'3')",
+        r#"
+            let calls = 0;
+            Object.defineProperty(Array.prototype, '1', {
+                set() {
+                    calls++
+                },
+                configurable: true
+            });
+            let a = /^((a())*)$/d.exec('');
+            calls === 0 && a[1] === '' && a[2] === undefined && a[3] === undefined && Object.hasOwn(a,
+                '3') && Object.hasOwn(a.indices, '3')
+        "#,
     );
 }
 

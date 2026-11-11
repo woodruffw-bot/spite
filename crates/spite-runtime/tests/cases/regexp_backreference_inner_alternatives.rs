@@ -73,35 +73,70 @@ fn inner_alternative_reference_result_snapshot() {
 #[test]
 fn common_enclosing_and_inactive_capture_slots_survive_failed_continuations() {
     assert_true(
-        r"let a=/(?:(?<x>a)|(?<x>ab))\k<x>/d.exec('qabab');a.index===1&&a[1]===undefined&&a[2]==='ab'&&a.groups.x==='ab'&&a.indices.groups.x===a.indices[2]&&a.indices[2][0]===1&&a.indices[2][1]===3",
+        r#"
+            let a = /(?:(?<x>a)|(?<x>ab))\k<x>/d.exec('qabab');
+            a.index === 1 && a[1] === undefined && a[2] === 'ab' && a.groups.x === 'ab' && a.indices.groups
+                .x === a.indices[2] && a.indices[2][0] === 1 && a.indices[2][1] === 3
+        "#,
     );
     assert_true(
-        r"let a=/((a)|(ab))\1/d.exec('qabab');a[0]==='abab'&&a[1]==='ab'&&a[2]===undefined&&a[3]==='ab'&&a.indices[1][0]===1&&a.indices[1][1]===3",
+        r#"
+            let a = /((a)|(ab))\1/d.exec('qabab');
+            a[0] === 'abab' && a[1] === 'ab' && a[2] === undefined && a[3] === 'ab' && a.indices[1][0] ===
+                1 && a.indices[1][1] === 3
+        "#,
     );
     assert_true(
-        r"let a=/(?<q>q)(?:(?<x>a)|(?<x>b))\k<q>\k<x>/d.exec('qbqb');a.groups.q==='q'&&a.groups.x==='b'&&a[2]===undefined&&a.indices.groups.q===a.indices[1]&&a.indices.groups.x===a.indices[3]",
+        r#"
+            let a = /(?<q>q)(?:(?<x>a)|(?<x>b))\k<q>\k<x>/d.exec('qbqb');
+            a.groups.q === 'q' && a.groups.x === 'b' && a[2] === undefined && a.indices.groups.q === a
+                .indices[1] && a.indices.groups.x === a.indices[3]
+        "#,
     );
     assert_true(
-        r"let a=/((a)|())\1/d.exec('b');a[0]===''&&a[1]===''&&a[2]===undefined&&a[3]===''&&a.indices[3][0]===0&&a.indices[3][1]===0",
+        r#"
+            let a = /((a)|())\1/d.exec('b');
+            a[0] === '' && a[1] === '' && a[2] === undefined && a[3] === '' && a.indices[3][0] === 0 && a
+                .indices[3][1] === 0
+        "#,
     );
     assert_true(
-        r"let a=/(?:(?<x>a)|\B(?<x>.)\B)\k<x>/d.exec('\uD800\uD800');a.groups.x.charCodeAt(0)===0xD800&&a.indices.groups.x===a.indices[2]&&a.indices[2][1]===1",
+        r#"
+            let a = /(?:(?<x>a)|\B(?<x>.)\B)\k<x>/d.exec('\uD800\uD800');
+            a.groups.x.charCodeAt(0) === 0xD800 && a.indices.groups.x === a.indices[2] && a.indices[2][
+                1] === 1
+        "#,
     );
 }
 
 #[test]
 fn consumers_sticky_positions_and_empty_choices_keep_order_and_original_sources() {
     assert_true(
-        r"let r=/(?:(?<x>a)|(?<x>ab))\k<x>/dg,a=[...'abab aa'.matchAll(r)];a.length===2&&a[0].groups.x==='ab'&&a[1].groups.x==='a'&&a[0].indices.groups.x===a[0].indices[2]&&r.lastIndex===0",
+        r#"
+            let r = /(?:(?<x>a)|(?<x>ab))\k<x>/dg,
+                a = [...'abab aa'.matchAll(r)];
+            a.length === 2 && a[0].groups.x === 'ab' && a[1].groups.x === 'a' && a[0].indices.groups.x ===
+                a[0].indices[2] && r.lastIndex === 0
+        "#,
     );
     assert_true(
         r"'qabab'.replace(/(?:(?<x>a)|(?<x>ab))\k<x>/,'<$<x>>')==='q<ab>'&&'qabab'.search(/(a|ab)\1/)===1&&'qababz'.split(/(?:(a)|(ab))\1\2/).join(',')==='q,,ab,z'",
     );
     assert_true(
-        r"let r=/(?:(?<x>a)|(?<x>b))\k<x>/dy;r.lastIndex=1;let copy=new RegExp(r),a=r.exec('qbb');a.groups.x==='b'&&r.lastIndex===3&&r.exec('qbb')===null&&r.lastIndex===0&&copy.source===r.source&&copy.lastIndex===0",
+        r#"
+            let r = /(?:(?<x>a)|(?<x>b))\k<x>/dy;
+            r.lastIndex = 1;
+            let copy = new RegExp(r),
+                a = r.exec('qbb');
+            a.groups.x === 'b' && r.lastIndex === 3 && r.exec('qbb') === null && r.lastIndex === 0 && copy
+                .source === r.source && copy.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let a=[...'q'.matchAll(/(?:(?<x>a)|)\k<x>/dg)];a.length===2&&a[0].index===0&&a[1].index===1&&a[0].groups.x===undefined",
+        r#"
+            let a = [...'q'.matchAll(/(?:(?<x>a)|)\k<x>/dg)];
+            a.length === 2 && a[0].index === 0 && a[1].index === 1 && a[0].groups.x === undefined
+        "#,
     );
 }
 

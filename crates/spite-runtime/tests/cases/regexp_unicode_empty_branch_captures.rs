@@ -8,14 +8,31 @@ use spite_runtime::{Realm, Value};
 fn nested_sibling_and_empty_only_captures_keep_selected_branch_participation() {
     for class in [r"[\q{a|b}]", r"[\q{a|b|ab}&&\p{Any}]"] {
         assert_true(&format!(
-            "let a=/(?<each>(?<part>{class})|(?:(?<empty>(?<deep>))(?<sibling>))){{3}}/dv.exec('abX'),b=/(?<each>(?<part>{class})|(?:(?<empty>(?<deep>))(?<sibling>))){{2}}/dv.exec('abX');a.length===6 && a[0]==='ab' && a.groups.each==='' && a.groups.part===undefined && a.indices[2]===undefined && ['empty','deep','sibling'].every(k=>a.groups[k]==='' && a.indices.groups[k][0]===2 && a.indices.groups[k][1]===2) && b.groups.part==='b' && ['empty','deep','sibling'].every(k=>b.groups[k]===undefined && b.indices.groups[k]===undefined)"
+            r#"
+                let a = /(?<each>(?<part>{class})|(?:(?<empty>(?<deep>))(?<sibling>))){{3}}/dv.exec('abX'),
+                    b = /(?<each>(?<part>{class})|(?:(?<empty>(?<deep>))(?<sibling>))){{2}}/dv.exec('abX');
+                a.length === 6 && a[0] === 'ab' && a.groups.each === '' && a.groups.part === undefined && a
+                    .indices[2] === undefined && ['empty', 'deep', 'sibling'].every(k => a.groups[k] === '' &&
+                        a.indices.groups[k][0] === 2 && a.indices.groups[k][1] === 2) && b.groups.part ===
+                    'b' && ['empty', 'deep', 'sibling'].every(k => b.groups[k] === undefined && b.indices
+                        .groups[k] === undefined)
+            "#
         ));
         assert_true(&format!(
-            "let a=/(?:{class}|(?<empty>)){{3}}/dv.exec('ab'),b=/(?:(?<empty>)|{class}){{2,3}}/dv.exec('ab');a.length===2 && a[0]==='ab' && a.groups.empty==='' && a.indices[1][0]===2 && b[0]==='a' && b.groups.empty===undefined && b.indices[1]===undefined"
+            r#"
+                let a = /(?:{class}|(?<empty>)){{3}}/dv.exec('ab'),
+                    b = /(?:(?<empty>)|{class}){{2,3}}/dv.exec('ab');
+                a.length === 2 && a[0] === 'ab' && a.groups.empty === '' && a.indices[1][0] === 2 && b[0] ===
+                    'a' && b.groups.empty === undefined && b.indices[1] === undefined
+            "#
         ));
     }
     assert_true(
-        r"let a=/(?<each>(?<empty>)|(?<part>[\q{a|b}])){2}/dv.exec('ab');Object.keys(a.groups).join('|')==='each|empty|part' && a[0]==='' && a.groups.each==='' && a.groups.empty==='' && a.groups.part===undefined && a.indices[2][0]===0",
+        r#"
+            let a = /(?<each>(?<empty>)|(?<part>[\q{a|b}])){2}/dv.exec('ab');
+            Object.keys(a.groups).join('|') === 'each|empty|part' && a[0] === '' && a.groups.each === '' &&
+                a.groups.empty === '' && a.groups.part === undefined && a.indices[2][0] === 0
+        "#,
     );
 }
 
@@ -40,23 +57,60 @@ fn empty_capture_utf16_ranges_names_source_and_sticky_state_remain_original() {
 #[test]
 fn empty_capture_string_consumers_callbacks_clones_and_collection_preserve_slots() {
     assert_true(
-        r"let r=/(?<each>(?<part>[\q{a|b}])|(?<empty>))+/dvg,a=[...'abXba'.matchAll(r)];a.length===4 && a[0].groups.part==='b' && a[0].groups.empty===undefined && a[1].groups.part===undefined && a[1].groups.empty==='' && a[1].indices.groups.empty[0]===2 && 'abXba'.replace(r,'<$2:$<empty>>')==='<b:><:>X<a:><:>' && r.lastIndex===0",
+        r#"
+            let r = /(?<each>(?<part>[\q{a|b}])|(?<empty>))+/dvg,
+                a = [...'abXba'.matchAll(r)];
+            a.length === 4 && a[0].groups.part === 'b' && a[0].groups.empty === undefined && a[1].groups
+                .part === undefined && a[1].groups.empty === '' && a[1].indices.groups.empty[0] === 2 &&
+                'abXba'.replace(r, '<$2:$<empty>>') === '<b:><:>X<a:><:>' && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let seen=[],out='abX'.replace(/(?<each>(?<part>[\q{a|b}])|(?<empty>)){3}/vg,(m,each,part,empty,at,input,groups)=>{seen.push([each,part,empty,at,groups.empty]);return '#'});out==='##X#' && seen.length===3 && seen.every(row=>row[0]==='' && row[1]===undefined && row[2]==='' && row[4]==='') && seen[0][3]===0 && seen[1][3]===2",
+        r#"
+            let seen = [],
+                out = 'abX'.replace(/(?<each>(?<part>[\q{a|b}])|(?<empty>)){3}/vg, (m, each, part, empty,
+                    at, input, groups) => {
+                    seen.push([each, part, empty, at, groups.empty]);
+                    return '#'
+                });
+            out === '##X#' && seen.length === 3 && seen.every(row => row[0] === '' && row[1] ===
+                undefined && row[2] === '' && row[4] === '') && seen[0][3] === 0 && seen[1][3] === 2
+        "#,
     );
     assert_true(
-        r"let r=/(?<each>(?<part>[\q{a|b}])|(?<empty>))+/vg;r.lastIndex=9;'Xab'.search(r)===0 && r.lastIndex===9 && 'abXba'.match(r).join('|')==='ab||ba|' && r.lastIndex===0 && 'ab'.split(r).join('|')==='|b|b||'",
+        r#"
+            let r = /(?<each>(?<part>[\q{a|b}])|(?<empty>))+/vg;
+            r.lastIndex = 9;
+            'Xab'.search(r) === 0 && r.lastIndex === 9 && 'abXba'.match(r).join('|') === 'ab||ba|' && r
+                .lastIndex === 0 && 'ab'.split(r).join('|') === '|b|b||'
+        "#,
     );
     assert_true(
-        r"let r=/(?<each>[\q{a|b}]|(?<empty>))+/iv;r.lastIndex=7;let c=new RegExp(r,'dvy'),m=c.exec('ABB');c.source===r.source && c.flags==='dvy' && m[0]==='' && m.groups.each==='' && m.groups.empty==='' && c.lastIndex===0 && r.exec('ABB').groups.empty===undefined && r.lastIndex===7",
+        r#"
+            let r = /(?<each>[\q{a|b}]|(?<empty>))+/iv;
+            r.lastIndex = 7;
+            let c = new RegExp(r, 'dvy'),
+                m = c.exec('ABB');
+            c.source === r.source && c.flags === 'dvy' && m[0] === '' && m.groups.each === '' && m.groups
+                .empty === '' && c.lastIndex === 0 && r.exec('ABB').groups.empty === undefined && r
+                .lastIndex === 7
+        "#,
     );
     let mut realm = Realm::default();
     realm
         .eval(r"var r=/(?<each>(?<part>[\q{a|b}])|(?<empty>)){3}/dvg;r.lastIndex=1")
         .unwrap();
     realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval(r"let m=r.exec('zabX');m[0]==='ab' && m.groups.each==='' && m.groups.part===undefined && m.groups.empty==='' && m.indices.groups.empty[0]===3 && r.lastIndex===3"),Ok(Value::Boolean(true)));
+    assert_eq!(
+        realm.eval(
+            r#"
+                let m = r.exec('zabX');
+                m[0] === 'ab' && m.groups.each === '' && m.groups.part === undefined && m.groups.empty ===
+                    '' && m.indices.groups.empty[0] === 3 && r.lastIndex === 3
+            "#
+        ),
+        Ok(Value::Boolean(true))
+    );
 }
 
 #[test]

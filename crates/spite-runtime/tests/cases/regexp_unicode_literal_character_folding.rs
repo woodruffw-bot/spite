@@ -111,7 +111,13 @@ fn unicode_literal_character_folding_escaped_anchors_and_fold_distinctions() {
 fn unicode_literal_character_folding_captures_consumers_and_original_text() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/(?<x>\u{{10400}})/di{mode}y;r.lastIndex=1;let m=r.exec('\u{{10428}}');m[0]==='\u{{10428}}'&&m[1]==='\u{{10428}}'&&m.groups.x===m[1]&&m.index===0&&m.indices[1][1]===2&&m.indices.groups.x===m.indices[1]&&r.lastIndex===2"
+            r#"
+                let r = /(?<x>\u{{10400}})/di{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('\u{{10428}}');
+                m[0] === '\u{{10428}}' && m[1] === '\u{{10428}}' && m.groups.x === m[1] && m.index === 0 && m
+                    .indices[1][1] === 2 && m.indices.groups.x === m.indices[1] && r.lastIndex === 2
+            "#
         ));
         assert_true(&format!(
             r"let a=[...'😀ſS'.matchAll(/(s)/di{mode}g)];a.length===2&&a[0][1]==='ſ'&&a[0].indices[1][0]===2&&a[1][1]==='S'"
@@ -131,16 +137,62 @@ fn unicode_literal_character_folding_captures_consumers_and_original_text() {
 #[test]
 fn unicode_literal_character_folding_metadata_coercions_and_strict_writes() {
     assert_true(
-        r"let r=/^a$/dimv,c=new RegExp(r,'diuy');c.source==='^a$'&&c.ignoreCase&&c.unicode&&!c.multiline&&c.exec('A')[0]==='A'&&c.lastIndex===1",
+        r#"
+            let r = /^a$/dimv,
+                c = new RegExp(r, 'diuy');
+            c.source === '^a$' && c.ignoreCase && c.unicode && !c.multiline && c.exec('A')[0] === 'A' && c
+                .lastIndex === 1
+        "#,
     );
     assert_true(
-        r"let t='',r=/s/iuy;r.lastIndex={valueOf(){t+='i';return 0}};let m=r.exec({toString(){t+='s';return 'ſ'}});t==='si'&&m[0]==='ſ'&&r.lastIndex===1",
+        r#"
+            let t = '',
+                r = /s/iuy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 0
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return 'ſ'
+                }
+            });
+            t === 'si' && m[0] === 'ſ' && r.lastIndex === 1
+        "#,
     );
     assert_true(
-        r"let r=/s/iuy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('ſ')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            let r = /s/iuy;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('ſ')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/s/ivy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /s/ivy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 

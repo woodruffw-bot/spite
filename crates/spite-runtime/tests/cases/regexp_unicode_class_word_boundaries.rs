@@ -49,10 +49,19 @@ fn unicode_class_word_boundary_results_snapshot() {
 fn unicode_class_word_boundaries_single_sides_complements_and_case_neighbors() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"/\b[A]\b/{mode}.test('A')&&!/\b[A]\b/{mode}.test('AA')&&/\b[A]\B/{mode}.exec('AA').index===0&&/\B[A]\b/{mode}.exec('AA').index===1&&/\b[A]/{mode}.test('AA')&&/[A]\b/{mode}.exec('AA').index===1"
+            r#"
+                /\b[A]\b/{mode}.test('A') && !/\b[A]\b/{mode}.test('AA') &&
+                    /\b[A]\B/{mode}.exec('AA').index === 0 && /\B[A]\b/{mode}.exec('AA')
+                    .index === 1 && /\b[A]/{mode}.test('AA') && /[A]\b/{mode}.exec('AA')
+                    .index === 1
+            "#
         ));
         assert_true(&format!(
-            r"/\B\p{{Any}}\B/{mode}.test('ſ')&&!/\B\p{{Any}}\B/i{mode}.test('ſ')&&/\b\p{{Any}}\b/i{mode}.test('ſ')&&/\b\p{{Any}}\b/i{mode}.test('K')&&!/\b\p{{Any}}\b/{mode}.test('K')"
+            r#"
+                /\B\p{{Any}}\B/{mode}.test('ſ') && !/\B\p{{Any}}\B/i{mode}.test('ſ') &&
+                    /\b\p{{Any}}\b/i{mode}.test('ſ') && /\b\p{{Any}}\b/i{mode}.test('K') && !
+                    /\b\p{{Any}}\b/{mode}.test('K')
+            "#
         ));
         assert_true(&format!(
             r"/\b\p{{space}}\B/{mode}.exec('A\u0085!').index===1&&/\b[\b]\B/{mode}.exec('A\b!')[0]==='\b'&&!/\b\P{{Any}}\b/{mode}.test('A')"
@@ -64,16 +73,33 @@ fn unicode_class_word_boundaries_single_sides_complements_and_case_neighbors() {
 fn unicode_class_word_boundaries_captures_line_context_and_pair_starts() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/(?<x>(^\b[\p{{AHex}}K]\b$))/dim{mode}g,m=r.exec('x\r\nK\u2028');m.index===3&&m[1]==='K'&&m[2]==='K'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===4&&r.lastIndex===4"
+            r#"
+                let r = /(?<x>(^\b[\p{{AHex}}K]\b$))/dim{mode}g,
+                    m = r.exec('x\r\nK\u2028');
+                m.index === 3 && m[1] === 'K' && m[2] === 'K' && m.indices.groups.x === m.indices[1] && m
+                    .indices[2][1] === 4 && r.lastIndex === 4
+            "#
         ));
         assert_true(&format!(
-            r"let r=/(?<__proto__>\b[\p{{Any}}]\b)/d{mode}y;r.lastIndex=2;let m=r.exec('A😀B');m.index===1&&m[1]==='😀'&&m.indices[1][1]===3&&r.lastIndex===3&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]"
+            r#"
+                let r = /(?<__proto__>\b[\p{{Any}}]\b)/d{mode}y;
+                r.lastIndex = 2;
+                let m = r.exec('A😀B');
+                m.index === 1 && m[1] === '😀' && m.indices[1][1] === 3 && r.lastIndex === 3 && Object
+                    .getPrototypeOf(m.groups) === null && m.indices.groups.__proto__ === m.indices[1]
+            "#
         ));
         assert_true(&format!(
             r"let r=/\b[\p{{Any}}]\b/{mode}y;r.lastIndex=1;r.exec('😀B')===null&&r.lastIndex===0"
         ));
         assert_true(&format!(
-            r"let a=/\b[\P{{space}}]\b/{mode}y,b=/\b[\P{{space}}]\b/{mode}y;a.lastIndex=1;b.lastIndex=1;a.exec('A\uD800B')[0]==='\uD800'&&b.exec('A\uDC00B')[0]==='\uDC00'"
+            r#"
+                let a = /\b[\P{{space}}]\b/{mode}y,
+                    b = /\b[\P{{space}}]\b/{mode}y;
+                a.lastIndex = 1;
+                b.lastIndex = 1;
+                a.exec('A\uD800B')[0] === '\uD800' && b.exec('A\uDC00B')[0] === '\uDC00'
+            "#
         ));
     }
 }
@@ -82,7 +108,11 @@ fn unicode_class_word_boundaries_captures_line_context_and_pair_starts() {
 fn unicode_class_word_boundary_consumers_keep_original_captures() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=[...'A A a'.matchAll(/(?<x>\b[A]\b)/di{mode}g)];a.length===3&&a[2][1]==='a'&&a[2].index===4&&a[2].indices.groups.x===a[2].indices[1]"
+            r#"
+                let a = [...'A A a'.matchAll(/(?<x>\b[A]\b)/di{mode}g)];
+                a.length === 3 && a[2][1] === 'a' && a[2].index === 4 && a[2].indices.groups.x === a[2]
+                    .indices[1]
+            "#
         ));
         assert_true(&format!(
             r"'A A_ a'.replace(/(?<x>\b[A]\b)/i{mode}g,'<$1:$<x>>')==='<A:A> A_ <a:a>'"
@@ -91,7 +121,14 @@ fn unicode_class_word_boundary_consumers_keep_original_captures() {
             r"'A B A'.split(/(\b[A]\b)/{mode}).join('|')==='|A| B |A|'&&'xx A!'.search(/\b[A]\b/{mode})===3&&'A A_ a'.match(/\b[A]\b/i{mode}g).join('')==='Aa'"
         ));
         assert_true(&format!(
-            r"let t='';let x='A a'.replace(/(\b[A]\b)/i{mode}g,(m,c,p)=>{{t+=p;return c.toLowerCase()}});x==='a a'&&t==='02'"
+            r#"
+                let t = '';
+                let x = 'A a'.replace(/(\b[A]\b)/i{mode}g, (m, c, p) => {{
+                    t += p;
+                    return c.toLowerCase()
+                }});
+                x === 'a a' && t === '02'
+            "#
         ));
     }
 }
@@ -99,16 +136,62 @@ fn unicode_class_word_boundary_consumers_keep_original_captures() {
 #[test]
 fn unicode_class_word_boundary_clones_coercions_and_strict_writes() {
     assert_true(
-        r"let r=/(?<x>\b[\p{AHex}K]\b)/diug,c=new RegExp(r,'dvy');c.source==='(?<x>\\b[\\p{AHex}K]\\b)'&&!c.ignoreCase&&c.unicodeSets&&c.exec('K')===null&&c.exec('K').groups.x==='K'&&c.lastIndex===1",
+        r#"
+            let r = /(?<x>\b[\p{AHex}K]\b)/diug,
+                c = new RegExp(r, 'dvy');
+            c.source === '(?<x>\\b[\\p{AHex}K]\\b)' && !c.ignoreCase && c.unicodeSets && c.exec('K') ===
+                null && c.exec('K').groups.x === 'K' && c.lastIndex === 1
+        "#,
     );
     assert_true(
-        r"let t='',r=/\b[\p{Any}]\b/uy;r.lastIndex={valueOf(){t+='i';return 2}};let m=r.exec({toString(){t+='s';return 'A😀B'}});t==='si'&&m[0]==='😀'&&m.index===1&&r.lastIndex===3",
+        r#"
+            let t = '',
+                r = /\b[\p{Any}]\b/uy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 2
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return 'A😀B'
+                }
+            });
+            t === 'si' && m[0] === '😀' && m.index === 1 && r.lastIndex === 3
+        "#,
     );
     assert_true(
-        r"let r=/\b[A]\b/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('A')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            let r = /\b[A]\b/vy;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('A')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/\b[A]\b/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('AA')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /\b[A]\b/vy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('AA')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 

@@ -105,19 +105,40 @@ fn nested_choice_iteration_retries_restore_counts_named_enclosures_and_source_or
 #[test]
 fn nested_progressing_choices_consumers_sticky_counts_and_zero_advancement_keep_semantics() {
     assert_true(
-        r"let r=/(?<all>(?:(?:a|)b|c)+)d/dg,a=[...'abccd abd'.matchAll(r)];a.length===2&&a[0][0]==='abccd'&&a[0].groups.all==='abcc'&&a[0].indices.groups.all[1]===4&&a[1].index===6&&a[1].groups.all==='ab'&&r.lastIndex===0",
+        r#"
+            let r = /(?<all>(?:(?:a|)b|c)+)d/dg,
+                a = [...'abccd abd'.matchAll(r)];
+            a.length === 2 && a[0][0] === 'abccd' && a[0].groups.all === 'abcc' && a[0].indices.groups.all[
+                1] === 4 && a[1].index === 6 && a[1].groups.all === 'ab' && r.lastIndex === 0
+        "#,
     );
     assert_true(
         r"'qabccdZ'.replace(/(?<all>(?:(?:a|)b|c)+)d/,'<$<all>>')==='q<abcc>Z'&&'qabccdZ'.search(/((?:(?:a|)b|c)+)d/)===1&&'qabccdZ'.split(/((?:(?:a|)b|c)+)d/).join(',')==='q,abcc,Z'",
     );
     assert_true(
-        r"let r=/(?<all>(?:(?:a|)b|c)+)d/dy;r.lastIndex=1;let copy=new RegExp(r),a=r.exec('qabccd');a.groups.all==='abcc'&&a.indices.groups.all[0]===1&&r.lastIndex===6&&r.exec('qabccd')===null&&r.lastIndex===0&&copy.source===r.source&&copy.lastIndex===0",
+        r#"
+            let r = /(?<all>(?:(?:a|)b|c)+)d/dy;
+            r.lastIndex = 1;
+            let copy = new RegExp(r),
+                a = r.exec('qabccd');
+            a.groups.all === 'abcc' && a.indices.groups.all[0] === 1 && r.lastIndex === 6 && r.exec(
+                    'qabccd') === null && r.lastIndex === 0 && copy.source === r.source && copy
+                .lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let a=[...'q'.matchAll(/(?<all>(?:(?:a|)b|c)*)/dg)];a.length===2&&a[0].groups.all===''&&a[1].groups.all===''&&a[1].indices.groups.all[0]===1&&a[1].indices.groups.all[1]===1",
+        r#"
+            let a = [...'q'.matchAll(/(?<all>(?:(?:a|)b|c)*)/dg)];
+            a.length === 2 && a[0].groups.all === '' && a[1].groups.all === '' && a[1].indices.groups.all[
+                0] === 1 && a[1].indices.groups.all[1] === 1
+        "#,
     );
     assert_true(
-        r"let a=/((?:(?:a|)b|c){2,3})d/d.exec('abccd'),b=/(?:(?:a|)b|c)*d|a/.exec('a');a[0]==='abccd'&&a[1]==='abcc'&&a.indices[1][1]===4&&b[0]==='a'",
+        r#"
+            let a = /((?:(?:a|)b|c){2,3})d/d.exec('abccd'),
+                b = /(?:(?:a|)b|c)*d|a/.exec('a');
+            a[0] === 'abccd' && a[1] === 'abcc' && a.indices[1][1] === 4 && b[0] === 'a'
+        "#,
     );
 }
 

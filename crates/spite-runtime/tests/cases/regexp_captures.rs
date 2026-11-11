@@ -7,7 +7,15 @@ use crate::common::assert_true;
 #[test]
 fn nested_and_empty_captures_follow_opening_parenthesis_order() {
     assert_true(
-        "let r=/a(b(c))()d/d,m=r.exec('xabcd');m.length===4 && m[0]==='abcd' && m[1]==='bc' && m[2]==='c' && m[3]==='' && m.index===1 && m.groups===undefined && m.indices.length===4 && m.indices[0].join(',')==='1,5' && m.indices[1].join(',')==='2,4' && m.indices[2].join(',')==='3,4' && m.indices[3].join(',')==='4,4' && m.indices.groups===undefined && r.source==='a(b(c))()d'",
+        r#"
+            let r = /a(b(c))()d/d,
+                m = r.exec('xabcd');
+            m.length === 4 && m[0] === 'abcd' && m[1] === 'bc' && m[2] === 'c' && m[3] === '' && m
+                .index === 1 && m.groups === undefined && m.indices.length === 4 && m.indices[0].join(
+                ',') === '1,5' && m.indices[1].join(',') === '2,4' && m.indices[2].join(',') === '3,4' && m
+                .indices[3].join(',') === '4,4' && m.indices.groups === undefined && r.source ===
+                'a(b(c))()d'
+        "#,
     );
     assert_true(
         "let m=/(?:a)(b)(?:c)/.exec('abc');m.length===2 && m[1]==='b' && m.indices===undefined",
@@ -21,17 +29,38 @@ fn captures_preserve_input_case_and_independent_surrogate_halves() {
         "let m=/(a)(b)/i.exec('xAB');m[0]==='AB' && m[1]==='A' && m[2]==='B' && m.index===1",
     );
     assert_true(
-        r"let m=/(\uD83D)(\uDCA9)/d.exec('x💩');m[0]==='💩' && m[1]==='\uD83D' && m[2]==='\uDCA9' && m.indices[1].join(',')==='1,2' && m.indices[2].join(',')==='2,3'",
+        r#"
+            let m = /(\uD83D)(\uDCA9)/d.exec('x💩');
+            m[0] === '💩' && m[1] === '\uD83D' && m[2] === '\uDCA9' && m.indices[1].join(',') === '1,2' &&
+                m.indices[2].join(',') === '2,3'
+        "#,
     );
 }
 
 #[test]
 fn capture_results_share_global_sticky_and_strict_lastindex_writes() {
     assert_true(
-        "let r=/(a)/gy;r.lastIndex=1;let m=r.exec('baa');m[1]==='a' && m.index===1 && r.lastIndex===2 && r.exec('baa')[1]==='a' && r.lastIndex===3 && r.exec('baa')===null && r.lastIndex===0",
+        r#"
+            let r = /(a)/gy;
+            r.lastIndex = 1;
+            let m = r.exec('baa');
+            m[1] === 'a' && m.index === 1 && r.lastIndex === 2 && r.exec('baa')[1] === 'a' && r
+                .lastIndex === 3 && r.exec('baa') === null && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        "let r=/(a)/g;Object.defineProperty(r,'lastIndex',{writable:false});try{r.exec('a');false;}catch(e){e instanceof TypeError && r.lastIndex===0;}",
+        r#"
+            let r = /(a)/g;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            try {
+                r.exec('a');
+                false;
+            } catch (e) {
+                e instanceof TypeError && r.lastIndex === 0;
+            }
+        "#,
     );
     assert_true(
         "let r=/()/g;r.lastIndex=2;let m=r.exec('ab');m[0]==='' && m[1]==='' && m.index===2 && r.lastIndex===2",
@@ -41,10 +70,31 @@ fn capture_results_share_global_sticky_and_strict_lastindex_writes() {
 #[test]
 fn capture_arrays_use_intrinsics_own_properties_and_standard_attributes() {
     assert_true(
-        "let P=Array.prototype;Object.defineProperty(P,'1',{set(){throw 7;},configurable:true});let r=/(a)(b)/d;Array=function(){throw 8;};let m=r.exec('ab'),d=Object.getOwnPropertyDescriptor(m,'1');Object.getPrototypeOf(m)===P && Object.getPrototypeOf(m.indices)===P && Object.getPrototypeOf(m.indices[1])===P && d.value==='a' && d.writable && d.enumerable && d.configurable && m.indices[1][0]===0 && m.indices[1][1]===1",
+        r#"
+            let P = Array.prototype;
+            Object.defineProperty(P, '1', {
+                set() {
+                    throw 7;
+                },
+                configurable: true
+            });
+            let r = /(a)(b)/d;
+            Array = function() {
+                throw 8;
+            };
+            let m = r.exec('ab'),
+                d = Object.getOwnPropertyDescriptor(m, '1');
+            Object.getPrototypeOf(m) === P && Object.getPrototypeOf(m.indices) === P && Object
+                .getPrototypeOf(m.indices[1]) === P && d.value === 'a' && d.writable && d.enumerable && d
+                .configurable && m.indices[1][0] === 0 && m.indices[1][1] === 1
+        "#,
     );
     assert_true(
-        "let m=/()()/.exec('');Object.getOwnPropertyNames(m).join(',')==='0,1,2,length,index,input,groups' && m.length===3 && m[1]==='' && m[2]===''",
+        r#"
+            let m = /()()/.exec('');
+            Object.getOwnPropertyNames(m).join(',') === '0,1,2,length,index,input,groups' && m.length ===
+                3 && m[1] === '' && m[2] === ''
+        "#,
     );
 }
 
@@ -54,7 +104,14 @@ fn replacement_split_match_and_lazy_matchall_consume_native_captures() {
         "'xab'.replace(/(a)(b)/,'$2$1')==='xba' && 'abab'.replaceAll(/(a)(b)/g,'$2$1')==='baba'",
     );
     assert_true(
-        "let seen='';let s='xab'.replace(/(a)(b)/,function(m,a,b,index,input){seen=[m,a,b,index,input,arguments.length].join(',');return b+a;});s==='xba' && seen==='ab,a,b,1,xab,5'",
+        r#"
+            let seen = '';
+            let s = 'xab'.replace(/(a)(b)/, function(m, a, b, index, input) {
+                seen = [m, a, b, index, input, arguments.length].join(',');
+                return b + a;
+            });
+            s === 'xba' && seen === 'ab,a,b,1,xab,5'
+        "#,
     );
     assert_true(
         "'a,b,'.split(/(,)/).join('|')==='a|,|b|,|' && 'ab'.match(/(a)(b)/)[2]==='b' && [...'abab'.matchAll(/(a)(b)/dg)].map(m=>m[1]+m.indices[2][0]).join(',')==='a1,a3'",
@@ -65,7 +122,14 @@ fn replacement_split_match_and_lazy_matchall_consume_native_captures() {
 #[test]
 fn constructor_copies_preserve_capture_plans_and_original_text() {
     assert_true(
-        "let a=/(a(?:b)c)/dg,b=new RegExp(a);a.lastIndex=7;let m=b.exec('xabc');a!==b && b.source==='(a(?:b)c)' && b.lastIndex===4 && m[1]==='abc' && m.indices[1].join(',')==='1,4'",
+        r#"
+            let a = /(a(?:b)c)/dg,
+                b = new RegExp(a);
+            a.lastIndex = 7;
+            let m = b.exec('xabc');
+            a !== b && b.source === '(a(?:b)c)' && b.lastIndex === 4 && m[1] === 'abc' && m.indices[1]
+                .join(',') === '1,4'
+        "#,
     );
 }
 

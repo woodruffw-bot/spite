@@ -547,24 +547,72 @@ fn surrounding_asserted_string_class_layouts_keep_spine_points_and_conditional_b
                         let text = JsString::from(input);
                         assert_true(&format!(
                             r#"
-var r=new RegExp({pattern:?},'dvgym'),m=r.exec({text:?}),ok=true;
-if({matched}){{
- var keys=Object.keys(m.groups),characters='{characters}'.split(','),before='{before}'.split(','),after='{after}'.split(','),empty='{empties}'.split(','),never='{never}'.split(','),starts='{starts}'.split(','),wholes='{wholes}'.split(','),ends='{ends}'.split(','),outsideNever='{outside_never}'.split(',');
- for(var name of keys){{var slot=keys.indexOf(name)+1,expected=undefined,from=-1,to=-1;
-  if({class_selected}&&characters.indexOf(name)!==-1){{expected={whole:?};from=0;to={end}}}
-  if({class_selected}&&before.indexOf(name)!==-1){{expected='';from=0;to=0}}
-  if({class_selected}&&after.indexOf(name)!==-1){{expected='';from={end};to={end}}}
-  if(!{class_selected}&&empty.indexOf(name)!==-1){{expected='';from=0;to=0}}
-  if(starts.indexOf(name)!==-1){{expected='';from=0;to=0}}
-  if(wholes.indexOf(name)!==-1){{expected={whole:?};from=0;to={end}}}
-  if(ends.indexOf(name)!==-1){{expected='';from={end};to={end}}}
-  if(never.indexOf(name)!==-1||outsideNever.indexOf(name)!==-1)expected=undefined;
-  ok=ok&&m[slot]===expected&&m.groups[name]===expected&&m.indices.groups[name]===m.indices[slot]&&Object.hasOwn(m.indices.groups,name);
-  if(expected===undefined)ok=ok&&m.indices[slot]===undefined;else ok=ok&&m.indices[slot][0]===from&&m.indices[slot][1]===to;
- }}ok=ok&&m.length===keys.length+1&&m[0]==={whole:?}&&m.index===0&&m.indices[0][1]==={end}&&r.lastIndex==={end};
-}}else ok=m===null&&r.lastIndex===0;
-ok&&r.source==={pattern:?}
-"#
+                                var r = new RegExp({pattern:?}, 'dvgym'),
+                                    m = r.exec({text:?}),
+                                    ok = true;
+                                if ({matched}) {{
+                                    var keys = Object.keys(m.groups),
+                                        characters = '{characters}'.split(','),
+                                        before = '{before}'.split(','),
+                                        after = '{after}'.split(','),
+                                        empty = '{empties}'.split(','),
+                                        never = '{never}'.split(','),
+                                        starts = '{starts}'.split(','),
+                                        wholes = '{wholes}'.split(','),
+                                        ends = '{ends}'.split(','),
+                                        outsideNever = '{outside_never}'.split(',');
+                                    for (var name of keys) {{
+                                        var slot = keys.indexOf(name) + 1,
+                                            expected = undefined,
+                                            from = -1,
+                                            to = -1;
+                                        if ({class_selected} && characters.indexOf(name) !== -1) {{
+                                            expected = {whole:?};
+                                            from = 0;
+                                            to = {end}
+                                        }}
+                                        if ({class_selected} && before.indexOf(name) !== -1) {{
+                                            expected = '';
+                                            from = 0;
+                                            to = 0
+                                        }}
+                                        if ({class_selected} && after.indexOf(name) !== -1) {{
+                                            expected = '';
+                                            from = {end};
+                                            to = {end}
+                                        }}
+                                        if (!{class_selected} && empty.indexOf(name) !== -1) {{
+                                            expected = '';
+                                            from = 0;
+                                            to = 0
+                                        }}
+                                        if (starts.indexOf(name) !== -1) {{
+                                            expected = '';
+                                            from = 0;
+                                            to = 0
+                                        }}
+                                        if (wholes.indexOf(name) !== -1) {{
+                                            expected = {whole:?};
+                                            from = 0;
+                                            to = {end}
+                                        }}
+                                        if (ends.indexOf(name) !== -1) {{
+                                            expected = '';
+                                            from = {end};
+                                            to = {end}
+                                        }}
+                                        if (never.indexOf(name) !== -1 || outsideNever.indexOf(name) !== -1) expected =
+                                            undefined;
+                                        ok = ok && m[slot] === expected && m.groups[name] === expected && m.indices.groups[
+                                            name] === m.indices[slot] && Object.hasOwn(m.indices.groups, name);
+                                        if (expected === undefined) ok = ok && m.indices[slot] === undefined;
+                                        else ok = ok && m.indices[slot][0] === from && m.indices[slot][1] === to;
+                                    }}
+                                    ok = ok && m.length === keys.length + 1 && m[0] === {whole:?} && m.index === 0 && m
+                                        .indices[0][1] === {end} && r.lastIndex === {end};
+                                }} else ok = m === null && r.lastIndex === 0;
+                                ok && r.source === {pattern:?}
+                            "#
                         ));
                     }
                 }

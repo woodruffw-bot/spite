@@ -60,10 +60,18 @@ fn unicode_captured_atoms_last_iteration_zero_and_bounds() {
             r"let a=/((a))+/{mode}.exec('aaa');a[0]==='aaa'&&a[1]==='a'&&a[2]==='a'&&a.length===3"
         ));
         assert_true(&format!(
-            r"let a=/((a)){{0,3}}?/{mode}.exec('aaa');a[0]===''&&a[1]===undefined&&a[2]===undefined&&Object.hasOwn(a,'1')&&Object.hasOwn(a,'2')"
+            r#"
+                let a = /((a)){{0,3}}?/{mode}.exec('aaa');
+                a[0] === '' && a[1] === undefined && a[2] === undefined && Object.hasOwn(a, '1') && Object
+                    .hasOwn(a, '2')
+            "#
         ));
         assert_true(&format!(
-            r"let a=/((?:a)){{0}}/{mode}.exec('aaa'),b=/(?:(a)){{2,3}}?/{mode}.exec('aaaa');a[0]===''&&a[1]===undefined&&b[0]==='aa'&&b[1]==='a'&&b.length===2"
+            r#"
+                let a = /((?:a)){{0}}/{mode}.exec('aaa'),
+                    b = /(?:(a)){{2,3}}?/{mode}.exec('aaaa');
+                a[0] === '' && a[1] === undefined && b[0] === 'aa' && b[1] === 'a' && b.length === 2
+            "#
         ));
         assert_true(&format!(
             r"let a=/^(?<x>(\D)){{1,4}}$/{mode}m.exec('ab\ncdef');a[0]==='ab'&&a.groups.x==='b'&&a[2]==='b'&&a.index===0"
@@ -72,7 +80,11 @@ fn unicode_captured_atoms_last_iteration_zero_and_bounds() {
             r"let a=/([aſK])+/i{mode}.exec('AſK');a[0]==='AſK'&&a[1]==='K'&&/(?:a)+/{mode}.exec('aaa').length===1"
         ));
         assert_true(&format!(
-            r"let a=/^((.))+$/{mode}sm.exec('a\nb'),b=/((\D))+?$/{mode}m.exec('a\nb');a[1]==='b'&&a[2]==='b'&&b[0]==='a'&&b[1]==='a'&&b[2]==='a'"
+            r#"
+                let a = /^((.))+$/{mode}sm.exec('a\nb'),
+                    b = /((\D))+?$/{mode}m.exec('a\nb');
+                a[1] === 'b' && a[2] === 'b' && b[0] === 'a' && b[1] === 'a' && b[2] === 'a'
+            "#
         ));
     }
 }
@@ -81,13 +93,29 @@ fn unicode_captured_atoms_last_iteration_zero_and_bounds() {
 fn unicode_captured_atoms_names_outer_scopes_and_original_pairs() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/^(?<whole>(?<__proto__>😀)+)$/d{mode}my;r.lastIndex=1;let m=r.exec('😀😀\n');m.index===0&&m[0]==='😀😀'&&m.groups.whole==='😀😀'&&m.groups.__proto__==='😀'&&m.indices[1][0]===0&&m.indices[1][1]===4&&m.indices[2][0]===2&&m.indices[2][1]===4&&m.indices.groups.__proto__===m.indices[2]&&r.lastIndex===4"
+            r#"
+                let r = /^(?<whole>(?<__proto__>😀)+)$/d{mode}my;
+                r.lastIndex = 1;
+                let m = r.exec('😀😀\n');
+                m.index === 0 && m[0] === '😀😀' && m.groups.whole === '😀😀' && m.groups.__proto__ === '😀' &&
+                    m.indices[1][0] === 0 && m.indices[1][1] === 4 && m.indices[2][0] === 2 && m.indices[2][
+                    1] === 4 && m.indices.groups.__proto__ === m.indices[2] && r.lastIndex === 4
+            "#
         ));
         assert_true(&format!(
-            r"let a=/(?<whole>(?<inner>a){{0}})/d{mode}.exec('A');a.groups.whole===''&&a.groups.inner===undefined&&Object.hasOwn(a.groups,'inner')&&a.indices.groups.whole===a.indices[1]&&a.indices[2]===undefined&&Object.hasOwn(a.indices.groups,'inner')"
+            r#"
+                let a = /(?<whole>(?<inner>a){{0}})/d{mode}.exec('A');
+                a.groups.whole === '' && a.groups.inner === undefined && Object.hasOwn(a.groups, 'inner') && a
+                    .indices.groups.whole === a.indices[1] && a.indices[2] === undefined && Object.hasOwn(a
+                        .indices.groups, 'inner')
+            "#
         ));
         assert_true(&format!(
-            r"let a=/((\uD800))+/{mode}.exec('B\uD800\uD800');a.index===1&&a[0]==='\uD800\uD800'&&a[1]==='\uD800'&&a[2]==='\uD800'&&!/(\uD800)+/{mode}.test('😀')"
+            r#"
+                let a = /((\uD800))+/{mode}.exec('B\uD800\uD800');
+                a.index === 1 && a[0] === '\uD800\uD800' && a[1] === '\uD800' && a[2] === '\uD800' && !
+                    /(\uD800)+/{mode}.test('😀')
+            "#
         ));
     }
 }
@@ -102,10 +130,18 @@ fn unicode_captured_atoms_consumers_and_empty_advance() {
             r"let a='baaac'.split(/((a))+/{mode});a.join('|')==='b|a|a|c'&&'baaac'.search(/(a)+/{mode})===1"
         ));
         assert_true(&format!(
-            r"let a=[...'aaa\naa'.matchAll(/(?<x>a)+$/d{mode}mg)];a.length===2&&a[0][0]==='aaa'&&a[0].groups.x==='a'&&a[0].indices.groups.x[0]===2&&a[1].index===4&&a[1].indices.groups.x[0]===5"
+            r#"
+                let a = [...'aaa\naa'.matchAll(/(?<x>a)+$/d{mode}mg)];
+                a.length === 2 && a[0][0] === 'aaa' && a[0].groups.x === 'a' && a[0].indices.groups.x[0] ===
+                    2 && a[1].index === 4 && a[1].indices.groups.x[0] === 5
+            "#
         ));
         assert_true(&format!(
-            r"let a=[...'😀'.matchAll(/(?<x>a){{0}}/d{mode}g)];a.length===2&&a[0].index===0&&a[1].index===2&&a.every(m=>m.groups.x===undefined&&Object.hasOwn(m.groups,'x')&&m.indices[1]===undefined)"
+            r#"
+                let a = [...'😀'.matchAll(/(?<x>a){{0}}/d{mode}g)];
+                a.length === 2 && a[0].index === 0 && a[1].index === 2 && a.every(m => m.groups.x ===
+                    undefined && Object.hasOwn(m.groups, 'x') && m.indices[1] === undefined)
+            "#
         ));
         assert_true(&format!(
             r"let t='',s='B😀😀'.replace(/(?<x>😀)+/{mode}g,(m,c,p,text,g)=>{{t+=p;return '['+g.x+']'}});s==='B[😀]'&&t==='1'"
@@ -116,16 +152,62 @@ fn unicode_captured_atoms_consumers_and_empty_advance() {
 #[test]
 fn unicode_captured_atoms_clones_coercions_and_strict_writes() {
     assert_true(
-        r"let r=/^(?<x>a)+$/diumg,c=new RegExp(r,'dvmy'),b=new RegExp(c,'diumy');c.exec('AA\n')===null&&b.exec('AA\n').groups.x==='A'&&b.lastIndex===2",
+        r#"
+            let r = /^(?<x>a)+$/diumg,
+                c = new RegExp(r, 'dvmy'),
+                b = new RegExp(c, 'diumy');
+            c.exec('AA\n') === null && b.exec('AA\n').groups.x === 'A' && b.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let t='',r=/^(😀)+$/umy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀😀\n'}});t==='si'&&m.index===0&&m[1]==='😀'&&r.lastIndex===4",
+        r#"
+            let t = '',
+                r = /^(😀)+$/umy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 1
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return '😀😀\n'
+                }
+            });
+            t === 'si' && m.index === 0 && m[1] === '😀' && r.lastIndex === 4
+        "#,
     );
     assert_true(
-        r"let r=/(a)*/vmy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            let r = /(a)*/vmy;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/(a)+/vmy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('BBB')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /(a)+/vmy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('BBB')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 

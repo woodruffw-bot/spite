@@ -52,13 +52,20 @@ fn unicode_word_assertions_empty_endpoints_case_neighbors_and_multiline() {
             r"/\B/{mode}.test('')&&!/\b/{mode}.test('')&&/^\B$/{mode}.test('')&&!/^\b$/{mode}.test('')"
         ));
         assert_true(&format!(
-            r"/\B/{mode}.exec('ſ').index===0&&/\b/i{mode}.exec('ſ').index===0&&!/\B/i{mode}.test('ſ')&&/\b/i{mode}.test('K')&&!/\b/{mode}.test('K')"
+            r#"
+                /\B/{mode}.exec('ſ').index === 0 && /\b/i{mode}.exec('ſ').index === 0 && !
+                    /\B/i{mode}.test('ſ') && /\b/i{mode}.test('K') && !/\b/{mode}.test(
+                        'K')
+            "#
         ));
         assert_true(&format!(
             r"let r=/\b$/{mode}g,m=r.exec('A');m.index===1&&m[0]===''&&r.lastIndex===1&&r.exec('A').index===1"
         ));
         assert_true(&format!(
-            r"/^\B$/m{mode}.test('\n')&&/^\B$/m{mode}.test('\r\n')&&/^\B$/m{mode}.test('\u2028')&&/^\B$/m{mode}.test('\u2029')&&!/^\B$/{mode}.test('\n')"
+            r#"
+                /^\B$/m{mode}.test('\n') && /^\B$/m{mode}.test('\r\n') && /^\B$/m{mode}
+                    .test('\u2028') && /^\B$/m{mode}.test('\u2029') && !/^\B$/{mode}.test('\n')
+            "#
         ));
         assert_true(&format!(
             r"let r=/\b/{mode}g;r.exec('A').index===0&&r.lastIndex===0&&r.exec('A').index===0"
@@ -70,10 +77,22 @@ fn unicode_word_assertions_empty_endpoints_case_neighbors_and_multiline() {
 fn unicode_word_assertions_original_empty_captures_and_pair_starts() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/(?<__proto__>(\b))/d{mode}y;r.lastIndex=2;let m=r.exec('A😀B');m.index===1&&m[0]===''&&m[1]===''&&m[2]===''&&m.indices[1][0]===1&&m.indices[1][1]===1&&m.indices.groups.__proto__===m.indices[1]&&r.lastIndex===1"
+            r#"
+                let r = /(?<__proto__>(\b))/d{mode}y;
+                r.lastIndex = 2;
+                let m = r.exec('A😀B');
+                m.index === 1 && m[0] === '' && m[1] === '' && m[2] === '' && m.indices[1][0] === 1 && m
+                    .indices[1][1] === 1 && m.indices.groups.__proto__ === m.indices[1] && r.lastIndex === 1
+            "#
         ));
         assert_true(&format!(
-            r"let r=/(?<x>\B)/d{mode}y;r.lastIndex=1;let m=r.exec('😀');m.index===0&&m.indices.groups.x[0]===0&&m.indices.groups.x[1]===0&&r.lastIndex===0"
+            r#"
+                let r = /(?<x>\B)/d{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('😀');
+                m.index === 0 && m.indices.groups.x[0] === 0 && m.indices.groups.x[1] === 0 && r.lastIndex ===
+                    0
+            "#
         ));
         assert_true(&format!(
             r"let r=/\b/{mode}y;r.lastIndex=1;r.exec('😀')===null&&r.lastIndex===0"
@@ -94,7 +113,11 @@ fn unicode_word_assertions_original_empty_captures_and_pair_starts() {
 fn unicode_word_assertion_consumers_advance_after_original_empty_matches() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=[...'A😀B'.matchAll(/(?<x>\b)/d{mode}g)];a.map(m=>m.index).join(',')==='0,1,3,4'&&a.every(m=>m[0]===''&&m[1]===''&&m.indices.groups.x===m.indices[1])"
+            r#"
+                let a = [...'A😀B'.matchAll(/(?<x>\b)/d{mode}g)];
+                a.map(m => m.index).join(',') === '0,1,3,4' && a.every(m => m[0] === '' && m[1] === '' && m
+                    .indices.groups.x === m.indices[1])
+            "#
         ));
         assert_true(&format!(
             r"'A😀B'.replace(/(?<x>\b)/{mode}g,'<$1$<x>>')==='<>A<>😀<>B<>'"
@@ -114,16 +137,63 @@ fn unicode_word_assertion_consumers_advance_after_original_empty_matches() {
 #[test]
 fn unicode_word_assertion_clones_coercions_and_strict_writes() {
     assert_true(
-        r"let r=/(?<x>\b)/diug,c=new RegExp(r,'dvy'),b=new RegExp(c,'diuy');c.source==='(?<x>\\b)'&&!c.ignoreCase&&c.unicodeSets&&c.exec('ſ')===null&&b.exec('ſ').groups.x===''&&b.lastIndex===0",
+        r#"
+            let r = /(?<x>\b)/diug,
+                c = new RegExp(r, 'dvy'),
+                b = new RegExp(c, 'diuy');
+            c.source === '(?<x>\\b)' && !c.ignoreCase && c.unicodeSets && c.exec('ſ') === null && b.exec(
+                'ſ').groups.x === '' && b.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let t='',r=/\b/uy;r.lastIndex={valueOf(){t+='i';return 2}};let m=r.exec({toString(){t+='s';return 'A😀B'}});t==='si'&&m[0]===''&&m.index===1&&r.lastIndex===1",
+        r#"
+            let t = '',
+                r = /\b/uy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 2
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return 'A😀B'
+                }
+            });
+            t === 'si' && m[0] === '' && m.index === 1 && r.lastIndex === 1
+        "#,
     );
     assert_true(
-        r"let r=/\B/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            let r = /\B/vy;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/\b/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /\b/vy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 

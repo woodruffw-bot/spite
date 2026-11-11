@@ -40,7 +40,12 @@ fn empty_alternatives_follow_source_order_and_generic_empty_match_advancement() 
 #[test]
 fn noncapturing_branches_escaped_delimiters_and_surrogate_halves_keep_utf16_ranges() {
     assert_true(
-        "let r=/(?:ab)|(?:c)/d,m=r.exec('xc');r.source==='(?:ab)|(?:c)' && m.length===1 && m.index===1 && m[0]==='c' && m.indices[0].join(',')==='1,2'",
+        r#"
+            let r = /(?:ab)|(?:c)/d,
+                m = r.exec('xc');
+            r.source === '(?:ab)|(?:c)' && m.length === 1 && m.index === 1 && m[0] === 'c' && m.indices[0]
+                .join(',') === '1,2'
+        "#,
     );
     assert_true(r"/a\|b|c/.exec('xa|b')[0]==='a|b'");
     assert_true(
@@ -51,14 +56,22 @@ fn noncapturing_branches_escaped_delimiters_and_surrogate_halves_keep_utf16_rang
 #[test]
 fn ignore_case_uses_pinned_ordinary_rules_across_all_alternatives() {
     assert_true(
-        "let r=/x|σ/i;let m=r.exec('ς');m[0]==='ς' && m.index===0 && /µ|z/i.test('Μ') && /s|x/i.exec('ſ')===null && /k|x/i.exec('K')===null",
+        r#"
+            let r = /x|σ/i;
+            let m = r.exec('ς');
+            m[0] === 'ς' && m.index === 0 && /µ|z/i.test('Μ') && /s|x/i.exec('ſ') === null && /k|x/i.exec(
+                'K') === null
+        "#,
     );
 }
 
 #[test]
 fn all_generic_consumers_and_string_fallbacks_use_literal_choices() {
     assert_true(
-        "'aba'.match(/a|b/g).join(',')==='a,b,a' && 'aba'.search(/b|z/)===1 && 'aba'.replaceAll(/a|b/g,'x')==='xxx' && 'a,b;c'.split(/,|;/).join('|')==='a|b|c'",
+        r#"
+            'aba'.match(/a|b/g).join(',') === 'a,b,a' && 'aba'.search(/b|z/) === 1 && 'aba'.replaceAll(
+                /a|b/g, 'x') === 'xxx' && 'a,b;c'.split(/,|;/).join('|') === 'a|b|c'
+        "#,
     );
     assert_true(
         "[...'aba'.matchAll('a|b')].map(m=>m[0]+m.index).join(',')==='a0,b1,a2' && 'aba'.match('b|z')[0]==='b' && 'aba'.search('b|z')===1",
@@ -72,7 +85,17 @@ fn copies_many_flat_alternatives_and_original_plans_survive_collection() {
         .eval("let r=new RegExp('a|'.repeat(1000)+'b','dg'),copy=new RegExp(r);RegExp=null;")
         .unwrap();
     realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("let m=r.exec('xb'),n=copy.exec('a');m[0]==='b' && m.index===1 && m.indices[0].join(',')==='1,2' && n[0]==='a' && copy.lastIndex===1 && r.lastIndex===2"),Ok(Value::Boolean(true)));
+    assert_eq!(
+        realm.eval(
+            r#"
+                let m = r.exec('xb'),
+                    n = copy.exec('a');
+                m[0] === 'b' && m.index === 1 && m.indices[0].join(',') === '1,2' && n[0] === 'a' && copy
+                    .lastIndex === 1 && r.lastIndex === 2
+            "#
+        ),
+        Ok(Value::Boolean(true))
+    );
 }
 
 #[test]

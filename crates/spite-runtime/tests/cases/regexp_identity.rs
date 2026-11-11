@@ -28,10 +28,30 @@ fn constructor_escapes_preserve_line_terminators_and_surrogate_code_units() {
 #[test]
 fn identifier_continue_and_unicode_identity_rules_still_reject_invalid_patterns() {
     assert_true(
-        r"['a','_',String.fromCharCode(0x200c),String.fromCharCode(0x200d),String.fromCharCode(0x301),String.fromCharCode(0x660)].every(s=>{try{new RegExp('\\'+s);return false;}catch(e){return e instanceof SyntaxError;}})",
+        r#"
+            ['a', '_', String.fromCharCode(0x200c), String.fromCharCode(0x200d), String.fromCharCode(
+                0x301), String.fromCharCode(0x660)
+            ].every(s => {
+                try {
+                    new RegExp('\\' + s);
+                    return false;
+                } catch (e) {
+                    return e instanceof SyntaxError;
+                }
+            })
+        "#,
     );
     assert_true(
-        r"['u','v'].every(flags=>{try{new RegExp('\\ ',flags);return false;}catch(e){return e instanceof SyntaxError;}})",
+        r#"
+            ['u', 'v'].every(flags => {
+                try {
+                    new RegExp('\\ ', flags);
+                    return false;
+                } catch (e) {
+                    return e instanceof SyntaxError;
+                }
+            })
+        "#,
     );
     assert_true(r"/\$/.test('$')");
 }

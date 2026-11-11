@@ -8,13 +8,27 @@ use crate::common::assert_true;
 #[test]
 fn ranges_and_character_escapes_share_longest_priority_and_assertion_fallback() {
     assert_true(
-        r"let a=/[a-z\q{ab|abc}]/dv.exec('abc!'),b=/[\q{ab}\d]/v.exec('ab'),c=/[\D\q{ab}]/v.exec('ab');a[0]==='abc' && a.indices[0][1]===3 && b[0]==='ab' && c[0]==='ab' && /[\q{ab}\d]/v.exec('!5ab')[0]==='5' && !/[\q{ab}\d]/v.test('ac')",
+        r#"
+            let a = /[a-z\q{ab|abc}]/dv.exec('abc!'),
+                b = /[\q{ab}\d]/v.exec('ab'),
+                c = /[\D\q{ab}]/v.exec('ab');
+            a[0] === 'abc' && a.indices[0][1] === 3 && b[0] === 'ab' && c[0] === 'ab' && /[\q{ab}\d]/v
+                .exec('!5ab')[0] === '5' && !/[\q{ab}\d]/v.test('ac')
+        "#,
     );
     assert_true(
-        r"let a=/[\q{a!}\p{Any}]\b/dv.exec('a!'),b=/[\q{a!}\p{Any}]\B/v.exec('a!');a[0]==='a' && a.indices[0][1]===1 && b[0]==='a!' && /[\w\q{sK}]/iv.exec('ſK')[0]==='ſK' && /[\w\q{sK}]/iv.exec('K')[0]==='K'",
+        r#"
+            let a = /[\q{a!}\p{Any}]\b/dv.exec('a!'),
+                b = /[\q{a!}\p{Any}]\B/v.exec('a!');
+            a[0] === 'a' && a.indices[0][1] === 1 && b[0] === 'a!' && /[\w\q{sK}]/iv.exec('ſK')[0] ===
+                'ſK' && /[\w\q{sK}]/iv.exec('K')[0] === 'K'
+        "#,
     );
     assert_true(
-        r"let m=/^\b[\q{ab}a-z]\b$/mv.exec('!\r\nab\u2028!');m.index===3 && m[0]==='ab' && !/^\b[\q{ab}a-z]\b$/v.test('!\r\nab\u2028!')",
+        r#"
+            let m = /^\b[\q{ab}a-z]\b$/mv.exec('!\r\nab\u2028!');
+            m.index === 3 && m[0] === 'ab' && !/^\b[\q{ab}a-z]\b$/v.test('!\r\nab\u2028!')
+        "#,
     );
 }
 
@@ -34,29 +48,79 @@ fn property_folding_complements_and_whitespace_retain_their_distinct_sets() {
 #[test]
 fn full_ranges_surrogates_names_indices_and_last_index_keep_original_boundaries() {
     assert_true(
-        r"let r=/(?<whole>([\u{0}-\u{10FFFF}\q{ab}]))/dvy;r.lastIndex=1;let m=r.exec('😀!');m.index===0 && m[0]==='😀' && m[1]==='😀' && m[2]==='😀' && m.groups.whole==='😀' && m.indices[0][0]===0 && m.indices[2][1]===2 && m.indices.groups.whole===m.indices[1] && r.lastIndex===2",
+        r#"
+            let r = /(?<whole>([\u{0}-\u{10FFFF}\q{ab}]))/dvy;
+            r.lastIndex = 1;
+            let m = r.exec('😀!');
+            m.index === 0 && m[0] === '😀' && m[1] === '😀' && m[2] === '😀' && m.groups.whole === '😀' &&
+                m.indices[0][0] === 0 && m.indices[2][1] === 2 && m.indices.groups.whole === m.indices[
+                1] && r.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let r=/[\q{}\p{Any}]/dvy;r.lastIndex=1;let a=r.exec('😀'),b=r.exec('😀');a[0]==='😀' && a.index===0 && a.indices[0][1]===2 && b.index===2 && b[0]==='' && r.lastIndex===2",
+        r#"
+            let r = /[\q{}\p{Any}]/dvy;
+            r.lastIndex = 1;
+            let a = r.exec('😀'),
+                b = r.exec('😀');
+            a[0] === '😀' && a.index === 0 && a.indices[0][1] === 2 && b.index === 2 && b[0] === '' && r
+                .lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let r=/[\q{ab}\u{D7FF}-\u{E000}]/vy;r.lastIndex=1;let a=r.exec('😀');a===null && r.lastIndex===0 && r.exec('\uD800a')[0].charCodeAt(0)===0xd800 && /[\q{ab}\u{D7FF}-\u{E000}]/v.exec('ab')[0]==='ab'",
+        r#"
+            let r = /[\q{ab}\u{D7FF}-\u{E000}]/vy;
+            r.lastIndex = 1;
+            let a = r.exec('😀');
+            a === null && r.lastIndex === 0 && r.exec('\uD800a')[0].charCodeAt(0) === 0xd800 &&
+                /[\q{ab}\u{D7FF}-\u{E000}]/v.exec('ab')[0] === 'ab'
+        "#,
     );
     assert_true(
-        r"let r=/[\q{}\p{Any}]/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀');}catch(e){caught=e instanceof TypeError;}caught && r.lastIndex===0",
+        r#"
+            let r = /[\q{}\p{Any}]/vy;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀');
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
 }
 
 #[test]
 fn consumers_clones_and_collection_use_the_complete_interval_string_plan() {
     assert_true(
-        r"let r=/(?<whole>([\q{}\P{Any}]))/dvg,a=[...'😀'.matchAll(r)];a.length===2 && a[0].index===0 && a[1].index===2 && a[1].groups.whole==='' && a[1].indices[2][1]===2 && '😀'.replace(r,'#')==='#😀#' && '😀'.split(/[\q{}\P{Any}]/v).join('|')==='😀'",
+        r#"
+            let r = /(?<whole>([\q{}\P{Any}]))/dvg,
+                a = [...'😀'.matchAll(r)];
+            a.length === 2 && a[0].index === 0 && a[1].index === 2 && a[1].groups.whole === '' && a[1]
+                .indices[2][1] === 2 && '😀'.replace(r, '#') === '#😀#' && '😀'.split(/[\q{}\P{Any}]/v)
+                .join('|') === '😀'
+        "#,
     );
     assert_true(
-        r"let r=/[\q{ab}\d]/vg;r.lastIndex=8;'xab5!'.search(r)===1 && r.lastIndex===8 && 'ab5'.match(r).join('|')==='ab|5' && r.lastIndex===0 && 'ab5'.replace(r,'#')==='##' && 'ab5'.split(/[\q{ab}\d]/v).join('|')==='||'",
+        r#"
+            let r = /[\q{ab}\d]/vg;
+            r.lastIndex = 8;
+            'xab5!'.search(r) === 1 && r.lastIndex === 8 && 'ab5'.match(r).join('|') === 'ab|5' && r
+                .lastIndex === 0 && 'ab5'.replace(r, '#') === '##' && 'ab5'.split(/[\q{ab}\d]/v).join(
+                '|') === '||'
+        "#,
     );
     assert_true(
-        r"let r=/[\q{ab}\p{ASCII}]/iv;r.lastIndex=7;let c=new RegExp(r,'dvy');c.exec('K')===null && r.exec('K')[0]==='K' && c.lastIndex===0 && r.lastIndex===7 && c.source==='[\\q{ab}\\p{ASCII}]'",
+        r#"
+            let r = /[\q{ab}\p{ASCII}]/iv;
+            r.lastIndex = 7;
+            let c = new RegExp(r, 'dvy');
+            c.exec('K') === null && r.exec('K')[0] === 'K' && c.lastIndex === 0 && r.lastIndex === 7 && c
+                .source === '[\\q{ab}\\p{ASCII}]'
+        "#,
     );
     let mut realm = Realm::default();
     realm

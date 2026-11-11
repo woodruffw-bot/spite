@@ -87,41 +87,91 @@ fn repeated_reference_character_result_snapshot() {
 #[test]
 fn repeated_character_terms_keep_current_named_values_and_retry_ranges() {
     assert_true(
-        r"let a=/(\1a)+/d.exec('aaa'),b=/((a)\1)+/d.exec('aaa'),c=/(?:(a)\1){2}/d.exec('aaaa');a[1]==='a'&&a.indices[1][0]===2&&b[1]==='a'&&b[2]==='a'&&b.indices[2][0]===2&&c[1]==='a'&&c.indices[1][0]===2",
+        r#"
+            let a = /(\1a)+/d.exec('aaa'),
+                b = /((a)\1)+/d.exec('aaa'),
+                c = /(?:(a)\1){2}/d.exec('aaaa');
+            a[1] === 'a' && a.indices[1][0] === 2 && b[1] === 'a' && b[2] === 'a' && b.indices[2][0] ===
+                2 && c[1] === 'a' && c.indices[1][0] === 2
+        "#,
     );
     assert_true(
-        r"let a=/(?<x>a)(?<y>b)(?<last>(?<piece>a)\k<piece>\k<y>)*aab$/d.exec('abaabaab');a[0]==='abaabaab'&&a.groups.last==='aab'&&a.groups.piece==='a'&&a.indices.groups.last===a.indices[3]&&a.indices.groups.last[0]===2&&a.indices.groups.piece===a.indices[4]&&a.indices[4][0]===2&&a.indices[4][1]===3",
+        r#"
+            let a = /(?<x>a)(?<y>b)(?<last>(?<piece>a)\k<piece>\k<y>)*aab$/d.exec('abaabaab');
+            a[0] === 'abaabaab' && a.groups.last === 'aab' && a.groups.piece === 'a' && a.indices.groups
+                .last === a.indices[3] && a.indices.groups.last[0] === 2 && a.indices.groups.piece === a
+                .indices[4] && a.indices[4][0] === 2 && a.indices[4][1] === 3
+        "#,
     );
     assert_true(
-        r"let a=/((?<x>a)(?<y>b)(?<last>(?<piece>a)\k<piece>\k<y>)+?)\1/d.exec('abaababaab');a[0]==='abaababaab'&&a[1]==='abaab'&&a.groups.last==='aab'&&a.groups.piece==='a'&&a.indices.groups.piece===a.indices[5]&&a.indices[5][0]===2",
+        r#"
+            let a = /((?<x>a)(?<y>b)(?<last>(?<piece>a)\k<piece>\k<y>)+?)\1/d.exec('abaababaab');
+            a[0] === 'abaababaab' && a[1] === 'abaab' && a.groups.last === 'aab' && a.groups.piece ===
+                'a' && a.indices.groups.piece === a.indices[5] && a.indices[5][0] === 2
+        "#,
     );
     assert_true(
-        r"let a=/(?<x>a)(?<y>b)(?<last>(?<piece>[ab])\k<piece>\k<y>)+$/d.exec('abaabbbb');a[0]==='abaabbbb'&&a.groups.last==='bbb'&&a.groups.piece==='b'&&a.indices.groups.piece===a.indices[4]&&a.indices[4][0]===5&&a.indices[4][1]===6",
+        r#"
+            let a = /(?<x>a)(?<y>b)(?<last>(?<piece>[ab])\k<piece>\k<y>)+$/d.exec('abaabbbb');
+            a[0] === 'abaabbbb' && a.groups.last === 'bbb' && a.groups.piece === 'b' && a.indices.groups
+                .piece === a.indices[4] && a.indices[4][0] === 5 && a.indices[4][1] === 6
+        "#,
     );
     assert_true(
-        r"let a=/(?:(?<x>a)|(?<x>b))(?<y>c)(?<last>(?<piece>a)\k<piece>\k<y>)+/d.exec('bcaac');a[1]===undefined&&a.groups.x==='b'&&a.groups.piece==='a'&&a.indices.groups.piece===a.indices[5]&&a.indices[5][0]===2",
+        r#"
+            let a = /(?:(?<x>a)|(?<x>b))(?<y>c)(?<last>(?<piece>a)\k<piece>\k<y>)+/d.exec('bcaac');
+            a[1] === undefined && a.groups.x === 'b' && a.groups.piece === 'a' && a.indices.groups
+                .piece === a.indices[5] && a.indices[5][0] === 2
+        "#,
     );
     assert_true(
-        r"let a=/(?<x>a)(?<y>b)(?<last>(?<piece>.)\k<piece>\k<y>)+/ds.exec('ab\n\nb');a.groups.piece==='\n'&&a.indices.groups.piece[0]===2&&/(?<x>a)(?<y>b)(?<last>(?<piece>.)\k<piece>\k<y>)+/.exec('ab\n\nb')===null",
+        r#"
+            let a = /(?<x>a)(?<y>b)(?<last>(?<piece>.)\k<piece>\k<y>)+/ds.exec('ab\n\nb');
+            a.groups.piece === '\n' && a.indices.groups.piece[0] === 2 &&
+                /(?<x>a)(?<y>b)(?<last>(?<piece>.)\k<piece>\k<y>)+/.exec('ab\n\nb') === null
+        "#,
     );
     assert_true(
-        r"let a=/(?<x>a)(?<y>b)(?<last>(?<piece>.)\k<piece>\k<y>)+/d.exec('ab\uD800\uD800b');a[0].length===5&&a.groups.piece.charCodeAt(0)===0xD800&&a.indices.groups.piece===a.indices[4]&&a.indices[4][0]===2&&a.indices[4][1]===3",
+        r#"
+            let a = /(?<x>a)(?<y>b)(?<last>(?<piece>.)\k<piece>\k<y>)+/d.exec('ab\uD800\uD800b');
+            a[0].length === 5 && a.groups.piece.charCodeAt(0) === 0xD800 && a.indices.groups.piece === a
+                .indices[4] && a.indices[4][0] === 2 && a.indices[4][1] === 3
+        "#,
     );
 }
 
 #[test]
 fn repeated_character_consumers_preserve_partial_indices_and_final_values() {
     assert_true(
-        r"let r=/(?<x>a)(?<y>b)(?<last>(?<piece>[ab])\k<piece>\k<y>)+/dg,a=[...'abaab abaabbbb'.matchAll(r)];a.length===2&&a[0].groups.last==='aab'&&a[1].groups.last==='bbb'&&a[1].groups.piece==='b'&&a[1].indices.groups.piece===a[1].indices[4]&&a[1].indices[4][0]===11&&r.lastIndex===0",
+        r#"
+            let r = /(?<x>a)(?<y>b)(?<last>(?<piece>[ab])\k<piece>\k<y>)+/dg,
+                a = [...'abaab abaabbbb'.matchAll(r)];
+            a.length === 2 && a[0].groups.last === 'aab' && a[1].groups.last === 'bbb' && a[1].groups
+                .piece === 'b' && a[1].indices.groups.piece === a[1].indices[4] && a[1].indices[4][0] ===
+                11 && r.lastIndex === 0
+        "#,
     );
     assert_true(
         r"'qabaabbbb'.replace(/(?<x>a)(?<y>b)(?<last>(?<piece>[ab])\k<piece>\k<y>)+/,'<$<last>:$<piece>>')==='q<bbb:b>'&&'qabaabbbb'.search(/(a)(b)(([ab])\4\2)+/)===1&&'qabaabbbbZ'.split(/(a)(b)(([ab])\4\2)+/).join(',')==='q,a,b,bbb,b,Z'",
     );
     assert_true(
-        r"let r=/(?<x>a)(?<y>b)(?<last>(?<piece>[ab])\k<piece>\k<y>)+/dy;r.lastIndex=1;let copy=new RegExp(r),a=r.exec('qabaabbbb');a.groups.piece==='b'&&a.indices.groups.piece[0]===6&&a.indices.groups.piece[1]===7&&r.lastIndex===9&&r.exec('qabaabbbb')===null&&r.lastIndex===0&&copy.source===r.source&&copy.lastIndex===0",
+        r#"
+            let r = /(?<x>a)(?<y>b)(?<last>(?<piece>[ab])\k<piece>\k<y>)+/dy;
+            r.lastIndex = 1;
+            let copy = new RegExp(r),
+                a = r.exec('qabaabbbb');
+            a.groups.piece === 'b' && a.indices.groups.piece[0] === 6 && a.indices.groups.piece[1] === 7 &&
+                r.lastIndex === 9 && r.exec('qabaabbbb') === null && r.lastIndex === 0 && copy.source === r
+                .source && copy.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let a=/(?<x>a)(?<y>b)(?<last>(?<piece>[ab])\k<piece>\k<y>)*\k<piece>$/d.exec('abbbbb'),b=/(?<x>a)(?<y>b)(?<last>(?<piece>[ab])\k<piece>\k<y>)*?\k<piece>$/d.exec('abbbbb');a[0]==='abbbbb'&&b[0]==='abbbbb'&&a.groups.piece==='b'&&b.groups.piece==='b'&&a.indices.groups.piece[0]===2&&b.indices.groups.piece[0]===2",
+        r#"
+            let a = /(?<x>a)(?<y>b)(?<last>(?<piece>[ab])\k<piece>\k<y>)*\k<piece>$/d.exec('abbbbb'),
+                b = /(?<x>a)(?<y>b)(?<last>(?<piece>[ab])\k<piece>\k<y>)*?\k<piece>$/d.exec('abbbbb');
+            a[0] === 'abbbbb' && b[0] === 'abbbbb' && a.groups.piece === 'b' && b.groups.piece === 'b' && a
+                .indices.groups.piece[0] === 2 && b.indices.groups.piece[0] === 2
+        "#,
     );
     assert_true(
         r"let a=/(?<x>a)(?<last>a\k<x>)* /d.exec('a ');a.groups.last===undefined&&a.indices.groups.last===undefined",

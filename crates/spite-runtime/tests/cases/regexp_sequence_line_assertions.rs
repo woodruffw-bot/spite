@@ -7,7 +7,11 @@ use crate::common::assert_true;
 #[test]
 fn internal_line_assertions_use_complete_input_positions_and_empty_capture_ranges() {
     assert_true(
-        r"let a=/(a)($)(\n)(^)(b)/dm.exec('xa\nbx');a.index===1&&a[0]==='a\nb'&&a[1]==='a'&&a[2]===''&&a[3]==='\n'&&a[4]===''&&a[5]==='b'&&a.indices[2][0]===2&&a.indices[4][0]===3",
+        r#"
+            let a = /(a)($)(\n)(^)(b)/dm.exec('xa\nbx');
+            a.index === 1 && a[0] === 'a\nb' && a[1] === 'a' && a[2] === '' && a[3] === '\n' && a[4] ===
+                '' && a[5] === 'b' && a.indices[2][0] === 2 && a.indices[4][0] === 3
+        "#,
     );
     assert_true(
         r"let a=/(a)($)(\n)(^)(b)/d.exec('a\nb');a===null&&/a^b/.exec('ab')===null&&/a$b/.exec('ab')===null",
@@ -36,7 +40,11 @@ fn dotall_ignore_case_word_and_input_assertions_keep_independent_flags() {
         r"/(.)(^)(.)/ms.exec('\nA')[0]==='\nA'&&/(.)(^)(.)/m.exec('\nA')===null&&/(.)(^)(.)/s.exec('\nA')===null",
     );
     assert_true(
-        r"let a=/(\r)(^\b)(a)/dmi.exec('\rA');a[1]==='\r'&&a[2]===''&&a[3]==='A'&&a.indices[2][0]===1&&/(\r)(^\B)(a)/mi.exec('\rA')===null",
+        r#"
+            let a = /(\r)(^\b)(a)/dmi.exec('\rA');
+            a[1] === '\r' && a[2] === '' && a[3] === 'A' && a.indices[2][0] === 1 && /(\r)(^\B)(a)/mi.exec(
+                '\rA') === null
+        "#,
     );
     assert_true(
         r"let a=/(\^)(a)(\$)/d.exec('^a$');a[1]==='^'&&a[3]==='$'&&/([\^$])(^)(a)/m.exec('^a')===null",
@@ -46,14 +54,32 @@ fn dotall_ignore_case_word_and_input_assertions_keep_independent_flags() {
 #[test]
 fn sticky_assertions_keep_input_identity_and_ordered_last_index_writes() {
     assert_true(
-        r"let r=/(^a)/my;r.lastIndex=2;let a=r.exec('x\na');a.index===2&&a[1]==='a'&&r.lastIndex===3&&r.exec('x\na')===null&&r.lastIndex===0",
+        r#"
+            let r = /(^a)/my;
+            r.lastIndex = 2;
+            let a = r.exec('x\na');
+            a.index === 2 && a[1] === 'a' && r.lastIndex === 3 && r.exec('x\na') === null && r
+                .lastIndex === 0
+        "#,
     );
     assert_true(r"let r=/(^a)/y;r.lastIndex=1;r.exec('xaa')===null&&r.lastIndex===0");
     assert_true(
         r"let r=/(a$)/my;r.lastIndex=1;let a=r.exec('xa\ny');a.index===1&&a[1]==='a'&&r.lastIndex===2",
     );
     assert_true(
-        r"let r=/(^a)/g;Object.defineProperty(r,'lastIndex',{writable:false});let failed=false;try{r.exec('a')}catch(e){failed=e instanceof TypeError}failed",
+        r#"
+            let r = /(^a)/g;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let failed = false;
+            try {
+                r.exec('a')
+            } catch (e) {
+                failed = e instanceof TypeError
+            }
+            failed
+        "#,
     );
 }
 
@@ -63,10 +89,17 @@ fn zero_width_assertion_groups_nested_outer_anchors_and_alternatives_keep_slots(
         r"let a=/(^$\B)()/d.exec('');a[0]===''&&a[1]===''&&a[2]===''&&a.indices[1][0]===0&&a.indices[2][1]===0",
     );
     assert_true(
-        r"let a=/^((^a))$/d.exec('a'),b=/^((a$))$/d.exec('a');a[1]==='a'&&a[2]==='a'&&b[1]==='a'&&b[2]==='a'&&a.indices[2][1]===1",
+        r#"
+            let a = /^((^a))$/d.exec('a'),
+                b = /^((a$))$/d.exec('a');
+            a[1] === 'a' && a[2] === 'a' && b[1] === 'a' && b[2] === 'a' && a.indices[2][1] === 1
+        "#,
     );
     assert_true(
-        r"let a=/(a$\n^b)|(a\nb)/dm.exec('a\nb');a[1]==='a\nb'&&a[2]===undefined&&Object.hasOwn(a,'2')&&a.indices[2]===undefined",
+        r#"
+            let a = /(a$\n^b)|(a\nb)/dm.exec('a\nb');
+            a[1] === 'a\nb' && a[2] === undefined && Object.hasOwn(a, '2') && a.indices[2] === undefined
+        "#,
     );
     assert_true(
         r"let a=/([\s\S])(^)(a)/dm.exec('💩\na');a.index===2&&a[1]==='\n'&&a[2]===''&&a[3]==='a'&&a.indices[3][0]===3",
@@ -79,13 +112,34 @@ fn generic_consumers_callbacks_and_intrinsic_arrays_preserve_empty_assertion_cap
         r"'a\nb a\nb'.replace(/(a)($)(\n)(^)(b)/gm,'$5$1')==='ba ba'&&'a\nbxa\nb'.split(/(a)($)(\n)(^)(b)/m).join(',')===',a,,\n,,b,x,a,,\n,,b,'",
     );
     assert_true(
-        r"let seen;let s='a\nb'.replace(/(a)($)(\n)(^)(b)/m,(whole,a,end,nl,start,b,index,input)=>{seen=[whole,a,end,nl,start,b,index,input];return 'x'});s==='x'&&seen[2]===''&&seen[4]===''&&seen[6]===0&&seen[7]==='a\nb'",
+        r#"
+            let seen;
+            let s = 'a\nb'.replace(/(a)($)(\n)(^)(b)/m, (whole, a, end, nl, start, b, index, input) => {
+                seen = [whole, a, end, nl, start, b, index, input];
+                return 'x'
+            });
+            s === 'x' && seen[2] === '' && seen[4] === '' && seen[6] === 0 && seen[7] === 'a\nb'
+        "#,
     );
     assert_true(
-        r"let r=/(a)($)(\n)(^)(b)/dgm,a=[...'a\nb a\nb'.matchAll(r)];a.length===2&&a[1].index===4&&a[1].indices[4][0]===6&&r.lastIndex===0",
+        r#"
+            let r = /(a)($)(\n)(^)(b)/dgm,
+                a = [...'a\nb a\nb'.matchAll(r)];
+            a.length === 2 && a[1].index === 4 && a[1].indices[4][0] === 6 && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let calls=0;Object.defineProperty(Array.prototype,'1',{set(){calls++},configurable:true});let a=/(^)a/d.exec('a');calls===0&&a[1]===''&&Object.hasOwn(a,'1')&&a.indices[1][1]===0",
+        r#"
+            let calls = 0;
+            Object.defineProperty(Array.prototype, '1', {
+                set() {
+                    calls++
+                },
+                configurable: true
+            });
+            let a = /(^)a/d.exec('a');
+            calls === 0 && a[1] === '' && Object.hasOwn(a, '1') && a.indices[1][1] === 0
+        "#,
     );
 }
 

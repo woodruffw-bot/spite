@@ -1608,24 +1608,61 @@ fn common_line_asserted_string_class_layouts_preserve_selected_branch_and_lexica
                         let named = true;
                         assert_true(&format!(
                             r#"
-var r=new RegExp({pattern:?},'dvgym'),m=r.exec({text:?}),ok=true;
-if({matched}){{
- if({named}){{var keys=Object.keys(m.groups),characters='{characters}'.split(','),before='{before}'.split(','),after='{after}'.split(','),empty='{empties}'.split(','),never='{never}'.split(',');
-  for(var name of keys){{var slot=keys.indexOf(name)+1,expected=undefined,from=-1,to=-1;
-   if({class_selected}&&characters.indexOf(name)!==-1){{expected={whole:?};from=0;to={end}}}
-   if({class_selected}&&before.indexOf(name)!==-1){{expected='';from=0;to=0}}
-   if({class_selected}&&after.indexOf(name)!==-1){{expected='';from={end};to={end}}}
-   if(!{class_selected}&&empty.indexOf(name)!==-1){{expected='';from=0;to=0}}
-   if(['enclosing','inner'].indexOf(name)!==-1){{expected={whole:?};from=0;to={end}}}
-   if(never.indexOf(name)!==-1)expected=undefined;
-   ok=ok&&m[slot]===expected&&m.groups[name]===expected&&m.indices.groups[name]===m.indices[slot]&&Object.hasOwn(m.indices.groups,name);
-   if(expected===undefined)ok=ok&&m.indices[slot]===undefined;else ok=ok&&m.indices[slot][0]===from&&m.indices[slot][1]===to;
-  }}ok=ok&&m.length===keys.length+1;
- }}else ok=ok&&m.length===1&&m.groups===undefined&&m.indices.groups===undefined;
- ok=ok&&m[0]==={whole:?}&&m.index===0&&m.indices[0][1]==={end}&&r.lastIndex==={end};
-}}else ok=m===null&&r.lastIndex===0;
-ok&&r.source==={pattern:?}
-"#
+                                var r = new RegExp({pattern:?}, 'dvgym'),
+                                    m = r.exec({text:?}),
+                                    ok = true;
+                                if ({matched}) {{
+                                    if ({named}) {{
+                                        var keys = Object.keys(m.groups),
+                                            characters = '{characters}'.split(','),
+                                            before = '{before}'.split(','),
+                                            after = '{after}'.split(','),
+                                            empty = '{empties}'.split(','),
+                                            never = '{never}'.split(',');
+                                        for (var name of keys) {{
+                                            var slot = keys.indexOf(name) + 1,
+                                                expected = undefined,
+                                                from = -1,
+                                                to = -1;
+                                            if ({class_selected} && characters.indexOf(name) !== -1) {{
+                                                expected = {whole:?};
+                                                from = 0;
+                                                to = {end}
+                                            }}
+                                            if ({class_selected} && before.indexOf(name) !== -1) {{
+                                                expected = '';
+                                                from = 0;
+                                                to = 0
+                                            }}
+                                            if ({class_selected} && after.indexOf(name) !== -1) {{
+                                                expected = '';
+                                                from = {end};
+                                                to = {end}
+                                            }}
+                                            if (!{class_selected} && empty.indexOf(name) !== -1) {{
+                                                expected = '';
+                                                from = 0;
+                                                to = 0
+                                            }}
+                                            if (['enclosing', 'inner'].indexOf(name) !== -1) {{
+                                                expected = {whole:?};
+                                                from = 0;
+                                                to = {end}
+                                            }}
+                                            if (never.indexOf(name) !== -1) expected = undefined;
+                                            ok = ok && m[slot] === expected && m.groups[name] === expected && m.indices.groups[
+                                                name] === m.indices[slot] && Object.hasOwn(m.indices.groups, name);
+                                            if (expected === undefined) ok = ok && m.indices[slot] === undefined;
+                                            else ok = ok && m.indices[slot][0] === from && m.indices[slot][1] === to;
+                                        }}
+                                        ok = ok && m.length === keys.length + 1;
+                                    }} else ok = ok && m.length === 1 && m.groups === undefined && m.indices.groups ===
+                                        undefined;
+                                    ok = ok && m[0] === {whole:?} && m.index === 0 && m.indices[0][1] === {end} &&
+                                        r.lastIndex === {end};
+                                }} else ok = m === null && r.lastIndex === 0;
+                                ok && r.source === {pattern:?}
+                            "#
                         ));
                     }
                 }

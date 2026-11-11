@@ -7,20 +7,95 @@ use crate::common::assert_true;
 #[test]
 fn creation_orders_input_species_flags_construction_and_lastindex_before_lazy_exec() {
     assert_true(
-        r"
-        let t='',fake={set lastIndex(v){t+='w';if(v!==2)throw 7;},get exec(){throw 8;}},
-            r={get constructor(){t+='c';return {get [Symbol.species](){t+='p';return C;}};},get flags(){t+='f';return {toString(){t+='F';return 'gu';}};},
-                get lastIndex(){t+='l';return {valueOf(){t+='L';return 2.9;}};},get [Symbol.match](){throw 9;},get source(){throw 10;},get global(){throw 11;},get unicode(){throw 12;}};
-        function C(pattern,flags){t+='n';if(new.target!==C||arguments.length!==2||pattern!==r||flags!=='gu'||!(this instanceof C))throw 13;return fake;}
-        let i=RegExp.prototype[Symbol.matchAll].call(r,{toString(){t+='s';return 'abc';}});
-        typeof i.next==='function'&&t==='scpfFnlLw'&&i[Symbol.iterator]()===i
-    ",
+        r#"
+            let t = '',
+                fake = {
+                    set lastIndex(v) {
+                        t += 'w';
+                        if (v !== 2) throw 7;
+                    },
+                    get exec() {
+                        throw 8;
+                    }
+                },
+                r = {
+                    get constructor() {
+                        t += 'c';
+                        return {
+                            get [Symbol.species]() {
+                                t += 'p';
+                                return C;
+                            }
+                        };
+                    },
+                    get flags() {
+                        t += 'f';
+                        return {
+                            toString() {
+                                t += 'F';
+                                return 'gu';
+                            }
+                        };
+                    },
+                    get lastIndex() {
+                        t += 'l';
+                        return {
+                            valueOf() {
+                                t += 'L';
+                                return 2.9;
+                            }
+                        };
+                    },
+                    get [Symbol.match]() {
+                        throw 9;
+                    },
+                    get source() {
+                        throw 10;
+                    },
+                    get global() {
+                        throw 11;
+                    },
+                    get unicode() {
+                        throw 12;
+                    }
+                };
+
+            function C(pattern, flags) {
+                t += 'n';
+                if (new.target !== C || arguments.length !== 2 || pattern !== r || flags !== 'gu' || !(
+                        this instanceof C)) throw 13;
+                return fake;
+            }
+            let i = RegExp.prototype[Symbol.matchAll].call(r, {
+                toString() {
+                    t += 's';
+                    return 'abc';
+                }
+            });
+            typeof i.next === 'function' && t === 'scpfFnlLw' && i[Symbol.iterator]() === i
+        "#,
     );
     assert_true(
-        r"
-        let fake={lastIndex:0,exec(){return null;}},r={flags:'',lastIndex:1,constructor:{[Symbol.species]:function(){r.lastIndex=3;return fake;}}};
-        RegExp.prototype[Symbol.matchAll].call(r,'abcd');fake.lastIndex===3
-    ",
+        r#"
+            let fake = {
+                    lastIndex: 0,
+                    exec() {
+                        return null;
+                    }
+                },
+                r = {
+                    flags: '',
+                    lastIndex: 1,
+                    constructor: {
+                        [Symbol.species]: function() {
+                            r.lastIndex = 3;
+                            return fake;
+                        }
+                    }
+                };
+            RegExp.prototype[Symbol.matchAll].call(r, 'abcd');
+            fake.lastIndex === 3
+        "#,
     );
     for receiver in ["undefined", "null", "1", "'x'", "true", "1n", "Symbol()"] {
         assert!(
@@ -42,12 +117,40 @@ fn creation_orders_input_species_flags_construction_and_lastindex_before_lazy_ex
 fn species_defaults_and_invalid_constructors_preserve_the_early_checks() {
     for constructor in ["null", "1", "false", "''", "1n", "Symbol()"] {
         assert_true(&format!(
-            "let ok=false;try{{RegExp.prototype[Symbol.matchAll].call({{constructor:{constructor},get flags(){{throw 7;}}}},'');}}catch(e){{ok=e instanceof TypeError;}}ok"
+            r#"
+                let ok = false;
+                try {{
+                    RegExp.prototype[Symbol.matchAll].call({{
+                        constructor: {constructor},
+                        get flags() {{
+                            throw 7;
+                        }}
+                    }}, '');
+                }} catch (e) {{
+                    ok = e instanceof TypeError;
+                }}
+                ok
+            "#
         ));
     }
     for species in ["{}", "Date.now", "()=>{}", "({m(){}}).m", "1n", "Symbol()"] {
         assert_true(&format!(
-            "let ok=false;try{{RegExp.prototype[Symbol.matchAll].call({{constructor:{{[Symbol.species]:{species}}},get flags(){{throw 7;}}}},'');}}catch(e){{ok=e instanceof TypeError;}}ok"
+            r#"
+                let ok = false;
+                try {{
+                    RegExp.prototype[Symbol.matchAll].call({{
+                        constructor: {{
+                            [Symbol.species]: {species}
+                        }},
+                        get flags() {{
+                            throw 7;
+                        }}
+                    }}, '');
+                }} catch (e) {{
+                    ok = e instanceof TypeError;
+                }}
+                ok
+            "#
         ));
     }
     for constructor in [
@@ -60,7 +163,21 @@ fn species_defaults_and_invalid_constructors_preserve_the_early_checks() {
         realm.eval("let f=RegExp.prototype[Symbol.matchAll],called=false;RegExp=function(){called=true;throw 7;};").unwrap();
         assert_eq!(
             realm.eval(&format!(
-                "let caught=false;try{{f.call({{constructor:{constructor},flags:'',get lastIndex(){{throw 8;}}}},'');}}catch(e){{caught=e===8;}}caught"
+                r#"
+                    let caught = false;
+                    try {{
+                        f.call({{
+                            constructor: {constructor},
+                            flags: '',
+                            get lastIndex() {{
+                                throw 8;
+                            }}
+                        }}, '');
+                    }} catch (e) {{
+                        caught = e === 8;
+                    }}
+                    caught
+                "#
             )),
             Ok(Value::Boolean(true)),
             "{constructor}"
@@ -81,62 +198,255 @@ fn lastindex_is_copied_with_tolength_and_strict_write_before_iteration() {
         ("Infinity", "9007199254740991"),
     ] {
         assert_true(&format!(
-            "let fake={{exec(){{return null;}}}},r={{flags:'',lastIndex:{value},constructor:{{[Symbol.species]:function(){{return fake;}}}}}};RegExp.prototype[Symbol.matchAll].call(r,'');Object.is(fake.lastIndex,{expected})"
+            r#"
+                let fake = {{
+                        exec() {{
+                            return null;
+                        }}
+                    }},
+                    r = {{
+                        flags: '',
+                        lastIndex: {value},
+                        constructor: {{
+                            [Symbol.species]: function() {{
+                                return fake;
+                            }}
+                        }}
+                    }};
+                RegExp.prototype[Symbol.matchAll].call(r, '');
+                Object.is(fake.lastIndex, {expected})
+            "#
         ));
     }
     for value in ["1n", "Symbol()"] {
         assert_true(&format!(
-            "let ok=false;try{{RegExp.prototype[Symbol.matchAll].call({{flags:'',lastIndex:{value},constructor:{{[Symbol.species]:function(){{return {{set lastIndex(v){{throw 7;}}}};}}}}}},'');}}catch(e){{ok=e instanceof TypeError;}}ok"
+            r#"
+                let ok = false;
+                try {{
+                    RegExp.prototype[Symbol.matchAll].call({{
+                        flags: '',
+                        lastIndex: {value},
+                        constructor: {{
+                            [Symbol.species]: function() {{
+                                return {{
+                                    set lastIndex(v) {{
+                                        throw 7;
+                                    }}
+                                }};
+                            }}
+                        }}
+                    }}, '');
+                }} catch (e) {{
+                    ok = e instanceof TypeError;
+                }}
+                ok
+            "#
         ));
     }
     assert_true(
         r"
-        let fake={},r={flags:'',constructor:{[Symbol.species]:function(){return fake;}}},ok=false;
-        Object.defineProperty(fake,'lastIndex',{value:0,writable:false});
-        try{RegExp.prototype[Symbol.matchAll].call(r,'');}catch(e){ok=e instanceof TypeError;}ok
-    ",
+            let fake={},r={flags:'',constructor:{[Symbol.species]:function(){return fake;}}},ok=false;
+            Object.defineProperty(fake,'lastIndex',{value:0,writable:false});
+            try{RegExp.prototype[Symbol.matchAll].call(r,'');}catch(e){ok=e instanceof TypeError;}ok
+        ",
     );
 }
 
 #[test]
 fn nonglobal_results_preserve_identity_without_reading_match_properties() {
     assert_true(
-        r"
-        let n=0,z={get 0(){throw 7;},get length(){throw 8;},get index(){throw 9;},get groups(){throw 10;}},fake={get flags(){throw 11;},get global(){throw 12;},get unicode(){throw 13;},exec(s){n++;if(this!==fake||s!=='abc'||arguments.length!==1)throw 14;return z;}},
-            r={flags:'',lastIndex:2,constructor:{[Symbol.species]:function(){return fake;}}};
-        let i=RegExp.prototype[Symbol.matchAll].call(r,'abc');r.lastIndex=0;r.flags='g';
-        let a=i.next();fake.exec=function(){throw 15;};let b=i.next(),c=i.next();
-        a.value===z&&a.done===false&&b.value===undefined&&b.done===true&&c.done===true&&b!==c&&n===1&&fake.lastIndex===2
-    ",
+        r#"
+            let n = 0,
+                z = {
+                    get 0() {
+                        throw 7;
+                    },
+                    get length() {
+                        throw 8;
+                    },
+                    get index() {
+                        throw 9;
+                    },
+                    get groups() {
+                        throw 10;
+                    }
+                },
+                fake = {
+                    get flags() {
+                        throw 11;
+                    },
+                    get global() {
+                        throw 12;
+                    },
+                    get unicode() {
+                        throw 13;
+                    },
+                    exec(s) {
+                        n++;
+                        if (this !== fake || s !== 'abc' || arguments.length !== 1) throw 14;
+                        return z;
+                    }
+                },
+                r = {
+                    flags: '',
+                    lastIndex: 2,
+                    constructor: {
+                        [Symbol.species]: function() {
+                            return fake;
+                        }
+                    }
+                };
+            let i = RegExp.prototype[Symbol.matchAll].call(r, 'abc');
+            r.lastIndex = 0;
+            r.flags = 'g';
+            let a = i.next();
+            fake.exec = function() {
+                throw 15;
+            };
+            let b = i.next(),
+                c = i.next();
+            a.value === z && a.done === false && b.value === undefined && b.done === true && c.done ===
+                true && b !== c && n === 1 && fake.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"
-        let n=0,fake={exec(){n++;return null;}},r={flags:'g',constructor:{[Symbol.species]:function(){return fake;}}},i=RegExp.prototype[Symbol.matchAll].call(r,'');
-        i.next().done&&i.next().done&&n===1
-    ",
+        r#"
+            let n = 0,
+                fake = {
+                    exec() {
+                        n++;
+                        return null;
+                    }
+                },
+                r = {
+                    flags: 'g',
+                    constructor: {
+                        [Symbol.species]: function() {
+                            return fake;
+                        }
+                    }
+                },
+                i = RegExp.prototype[Symbol.matchAll].call(r, '');
+            i.next().done && i.next().done && n === 1
+        "#,
     );
 }
 
 #[test]
 fn global_exec_is_live_and_abrupt_completions_leave_the_iterator_retryable() {
     assert_true(
-        r"
-        let fake={get exec(){throw 7;}},r={flags:'g',constructor:{[Symbol.species]:function(){return fake;}}},i=RegExp.prototype[Symbol.matchAll].call(r,'abc'),ok=false;
-        try{i.next();}catch(e){ok=e===7;}
-        Object.defineProperty(fake,'exec',{value:function(){return {get 0(){throw 8;}};},writable:true,configurable:true});
-        try{i.next();}catch(e){ok=ok&&e===8;}
-        fake.exec=function(){return {0:{toString(){throw 9;}}};};try{i.next();}catch(e){ok=ok&&e===9;}
-        fake.exec=function(){return 1;};try{i.next();}catch(e){ok=ok&&e instanceof TypeError;}
-        let z={0:'a',get length(){throw 10;},get index(){throw 11;},get groups(){throw 12;}};fake.exec=function(){return z;};
-        let a=i.next();fake.exec=function(){return null;};ok&&a.value===z&&!a.done&&i.next().done
-    ",
+        r#"
+            let fake = {
+                    get exec() {
+                        throw 7;
+                    }
+                },
+                r = {
+                    flags: 'g',
+                    constructor: {
+                        [Symbol.species]: function() {
+                            return fake;
+                        }
+                    }
+                },
+                i = RegExp.prototype[Symbol.matchAll].call(r, 'abc'),
+                ok = false;
+            try {
+                i.next();
+            } catch (e) {
+                ok = e === 7;
+            }
+            Object.defineProperty(fake, 'exec', {
+                value: function() {
+                    return {
+                        get 0() {
+                            throw 8;
+                        }
+                    };
+                },
+                writable: true,
+                configurable: true
+            });
+            try {
+                i.next();
+            } catch (e) {
+                ok = ok && e === 8;
+            }
+            fake.exec = function() {
+                return {
+                    0: {
+                        toString() {
+                            throw 9;
+                        }
+                    }
+                };
+            };
+            try {
+                i.next();
+            } catch (e) {
+                ok = ok && e === 9;
+            }
+            fake.exec = function() {
+                return 1;
+            };
+            try {
+                i.next();
+            } catch (e) {
+                ok = ok && e instanceof TypeError;
+            }
+            let z = {
+                0: 'a',
+                get length() {
+                    throw 10;
+                },
+                get index() {
+                    throw 11;
+                },
+                get groups() {
+                    throw 12;
+                }
+            };
+            fake.exec = function() {
+                return z;
+            };
+            let a = i.next();
+            fake.exec = function() {
+                return null;
+            };
+            ok && a.value === z && !a.done && i.next().done
+        "#,
     );
 }
 
 #[test]
 fn matcher_slots_survive_collection_after_public_references_are_cleared() {
     let mut realm = Realm::default();
-    let Value::Object(matcher)=realm.eval("let fake={exec(s){return {0:s};}},r={flags:'',constructor:{[Symbol.species]:function(){return fake;}}},i=RegExp.prototype[Symbol.matchAll].call(r,'captured');fake").unwrap() else {panic!()};
+    let Value::Object(matcher) = realm
+        .eval(
+            r#"
+                let fake = {
+                        exec(s) {
+                            return {
+                                0: s
+                            };
+                        }
+                    },
+                    r = {
+                        flags: '',
+                        constructor: {
+                            [Symbol.species]: function() {
+                                return fake;
+                            }
+                        }
+                    },
+                    i = RegExp.prototype[Symbol.matchAll].call(r, 'captured');
+                fake
+            "#,
+        )
+        .unwrap()
+    else {
+        panic!()
+    };
     realm.eval("fake=null;r=null").unwrap();
     realm.collect(usize::MAX).unwrap();
     assert!(realm.inspect_object(&matcher).is_ok());
@@ -183,7 +493,25 @@ fn optional_work_and_output_aborts_skip_cleanup_without_completing_the_iterator(
         Ok(Value::Boolean(true))
     );
     assert_true(
-        "let fake={exec(s){return {0:s};}},r={flags:'',constructor:{[Symbol.species]:function(){return fake;}}},i=RegExp.prototype[Symbol.matchAll].call(r,'x'.repeat(120000));i.next().value[0].length===120000&&i.next().done",
+        r#"
+            let fake = {
+                    exec(s) {
+                        return {
+                            0: s
+                        };
+                    }
+                },
+                r = {
+                    flags: '',
+                    constructor: {
+                        [Symbol.species]: function() {
+                            return fake;
+                        }
+                    }
+                },
+                i = RegExp.prototype[Symbol.matchAll].call(r, 'x'.repeat(120000));
+            i.next().value[0].length === 120000 && i.next().done
+        "#,
     );
 }
 
@@ -195,23 +523,102 @@ fn recursive_creation_and_next_hooks_use_native_stack_guards() {
             "f.call(r,'')",
         ),
         (
-            "let f=RegExp.prototype[Symbol.matchAll],r={flags:'',constructor:{[Symbol.species]:function(){return f.call(r,'');}}};",
+            r#"
+                let f = RegExp.prototype[Symbol.matchAll],
+                    r = {
+                        flags: '',
+                        constructor: {
+                            [Symbol.species]: function() {
+                                return f.call(r, '');
+                            }
+                        }
+                    };
+            "#,
             "f.call(r,'')",
         ),
         (
-            "let f=RegExp.prototype[Symbol.matchAll],r={flags:'',get lastIndex(){return f.call(r,'');},constructor:{[Symbol.species]:function(){return {};}}};",
+            r#"
+                let f = RegExp.prototype[Symbol.matchAll],
+                    r = {
+                        flags: '',
+                        get lastIndex() {
+                            return f.call(r, '');
+                        },
+                        constructor: {
+                            [Symbol.species]: function() {
+                                return {};
+                            }
+                        }
+                    };
+            "#,
             "f.call(r,'')",
         ),
         (
-            "let fake={exec(){return i.next();}},r={flags:'g',constructor:{[Symbol.species]:function(){return fake;}}},i=RegExp.prototype[Symbol.matchAll].call(r,'');",
+            r#"
+                let fake = {
+                        exec() {
+                            return i.next();
+                        }
+                    },
+                    r = {
+                        flags: 'g',
+                        constructor: {
+                            [Symbol.species]: function() {
+                                return fake;
+                            }
+                        }
+                    },
+                    i = RegExp.prototype[Symbol.matchAll].call(r, '');
+            "#,
             "i.next()",
         ),
         (
-            "let fake={exec(){return {get 0(){return i.next();}};}},r={flags:'g',constructor:{[Symbol.species]:function(){return fake;}}},i=RegExp.prototype[Symbol.matchAll].call(r,'');",
+            r#"
+                let fake = {
+                        exec() {
+                            return {
+                                get 0() {
+                                    return i.next();
+                                }
+                            };
+                        }
+                    },
+                    r = {
+                        flags: 'g',
+                        constructor: {
+                            [Symbol.species]: function() {
+                                return fake;
+                            }
+                        }
+                    },
+                    i = RegExp.prototype[Symbol.matchAll].call(r, '');
+            "#,
             "i.next()",
         ),
         (
-            "let fake={exec(){this.lastIndex={valueOf(){return i.next();}};return {0:''};}},r={flags:'g',constructor:{[Symbol.species]:function(){return fake;}}},i=RegExp.prototype[Symbol.matchAll].call(r,'');",
+            r#"
+                let fake = {
+                        exec() {
+                            this.lastIndex = {
+                                valueOf() {
+                                    return i.next();
+                                }
+                            };
+                            return {
+                                0: ''
+                            };
+                        }
+                    },
+                    r = {
+                        flags: 'g',
+                        constructor: {
+                            [Symbol.species]: function() {
+                                return fake;
+                            }
+                        }
+                    },
+                    i = RegExp.prototype[Symbol.matchAll].call(r, '');
+            "#,
             "i.next()",
         ),
     ] {
@@ -238,43 +645,186 @@ fn empty_global_matches_advance_lossless_utf16_with_the_captured_unicode_flags()
         ("gv", "0,2,3,4,", 3),
     ] {
         assert_true(&format!(
-            r"let seen='',z={{0:{{toString(){{return '';}}}}}},fake={{exec(s){{seen+=this.lastIndex+',';return this.lastIndex>s.length?null:z;}}}},r={{flags:'{flags}',constructor:{{[Symbol.species]:function(){{return fake;}}}}}},i=RegExp.prototype[Symbol.matchAll].call(r,'\ud800\udc00X'),n=0;r.flags='g';for(let a of i){{if(a!==z)throw 7;n++;}}n==={count}&&seen==='{indices}'"
+            r#"
+                let seen = '',
+                    z = {{
+                        0: {{
+                            toString() {{
+                                return '';
+                            }}
+                        }}
+                    }},
+                    fake = {{
+                        exec(s) {{
+                            seen += this.lastIndex + ',';
+                            return this.lastIndex > s.length ? null : z;
+                        }}
+                    }},
+                    r = {{
+                        flags: '{flags}',
+                        constructor: {{
+                            [Symbol.species]: function() {{
+                                return fake;
+                            }}
+                        }}
+                    }},
+                    i = RegExp.prototype[Symbol.matchAll].call(r, '\ud800\udc00X'),
+                    n = 0;
+                r.flags = 'g';
+                for (let a of i) {{
+                    if (a !== z) throw 7;
+                    n++;
+                }}
+                n === {count} && seen === '{indices}'
+            "#
         ));
     }
     assert_true(
-        r"
-        let n=0,fake={exec(){if(n++>0)return null;this.lastIndex=Infinity;return {0:''};}},r={flags:'gu',constructor:{[Symbol.species]:function(){return fake;}}},i=RegExp.prototype[Symbol.matchAll].call(r,'x');
-        !i.next().done&&fake.lastIndex===9007199254740992&&i.next().done
-    ",
+        r#"
+            let n = 0,
+                fake = {
+                    exec() {
+                        if (n++ > 0) return null;
+                        this.lastIndex = Infinity;
+                        return {
+                            0: ''
+                        };
+                    }
+                },
+                r = {
+                    flags: 'gu',
+                    constructor: {
+                        [Symbol.species]: function() {
+                            return fake;
+                        }
+                    }
+                },
+                i = RegExp.prototype[Symbol.matchAll].call(r, 'x');
+            !i.next().done && fake.lastIndex === 9007199254740992 && i.next().done
+        "#,
     );
     assert_true(
-        r"
-        let fake={exec(){return {0:''};}},r={flags:'g',constructor:{[Symbol.species]:function(){return fake;}}},i=RegExp.prototype[Symbol.matchAll].call(r,''),ok=false;
-        Object.defineProperty(fake,'lastIndex',{value:0,writable:false});try{i.next();}catch(e){ok=e instanceof TypeError;}
-        Object.defineProperty(fake,'lastIndex',{writable:true});ok&&!i.next().done&&fake.lastIndex===1
-    ",
+        r#"
+            let fake = {
+                    exec() {
+                        return {
+                            0: ''
+                        };
+                    }
+                },
+                r = {
+                    flags: 'g',
+                    constructor: {
+                        [Symbol.species]: function() {
+                            return fake;
+                        }
+                    }
+                },
+                i = RegExp.prototype[Symbol.matchAll].call(r, ''),
+                ok = false;
+            Object.defineProperty(fake, 'lastIndex', {
+                value: 0,
+                writable: false
+            });
+            try {
+                i.next();
+            } catch (e) {
+                ok = e instanceof TypeError;
+            }
+            Object.defineProperty(fake, 'lastIndex', {
+                writable: true
+            });
+            ok && !i.next().done && fake.lastIndex === 1
+        "#,
     );
 }
 
 #[test]
 fn reentrant_next_calls_do_not_reset_a_nested_completed_state() {
     assert_true(
-        r"
-        let n=0,z={0:'x'},fake={exec(){if(n++===0){if(!i.next().done)throw 7;return z;}return null;}},r={flags:'g',constructor:{[Symbol.species]:function(){return fake;}}},i=RegExp.prototype[Symbol.matchAll].call(r,'');
-        let a=i.next();a.value===z&&!a.done&&i.next().done&&n===2
-    ",
+        r#"
+            let n = 0,
+                z = {
+                    0: 'x'
+                },
+                fake = {
+                    exec() {
+                        if (n++ === 0) {
+                            if (!i.next().done) throw 7;
+                            return z;
+                        }
+                        return null;
+                    }
+                },
+                r = {
+                    flags: 'g',
+                    constructor: {
+                        [Symbol.species]: function() {
+                            return fake;
+                        }
+                    }
+                },
+                i = RegExp.prototype[Symbol.matchAll].call(r, '');
+            let a = i.next();
+            a.value === z && !a.done && i.next().done && n === 2
+        "#,
     );
     assert_true(
-        r"
-        let n=0,z={get 0(){if(!i.next().done)throw 7;return '';}},fake={exec(){return n++===0?z:null;}},r={flags:'g',constructor:{[Symbol.species]:function(){return fake;}}},i=RegExp.prototype[Symbol.matchAll].call(r,'');
-        let a=i.next();a.value===z&&!a.done&&i.next().done&&fake.lastIndex===1&&n===2
-    ",
+        r#"
+            let n = 0,
+                z = {
+                    get 0() {
+                        if (!i.next().done) throw 7;
+                        return '';
+                    }
+                },
+                fake = {
+                    exec() {
+                        return n++ === 0 ? z : null;
+                    }
+                },
+                r = {
+                    flags: 'g',
+                    constructor: {
+                        [Symbol.species]: function() {
+                            return fake;
+                        }
+                    }
+                },
+                i = RegExp.prototype[Symbol.matchAll].call(r, '');
+            let a = i.next();
+            a.value === z && !a.done && i.next().done && fake.lastIndex === 1 && n === 2
+        "#,
     );
     assert_true(
-        r"
-        let n=0,fake={exec(){if(n++===0){i.next();throw 7;}return null;}},r={flags:'g',constructor:{[Symbol.species]:function(){return fake;}}},i=RegExp.prototype[Symbol.matchAll].call(r,''),ok=false;
-        try{i.next();}catch(e){ok=e===7;}ok&&i.next().done&&n===2
-    ",
+        r#"
+            let n = 0,
+                fake = {
+                    exec() {
+                        if (n++ === 0) {
+                            i.next();
+                            throw 7;
+                        }
+                        return null;
+                    }
+                },
+                r = {
+                    flags: 'g',
+                    constructor: {
+                        [Symbol.species]: function() {
+                            return fake;
+                        }
+                    }
+                },
+                i = RegExp.prototype[Symbol.matchAll].call(r, ''),
+                ok = false;
+            try {
+                i.next();
+            } catch (e) {
+                ok = e === 7;
+            }
+            ok && i.next().done && n === 2
+        "#,
     );
 }
 
@@ -319,17 +869,76 @@ fn iterator_prototypes_results_and_brands_have_the_standard_descriptors() {
 #[test]
 fn string_matchall_and_iterator_helpers_bypass_poisoned_public_libraries() {
     assert_true(
-        r"
-        let t='',f=RegExp.prototype[Symbol.matchAll],fake={exec(s){let n=this.lastIndex;if(n>=s.length)return null;this.lastIndex++;return {0:s[n]};}},
-            r={get flags(){t+='f';return 'g';},lastIndex:0,[Symbol.match]:true,get [Symbol.matchAll](){t+='h';return f;},constructor:{[Symbol.species]:function(){t+='c';return fake;}}};
-        let i='ab'.matchAll(r);
-        delete String.prototype.matchAll;delete String.prototype.charAt;delete RegExp.prototype[Symbol.matchAll];delete Array.prototype.push;delete Array.prototype[Symbol.iterator];delete Function.prototype.apply;
-        Array[Symbol.species]=function(){throw 7;};
-        for(let n=0;n<3;n++)Object.defineProperty(Array.prototype,n,{get(){throw 8;},set(){throw 9;}});
-        Object.defineProperty(Object.prototype,'done',{get(){throw 10;},set(){throw 11;}});
-        Object.defineProperty(Object.prototype,'value',{get(){throw 10;},set(){throw 11;}});
-        let a=i.map(function(z){return z[0];}).toArray();
-        a.length===2&&a[0]==='a'&&a[1]==='b'&&Object.getPrototypeOf(a)===Array.prototype&&t==='fhfc'
-    ",
+        r#"
+            let t = '',
+                f = RegExp.prototype[Symbol.matchAll],
+                fake = {
+                    exec(s) {
+                        let n = this.lastIndex;
+                        if (n >= s.length) return null;
+                        this.lastIndex++;
+                        return {
+                            0: s[n]
+                        };
+                    }
+                },
+                r = {
+                    get flags() {
+                        t += 'f';
+                        return 'g';
+                    },
+                    lastIndex: 0,
+                    [Symbol.match]: true,
+                    get [Symbol.matchAll]() {
+                        t += 'h';
+                        return f;
+                    },
+                    constructor: {
+                        [Symbol.species]: function() {
+                            t += 'c';
+                            return fake;
+                        }
+                    }
+                };
+            let i = 'ab'.matchAll(r);
+            delete String.prototype.matchAll;
+            delete String.prototype.charAt;
+            delete RegExp.prototype[Symbol.matchAll];
+            delete Array.prototype.push;
+            delete Array.prototype[Symbol.iterator];
+            delete Function.prototype.apply;
+            Array[Symbol.species] = function() {
+                throw 7;
+            };
+            for (let n = 0; n < 3; n++) Object.defineProperty(Array.prototype, n, {
+                get() {
+                    throw 8;
+                },
+                set() {
+                    throw 9;
+                }
+            });
+            Object.defineProperty(Object.prototype, 'done', {
+                get() {
+                    throw 10;
+                },
+                set() {
+                    throw 11;
+                }
+            });
+            Object.defineProperty(Object.prototype, 'value', {
+                get() {
+                    throw 10;
+                },
+                set() {
+                    throw 11;
+                }
+            });
+            let a = i.map(function(z) {
+                return z[0];
+            }).toArray();
+            a.length === 2 && a[0] === 'a' && a[1] === 'b' && Object.getPrototypeOf(a) === Array
+                .prototype && t === 'fhfc'
+        "#,
     );
 }

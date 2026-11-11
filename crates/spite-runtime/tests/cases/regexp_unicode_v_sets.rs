@@ -16,7 +16,11 @@ fn checked_v_set_algebra_and_folding() {
     assert_true(r"let r=/[K&&k]/iv;r.test('K')&&r.test('k')&&r.test('\u212A')&&!r.test('s')");
     assert_true(r"!/[s--\u017F]/iv.test('s')&&!/[s--\u017F]/iv.test('\u017F')");
     assert_true(
-        r"let r=/[[Z-a]--[a]]/iv;r.test('[')&&r.test('_')&&r.test('`')&&r.test('Z')&&r.test('z')&&!r.test('A')&&!r.test('b')",
+        r#"
+            let r = /[[Z-a]--[a]]/iv;
+            r.test('[') && r.test('_') && r.test('`') && r.test('Z') && r.test('z') && !r.test('A') && !r
+                .test('b')
+        "#,
     );
     assert_true(r"/[a&&a&&a]/v.test('a')&&!/[a--b--a]/v.test('a')");
     assert_true(
@@ -40,7 +44,11 @@ fn checked_v_set_property_complements_and_scripts() {
         r"let r=/[\p{scx=Greek}--\p{sc=Greek}]/iv;r.test('\u0300')&&!r.test('\u0345')&&!r.test('\u03B9')",
     );
     assert_true(
-        r"let a=/[\p{sc=Greek}&&\p{scx=Greek}]/v,b=/[\p{sc=Greek}&&\p{scx=Greek}]/iv;!a.test('\u0345')&&a.test('\u03B1')&&b.test('\u0345')&&b.test('\u03B9')",
+        r#"
+            let a = /[\p{sc=Greek}&&\p{scx=Greek}]/v,
+                b = /[\p{sc=Greek}&&\p{scx=Greek}]/iv;
+            !a.test('\u0345') && a.test('\u03B1') && b.test('\u0345') && b.test('\u03B9')
+        "#,
     );
     assert_true(
         r"/[\P{Ll}&&A]/v.test('A')&&!/[\P{Ll}&&A]/iv.test('A')&&!/[\P{Ll}&&A]/iv.test('a')",
@@ -56,7 +64,10 @@ fn checked_v_set_property_complements_and_scripts() {
     );
     assert_true(r"!/[\p{sc=Hrkt}&&a]/v.test('a')&&/[\P{sc=Hrkt}&&a]/v.test('a')");
     assert_true(
-        r"let r=/[\p{sc=Unknown}--[\uDC00-\uDFFF]]/v;r.test('\uD800')&&r.test('\uE000')&&!r.test('\uDC00')&&!r.test('😀')",
+        r#"
+            let r = /[\p{sc=Unknown}--[\uDC00-\uDFFF]]/v;
+            r.test('\uD800') && r.test('\uE000') && !r.test('\uDC00') && !r.test('😀')
+        "#,
     );
 }
 
@@ -133,22 +144,70 @@ fn checked_v_set_global_sticky_and_utf16_starts() {
     // The existing approved Node-compatible rule moves an inside-pair Unicode
     // start to that pair's leading boundary, including this checked class plan.
     assert_true(
-        r"let r=/[[\u{1f600}-\u{1f601}]--[\u{1f601}]]/dvy;r.lastIndex=1;let m=r.exec('😀😁');m.index===0&&m[0]==='😀'&&m.indices[0][0]===0&&m.indices[0][1]===2&&r.lastIndex===2&&r.exec('😀😁')===null&&r.lastIndex===0",
+        r#"
+            let r = /[[\u{1f600}-\u{1f601}]--[\u{1f601}]]/dvy;
+            r.lastIndex = 1;
+            let m = r.exec('😀😁');
+            m.index === 0 && m[0] === '😀' && m.indices[0][0] === 0 && m.indices[0][1] === 2 && r
+                .lastIndex === 2 && r.exec('😀😁') === null && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/[A&&a]/divy;r.lastIndex=1;let a=r.exec('😀aA');a===null&&r.lastIndex===0&&(r.lastIndex=2,r.exec('😀aA')[0]==='a')&&r.lastIndex===3&&r.exec('😀aA')[0]==='A'&&r.lastIndex===4&&r.exec('😀aA')===null&&r.lastIndex===0",
+        r#"
+            let r = /[A&&a]/divy;
+            r.lastIndex = 1;
+            let a = r.exec('😀aA');
+            a === null && r.lastIndex === 0 && (r.lastIndex = 2, r.exec('😀aA')[0] === 'a') && r
+                .lastIndex === 3 && r.exec('😀aA')[0] === 'A' && r.lastIndex === 4 && r.exec('😀aA') ===
+                null && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/[[a-z]--[aeiou]]/dvg;r.lastIndex=1;let a=r.exec('😀b😀c'),b=r.exec('😀b😀c');a.index===2&&a.indices[0][1]===3&&b.index===5&&b.indices[0][1]===6&&r.lastIndex===6&&r.exec('😀b😀c')===null&&r.lastIndex===0",
+        r#"
+            let r = /[[a-z]--[aeiou]]/dvg;
+            r.lastIndex = 1;
+            let a = r.exec('😀b😀c'),
+                b = r.exec('😀b😀c');
+            a.index === 2 && a.indices[0][1] === 3 && b.index === 5 && b.indices[0][1] === 6 && r
+                .lastIndex === 6 && r.exec('😀b😀c') === null && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let seen=0,r=/[A&&a]/iv;r.lastIndex={valueOf(){seen++;return 1}};let m=r.exec('😀a');m.index===2&&m[0]==='a'&&seen===1&&typeof r.lastIndex==='object'",
+        r#"
+            let seen = 0,
+                r = /[A&&a]/iv;
+            r.lastIndex = {
+                valueOf() {
+                    seen++;
+                    return 1
+                }
+            };
+            let m = r.exec('😀a');
+            m.index === 2 && m[0] === 'a' && seen === 1 && typeof r.lastIndex === 'object'
+        "#,
     );
     assert_true(
-        r"let r=/[A&&a]/divg,c=new RegExp(r,'dvy');c.source==='[A&&a]'&&c.unicodeSets&&!c.ignoreCase&&c.exec('a')===null&&c.lastIndex===0&&r.exec('a')[0]==='a'",
+        r#"
+            let r = /[A&&a]/divg,
+                c = new RegExp(r, 'dvy');
+            c.source === '[A&&a]' && c.unicodeSets && !c.ignoreCase && c.exec('a') === null && c
+                .lastIndex === 0 && r.exec('a')[0] === 'a'
+        "#,
     );
     assert_true(
-        r"let r=/[a--b]/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('a')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            let r = /[a--b]/vy;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('a')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
 }
 
@@ -156,14 +215,27 @@ fn checked_v_set_global_sticky_and_utf16_starts() {
 fn checked_v_set_consumers() {
     assert_true(r"'😀bcd aef'.match(/[[a-z]--[aeiou]]+/vg).join('|')==='bcd|f'");
     assert_true(
-        r"let r=/(?<x>([[a-z]--[aeiou]]+))/dvg,a=[...'😀bcd😀f'.matchAll(r)];a.length===2&&a[0][0]==='bcd'&&a[0][1]==='bcd'&&a[0][2]==='bcd'&&a[0].index===2&&a[0].indices.groups.x===a[0].indices[1]&&a[0].indices[2][1]===5&&a[1].groups.x==='f'&&a[1].index===7&&a[1].indices[0][1]===8&&r.lastIndex===0",
+        r#"
+            let r = /(?<x>([[a-z]--[aeiou]]+))/dvg,
+                a = [...'😀bcd😀f'.matchAll(r)];
+            a.length === 2 && a[0][0] === 'bcd' && a[0][1] === 'bcd' && a[0][2] === 'bcd' && a[0].index ===
+                2 && a[0].indices.groups.x === a[0].indices[1] && a[0].indices[2][1] === 5 && a[1].groups
+                .x === 'f' && a[1].index === 7 && a[1].indices[0][1] === 8 && r.lastIndex === 0
+        "#,
     );
     assert_true(r"let r=/[a--b]/vg;r.lastIndex=1;'😀ca'.search(r)===3&&r.lastIndex===1");
     assert_true(
         r"'😀bc a f'.replace(/(?<x>[[a-z]--[aeiou]]+)/vg,'<$1:$<x>>')==='😀<bc:bc> a <f:f>'",
     );
     assert_true(
-        r"let t='',s='😀b😀c'.replace(/(?<x>[[a-z]--[aeiou]])/vg,(m,c,p,text,g)=>{t+=p+':'+c+';';return '<'+g.x+'>'});s==='😀<b>😀<c>'&&t==='2:b;5:c;'",
+        r#"
+            let t = '',
+                s = '😀b😀c'.replace(/(?<x>[[a-z]--[aeiou]])/vg, (m, c, p, text, g) => {
+                    t += p + ':' + c + ';';
+                    return '<' + g.x + '>'
+                });
+            s === '😀<b>😀<c>' && t === '2:b;5:c;'
+        "#,
     );
     assert_true(r"'😀bc a f'.split(/([[a-z]--[aeiou]]+)/v).join('|')==='😀|bc| a |f|'");
     assert_true(r"[...'😀a'.matchAll(/[a--a]*/dvg)].map(m=>m.index).join(',')==='0,2,3'");
@@ -183,14 +255,26 @@ fn checked_v_set_anchored_repetition() {
         r"/[a--b]?/v.exec('a')[0]==='a'&&/[a--b]??/v.exec('a')[0]===''&&/[a--b]{0}/v.exec('a')[0]===''",
     );
     assert_true(
-        r"/[a--a]+/v.exec('')===null&&/[a--a]+/v.exec('a')===null&&/^[a--a]*$/v.test('')&&!/^[a--a]*$/v.test('a')&&/[a--a]{2}/v.exec('')===null",
+        r#"
+            /[a--a]+/v.exec('') === null && /[a--a]+/v.exec('a') === null && /^[a--a]*$/v.test('') && !
+                /^[a--a]*$/v.test('a') && /[a--a]{2}/v.exec('') === null
+        "#,
     );
     assert_true(r"/^[^a--a]{2}$/v.test('😀a')&&!/^[^a--a]{3}$/v.test('😀a')");
     assert_true(
-        r"let r=/^[[a-z]--[aeiou]]+$/dmvg,a=r.exec('😀\r\nbcd\u2028f'),b=r.exec('😀\r\nbcd\u2028f');a[0]==='bcd'&&a.index===4&&a.indices[0][1]===7&&b[0]==='f'&&b.index===8&&r.lastIndex===9",
+        r#"
+            let r = /^[[a-z]--[aeiou]]+$/dmvg,
+                a = r.exec('😀\r\nbcd\u2028f'),
+                b = r.exec('😀\r\nbcd\u2028f');
+            a[0] === 'bcd' && a.index === 4 && a.indices[0][1] === 7 && b[0] === 'f' && b.index === 8 && r
+                .lastIndex === 9
+        "#,
     );
     assert_true(
-        r"/[[a--a]]+/v.exec('')===null&&/[[a--a]]+/v.exec('a')===null&&/^[[a--a]]*$/v.test('')&&!/^[[a--a]]*$/v.test('a')",
+        r#"
+            /[[a--a]]+/v.exec('') === null && /[[a--a]]+/v.exec('a') === null && /^[[a--a]]*$/v.test('') &&
+                !/^[[a--a]]*$/v.test('a')
+        "#,
     );
     assert_true(r"/^[^[[a--a]]]{2}$/v.test('😀a')&&!/^[^[[a--a]]]{3}$/v.test('😀a')");
 }
@@ -277,10 +361,23 @@ fn checked_v_set_nested_algebra_and_state() {
     assert_true(r"/[[^[A&&a]]&&[a]]/v.test('a')&&!/[[^[A&&a]]&&[a]]/iv.test('a')");
     assert_true(r"!/[[a--a]]/v.test('a')&&/[^[[a--a]]]/v.test('a')&&/[^[[a--a]]]/v.test('😀')");
     assert_true(
-        r"let r=/[[[\u{1f600}]]--[[\uD800-\uDFFF]]]/dvy;r.lastIndex=1;let m=r.exec('😀a');m[0]==='😀'&&m.index===0&&m.indices[0][0]===0&&m.indices[0][1]===2&&r.lastIndex===2&&r.exec('😀a')===null&&r.lastIndex===0",
+        r#"
+            let r = /[[[\u{1f600}]]--[[\uD800-\uDFFF]]]/dvy;
+            r.lastIndex = 1;
+            let m = r.exec('😀a');
+            m[0] === '😀' && m.index === 0 && m.indices[0][0] === 0 && m.indices[0][1] === 2 && r
+                .lastIndex === 2 && r.exec('😀a') === null && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/^(?<whole>([[\(\)]]))$/dv,a=r.exec('('),b=r.exec(')');a.length===3&&a[0]==='('&&a[1]==='('&&a[2]==='('&&a.groups.whole==='('&&a.indices.groups.whole===a.indices[1]&&a.indices[2][1]===1&&b[0]===')'&&b[2]===')'&&b.index===0&&b.input===')'",
+        r#"
+            let r = /^(?<whole>([[\(\)]]))$/dv,
+                a = r.exec('('),
+                b = r.exec(')');
+            a.length === 3 && a[0] === '(' && a[1] === '(' && a[2] === '(' && a.groups.whole === '(' && a
+                .indices.groups.whole === a.indices[1] && a.indices[2][1] === 1 && b[0] === ')' && b[2] ===
+                ')' && b.index === 0 && b.input === ')'
+        "#,
     );
 }
 

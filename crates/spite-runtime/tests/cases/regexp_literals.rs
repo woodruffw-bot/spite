@@ -20,13 +20,39 @@ fn every_evaluation_creates_a_fresh_branded_object_with_zero_lastindex() {
 #[test]
 fn public_constructor_and_symbol_hooks_cannot_intercept_literal_creation() {
     assert_true(
-        "let P=RegExp.prototype;Object.defineProperty(P,Symbol.match,{get(){throw 7;}});RegExp=function(){throw 8;};let r=/a/g;Object.getPrototypeOf(r)===P && r.source==='a' && r.flags==='g' && r.exec('ba').index===1",
+        r#"
+            let P = RegExp.prototype;
+            Object.defineProperty(P, Symbol.match, {
+                get() {
+                    throw 7;
+                }
+            });
+            RegExp = function() {
+                throw 8;
+            };
+            let r = /a/g;
+            Object.getPrototypeOf(r) === P && r.source === 'a' && r.flags === 'g' && r.exec('ba').index ===
+                1
+        "#,
     );
     assert_true(
-        "let P=RegExp.prototype;delete globalThis.RegExp;let r=/a/;Object.getPrototypeOf(r)===P && r.exec('ba')[0]==='a'",
+        r#"
+            let P = RegExp.prototype;
+            delete globalThis.RegExp;
+            let r = /a/;
+            Object.getPrototypeOf(r) === P && r.exec('ba')[0] === 'a'
+        "#,
     );
     assert_true(
-        "let P=RegExp.prototype;{let RegExp=7;let r=/a/;if(Object.getPrototypeOf(r)!==P || r.exec('a')[0]!=='a')throw 8;}true",
+        r#"
+            let P = RegExp.prototype;
+            {
+                let RegExp = 7;
+                let r = /a/;
+                if (Object.getPrototypeOf(r) !== P || r.exec('a')[0] !== 'a') throw 8;
+            }
+            true
+        "#,
     );
 }
 
@@ -59,10 +85,21 @@ fn arrow_destructuring_and_template_literals_execute_with_correct_goals() {
 #[test]
 fn all_generic_consumers_share_literal_matching_and_lastindex_state() {
     assert_true(
-        "'aba'.match(/a/g).join(',')==='a,a' && 'aba'.search(/b/)===1 && 'aba'.replace(/a/g,'x')==='xbx' && 'a,b,'.split(/,/).join('|')==='a|b|' && [...'aba'.matchAll(/a/g)].length===2",
+        r#"
+            'aba'.match(/a/g).join(',') === 'a,a' && 'aba'.search(/b/) === 1 && 'aba'.replace(/a/g,
+                'x') === 'xbx' && 'a,b,'.split(/,/).join('|') === 'a|b|' && [...'aba'.matchAll(/a/g)]
+                .length === 2
+        "#,
     );
     assert_true(
-        "let r=/a/gy;r.lastIndex=1;let a=r.exec('baa'),b=r.exec('baa'),c=r.exec('baa');a.index===1 && b.index===2 && c===null && r.lastIndex===0",
+        r#"
+            let r = /a/gy;
+            r.lastIndex = 1;
+            let a = r.exec('baa'),
+                b = r.exec('baa'),
+                c = r.exec('baa');
+            a.index === 1 && b.index === 2 && c === null && r.lastIndex === 0
+        "#,
     );
 }
 

@@ -73,13 +73,24 @@ fn nested_exact_reference_units_result_snapshot() {
 #[test]
 fn named_ranges_retry_required_empty_original_gap_and_both_directions_are_exact() {
     assert_true(
-        r"let a=/(?<x>(?<y>b)\k<y>{2})+bb/d.exec('bbbbbbb');a.index===0&&a[0]==='bbbbb'&&a.groups.x==='bbb'&&a.groups.y==='b'&&a.indices.groups.x===a.indices[1]&&a.indices[1][0]===0&&a.indices[2][0]===0",
+        r#"
+            let a = /(?<x>(?<y>b)\k<y>{2})+bb/d.exec('bbbbbbb');
+            a.index === 0 && a[0] === 'bbbbb' && a.groups.x === 'bbb' && a.groups.y === 'b' && a.indices
+                .groups.x === a.indices[1] && a.indices[1][0] === 0 && a.indices[2][0] === 0
+        "#,
     );
     assert_true(
-        r"let a=/(?<=(?<x>(\k<y>{2})(?<y>b)){2})c/d.exec('bbbbbbc');a.groups.x==='bbb'&&a[2]==='bb'&&a.groups.y==='b'&&a.indices.groups.x[0]===0&&a.indices.groups.y[0]===2",
+        r#"
+            let a = /(?<=(?<x>(\k<y>{2})(?<y>b)){2})c/d.exec('bbbbbbc');
+            a.groups.x === 'bbb' && a[2] === 'bb' && a.groups.y === 'b' && a.indices.groups.x[0] === 0 && a
+                .indices.groups.y[0] === 2
+        "#,
     );
     assert_true(
-        r"let a=/(?<=a(?=((b)\2{2}){2}))b/d.exec('abbbbbb');a.index===1&&a.indices[1][0]===4&&a.indices[1][1]===7&&a.indices[2][0]===4",
+        r#"
+            let a = /(?<=a(?=((b)\2{2}){2}))b/d.exec('abbbbbb');
+            a.index === 1 && a.indices[1][0] === 4 && a.indices[1][1] === 7 && a.indices[2][0] === 4
+        "#,
     );
     assert_true(r"/(?:()(?:\1)+){2}/.test('')");
     assert_true(
@@ -90,22 +101,46 @@ fn named_ranges_retry_required_empty_original_gap_and_both_directions_are_exact(
         r"let a=/(?<x>(?<y>b)\k<y>{2})+/di.exec('bBbBBb');a.groups.x==='BBb'&&a.groups.y==='B'&&a.indices[1][0]===3",
     );
     assert_true(
-        r"let a=/(([\uD800])\2{2})+/d.exec('\uD800\uD800\uD800\uD800\uD800\uD800\uDC00');a[0].length===6&&a.indices[1][0]===3&&a.indices[2][0]===3",
+        r#"
+            let a = /(([\uD800])\2{2})+/d.exec('\uD800\uD800\uD800\uD800\uD800\uD800\uDC00');
+            a[0].length === 6 && a.indices[1][0] === 3 && a.indices[2][0] === 3
+        "#,
     );
 }
 #[test]
 fn consumers_keep_sticky_global_lazy_zero_advancement_and_callback_slots() {
     assert_true(
-        r"let r=/((b)\2{2})+/dy;r.lastIndex=1;let a=r.exec('cbbbbbb');a.index===1&&a[1]==='bbb'&&r.lastIndex===7&&r.exec('cbbbbbb')===null&&r.lastIndex===0",
+        r#"
+            let r = /((b)\2{2})+/dy;
+            r.lastIndex = 1;
+            let a = r.exec('cbbbbbb');
+            a.index === 1 && a[1] === 'bbb' && r.lastIndex === 7 && r.exec('cbbbbbb') === null && r
+                .lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/((b)\2{2})+/dg,a=[...'bbbbbb bbb'.matchAll(r)];a.length===2&&a[0].indices[1][0]===3&&a[1].index===7&&a[1][2]==='b'&&r.lastIndex===0",
+        r#"
+            let r = /((b)\2{2})+/dg,
+                a = [...'bbbbbb bbb'.matchAll(r)];
+            a.length === 2 && a[0].indices[1][0] === 3 && a[1].index === 7 && a[1][2] === 'b' && r
+                .lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let a=[...'bbb'.matchAll(/((b)\2{2})*?/dg)];a.length===4&&a[3].index===3&&a[0][1]===undefined&&a[3].indices[2]===undefined",
+        r#"
+            let a = [...'bbb'.matchAll(/((b)\2{2})*?/dg)];
+            a.length === 4 && a[3].index === 3 && a[0][1] === undefined && a[3].indices[2] === undefined
+        "#,
     );
     assert_true(
-        r"let seen=[];let s='bbbbbb bbb'.replace(/((b)\2{2})+/g,(m,x,y,i)=>{seen.push(x,y,i);return '_'});s==='_ _'&&seen.join('|')==='bbb|b|0|bbb|b|7'",
+        r#"
+            let seen = [];
+            let s = 'bbbbbb bbb'.replace(/((b)\2{2})+/g, (m, x, y, i) => {
+                seen.push(x, y, i);
+                return '_'
+            });
+            s === '_ _' && seen.join('|') === 'bbb|b|0|bbb|b|7'
+        "#,
     );
     assert_true(
         r"'cbbbbbb'.search(/((b)\2{2})+/)===1&&'cbbbbbb'.split(/((b)\2{2})+/).join('|')==='c|bbb|b|'",

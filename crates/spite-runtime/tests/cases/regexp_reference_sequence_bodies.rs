@@ -75,35 +75,74 @@ fn reference_sequence_body_result_snapshot() {
 #[test]
 fn reference_sequence_retries_keep_prefix_ranges_and_original_aliases() {
     assert_true(
-        r"let a=/(?<x>a)(?<y>b)(?:\k<x>\k<y>)*ab$/d.exec('ababab');a[0]==='ababab'&&a.groups.x==='a'&&a.groups.y==='b'&&a.indices.groups.x===a.indices[1]&&a.indices.groups.y===a.indices[2]&&a.indices[1][0]===0&&a.indices[2][0]===1",
+        r#"
+            let a = /(?<x>a)(?<y>b)(?:\k<x>\k<y>)*ab$/d.exec('ababab');
+            a[0] === 'ababab' && a.groups.x === 'a' && a.groups.y === 'b' && a.indices.groups.x === a
+                .indices[1] && a.indices.groups.y === a.indices[2] && a.indices[1][0] === 0 && a.indices[2]
+                [0] === 1
+        "#,
     );
     assert_true(
-        r"let a=/((?<x>a)(?<y>b)(?:\k<x>\k<y>)+?)\1/d.exec('abababab');a[0]==='abababab'&&a[1]==='abab'&&a.indices[1][1]===4&&a.indices.groups.x===a.indices[2]&&a.indices.groups.y===a.indices[3]",
+        r#"
+            let a = /((?<x>a)(?<y>b)(?:\k<x>\k<y>)+?)\1/d.exec('abababab');
+            a[0] === 'abababab' && a[1] === 'abab' && a.indices[1][1] === 4 && a.indices.groups.x === a
+                .indices[2] && a.indices.groups.y === a.indices[3]
+        "#,
     );
     assert_true(
-        r"let a=/(?:(?<x>a)|(?<x>b))(?<y>c)(?:\k<x>\k<y>)+d/d.exec('bcbcd');a[0]==='bcbcd'&&a[1]===undefined&&a.groups.x==='b'&&a.groups.y==='c'&&a.indices.groups.x===a.indices[2]&&a.indices.groups.y===a.indices[3]",
+        r#"
+            let a = /(?:(?<x>a)|(?<x>b))(?<y>c)(?:\k<x>\k<y>)+d/d.exec('bcbcd');
+            a[0] === 'bcbcd' && a[1] === undefined && a.groups.x === 'b' && a.groups.y === 'c' && a.indices
+                .groups.x === a.indices[2] && a.indices.groups.y === a.indices[3]
+        "#,
     );
     assert_true(
-        r"let a=/(?<x>a)(?:\1\k<x>)+/d.exec('aaaaa');a[0]==='aaaaa'&&a.groups.x==='a'&&a.indices.groups.x===a.indices[1]&&/^(?<x>a)(?:\1\k<x>)+$/.exec('aaaa')===null",
+        r#"
+            let a = /(?<x>a)(?:\1\k<x>)+/d.exec('aaaaa');
+            a[0] === 'aaaaa' && a.groups.x === 'a' && a.indices.groups.x === a.indices[1] &&
+                /^(?<x>a)(?:\1\k<x>)+$/.exec('aaaa') === null
+        "#,
     );
     assert_true(
-        r"let a=/(?<x>.)(?<y>a)(?:\k<x>\k<y>)+/d.exec('\uD800a\uD800a');a[0].length===4&&a.groups.x.charCodeAt(0)===0xD800&&a.indices.groups.x===a.indices[1]&&a.indices.groups.y===a.indices[2]&&a.indices[2][0]===1",
+        r#"
+            let a = /(?<x>.)(?<y>a)(?:\k<x>\k<y>)+/d.exec('\uD800a\uD800a');
+            a[0].length === 4 && a.groups.x.charCodeAt(0) === 0xD800 && a.indices.groups.x === a.indices[
+                1] && a.indices.groups.y === a.indices[2] && a.indices[2][0] === 1
+        "#,
     );
 }
 
 #[test]
 fn reference_sequence_consumers_and_empty_targets_keep_original_sources() {
     assert_true(
-        r"let r=/(?<x>a)(?<y>b)(?:\k<x>\k<y>)+/dg,a=[...'abab ababab'.matchAll(r)];a.length===2&&a[0][0]==='abab'&&a[1][0]==='ababab'&&a[0].groups.x==='a'&&a[0].indices.groups.x===a[0].indices[1]&&a[1].indices.groups.y===a[1].indices[2]&&r.lastIndex===0",
+        r#"
+            let r = /(?<x>a)(?<y>b)(?:\k<x>\k<y>)+/dg,
+                a = [...'abab ababab'.matchAll(r)];
+            a.length === 2 && a[0][0] === 'abab' && a[1][0] === 'ababab' && a[0].groups.x === 'a' && a[0]
+                .indices.groups.x === a[0].indices[1] && a[1].indices.groups.y === a[1].indices[2] && r
+                .lastIndex === 0
+        "#,
     );
     assert_true(
         r"'qababab'.replace(/(?<x>a)(?<y>b)(?:\k<x>\k<y>)+/,'<$<x>:$<y>>')==='q<a:b>'&&'qababab'.search(/(a)(b)(?:\1\2)+/)===1&&'qabababZ'.split(/(a)(b)(?:\1\2)+/).join(',')==='q,a,b,Z'",
     );
     assert_true(
-        r"let r=/(?<x>a)(?<y>b)(?:\k<x>\k<y>)+/dy;r.lastIndex=1;let copy=new RegExp(r),a=r.exec('qababab');a[0]==='ababab'&&r.lastIndex===7&&r.exec('qababab')===null&&r.lastIndex===0&&copy.source===r.source&&copy.lastIndex===0",
+        r#"
+            let r = /(?<x>a)(?<y>b)(?:\k<x>\k<y>)+/dy;
+            r.lastIndex = 1;
+            let copy = new RegExp(r),
+                a = r.exec('qababab');
+            a[0] === 'ababab' && r.lastIndex === 7 && r.exec('qababab') === null && r.lastIndex === 0 &&
+                copy.source === r.source && copy.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let a=[...'q'.matchAll(/(?<x>)(?<y>)(?:\k<x>\k<y>)+/dg)],b=/(?<x>(?:\k<x>\k<y>)+a)(?<y>b)/d.exec('ab');a.length===2&&a[0].groups.x===''&&a[0].groups.y===''&&a[1].index===1&&b.groups.x==='a'&&b.groups.y==='b'&&b.indices.groups.x===b.indices[1]",
+        r#"
+            let a = [...'q'.matchAll(/(?<x>)(?<y>)(?:\k<x>\k<y>)+/dg)],
+                b = /(?<x>(?:\k<x>\k<y>)+a)(?<y>b)/d.exec('ab');
+            a.length === 2 && a[0].groups.x === '' && a[0].groups.y === '' && a[1].index === 1 && b.groups
+                .x === 'a' && b.groups.y === 'b' && b.indices.groups.x === b.indices[1]
+        "#,
     );
 }
 

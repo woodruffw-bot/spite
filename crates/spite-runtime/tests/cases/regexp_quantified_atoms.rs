@@ -7,62 +7,131 @@ use crate::common::assert_true;
 #[test]
 fn greedy_lazy_and_bounded_runs_select_the_earliest_position() {
     assert_true(
-        "/a*/.exec('aaab')[0]==='aaa'&&/a*?/.exec('aaab')[0]===''&&/a+/.exec('baaab')[0]==='aaa'&&/a+?/.exec('baaab')[0]==='a'&&/a?/.exec('aa')[0]==='a'&&/a??/.exec('aa')[0]===''",
+        r#"
+            /a*/.exec('aaab')[0] === 'aaa' && /a*?/.exec('aaab')[0] === '' && /a+/.exec('baaab')[0] ===
+                'aaa' && /a+?/.exec('baaab')[0] === 'a' && /a?/.exec('aa')[0] === 'a' && /a??/.exec('aa')[
+                    0] === ''
+        "#,
     );
     assert_true(
-        "let m=/[ab]{2,3}/.exec('aXbbaba'),n=/[ab]{2,3}?/.exec('aXbbaba');m.index===2&&m[0]==='bba'&&n.index===2&&n[0]==='bb'&&/[a]{2}/.exec('aba')===null&&/[a]{2,}/.exec('xaaa')[0]==='aaa'",
+        r#"
+            let m = /[ab]{2,3}/.exec('aXbbaba'),
+                n = /[ab]{2,3}?/.exec('aXbbaba');
+            m.index === 2 && m[0] === 'bba' && n.index === 2 && n[0] === 'bb' && /[a]{2}/.exec('aba') ===
+                null && /[a]{2,}/.exec('xaaa')[0] === 'aaa'
+        "#,
     );
     assert_true(
-        "/a{00,02}/.exec('aaa')[0]==='aa'&&/[]{0}/.exec('a')[0]===''&&/[]+/.exec('a')===null&&/[^]{2}/.exec('ab')[0]==='ab'",
+        r#"
+            /a{00,02}/.exec('aaa')[0] === 'aa' && /[]{0}/.exec('a')[0] === '' && /[]+/.exec('a') ===
+                null && /[^]{2}/.exec('ab')[0] === 'ab'
+        "#,
     );
 }
 
 #[test]
 fn lastindex_global_sticky_and_strict_writes_follow_complete_runs() {
     assert_true(
-        "let r=/[ab]+/g,a=r.exec('aabb xa'),b=r.exec('aabb xa');a.index===0&&a[0]==='aabb'&&b.index===6&&b[0]==='a'&&r.lastIndex===7&&r.exec('aabb xa')===null&&r.lastIndex===0",
+        r#"
+            let r = /[ab]+/g,
+                a = r.exec('aabb xa'),
+                b = r.exec('aabb xa');
+            a.index === 0 && a[0] === 'aabb' && b.index === 6 && b[0] === 'a' && r.lastIndex === 7 && r
+                .exec('aabb xa') === null && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        "let r=/a+/y;r.lastIndex=1;let m=r.exec('baaa');m.index===1&&m[0]==='aaa'&&r.lastIndex===4&&r.exec('baaa')===null&&r.lastIndex===0",
+        r#"
+            let r = /a+/y;
+            r.lastIndex = 1;
+            let m = r.exec('baaa');
+            m.index === 1 && m[0] === 'aaa' && r.lastIndex === 4 && r.exec('baaa') === null && r
+                .lastIndex === 0
+        "#,
     );
     assert_true(
         "let r=/a*/gy;r.lastIndex=2;let m=r.exec('ba');m[0]===''&&m.index===2&&r.lastIndex===2",
     );
     assert_true(
-        "let r=/a+/g;Object.defineProperty(r,'lastIndex',{writable:false});let ok=false;try{r.exec('aa')}catch(e){ok=e instanceof TypeError}ok&&r.lastIndex===0",
+        r#"
+            let r = /a+/g;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let ok = false;
+            try {
+                r.exec('aa')
+            } catch (e) {
+                ok = e instanceof TypeError
+            }
+            ok && r.lastIndex === 0
+        "#,
     );
 }
 
 #[test]
 fn dotall_ignorecase_escapes_and_utf16_units_use_existing_membership() {
     assert_true(
-        r"/.+/.exec('a\nb')[0]==='a'&&/.+/s.exec('a\nb')[0]==='a\nb'&&/[^a]+/i.exec('aaBBa')[0]==='BB'&&/[µ]+/i.exec('µΜμ')[0]==='µΜμ'&&/[ſ]+/i.exec('s')===null",
+        r#"
+            /.+/.exec('a\nb')[0] === 'a' && /.+/s.exec('a\nb')[0] === 'a\nb' && /[^a]+/i.exec('aaBBa')[
+                0] === 'BB' && /[µ]+/i.exec('µΜμ')[0] === 'µΜμ' && /[ſ]+/i.exec('s') === null
+        "#,
     );
     assert_true(
-        r"/\d+/.exec('x123')[0]==='123'&&/\w+?/.exec('abc')[0]==='a'&&/\s+/.exec(' \n')[0]===' \n'&&/\++/.exec('x+++')[0]==='+++'",
+        r#"
+            /\d+/.exec('x123')[0] === '123' && /\w+?/.exec('abc')[0] === 'a' && /\s+/.exec(' \n')[0] ===
+                ' \n' && /\++/.exec('x+++')[0] === '+++'
+        "#,
     );
     assert_true(
-        r"let m=/[^]{2}/d.exec('\uD800\uDC00'),n=/\uD800+/.exec('\uD800\uD800\uDC00');m[0].length===2&&m.indices[0][1]===2&&n[0].length===2",
+        r#"
+            let m = /[^]{2}/d.exec('\uD800\uDC00'),
+                n = /\uD800+/.exec('\uD800\uD800\uDC00');
+            m[0].length === 2 && m.indices[0][1] === 2 && n[0].length === 2
+        "#,
     );
 }
 
 #[test]
 fn intrinsic_results_have_no_capture_slots_and_bypass_prototype_setters() {
     assert_true(
-        "let calls=0;Object.defineProperty(Array.prototype,'0',{set(){calls++},configurable:true});let m=/a+/d.exec('xaa'),p=Object.getOwnPropertyDescriptor(m,'0');calls===0&&m.length===1&&m[0]==='aa'&&m.index===1&&m.input==='xaa'&&m.groups===undefined&&m.indices.length===1&&m.indices[0][0]===1&&m.indices[0][1]===3&&m.indices.groups===undefined&&p.writable&&p.enumerable&&p.configurable",
+        r#"
+            let calls = 0;
+            Object.defineProperty(Array.prototype, '0', {
+                set() {
+                    calls++
+                },
+                configurable: true
+            });
+            let m = /a+/d.exec('xaa'),
+                p = Object.getOwnPropertyDescriptor(m, '0');
+            calls === 0 && m.length === 1 && m[0] === 'aa' && m.index === 1 && m.input === 'xaa' && m
+                .groups === undefined && m.indices.length === 1 && m.indices[0][0] === 1 && m.indices[0][
+                1] === 3 && m.indices.groups === undefined && p.writable && p.enumerable && p.configurable
+        "#,
     );
 }
 
 #[test]
 fn generic_consumers_keep_lazy_and_empty_match_advancement() {
     assert_true(
-        "'aa xbbb'.match(/[ab]+/g).join(',')==='aa,bbb'&&'aa'.match(/a*?/g).length===3&&'aa'.replace(/a+?/g,'x')==='xx'&&'aabb'.replace(/[ab]+/,'x')==='x'",
+        r#"
+            'aa xbbb'.match(/[ab]+/g).join(',') === 'aa,bbb' && 'aa'.match(/a*?/g).length === 3 && 'aa'
+                .replace(/a+?/g, 'x') === 'xx' && 'aabb'.replace(/[ab]+/, 'x') === 'x'
+        "#,
     );
     assert_true(
         "'aabbx'.split(/[ab]+/).join(',')===',x'&&'xaab'.search('a+')===1&&[...'aa'.matchAll(/a*?/g)].length===3",
     );
     assert_true(
-        "let seen;let s='xaa'.replace(/a+/,(...args)=>{seen=args;return 'z'});s==='xz'&&seen.length===3&&seen[0]==='aa'&&seen[1]===1&&seen[2]==='xaa'",
+        r#"
+            let seen;
+            let s = 'xaa'.replace(/a+/, (...args) => {
+                seen = args;
+                return 'z'
+            });
+            s === 'xz' && seen.length === 3 && seen[0] === 'aa' && seen[1] === 1 && seen[2] === 'xaa'
+        "#,
     );
 }
 

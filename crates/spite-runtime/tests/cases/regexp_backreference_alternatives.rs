@@ -73,19 +73,39 @@ fn alternative_reference_result_snapshot() {
 #[test]
 fn branch_order_and_failed_capture_resets_preserve_undefined_slots_and_indices_aliases() {
     assert_true(
-        r"let a=/(?<x>a)\k<x>c|(?<y>\k<x>b)\k<y>/d.exec('aabb');a.index===2&&a[0]==='bb'&&a[1]===undefined&&a.groups.x===undefined&&a.groups.y==='b'&&a.indices[1]===undefined&&a.indices.groups.x===undefined&&a.indices.groups.y===a.indices[2]&&a.indices[2][0]===2&&a.indices[2][1]===3",
+        r#"
+            let a = /(?<x>a)\k<x>c|(?<y>\k<x>b)\k<y>/d.exec('aabb');
+            a.index === 2 && a[0] === 'bb' && a[1] === undefined && a.groups.x === undefined && a.groups
+                .y === 'b' && a.indices[1] === undefined && a.indices.groups.x === undefined && a.indices
+                .groups.y === a.indices[2] && a.indices[2][0] === 2 && a.indices[2][1] === 3
+        "#,
     );
     assert_true(
-        r"let a=/(a)\1|b/d.exec('baa');a.index===0&&a[0]==='b'&&a[1]===undefined&&a.indices[1]===undefined&&/a|(ab)\1/.exec('abab')[0]==='a'&&/(ab)\1|a/.exec('abab')[0]==='abab'",
+        r#"
+            let a = /(a)\1|b/d.exec('baa');
+            a.index === 0 && a[0] === 'b' && a[1] === undefined && a.indices[1] === undefined && /a|(ab)\1/
+                .exec('abab')[0] === 'a' && /(ab)\1|a/.exec('abab')[0] === 'abab'
+        "#,
     );
     assert_true(
-        r"let a=/\2(a)\1|(b)\2/d.exec('bb');a[1]===undefined&&a[2]==='b'&&a.indices[2][0]===0&&/(a)\1|(\2b)\2/.exec('bb')[2]==='b'",
+        r#"
+            let a = /\2(a)\1|(b)\2/d.exec('bb');
+            a[1] === undefined && a[2] === 'b' && a.indices[2][0] === 0 && /(a)\1|(\2b)\2/.exec('bb')[
+                2] === 'b'
+        "#,
     );
     assert_true(
-        r"let a=/(a)\1|\B(.)\2\B/d.exec('\uD800\uD800');a[1]===undefined&&a[2].charCodeAt(0)===0xD800&&a.indices[2][0]===0&&a.indices[2][1]===1",
+        r#"
+            let a = /(a)\1|\B(.)\2\B/d.exec('\uD800\uD800');
+            a[1] === undefined && a[2].charCodeAt(0) === 0xD800 && a.indices[2][0] === 0 && a.indices[2][
+                1] === 1
+        "#,
     );
     assert_true(
-        r"let a=/^(?<x>\w)\k<x>$|^(?<y>.)\k<y>$/dims.exec('\n\n');a.groups.x===undefined&&a.groups.y==='\n'&&a.indices.groups.y===a.indices[2]",
+        r#"
+            let a = /^(?<x>\w)\k<x>$|^(?<y>.)\k<y>$/dims.exec('\n\n');
+            a.groups.x === undefined && a.groups.y === '\n' && a.indices.groups.y === a.indices[2]
+        "#,
     );
 }
 

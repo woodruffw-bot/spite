@@ -49,16 +49,31 @@ fn unicode_class_assertion_consumers_and_pair_boundaries() {
             r"'😀\n\uD800\r\nx'.match(/^[^]$/{mode}mg).join('|')==='😀|\uD800|x'"
         ));
         assert_true(&format!(
-            r"let a=[...'😀\n\uD800\r\nx'.matchAll(/^[^]$/d{mode}mg)];a.length===3&&a[0].indices[0][1]===2&&a[1].index===3&&a[2].index===6"
+            r#"
+                let a = [...'😀\n\uD800\r\nx'.matchAll(/^[^]$/d{mode}mg)];
+                a.length === 3 && a[0].indices[0][1] === 2 && a[1].index === 3 && a[2].index === 6
+            "#
         ));
         assert_true(&format!(
             r"'😀\n\uD800\r\nx'.split(/^[^]$/{mode}m).join('|')==='|\n|\r\n|'"
         ));
         assert_true(&format!(
-            r"let seen=[];let s='😀\n\uD800\r\nx'.replace(/^[^]$/{mode}mg,(m,i)=>{{seen.push(i);return '_'}});s==='_\n_\r\n_'&&seen.join(',')==='0,3,6'"
+            r#"
+                let seen = [];
+                let s = '😀\n\uD800\r\nx'.replace(/^[^]$/{mode}mg, (m, i) => {{
+                    seen.push(i);
+                    return '_'
+                }});
+                s === '_\n_\r\n_' && seen.join(',') === '0,3,6'
+            "#
         ));
         assert_true(&format!(
-            r"let r=/^[😀]$/d{mode}y;r.lastIndex=1;let m=r.exec('😀');m.index===0&&m[0]==='😀'&&m.indices[0][1]===2&&r.lastIndex===2"
+            r#"
+                let r = /^[😀]$/d{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('😀');
+                m.index === 0 && m[0] === '😀' && m.indices[0][1] === 2 && r.lastIndex === 2
+            "#
         ));
         assert_true(&format!(
             r"let r=/^[\uD800-\uDFFF]$/{mode}y;r.lastIndex=1;r.exec('😀')===null&&r.lastIndex===0"
@@ -92,19 +107,66 @@ fn unicode_class_assertion_line_contexts_and_escaped_data() {
 #[test]
 fn unicode_class_assertion_metadata_coercions_clones_and_strict_writes() {
     assert_true(
-        r"let r=/^[^]$/dmv,c=new RegExp(r,'duy');c.source==='^[^]$'&&c.unicode&&!c.unicodeSets&&!c.multiline&&c.exec('😀')[0]==='😀'&&c.lastIndex===2",
+        r#"
+            let r = /^[^]$/dmv,
+                c = new RegExp(r, 'duy');
+            c.source === '^[^]$' && c.unicode && !c.unicodeSets && !c.multiline && c.exec('😀')[0] ===
+                '😀' && c.lastIndex === 2
+        "#,
     );
     assert_true(
         r"let r=/^[^]$/dvmg,m=r.exec('😀');m.length===1&&m.groups===undefined&&m.indices.groups===undefined",
     );
     assert_true(
-        r"let t='',r=/^[^]$/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m.index===0&&r.lastIndex===2",
+        r#"
+            let t = '',
+                r = /^[^]$/uy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 1
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return '😀'
+                }
+            });
+            t === 'si' && m.index === 0 && r.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let r=/^[^]$/uy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /^[^]$/uy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
     assert_true(
-        r"let r=/^[\uD800]$/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /^[\uD800]$/vy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 

@@ -80,40 +80,70 @@ fn numbered_reference_result_snapshot() {
 fn native_results_keep_captures_indices_aliases_and_case_from_the_input() {
     assert_true(
         r#"
-        for(const flags of ['u','ui','v','vi']) {
-            for(const suffix of ['\uDC00','\uD834','A','']) {
-                const a=new RegExp('foo(.+)bar\\1',flags).exec('foo\uD834bar\uD834'+suffix);
-                if(suffix==='\uDC00' ? a!==null : a===null||a[1]!=='\uD834')throw 1;
+            for(const flags of ['u','ui','v','vi']) {
+                for(const suffix of ['\uDC00','\uD834','A','']) {
+                    const a=new RegExp('foo(.+)bar\\1',flags).exec('foo\uD834bar\uD834'+suffix);
+                    if(suffix==='\uDC00' ? a!==null : a===null||a[1]!=='\uD834')throw 1;
+                }
+                if(new RegExp('(?<=\\1#(.+))$',flags).test('\uD834\uDC00#\uDC00'))throw 2;
+                if(!new RegExp('(?<=\\1#(.+))$',flags).test('\uD834\uDC00#\uD834\uDC00'))throw 3;
+                if(new RegExp('^(?<x>.+)#\\k<x>',flags).test('\uD834#\uD834\uDC00'))throw 4;
             }
-            if(new RegExp('(?<=\\1#(.+))$',flags).test('\uD834\uDC00#\uDC00'))throw 2;
-            if(!new RegExp('(?<=\\1#(.+))$',flags).test('\uD834\uDC00#\uD834\uDC00'))throw 3;
-            if(new RegExp('^(?<x>.+)#\\k<x>',flags).test('\uD834#\uD834\uDC00'))throw 4;
-        }
-        new RegExp('^(.+)#\\1').test('\uD834#\uD834\uDC00')&&
-            new RegExp('(?<=\\1#(.+))$').test('\uD834\uDC00#\uDC00')
-    "#,
+            new RegExp('^(.+)#\\1').test('\uD834#\uD834\uDC00')&&
+                new RegExp('(?<=\\1#(.+))$').test('\uD834\uDC00#\uDC00')
+        "#,
     );
     assert_true(
-        r"let a=/(?<x>a)\1/di.exec('qAa');a[0]==='Aa'&&a[1]==='A'&&a.groups.x==='A'&&a.indices[0][0]===1&&a.indices[0][1]===3&&a.indices.groups.x===a.indices[1]&&a.indices[1][0]===1&&a.indices[1][1]===2",
+        r#"
+            let a = /(?<x>a)\1/di.exec('qAa');
+            a[0] === 'Aa' && a[1] === 'A' && a.groups.x === 'A' && a.indices[0][0] === 1 && a.indices[0][
+                1] === 3 && a.indices.groups.x === a.indices[1] && a.indices[1][0] === 1 && a.indices[1][
+                1] === 2
+        "#,
     );
     assert_true(
-        r"let a=/(a(\1b)\2)\1/d.exec('qabbabb');a[0]==='abbabb'&&a[1]==='abb'&&a[2]==='b'&&a.indices[1][0]===1&&a.indices[1][1]===4&&a.indices[2][0]===2&&a.indices[2][1]===3",
+        r#"
+            let a = /(a(\1b)\2)\1/d.exec('qabbabb');
+            a[0] === 'abbabb' && a[1] === 'abb' && a[2] === 'b' && a.indices[1][0] === 1 && a.indices[1][
+                1] === 4 && a.indices[2][0] === 2 && a.indices[2][1] === 3
+        "#,
     );
     assert_true(
-        r"let a=/\1(a)/d.exec('qa'),b=/(a\1)/d.exec('qa'),c=/()\1/d.exec('q');a[0]==='a'&&a[1]==='a'&&b[0]==='a'&&b[1]==='a'&&c[0]===''&&c[1]===''&&c.indices[1][0]===0&&c.indices[1][1]===0",
+        r#"
+            let a = /\1(a)/d.exec('qa'),
+                b = /(a\1)/d.exec('qa'),
+                c = /()\1/d.exec('q');
+            a[0] === 'a' && a[1] === 'a' && b[0] === 'a' && b[1] === 'a' && c[0] === '' && c[1] === '' && c
+                .indices[1][0] === 0 && c.indices[1][1] === 0
+        "#,
     );
     assert_true(
-        r"let a=/()()()()()()()()()(a)\10/d.exec('qaa');a.length===11&&a[10]==='a'&&a.indices[10][0]===1&&a.indices[10][1]===2&&a[0]==='aa'",
+        r#"
+            let a = /()()()()()()()()()(a)\10/d.exec('qaa');
+            a.length === 11 && a[10] === 'a' && a.indices[10][0] === 1 && a.indices[10][1] === 2 && a[
+                0] === 'aa'
+        "#,
     );
 }
 
 #[test]
 fn stateful_exec_and_generic_consumers_use_the_same_reference_program() {
     assert_true(
-        r"let r=/(a)\1/dg,a=r.exec('qaa aa'),b=r.exec('qaa aa'),c=r.exec('qaa aa');a.index===1&&b.index===4&&c===null&&r.lastIndex===0",
+        r#"
+            let r = /(a)\1/dg,
+                a = r.exec('qaa aa'),
+                b = r.exec('qaa aa'),
+                c = r.exec('qaa aa');
+            a.index === 1 && b.index === 4 && c === null && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/(a)\1/dy;r.lastIndex=1;let a=r.exec('qaa');a.index===1&&r.lastIndex===3&&r.exec('qaa')===null&&r.lastIndex===0",
+        r#"
+            let r = /(a)\1/dy;
+            r.lastIndex = 1;
+            let a = r.exec('qaa');
+            a.index === 1 && r.lastIndex === 3 && r.exec('qaa') === null && r.lastIndex === 0
+        "#,
     );
     assert_true(
         r"let r=/()\1/g,a=r.exec('q');a[0]===''&&r.lastIndex===0&&[...'q'.matchAll(r)].length===2",
@@ -122,10 +152,27 @@ fn stateful_exec_and_generic_consumers_use_the_same_reference_program() {
         r"'qaa'.replace(/(?<x>a)\1/,'<$<x>>')==='q<a>'&&'qaa'.split(/(a)\1/).join(',')==='q,a,'&&'qaa'.search(/(a)\1/)===1",
     );
     assert_true(
-        r"let seen;'qAa'.replace(/(?<x>a)\1/i,(whole,x,index,input,groups)=>{seen=[whole,x,index,input,groups.x];return 'z'});seen.join(',')==='Aa,A,1,qAa,A'",
+        r#"
+            let seen;
+            'qAa'.replace(/(?<x>a)\1/i, (whole, x, index, input, groups) => {
+                seen = [whole, x, index, input, groups.x];
+                return 'z'
+            });
+            seen.join(',') === 'Aa,A,1,qAa,A'
+        "#,
     );
     assert_true(
-        r"let r=/(?<x>a)\1/dg;Object.defineProperty(r,'source',{get(){throw 7}});let copy=new RegExp(r);copy.source==='(?<x>a)\\1'&&copy.exec('aa').groups.x==='a'&&copy.lastIndex===2&&r.lastIndex===0",
+        r#"
+            let r = /(?<x>a)\1/dg;
+            Object.defineProperty(r, 'source', {
+                get() {
+                    throw 7
+                }
+            });
+            let copy = new RegExp(r);
+            copy.source === '(?<x>a)\\1' && copy.exec('aa').groups.x === 'a' && copy.lastIndex === 2 && r
+                .lastIndex === 0
+        "#,
     );
 }
 

@@ -8,26 +8,53 @@ use crate::common::assert_true;
 #[test]
 fn string_operations_compare_complete_members_and_preserve_longest_priority() {
     assert_true(
-        r"let a=/[\q{a|ab|abc|}&&\q{ab|}]/dv.exec('ab!'),b=/[\q{a|ab|abc|}--\q{ab|}]/v.exec('abc!');a[0]==='ab' && a.indices[0][1]===2 && b[0]==='abc' && /[\q{a|ab|abc|}&&\q{ab|}]/v.exec('xab')[0]===''",
+        r#"
+            let a = /[\q{a|ab|abc|}&&\q{ab|}]/dv.exec('ab!'),
+                b = /[\q{a|ab|abc|}--\q{ab|}]/v.exec('abc!');
+            a[0] === 'ab' && a.indices[0][1] === 2 && b[0] === 'abc' && /[\q{a|ab|abc|}&&\q{ab|}]/v.exec(
+                'xab')[0] === ''
+        "#,
     );
     assert_true(
-        r"!/[\q{a|ab}&&\q{abc}]/v.test('abc') && !/[\q{ab}--\q{cd}]/v.test('cd') && /[\q{a|ab}--\q{a}]/v.exec('ab')[0]==='ab' && !/[\q{a|ab}--\q{a}]/v.test('a') && /[\q{a\|b|ab}&&\q{a\|b}]/v.exec('xa|b')[0]==='a|b'",
+        r#"
+            !/[\q{a|ab}&&\q{abc}]/v.test('abc') && !/[\q{ab}--\q{cd}]/v.test('cd') && /[\q{a|ab}--\q{a}]/v
+                .exec('ab')[0] === 'ab' && !/[\q{a|ab}--\q{a}]/v.test('a') && /[\q{a\|b|ab}&&\q{a\|b}]/v
+                .exec('xa|b')[0] === 'a|b'
+        "#,
     );
     assert_true(
-        r"/[\q{a|ab|abc}&&\q{a|ab}&&\q{ab}]/v.exec('abc')[0]==='ab' && /[\q{a|ab|abc|abcd}--\q{a}--\q{abc}]/v.exec('abcd')[0]==='abcd' && /[\q{a|ab|abc|abcd}--\q{a}--\q{abc}]/v.exec('abc!')[0]==='ab'",
+        r#"
+            /[\q{a|ab|abc}&&\q{a|ab}&&\q{ab}]/v.exec('abc')[0] === 'ab' &&
+                /[\q{a|ab|abc|abcd}--\q{a}--\q{abc}]/v.exec('abcd')[0] === 'abcd' &&
+                /[\q{a|ab|abc|abcd}--\q{a}--\q{abc}]/v.exec('abc!')[0] === 'ab'
+        "#,
     );
 }
 
 #[test]
 fn canonical_word_equality_precedes_operations_without_expansion_or_normalization() {
     assert_true(
-        r"let a=/[\q{K|sK|}&&\q{k|ſK|}]/iv.exec('ſK'),b=/[\q{K|sK|}&&\q{k|ſK|}]/iv.exec('K');a[0]==='ſK' && b[0]==='K' && /[\q{sK|K|}--\q{ſK}]/iv.exec('ſK')[0]==='' && /[\q{sK|K|}--\q{ſK}]/iv.exec('K')[0]==='K'",
+        r#"
+            let a = /[\q{K|sK|}&&\q{k|ſK|}]/iv.exec('ſK'),
+                b = /[\q{K|sK|}&&\q{k|ſK|}]/iv.exec('K');
+            a[0] === 'ſK' && b[0] === 'K' && /[\q{sK|K|}--\q{ſK}]/iv.exec('ſK')[0] === '' &&
+                /[\q{sK|K|}--\q{ſK}]/iv.exec('K')[0] === 'K'
+        "#,
     );
     assert_true(
-        r"/[\q{ßa|sa}&&\q{ẞA}]/iv.exec('ẞA')[0]==='ẞA' && !/[\q{ßa}&&\q{SSa}]/iv.test('SSa') && !/[\q{é}&&\q{é}]/iv.test('é') && !/[\q{é}&&\q{é}]/iv.test('é') && /[\q{\u{10400}a|x}&&\q{\u{10428}A|X}]/iv.exec('𐐨A')[0]==='𐐨A'",
+        r#"
+            /[\q{ßa|sa}&&\q{ẞA}]/iv.exec('ẞA')[0] === 'ẞA' && !/[\q{ßa}&&\q{SSa}]/iv.test('SSa') && !
+                /[\q{é}&&\q{é}]/iv.test('é') && !/[\q{é}&&\q{é}]/iv.test('é') &&
+                /[\q{\u{10400}a|x}&&\q{\u{10428}A|X}]/iv.exec('𐐨A')[0] === '𐐨A'
+        "#,
     );
     assert_true(
-        r"let r=/(?<whole>(^[\q{K|sK|}&&\q{k|ſK|}]\b$))/dimv,m=r.exec('!\r\nſK\u2028!');m.index===3 && m[0]==='ſK' && m[1]==='ſK' && m[2]==='ſK' && m.groups.whole==='ſK' && m.indices[0][0]===3 && m.indices[2][1]===5 && m.indices.groups.whole===m.indices[1]",
+        r#"
+            let r = /(?<whole>(^[\q{K|sK|}&&\q{k|ſK|}]\b$))/dimv,
+                m = r.exec('!\r\nſK\u2028!');
+            m.index === 3 && m[0] === 'ſK' && m[1] === 'ſK' && m[2] === 'ſK' && m.groups.whole === 'ſK' &&
+                m.indices[0][0] === 3 && m.indices[2][1] === 5 && m.indices.groups.whole === m.indices[1]
+        "#,
     );
     assert_true(r"let a=/[\q{a!|a}&&\q{a!|a}]\b/dv.exec('a!');a[0]==='a' && a.indices[0][1]===1");
 }
@@ -35,32 +62,82 @@ fn canonical_word_equality_precedes_operations_without_expansion_or_normalizatio
 #[test]
 fn surviving_empty_members_and_empty_sets_keep_distinct_state_and_surrogate_ranges() {
     assert_true(
-        r"let r=/(?<whole>([\q{😀x|🚀|}&&\q{😀x|}]))/dvgy;r.lastIndex=2;let a=r.exec('A😀x'),b=r.exec('A😀x');a.index===1 && a[0]==='😀x' && a.groups.whole==='😀x' && a.indices[2][1]===4 && b.index===4 && b[0]==='' && b.groups.whole==='' && r.lastIndex===4",
+        r#"
+            let r = /(?<whole>([\q{😀x|🚀|}&&\q{😀x|}]))/dvgy;
+            r.lastIndex = 2;
+            let a = r.exec('A😀x'),
+                b = r.exec('A😀x');
+            a.index === 1 && a[0] === '😀x' && a.groups.whole === '😀x' && a.indices[2][1] === 4 && b
+                .index === 4 && b[0] === '' && b.groups.whole === '' && r.lastIndex === 4
+        "#,
     );
     assert_true(
-        r"let r=/(?<whole>([\q{|ab}--\q{ab}]))/dvy;r.lastIndex=1;let m=r.exec('😀');m.index===0 && m[0]==='' && m[1]==='' && m.groups.whole==='' && m.indices[2][0]===0 && m.indices[2][1]===0 && r.lastIndex===0",
+        r#"
+            let r = /(?<whole>([\q{|ab}--\q{ab}]))/dvy;
+            r.lastIndex = 1;
+            let m = r.exec('😀');
+            m.index === 0 && m[0] === '' && m[1] === '' && m.groups.whole === '' && m.indices[2][0] ===
+                0 && m.indices[2][1] === 0 && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/[\q{ab}&&\q{cd}]/vg;r.lastIndex=1;let m=r.exec('abcd');m===null && r.lastIndex===0 && !r.test('') && /[\q{|ab}--\q{ab}]/v.exec('')[0]===''",
+        r#"
+            let r = /[\q{ab}&&\q{cd}]/vg;
+            r.lastIndex = 1;
+            let m = r.exec('abcd');
+            m === null && r.lastIndex === 0 && !r.test('') && /[\q{|ab}--\q{ab}]/v.exec('')[0] === ''
+        "#,
     );
     assert_true(
-        r"let r=/[\q{ab}&&\q{cd}]/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('ab');}catch(e){caught=e instanceof TypeError;}caught && r.lastIndex===1",
+        r#"
+            let r = /[\q{ab}&&\q{cd}]/vy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('ab');
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
     assert_true(
-        r"!/[\q{\u{D800}\u{DC00}|ab}&&\q{\uD800\uDC00|ab}]/v.test('𐀀') && /[\q{\u{D800}\u{DC00}|ab}&&\q{\uD800\uDC00|ab}]/v.exec('ab')[0]==='ab'",
+        r#"
+            !/[\q{\u{D800}\u{DC00}|ab}&&\q{\uD800\uDC00|ab}]/v.test('𐀀') &&
+                /[\q{\u{D800}\u{DC00}|ab}&&\q{\uD800\uDC00|ab}]/v.exec('ab')[0] === 'ab'
+        "#,
     );
 }
 
 #[test]
 fn consumers_clones_and_collection_use_the_filtered_member_plan() {
     assert_true(
-        r"let r=/(?<whole>([\q{|ab}&&\q{|ab}]))/dvg,a=[...'ab😀'.matchAll(r)];a.length===3 && a[0][0]==='ab' && a[1].index===2 && a[1][0]==='' && a[2].index===4 && a[2].indices[2][1]===4 && 'ab😀'.replace(r,'#')==='##😀#' && 'ab😀'.split(/[\q{|ab}&&\q{|ab}]/v).join('|')==='|😀'",
+        r#"
+            let r = /(?<whole>([\q{|ab}&&\q{|ab}]))/dvg,
+                a = [...'ab😀'.matchAll(r)];
+            a.length === 3 && a[0][0] === 'ab' && a[1].index === 2 && a[1][0] === '' && a[2].index === 4 &&
+                a[2].indices[2][1] === 4 && 'ab😀'.replace(r, '#') === '##😀#' && 'ab😀'.split(
+                    /[\q{|ab}&&\q{|ab}]/v).join('|') === '|😀'
+        "#,
     );
     assert_true(
-        r"let r=/[\q{a|ab|abc}--\q{a}]/vg;r.lastIndex=8;'xabc!'.search(r)===1 && r.lastIndex===8 && 'ababc'.match(r).join('|')==='ab|abc' && r.lastIndex===0 && 'ababc'.replace(r,'#')==='##'",
+        r#"
+            let r = /[\q{a|ab|abc}--\q{a}]/vg;
+            r.lastIndex = 8;
+            'xabc!'.search(r) === 1 && r.lastIndex === 8 && 'ababc'.match(r).join('|') === 'ab|abc' && r
+                .lastIndex === 0 && 'ababc'.replace(r, '#') === '##'
+        "#,
     );
     assert_true(
-        r"let r=/[\q{K|sK}&&\q{k|ſK}]/iv;r.lastIndex=7;let c=new RegExp(r,'dvy');c.exec('ſK')===null && c.lastIndex===0 && r.exec('ſK')[0]==='ſK' && r.lastIndex===7",
+        r#"
+            let r = /[\q{K|sK}&&\q{k|ſK}]/iv;
+            r.lastIndex = 7;
+            let c = new RegExp(r, 'dvy');
+            c.exec('ſK') === null && c.lastIndex === 0 && r.exec('ſK')[0] === 'ſK' && r.lastIndex === 7
+        "#,
     );
     let mut realm = Realm::default();
     realm

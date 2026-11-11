@@ -23,55 +23,291 @@ fn default_patterns_flags_metadata_and_lastindex_have_standard_descriptors() {
 #[test]
 fn identity_requires_a_call_truthy_match_undefined_flags_and_the_active_constructor() {
     assert_true(
-        "let r=new RegExp('a','g');RegExp(r)===r && RegExp(r,undefined)===r && new RegExp(r)!==r && RegExp(r,'')!==r && RegExp.call({},r)===r && RegExp(r).lastIndex===0",
+        r#"
+            let r = new RegExp('a', 'g');
+            RegExp(r) === r && RegExp(r, undefined) === r && new RegExp(r) !== r && RegExp(r, '') !== r &&
+                RegExp.call({}, r) === r && RegExp(r).lastIndex === 0
+        "#,
     );
     assert_true(
-        "let t='',r={get [Symbol.match](){t+='m';return 1;},get constructor(){t+='c';return RegExp;},get source(){throw 7;},get flags(){throw 8;}};RegExp(r)===r && t==='mc'",
+        r#"
+            let t = '',
+                r = {
+                    get [Symbol.match]() {
+                        t += 'm';
+                        return 1;
+                    },
+                    get constructor() {
+                        t += 'c';
+                        return RegExp;
+                    },
+                    get source() {
+                        throw 7;
+                    },
+                    get flags() {
+                        throw 8;
+                    }
+                };
+            RegExp(r) === r && t === 'mc'
+        "#,
     );
     assert_true(
-        "let t='',r={get [Symbol.match](){t+='m';return false;},get constructor(){throw 7;},toString(){t+='s';return 'a';}};RegExp(r).source==='a' && t==='ms'",
+        r#"
+            let t = '',
+                r = {
+                    get [Symbol.match]() {
+                        t += 'm';
+                        return false;
+                    },
+                    get constructor() {
+                        throw 7;
+                    },
+                    toString() {
+                        t += 's';
+                        return 'a';
+                    }
+                };
+            RegExp(r).source === 'a' && t === 'ms'
+        "#,
     );
     assert_true(
-        "let r=new RegExp('a');r.lastIndex=9;r.constructor=function(){};let copy=RegExp(r);copy!==r && copy.source==='a' && copy.lastIndex===0",
+        r#"
+            let r = new RegExp('a');
+            r.lastIndex = 9;
+            r.constructor = function() {};
+            let copy = RegExp(r);
+            copy !== r && copy.source === 'a' && copy.lastIndex === 0
+        "#,
     );
 }
 
 #[test]
 fn regexp_like_property_gets_precede_all_string_coercions_and_explicit_flags_skip_get() {
     assert_true(
-        "let t='',r={get [Symbol.match](){t+='m';return true;},get constructor(){t+='c';return {};},get source(){t+='s';return {[Symbol.toPrimitive](h){t+=h;return 'a';}};},get flags(){t+='f';return {[Symbol.toPrimitive](h){t+=h;return 'g';}};}};let a=RegExp(r);a.source==='a' && a.flags==='g' && t==='mcsfstringstring'",
+        r#"
+            let t = '',
+                r = {
+                    get [Symbol.match]() {
+                        t += 'm';
+                        return true;
+                    },
+                    get constructor() {
+                        t += 'c';
+                        return {};
+                    },
+                    get source() {
+                        t += 's';
+                        return {
+                            [Symbol.toPrimitive](h) {
+                                t += h;
+                                return 'a';
+                            }
+                        };
+                    },
+                    get flags() {
+                        t += 'f';
+                        return {
+                            [Symbol.toPrimitive](h) {
+                                t += h;
+                                return 'g';
+                            }
+                        };
+                    }
+                };
+            let a = RegExp(r);
+            a.source === 'a' && a.flags === 'g' && t === 'mcsfstringstring'
+        "#,
     );
     assert_true(
-        "let t='',r={get [Symbol.match](){t+='m';return true;},get constructor(){throw 8;},get source(){t+='s';return {toString(){t+='p';return 'a';}};},get flags(){throw 7;}},f={toString(){t+='f';return 'i';}};let a=new RegExp(r,f);a.ignoreCase && t==='mspf'",
+        r#"
+            let t = '',
+                r = {
+                    get [Symbol.match]() {
+                        t += 'm';
+                        return true;
+                    },
+                    get constructor() {
+                        throw 8;
+                    },
+                    get source() {
+                        t += 's';
+                        return {
+                            toString() {
+                                t += 'p';
+                                return 'a';
+                            }
+                        };
+                    },
+                    get flags() {
+                        throw 7;
+                    }
+                },
+                f = {
+                    toString() {
+                        t += 'f';
+                        return 'i';
+                    }
+                };
+            let a = new RegExp(r, f);
+            a.ignoreCase && t === 'mspf'
+        "#,
     );
     assert_true(
-        "let t='',r={get [Symbol.match](){t+='m';return true;},get source(){t+='s';return {toString(){t+='p';throw 7;}};},get flags(){t+='f';return 'g';}};try{new RegExp(r);}catch(e){t+=e;}t==='msfp7'",
+        r#"
+            let t = '',
+                r = {
+                    get [Symbol.match]() {
+                        t += 'm';
+                        return true;
+                    },
+                    get source() {
+                        t += 's';
+                        return {
+                            toString() {
+                                t += 'p';
+                                throw 7;
+                            }
+                        };
+                    },
+                    get flags() {
+                        t += 'f';
+                        return 'g';
+                    }
+                };
+            try {
+                new RegExp(r);
+            } catch (e) {
+                t += e;
+            }
+            t === 'msfp7'
+        "#,
     );
 }
 
 #[test]
 fn newtarget_prototype_get_occurs_between_pattern_gets_and_string_conversion() {
     assert_true(
-        "let t='',prototype={},r={get [Symbol.match](){t+='m';return true;},get source(){t+='s';return {toString(){t+='p';return 'a';}};},get flags(){t+='f';return {toString(){t+='q';return 'g';}};}};let Target=(function(){}).bind(null);Object.defineProperty(Target,'prototype',{get(){t+='n';return prototype;}});let result=Reflect.construct(RegExp,[r],Target);t==='msfnpq' && Object.getPrototypeOf(result)===prototype && Object.getOwnPropertyDescriptor(RegExp.prototype,'source').get.call(result)==='a'",
+        r#"
+            let t = '',
+                prototype = {},
+                r = {
+                    get [Symbol.match]() {
+                        t += 'm';
+                        return true;
+                    },
+                    get source() {
+                        t += 's';
+                        return {
+                            toString() {
+                                t += 'p';
+                                return 'a';
+                            }
+                        };
+                    },
+                    get flags() {
+                        t += 'f';
+                        return {
+                            toString() {
+                                t += 'q';
+                                return 'g';
+                            }
+                        };
+                    }
+                };
+            let Target = (function() {}).bind(null);
+            Object.defineProperty(Target, 'prototype', {
+                get() {
+                    t += 'n';
+                    return prototype;
+                }
+            });
+            let result = Reflect.construct(RegExp, [r], Target);
+            t === 'msfnpq' && Object.getPrototypeOf(result) === prototype && Object
+                .getOwnPropertyDescriptor(RegExp.prototype, 'source').get.call(result) === 'a'
+        "#,
     );
     assert_true(
-        "let Target=(function(){}).bind(null);Object.defineProperty(Target,'prototype',{get(){throw 7;}});let t='';try{Reflect.construct(RegExp,[{toString(){t+='s';throw 8;}}],Target);}catch(e){t+=e;}t==='7'",
+        r#"
+            let Target = (function() {}).bind(null);
+            Object.defineProperty(Target, 'prototype', {
+                get() {
+                    throw 7;
+                }
+            });
+            let t = '';
+            try {
+                Reflect.construct(RegExp, [{
+                    toString() {
+                        t += 's';
+                        throw 8;
+                    }
+                }], Target);
+            } catch (e) {
+                t += e;
+            }
+            t === '7'
+        "#,
     );
     assert_true(
-        "let Target=(function(){}).bind(null);Target.prototype=null;let r=Reflect.construct(RegExp,['a'],Target);Object.getPrototypeOf(r)===RegExp.prototype && r.source==='a'",
+        r#"
+            let Target = (function() {}).bind(null);
+            Target.prototype = null;
+            let r = Reflect.construct(RegExp, ['a'], Target);
+            Object.getPrototypeOf(r) === RegExp.prototype && r.source === 'a'
+        "#,
     );
     assert_true(
-        "class R extends RegExp {x=7;}let r=new R('a','g');r instanceof R && r instanceof RegExp && r.x===7 && r.source==='a' && r.global && r.lastIndex===0",
+        r#"
+            class R extends RegExp {
+                x = 7;
+            }
+            let r = new R('a', 'g');
+            r instanceof R && r instanceof RegExp && r.x === 7 && r.source === 'a' && r.global && r
+                .lastIndex === 0
+        "#,
     );
 }
 
 #[test]
 fn cloning_uses_original_slots_after_match_override_and_ignores_public_overrides() {
     assert_true(
-        r"let r=new RegExp('/\n','yg');r.lastIndex=7;Object.defineProperty(r,'source',{get(){throw 7;}});Object.defineProperty(r,'flags',{get(){throw 8;}});r[Symbol.match]=false;Object.defineProperty(r,'constructor',{get(){throw 9;}});let a=RegExp(r),b=new RegExp(r,'i');a!==r && a.source==='\\/\\n' && a.flags==='gy' && a.lastIndex===0 && b.source===a.source && b.flags==='i'",
+        r#"
+            let r = new RegExp('/\n', 'yg');
+            r.lastIndex = 7;
+            Object.defineProperty(r, 'source', {
+                get() {
+                    throw 7;
+                }
+            });
+            Object.defineProperty(r, 'flags', {
+                get() {
+                    throw 8;
+                }
+            });
+            r[Symbol.match] = false;
+            Object.defineProperty(r, 'constructor', {
+                get() {
+                    throw 9;
+                }
+            });
+            let a = RegExp(r),
+                b = new RegExp(r, 'i');
+            a !== r && a.source === '\\/\\n' && a.flags === 'gy' && a.lastIndex === 0 && b.source === a
+                .source && b.flags === 'i'
+        "#,
     );
     assert_true(
-        "let r=new RegExp('[/]');r[Symbol.match]=false;let caught=false;try{new RegExp(r,'v');}catch(e){caught=e instanceof SyntaxError;}caught",
+        r#"
+            let r = new RegExp('[/]');
+            r[Symbol.match] = false;
+            let caught = false;
+            try {
+                new RegExp(r, 'v');
+            } catch (e) {
+                caught = e instanceof SyntaxError;
+            }
+            caught
+        "#,
     );
 }
 
@@ -149,7 +385,19 @@ fn isregexp_and_object_tag_use_own_native_brands_after_symbol_overrides() {
 #[test]
 fn native_exec_validates_brand_and_coerces_input_before_the_matching_boundary() {
     assert_true(
-        "let called=false;try{RegExp.prototype.exec.call({}, {toString(){called=true;throw 7;}});}catch(e){called=called || !(e instanceof TypeError);}!called",
+        r#"
+            let called = false;
+            try {
+                RegExp.prototype.exec.call({}, {
+                    toString() {
+                        called = true;
+                        throw 7;
+                    }
+                });
+            } catch (e) {
+                called = called || !(e instanceof TypeError);
+            }!called
+        "#,
     );
     assert_true(
         "let r=new RegExp('a'),t='';try{r.exec({toString(){t+='s';throw 7;}});}catch(e){t+=e;}t==='s7'",
@@ -158,10 +406,24 @@ fn native_exec_validates_brand_and_coerces_input_before_the_matching_boundary() 
         "let m=new RegExp('(?:(?:(?:(?:a(a|bc)){2}){2})|){2,3}').exec('a');m.index===0&&m[0]===''&&m[1]===undefined",
     );
     assert_true(
-        "let r=new RegExp('(?:(?:(?:(?:a(a|bc)){2}){2})|){2,3}');r.exec=undefined;RegExp.prototype.test.call(r,'a')===true",
+        r#"
+            let r = new RegExp('(?:(?:(?:(?:a(a|bc)){2}){2})|){2,3}');
+            r.exec = undefined;
+            RegExp.prototype.test.call(r, 'a') === true
+        "#,
     );
     assert_true(
-        "let r=new RegExp('a');r.exec=function(s){return {0:s,index:3,length:1};};r.test('x') && r[Symbol.search]('x')===3 && r[Symbol.match]('x')[0]==='x'",
+        r#"
+            let r = new RegExp('a');
+            r.exec = function(s) {
+                return {
+                    0: s,
+                    index: 3,
+                    length: 1
+                };
+            };
+            r.test('x') && r[Symbol.search]('x') === 3 && r[Symbol.match]('x')[0] === 'x'
+        "#,
     );
 }
 
@@ -196,7 +458,15 @@ fn reentrant_constructor_getters_and_conversions_use_existing_native_stack_guard
     for source in [
         "let r={get [Symbol.match](){return RegExp(r);}};RegExp(r)",
         "let r={toString(){return RegExp(r);}};RegExp(r)",
-        "let Target=(function(){}).bind(null);Object.defineProperty(Target,'prototype',{get(){return Reflect.construct(RegExp,[],Target);}});Reflect.construct(RegExp,[],Target)",
+        r#"
+            let Target = (function() {}).bind(null);
+            Object.defineProperty(Target, 'prototype', {
+                get() {
+                    return Reflect.construct(RegExp, [], Target);
+                }
+            });
+            Reflect.construct(RegExp, [], Target)
+        "#,
     ] {
         let mut realm = Realm::default();
         assert!(
@@ -248,6 +518,14 @@ fn shared_backend_native_depth_and_counter_limits_are_host_failures() {
         assert_eq!(realm.eval("marker"), Ok(Value::Number(0.0)));
     }
     assert_true(
-        "var caught=false;try{new RegExp('(a?){999999999999999999999999999999,1}')}catch(error){caught=error instanceof SyntaxError}caught",
+        r#"
+            var caught = false;
+            try {
+                new RegExp('(a?){999999999999999999999999999999,1}')
+            } catch (error) {
+                caught = error instanceof SyntaxError
+            }
+            caught
+        "#,
     );
 }

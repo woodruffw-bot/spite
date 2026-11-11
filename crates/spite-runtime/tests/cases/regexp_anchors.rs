@@ -7,7 +7,11 @@ use crate::common::assert_true;
 #[test]
 fn nonmultiline_assertions_use_exact_input_boundaries() {
     assert_true(
-        "/^a/.exec('ba')===null && /a$/.exec('ab')===null && /^a$/.exec('a')[0]==='a' && /^a$/.exec('a\\n')===null && /a$/.exec('a\\r')===null && /$/.exec('abc').index===3 && /^$/.test('') && /^$/.exec('\\n')===null",
+        r#"
+            /^a/.exec('ba') === null && /a$/.exec('ab') === null && /^a$/.exec('a')[0] === 'a' && /^a$/
+                .exec('a\n') === null && /a$/.exec('a\r') === null && /$/.exec('abc').index === 3 && /^$/
+                .test('') && /^$/.exec('\n') === null
+        "#,
     );
     assert_true("/^/.exec('a')[0]==='' && /^/.exec('a').index===0 && /a$/.exec('aba').index===2");
 }
@@ -26,7 +30,12 @@ fn multiline_anchors_use_all_four_line_terminators_and_crlf_positions() {
 fn sticky_offsets_do_not_change_the_meaning_of_beginning_assertions() {
     assert_true("let r=/^a/y;r.lastIndex=1;r.exec('ba')===null && r.lastIndex===0");
     assert_true(
-        "let r=/^a$/my;r.lastIndex=2;let m=r.exec('x\\na\\ry');m.index===2 && r.lastIndex===3 && r.exec('x\\na\\ry')===null && r.lastIndex===0",
+        r#"
+            let r = /^a$/my;
+            r.lastIndex = 2;
+            let m = r.exec('x\na\ry');
+            m.index === 2 && r.lastIndex === 3 && r.exec('x\na\ry') === null && r.lastIndex === 0
+        "#,
     );
     assert_true("let r=/a$/y;r.lastIndex=2;r.exec('aba')[0]==='a' && r.lastIndex===3");
 }
@@ -34,7 +43,11 @@ fn sticky_offsets_do_not_change_the_meaning_of_beginning_assertions() {
 #[test]
 fn captures_case_and_indices_exclude_the_zero_width_assertions() {
     assert_true(
-        "let m=/^(a)()$/di.exec('A');m.length===3 && m[0]==='A' && m[1]==='A' && m[2]==='' && m.indices[0].join(',')==='0,1' && m.indices[1].join(',')==='0,1' && m.indices[2].join(',')==='1,1'",
+        r#"
+            let m = /^(a)()$/di.exec('A');
+            m.length === 3 && m[0] === 'A' && m[1] === 'A' && m[2] === '' && m.indices[0].join(',') ===
+                '0,1' && m.indices[1].join(',') === '0,1' && m.indices[2].join(',') === '1,1'
+        "#,
     );
     assert_true(
         r"let m=/^(\uD800)/d.exec('\uD800\uDC00');m[0]==='\uD800' && m[1]==='\uD800' && m.indices[1].join(',')==='0,1'",
@@ -51,10 +64,27 @@ fn escaped_dollars_carets_and_backslash_parity_preserve_literal_meanings() {
 #[test]
 fn rejected_overlapping_matches_and_generic_consumers_continue_correctly() {
     assert_true(
-        "/aba$/.exec('ababa').index===2 && 'ba'.match('a$')[0]==='a' && 'ba'.search('a$')===1 && 'a\\nb'.replace(/^/mg,'-')==='-a\\n-b' && 'ab'.split(/$/).join(',')==='ab' && [...'ab'.matchAll('$')][0].index===2",
+        r#"
+            /aba$/.exec('ababa').index === 2 && 'ba'.match('a$')[0] === 'a' && 'ba'.search('a$') === 1 &&
+                'a\nb'.replace(/^/mg, '-') === '-a\n-b' && 'ab'.split(/$/).join(',') === 'ab' && [...'ab'
+                    .matchAll('$')
+                ][0].index === 2
+        "#,
     );
     assert_true(
-        "let r=/a$/g;Object.defineProperty(r,'lastIndex',{writable:false});let threw=false;try{r.exec('ba')}catch(e){threw=e instanceof TypeError}threw && r.lastIndex===0",
+        r#"
+            let r = /a$/g;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let threw = false;
+            try {
+                r.exec('ba')
+            } catch (e) {
+                threw = e instanceof TypeError
+            }
+            threw && r.lastIndex === 0
+        "#,
     );
 }
 

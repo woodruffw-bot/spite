@@ -62,16 +62,33 @@ fn unicode_repeated_atom_scoped_word_counts_and_scopes() {
         ));
         assert_true(&format!(r"/\b(?:(^a$)){{2}}\b/{mode}m.exec('a\na')===null"));
         assert_true(&format!(
-            r"let a=/\B((a$)){{0,3}}?/{mode}.exec('aa');a.index===1&&a[0]===''&&a[1]===undefined&&a[2]===undefined&&Object.hasOwn(a,'1')&&Object.hasOwn(a,'2')"
+            r#"
+                let a = /\B((a$)){{0,3}}?/{mode}.exec('aa');
+                a.index === 1 && a[0] === '' && a[1] === undefined && a[2] === undefined && Object.hasOwn(a,
+                    '1') && Object.hasOwn(a, '2')
+            "#
         ));
         assert_true(&format!(
-            r"let r=/\B((?:a$)){{0}}\B/d{mode}y;r.lastIndex=2;let m=r.exec('aaa');m.index===2&&m[0]===''&&m[1]===undefined&&m.indices[0][0]===2&&r.lastIndex===2"
+            r#"
+                let r = /\B((?:a$)){{0}}\B/d{mode}y;
+                r.lastIndex = 2;
+                let m = r.exec('aaa');
+                m.index === 2 && m[0] === '' && m[1] === undefined && m.indices[0][0] === 2 && r.lastIndex ===
+                    2
+            "#
         ));
         assert_true(&format!(
-            r"let a=/\B(^.$){{2,3}}\B/ds{mode}m.exec('\r\n\nA');a[0]==='\r\n'&&a[1]==='\n'&&a.indices[1][0]===1&&a.indices[1][1]===2"
+            r#"
+                let a = /\B(^.$){{2,3}}\B/ds{mode}m.exec('\r\n\nA');
+                a[0] === '\r\n' && a[1] === '\n' && a.indices[1][0] === 1 && a.indices[1][1] === 2
+            "#
         ));
         assert_true(&format!(
-            r"let a=/^\B((^.$))+?\B$/ds{mode}m.exec('\r\n\n'),b=/^\B((^.$))+\B$/ds{mode}m.exec('\r\n\n');a[0]==='\r'&&a[1]==='\r'&&b[0]==='\r\n\n'&&b[1]==='\n'&&b.indices[2][0]===2"
+            r#"
+                let a = /^\B((^.$))+?\B$/ds{mode}m.exec('\r\n\n'),
+                    b = /^\B((^.$))+\B$/ds{mode}m.exec('\r\n\n');
+                a[0] === '\r' && a[1] === '\r' && b[0] === '\r\n\n' && b[1] === '\n' && b.indices[2][0] === 2
+            "#
         ));
     }
 }
@@ -79,13 +96,30 @@ fn unicode_repeated_atom_scoped_word_counts_and_scopes() {
 fn unicode_repeated_atom_scoped_word_names_pairs_and_folding() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/(?<whole>\B(?<__proto__>^😀)+\B)/d{mode}y;r.lastIndex=1;let m=r.exec('😀😀');m.index===0&&m.groups.whole==='😀'&&m.groups.__proto__==='😀'&&m.indices.groups.__proto__[0]===0&&m.indices.groups.__proto__[1]===2&&m.indices.groups.__proto__===m.indices[2]&&r.lastIndex===2"
+            r#"
+                let r = /(?<whole>\B(?<__proto__>^😀)+\B)/d{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('😀😀');
+                m.index === 0 && m.groups.whole === '😀' && m.groups.__proto__ === '😀' && m.indices.groups
+                    .__proto__[0] === 0 && m.indices.groups.__proto__[1] === 2 && m.indices.groups
+                    .__proto__ === m.indices[2] && r.lastIndex === 2
+            "#
         ));
         assert_true(&format!(
-            r"let r=/\b((a$))+\b/di{mode}m,a=r.exec('A\nA'),b=new RegExp(r,'di{mode}').exec('A\nA');a.index===0&&a[0]==='A'&&a[1]==='A'&&b.index===2&&b[2]==='A'"
+            r#"
+                let r = /\b((a$))+\b/di{mode}m,
+                    a = r.exec('A\nA'),
+                    b = new RegExp(r, 'di{mode}').exec('A\nA');
+                a.index === 0 && a[0] === 'A' && a[1] === 'A' && b.index === 2 && b[2] === 'A'
+            "#
         ));
         assert_true(&format!(
-            r"let a=/(\uD800$)+\B/{mode}m.exec('B\uD800\n\uD800'),b=/\B(^\uD800)+\B/{mode}m.exec('\n\uD800\uD800');a.index===1&&a[0]==='\uD800'&&b.index===1&&b[0]==='\uD800'&&!/\B(\uD800$)+\B/{mode}.test('😀')"
+            r#"
+                let a = /(\uD800$)+\B/{mode}m.exec('B\uD800\n\uD800'),
+                    b = /\B(^\uD800)+\B/{mode}m.exec('\n\uD800\uD800');
+                a.index === 1 && a[0] === '\uD800' && b.index === 1 && b[0] === '\uD800' && !
+                    /\B(\uD800$)+\B/{mode}.test('😀')
+            "#
         ));
     }
 }
@@ -99,26 +133,80 @@ fn unicode_repeated_atom_scoped_word_consumers_and_empty_advance() {
             r"'aaa'.split(/((a$))+\b/{mode}).join('|')==='aa|a|a|'&&'baa'.search(/(a$)+\b/{mode})===2"
         ));
         assert_true(&format!(
-            r"let a=[...'a\na'.matchAll(/\b(?<x>^a$)+\b/d{mode}mg)];a.length===2&&a[0].index===0&&a[0].groups.x==='a'&&a[1].index===2&&a[1].indices.groups.x[0]===2"
+            r#"
+                let a = [...'a\na'.matchAll(/\b(?<x>^a$)+\b/d{mode}mg)];
+                a.length === 2 && a[0].index === 0 && a[0].groups.x === 'a' && a[1].index === 2 && a[1].indices
+                    .groups.x[0] === 2
+            "#
         ));
         assert_true(&format!(
-            r"let a=[...'😀'.matchAll(/\B(?<x>^a){{0}}\B/d{mode}g)];a.length===2&&a[0].index===0&&a[1].index===2&&a.every(m=>m.groups.x===undefined&&Object.hasOwn(m.groups,'x')&&m.indices[1]===undefined)"
+            r#"
+                let a = [...'😀'.matchAll(/\B(?<x>^a){{0}}\B/d{mode}g)];
+                a.length === 2 && a[0].index === 0 && a[1].index === 2 && a.every(m => m.groups.x ===
+                    undefined && Object.hasOwn(m.groups, 'x') && m.indices[1] === undefined)
+            "#
         ));
     }
 }
 #[test]
 fn unicode_repeated_atom_scoped_word_clones_coercion_and_strict_writes() {
     assert_true(
-        r"let r=/\B(?<x>^.$)+\B/dsmug,c=new RegExp(r,'dvmy'),b=new RegExp(c,'dsumy');c.exec('\r\n')===null&&b.exec('\r\n').groups.x==='\n'&&b.lastIndex===2",
+        r#"
+            let r = /\B(?<x>^.$)+\B/dsmug,
+                c = new RegExp(r, 'dvmy'),
+                b = new RegExp(c, 'dsumy');
+            c.exec('\r\n') === null && b.exec('\r\n').groups.x === '\n' && b.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let t='',r=/\B(^😀)+\B/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀😀'}});t==='si'&&m.index===0&&m[1]==='😀'&&r.lastIndex===2",
+        r#"
+            let t = '',
+                r = /\B(^😀)+\B/uy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 1
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return '😀😀'
+                }
+            });
+            t === 'si' && m.index === 0 && m[1] === '😀' && r.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let r=/\B(^a)*\B/vmy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            let r = /\B(^a)*\B/vmy;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/\b(a$)+\b/vmy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('BBB')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /\b(a$)+\b/vmy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('BBB')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 

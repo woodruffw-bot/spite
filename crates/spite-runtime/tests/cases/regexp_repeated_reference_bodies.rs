@@ -79,19 +79,41 @@ fn repeated_reference_body_result_snapshot() {
 #[test]
 fn whole_reference_body_retries_keep_original_named_ranges_and_aliases() {
     assert_true(
-        r"let a=/(?<x>a)(?<last>\k<x>\k<x>)+\k<last>/d.exec('aaaaaa');a[0]==='aaaaa'&&a.groups.last==='aa'&&a.indices.groups.last===a.indices[2]&&a.indices[2][0]===1&&a.indices[2][1]===3",
+        r#"
+            let a = /(?<x>a)(?<last>\k<x>\k<x>)+\k<last>/d.exec('aaaaaa');
+            a[0] === 'aaaaa' && a.groups.last === 'aa' && a.indices.groups.last === a.indices[2] && a
+                .indices[2][0] === 1 && a.indices[2][1] === 3
+        "#,
     );
     assert_true(
-        r"let a=/((?<x>a)(?<last>\k<x>\k<x>)+?)\1/d.exec('aaaaaa');a[0]==='aaaaaa'&&a[1]==='aaa'&&a.groups.last==='aa'&&a.indices.groups.last===a.indices[3]&&a.indices[3][0]===1&&a.indices[3][1]===3",
+        r#"
+            let a = /((?<x>a)(?<last>\k<x>\k<x>)+?)\1/d.exec('aaaaaa');
+            a[0] === 'aaaaaa' && a[1] === 'aaa' && a.groups.last === 'aa' && a.indices.groups.last === a
+                .indices[3] && a.indices[3][0] === 1 && a.indices[3][1] === 3
+        "#,
     );
     assert_true(
-        r"let a=/(?:(?<x>a)|(?<x>ab))(?<last>\k<x>\k<x>)+b/d.exec('qabababb');a.index===1&&a[0]==='abababb'&&a[1]===undefined&&a.groups.x==='ab'&&a.groups.last==='abab'&&a.indices.groups.x===a.indices[2]&&a.indices.groups.last===a.indices[3]&&a.indices[3][0]===3&&a.indices[3][1]===7",
+        r#"
+            let a = /(?:(?<x>a)|(?<x>ab))(?<last>\k<x>\k<x>)+b/d.exec('qabababb');
+            a.index === 1 && a[0] === 'abababb' && a[1] === undefined && a.groups.x === 'ab' && a.groups
+                .last === 'abab' && a.indices.groups.x === a.indices[2] && a.indices.groups.last === a
+                .indices[3] && a.indices[3][0] === 3 && a.indices[3][1] === 7
+        "#,
     );
     assert_true(
-        r"let a=/(?<x>a)(?<last>(?<before>)\k<x>\k<x>(?<after>))+/d.exec('aaaaa');a.groups.last==='aa'&&a.groups.before===''&&a.groups.after===''&&a.indices.groups.before===a.indices[3]&&a.indices[3][0]===3&&a.indices.groups.after===a.indices[4]&&a.indices[4][0]===5&&/^(a)(?:\1\1)+$/.exec('aaaa')===null",
+        r#"
+            let a = /(?<x>a)(?<last>(?<before>)\k<x>\k<x>(?<after>))+/d.exec('aaaaa');
+            a.groups.last === 'aa' && a.groups.before === '' && a.groups.after === '' && a.indices.groups
+                .before === a.indices[3] && a.indices[3][0] === 3 && a.indices.groups.after === a.indices[
+                    4] && a.indices[4][0] === 5 && /^(a)(?:\1\1)+$/.exec('aaaa') === null
+        "#,
     );
     assert_true(
-        r"let a=/(?<x>.)(?<last>\k<x>\k<x>)+/d.exec('\uD800\uD800\uD800');a[0].length===3&&a.groups.last.length===2&&a.indices.groups.last===a.indices[2]&&a.indices[2][0]===1&&a.indices[2][1]===3",
+        r#"
+            let a = /(?<x>.)(?<last>\k<x>\k<x>)+/d.exec('\uD800\uD800\uD800');
+            a[0].length === 3 && a.groups.last.length === 2 && a.indices.groups.last === a.indices[2] && a
+                .indices[2][0] === 1 && a.indices[2][1] === 3
+        "#,
     );
 }
 

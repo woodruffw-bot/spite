@@ -8,56 +8,128 @@ use crate::common::assert_true;
 #[test]
 fn projected_repetition_keeps_greedy_lazy_and_counted_character_priority() {
     assert_true(
-        r"/[\p{Any}&&\q{a|ab|}]+/v.exec('aaab')[0]==='aaa' && /[\p{Any}&&\q{a|ab|}]+?/v.exec('aaab')[0]==='a' && /[\p{Any}&&\q{a|ab|}]{1,2}/v.exec('aaab')[0]==='aa' && /[\p{Any}&&\q{a|ab|}]{1,2}?/v.exec('aaab')[0]==='a'",
+        r#"
+            /[\p{Any}&&\q{a|ab|}]+/v.exec('aaab')[0] === 'aaa' && /[\p{Any}&&\q{a|ab|}]+?/v.exec('aaab')[
+                0] === 'a' && /[\p{Any}&&\q{a|ab|}]{1,2}/v.exec('aaab')[0] === 'aa' &&
+                /[\p{Any}&&\q{a|ab|}]{1,2}?/v.exec('aaab')[0] === 'a'
+        "#,
     );
     assert_true(
-        r"/[\p{Any}--\q{a|ab|}]+/v.exec('ab😀c')[0]==='b😀c' && /[\p{Any}--\q{a|ab|}]+?/v.exec('ab😀c')[0]==='b' && /^[\p{Any}--\q{}]{3}$/v.test('ab😀') && !/^[\p{Any}--\q{}]{4}$/v.test('ab😀')",
+        r#"
+            /[\p{Any}--\q{a|ab|}]+/v.exec('ab😀c')[0] === 'b😀c' && /[\p{Any}--\q{a|ab|}]+?/v.exec(
+                'ab😀c')[0] === 'b' && /^[\p{Any}--\q{}]{3}$/v.test('ab😀') && !/^[\p{Any}--\q{}]{4}$/v
+                .test('ab😀')
+        "#,
     );
     assert_true(
-        r"/^[[0-9]--\q{0|2|4|9\uFE0F\u20E3}]+$/v.test('1356789') && !/^[[0-9]--\q{0|2|4|9\uFE0F\u20E3}]+$/v.test('9\uFE0F\u20E3') && /^[\p{ASCII_Hex_Digit}&&\q{0|2|4|9\uFE0F\u20E3}]+$/v.test('024') && !/^[_&&\q{0|2|4|9\uFE0F\u20E3}]+$/v.test('_')",
+        r#"
+            /^[[0-9]--\q{0|2|4|9\uFE0F\u20E3}]+$/v.test('1356789') && !
+                /^[[0-9]--\q{0|2|4|9\uFE0F\u20E3}]+$/v.test('9\uFE0F\u20E3') &&
+                /^[\p{ASCII_Hex_Digit}&&\q{0|2|4|9\uFE0F\u20E3}]+$/v.test('024') && !
+                /^[_&&\q{0|2|4|9\uFE0F\u20E3}]+$/v.test('_')
+        "#,
     );
 }
 
 #[test]
 fn q_empty_members_cannot_create_empty_iterations_but_zero_counts_can_match_empty() {
     assert_true(
-        r"!/[\p{Any}&&\q{ab|}]+/v.test('ab') && !/[\p{Any}&&\q{ab|}]+/v.test('') && /[\p{Any}&&\q{ab|}]*/v.exec('ab')[0]==='' && /[\p{Any}&&\q{ab|}]?/v.exec('ab')[0]==='' && /[\p{Any}--\q{}]+/v.exec('ab')[0]==='ab' && !/[\p{Any}--\q{}]+/v.test('')",
+        r#"
+            !/[\p{Any}&&\q{ab|}]+/v.test('ab') && !/[\p{Any}&&\q{ab|}]+/v.test('') &&
+                /[\p{Any}&&\q{ab|}]*/v.exec('ab')[0] === '' && /[\p{Any}&&\q{ab|}]?/v.exec('ab')[0] ===
+                '' && /[\p{Any}--\q{}]+/v.exec('ab')[0] === 'ab' && !/[\p{Any}--\q{}]+/v.test('')
+        "#,
     );
     assert_true(
-        r"let r=/(?<whole>([\p{Any}&&\q{ab|}]{0}))/dvgy;r.lastIndex=1;let m=r.exec('😀');m.index===0 && m[0]==='' && m[1]==='' && m.groups.whole==='' && m.indices[2][0]===0 && m.indices[2][1]===0 && r.lastIndex===0",
+        r#"
+            let r = /(?<whole>([\p{Any}&&\q{ab|}]{0}))/dvgy;
+            r.lastIndex = 1;
+            let m = r.exec('😀');
+            m.index === 0 && m[0] === '' && m[1] === '' && m.groups.whole === '' && m.indices[2][0] ===
+                0 && m.indices[2][1] === 0 && r.lastIndex === 0
+        "#,
     );
     let huge = "9".repeat(3);
     assert_true(&format!(
-        r"!/[\p{{Any}}--\q{{ab}}]{{{huge}}}/v.test('ab') && /^[\p{{Any}}--\q{{ab}}]{{1,{huge}}}$/v.test('ab😀') && /[\p{{Any}}&&\q{{ab|}}]{{0,{huge}}}/v.exec('ab')[0]===''"
+        r#"
+            !/[\p{{Any}}--\q{{ab}}]{{{huge}}}/v.test('ab') && /^[\p{{Any}}--\q{{ab}}]{{1,{huge}}}$/v
+                .test('ab😀') && /[\p{{Any}}&&\q{{ab|}}]{{0,{huge}}}/v.exec('ab')[0] === ''
+        "#
     ));
 }
 
 #[test]
 fn whole_repetition_assertions_folding_names_and_surrogate_ranges_use_original_input() {
     assert_true(
-        r"let r=/(?<whole>(^\b[[a-z]&&[a-z\q{ab}]]+?\b$))/dimv,m=r.exec('!\r\nſKA\u2028!');m.index===3 && m[0]==='ſKA' && m[1]==='ſKA' && m[2]==='ſKA' && m.groups.whole==='ſKA' && m.indices[2][1]===6 && m.indices.groups.whole===m.indices[1]",
+        r#"
+            let r = /(?<whole>(^\b[[a-z]&&[a-z\q{ab}]]+?\b$))/dimv,
+                m = r.exec('!\r\nſKA\u2028!');
+            m.index === 3 && m[0] === 'ſKA' && m[1] === 'ſKA' && m[2] === 'ſKA' && m.groups.whole ===
+                'ſKA' && m.indices[2][1] === 6 && m.indices.groups.whole === m.indices[1]
+        "#,
     );
     assert_true(
-        r"let r=/(?<whole>([\p{Any}&&\q{😀|😀x|}]+))/dvgy;r.lastIndex=2;let m=r.exec('A😀😀x');m.index===1 && m[0]==='😀😀' && m.groups.whole==='😀😀' && m.indices[2][0]===1 && m.indices[2][1]===5 && r.lastIndex===5 && r.exec('A😀😀x')===null && r.lastIndex===0",
+        r#"
+            let r = /(?<whole>([\p{Any}&&\q{😀|😀x|}]+))/dvgy;
+            r.lastIndex = 2;
+            let m = r.exec('A😀😀x');
+            m.index === 1 && m[0] === '😀😀' && m.groups.whole === '😀😀' && m.indices[2][0] === 1 && m
+                .indices[2][1] === 5 && r.lastIndex === 5 && r.exec('A😀😀x') === null && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/[\p{Any}&&\q{\uD800a|\uD800|\u{D800}\u{DC00}}]+/v,m=r.exec('\uD800\uD800a');m[0].length===2 && m[0].charCodeAt(0)===0xd800 && m[0].charCodeAt(1)===0xd800 && !r.test('𐀀') && /[\p{ASCII}--\q{k|sK|}]+/iv.exec('KſA')[0]==='ſA'",
+        r#"
+            let r = /[\p{Any}&&\q{\uD800a|\uD800|\u{D800}\u{DC00}}]+/v,
+                m = r.exec('\uD800\uD800a');
+            m[0].length === 2 && m[0].charCodeAt(0) === 0xd800 && m[0].charCodeAt(1) === 0xd800 && !r.test(
+                '𐀀') && /[\p{ASCII}--\q{k|sK|}]+/iv.exec('KſA')[0] === 'ſA'
+        "#,
     );
     assert_true(
-        r"let r=/[\p{Any}&&\q{ab|}]*/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀')}catch(e){caught=e instanceof TypeError}caught && r.lastIndex===1",
+        r#"
+            let r = /[\p{Any}&&\q{ab|}]*/vy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 
 #[test]
 fn repeated_projection_string_consumers_clones_and_collection_keep_metadata_and_state() {
     assert_true(
-        r"let r=/(?<whole>([\p{Any}&&\q{ab|}]*))/dvg,a=[...'ab😀'.matchAll(r)];a.length===4 && a[0].index===0 && a[1].index===1 && a[2].index===2 && a[3].index===4 && a[3][0]==='' && a[3].groups.whole==='' && a[3].indices[2][1]===4 && 'ab😀'.replace(r,'#')==='#a#b#😀#' && 'ab😀'.split(/[\p{Any}&&\q{ab|}]*/v).join('|')==='a|b|😀'",
+        r#"
+            let r = /(?<whole>([\p{Any}&&\q{ab|}]*))/dvg,
+                a = [...'ab😀'.matchAll(r)];
+            a.length === 4 && a[0].index === 0 && a[1].index === 1 && a[2].index === 2 && a[3].index ===
+                4 && a[3][0] === '' && a[3].groups.whole === '' && a[3].indices[2][1] === 4 && 'ab😀'
+                .replace(r, '#') === '#a#b#😀#' && 'ab😀'.split(/[\p{Any}&&\q{ab|}]*/v).join('|') ===
+                'a|b|😀'
+        "#,
     );
     assert_true(
-        r"let r=/[\p{Any}--\q{a|ab}]+/vg;r.lastIndex=8;'aab😀c!'.search(r)===2 && r.lastIndex===8 && 'ab😀ca!'.match(r).join('|')==='b😀c|!' && r.lastIndex===0 && 'ab😀ca!'.replace(r,'#')==='a#a#'",
+        r#"
+            let r = /[\p{Any}--\q{a|ab}]+/vg;
+            r.lastIndex = 8;
+            'aab😀c!'.search(r) === 2 && r.lastIndex === 8 && 'ab😀ca!'.match(r).join('|') === 'b😀c|!' &&
+                r.lastIndex === 0 && 'ab😀ca!'.replace(r, '#') === 'a#a#'
+        "#,
     );
     assert_true(
-        r"let r=/[[a-z]&&[a-z\q{ab}]]+/iv;r.lastIndex=7;let c=new RegExp(r,'dvy');c.exec('ſK')===null && c.lastIndex===0 && r.exec('ſK')[0]==='ſK' && r.lastIndex===7",
+        r#"
+            let r = /[[a-z]&&[a-z\q{ab}]]+/iv;
+            r.lastIndex = 7;
+            let c = new RegExp(r, 'dvy');
+            c.exec('ſK') === null && c.lastIndex === 0 && r.exec('ſK')[0] === 'ſK' && r.lastIndex === 7
+        "#,
     );
     let mut realm = Realm::default();
     realm

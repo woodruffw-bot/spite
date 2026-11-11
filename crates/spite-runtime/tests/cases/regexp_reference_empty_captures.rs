@@ -83,35 +83,81 @@ fn empty_capture_quantified_reference_result_snapshot() {
 #[test]
 fn empty_sibling_retries_keep_final_named_ranges_and_aliases() {
     assert_true(
-        r"let a=/(?<x>a)(?<last>(?<before>)\k<x>(?<after>))+\k<last>/d.exec('aaaa');a[0]==='aaaa'&&a.groups.last==='a'&&a.groups.before===''&&a.groups.after===''&&a.indices.groups.last===a.indices[2]&&a.indices[2][0]===2&&a.indices[2][1]===3&&a.indices.groups.before===a.indices[3]&&a.indices[3][0]===2&&a.indices[3][1]===2&&a.indices.groups.after===a.indices[4]&&a.indices[4][0]===3&&a.indices[4][1]===3",
+        r#"
+            let a = /(?<x>a)(?<last>(?<before>)\k<x>(?<after>))+\k<last>/d.exec('aaaa');
+            a[0] === 'aaaa' && a.groups.last === 'a' && a.groups.before === '' && a.groups.after === '' &&
+                a.indices.groups.last === a.indices[2] && a.indices[2][0] === 2 && a.indices[2][1] === 3 &&
+                a.indices.groups.before === a.indices[3] && a.indices[3][0] === 2 && a.indices[3][1] ===
+                2 && a.indices.groups.after === a.indices[4] && a.indices[4][0] === 3 && a.indices[4][
+                1] === 3
+        "#,
     );
     assert_true(
-        r"let a=/((?<x>a)(?<last>(?<before>)\k<x>(?<after>))+?)\1/d.exec('aaaaaa');a[0]==='aaaa'&&a[1]==='aa'&&a.groups.last==='a'&&a.indices.groups.last===a.indices[3]&&a.indices[3][0]===1&&a.indices.groups.before===a.indices[4]&&a.indices[4][0]===1&&a.indices.groups.after===a.indices[5]&&a.indices[5][0]===2",
+        r#"
+            let a = /((?<x>a)(?<last>(?<before>)\k<x>(?<after>))+?)\1/d.exec('aaaaaa');
+            a[0] === 'aaaa' && a[1] === 'aa' && a.groups.last === 'a' && a.indices.groups.last === a
+                .indices[3] && a.indices[3][0] === 1 && a.indices.groups.before === a.indices[4] && a
+                .indices[4][0] === 1 && a.indices.groups.after === a.indices[5] && a.indices[5][0] === 2
+        "#,
     );
     assert_true(
-        r"let a=/(?:(?<x>a)|(?<x>ab))(?<last>(?<before>)\k<x>(?<after>))+b/d.exec('qabababb');a.index===1&&a[0]==='abababb'&&a[1]===undefined&&a.groups.x==='ab'&&a.groups.last==='ab'&&a.indices.groups.x===a.indices[2]&&a.indices.groups.before===a.indices[4]&&a.indices[4][0]===5&&a.indices.groups.after===a.indices[5]&&a.indices[5][0]===7",
+        r#"
+            let a = /(?:(?<x>a)|(?<x>ab))(?<last>(?<before>)\k<x>(?<after>))+b/d.exec('qabababb');
+            a.index === 1 && a[0] === 'abababb' && a[1] === undefined && a.groups.x === 'ab' && a.groups
+                .last === 'ab' && a.indices.groups.x === a.indices[2] && a.indices.groups.before === a
+                .indices[4] && a.indices[4][0] === 5 && a.indices.groups.after === a.indices[5] && a
+                .indices[5][0] === 7
+        "#,
     );
     assert_true(
-        r"let a=/(?<last>(?<before>)\k<before>(?<after>))+/d.exec('q'),b=/(?<last>(?<before>)\k<before>(?<after>))*/d.exec('q');a.groups.last===''&&a.groups.before===''&&a.groups.after===''&&a.indices.groups.before===a.indices[2]&&a.indices[2][0]===0&&b.groups.last===undefined&&b.groups.before===undefined&&b.groups.after===undefined",
+        r#"
+            let a = /(?<last>(?<before>)\k<before>(?<after>))+/d.exec('q'),
+                b = /(?<last>(?<before>)\k<before>(?<after>))*/d.exec('q');
+            a.groups.last === '' && a.groups.before === '' && a.groups.after === '' && a.indices.groups
+                .before === a.indices[2] && a.indices[2][0] === 0 && b.groups.last === undefined && b
+                .groups.before === undefined && b.groups.after === undefined
+        "#,
     );
     assert_true(
-        r"let a=/(?<x>.)(?<last>(?<before>)\k<x>(?<after>))+/d.exec('\uD800\uD800\uD800');a[0].length===3&&a.groups.last.charCodeAt(0)===0xD800&&a.indices.groups.before===a.indices[3]&&a.indices[3][0]===2&&a.indices.groups.after===a.indices[4]&&a.indices[4][0]===3",
+        r#"
+            let a = /(?<x>.)(?<last>(?<before>)\k<x>(?<after>))+/d.exec('\uD800\uD800\uD800');
+            a[0].length === 3 && a.groups.last.charCodeAt(0) === 0xD800 && a.indices.groups.before === a
+                .indices[3] && a.indices[3][0] === 2 && a.indices.groups.after === a.indices[4] && a
+                .indices[4][0] === 3
+        "#,
     );
 }
 
 #[test]
 fn empty_sibling_consumers_and_zero_iterations_keep_original_sources() {
     assert_true(
-        r"let r=/(?<x>a)(?<last>(?<before>)\k<x>(?<after>))+/dg,a=[...'aaa aa'.matchAll(r)];a.length===2&&a[0][0]==='aaa'&&a[1][0]==='aa'&&a[0].groups.before===''&&a[0].indices.groups.before===a[0].indices[3]&&a[0].indices[3][0]===2&&r.lastIndex===0",
+        r#"
+            let r = /(?<x>a)(?<last>(?<before>)\k<x>(?<after>))+/dg,
+                a = [...'aaa aa'.matchAll(r)];
+            a.length === 2 && a[0][0] === 'aaa' && a[1][0] === 'aa' && a[0].groups.before === '' && a[0]
+                .indices.groups.before === a[0].indices[3] && a[0].indices[3][0] === 2 && r.lastIndex === 0
+        "#,
     );
     assert_true(
         r"'qaaaa'.replace(/(?<x>a)(?<last>(?<before>)\k<x>(?<after>))+/,'<$<last>>')==='q<a>'&&'qaaaa'.search(/(a)(()\1())+/)===1&&'qaaaaZ'.split(/(a)(()\1())+/).join(',')==='q,a,a,,,Z'",
     );
     assert_true(
-        r"let r=/(?<x>a)(?<last>(?<before>)\k<x>(?<after>))+/dy;r.lastIndex=1;let copy=new RegExp(r),a=r.exec('qaaa');a[0]==='aaa'&&a.indices[3][0]===3&&a.indices[4][0]===4&&r.lastIndex===4&&r.exec('qaaa')===null&&r.lastIndex===0&&copy.source===r.source&&copy.lastIndex===0",
+        r#"
+            let r = /(?<x>a)(?<last>(?<before>)\k<x>(?<after>))+/dy;
+            r.lastIndex = 1;
+            let copy = new RegExp(r),
+                a = r.exec('qaaa');
+            a[0] === 'aaa' && a.indices[3][0] === 3 && a.indices[4][0] === 4 && r.lastIndex === 4 && r
+                .exec('qaaa') === null && r.lastIndex === 0 && copy.source === r.source && copy
+                .lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let a=[...'q'.matchAll(/(?<last>(?<before>)\k<before>(?<after>))*/dg)];a.length===2&&a[0].groups.last===undefined&&a[0].groups.before===undefined&&a[0].groups.after===undefined&&a[1].index===1",
+        r#"
+            let a = [...'q'.matchAll(/(?<last>(?<before>)\k<before>(?<after>))*/dg)];
+            a.length === 2 && a[0].groups.last === undefined && a[0].groups.before === undefined && a[0]
+                .groups.after === undefined && a[1].index === 1
+        "#,
     );
 }
 

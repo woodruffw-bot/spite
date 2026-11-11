@@ -56,7 +56,11 @@ fn unicode_repeated_atom_shared_alternative_assertions_results_snapshot() {
 fn unicode_repeated_atom_shared_alternative_assertions_counts_and_scopes() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let m=/(\b(a|b))+/{mode}.exec('aaa');m[0]==='a'&&m[1]==='a'&&m[2]==='a'&&m.index===0&&/(a|b)+/{mode}.exec('aaa')[0]==='aaa'"
+            r#"
+                let m = /(\b(a|b))+/{mode}.exec('aaa');
+                m[0] === 'a' && m[1] === 'a' && m[2] === 'a' && m.index === 0 && /(a|b)+/{mode}.exec(
+                    'aaa')[0] === 'aaa'
+            "#
         ));
         assert_true(&format!(
             r"let m=/((a|b)\b)+/{mode}.exec('aaa');m[0]==='a'&&m[1]==='a'&&m[2]==='a'&&m.index===2"
@@ -78,19 +82,39 @@ fn unicode_repeated_atom_shared_alternative_assertions_counts_and_scopes() {
 #[test]
 fn unicode_repeated_atom_shared_alternative_assertions_fold_surrogates_and_names() {
     assert_true(
-        r"let m=/(?<whole>(\B(?<__proto__>ſ|K)\B)+)/dvi.exec('XSkB');m[0]==='Sk'&&m[1]==='Sk'&&m[2]==='k'&&m.groups.__proto__==='k'&&m.indices.groups.__proto__[0]===2&&m.indices.groups.__proto__[1]===3",
+        r#"
+            let m = /(?<whole>(\B(?<__proto__>ſ|K)\B)+)/dvi.exec('XSkB');
+            m[0] === 'Sk' && m[1] === 'Sk' && m[2] === 'k' && m.groups.__proto__ === 'k' && m.indices
+                .groups.__proto__[0] === 2 && m.indices.groups.__proto__[1] === 3
+        "#,
     );
     assert_true(
-        r"let m=/(?<whole>(\B(?<last>😀|a)\B)+)/dvg.exec('😀😀');m[0]==='😀😀'&&m.groups.last==='😀'&&m.indices.groups.last[0]===2&&m.indices.groups.last[1]===4",
+        r#"
+            let m = /(?<whole>(\B(?<last>😀|a)\B)+)/dvg.exec('😀😀');
+            m[0] === '😀😀' && m.groups.last === '😀' && m.indices.groups.last[0] === 2 && m.indices.groups
+                .last[1] === 4
+        "#,
     );
     assert_true(
-        r"let r=/(\B(😀|a)\B)+/duy;r.lastIndex=1;let m=r.exec('😀😀');m.index===0&&m[0]==='😀😀'&&m.indices[1][0]===2&&r.lastIndex===4",
+        r#"
+            let r = /(\B(😀|a)\B)+/duy;
+            r.lastIndex = 1;
+            let m = r.exec('😀😀');
+            m.index === 0 && m[0] === '😀😀' && m.indices[1][0] === 2 && r.lastIndex === 4
+        "#,
     );
     assert_true(
-        r"let m=/(\b(?<x>a|b)\b){0}/dv.exec('ab');m[0]===''&&m[1]===undefined&&m.groups.x===undefined&&m.indices[2]===undefined",
+        r#"
+            let m = /(\b(?<x>a|b)\b){0}/dv.exec('ab');
+            m[0] === '' && m[1] === undefined && m.groups.x === undefined && m.indices[2] === undefined
+        "#,
     );
     assert_true(
-        r"let m=/(\B(\uD800|\uDC00)\B)+/du.exec('!\uD800!');m[0]==='\uD800'&&m.indices[2][0]===1&&m.indices[2][1]===2&&/(\B(\uD83D|\uDE00)\B)+/u.exec('😀')===null",
+        r#"
+            let m = /(\B(\uD800|\uDC00)\B)+/du.exec('!\uD800!');
+            m[0] === '\uD800' && m.indices[2][0] === 1 && m.indices[2][1] === 2 &&
+                /(\B(\uD83D|\uDE00)\B)+/u.exec('😀') === null
+        "#,
     );
 }
 #[test]
@@ -103,19 +127,60 @@ fn unicode_repeated_atom_shared_alternative_assertions_string_consumers() {
         r"let a='ab ba'.split(/(\b(a|b)\B)+/u);a.length===7&&a.join('|')==='|a|a|b |b|b|a'",
     );
     assert_true(
-        r"let a=[...'ab ba'.matchAll(/((?<x>a|b)\b)+/dvg)];a.length===2&&a[0].index===1&&a[1].index===4&&a[1].groups.x==='a'&&a[1].indices.groups.x[0]===4",
+        r#"
+            let a = [...'ab ba'.matchAll(/((?<x>a|b)\b)+/dvg)];
+            a.length === 2 && a[0].index === 1 && a[1].index === 4 && a[1].groups.x === 'a' && a[1].indices
+                .groups.x[0] === 4
+        "#,
     );
 }
 #[test]
 fn unicode_repeated_atom_shared_alternative_assertions_coercions_and_last_index() {
     assert_true(
-        r"let log='',r=/((a|b)\b)+/vgy;r.lastIndex={valueOf(){log+='i';return 2}};let m=r.exec({toString(){log+='s';return 'Xab'}});log==='si'&&m.index===2&&r.lastIndex===3",
+        r#"
+            let log = '',
+                r = /((a|b)\b)+/vgy;
+            r.lastIndex = {
+                valueOf() {
+                    log += 'i';
+                    return 2
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    log += 's';
+                    return 'Xab'
+                }
+            });
+            log === 'si' && m.index === 2 && r.lastIndex === 3
+        "#,
     );
     assert_true(
-        r"let r=/((a|b)\b)+/ug;r.lastIndex=2;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('Xab')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===2",
+        r#"
+            let r = /((a|b)\b)+/ug;
+            r.lastIndex = 2;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('Xab')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let r=/((a|b)\b)+/v;Object.defineProperty(r,'lastIndex',{value:100,writable:false});let m=r.exec('Xab');m.index===2&&r.lastIndex===100",
+        r#"
+            let r = /((a|b)\b)+/v;
+            Object.defineProperty(r, 'lastIndex', {
+                value: 100,
+                writable: false
+            });
+            let m = r.exec('Xab');
+            m.index === 2 && r.lastIndex === 100
+        "#,
     );
 }
 

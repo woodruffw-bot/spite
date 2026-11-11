@@ -61,7 +61,11 @@ fn unicode_noncapturing_branch_nested_assertions_counts_and_branch_scopes() {
             r"let m=/((?:a)|(?:b))+/{mode}.exec('abba');m[0]==='abba'&&m[1]==='a'&&m.index===0"
         ));
         assert_true(&format!(
-            r"let m=/((?:\b(?:\ba))|(?:(?:b\b)\b))+/{mode}.exec('aaa bbb');m[0]==='a'&&m[1]==='a'&&/((?:\b(?:\ba))|(?:(?:b\b)\b)){{2}}/{mode}.exec('aaa bbb')===null"
+            r#"
+                let m = /((?:\b(?:\ba))|(?:(?:b\b)\b))+/{mode}.exec('aaa bbb');
+                m[0] === 'a' && m[1] === 'a' && /((?:\b(?:\ba))|(?:(?:b\b)\b)){{2}}/{mode}.exec(
+                    'aaa bbb') === null
+            "#
         ));
         assert_true(&format!(
             r"let m=/((?:^(?:^a))|(?:(?:b$)$))+/{mode}m.exec('aa\nbb');m[0]==='a'&&m[1]==='a'&&m.index===0"
@@ -70,7 +74,10 @@ fn unicode_noncapturing_branch_nested_assertions_counts_and_branch_scopes() {
             r"let m=/(((?:a)|(?:b)))*?/{mode}.exec('ab');m[0]===''&&m[1]===undefined&&m[2]===undefined"
         ));
         assert_true(&format!(
-            r"let m=/((?:a)|(?:b)){{2,3}}/{mode}.exec('abba');m[0]==='abb'&&m[1]==='b'&&/((?:a)|(?:b)){{2,3}}?/{mode}.exec('abba')[0]==='ab'"
+            r#"
+                let m = /((?:a)|(?:b)){{2,3}}/{mode}.exec('abba');
+                m[0] === 'abb' && m[1] === 'b' && /((?:a)|(?:b)){{2,3}}?/{mode}.exec('abba')[0] === 'ab'
+            "#
         ));
         assert_true(&format!(
             r"let m=/((?:[a\|])|(?:b))+/{mode}.exec('a|b');m[0]==='a|b'&&m[1]==='b'"
@@ -87,17 +94,31 @@ fn unicode_noncapturing_branch_nested_assertions_counts_and_branch_scopes() {
 #[test]
 fn unicode_noncapturing_branch_nested_assertions_contradictions_and_empty_counts() {
     assert_true(
-        r"let m=/(\b\b(?:\$)|b)+/du.exec('a$');m.index===1&&m[0]==='$'&&m[1]==='$'&&m.indices[1][0]===1&&m.indices[1][1]===2",
+        r#"
+            let m = /(\b\b(?:\$)|b)+/du.exec('a$');
+            m.index === 1 && m[0] === '$' && m[1] === '$' && m.indices[1][0] === 1 && m.indices[1][1] === 2
+        "#,
     );
     assert_true(
-        r"let m=/((?:\$)\b\b|b)+/dv.exec('$a');m.index===0&&m[0]==='$'&&m[1]==='$'&&m.indices[1][0]===0&&m.indices[1][1]===1",
+        r#"
+            let m = /((?:\$)\b\b|b)+/dv.exec('$a');
+            m.index === 0 && m[0] === '$' && m[1] === '$' && m.indices[1][0] === 0 && m.indices[1][1] === 1
+        "#,
     );
     assert_true(r"let r=/((?:\b(?:\Ba))|b)+/v;r.exec('a')===null&&r.exec('b')[0]==='b'");
     assert_true(r"let r=/((?:(?:a\b)\B)|b)+/u;r.exec('a')===null&&r.exec('b')[0]==='b'");
     assert_true(
-        r"let m=/((?:\b(?:\Ba))|(?:\b(?:\Bb)))*/dv.exec('ab');m[0]===''&&m[1]===undefined&&m.indices[1]===undefined&&/((?:\b(?:\Ba))|(?:\b(?:\Bb)))+/v.exec('ab')===null",
+        r#"
+            let m = /((?:\b(?:\Ba))|(?:\b(?:\Bb)))*/dv.exec('ab');
+            m[0] === '' && m[1] === undefined && m.indices[1] === undefined &&
+                /((?:\b(?:\Ba))|(?:\b(?:\Bb)))+/v.exec('ab') === null
+        "#,
     );
     assert_true(
-        r"let m=/(?<whole>((?:\b(?:\Ba))|(?:(?:b\b)\B))*)/du.exec('');m[0]===''&&m[1]===''&&m.groups.whole===''&&m[2]===undefined&&m.indices[1][0]===0&&m.indices[1][1]===0&&m.indices[2]===undefined",
+        r#"
+            let m = /(?<whole>((?:\b(?:\Ba))|(?:(?:b\b)\B))*)/du.exec('');
+            m[0] === '' && m[1] === '' && m.groups.whole === '' && m[2] === undefined && m.indices[1][
+                0] === 0 && m.indices[1][1] === 0 && m.indices[2] === undefined
+        "#,
     );
 }

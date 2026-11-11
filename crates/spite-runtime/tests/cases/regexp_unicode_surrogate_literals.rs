@@ -39,15 +39,37 @@ fn unicode_surrogate_literal_results_snapshot() {
 #[test]
 fn unicode_surrogate_literal_consumers_preserve_complete_input_boundaries() {
     assert_true(
-        r"let ok=true;for(let f of ['u','v'])for(let n=0xD800;n<=0xDFFF;n++){let c=String.fromCharCode(n),r=new RegExp(c,f);if(r.source!==c||r.exec(c)[0]!==c)ok=false;if(n<0xDC00&&r.exec(c+'\uDC00')!==null)ok=false;if(n>=0xDC00&&r.exec('\uD800'+c)!==null)ok=false;}ok",
+        r#"
+            let ok = true;
+            for (let f of ['u', 'v'])
+                for (let n = 0xD800; n <= 0xDFFF; n++) {
+                    let c = String.fromCharCode(n),
+                        r = new RegExp(c, f);
+                    if (r.source !== c || r.exec(c)[0] !== c) ok = false;
+                    if (n < 0xDC00 && r.exec(c + '\uDC00') !== null) ok = false;
+                    if (n >= 0xDC00 && r.exec('\uD800' + c) !== null) ok = false;
+                }
+            ok
+        "#,
     );
     assert_true(r"'😀\uDE00a'.split(/(\uDE00)/u).join('|')==='😀|\uDE00|a'");
     assert_true(r"'😀\uDE00😀\uDE00'.match(/\uDE00/vg).length===2");
     assert_true(
-        r"let a=[...'😀\uDE00😀\uDE00'.matchAll(/(?<x>\uDE00)/dug)];a.length===2&&a[0].index===2&&a[1].index===5&&a[0].groups.x==='\uDE00'&&a[0].indices.groups.x===a[0].indices[1]",
+        r#"
+            let a = [...'😀\uDE00😀\uDE00'.matchAll(/(?<x>\uDE00)/dug)];
+            a.length === 2 && a[0].index === 2 && a[1].index === 5 && a[0].groups.x === '\uDE00' && a[0]
+                .indices.groups.x === a[0].indices[1]
+        "#,
     );
     assert_true(
-        r"let seen=[];let s='😀\uDE00😀\uDE00'.replace(/(\uDE00)/vg,(m,a,i)=>{seen.push(i);return '_'});s==='😀_😀_'&&seen.join(',')==='2,5'",
+        r#"
+            let seen = [];
+            let s = '😀\uDE00😀\uDE00'.replace(/(\uDE00)/vg, (m, a, i) => {
+                seen.push(i);
+                return '_'
+            });
+            s === '😀_😀_' && seen.join(',') === '2,5'
+        "#,
     );
     assert_true(
         r"let r=/\uD83D/vg;r.lastIndex=1;let m=r.exec('😀\uD83D');m.index===2&&m[0]==='\uD83D'&&r.lastIndex===3",
@@ -55,22 +77,84 @@ fn unicode_surrogate_literal_consumers_preserve_complete_input_boundaries() {
     assert_true(r"let r=/\uDE00/uy;r.lastIndex=1;r.exec('😀')===null&&r.lastIndex===0");
     assert_true(r"let r=/\uDE00/vg;r.lastIndex=1;'😀\uDE00'.search(r)===2&&r.lastIndex===1");
     assert_true(
-        r"let r=new RegExp('(?<x>\\u{D800})','u'),c=new RegExp(r);c.source===r.source&&c.flags==='u'&&c.exec('\uD800').groups.x==='\uD800'",
+        r#"
+            let r = new RegExp('(?<x>\\u{D800})', 'u'),
+                c = new RegExp(r);
+            c.source === r.source && c.flags === 'u' && c.exec('\uD800').groups.x === '\uD800'
+        "#,
     );
 }
 #[test]
 fn unicode_surrogate_literal_coercions_and_strict_writes() {
     assert_true(
-        r"let t='',r=/(?<x>\uDE00)/dvg;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀\uDE00'}});t==='si'&&m.index===2&&m[0]==='\uDE00'&&m.indices.groups.x===m.indices[1]&&r.lastIndex===3",
+        r#"
+            let t = '',
+                r = /(?<x>\uDE00)/dvg;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 1
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return '😀\uDE00'
+                }
+            });
+            t === 'si' && m.index === 2 && m[0] === '\uDE00' && m.indices.groups.x === m.indices[1] && r
+                .lastIndex === 3
+        "#,
     );
     assert_true(
-        r"let r=/\uDE00/uy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('a\uDE00')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /\uDE00/uy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('a\uDE00')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
     assert_true(
-        r"let r=/\uDE00/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /\uDE00/vy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
     assert_true(
-        r"let r=/\uD800/ug;r.lastIndex=1;let mark={},caught=false;try{r.exec({toString(){throw mark}})}catch(e){caught=e===mark}caught&&r.lastIndex===1",
+        r#"
+            let r = /\uD800/ug;
+            r.lastIndex = 1;
+            let mark = {},
+                caught = false;
+            try {
+                r.exec({
+                    toString() {
+                        throw mark
+                    }
+                })
+            } catch (e) {
+                caught = e === mark
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 

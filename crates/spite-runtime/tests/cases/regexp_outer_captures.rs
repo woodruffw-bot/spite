@@ -7,13 +7,27 @@ use crate::common::assert_true;
 #[test]
 fn whole_match_captures_precede_inner_repetition_and_suffix_captures() {
     assert_true(
-        "let a=/(a+b)/d.exec('xaaab'),b=/(((a)+(b)))/d.exec('aaab');a[1]==='aaab'&&a.indices[1][0]===1&&a.indices[1][1]===5&&b.length===5&&b[1]==='aaab'&&b[2]==='aaab'&&b[3]==='a'&&b[4]==='b'&&b.indices[3][0]===2&&b.indices[4][0]===3",
+        r#"
+            let a = /(a+b)/d.exec('xaaab'),
+                b = /(((a)+(b)))/d.exec('aaab');
+            a[1] === 'aaab' && a.indices[1][0] === 1 && a.indices[1][1] === 5 && b.length === 5 && b[1] ===
+                'aaab' && b[2] === 'aaab' && b[3] === 'a' && b[4] === 'b' && b.indices[3][0] === 2 && b
+                .indices[4][0] === 3
+        "#,
     );
     assert_true(
-        "let a=/((?:a+?aa))/.exec('aaaa'),b=/(?:(a+b))/.exec('aaab');a[1]==='aaa'&&b[1]==='aaab'&&/((a)+b)/.exec('aaab')[2]==='a'",
+        r#"
+            let a = /((?:a+?aa))/.exec('aaaa'),
+                b = /(?:(a+b))/.exec('aaab');
+            a[1] === 'aaa' && b[1] === 'aaab' && /((a)+b)/.exec('aaab')[2] === 'a'
+        "#,
     );
     assert_true(
-        r"let m=/(^((a)+)(b)$)/md.exec('x\naab\ny');m.index===2&&m[1]==='aab'&&m[2]==='aa'&&m[3]==='a'&&m[4]==='b'&&m.indices[1][0]===2&&m.indices[4][0]===4",
+        r#"
+            let m = /(^((a)+)(b)$)/md.exec('x\naab\ny');
+            m.index === 2 && m[1] === 'aab' && m[2] === 'aa' && m[3] === 'a' && m[4] === 'b' && m.indices[
+                1][0] === 2 && m.indices[4][0] === 4
+        "#,
     );
 }
 
@@ -33,10 +47,20 @@ fn choices_preserve_source_order_and_own_undefined_inner_slots() {
 #[test]
 fn zero_repetitions_empty_groups_and_final_iterations_remain_distinct() {
     assert_true(
-        "let a=/((a)*())/d.exec(''),b=/((a*)())/d.exec('');a[1]===''&&a[2]===undefined&&a[3]===''&&a.indices[1][1]===0&&a.indices[2]===undefined&&b[1]===''&&b[2]===''&&b[3]===''",
+        r#"
+            let a = /((a)*())/d.exec(''),
+                b = /((a*)())/d.exec('');
+            a[1] === '' && a[2] === undefined && a[3] === '' && a.indices[1][1] === 0 && a.indices[2] ===
+                undefined && b[1] === '' && b[2] === '' && b[3] === ''
+        "#,
     );
     assert_true(
-        "let a=/((a)*)/d.exec('aaa'),b=/(a)*/d.exec('aaa');a[1]==='aaa'&&a[2]==='a'&&a.indices[2][0]===2&&b[1]==='a'&&b.indices[1][0]===2&&/((a)*)/.exec('')[2]===undefined",
+        r#"
+            let a = /((a)*)/d.exec('aaa'),
+                b = /(a)*/d.exec('aaa');
+            a[1] === 'aaa' && a[2] === 'a' && a.indices[2][0] === 2 && b[1] === 'a' && b.indices[1][0] ===
+                2 && /((a)*)/.exec('')[2] === undefined
+        "#,
     );
     assert_true(
         "let a=/((?:))/.exec('x'),b=/((a)*?())/.exec('aaa');a[1]===''&&b[1]===''&&b[2]===undefined&&b[3]===''",
@@ -46,13 +70,37 @@ fn zero_repetitions_empty_groups_and_final_iterations_remain_distinct() {
 #[test]
 fn global_sticky_state_and_strict_lastindex_writes_preserve_complete_ranges() {
     assert_true(
-        "let r=/(a+b)/g,a=r.exec('aab xaab'),b=r.exec('aab xaab');a[1]==='aab'&&b.index===5&&b[1]==='aab'&&r.lastIndex===8&&r.exec('aab xaab')===null&&r.lastIndex===0",
+        r#"
+            let r = /(a+b)/g,
+                a = r.exec('aab xaab'),
+                b = r.exec('aab xaab');
+            a[1] === 'aab' && b.index === 5 && b[1] === 'aab' && r.lastIndex === 8 && r.exec(
+                'aab xaab') === null && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        "let r=/((a)+(b))/y;r.lastIndex=1;let m=r.exec('xaab');m.index===1&&m[1]==='aab'&&m[2]==='a'&&m[3]==='b'&&r.lastIndex===4&&r.exec('xaab')===null&&r.lastIndex===0",
+        r#"
+            let r = /((a)+(b))/y;
+            r.lastIndex = 1;
+            let m = r.exec('xaab');
+            m.index === 1 && m[1] === 'aab' && m[2] === 'a' && m[3] === 'b' && r.lastIndex === 4 && r.exec(
+                'xaab') === null && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        "let r=/(a+b)/g;Object.defineProperty(r,'lastIndex',{writable:false});let failed=false;try{r.exec('aab')}catch(e){failed=e instanceof TypeError}failed",
+        r#"
+            let r = /(a+b)/g;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let failed = false;
+            try {
+                r.exec('aab')
+            } catch (e) {
+                failed = e instanceof TypeError
+            }
+            failed
+        "#,
     );
 }
 
@@ -76,13 +124,37 @@ fn generic_consumers_callbacks_and_intrinsic_arrays_share_capture_layout() {
         "'aaab'.replace(/((a)+(b))/,'$1-$2-$3')==='aaab-a-b'&&'aabxaab'.split(/((a)+(b))/).join(',')===',aab,a,b,x,aab,a,b,'",
     );
     assert_true(
-        "let seen;let s='aaab'.replace(/((a)+(b))/,(whole,outer,a,b,index,input)=>{seen=[whole,outer,a,b,index,input];return 'x'});s==='x'&&seen.join(',')==='aaab,aaab,a,b,0,aaab'",
+        r#"
+            let seen;
+            let s = 'aaab'.replace(/((a)+(b))/, (whole, outer, a, b, index, input) => {
+                seen = [whole, outer, a, b, index, input];
+                return 'x'
+            });
+            s === 'x' && seen.join(',') === 'aaab,aaab,a,b,0,aaab'
+        "#,
     );
     assert_true(
-        "let r=/((a)+(b))/dg,m=[...'aaab aab'.matchAll(r)];m.length===2&&m[1][1]==='aab'&&m[1][3]==='b'&&m[1].indices[3][0]===7&&r.lastIndex===0&&'a'.match(/(a*)/g).length===2",
+        r#"
+            let r = /((a)+(b))/dg,
+                m = [...'aaab aab'.matchAll(r)];
+            m.length === 2 && m[1][1] === 'aab' && m[1][3] === 'b' && m[1].indices[3][0] === 7 && r
+                .lastIndex === 0 && 'a'.match(/(a*)/g).length === 2
+        "#,
     );
     assert_true(
-        "let calls=0;Object.defineProperty(Array.prototype,'1',{set(){calls++},configurable:true});let m=/((x)|(a)+(b))/d.exec('aaab'),p=Object.getOwnPropertyDescriptor(m,'1');calls===0&&m[1]==='aaab'&&m[2]===undefined&&m.indices[2]===undefined&&Object.hasOwn(m,'2')&&p.writable&&p.enumerable&&p.configurable",
+        r#"
+            let calls = 0;
+            Object.defineProperty(Array.prototype, '1', {
+                set() {
+                    calls++
+                },
+                configurable: true
+            });
+            let m = /((x)|(a)+(b))/d.exec('aaab'),
+                p = Object.getOwnPropertyDescriptor(m, '1');
+            calls === 0 && m[1] === 'aaab' && m[2] === undefined && m.indices[2] === undefined && Object
+                .hasOwn(m, '2') && p.writable && p.enumerable && p.configurable
+        "#,
     );
 }
 

@@ -87,21 +87,53 @@ fn empty_member_root_layouts_distinguish_defined_zero_width_class_captures() {
                 let named = layout != 0;
                 assert_true(&format!(
                     r#"
-                var r=new RegExp({pattern:?},'dvgy');r.lastIndex=1;var m=r.exec({text:?}),ok=true;
-                if({named}){{var keys=Object.keys(m.groups),characters='{characters}'.split(','),before='{before}'.split(','),after='{after}'.split(','),empty='{empties}'.split(','),never='{never}'.split(',');
-                    for(var name of keys){{var slot=keys.indexOf(name)+1,expected=undefined,from=-1,to=-1;
-                        if({class_selected}&&characters.indexOf(name)!==-1){{expected={whole:?};from=1;to={end}}}
-                        if({class_selected}&&before.indexOf(name)!==-1){{expected='';from=1;to=1}}
-                        if({class_selected}&&after.indexOf(name)!==-1){{expected='';from={end};to={end}}}
-                        if(!{class_selected}&&empty.indexOf(name)!==-1){{expected='';from=1;to=1}}
-                        if(never.indexOf(name)!==-1)expected=undefined;
-                        ok=ok&&m[slot]===expected&&m.groups[name]===expected&&m.indices.groups[name]===m.indices[slot]&&Object.hasOwn(m.indices.groups,name);
-                        if(expected===undefined)ok=ok&&m.indices[slot]===undefined;
-                        else ok=ok&&m.indices[slot][0]===from&&m.indices[slot][1]===to;
-                    }}ok=ok&&m.length===keys.length+1;
-                }}else ok=ok&&m.length===1&&m.groups===undefined&&m.indices.groups===undefined;
-                ok&&m[0]==={whole:?}&&m.index===1&&m.indices[0][1]==={end}&&r.lastIndex==={end}&&r.source==={pattern:?}
-            "#
+                        var r = new RegExp({pattern:?}, 'dvgy');
+                        r.lastIndex = 1;
+                        var m = r.exec({text:?}),
+                            ok = true;
+                        if ({named}) {{
+                            var keys = Object.keys(m.groups),
+                                characters = '{characters}'.split(','),
+                                before = '{before}'.split(','),
+                                after = '{after}'.split(','),
+                                empty = '{empties}'.split(','),
+                                never = '{never}'.split(',');
+                            for (var name of keys) {{
+                                var slot = keys.indexOf(name) + 1,
+                                    expected = undefined,
+                                    from = -1,
+                                    to = -1;
+                                if ({class_selected} && characters.indexOf(name) !== -1) {{
+                                    expected = {whole:?};
+                                    from = 1;
+                                    to = {end}
+                                }}
+                                if ({class_selected} && before.indexOf(name) !== -1) {{
+                                    expected = '';
+                                    from = 1;
+                                    to = 1
+                                }}
+                                if ({class_selected} && after.indexOf(name) !== -1) {{
+                                    expected = '';
+                                    from = {end};
+                                    to = {end}
+                                }}
+                                if (!{class_selected} && empty.indexOf(name) !== -1) {{
+                                    expected = '';
+                                    from = 1;
+                                    to = 1
+                                }}
+                                if (never.indexOf(name) !== -1) expected = undefined;
+                                ok = ok && m[slot] === expected && m.groups[name] === expected && m.indices.groups[
+                                    name] === m.indices[slot] && Object.hasOwn(m.indices.groups, name);
+                                if (expected === undefined) ok = ok && m.indices[slot] === undefined;
+                                else ok = ok && m.indices[slot][0] === from && m.indices[slot][1] === to;
+                            }}
+                            ok = ok && m.length === keys.length + 1;
+                        }} else ok = ok && m.length === 1 && m.groups === undefined && m.indices.groups === undefined;
+                        ok && m[0] === {whole:?} && m.index === 1 && m.indices[0][1] === {end} && r
+                            .lastIndex === {end} && r.source === {pattern:?}
+                    "#
                 ));
             }
         }
@@ -111,41 +143,109 @@ fn empty_member_root_layouts_distinguish_defined_zero_width_class_captures() {
 #[test]
 fn empty_member_root_selection_keeps_class_identity_for_empty_and_longest_words() {
     assert_true(
-        r"var m=/(?<before>)(?<part>[\q{|a|ab}])(?<after>)|(?<empty>)/dv.exec('!');m[0]===''&&m.groups.part===''&&m.groups.before===''&&m.groups.after===''&&m.groups.empty===undefined&&m.indices.groups.part[0]===0&&m.indices.groups.part[1]===0&&m.indices.groups.after[0]===0",
+        r#"
+            var m = /(?<before>)(?<part>[\q{|a|ab}])(?<after>)|(?<empty>)/dv.exec('!');
+            m[0] === '' && m.groups.part === '' && m.groups.before === '' && m.groups.after === '' && m
+                .groups.empty === undefined && m.indices.groups.part[0] === 0 && m.indices.groups.part[
+                1] === 0 && m.indices.groups.after[0] === 0
+        "#,
     );
     assert_true(
-        r"var m=/(?<empty>)|(?<before>)(?<part>[\q{|a|ab}])(?<after>)/dv.exec('!');m[0]===''&&m.groups.empty===''&&m.groups.part===undefined&&m.groups.before===undefined&&m.groups.after===undefined&&m.indices.groups.empty[0]===0",
+        r#"
+            var m = /(?<empty>)|(?<before>)(?<part>[\q{|a|ab}])(?<after>)/dv.exec('!');
+            m[0] === '' && m.groups.empty === '' && m.groups.part === undefined && m.groups.before ===
+                undefined && m.groups.after === undefined && m.indices.groups.empty[0] === 0
+        "#,
     );
     assert_true(
-        r"var r=/(?<part>[\q{|😀|😀a}])|(?<empty>)/dvgy;r.lastIndex=1;var m=r.exec('😀a!');m[0]==='😀a'&&m.index===0&&m.groups.part==='😀a'&&m.groups.empty===undefined&&m.indices.groups.part[1]===3&&r.lastIndex===3",
+        r#"
+            var r = /(?<part>[\q{|😀|😀a}])|(?<empty>)/dvgy;
+            r.lastIndex = 1;
+            var m = r.exec('😀a!');
+            m[0] === '😀a' && m.index === 0 && m.groups.part === '😀a' && m.groups.empty === undefined && m
+                .indices.groups.part[1] === 3 && r.lastIndex === 3
+        "#,
     );
     assert_true(
-        r"var r=/(?<\u{1D49C}>[\q{|s|sa|k|ka}])|(?<empty>)/dvgi;var m=r.exec('ſaKa'),n=r.exec('ſaKa'),e=r.exec('ſaKa');m.groups.𝒜==='ſa'&&n.groups.𝒜==='Ka'&&e.groups.𝒜===''&&e.groups.empty===undefined&&e.indices.groups.𝒜[0]===4&&r.source.indexOf('1D49C')!==-1",
+        r#"
+            var r = /(?<\u{1D49C}>[\q{|s|sa|k|ka}])|(?<empty>)/dvgi;
+            var m = r.exec('ſaKa'),
+                n = r.exec('ſaKa'),
+                e = r.exec('ſaKa');
+            m.groups.𝒜 === 'ſa' && n.groups.𝒜 === 'Ka' && e.groups.𝒜 === '' && e.groups.empty ===
+                undefined && e.indices.groups.𝒜[0] === 4 && r.source.indexOf('1D49C') !== -1
+        "#,
     );
     assert_true(
-        r"var m=/(?<part>[\q{|\ud800|\ud800a}])|(?<empty>)/dv.exec('\ud800a!');m.groups.part==='\ud800a'&&m.groups.empty===undefined&&m.indices.groups.part[1]===2",
+        r#"
+            var m = /(?<part>[\q{|\ud800|\ud800a}])|(?<empty>)/dv.exec('\ud800a!');
+            m.groups.part === '\ud800a' && m.groups.empty === undefined && m.indices.groups.part[1] === 2
+        "#,
     );
     assert_true(
-        r"var r=/(?<part>[\q{}])|(?<empty>)/vg;Object.defineProperty(r,'lastIndex',{writable:false});var caught=false;try{r.exec('a')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            var r = /(?<part>[\q{}])|(?<empty>)/vg;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            var caught = false;
+            try {
+                r.exec('a')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
 }
 
 #[test]
 fn empty_member_root_consumers_preserve_defined_empty_captures_and_unicode_progress() {
     assert_true(
-        r"var r=/(?<before>)(?<part>[\q{|a|ab}])(?<after>)|(?<empty>)/dvg;var all=Array.from('abXa'.matchAll(r));all.length===4&&all.map(m=>m[0]).join('|')==='ab||a|'&&all.map(m=>m.groups.part).join('|')==='ab||a|'&&all.every(m=>m.groups.before===''&&m.groups.after===''&&m.groups.empty===undefined)&&all[1].indices.groups.part[0]===2&&all[1].indices.groups.part[1]===2&&r.lastIndex===0",
+        r#"
+            var r = /(?<before>)(?<part>[\q{|a|ab}])(?<after>)|(?<empty>)/dvg;
+            var all = Array.from('abXa'.matchAll(r));
+            all.length === 4 && all.map(m => m[0]).join('|') === 'ab||a|' && all.map(m => m.groups.part)
+                .join('|') === 'ab||a|' && all.every(m => m.groups.before === '' && m.groups.after ===
+                    '' && m.groups.empty === undefined) && all[1].indices.groups.part[0] === 2 && all[1]
+                .indices.groups.part[1] === 2 && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"var all=Array.from('😀a'.matchAll(/(?<part>[\q{}])|(?<empty>)/dvg));all.length===3&&all.map(m=>m.index).join(',')==='0,2,3'&&all.every(m=>m.groups.part===''&&m.groups.empty===undefined)",
+        r#"
+            var all = Array.from('😀a'.matchAll(/(?<part>[\q{}])|(?<empty>)/dvg));
+            all.length === 3 && all.map(m => m.index).join(',') === '0,2,3' && all.every(m => m.groups
+                .part === '' && m.groups.empty === undefined)
+        "#,
     );
     assert_true(
-        r"var all=Array.from('😀a'.matchAll(/(?<empty>)|(?<part>[\q{|😀|😀a}])/dvg));all.length===3&&all.map(m=>m.index).join(',')==='0,2,3'&&all.every(m=>m.groups.empty===''&&m.groups.part===undefined)",
+        r#"
+            var all = Array.from('😀a'.matchAll(/(?<empty>)|(?<part>[\q{|😀|😀a}])/dvg));
+            all.length === 3 && all.map(m => m.index).join(',') === '0,2,3' && all.every(m => m.groups
+                .empty === '' && m.groups.part === undefined)
+        "#,
     );
     assert_true(
-        r"var calls=0;var out='abXa'.replace(/(?<before>)(?<part>[\q{|a|ab}])(?<after>)|(?<empty>)/vg,function(whole,before,part,after,empty,offset,input,groups){calls++;return arguments.length===8&&whole===part&&before===''&&after===''&&empty===undefined&&groups.part===part&&input==='abXa'?'#':'bad'});out==='##X##'&&calls===4",
+        r#"
+            var calls = 0;
+            var out = 'abXa'.replace(/(?<before>)(?<part>[\q{|a|ab}])(?<after>)|(?<empty>)/vg, function(
+                whole, before, part, after, empty, offset, input, groups) {
+                calls++;
+                return arguments.length === 8 && whole === part && before === '' && after === '' &&
+                    empty === undefined && groups.part === part && input === 'abXa' ? '#' : 'bad'
+            });
+            out === '##X##' && calls === 4
+        "#,
     );
     assert_true(
-        r"var r=/(?<part>[\q{|a|ab}])|(?<empty>)/vg;r.lastIndex=9;var parts='abX'.split(r);'Xab'.search(r)===0&&r.lastIndex===9&&parts.length===4&&parts[0]===''&&parts[1]==='ab'&&parts[2]===undefined&&parts[3]==='X'&&'abXa'.match(r).join('|')==='ab||a|'&&'abXa'.replace(r,'<$<part>:$<empty>>')==='<ab:><:>X<a:><:>'",
+        r#"
+            var r = /(?<part>[\q{|a|ab}])|(?<empty>)/vg;
+            r.lastIndex = 9;
+            var parts = 'abX'.split(r);
+            'Xab'.search(r) === 0 && r.lastIndex === 9 && parts.length === 4 && parts[0] === '' && parts[
+                1] === 'ab' && parts[2] === undefined && parts[3] === 'X' && 'abXa'.match(r).join('|') ===
+                'ab||a|' && 'abXa'.replace(r, '<$<part>:$<empty>>') === '<ab:><:>X<a:><:>'
+        "#,
     );
     let mut realm = Realm::default();
     realm
@@ -154,7 +254,10 @@ fn empty_member_root_consumers_preserve_defined_empty_captures_and_unicode_progr
         )
         .unwrap();
     realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("m.groups.part===''&&m.groups.empty===undefined&&m.indices.groups.part[1]===0&&clone.exec('ab!').groups.part==='ab'&&r.lastIndex===0"),Ok(Value::Boolean(true)));
+    assert_eq!(realm.eval(r#"
+        m.groups.part === '' && m.groups.empty === undefined && m.indices.groups.part[1] === 0 && clone
+            .exec('ab!').groups.part === 'ab' && r.lastIndex === 0
+    "#),Ok(Value::Boolean(true)));
 }
 
 #[test]

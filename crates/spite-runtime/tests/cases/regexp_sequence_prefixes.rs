@@ -7,59 +7,127 @@ use crate::common::assert_true;
 #[test]
 fn set_prefixes_choose_earliest_candidates_before_repetition_lengths() {
     assert_true(
-        "let a=/[ab]a+a/.exec('baaaa'),b=/[ab]a+?a/.exec('baaaa');a.index===0&&a[0]==='baaaa'&&b.index===0&&b[0]==='baa'",
+        r#"
+            let a = /[ab]a+a/.exec('baaaa'),
+                b = /[ab]a+?a/.exec('baaaa');
+            a.index === 0 && a[0] === 'baaaa' && b.index === 0 && b[0] === 'baa'
+        "#,
     );
     assert_true(
-        "let a=/([ab][ab])([ab])*ab/d.exec('aabab'),b=/([ab][ab])([ab])*?ab/d.exec('aabab');a[0]==='aabab'&&a[1]==='aa'&&a[2]==='b'&&a.indices[2][0]===2&&b[0]==='aabab'&&b[2]==='b'",
+        r#"
+            let a = /([ab][ab])([ab])*ab/d.exec('aabab'),
+                b = /([ab][ab])([ab])*?ab/d.exec('aabab');
+            a[0] === 'aabab' && a[1] === 'aa' && a[2] === 'b' && a.indices[2][0] === 2 && b[0] ===
+                'aabab' && b[2] === 'b'
+        "#,
     );
     assert_true(
-        r"let m=/[ab]c{0,1}d/.exec('xacd');m.index===1&&m[0]==='acd'&&/([])a*/.exec('aa')===null&&/([^])a+/.exec('\naa')[1]==='\n'",
+        r#"
+            let m = /[ab]c{0,1}d/.exec('xacd');
+            m.index === 1 && m[0] === 'acd' && /([])a*/.exec('aa') === null && /([^])a+/.exec('\naa')[
+                1] === '\n'
+        "#,
     );
 }
 
 #[test]
 fn sequence_prefix_capture_slots_keep_body_suffix_and_empty_participation() {
     assert_true(
-        "let m=/()((a[bc]))()(d)+((e)())/d.exec('xabdde');m.index===1&&m.length===9&&m[1]===''&&m[2]==='ab'&&m[3]==='ab'&&m[4]===''&&m[5]==='d'&&m[6]==='e'&&m[7]==='e'&&m[8]===''&&m.indices[3][1]===3&&m.indices[5][0]===4&&m.indices[8][0]===6",
+        r#"
+            let m = /()((a[bc]))()(d)+((e)())/d.exec('xabdde');
+            m.index === 1 && m.length === 9 && m[1] === '' && m[2] === 'ab' && m[3] === 'ab' && m[4] ===
+                '' && m[5] === 'd' && m[6] === 'e' && m[7] === 'e' && m[8] === '' && m.indices[3][1] ===
+                3 && m.indices[5][0] === 4 && m.indices[8][0] === 6
+        "#,
     );
     assert_true(
-        "let a=/([ab])(c*)()/d.exec('a'),b=/([ab])(c)*()/d.exec('a');a[1]==='a'&&a[2]===''&&b[1]==='a'&&b[2]===undefined&&a.indices[2][0]===1&&Object.hasOwn(b.indices,'2')&&b[3]===''",
+        r#"
+            let a = /([ab])(c*)()/d.exec('a'),
+                b = /([ab])(c)*()/d.exec('a');
+            a[1] === 'a' && a[2] === '' && b[1] === 'a' && b[2] === undefined && a.indices[2][0] === 1 &&
+                Object.hasOwn(b.indices, '2') && b[3] === ''
+        "#,
     );
 }
 
 #[test]
 fn global_sticky_failures_and_strict_writes_use_whole_fixed_prefixes() {
     assert_true(
-        "let r=/([ab])(c)+/dg,a=r.exec('xac bbccc'),b=r.exec('xac bbccc');a.index===1&&a[1]==='a'&&b.index===5&&b[1]==='b'&&b[2]==='c'&&r.lastIndex===9&&r.exec('xac bbccc')===null&&r.lastIndex===0",
+        r#"
+            let r = /([ab])(c)+/dg,
+                a = r.exec('xac bbccc'),
+                b = r.exec('xac bbccc');
+            a.index === 1 && a[1] === 'a' && b.index === 5 && b[1] === 'b' && b[2] === 'c' && r
+                .lastIndex === 9 && r.exec('xac bbccc') === null && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        "let r=/([ab])c+/y;r.lastIndex=1;let m=r.exec('xacc');m.index===1&&m[1]==='a'&&r.lastIndex===4&&r.exec('xacc')===null&&r.lastIndex===0",
+        r#"
+            let r = /([ab])c+/y;
+            r.lastIndex = 1;
+            let m = r.exec('xacc');
+            m.index === 1 && m[1] === 'a' && r.lastIndex === 4 && r.exec('xacc') === null && r
+                .lastIndex === 0
+        "#,
     );
     assert_true(
-        "let r=/([ab])c+/g;Object.defineProperty(r,'lastIndex',{writable:false});let failed=false;try{r.exec('acc')}catch(e){failed=e instanceof TypeError}failed",
+        r#"
+            let r = /([ab])c+/g;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let failed = false;
+            try {
+                r.exec('acc')
+            } catch (e) {
+                failed = e instanceof TypeError
+            }
+            failed
+        "#,
     );
 }
 
 #[test]
 fn sequence_prefixes_compose_with_anchors_branches_and_whole_captures() {
     assert_true(
-        "let m=/([x])|([ab])(c)+(d)|([y])/d.exec('accd');m.length===6&&m[1]===undefined&&m[2]==='a'&&m[3]==='c'&&m[4]==='d'&&m[5]===undefined&&m.indices[3][0]===2",
+        r#"
+            let m = /([x])|([ab])(c)+(d)|([y])/d.exec('accd');
+            m.length === 6 && m[1] === undefined && m[2] === 'a' && m[3] === 'c' && m[4] === 'd' && m[
+                5] === undefined && m.indices[3][0] === 2
+        "#,
     );
     assert_true(
-        "let m=/^(([ab])(c)+())$/d.exec('acc');m[1]==='acc'&&m[2]==='a'&&m[3]==='c'&&m[4]===''&&m.indices[3][0]===2&&m.indices[4][0]===3",
+        r#"
+            let m = /^(([ab])(c)+())$/d.exec('acc');
+            m[1] === 'acc' && m[2] === 'a' && m[3] === 'c' && m[4] === '' && m.indices[3][0] === 2 && m
+                .indices[4][0] === 3
+        "#,
     );
     assert_true(
-        r"let r=/^([ab])(c)*?(cd)$/dmy;r.lastIndex=2;let m=r.exec('x\nacccd\ny');m.index===2&&m[1]==='a'&&m[2]==='c'&&m[3]==='cd'&&m.indices[2][0]===4&&m.indices[3][0]===5&&r.lastIndex===7",
+        r#"
+            let r = /^([ab])(c)*?(cd)$/dmy;
+            r.lastIndex = 2;
+            let m = r.exec('x\nacccd\ny');
+            m.index === 2 && m[1] === 'a' && m[2] === 'c' && m[3] === 'cd' && m.indices[2][0] === 4 && m
+                .indices[3][0] === 5 && r.lastIndex === 7
+        "#,
     );
 }
 
 #[test]
 fn prefix_sets_dot_flags_case_and_utf16_offsets_use_pinned_semantics() {
     assert_true(
-        r"let m=/(\d)(a)+()/d.exec('x1aa');m.index===1&&m[1]==='1'&&m[2]==='a'&&m.indices[1][1]===2&&m.indices[2][0]===3",
+        r#"
+            let m = /(\d)(a)+()/d.exec('x1aa');
+            m.index === 1 && m[1] === '1' && m[2] === 'a' && m.indices[1][1] === 2 && m.indices[2][0] === 3
+        "#,
     );
     assert_true(
-        "let a=/([µ])(a)+/di.exec('ΜAA'),b=/([^µ])(a)+/di.exec('ΜA');a[1]==='Μ'&&a[2]==='A'&&b===null&&/([ſ])a+/i.exec('saa')===null",
+        r#"
+            let a = /([µ])(a)+/di.exec('ΜAA'),
+                b = /([^µ])(a)+/di.exec('ΜA');
+            a[1] === 'Μ' && a[2] === 'A' && b === null && /([ſ])a+/i.exec('saa') === null
+        "#,
     );
     assert_true(
         r"let m=/([💩])(a)+/d.exec('💩aa');m.index===1&&m[1]==='\uDCA9'&&m.indices[1][0]===1&&m.indices[2][0]===3",
@@ -75,13 +143,35 @@ fn generic_consumers_callbacks_and_intrinsic_arrays_share_sequence_prefix_plans(
         "'accd'.replace(/([ab])(c)+(d)/,'$1-$2-$3')==='a-c-d'&&'accxacc'.split(/([ab])(c)+/).join(',')===',a,c,x,a,c,'",
     );
     assert_true(
-        "let seen;let s='accd'.replace(/([ab])(c)+(d)/,(whole,a,c,d,index,input)=>{seen=[whole,a,c,d,index,input];return 'z'});s==='z'&&seen.join(',')==='accd,a,c,d,0,accd'",
+        r#"
+            let seen;
+            let s = 'accd'.replace(/([ab])(c)+(d)/, (whole, a, c, d, index, input) => {
+                seen = [whole, a, c, d, index, input];
+                return 'z'
+            });
+            s === 'z' && seen.join(',') === 'accd,a,c,d,0,accd'
+        "#,
     );
     assert_true(
-        "let r=/([ab])(c)+/dg,m=[...'acc bc'.matchAll(r)];m.length===2&&m[1][1]==='b'&&m[1].indices[2][0]===5&&r.lastIndex===0",
+        r#"
+            let r = /([ab])(c)+/dg,
+                m = [...'acc bc'.matchAll(r)];
+            m.length === 2 && m[1][1] === 'b' && m[1].indices[2][0] === 5 && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        "let calls=0;Object.defineProperty(Array.prototype,'2',{set(){calls++},configurable:true});let m=/([ab])(c)*()/d.exec('a');calls===0&&m[1]==='a'&&m[2]===undefined&&Object.hasOwn(m,'2')&&Object.hasOwn(m.indices,'2')&&m[3]===''",
+        r#"
+            let calls = 0;
+            Object.defineProperty(Array.prototype, '2', {
+                set() {
+                    calls++
+                },
+                configurable: true
+            });
+            let m = /([ab])(c)*()/d.exec('a');
+            calls === 0 && m[1] === 'a' && m[2] === undefined && Object.hasOwn(m, '2') && Object.hasOwn(m
+                .indices, '2') && m[3] === ''
+        "#,
     );
 }
 

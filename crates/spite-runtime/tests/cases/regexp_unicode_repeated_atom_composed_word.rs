@@ -55,7 +55,10 @@ fn unicode_repeated_atom_composed_word_results_snapshot() {
 fn unicode_repeated_atom_composed_word_counts_and_scopes() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let m=/\b(\ba)+\B/{mode}.exec('aaa');m[0]==='a'&&m[1]==='a'&&m.index===0&&/\ba+\B/{mode}.exec('aaa')[0]==='aa'"
+            r#"
+                let m = /\b(\ba)+\B/{mode}.exec('aaa');
+                m[0] === 'a' && m[1] === 'a' && m.index === 0 && /\ba+\B/{mode}.exec('aaa')[0] === 'aa'
+            "#
         ));
         assert_true(&format!(
             r"let m=/\B(a\b)+\b/{mode}.exec('aaa');m[0]==='a'&&m[1]==='a'&&m.index===2"
@@ -70,23 +73,42 @@ fn unicode_repeated_atom_composed_word_counts_and_scopes() {
             r"let m=/\B(\Ba\B)+\B/{mode}.exec('BaaaB');m[0]==='aaa'&&m[1]==='a'&&m.index===1"
         ));
         assert_true(&format!(
-            r"let m=/\B(^\B.\B$)+\B/{mode}ms.exec('\r\n');m[0]==='\r\n'&&m[1]==='\n'&&/\B(^\B.\B$){{3}}\B/{mode}ms.exec('\r\n')===null"
+            r#"
+                let m = /\B(^\B.\B$)+\B/{mode}ms.exec('\r\n');
+                m[0] === '\r\n' && m[1] === '\n' && /\B(^\B.\B$){{3}}\B/{mode}ms.exec('\r\n') === null
+            "#
         ));
     }
 }
 #[test]
 fn unicode_repeated_atom_composed_word_fold_surrogates_and_names() {
     assert_true(
-        r"let m=/(?<whole>\b(?<__proto__>\b[ſK]\B)+\B)/dvi.exec('ſKB');m[0]==='ſ'&&m[1]==='ſ'&&m[2]==='ſ'&&m.groups.__proto__==='ſ'&&m.indices.groups.__proto__[0]===0&&m.indices.groups.__proto__[1]===1",
+        r#"
+            let m = /(?<whole>\b(?<__proto__>\b[ſK]\B)+\B)/dvi.exec('ſKB');
+            m[0] === 'ſ' && m[1] === 'ſ' && m[2] === 'ſ' && m.groups.__proto__ === 'ſ' && m.indices.groups
+                .__proto__[0] === 0 && m.indices.groups.__proto__[1] === 1
+        "#,
     );
     assert_true(
-        r"let m=/(?<whole>\B(?<last>\B😀\B)+\B)/dvg.exec('😀😀');m[0]==='😀😀'&&m.groups.last==='😀'&&m.indices.groups.last[0]===2&&m.indices.groups.last[1]===4",
+        r#"
+            let m = /(?<whole>\B(?<last>\B😀\B)+\B)/dvg.exec('😀😀');
+            m[0] === '😀😀' && m.groups.last === '😀' && m.indices.groups.last[0] === 2 && m.indices.groups
+                .last[1] === 4
+        "#,
     );
     assert_true(
-        r"let r=/\B(\B😀\B)+\B/duy;r.lastIndex=1;let m=r.exec('😀😀');m.index===0&&m[0]==='😀😀'&&m.indices[1][0]===2&&r.lastIndex===4",
+        r#"
+            let r = /\B(\B😀\B)+\B/duy;
+            r.lastIndex = 1;
+            let m = r.exec('😀😀');
+            m.index === 0 && m[0] === '😀😀' && m.indices[1][0] === 2 && r.lastIndex === 4
+        "#,
     );
     assert_true(
-        r"let m=/\b(?<x>\ba\b){0}\b/dv.exec('aa');m[0]===''&&m[1]===undefined&&m.groups.x===undefined&&m.indices[1]===undefined",
+        r#"
+            let m = /\b(?<x>\ba\b){0}\b/dv.exec('aa');
+            m[0] === '' && m[1] === undefined && m.groups.x === undefined && m.indices[1] === undefined
+        "#,
     );
 }
 #[test]
@@ -95,19 +117,60 @@ fn unicode_repeated_atom_composed_word_string_consumers() {
     assert_true(r"'aaa'.replace(/\B(a\b)+\b/v,'<$1>')==='aa<a>'&&'aaa'.search(/\B(a\b)+\b/v)===2");
     assert_true(r"let a='aa aa'.split(/\b(\ba)+\B/u);a.length===5&&a.join('|')==='|a|a |a|a'");
     assert_true(
-        r"let a=[...'aa aa'.matchAll(/\b(?<x>\ba)+\B/dvg)];a.length===2&&a[0].index===0&&a[1].index===3&&a[1].groups.x==='a'&&a[1].indices.groups.x[0]===3",
+        r#"
+            let a = [...'aa aa'.matchAll(/\b(?<x>\ba)+\B/dvg)];
+            a.length === 2 && a[0].index === 0 && a[1].index === 3 && a[1].groups.x === 'a' && a[1].indices
+                .groups.x[0] === 3
+        "#,
     );
 }
 #[test]
 fn unicode_repeated_atom_composed_word_coercions_and_last_index() {
     assert_true(
-        r"let log='',r=/\B(a\b)+\b/vgy;r.lastIndex={valueOf(){log+='i';return 2}};let m=r.exec({toString(){log+='s';return 'aaa'}});log==='si'&&m.index===2&&r.lastIndex===3",
+        r#"
+            let log = '',
+                r = /\B(a\b)+\b/vgy;
+            r.lastIndex = {
+                valueOf() {
+                    log += 'i';
+                    return 2
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    log += 's';
+                    return 'aaa'
+                }
+            });
+            log === 'si' && m.index === 2 && r.lastIndex === 3
+        "#,
     );
     assert_true(
-        r"let r=/\b(\ba)+\B/ug;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('aaa')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /\b(\ba)+\B/ug;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('aaa')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
     assert_true(
-        r"let r=/\B(a\b)+\b/v;Object.defineProperty(r,'lastIndex',{value:100,writable:false});let m=r.exec('aaa');m.index===2&&r.lastIndex===100",
+        r#"
+            let r = /\B(a\b)+\b/v;
+            Object.defineProperty(r, 'lastIndex', {
+                value: 100,
+                writable: false
+            });
+            let m = r.exec('aaa');
+            m.index === 2 && r.lastIndex === 100
+        "#,
     );
 }
 

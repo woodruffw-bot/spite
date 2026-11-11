@@ -7,13 +7,26 @@ use crate::common::assert_true;
 #[test]
 fn grouped_quantified_continuations_preserve_whole_and_inner_ranges() {
     assert_true(
-        "let m=/^((a)+(b))$/d.exec('aaab');m.length===4&&m[1]==='aaab'&&m[2]==='a'&&m[3]==='b'&&m.indices[1][1]===4&&m.indices[2][0]===2&&m.indices[3][0]===3&&/^(?:a+b)$/.exec('aaab')[0]==='aaab'",
+        r#"
+            let m = /^((a)+(b))$/d.exec('aaab');
+            m.length === 4 && m[1] === 'aaab' && m[2] === 'a' && m[3] === 'b' && m.indices[1][1] === 4 && m
+                .indices[2][0] === 2 && m.indices[3][0] === 3 && /^(?:a+b)$/.exec('aaab')[0] === 'aaab'
+        "#,
     );
     assert_true(
-        "let m=/^((a)+?(aa))$/d.exec('aaaa');m[1]==='aaaa'&&m[2]==='a'&&m[3]==='aa'&&m.indices[2][0]===1&&m.indices[3][0]===2&&/^(a+?aa)$/.exec('aaaa')[1]==='aaaa'",
+        r#"
+            let m = /^((a)+?(aa))$/d.exec('aaaa');
+            m[1] === 'aaaa' && m[2] === 'a' && m[3] === 'aa' && m.indices[2][0] === 1 && m.indices[3][
+                0] === 2 && /^(a+?aa)$/.exec('aaaa')[1] === 'aaaa'
+        "#,
     );
     assert_true(
-        "let a=/^(([ab])*?(ab))$/d.exec('abab'),b=/^(([ab])*?(ab))/.exec('abab');a[1]==='abab'&&a[2]==='b'&&a[3]==='ab'&&a.indices[3][0]===2&&b[1]==='ab'&&b[2]===undefined&&b[3]==='ab'",
+        r#"
+            let a = /^(([ab])*?(ab))$/d.exec('abab'),
+                b = /^(([ab])*?(ab))/.exec('abab');
+            a[1] === 'abab' && a[2] === 'b' && a[3] === 'ab' && a.indices[3][0] === 2 && b[1] === 'ab' &&
+                b[2] === undefined && b[3] === 'ab'
+        "#,
     );
 }
 
@@ -21,18 +34,31 @@ fn grouped_quantified_continuations_preserve_whole_and_inner_ranges() {
 fn multiline_boundaries_and_exact_input_ends_constrain_grouped_bodies() {
     for boundary in [r"\n", r"\r", r"\u2028", r"\u2029"] {
         assert_true(&format!(
-            "let m=/^((a)+(b))$/md.exec('x{boundary}aaab{boundary}y');m.index===2&&m[1]==='aaab'&&m[2]==='a'&&m[3]==='b'&&m.indices[3][0]===5"
+            r#"
+                let m = /^((a)+(b))$/md.exec('x{boundary}aaab{boundary}y');
+                m.index === 2 && m[1] === 'aaab' && m[2] === 'a' && m[3] === 'b' && m.indices[3][0] === 5
+            "#
         ));
     }
     assert_true(
-        r"let a=/^([ab]*?ab)$/m.exec('abab\nab'),b=/^((a)+(b))$/m.exec('x\r\naaab\r\ny');a[1]==='abab'&&b.index===3&&b[1]==='aaab'&&/^(a+b)$/.exec('aaab\n')===null&&/^(a+b)$/.exec('xaaab')===null",
+        r#"
+            let a = /^([ab]*?ab)$/m.exec('abab\nab'),
+                b = /^((a)+(b))$/m.exec('x\r\naaab\r\ny');
+            a[1] === 'abab' && b.index === 3 && b[1] === 'aaab' && /^(a+b)$/.exec('aaab\n') === null &&
+                /^(a+b)$/.exec('xaaab') === null
+        "#,
     );
 }
 
 #[test]
 fn empty_groups_and_zero_iterations_keep_capture_participation() {
     assert_true(
-        "let a=/^((a)*())$/d.exec(''),b=/^((a*)())$/d.exec('');a[1]===''&&a[2]===undefined&&a[3]===''&&a.indices[1][0]===0&&a.indices[2]===undefined&&b[1]===''&&b[2]===''&&b[3]===''&&b.indices[2][1]===0",
+        r#"
+            let a = /^((a)*())$/d.exec(''),
+                b = /^((a*)())$/d.exec('');
+            a[1] === '' && a[2] === undefined && a[3] === '' && a.indices[1][0] === 0 && a.indices[2] ===
+                undefined && b[1] === '' && b[2] === '' && b[3] === '' && b.indices[2][1] === 0
+        "#,
     );
     assert_true(
         "let a=/^((?:))$/.exec(''),b=/^((?:a)*x)$/.exec('x');a[1]===''&&b[1]==='x'&&/^((?:))$/.exec('x')===null",
@@ -42,21 +68,48 @@ fn empty_groups_and_zero_iterations_keep_capture_participation() {
 #[test]
 fn global_sticky_state_and_strict_writes_preserve_anchor_boundaries() {
     assert_true(
-        r"let r=/^(a+b)$/my;r.lastIndex=2;let m=r.exec('x\naaab\ny');m.index===2&&m[1]==='aaab'&&r.lastIndex===6&&r.exec('x\naaab\ny')===null&&r.lastIndex===0",
+        r#"
+            let r = /^(a+b)$/my;
+            r.lastIndex = 2;
+            let m = r.exec('x\naaab\ny');
+            m.index === 2 && m[1] === 'aaab' && r.lastIndex === 6 && r.exec('x\naaab\ny') === null && r
+                .lastIndex === 0
+        "#,
     );
     assert_true(r"let r=/^(a+b)$/my;r.lastIndex=3;r.exec('x\naaab\ny')===null&&r.lastIndex===0");
     assert_true(
-        "let r=/^(a+b)$/g;Object.defineProperty(r,'lastIndex',{writable:false});let failed=false;try{r.exec('aaab')}catch(e){failed=e instanceof TypeError}failed",
+        r#"
+            let r = /^(a+b)$/g;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let failed = false;
+            try {
+                r.exec('aaab')
+            } catch (e) {
+                failed = e instanceof TypeError
+            }
+            failed
+        "#,
     );
 }
 
 #[test]
 fn grouped_anchor_bodies_compose_with_branch_and_outer_capture_prefixes() {
     assert_true(
-        r"let m=/([x])|^(a+b)$|([y])/md.exec('z\naaab\ny');m.index===2&&m[1]===undefined&&m[2]==='aaab'&&m[3]===undefined&&m.indices[2][0]===2",
+        r#"
+            let m = /([x])|^(a+b)$|([y])/md.exec('z\naaab\ny');
+            m.index === 2 && m[1] === undefined && m[2] === 'aaab' && m[3] === undefined && m.indices[2][
+                0] === 2
+        "#,
     );
     assert_true(
-        "let m=/(^(a+b)$)|x/d.exec('aaab'),n=/(?:(^(a+b)$))/.exec('aaab');m[1]==='aaab'&&m[2]==='aaab'&&m.indices[2][1]===4&&n[1]==='aaab'&&n[2]==='aaab'",
+        r#"
+            let m = /(^(a+b)$)|x/d.exec('aaab'),
+                n = /(?:(^(a+b)$))/.exec('aaab');
+            m[1] === 'aaab' && m[2] === 'aaab' && m.indices[2][1] === 4 && n[1] === 'aaab' && n[2] ===
+                'aaab'
+        "#,
     );
 }
 

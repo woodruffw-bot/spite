@@ -8,11 +8,27 @@ use spite_runtime::{Realm, Value};
 fn required_empty_iterations_clear_character_groups_after_earlier_characters() {
     for class in [r"[\q{a|b}]", r"[\q{a|b|ab}&&\p{Any}]"] {
         assert_true(&format!(
-            "let a=/(?<whole>(?<each>(?<x>(?<y>{class}))|(?:(?:)*?)(?:)+?){{3}})/dv.exec('abX'),b=/(?<each>(?<part>{class})|(?:(?:)*?)(?:)+?){{2}}/dv.exec('abX'),c=/(?<each>(?:(?:)*?)(?:)+?|(?<part>{class})){{1}}/dv.exec('ab');a.length===5 && a[0]==='ab' && a.groups.whole==='ab' && a.groups.each==='' && a.groups.x===undefined && a.groups.y===undefined && a.indices[2][0]===2 && a.indices[3]===undefined && a.indices.groups.y===undefined && b.groups.each==='b' && b.groups.part==='b' && b.indices.groups.part[0]===1 && c.groups.each==='' && c.groups.part===undefined && c.indices[2]===undefined"
+            r#"
+                let a = /(?<whole>(?<each>(?<x>(?<y>{class}))|(?:(?:)*?)(?:)+?){{3}})/dv.exec('abX'),
+                    b = /(?<each>(?<part>{class})|(?:(?:)*?)(?:)+?){{2}}/dv.exec('abX'),
+                    c = /(?<each>(?:(?:)*?)(?:)+?|(?<part>{class})){{1}}/dv.exec('ab');
+                a.length === 5 && a[0] === 'ab' && a.groups.whole === 'ab' && a.groups.each === '' && a.groups
+                    .x === undefined && a.groups.y === undefined && a.indices[2][0] === 2 && a.indices[3] ===
+                    undefined && a.indices.groups.y === undefined && b.groups.each === 'b' && b.groups.part ===
+                    'b' && b.indices.groups.part[0] === 1 && c.groups.each === '' && c.groups.part ===
+                    undefined && c.indices[2] === undefined
+            "#
         ));
     }
     assert_true(
-        r"let a=/(?:(?<part>[\q{a|b}])|(?:(?:)*?)(?:)+?){3}/dv.exec('ab'),b=/(?:(?:(?:)*?)(?:)+?|(?<part>[\q{a|b}]))+?/dv.exec('ab'),c=/(?<each>(?<part>[\q{ab}&&a])|(?:(?:)*?)(?:)+?)*/dv.exec('ab');a[0]==='ab' && a.groups.part===undefined && a.indices[1]===undefined && b[0]==='' && b.groups.part===undefined && c[0]==='' && c.groups.each===undefined && c.groups.part===undefined",
+        r#"
+            let a = /(?:(?<part>[\q{a|b}])|(?:(?:)*?)(?:)+?){3}/dv.exec('ab'),
+                b = /(?:(?:(?:)*?)(?:)+?|(?<part>[\q{a|b}]))+?/dv.exec('ab'),
+                c = /(?<each>(?<part>[\q{ab}&&a])|(?:(?:)*?)(?:)+?)*/dv.exec('ab');
+            a[0] === 'ab' && a.groups.part === undefined && a.indices[1] === undefined && b[0] === '' && b
+                .groups.part === undefined && c[0] === '' && c.groups.each === undefined && c.groups
+                .part === undefined
+        "#,
     );
 }
 
@@ -20,43 +36,123 @@ fn required_empty_iterations_clear_character_groups_after_earlier_characters() {
 fn partial_quantified_capture_ranges_names_and_sticky_state_keep_original_utf16_values() {
     for class in [r"[\q{😀}]", r"[\q{😀|😀x}&&\p{Any}]"] {
         assert_true(&format!(
-            "let r=/(?<whole>(?<each>((?<part>{class}))|(?:(?:)*?)(?:)+?)+)/dvgy;r.lastIndex=2;let a=r.exec('A😀😀x'),s=/(?<whole>(?<each>((?<part>{class}))|(?:(?:)*?)(?:)+?){{3}})/dvgy;s.lastIndex=2;let b=s.exec('A😀😀x');a.index===1 && a[0]==='😀😀' && a.groups.each==='😀' && a.groups.part==='😀' && a.indices[3][0]===3 && a.indices.groups.part[1]===5 && r.lastIndex===5 && b.index===1 && b[0]==='😀😀' && b.groups.each==='' && b.groups.part===undefined && b[3]===undefined && b.indices[3]===undefined && b.indices.groups.part===undefined && b.indices.groups.each[0]===5 && s.lastIndex===5"
+            r#"
+                let r = /(?<whole>(?<each>((?<part>{class}))|(?:(?:)*?)(?:)+?)+)/dvgy;
+                r.lastIndex = 2;
+                let a = r.exec('A😀😀x'),
+                    s = /(?<whole>(?<each>((?<part>{class}))|(?:(?:)*?)(?:)+?){{3}})/dvgy;
+                s.lastIndex = 2;
+                let b = s.exec('A😀😀x');
+                a.index === 1 && a[0] === '😀😀' && a.groups.each === '😀' && a.groups.part === '😀' && a
+                    .indices[3][0] === 3 && a.indices.groups.part[1] === 5 && r.lastIndex === 5 && b.index ===
+                    1 && b[0] === '😀😀' && b.groups.each === '' && b.groups.part === undefined && b[3] ===
+                    undefined && b.indices[3] === undefined && b.indices.groups.part === undefined && b.indices
+                    .groups.each[0] === 5 && s.lastIndex === 5
+            "#
         ));
     }
     assert_true(
-        r"let source='(?<each>(?<\\u{1D49C}>[\\q{s|k}])|(?:(?:)*?)(?:)+?)+',r=new RegExp(source,'div'),m=r.exec('ſK');r.source===source && r.flags==='div' && m[0]==='ſK' && m.groups.each==='K' && m.groups['𝒜']==='K' && m.indices.groups['𝒜']===m.indices[2] && m.indices[2][0]===1 && m.indices[2][1]===2",
+        r#"
+            let source = '(?<each>(?<\\u{1D49C}>[\\q{s|k}])|(?:(?:)*?)(?:)+?)+',
+                r = new RegExp(source, 'div'),
+                m = r.exec('ſK');
+            r.source === source && r.flags === 'div' && m[0] === 'ſK' && m.groups.each === 'K' && m.groups[
+                    '𝒜'] === 'K' && m.indices.groups['𝒜'] === m.indices[2] && m.indices[2][0] === 1 && m
+                .indices[2][1] === 2
+        "#,
     );
     assert_true(
-        r"let m=/(?<each>((?<part>[\q{\uD800a|\uD800}&&\p{Any}]))|(?:(?:)*?)(?:)+?)+/dv.exec('\uD800\uD800a');m[0].length===2 && m.groups.part.charCodeAt(0)===0xd800 && m.indices.groups.part[0]===1 && m.indices[3][1]===2",
+        r#"
+            let m = /(?<each>((?<part>[\q{\uD800a|\uD800}&&\p{Any}]))|(?:(?:)*?)(?:)+?)+/dv.exec(
+                '\uD800\uD800a');
+            m[0].length === 2 && m.groups.part.charCodeAt(0) === 0xd800 && m.indices.groups.part[0] ===
+                1 && m.indices[3][1] === 2
+        "#,
     );
     assert_true(
-        r"let r=/(?:(?<part>[\q{ab}&&a])|(?:(?:)*?)(?:)+?)+/dvy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀')}catch(e){caught=e instanceof TypeError}caught && r.lastIndex===1",
+        r#"
+            let r = /(?:(?<part>[\q{ab}&&a])|(?:(?:)*?)(?:)+?)+/dvy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 
 #[test]
 fn partial_quantified_capture_consumers_callbacks_clones_and_collection_keep_undefined_slots() {
     assert_true(
-        r"let r=/(?<each>(?<part>[\q{a|b|ab}&&\p{Any}])|(?:(?:)*?)(?:)+?)+/dvg,a=[...'abXba'.matchAll(r)];a.length===4 && a.map(m=>m[0]).join('|')==='ab||ba|' && a[0].groups.each==='b' && a[0].groups.part==='b' && a[1].groups.each==='' && a[1].groups.part===undefined && a[1].indices[2]===undefined && a[2].groups.part==='a' && r.lastIndex===0 && 'abXba'.replace(r,'<$2:$<part>>')==='<b:b><:>X<a:a><:>'",
+        r#"
+            let r = /(?<each>(?<part>[\q{a|b|ab}&&\p{Any}])|(?:(?:)*?)(?:)+?)+/dvg,
+                a = [...'abXba'.matchAll(r)];
+            a.length === 4 && a.map(m => m[0]).join('|') === 'ab||ba|' && a[0].groups.each === 'b' && a[0]
+                .groups.part === 'b' && a[1].groups.each === '' && a[1].groups.part === undefined && a[1]
+                .indices[2] === undefined && a[2].groups.part === 'a' && r.lastIndex === 0 && 'abXba'
+                .replace(r, '<$2:$<part>>') === '<b:b><:>X<a:a><:>'
+        "#,
     );
     assert_true(
-        r"let seen=[],result='abX'.replace(/(?<each>(?<part>[\q{a|b}])|(?:(?:)*?)(?:)+?)+/vg,(m,each,part,at,input,groups)=>{seen.push([each,part,at,groups.part]);return '#'});result==='##X#' && seen.length===3 && seen[0][0]==='b' && seen[0][1]==='b' && seen[1][0]==='' && seen[1][1]===undefined && seen[1][2]===2 && seen[2][3]===undefined",
+        r#"
+            let seen = [],
+                result = 'abX'.replace(/(?<each>(?<part>[\q{a|b}])|(?:(?:)*?)(?:)+?)+/vg, (m, each, part,
+                    at, input, groups) => {
+                    seen.push([each, part, at, groups.part]);
+                    return '#'
+                });
+            result === '##X#' && seen.length === 3 && seen[0][0] === 'b' && seen[0][1] === 'b' && seen[1][
+                0] === '' && seen[1][1] === undefined && seen[1][2] === 2 && seen[2][3] === undefined
+        "#,
     );
     assert_true(
-        r"let r=/(?<each>(?<part>[\q{a|b}])|(?:(?:)*?)(?:)+?){3}/dvg,a=[...'abXba'.matchAll(r)];a.length===4 && a.every(m=>m.groups.each==='' && m.groups.part===undefined) && a[0].indices[1][0]===2 && 'abXba'.replace(r,'<$2>')==='<><>X<><>'",
+        r#"
+            let r = /(?<each>(?<part>[\q{a|b}])|(?:(?:)*?)(?:)+?){3}/dvg,
+                a = [...'abXba'.matchAll(r)];
+            a.length === 4 && a.every(m => m.groups.each === '' && m.groups.part === undefined) && a[0]
+                .indices[1][0] === 2 && 'abXba'.replace(r, '<$2>') === '<><>X<><>'
+        "#,
     );
     assert_true(
-        r"let r=/(?<each>(?<part>[\q{a|b}])|(?:(?:)*?)(?:)+?)+/iv;r.lastIndex=7;let c=new RegExp(r,'dvy'),m=c.exec('ABB');c.source===r.source && c.flags==='dvy' && c.lastIndex===0 && m[0]==='' && m.groups.each==='' && m.groups.part===undefined && r.exec('ABB').groups.part==='B' && r.lastIndex===7",
+        r#"
+            let r = /(?<each>(?<part>[\q{a|b}])|(?:(?:)*?)(?:)+?)+/iv;
+            r.lastIndex = 7;
+            let c = new RegExp(r, 'dvy'),
+                m = c.exec('ABB');
+            c.source === r.source && c.flags === 'dvy' && c.lastIndex === 0 && m[0] === '' && m.groups
+                .each === '' && m.groups.part === undefined && r.exec('ABB').groups.part === 'B' && r
+                .lastIndex === 7
+        "#,
     );
     assert_true(
-        r"let r=/(?<each>(?<part>[\q{a|b}])|(?:(?:)*?)(?:)+?)+/vg;r.lastIndex=9;'Xab'.search(r)===0 && r.lastIndex===9 && 'abXba'.match(r).join('|')==='ab||ba|' && r.lastIndex===0 && 'ab'.split(r).join('|')==='|b|b|'",
+        r#"
+            let r = /(?<each>(?<part>[\q{a|b}])|(?:(?:)*?)(?:)+?)+/vg;
+            r.lastIndex = 9;
+            'Xab'.search(r) === 0 && r.lastIndex === 9 && 'abXba'.match(r).join('|') === 'ab||ba|' && r
+                .lastIndex === 0 && 'ab'.split(r).join('|') === '|b|b|'
+        "#,
     );
     let mut realm = Realm::default();
     realm
         .eval(r"var r=/(?<each>(?<part>[\q{a|b}])|(?:(?:)*?)(?:)+?){3}/dvg;r.lastIndex=1")
         .unwrap();
     realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval(r"let m=r.exec('zabX');m[0]==='ab' && m.groups.each==='' && m.groups.part===undefined && m.indices[2]===undefined && r.lastIndex===3"),Ok(Value::Boolean(true)));
+    assert_eq!(
+        realm.eval(
+            r#"
+                let m = r.exec('zabX');
+                m[0] === 'ab' && m.groups.each === '' && m.groups.part === undefined && m.indices[2] ===
+                    undefined && r.lastIndex === 3
+            "#
+        ),
+        Ok(Value::Boolean(true))
+    );
 }
 
 #[test]

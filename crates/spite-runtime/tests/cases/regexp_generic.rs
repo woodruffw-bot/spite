@@ -115,13 +115,59 @@ fn tostring_orders_gets_and_string_hint_conversion_and_preserves_borrowed_source
 #[test]
 fn test_delegates_to_exec_after_argument_conversion_and_validates_its_result() {
     assert_true(
-        "let t='',r={get exec(){t+='e';return function(s){t+='c';return this===r && arguments.length===1 && s==='x'?{}:null;};}},s={[Symbol.toPrimitive](h){t+=h;return 'x';}};RegExp.prototype.test.call(r,s)===true && t==='stringec'",
+        r#"
+            let t = '',
+                r = {
+                    get exec() {
+                        t += 'e';
+                        return function(s) {
+                            t += 'c';
+                            return this === r && arguments.length === 1 && s === 'x' ? {} : null;
+                        };
+                    }
+                },
+                s = {
+                    [Symbol.toPrimitive](h) {
+                        t += h;
+                        return 'x';
+                    }
+                };
+            RegExp.prototype.test.call(r, s) === true && t === 'stringec'
+        "#,
     );
     assert_true(
-        "RegExp.prototype.test.call({exec(s){return s==='undefined'?null:{};}},undefined)===false && RegExp.prototype.test.call({exec(){return []; }},'')===true",
+        r#"
+            RegExp.prototype.test.call({
+                exec(s) {
+                    return s === 'undefined' ? null : {};
+                }
+            }, undefined) === false && RegExp.prototype.test.call({
+                exec() {
+                    return [];
+                }
+            }, '') === true
+        "#,
     );
     assert_true(
-        "let t='';try{RegExp.prototype.test.call({get exec(){t+='e';throw 8;}},{toString(){t+='s';throw 7;}});}catch(e){t+=e;}t==='s7'",
+        r#"
+            let t = '';
+            try {
+                RegExp.prototype.test.call({
+                    get exec() {
+                        t += 'e';
+                        throw 8;
+                    }
+                }, {
+                    toString() {
+                        t += 's';
+                        throw 7;
+                    }
+                });
+            } catch (e) {
+                t += e;
+            }
+            t === 's7'
+        "#,
     );
     for result in ["undefined", "true", "7", "'x'", "1n", "Symbol()"] {
         assert!(
@@ -145,7 +191,20 @@ fn test_delegates_to_exec_after_argument_conversion_and_validates_its_result() {
         })
     ));
     assert_true(
-        "let t='';try{RegExp.prototype.test.call(7,{toString(){t+='s';throw 9;}});}catch(e){t=e instanceof TypeError?'type':t;}t==='type'",
+        r#"
+            let t = '';
+            try {
+                RegExp.prototype.test.call(7, {
+                    toString() {
+                        t += 's';
+                        throw 9;
+                    }
+                });
+            } catch (e) {
+                t = e instanceof TypeError ? 'type' : t;
+            }
+            t === 'type'
+        "#,
     );
 }
 

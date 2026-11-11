@@ -85,23 +85,51 @@ fn asserted_single_string_class_layouts_keep_complete_and_point_ranges() {
                 let named = layout != 0;
                 assert_true(&format!(
                     r#"
-            var r=new RegExp({pattern:?},'dvgym');r.lastIndex=1;var m=r.exec({text:?}),ok=true;
-            if({matched}){{
-                if({named}){{var keys=Object.keys(m.groups),characters='{characters}'.split(','),before='{before}'.split(','),after='{after}'.split(','),never='{never}'.split(',');
-                    for(var name of keys){{var slot=keys.indexOf(name)+1,expected=undefined,from=-1,to=-1;
-                        if(characters.indexOf(name)!==-1){{expected={whole:?};from=1;to={end}}}
-                        if(before.indexOf(name)!==-1){{expected='';from=1;to=1}}
-                        if(after.indexOf(name)!==-1){{expected='';from={end};to={end}}}
-                        if(never.indexOf(name)!==-1)expected=undefined;
-                        ok=ok&&m[slot]===expected&&m.groups[name]===expected&&m.indices.groups[name]===m.indices[slot]&&Object.hasOwn(m.indices.groups,name);
-                        if(expected===undefined)ok=ok&&m.indices[slot]===undefined;
-                        else ok=ok&&m.indices[slot][0]===from&&m.indices[slot][1]===to;
-                    }}ok=ok&&m.length===keys.length+1;
-                }}else ok=ok&&m.length===1&&m.groups===undefined&&m.indices.groups===undefined;
-                ok=ok&&m[0]==={whole:?}&&m.index===1&&m.indices[0][0]===1&&m.indices[0][1]==={end}&&r.lastIndex==={end};
-            }}else ok=m===null&&r.lastIndex===0;
-            ok&&r.source==={pattern:?}
-            "#
+                        var r = new RegExp({pattern:?}, 'dvgym');
+                        r.lastIndex = 1;
+                        var m = r.exec({text:?}),
+                            ok = true;
+                        if ({matched}) {{
+                            if ({named}) {{
+                                var keys = Object.keys(m.groups),
+                                    characters = '{characters}'.split(','),
+                                    before = '{before}'.split(','),
+                                    after = '{after}'.split(','),
+                                    never = '{never}'.split(',');
+                                for (var name of keys) {{
+                                    var slot = keys.indexOf(name) + 1,
+                                        expected = undefined,
+                                        from = -1,
+                                        to = -1;
+                                    if (characters.indexOf(name) !== -1) {{
+                                        expected = {whole:?};
+                                        from = 1;
+                                        to = {end}
+                                    }}
+                                    if (before.indexOf(name) !== -1) {{
+                                        expected = '';
+                                        from = 1;
+                                        to = 1
+                                    }}
+                                    if (after.indexOf(name) !== -1) {{
+                                        expected = '';
+                                        from = {end};
+                                        to = {end}
+                                    }}
+                                    if (never.indexOf(name) !== -1) expected = undefined;
+                                    ok = ok && m[slot] === expected && m.groups[name] === expected && m.indices.groups[
+                                        name] === m.indices[slot] && Object.hasOwn(m.indices.groups, name);
+                                    if (expected === undefined) ok = ok && m.indices[slot] === undefined;
+                                    else ok = ok && m.indices[slot][0] === from && m.indices[slot][1] === to;
+                                }}
+                                ok = ok && m.length === keys.length + 1;
+                            }} else ok = ok && m.length === 1 && m.groups === undefined && m.indices.groups ===
+                                undefined;
+                            ok = ok && m[0] === {whole:?} && m.index === 1 && m.indices[0][0] === 1 && m.indices[0]
+                                [1] === {end} && r.lastIndex === {end};
+                        }} else ok = m === null && r.lastIndex === 0;
+                        ok && r.source === {pattern:?}
+                    "#
                 ));
             }
         }
@@ -110,28 +138,71 @@ fn asserted_single_string_class_layouts_keep_complete_and_point_ranges() {
 #[test]
 fn asserted_single_string_class_retries_shorter_words_and_rejected_empty_starts() {
     assert_true(
-        r"var m=/()([\q{a|ab}])()\B/dv.exec('ab!');m[0]==='a'&&m[1]===''&&m[2]==='a'&&m[3]===''&&m.indices[2][1]===1&&m.indices[3][0]===1",
+        r#"
+            var m = /()([\q{a|ab}])()\B/dv.exec('ab!');
+            m[0] === 'a' && m[1] === '' && m[2] === 'a' && m[3] === '' && m.indices[2][1] === 1 && m
+                .indices[3][0] === 1
+        "#,
     );
     assert_true(
-        r"var m=/()([\q{|ab}])()$/dv.exec('!ab');m[0]==='ab'&&m.index===1&&m[1]===''&&m[2]==='ab'&&m[3]===''&&m.indices[1][0]===1&&m.indices[3][0]===3",
+        r#"
+            var m = /()([\q{|ab}])()$/dv.exec('!ab');
+            m[0] === 'ab' && m.index === 1 && m[1] === '' && m[2] === 'ab' && m[3] === '' && m.indices[1][
+                0] === 1 && m.indices[3][0] === 3
+        "#,
     );
     assert_true(
-        r"var m=/()([\q{}])()$/dv.exec('!ab');m[0]===''&&m.index===3&&m[1]===''&&m[2]===''&&m[3]===''&&m.indices[2][0]===3",
+        r#"
+            var m = /()([\q{}])()$/dv.exec('!ab');
+            m[0] === '' && m.index === 3 && m[1] === '' && m[2] === '' && m[3] === '' && m.indices[2][
+                0] === 3
+        "#,
     );
     assert_true(
-        r"var r=/^()([\q{|ab}])()$/dvg;r.lastIndex=1;var n=r.exec('ab');var m=r.exec('ab');n===null&&m[0]==='ab'&&m.index===0&&r.lastIndex===2",
+        r#"
+            var r = /^()([\q{|ab}])()$/dvg;
+            r.lastIndex = 1;
+            var n = r.exec('ab');
+            var m = r.exec('ab');
+            n === null && m[0] === 'ab' && m.index === 0 && r.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"var m=/^()([\q{|ab}])()$/dvm.exec('!\r\nab\r\n');m[0]===''&&m.index===2&&m[1]===''&&m[2]===''&&m.indices[3][0]===2",
+        r#"
+            var m = /^()([\q{|ab}])()$/dvm.exec('!\r\nab\r\n');
+            m[0] === '' && m.index === 2 && m[1] === '' && m[2] === '' && m.indices[3][0] === 2
+        "#,
     );
     assert_true(
-        r"var r=/^()([\q{😀|😀a}])()$/dvgy;r.lastIndex=1;var m=r.exec('😀a');m[0]==='😀a'&&m.index===0&&m.indices[1][0]===0&&m.indices[3][0]===3&&r.lastIndex===3",
+        r#"
+            var r = /^()([\q{😀|😀a}])()$/dvgy;
+            r.lastIndex = 1;
+            var m = r.exec('😀a');
+            m[0] === '😀a' && m.index === 0 && m.indices[1][0] === 0 && m.indices[3][0] === 3 && r
+                .lastIndex === 3
+        "#,
     );
     assert_true(
-        r"var m=/\b(?<before>)(?<\u{1D49C}>[\q{s|sa|k|ka}])(?<after>)\b/dvi.exec('!ſa!');m.groups.𝒜==='ſa'&&m.index===1&&m.groups.before===''&&m.indices.groups.after[0]===3",
+        r#"
+            var m = /\b(?<before>)(?<\u{1D49C}>[\q{s|sa|k|ka}])(?<after>)\b/dvi.exec('!ſa!');
+            m.groups.𝒜 === 'ſa' && m.index === 1 && m.groups.before === '' && m.indices.groups.after[
+                0] === 3
+        "#,
     );
     assert_true(
-        r"var r=/()([\q{}])()$/vg;Object.defineProperty(r,'lastIndex',{writable:false});var caught=false;try{r.exec('!')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            var r = /()([\q{}])()$/vg;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            var caught = false;
+            try {
+                r.exec('!')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
     // Spec regression: failed Unicode search candidates never enter a pair.
     // V8's nonsticky \B search chooses the interior code unit here; control
@@ -140,39 +211,89 @@ fn asserted_single_string_class_retries_shorter_words_and_rejected_empty_starts(
     for (flags, expected) in [
         (
             "dvg",
-            "m!==null&&m.index===5&&m[0]===''&&m[1]===''&&m.groups.part===''&&m[3]===''&&m.indices.groups.part[0]===5&&m.indices[3][0]===5&&r.lastIndex===5",
+            r#"
+                m !== null && m.index === 5 && m[0] === '' && m[1] === '' && m.groups.part === '' && m[3] ===
+                    '' && m.indices.groups.part[0] === 5 && m.indices[3][0] === 5 && r.lastIndex === 5
+            "#,
         ),
         ("dvgy", "m===null&&r.lastIndex===0"),
     ] {
         assert_true(&format!(
-            "var r=new RegExp({pattern:?},'{flags}'),ok=true;for(var start of [2,3,4]){{r.lastIndex=start;var m=r.exec('😀a😀!');ok=ok&&({expected})}}ok"
+            r#"
+                var r = new RegExp({pattern:?}, '{flags}'),
+                    ok = true;
+                for (var start of [2, 3, 4]) {{
+                    r.lastIndex = start;
+                    var m = r.exec('😀a😀!');
+                    ok = ok && ({expected})
+                }}
+                ok
+            "#
         ));
     }
     assert_true(&format!(
-        "var r=new RegExp({pattern:?},'dvg');var all=Array.from('😀a😀!'.matchAll(r));all.map(m=>m.index).join(',')==='0,5,6'&&all.every(m=>m[1]===''&&m.groups.part===''&&m[3]===''&&m.indices.groups.part[0]===m.index)&&r.lastIndex===0"
+        r#"
+            var r = new RegExp({pattern:?}, 'dvg');
+            var all = Array.from('😀a😀!'.matchAll(r));
+            all.map(m => m.index).join(',') === '0,5,6' && all.every(m => m[1] === '' && m.groups.part ===
+                '' && m[3] === '' && m.indices.groups.part[0] === m.index) && r.lastIndex === 0
+        "#
     ));
 }
 
 #[test]
 fn asserted_single_string_class_consumers_keep_points_names_and_unicode_progress() {
     assert_true(
-        r"var r=/^(?<before>)(?<part>[\q{a|ab}])(?<after>)$/dvgm;var a=Array.from('ab\na\n!'.matchAll(r));a.length===2&&a.map(m=>m[0]).join('|')==='ab|a'&&a.every(m=>m.groups.part===m[0]&&m.groups.before===''&&m.groups.after==='')&&a[1].indices.groups.after[0]===4&&r.lastIndex===0",
+        r#"
+            var r = /^(?<before>)(?<part>[\q{a|ab}])(?<after>)$/dvgm;
+            var a = Array.from('ab\na\n!'.matchAll(r));
+            a.length === 2 && a.map(m => m[0]).join('|') === 'ab|a' && a.every(m => m.groups.part === m[
+                    0] && m.groups.before === '' && m.groups.after === '') && a[1].indices.groups.after[
+                0] === 4 && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"var a=Array.from('😀a'.matchAll(/()([\q{}])()$/dvg));a.length===1&&a[0].index===3&&a[0][1]===''&&a[0][2]===''&&a[0][3]===''",
+        r#"
+            var a = Array.from('😀a'.matchAll(/()([\q{}])()$/dvg));
+            a.length === 1 && a[0].index === 3 && a[0][1] === '' && a[0][2] === '' && a[0][3] === ''
+        "#,
     );
     assert_true(
-        r"var calls=0;var out='ab\na\n!'.replace(/^(?<before>)(?<part>[\q{a|ab}])(?<after>)$/vgm,function(all,b,p,a,offset,input,groups){calls++;return arguments.length===7&&all===p&&b===''&&a===''&&groups.part===p&&input==='ab\na\n!'?'#':'bad'});out==='#\n#\n!'&&calls===2",
+        r#"
+            var calls = 0;
+            var out = 'ab\na\n!'.replace(/^(?<before>)(?<part>[\q{a|ab}])(?<after>)$/vgm, function(all, b,
+                p, a, offset, input, groups) {
+                calls++;
+                return arguments.length === 7 && all === p && b === '' && a === '' && groups
+                    .part === p && input === 'ab\na\n!' ? '#' : 'bad'
+            });
+            out === '#\n#\n!' && calls === 2
+        "#,
     );
     assert_true(
-        r"var r=/()([\q{a|ab}])()\B/vg;r.lastIndex=9;var parts='ab!'.split(r);'!ab!'.search(r)===1&&r.lastIndex===9&&parts.length===5&&parts[0]===''&&parts[1]===''&&parts[2]==='a'&&parts[3]===''&&parts[4]==='b!'&&'ab!'.replace(r,'<$1:$2:$3>')==='<:a:>b!'",
+        r#"
+            var r = /()([\q{a|ab}])()\B/vg;
+            r.lastIndex = 9;
+            var parts = 'ab!'.split(r);
+            '!ab!'.search(r) === 1 && r.lastIndex === 9 && parts.length === 5 && parts[0] === '' && parts[
+                1] === '' && parts[2] === 'a' && parts[3] === '' && parts[4] === 'b!' && 'ab!'.replace(
+                r, '<$1:$2:$3>') === '<:a:>b!'
+        "#,
     );
     let mut realm = Realm::default();
     realm
         .eval(r"var r=/()(?<part>[\q{|a|ab}])()$/dvg,clone=new RegExp(r),m=r.exec('!ab')")
         .unwrap();
     realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval("m.groups.part==='ab'&&m.index===1&&m.indices[1][0]===1&&m.indices[3][0]===3&&clone.exec('!')[2]===''&&r.lastIndex===3"),Ok(Value::Boolean(true)));
+    assert_eq!(
+        realm.eval(
+            r#"
+                m.groups.part === 'ab' && m.index === 1 && m.indices[1][0] === 1 && m.indices[3][0] === 3 &&
+                    clone.exec('!')[2] === '' && r.lastIndex === 3
+            "#
+        ),
+        Ok(Value::Boolean(true))
+    );
 }
 
 #[test]

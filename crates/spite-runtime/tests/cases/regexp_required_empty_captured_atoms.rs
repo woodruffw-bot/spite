@@ -77,10 +77,19 @@ fn required_effects_original_gap_names_open_reads_and_negative_rollback_are_exac
         Ok(Value::Object(_))
     ));
     assert_true(
-        r"let a=/((\1){1,2}){2}a()/d.exec('a');a[1]===''&&a[2]===''&&a[3]===''&&a.indices[1][0]===0&&a.indices[2][0]===0&&a.indices[3][0]===1",
+        r#"
+            let a = /((\1){1,2}){2}a()/d.exec('a');
+            a[1] === '' && a[2] === '' && a[3] === '' && a.indices[1][0] === 0 && a.indices[2][0] === 0 &&
+                a.indices[3][0] === 1
+        "#,
     );
     assert_true(
-        r"let a=/(?<=(?<x>a)(?<y>\k<x>)+)b/d.exec('ab');a.groups.x==='a'&&a.groups.y===''&&a.indices.groups.y===a.indices[2]&&a.indices[2][0]===1",
+        r#"
+            let a = /(?<=(?<x>a)(?<y>\k<x>)+)b/d.exec('ab');
+            a.groups.x === 'a' && a.groups.y === '' && a.indices.groups.y === a.indices[2] && a.indices[2][
+                0
+            ] === 1
+        "#,
     );
     assert_true(
         r"let a=/(?=(?<x>\k<y>)+(?<y>a))a/d.exec('a');a.groups.x===''&&a.groups.y==='a'&&a.indices.groups.x[0]===0",
@@ -99,16 +108,33 @@ fn required_effects_original_gap_names_open_reads_and_negative_rollback_are_exac
 #[test]
 fn consumers_empty_global_sticky_advancement_and_callbacks_keep_required_slots() {
     assert_true(
-        r"let r=/(?<=(a)(\1)+)b/dy;r.lastIndex=1;let a=r.exec('ab');a[2]===''&&r.lastIndex===2&&r.exec('ab')===null&&r.lastIndex===0",
+        r#"
+            let r = /(?<=(a)(\1)+)b/dy;
+            r.lastIndex = 1;
+            let a = r.exec('ab');
+            a[2] === '' && r.lastIndex === 2 && r.exec('ab') === null && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/(?<=(a)(\1)+)b/dg,a=[...'ab ab'.matchAll(r)];a.length===2&&a[0].index===1&&a[1].index===4&&a[1].indices[2][0]===4&&r.lastIndex===0",
+        r#"
+            let r = /(?<=(a)(\1)+)b/dg,
+                a = [...'ab ab'.matchAll(r)];
+            a.length === 2 && a[0].index === 1 && a[1].index === 4 && a[1].indices[2][0] === 4 && r
+                .lastIndex === 0
+        "#,
     );
     assert_true(
         r"let a=[...'aa'.matchAll(/(?=(\2)+(a))/dg)];a.length===2&&a[0][1]===''&&a[1].indices[1][0]===1",
     );
     assert_true(
-        r"let seen=[];let s='ab ab'.replace(/(?<=(a)(\1)+)b/g,(m,x,y,i)=>{seen.push(x,y,i);return '_'});s==='a_ a_'&&seen.join('|')==='a||1|a||4'",
+        r#"
+            let seen = [];
+            let s = 'ab ab'.replace(/(?<=(a)(\1)+)b/g, (m, x, y, i) => {
+                seen.push(x, y, i);
+                return '_'
+            });
+            s === 'a_ a_' && seen.join('|') === 'a||1|a||4'
+        "#,
     );
     assert_true(
         r"'ab'.search(/(?<=(a)(\1)+)b/)===1&&'ab'.split(/(?<=(a)(\1)+)b/).join('|')==='a|a||'",

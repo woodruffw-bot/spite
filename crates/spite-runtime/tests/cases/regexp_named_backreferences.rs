@@ -75,22 +75,47 @@ fn named_reference_result_snapshot() {
 #[test]
 fn decoded_names_original_ranges_and_reference_digit_boundaries_are_preserved() {
     assert_true(
-        r"let a=/(?<x>a)\k<x>0/d.exec('qaa0');a[0]==='aa0'&&a[1]==='a'&&a.groups.x==='a'&&a.indices.groups.x===a.indices[1]&&a.indices[0][1]===4",
+        r#"
+            let a = /(?<x>a)\k<x>0/d.exec('qaa0');
+            a[0] === 'aa0' && a[1] === 'a' && a.groups.x === 'a' && a.indices.groups.x === a.indices[1] &&
+                a.indices[0][1] === 4
+        "#,
     );
     assert_true(
-        r"let a=/()()()()()()()()()(?<x>a)\k<x>0/d.exec('qaa0');a.length===11&&a[10]==='a'&&a.groups.x==='a'&&a.indices.groups.x===a.indices[10]&&a[0]==='aa0'",
+        r#"
+            let a = /()()()()()()()()()(?<x>a)\k<x>0/d.exec('qaa0');
+            a.length === 11 && a[10] === 'a' && a.groups.x === 'a' && a.indices.groups.x === a.indices[
+                10] && a[0] === 'aa0'
+        "#,
     );
     assert_true(
-        r"let a=/(?<outer>a(?<x>\k<outer>b)\k<x>)\k<outer>/d.exec('qabbabb');a[0]==='abbabb'&&a.groups.outer==='abb'&&a.groups.x==='b'&&a.indices.groups.outer===a.indices[1]&&a.indices.groups.x===a.indices[2]&&a.indices[2][0]===2&&a.indices[2][1]===3",
+        r#"
+            let a = /(?<outer>a(?<x>\k<outer>b)\k<x>)\k<outer>/d.exec('qabbabb');
+            a[0] === 'abbabb' && a.groups.outer === 'abb' && a.groups.x === 'b' && a.indices.groups
+                .outer === a.indices[1] && a.indices.groups.x === a.indices[2] && a.indices[2][0] === 2 &&
+                a.indices[2][1] === 3
+        "#,
     );
     assert_true(
-        r"let a=/\k<x>(?<x>a)/d.exec('qa'),b=/(?<x>a\k<x>)/d.exec('qa');a[0]==='a'&&a.groups.x==='a'&&b[0]==='a'&&b.groups.x==='a'",
+        r#"
+            let a = /\k<x>(?<x>a)/d.exec('qa'),
+                b = /(?<x>a\k<x>)/d.exec('qa');
+            a[0] === 'a' && a.groups.x === 'a' && b[0] === 'a' && b.groups.x === 'a'
+        "#,
     );
     assert_true(
-        r"let a=/(?<\u0078>a)\k<\u{78}>/di.exec('qAa');a[0]==='Aa'&&a.groups.x==='A'&&Object.keys(a.groups).join(',')==='x'&&Object.getPrototypeOf(a.groups)===null",
+        r#"
+            let a = /(?<\u0078>a)\k<\u{78}>/di.exec('qAa');
+            a[0] === 'Aa' && a.groups.x === 'A' && Object.keys(a.groups).join(',') === 'x' && Object
+                .getPrototypeOf(a.groups) === null
+        "#,
     );
     assert_true(
-        r"let a=/(?<__proto__>a)\k<__proto__>/d.exec('aa');Object.getPrototypeOf(a.groups)===null&&a.groups.__proto__==='a'&&a.indices.groups.__proto__===a.indices[1]",
+        r#"
+            let a = /(?<__proto__>a)\k<__proto__>/d.exec('aa');
+            Object.getPrototypeOf(a.groups) === null && a.groups.__proto__ === 'a' && a.indices.groups
+                .__proto__ === a.indices[1]
+        "#,
     );
 }
 

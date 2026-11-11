@@ -101,13 +101,29 @@ fn unicode_word_asserted_whole_captures_single_runes_empty_counts_and_aliases() 
         r"let m=/^\b((?:[aſK]))\b$/dvi.exec('S');m[0]==='S'&&m[1]==='S'&&m.indices[1][0]===0&&m.indices[1][1]===1",
     );
     assert_true(
-        r"let r=/\B(?<__proto__>😀)\B/dvy;r.lastIndex=1;let m=r.exec('😀');m.index===0&&m.groups.__proto__==='😀'&&m.indices.groups.__proto__[0]===0&&m.indices.groups.__proto__[1]===2&&r.lastIndex===2",
+        r#"
+            let r = /\B(?<__proto__>😀)\B/dvy;
+            r.lastIndex = 1;
+            let m = r.exec('😀');
+            m.index === 0 && m.groups.__proto__ === '😀' && m.indices.groups.__proto__[0] === 0 && m
+                .indices.groups.__proto__[1] === 2 && r.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let m=/\B(?<whole>(a|b)*)\B/dv.exec('');m[0]===''&&m[1]===''&&m.groups.whole===''&&m[2]===undefined&&m.indices[2]===undefined&&m.indices[1][0]===0&&m.indices[1][1]===0",
+        r#"
+            let m = /\B(?<whole>(a|b)*)\B/dv.exec('');
+            m[0] === '' && m[1] === '' && m.groups.whole === '' && m[2] === undefined && m.indices[2] ===
+                undefined && m.indices[1][0] === 0 && m.indices[1][1] === 0
+        "#,
     );
     assert_true(
-        r"let r=/\b(?<whole>(a|b)+)\b$/dvg,m=r.exec(' ab');m[0]==='ab'&&m.index===1&&m.groups.whole==='ab'&&m[2]==='b'&&m.indices[1][0]===1&&m.indices[1][1]===3&&m.indices[2][0]===2&&m.indices[2][1]===3&&r.lastIndex===3&&r.source==='\\b(?<whole>(a|b)+)\\b$'",
+        r#"
+            let r = /\b(?<whole>(a|b)+)\b$/dvg,
+                m = r.exec(' ab');
+            m[0] === 'ab' && m.index === 1 && m.groups.whole === 'ab' && m[2] === 'b' && m.indices[1][
+                0] === 1 && m.indices[1][1] === 3 && m.indices[2][0] === 2 && m.indices[2][1] === 3 && r
+                .lastIndex === 3 && r.source === '\\b(?<whole>(a|b)+)\\b$'
+        "#,
     );
 }
 

@@ -20,26 +20,63 @@ fn prefix_and_suffix_ranges_follow_greedy_lazy_and_source_order() {
 #[test]
 fn empty_suffixes_and_zero_runs_distinguish_absent_and_empty_captures() {
     assert_true(
-        "let a=/(a)*()/d.exec(''),b=/(a*)()/d.exec('');a[1]===undefined&&a[2]===''&&a.indices[1]===undefined&&a.indices[2][0]===0&&b[1]===''&&b[2]===''&&b.indices[1][1]===0&&b.indices[2][1]===0",
+        r#"
+            let a = /(a)*()/d.exec(''),
+                b = /(a*)()/d.exec('');
+            a[1] === undefined && a[2] === '' && a.indices[1] === undefined && a.indices[2][0] === 0 && b[
+                1] === '' && b[2] === '' && b.indices[1][1] === 0 && b.indices[2][1] === 0
+        "#,
     );
     assert_true(
-        "let m=/a+((?:))()/d.exec('aaa');m[0]==='aaa'&&m[1]===''&&m[2]===''&&m.indices[1][0]===3&&m.indices[2][1]===3&&/[]*(x)/.exec('x')[1]==='x'",
+        r#"
+            let m = /a+((?:))()/d.exec('aaa');
+            m[0] === 'aaa' && m[1] === '' && m[2] === '' && m.indices[1][0] === 3 && m.indices[2][1] ===
+                3 && /[]*(x)/.exec('x')[1] === 'x'
+        "#,
     );
 }
 
 #[test]
 fn anchors_choices_and_global_sticky_state_preserve_all_capture_slots() {
     assert_true(
-        r"let m=/^((a)+?)(b)$/md.exec('x\naab\ny');m.index===2&&m[1]==='aa'&&m[2]==='a'&&m[3]==='b'&&m.indices[3][0]===4",
+        r#"
+            let m = /^((a)+?)(b)$/md.exec('x\naab\ny');
+            m.index === 2 && m[1] === 'aa' && m[2] === 'a' && m[3] === 'b' && m.indices[3][0] === 4
+        "#,
     );
     assert_true(
-        "let r=/([x])|(a)+(b)|([y])/dg,a=r.exec('aaby'),b=r.exec('aaby');a.length===5&&a[1]===undefined&&a[2]==='a'&&a[3]==='b'&&a[4]===undefined&&a.indices[3][0]===2&&b[4]==='y'&&b[3]===undefined&&r.lastIndex===4&&r.exec('aaby')===null&&r.lastIndex===0",
+        r#"
+            let r = /([x])|(a)+(b)|([y])/dg,
+                a = r.exec('aaby'),
+                b = r.exec('aaby');
+            a.length === 5 && a[1] === undefined && a[2] === 'a' && a[3] === 'b' && a[4] === undefined && a
+                .indices[3][0] === 2 && b[4] === 'y' && b[3] === undefined && r.lastIndex === 4 && r.exec(
+                    'aaby') === null && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        "let r=/(a)+(b)/y;r.lastIndex=1;let m=r.exec('xaab');m.index===1&&m[1]==='a'&&m[2]==='b'&&r.lastIndex===4&&r.exec('xaab')===null&&r.lastIndex===0",
+        r#"
+            let r = /(a)+(b)/y;
+            r.lastIndex = 1;
+            let m = r.exec('xaab');
+            m.index === 1 && m[1] === 'a' && m[2] === 'b' && r.lastIndex === 4 && r.exec('xaab') ===
+                null && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        "let r=/a+(b)/g;Object.defineProperty(r,'lastIndex',{writable:false});let ok=false;try{r.exec('aab')}catch(e){ok=e instanceof TypeError}ok",
+        r#"
+            let r = /a+(b)/g;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let ok = false;
+            try {
+                r.exec('aab')
+            } catch (e) {
+                ok = e instanceof TypeError
+            }
+            ok
+        "#,
     );
 }
 
@@ -47,7 +84,10 @@ fn anchors_choices_and_global_sticky_state_preserve_all_capture_slots() {
 fn fixed_suffixes_capture_original_case_surrogates_and_empty_groups() {
     assert_true("let m=/a+(µ)/i.exec('AAΜ');m[0]==='AAΜ'&&m[1]==='Μ'&&/a+(ſ)/i.exec('aas')===null");
     assert_true(
-        r"let m=/(.)+(\uD800)/sd.exec('a\n\uD800');m[1]==='\n'&&m[2]==='\uD800'&&m.indices[1][0]===1&&m.indices[2][0]===2",
+        r#"
+            let m = /(.)+(\uD800)/sd.exec('a\n\uD800');
+            m[1] === '\n' && m[2] === '\uD800' && m.indices[1][0] === 1 && m.indices[2][0] === 2
+        "#,
     );
 }
 
@@ -57,17 +97,43 @@ fn generic_consumers_replacements_split_and_matchall_resolve_suffix_captures() {
         "'aaab'.replace(/(a)+(b)/,'$1-$2')==='a-b'&&'aabxaab'.split(/(a)+(b)/).join(',')===',a,b,x,a,b,'",
     );
     assert_true(
-        "let seen;let s='aaab'.replace(/(a)+(b)/,(whole,prefix,suffix,index,input)=>{seen=[whole,prefix,suffix,index,input];return 'x'});s==='x'&&seen.join(',')==='aaab,a,b,0,aaab'",
+        r#"
+            let seen;
+            let s = 'aaab'.replace(/(a)+(b)/, (whole, prefix, suffix, index, input) => {
+                seen = [whole, prefix, suffix, index, input];
+                return 'x'
+            });
+            s === 'x' && seen.join(',') === 'aaab,a,b,0,aaab'
+        "#,
     );
     assert_true(
-        "let r=/(a)+(b)/dg,m=[...'aaab aab'.matchAll(r)];m.length===2&&m[0][2]==='b'&&m[0].indices[2][0]===3&&m[1].indices[2][0]===7&&r.lastIndex===0&&'a'.match(/a*()/g).length===2",
+        r#"
+            let r = /(a)+(b)/dg,
+                m = [...'aaab aab'.matchAll(r)];
+            m.length === 2 && m[0][2] === 'b' && m[0].indices[2][0] === 3 && m[1].indices[2][0] === 7 && r
+                .lastIndex === 0 && 'a'.match(/a*()/g).length === 2
+        "#,
     );
 }
 
 #[test]
 fn intrinsic_arrays_and_undefined_alternative_slots_bypass_setters() {
     assert_true(
-        "let calls=0;Object.defineProperty(Array.prototype,'1',{set(){calls++},configurable:true});let m=/a+(b)/d.exec('aaab'),n=/([x])|a+(b)/d.exec('aaab'),p=Object.getOwnPropertyDescriptor(m,'1');calls===0&&m[1]==='b'&&p.writable&&p.enumerable&&p.configurable&&n[1]===undefined&&n[2]==='b'&&Object.hasOwn(n.indices,'1')&&n.indices[1]===undefined&&m.groups===undefined",
+        r#"
+            let calls = 0;
+            Object.defineProperty(Array.prototype, '1', {
+                set() {
+                    calls++
+                },
+                configurable: true
+            });
+            let m = /a+(b)/d.exec('aaab'),
+                n = /([x])|a+(b)/d.exec('aaab'),
+                p = Object.getOwnPropertyDescriptor(m, '1');
+            calls === 0 && m[1] === 'b' && p.writable && p.enumerable && p.configurable && n[1] ===
+                undefined && n[2] === 'b' && Object.hasOwn(n.indices, '1') && n.indices[1] === undefined &&
+                m.groups === undefined
+        "#,
     );
 }
 

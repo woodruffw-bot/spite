@@ -20,45 +20,91 @@ fn fixed_choices_preserve_source_ordered_capture_positions() {
 #[test]
 fn repeated_fixed_choice_bodies_keep_last_iteration_and_undefined_slots() {
     assert_true(
-        r"let a=/(x((?:(?:)[^z]|[^z])|(?:(?:)b|b)))+(y)/d.exec('xaxby');a[1]==='xb'&&a[2]==='b'&&a[3]==='y'&&a.indices[1][0]===2&&a.indices[2][0]===3&&a.indices[3][0]===4",
+        r#"
+            let a = /(x((?:(?:)[^z]|[^z])|(?:(?:)b|b)))+(y)/d.exec('xaxby');
+            a[1] === 'xb' && a[2] === 'b' && a[3] === 'y' && a.indices[1][0] === 2 && a.indices[2][0] ===
+                3 && a.indices[3][0] === 4
+        "#,
     );
     assert_true(
-        r"let a=/(((?:(?:)[^z]|[^z])|(?:(?:)b|b))(c|d)){2}(x)/d.exec('acbdx');a[1]==='bd'&&a[2]==='b'&&a[3]==='d'&&a[4]==='x'&&a.indices[1][0]===2&&a.indices[2][0]===2&&a.indices[3][0]===3",
+        r#"
+            let a = /(((?:(?:)[^z]|[^z])|(?:(?:)b|b))(c|d)){2}(x)/d.exec('acbdx');
+            a[1] === 'bd' && a[2] === 'b' && a[3] === 'd' && a[4] === 'x' && a.indices[1][0] === 2 && a
+                .indices[2][0] === 2 && a.indices[3][0] === 3
+        "#,
     );
     assert_true(
-        r"let a=/(((?:(?:)[^z]|[^z])|(?:(?:)b|b))(c|d))*(x)/d.exec('x');a[1]===undefined&&a[2]===undefined&&a[3]===undefined&&a[4]==='x'&&a.indices[1]===undefined&&Object.hasOwn(a.indices,'3')",
+        r#"
+            let a = /(((?:(?:)[^z]|[^z])|(?:(?:)b|b))(c|d))*(x)/d.exec('x');
+            a[1] === undefined && a[2] === undefined && a[3] === undefined && a[4] === 'x' && a.indices[
+                1] === undefined && Object.hasOwn(a.indices, '3')
+        "#,
     );
     assert_true(
-        r"let a=/(((?:(?:)[^z]|[^z])|(?:(?:)b|b))())+/d.exec('ab');a[1]==='b'&&a[2]==='b'&&a[3]===''&&a.indices[1][0]===1&&a.indices[3][0]===2",
+        r#"
+            let a = /(((?:(?:)[^z]|[^z])|(?:(?:)b|b))())+/d.exec('ab');
+            a[1] === 'b' && a[2] === 'b' && a[3] === '' && a.indices[1][0] === 1 && a.indices[3][0] === 2
+        "#,
     );
 }
 
 #[test]
 fn fixed_choices_surround_repetition_with_partial_enclosing_captures() {
     assert_true(
-        r"let a=/((x|y)(((?:(?:)[^z]|[^z])|(?:(?:)b|b))(c|d))+)(e|f)/d.exec('y acbd'.replace(' ', '')+'f');a[1]==='yacbd'&&a[2]==='y'&&a[3]==='bd'&&a[4]==='b'&&a[5]==='d'&&a[6]==='f'&&a.indices[1][0]===0&&a.indices[1][1]===5&&a.indices[3][0]===3&&a.indices[6][0]===5",
+        r#"
+            let a = /((x|y)(((?:(?:)[^z]|[^z])|(?:(?:)b|b))(c|d))+)(e|f)/d.exec('y acbd'.replace(' ', '') +
+                'f');
+            a[1] === 'yacbd' && a[2] === 'y' && a[3] === 'bd' && a[4] === 'b' && a[5] === 'd' && a[6] ===
+                'f' && a.indices[1][0] === 0 && a.indices[1][1] === 5 && a.indices[3][0] === 3 && a
+                .indices[6][0] === 5
+        "#,
     );
     assert_true(
-        r"let a=/(x|y)(a+)(b|c)/d.exec('yaaac');a[1]==='y'&&a[2]==='aaa'&&a[3]==='c'&&a.indices[2][0]===1&&a.indices[2][1]===4",
+        r#"
+            let a = /(x|y)(a+)(b|c)/d.exec('yaaac');
+            a[1] === 'y' && a[2] === 'aaa' && a[3] === 'c' && a.indices[2][0] === 1 && a.indices[2][1] ===
+                4
+        "#,
     );
     assert_true(
-        r"let a=/((x|y)(((?:(?:)[^z]|[^z])|(?:(?:)b|b))(c|d))*)(e|f)/d.exec('xf');a[1]==='x'&&a[2]==='x'&&a[3]===undefined&&a[4]===undefined&&a[5]===undefined&&a[6]==='f'&&a.indices[1][1]===1",
+        r#"
+            let a = /((x|y)(((?:(?:)[^z]|[^z])|(?:(?:)b|b))(c|d))*)(e|f)/d.exec('xf');
+            a[1] === 'x' && a[2] === 'x' && a[3] === undefined && a[4] === undefined && a[5] ===
+                undefined && a[6] === 'f' && a.indices[1][1] === 1
+        "#,
     );
 }
 
 #[test]
 fn greedy_lazy_bounds_and_assertions_keep_candidate_order() {
     assert_true(
-        r"let a=/(((?:(?:)[^z]|[^z])|(?:(?:)b|b))c)+(ac)/d.exec('acbcac'),b=/(((?:(?:)[^z]|[^z])|(?:(?:)b|b))c)+?(ac)/d.exec('acbcac');a[0]==='acbcac'&&b[0]==='acbcac'&&a[1]==='bc'&&a[2]==='b'&&a.indices[2][0]===2&&b.indices[2][0]===2",
+        r#"
+            let a = /(((?:(?:)[^z]|[^z])|(?:(?:)b|b))c)+(ac)/d.exec('acbcac'),
+                b = /(((?:(?:)[^z]|[^z])|(?:(?:)b|b))c)+?(ac)/d.exec('acbcac');
+            a[0] === 'acbcac' && b[0] === 'acbcac' && a[1] === 'bc' && a[2] === 'b' && a.indices[2][0] ===
+                2 && b.indices[2][0] === 2
+        "#,
     );
     assert_true(
-        r"let a=/(((?:(?:)[^z]|[^z])|(?:(?:)b|b))c){1,2}(ac)/d.exec('acbcacac');a.index===0&&a[1]==='bc'&&a[2]==='b'&&a[3]==='ac'",
+        r#"
+            let a = /(((?:(?:)[^z]|[^z])|(?:(?:)b|b))c){1,2}(ac)/d.exec('acbcacac');
+            a.index === 0 && a[1] === 'bc' && a[2] === 'b' && a[3] === 'ac'
+        "#,
     );
     assert_true(
-        r"let a=/^(((?:(?:)[^z]|[^z])|(?:(?:)b|b))($)(\n))+(c|d)$/dm.exec('x\na\nb\nc');a.index===0&&a[1]==='b\n'&&a[2]==='b'&&a[3]===''&&a[4]==='\n'&&a[5]==='c'&&a.indices[2][0]===4&&/^(((?:(?:)[^z]|[^z])|(?:(?:)b|b))($)(\n))+(c|d)$/.exec('a\nc')===null",
+        r#"
+            let a = /^(((?:(?:)[^z]|[^z])|(?:(?:)b|b))($)(\n))+(c|d)$/dm.exec('x\na\nb\nc');
+            a.index === 0 && a[1] === 'b\n' && a[2] === 'b' && a[3] === '' && a[4] === '\n' && a[5] ===
+                'c' && a.indices[2][0] === 4 && /^(((?:(?:)[^z]|[^z])|(?:(?:)b|b))($)(\n))+(c|d)$/.exec(
+                    'a\nc') === null
+        "#,
     );
     assert_true(
-        r"let a=/\b(x((?:(?:)[^z]|[^z])|(?:(?:)b|b)))\b/d.exec(' xb ');a.index===1&&a[1]==='xb'&&a[2]==='b'&&a.indices[2][0]===2&&/\b(x((?:(?:)[^z]|[^z])|(?:(?:)b|b)))\b/.exec('xbz')===null",
+        r#"
+            let a = /\b(x((?:(?:)[^z]|[^z])|(?:(?:)b|b)))\b/d.exec(' xb ');
+            a.index === 1 && a[1] === 'xb' && a[2] === 'b' && a.indices[2][0] === 2 &&
+                /\b(x((?:(?:)[^z]|[^z])|(?:(?:)b|b)))\b/.exec('xbz') === null
+        "#,
     );
 }
 
@@ -81,13 +127,25 @@ fn escapes_flags_surrogates_and_adjacent_empty_groups_keep_exact_units() {
         r"let a=/\0()(\x61|\u0062)1/d.exec('\0b1');a[1]===''&&a[2]==='b'&&a.indices[1][0]===1&&a.indices[2][0]===1",
     );
     assert_true(
-        r"let a=/(µ|Μ)(ſ|S)(σ|ς)/di.exec('ΜSΣ');a[1]==='Μ'&&a[2]==='S'&&a[3]==='Σ'&&/(ſ|S)/i.exec('s')[0]==='s'&&/(ſ|S)/i.exec('ſ')[0]==='ſ'",
+        r#"
+            let a = /(µ|Μ)(ſ|S)(σ|ς)/di.exec('ΜSΣ');
+            a[1] === 'Μ' && a[2] === 'S' && a[3] === 'Σ' && /(ſ|S)/i.exec('s')[0] === 's' && /(ſ|S)/i.exec(
+                'ſ')[0] === 'ſ'
+        "#,
     );
     assert_true(
-        r"let a=/.((?:(?:)[^z]|[^z])|(?:(?:)b|b))./ds.exec('\nab\n');a[0]==='\nab'&&a[1]==='a'&&a.indices[1][0]===1&&/.((?:(?:)[^z]|[^z])|(?:(?:)b|b))./.exec('\nab\n')===null",
+        r#"
+            let a = /.((?:(?:)[^z]|[^z])|(?:(?:)b|b))./ds.exec('\nab\n');
+            a[0] === '\nab' && a[1] === 'a' && a.indices[1][0] === 1 && /.((?:(?:)[^z]|[^z])|(?:(?:)b|b))./
+                .exec('\nab\n') === null
+        "#,
     );
     assert_true(
-        r"let a=/(\uD83D|a)(\uDCA9|b)/d.exec('💩');a[1].charCodeAt(0)===55357&&a[2].charCodeAt(0)===56489&&a.indices[1][1]===1&&a.indices[2][0]===1",
+        r#"
+            let a = /(\uD83D|a)(\uDCA9|b)/d.exec('💩');
+            a[1].charCodeAt(0) === 55357 && a[2].charCodeAt(0) === 56489 && a.indices[1][1] === 1 && a
+                .indices[2][0] === 1
+        "#,
     );
 }
 
@@ -97,35 +155,83 @@ fn consumers_callbacks_and_intrinsic_arrays_observe_fixed_choice_captures() {
         r"'qxbyz'.replace(/(x((?:(?:)[^z]|[^z])|(?:(?:)b|b))y)/,'<$1,$2>')==='q<xby,b>z'&&'qxbyz'.split(/(x((?:(?:)[^z]|[^z])|(?:(?:)b|b))y)/).join(',')==='q,xby,b,z'&&'qxby'.search(/x((?:(?:)[^z]|[^z])|(?:(?:)b|b))y/)===1",
     );
     assert_true(
-        r"let r=/(x((?:(?:)[^z]|[^z])|(?:(?:)b|b))y)/dg,a=[...'xay xby'.matchAll(r)];a.length===2&&a[1][1]==='xby'&&a[1][2]==='b'&&a[1].indices[2][0]===5&&r.lastIndex===0",
+        r#"
+            let r = /(x((?:(?:)[^z]|[^z])|(?:(?:)b|b))y)/dg,
+                a = [...'xay xby'.matchAll(r)];
+            a.length === 2 && a[1][1] === 'xby' && a[1][2] === 'b' && a[1].indices[2][0] === 5 && r
+                .lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let seen;let s='qxby'.replace(/(x((?:(?:)[^z]|[^z])|(?:(?:)b|b))y)/,(whole,outer,inner,index,input)=>{seen=[whole,outer,inner,index,input];return 'z'});s==='qz'&&seen[1]==='xby'&&seen[2]==='b'&&seen[3]===1&&seen[4]==='qxby'",
+        r#"
+            let seen;
+            let s = 'qxby'.replace(/(x((?:(?:)[^z]|[^z])|(?:(?:)b|b))y)/, (whole, outer, inner, index,
+                input) => {
+                seen = [whole, outer, inner, index, input];
+                return 'z'
+            });
+            s === 'qz' && seen[1] === 'xby' && seen[2] === 'b' && seen[3] === 1 && seen[4] === 'qxby'
+        "#,
     );
     assert_true(
-        r"let calls=0;Object.defineProperty(Array.prototype,'2',{set(){calls++},configurable:true});let a=/(((?:(?:)[^z]|[^z])|(?:(?:)b|b)))()/d.exec('b');calls===0&&a[1]==='b'&&a[2]==='b'&&a[3]===''&&a.indices[1]!==a.indices[2]&&Object.hasOwn(a,'2')&&Object.hasOwn(a.indices,'2')",
+        r#"
+            let calls = 0;
+            Object.defineProperty(Array.prototype, '2', {
+                set() {
+                    calls++
+                },
+                configurable: true
+            });
+            let a = /(((?:(?:)[^z]|[^z])|(?:(?:)b|b)))()/d.exec('b');
+            calls === 0 && a[1] === 'b' && a[2] === 'b' && a[3] === '' && a.indices[1] !== a.indices[2] &&
+                Object.hasOwn(a, '2') && Object.hasOwn(a.indices, '2')
+        "#,
     );
 }
 
 #[test]
 fn each_branch_inverts_after_canonicalization_before_union() {
     assert_true(
-        r"/((?:(?:)[^a]|[^a])|(?:(?:)b|b))/i.exec('A')===null&&/((?:(?:)[^a]|[^a])|(?:(?:)b|b))/.exec('A')[1]==='A'&&/((?:(?:)[^a]|[^a])|(?:(?:)a|a))/i.exec('A')[1]==='A'&&/((?:(?:)[^a]|[^a])|(?:(?:)[^b]|[^b]))/i.exec('Ab')[1]==='A'",
+        r#"
+            /((?:(?:)[^a]|[^a])|(?:(?:)b|b))/i.exec('A') === null && /((?:(?:)[^a]|[^a])|(?:(?:)b|b))/
+                .exec('A')[1] === 'A' && /((?:(?:)[^a]|[^a])|(?:(?:)a|a))/i.exec('A')[1] === 'A' &&
+                /((?:(?:)[^a]|[^a])|(?:(?:)[^b]|[^b]))/i.exec('Ab')[1] === 'A'
+        "#,
     );
     assert_true(
-        r"let a=/((?:(?:)[^µ]|[^µ])|(?:(?:)[Μ]|[Μ]))/di.exec('µ');a[1]==='µ'&&a.indices[1][0]===0&&/((?:(?:)[^µ]|[^µ])|(?:(?:)[Μ]|[Μ]))/.exec('µ')===null&&/((?:(?:)[^ſ]|[^ſ])|(?:(?:)S|S))/i.exec('ſ')===null&&/((?:(?:)[^ſ]|[^ſ])|(?:(?:)S|S))/i.exec('s')[1]==='s'",
+        r#"
+            let a = /((?:(?:)[^µ]|[^µ])|(?:(?:)[Μ]|[Μ]))/di.exec('µ');
+            a[1] === 'µ' && a.indices[1][0] === 0 && /((?:(?:)[^µ]|[^µ])|(?:(?:)[Μ]|[Μ]))/.exec('µ') ===
+                null && /((?:(?:)[^ſ]|[^ſ])|(?:(?:)S|S))/i.exec('ſ') === null &&
+                /((?:(?:)[^ſ]|[^ſ])|(?:(?:)S|S))/i.exec('s')[1] === 's'
+        "#,
     );
     assert_true(
-        r"/([^\w]|\w)/i.exec('ſ')[1]==='ſ'&&/([^\D]|[1])/.exec('2')[1]==='2'&&/([^\D]|[1])/.exec('x')===null&&/([^\s]|\s)/.exec('\n')[1]==='\n'",
+        r#"
+            /([^\w]|\w)/i.exec('ſ')[1] === 'ſ' && /([^\D]|[1])/.exec('2')[1] === '2' && /([^\D]|[1])/.exec(
+                'x') === null && /([^\s]|\s)/.exec('\n')[1] === '\n'
+        "#,
     );
     assert_true(
-        r"let a=/([]|[^])+/d.exec('\n\uD800');a[0].length===2&&a[1].charCodeAt(0)===55296&&a.indices[1][0]===1&&/([]|[^])+/.exec('')===null",
+        r#"
+            let a = /([]|[^])+/d.exec('\n\uD800');
+            a[0].length === 2 && a[1].charCodeAt(0) === 55296 && a.indices[1][0] === 1 && /([]|[^])+/.exec(
+                '') === null
+        "#,
     );
     assert_true(
-        r"let a=/((?:(?:)[^a]|[^a])|(?:(?:)b|b))|a/d.exec('a'),b=/((?:(?:)[^a]|[^a])|(?:(?:)b|b))|a/d.exec('b');a[1]===undefined&&a.indices[1]===undefined&&b[1]==='b'&&b.indices[1][0]===0",
+        r#"
+            let a = /((?:(?:)[^a]|[^a])|(?:(?:)b|b))|a/d.exec('a'),
+                b = /((?:(?:)[^a]|[^a])|(?:(?:)b|b))|a/d.exec('b');
+            a[1] === undefined && a.indices[1] === undefined && b[1] === 'b' && b.indices[1][0] === 0
+        "#,
     );
     assert_true(
-        r"let a=/((x|[^z])((a|[^z])(c|d))+)(e|f)/d.exec('yacbdf');a[1]==='yacbd'&&a[2]==='y'&&a[3]==='bd'&&a[4]==='b'&&a[5]==='d'&&a[6]==='f'&&a.indices[3][0]===3&&a.indices[6][0]===5",
+        r#"
+            let a = /((x|[^z])((a|[^z])(c|d))+)(e|f)/d.exec('yacbdf');
+            a[1] === 'yacbd' && a[2] === 'y' && a[3] === 'bd' && a[4] === 'b' && a[5] === 'd' && a[6] ===
+                'f' && a.indices[3][0] === 3 && a.indices[6][0] === 5
+        "#,
     );
 }
 

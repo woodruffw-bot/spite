@@ -49,13 +49,26 @@ fn unicode_dot_escapes_consumers_and_complete_character_boundaries() {
         ));
         assert_true(&format!(r"'😀a😀b'.split(/\D/{mode}).join('|')==='||||'"));
         assert_true(&format!(
-            r"let seen=[];let s='😀9\uD800'.replace(/\D/{mode}g,(m,i)=>{{seen.push(i);return '_'}});s==='_9_'&&seen.join(',')==='0,3'"
+            r#"
+                let seen = [];
+                let s = '😀9\uD800'.replace(/\D/{mode}g, (m, i) => {{
+                    seen.push(i);
+                    return '_'
+                }});
+                s === '_9_' && seen.join(',') === '0,3'
+            "#
         ));
         assert_true(&format!(
             r"let r=/\W/{mode}g;r.lastIndex=1;'a😀'.search(r)===1&&r.lastIndex===1"
         ));
         assert_true(&format!(
-            r"let r=/./d{mode}y;r.lastIndex=1;let m=r.exec('😀');m[0]==='😀'&&m.index===0&&m.indices[0][0]===0&&m.indices[0][1]===2&&r.lastIndex===2"
+            r#"
+                let r = /./d{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('😀');
+                m[0] === '😀' && m.index === 0 && m.indices[0][0] === 0 && m.indices[0][1] === 2 && r
+                    .lastIndex === 2
+            "#
         ));
         assert_true(&format!(
             r"let r=/\d/{mode}y;r.lastIndex=1;r.exec('😀9')===null&&r.lastIndex===0"
@@ -76,10 +89,20 @@ fn unicode_dot_escapes_exact_membership_and_original_metadata() {
     assert_true(r"/\w/u.exec('Kſk').index===2&&/\W/v.exec('kK')[0]==='K'");
     assert_true(r"/\d/u.exec('９9').index===1&&/\D/v.exec('9９')[0]==='９'");
     assert_true(
-        r"let r=/./dsv,c=new RegExp(r,'dug');c.source==='.'&&c.unicode&&!c.unicodeSets&&!c.dotAll&&c.exec('\nx').index===1&&c.lastIndex===2",
+        r#"
+            let r = /./dsv,
+                c = new RegExp(r, 'dug');
+            c.source === '.' && c.unicode && !c.unicodeSets && !c.dotAll && c.exec('\nx').index === 1 && c
+                .lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let r=/\D/dvg,m=r.exec('😀');m.length===1&&m.groups===undefined&&m.indices.groups===undefined&&r.source==='\\D'",
+        r#"
+            let r = /\D/dvg,
+                m = r.exec('😀');
+            m.length === 1 && m.groups === undefined && m.indices.groups === undefined && r.source ===
+                '\\D'
+        "#,
     );
     assert_true(r"/./.exec('😀')[0]==='\uD83D'&&/./u.exec('😀')[0]==='😀'");
 }
@@ -87,19 +110,98 @@ fn unicode_dot_escapes_exact_membership_and_original_metadata() {
 #[test]
 fn unicode_dot_escapes_ordered_coercions_and_strict_lastindex() {
     assert_true(
-        r"let t='',r=/./uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m.index===0&&r.lastIndex===2",
+        r#"
+            let t = '',
+                r = /./uy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 1
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return '😀'
+                }
+            });
+            t === 'si' && m.index === 0 && r.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let t='',r=/\D/v;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m.index===0&&typeof r.lastIndex==='object'",
+        r#"
+            let t = '',
+                r = /\D/v;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 1
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return '😀'
+                }
+            });
+            t === 'si' && m.index === 0 && typeof r.lastIndex === 'object'
+        "#,
     );
     assert_true(
-        r"let r=/./uy,n=0,e={};r.lastIndex={valueOf(){n++;return 0}};let caught=false;try{r.exec({toString(){throw e}})}catch(x){caught=x===e}caught&&n===0&&typeof r.lastIndex==='object'",
+        r#"
+            let r = /./uy,
+                n = 0,
+                e = {};
+            r.lastIndex = {
+                valueOf() {
+                    n++;
+                    return 0
+                }
+            };
+            let caught = false;
+            try {
+                r.exec({
+                    toString() {
+                        throw e
+                    }
+                })
+            } catch (x) {
+                caught = x === e
+            }
+            caught && n === 0 && typeof r.lastIndex === 'object'
+        "#,
     );
     assert_true(
-        r"let r=/./uy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /./uy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
     assert_true(
-        r"let r=/\d/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /\d/vy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 

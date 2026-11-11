@@ -41,16 +41,32 @@ fn unicode_character_folding_consumers_and_original_text() {
             r"'ſK😀 9'.match(/\w/i{mode}g).join('|')==='ſ|K|9'"
         ));
         assert_true(&format!(
-            r"let a=[...'ſK😀 9'.matchAll(/\w/di{mode}g)];a.length===3&&a[0][0]==='ſ'&&a[1][0]==='K'&&a[2].index===5&&a[1].indices[0][1]===2"
+            r#"
+                let a = [...'ſK😀 9'.matchAll(/\w/di{mode}g)];
+                a.length === 3 && a[0][0] === 'ſ' && a[1][0] === 'K' && a[2].index === 5 && a[1].indices[0][
+                    1] === 2
+            "#
         ));
         assert_true(&format!(
             r"'ſK😀 9'.split(/\w/i{mode}).join('|')==='||😀 |'"
         ));
         assert_true(&format!(
-            r"let seen=[];let s='ſK😀 9'.replace(/\w/i{mode}g,(m,i)=>{{seen.push(i);return '_'}});s==='__😀 _'&&seen.join(',')==='0,1,5'"
+            r#"
+                let seen = [];
+                let s = 'ſK😀 9'.replace(/\w/i{mode}g, (m, i) => {{
+                    seen.push(i);
+                    return '_'
+                }});
+                s === '__😀 _' && seen.join(',') === '0,1,5'
+            "#
         ));
         assert_true(&format!(
-            r"let r=/\W/di{mode}y;r.lastIndex=3;let m=r.exec('ſK😀 9');m.index===2&&m[0]==='😀'&&m.indices[0][1]===4&&r.lastIndex===4"
+            r#"
+                let r = /\W/di{mode}y;
+                r.lastIndex = 3;
+                let m = r.exec('ſK😀 9');
+                m.index === 2 && m[0] === '😀' && m.indices[0][1] === 4 && r.lastIndex === 4
+            "#
         ));
         assert_true(&format!(
             r"let r=/\w/i{mode}y;r.lastIndex=3;r.exec('ſK😀 9')===null&&r.lastIndex===0"
@@ -77,16 +93,62 @@ fn unicode_word_folding_is_simple_common_and_has_complete_boundaries() {
 #[test]
 fn unicode_character_folding_metadata_clones_coercions_and_strict_writes() {
     assert_true(
-        r"let r=/^\w$/dimv,c=new RegExp(r,'diuy');c.source==='^\\w$'&&c.ignoreCase&&c.unicode&&!c.unicodeSets&&!c.multiline&&c.exec('K')[0]==='K'&&c.lastIndex===1",
+        r#"
+            let r = /^\w$/dimv,
+                c = new RegExp(r, 'diuy');
+            c.source === '^\\w$' && c.ignoreCase && c.unicode && !c.unicodeSets && !c.multiline && c.exec(
+                'K')[0] === 'K' && c.lastIndex === 1
+        "#,
     );
     assert_true(
-        r"let t='',r=/\w/iuy;r.lastIndex={valueOf(){t+='i';return 0}};let m=r.exec({toString(){t+='s';return 'ſ'}});t==='si'&&m[0]==='ſ'&&r.lastIndex===1",
+        r#"
+            let t = '',
+                r = /\w/iuy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 0
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return 'ſ'
+                }
+            });
+            t === 'si' && m[0] === 'ſ' && r.lastIndex === 1
+        "#,
     );
     assert_true(
-        r"let r=/\w/iuy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('ſ')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            let r = /\w/iuy;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('ſ')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/\w/ivy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /\w/ivy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 

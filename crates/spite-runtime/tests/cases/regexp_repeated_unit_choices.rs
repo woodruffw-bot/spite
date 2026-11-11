@@ -7,10 +7,19 @@ use crate::common::assert_true;
 #[test]
 fn literal_choices_greedy_lazy_and_bounded_endpoints_keep_final_iteration() {
     assert_true(
-        r"let a=/(a|b)+(b)/d.exec('abab'),b=/(a|b)+?(b)/d.exec('abab');a[0]==='abab'&&a[1]==='a'&&a.indices[1][0]===2&&a.indices[2][0]===3&&b[0]==='ab'&&b[1]==='a'&&b.indices[1][0]===0&&b.indices[2][0]===1",
+        r#"
+            let a = /(a|b)+(b)/d.exec('abab'),
+                b = /(a|b)+?(b)/d.exec('abab');
+            a[0] === 'abab' && a[1] === 'a' && a.indices[1][0] === 2 && a.indices[2][0] === 3 && b[0] ===
+                'ab' && b[1] === 'a' && b.indices[1][0] === 0 && b.indices[2][0] === 1
+        "#,
     );
     assert_true(
-        r"let a=/(a|b){1,2}(b)/d.exec('aaaab');a.index===2&&a[0]==='aab'&&a.indices[1][0]===3&&a.indices[2][0]===4&&/(a|b){1,2}?(b)/.exec('aaaab').index===2",
+        r#"
+            let a = /(a|b){1,2}(b)/d.exec('aaaab');
+            a.index === 2 && a[0] === 'aab' && a.indices[1][0] === 3 && a.indices[2][0] === 4 &&
+                /(a|b){1,2}?(b)/.exec('aaaab').index === 2
+        "#,
     );
     assert_true(
         r"let a=/(a|a|b|a)+(c)/d.exec('ababc');a[1]==='b'&&a.indices[1][0]===3&&a.indices[2][0]===4",
@@ -20,45 +29,89 @@ fn literal_choices_greedy_lazy_and_bounded_endpoints_keep_final_iteration() {
 #[test]
 fn zero_iterations_partial_wrappers_and_noncapturing_choices_keep_slots() {
     assert_true(
-        r"let a=/((a|b)+)/d.exec('ab'),r=/(?:(?:a|b)+)/d; a[1]==='ab'&&a[2]==='b'&&a.indices[1][0]===0&&a.indices[1][1]===2&&a.indices[2][0]===1&&r.exec('ab').length===1&&r.source==='(?:(?:a|b)+)'",
+        r#"
+            let a = /((a|b)+)/d.exec('ab'),
+                r = /(?:(?:a|b)+)/d;
+            a[1] === 'ab' && a[2] === 'b' && a.indices[1][0] === 0 && a.indices[1][1] === 2 && a.indices[2]
+                [0] === 1 && r.exec('ab').length === 1 && r.source === '(?:(?:a|b)+)'
+        "#,
     );
     assert_true(
-        r"let a=/(x)((a|b)*)(y)/d.exec('xy');a[1]==='x'&&a[2]===''&&a[3]===undefined&&a[4]==='y'&&a.indices[2][0]===1&&a.indices[2][1]===1&&a.indices[3]===undefined&&Object.hasOwn(a,'3')",
+        r#"
+            let a = /(x)((a|b)*)(y)/d.exec('xy');
+            a[1] === 'x' && a[2] === '' && a[3] === undefined && a[4] === 'y' && a.indices[2][0] === 1 && a
+                .indices[2][1] === 1 && a.indices[3] === undefined && Object.hasOwn(a, '3')
+        "#,
     );
     assert_true(
-        r"let a=/((x)(a|b)+)(y)/d.exec('xababy');a[1]==='xabab'&&a[2]==='x'&&a[3]==='b'&&a[4]==='y'&&a.indices[1][1]===5&&a.indices[3][0]===4",
+        r#"
+            let a = /((x)(a|b)+)(y)/d.exec('xababy');
+            a[1] === 'xabab' && a[2] === 'x' && a[3] === 'b' && a[4] === 'y' && a.indices[1][1] === 5 && a
+                .indices[3][0] === 4
+        "#,
     );
     assert_true(
-        r"let a=/x(?:a|b)+(y)/d.exec('xababy');a.length===2&&a[1]==='y'&&a.indices[1][0]===5&&/(a|b){0}/.exec('')[1]===undefined",
+        r#"
+            let a = /x(?:a|b)+(y)/d.exec('xababy');
+            a.length === 2 && a[1] === 'y' && a.indices[1][0] === 5 && /(a|b){0}/.exec('')[1] === undefined
+        "#,
     );
     assert_true(
-        r"let a=/(((a|b)+))(c)/d.exec('ababc');a[1]==='abab'&&a[2]==='abab'&&a[3]==='b'&&a[4]==='c'&&a.indices[1][1]===4&&a.indices[3][0]===3",
+        r#"
+            let a = /(((a|b)+))(c)/d.exec('ababc');
+            a[1] === 'abab' && a[2] === 'abab' && a[3] === 'b' && a[4] === 'c' && a.indices[1][1] === 4 &&
+                a.indices[3][0] === 3
+        "#,
     );
 }
 
 #[test]
 fn assertions_flags_and_complete_input_neighbors_keep_choice_ranges() {
     assert_true(
-        r"let a=/^((a|b)+)($)(\n)/dm.exec('x\nabab\n');a.index===2&&a[1]==='abab'&&a[2]==='b'&&a.indices[2][0]===5&&a.indices[3][0]===6&&/^((a|b)+)($)(\n)/.exec('abab\n')===null",
+        r#"
+            let a = /^((a|b)+)($)(\n)/dm.exec('x\nabab\n');
+            a.index === 2 && a[1] === 'abab' && a[2] === 'b' && a.indices[2][0] === 5 && a.indices[3][
+                0] === 6 && /^((a|b)+)($)(\n)/.exec('abab\n') === null
+        "#,
     );
     assert_true(
-        r"let a=/\b((a|b)+)(c)\b/d.exec('ababc');a[1]==='abab'&&a[2]==='b'&&a.indices[1][1]===4&&a.indices[2][0]===3&&/\b((a|b)+)(c)\b/.exec('ababcd')===null",
+        r#"
+            let a = /\b((a|b)+)(c)\b/d.exec('ababc');
+            a[1] === 'abab' && a[2] === 'b' && a.indices[1][1] === 4 && a.indices[2][0] === 3 &&
+                /\b((a|b)+)(c)\b/.exec('ababcd') === null
+        "#,
     );
     assert_true(
-        r"let a=/(µ|Μ)+(x)/di.exec('µΜµx');a[1]==='µ'&&a.indices[1][0]===2&&a.indices[2][0]===3&&/(S|s)+/i.exec('ſ')===null&&/(ſ|S)+/i.exec('ſSs')[0]==='ſSs'",
+        r#"
+            let a = /(µ|Μ)+(x)/di.exec('µΜµx');
+            a[1] === 'µ' && a.indices[1][0] === 2 && a.indices[2][0] === 3 && /(S|s)+/i.exec('ſ') ===
+                null && /(ſ|S)+/i.exec('ſSs')[0] === 'ſSs'
+        "#,
     );
 }
 
 #[test]
 fn decoded_literal_metacharacters_controls_and_surrogates_are_exact() {
     assert_true(
-        r"let a=/(\x61|\u0062)+(c)/d.exec('ababc'),b=/(\(|\))+(x)/d.exec('()()x');a[1]==='b'&&a.indices[1][0]===3&&b[1]===')'&&b.indices[2][0]===4",
+        r#"
+            let a = /(\x61|\u0062)+(c)/d.exec('ababc'),
+                b = /(\(|\))+(x)/d.exec('()()x');
+            a[1] === 'b' && a.indices[1][0] === 3 && b[1] === ')' && b.indices[2][0] === 4
+        "#,
     );
     assert_true(
-        r"let a=/(\0|1)+(x)/d.exec('\x0011x'),b=/(\x08|\t)+(x)/d.exec('\x08\tx');a[1]==='1'&&a.indices[1][0]===2&&b[1]==='\t'&&b.indices[2][0]===2",
+        r#"
+            let a = /(\0|1)+(x)/d.exec('\x0011x'),
+                b = /(\x08|\t)+(x)/d.exec('\x08\tx');
+            a[1] === '1' && a.indices[1][0] === 2 && b[1] === '\t' && b.indices[2][0] === 2
+        "#,
     );
     assert_true(
-        r"let a=/(\uDCA9|a)+(b)/d.exec('💩aaab');a.index===1&&a[1]==='a'&&a.indices[1][0]===4&&a.indices[2][0]===5&&/(\uD800|\uDC00)+(c)/.exec('\uD800\uDC00c')[1]==='\uDC00'",
+        r#"
+            let a = /(\uDCA9|a)+(b)/d.exec('💩aaab');
+            a.index === 1 && a[1] === 'a' && a.indices[1][0] === 4 && a.indices[2][0] === 5 &&
+                /(\uD800|\uDC00)+(c)/.exec('\uD800\uDC00c')[1] === '\uDC00'
+        "#,
     );
 }
 
@@ -81,13 +134,37 @@ fn generic_consumers_intrinsic_arrays_and_callback_arguments_keep_choices() {
         r"'xababy'.replace(/(x)((a|b)+)(y)/,'<$1,$2,$3,$4>')==='<x,abab,b,y>'&&'qxababyz'.split(/(x)((a|b)+)(y)/).join(',')==='q,x,abab,b,y,z'&&'qxababy'.search(/x(a|b)+y/)===1",
     );
     assert_true(
-        r"let r=/(x)((a|b)+)(y)/dg,a=[...'xay xababy'.matchAll(r)];a.length===2&&a[1][2]==='abab'&&a[1][3]==='b'&&a[1].indices[3][0]===8&&r.lastIndex===0",
+        r#"
+            let r = /(x)((a|b)+)(y)/dg,
+                a = [...'xay xababy'.matchAll(r)];
+            a.length === 2 && a[1][2] === 'abab' && a[1][3] === 'b' && a[1].indices[3][0] === 8 && r
+                .lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let seen;let s='qxababy'.replace(/(x)((a|b)+)(y)/,(whole,prefix,run,last,sequel,index,input)=>{seen=[whole,prefix,run,last,sequel,index,input];return 'z'});s==='qz'&&seen[2]==='abab'&&seen[3]==='b'&&seen[5]===1&&seen[6]==='qxababy'",
+        r#"
+            let seen;
+            let s = 'qxababy'.replace(/(x)((a|b)+)(y)/, (whole, prefix, run, last, sequel, index,
+            input) => {
+                seen = [whole, prefix, run, last, sequel, index, input];
+                return 'z'
+            });
+            s === 'qz' && seen[2] === 'abab' && seen[3] === 'b' && seen[5] === 1 && seen[6] === 'qxababy'
+        "#,
     );
     assert_true(
-        r"let calls=0;Object.defineProperty(Array.prototype,'3',{set(){calls++},configurable:true});let a=/(x)((a|b){0})(y)/d.exec('xy');calls===0&&a[2]===''&&a[3]===undefined&&a.indices[3]===undefined&&Object.hasOwn(a,'3')&&Object.hasOwn(a.indices,'3')",
+        r#"
+            let calls = 0;
+            Object.defineProperty(Array.prototype, '3', {
+                set() {
+                    calls++
+                },
+                configurable: true
+            });
+            let a = /(x)((a|b){0})(y)/d.exec('xy');
+            calls === 0 && a[2] === '' && a[3] === undefined && a.indices[3] === undefined && Object
+                .hasOwn(a, '3') && Object.hasOwn(a.indices, '3')
+        "#,
     );
 }
 

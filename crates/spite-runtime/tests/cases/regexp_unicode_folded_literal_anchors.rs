@@ -53,7 +53,12 @@ fn unicode_folded_literal_boundary_results_snapshot() {
 fn unicode_folded_literal_boundary_context_overlap_and_original_captures() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/^((a)A)$/dim{mode}g,m=r.exec('aaa\r\nAA\u2028aa\u2029');m.index===5&&m[1]==='AA'&&m[2]==='A'&&m.indices[1][0]===5&&m.indices[2][1]===6&&r.lastIndex===7"
+            r#"
+                let r = /^((a)A)$/dim{mode}g,
+                    m = r.exec('aaa\r\nAA\u2028aa\u2029');
+                m.index === 5 && m[1] === 'AA' && m[2] === 'A' && m.indices[1][0] === 5 && m.indices[2][1] ===
+                    6 && r.lastIndex === 7
+            "#
         ));
         assert_true(&format!(
             r"let r=/a(a)$/di{mode}g,m=r.exec('AAAA');m.index===2&&m[1]==='A'&&m.indices[1][0]===3&&r.lastIndex===4"
@@ -62,13 +67,28 @@ fn unicode_folded_literal_boundary_context_overlap_and_original_captures() {
             r"/^a(a)$/im{mode}.test('xAA\nAA')&&!/^a(a)$/i{mode}.test('AA\n')"
         ));
         assert_true(&format!(
-            r"let r=/^(?<x>\u{{10400}})(?<y>\u{{10428}})$/di{mode}y;r.lastIndex=1;let m=r.exec('\u{{10428}}\u{{10400}}');m.index===0&&m[1]==='\u{{10428}}'&&m[2]==='\u{{10400}}'&&m.indices.groups.x===m.indices[1]&&m.indices[1][1]===2&&r.lastIndex===4"
+            r#"
+                let r = /^(?<x>\u{{10400}})(?<y>\u{{10428}})$/di{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('\u{{10428}}\u{{10400}}');
+                m.index === 0 && m[1] === '\u{{10428}}' && m[2] === '\u{{10400}}' && m.indices.groups.x === m
+                    .indices[1] && m.indices[1][1] === 2 && r.lastIndex === 4
+            "#
         ));
         assert_true(&format!(
-            r"let r=/^(?<__proto__>a)(())a$/dim{mode}g,m=r.exec('x\nAA');m.groups.__proto__==='A'&&Object.getPrototypeOf(m.groups)===null&&m[2]===''&&m[3]===''&&m.indices[2][0]===3&&m.indices.groups.__proto__===m.indices[1]"
+            r#"
+                let r = /^(?<__proto__>a)(())a$/dim{mode}g,
+                    m = r.exec('x\nAA');
+                m.groups.__proto__ === 'A' && Object.getPrototypeOf(m.groups) === null && m[2] === '' && m[
+                    3] === '' && m.indices[2][0] === 3 && m.indices.groups.__proto__ === m.indices[1]
+            "#
         ));
         assert_true(&format!(
-            r"let r=/^(\uD800)(a)$/di{mode};let m=r.exec('\uD800A');m[1]==='\uD800'&&m.indices[1][1]===1&&!r.test('\uD800\uDC00A')"
+            r#"
+                let r = /^(\uD800)(a)$/di{mode};
+                let m = r.exec('\uD800A');
+                m[1] === '\uD800' && m.indices[1][1] === 1 && !r.test('\uD800\uDC00A')
+            "#
         ));
     }
 }
@@ -80,7 +100,11 @@ fn unicode_folded_literal_boundary_escaped_anchors_and_consumers() {
             r"/^(\$)(a)\$$/i{mode}.exec('$A$')[2]==='A'&&/^(a)\\$/i{mode}.exec('A\\')[1]==='A'"
         ));
         assert_true(&format!(
-            r"let a=[...'AA\r\nAa\u2028aA\u2029'.matchAll(/^(a)(a)$/dim{mode}g)];a.length===3&&a[0].index===0&&a[1].index===4&&a[2].index===7&&a[2].indices[2][1]===9"
+            r#"
+                let a = [...'AA\r\nAa\u2028aA\u2029'.matchAll(/^(a)(a)$/dim{mode}g)];
+                a.length === 3 && a[0].index === 0 && a[1].index === 4 && a[2].index === 7 && a[2].indices[2][
+                    1] === 9
+            "#
         ));
         assert_true(&format!(
             r"'AA\nAa'.replace(/^(?<x>a)(a)$/im{mode}g,'<$1:$2:$<x>>')==='<A:A:A>\n<A:a:A>'"
@@ -97,16 +121,62 @@ fn unicode_folded_literal_boundary_escaped_anchors_and_consumers() {
 #[test]
 fn unicode_folded_literal_boundary_metadata_clones_coercions_and_writes() {
     assert_true(
-        r"let r=/^(?<x>a)(a)$/dimv,c=new RegExp(r,'diuy');c.source==='^(?<x>a)(a)$'&&c.ignoreCase&&c.unicode&&!c.multiline&&c.exec('AA').groups.x==='A'&&c.lastIndex===2",
+        r#"
+            let r = /^(?<x>a)(a)$/dimv,
+                c = new RegExp(r, 'diuy');
+            c.source === '^(?<x>a)(a)$' && c.ignoreCase && c.unicode && !c.multiline && c.exec('AA').groups
+                .x === 'A' && c.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let t='',r=/^a(a)$/iuy;r.lastIndex={valueOf(){t+='i';return 0}};let m=r.exec({toString(){t+='s';return 'AA'}});t==='si'&&m[1]==='A'&&r.lastIndex===2",
+        r#"
+            let t = '',
+                r = /^a(a)$/iuy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 0
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return 'AA'
+                }
+            });
+            t === 'si' && m[1] === 'A' && r.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let r=/^a(a)$/iuy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('AA')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            let r = /^a(a)$/iuy;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('AA')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/^a(a)$/ivy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('xAA')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /^a(a)$/ivy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('xAA')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 
