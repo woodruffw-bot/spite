@@ -218,7 +218,7 @@ fn optional_call_argument_limits_and_host_aborts_skip_handlers_and_resource_clea
                 PromiseJobOutcome::Reported(error) => {
                     assert!(matches!(error, Error::Limit { .. }) == limited, "{error}");
                     if !limited {
-                        assert!(matches!(error, Error::Unsupported { .. }), "{error}")
+                        assert!(matches!(error, Error::Unsupported { .. }), "{error}");
                     }
                     reported = true;
                 }

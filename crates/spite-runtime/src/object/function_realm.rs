@@ -1,7 +1,8 @@
 //! Function creation Realms use traced, checked environment handles (9.3, 7.3.24).
 
 use super::{Error, Objects};
-use crate::{environment::EnvironmentHandle, function::Callable};
+use crate::environment::EnvironmentHandle;
+use crate::function::Callable;
 use spite_heap::Handle;
 
 impl Objects {
@@ -59,7 +60,8 @@ impl Objects {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{BindingState, Value, object::Budget};
+    use crate::object::Budget;
+    use crate::{BindingState, Value};
     use std::collections::BTreeMap;
 
     #[test]

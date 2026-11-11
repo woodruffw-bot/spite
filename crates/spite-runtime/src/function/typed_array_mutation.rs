@@ -1,11 +1,9 @@
 //! TypedArray copyWithin/fill/reverse/set with explicit live witnesses (23.2.3).
 
 use super::typed_array_methods::Method;
-use crate::{
-    Error, ExceptionKind, ObjectHandle, Realm, Value,
-    binary_data::ElementType,
-    object::{ArrayBufferError, Budget, Objects},
-};
+use crate::binary_data::ElementType;
+use crate::object::{ArrayBufferError, Budget, Objects};
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span};
 
 struct View {

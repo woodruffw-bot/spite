@@ -1,9 +1,7 @@
 //! Builtin function objects and the initial Object/Function prototype graph.
 
-use crate::{
-    Error, ExceptionKind, ObjectHandle, Realm, Value, binary_data,
-    object::{DataDescriptor, DescriptorKind, PropertyDescriptor},
-};
+use crate::object::{DataDescriptor, DescriptorKind, PropertyDescriptor};
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, binary_data};
 use spite_core::{JsString, Span, WellKnownSymbol};
 
 mod arguments;

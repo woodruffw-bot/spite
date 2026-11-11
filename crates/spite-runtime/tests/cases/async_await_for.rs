@@ -219,7 +219,7 @@ fn for_host_abort_releases_header_resources_without_handlers_or_disposal_at_budg
                 PromiseJobOutcome::Reported(error) => {
                     assert!(matches!(error, Error::Limit { .. }) == limited, "{error}");
                     if !limited {
-                        assert!(matches!(error, Error::Unsupported { .. }), "{error}")
+                        assert!(matches!(error, Error::Unsupported { .. }), "{error}");
                     }
                     reported = true;
                 }

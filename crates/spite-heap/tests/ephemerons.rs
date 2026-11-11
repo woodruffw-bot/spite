@@ -139,12 +139,12 @@ fn activated_values_can_reveal_more_containers_keys_and_strong_edges() {
     let second_container = heap
         .insert(Node {
             strong: vec![second_key.clone()],
-            entries: vec![(second_key.clone(), Some(value.clone()))],
+            entries: vec![(second_key, Some(value.clone()))],
         })
         .unwrap();
     let first_container = heap
         .insert(Node {
-            entries: vec![(first_key.clone(), Some(second_container.clone()))],
+            entries: vec![(first_key.clone(), Some(second_container))],
             ..Node::default()
         })
         .unwrap();

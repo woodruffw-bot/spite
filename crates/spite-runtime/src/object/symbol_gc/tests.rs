@@ -4,12 +4,10 @@ use crate::object::{Budget, DataDescriptor, Error as ObjectError, Objects};
 use crate::{Realm, Value};
 use spite_core::{JsString, JsSymbol, WeakJsSymbol};
 use spite_heap::Handle;
-use std::{
-    cell::{Cell, RefCell},
-    rc::Rc,
-    sync::mpsc,
-    thread,
-};
+use std::cell::{Cell, RefCell};
+use std::rc::Rc;
+use std::sync::mpsc;
+use std::thread;
 
 fn unlimited() -> Budget {
     Budget::with_work_limit(None)

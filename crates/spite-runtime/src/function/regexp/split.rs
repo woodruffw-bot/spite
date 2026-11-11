@@ -1,7 +1,8 @@
 //! Generic RegExp splitting via species construction and custom exec (22.2.6.14).
 
 use super::{advance_string_index, regexp_output_limit};
-use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, value::to_uint32};
+use crate::value::to_uint32;
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span, WellKnownSymbol};
 
 impl Realm {

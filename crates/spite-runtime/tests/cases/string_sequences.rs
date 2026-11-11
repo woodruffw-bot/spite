@@ -2,26 +2,20 @@
 
 use spite_runtime::{Error, ExceptionKind, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn concat_converts_values_with_string_hint_and_preserves_code_units() {
-    check(
+    assert_true(
         "''.concat()==='' && 'abc'.concat()==='abc' && 'x'.concat(undefined,null,true,12,34n)==='xundefinednulltrue1234'",
     );
-    check(
+    assert_true(
         "'\\uD800'.concat('\\uDC00')==='𐀀' && '\\uDC00'.concat('x','\\uD800')==='\\uDC00x\\uD800'",
     );
-    check(
+    assert_true(
         "String.prototype.concat.call(12,3)==='123' && new String('a').concat('b')==='ab' && typeof new String('a').concat()==='string'",
     );
-    check(
+    assert_true(
         "let log='';let r={toString:()=>{log+='r';return 'a';}},a={toString:()=>{log+='a';return 'b';},valueOf:()=>{throw 1;}},b={toString:()=>{log+='b';return {};},valueOf:()=>{log+='v';return 'c';}};String.prototype.concat.call(r,a,b)==='abc' && log==='rabv'",
     );
     let mut realm = Realm::default();
@@ -56,7 +50,7 @@ fn slice_uses_relative_indices_and_returns_empty_for_reversed_endpoints() {
         ("true,'3'", "bc"),
         ("0,null", ""),
     ] {
-        check(&format!("'abcdef'.slice({arguments})==='{expected}'"));
+        assert_true(&format!("'abcdef'.slice({arguments})==='{expected}'"));
     }
 }
 
@@ -81,17 +75,17 @@ fn substring_clamps_negatives_and_swaps_endpoints() {
         ("true,'3'", "bc"),
         ("3,null", "abc"),
     ] {
-        check(&format!("'abcdef'.substring({arguments})==='{expected}'"));
+        assert_true(&format!("'abcdef'.substring({arguments})==='{expected}'"));
     }
 }
 
 #[test]
 fn substrings_may_split_pairs_and_preserve_unpaired_surrogates() {
     for name in ["slice", "substring"] {
-        check(&format!(
+        assert_true(&format!(
             "'a💩b'.{name}(1,2)==='\\uD83D' && 'a💩b'.{name}(2,3)==='\\uDCA9' && 'a💩b'.{name}(1,3)==='💩' && '\\uD800x\\uDC00'.{name}(0,2)==='\\uD800x'"
         ));
-        check(&format!(
+        assert_true(&format!(
             "String.prototype.{name}.call(123n,1,2)==='2' && new String('abc').{name}(1)==='bc'"
         ));
     }
@@ -101,7 +95,7 @@ fn substrings_may_split_pairs_and_preserve_unpaired_surrogates() {
 fn substring_conversions_run_in_order_even_for_empty_or_reversed_ranges() {
     for name in ["slice", "substring"] {
         for value in ["''", "'abc'"] {
-            check(&format!(
+            assert_true(&format!(
                 "let log='';let r={{toString:()=>{{log+='r';return {value};}}}},a={{valueOf:()=>{{log+='a';return 3;}},toString:()=>{{throw 1;}}}},b={{valueOf:()=>{{log+='b';return 0;}}}};String.prototype.{name}.call(r,a,b);log==='rab'"
             ));
         }
@@ -140,7 +134,7 @@ fn generic_methods_reject_nullish_receivers_and_have_standard_metadata() {
         for nullish in ["null", "undefined"] {
             assert!(matches!(Realm::default().eval(&format!("String.prototype.{name}.call({nullish},{{valueOf:()=>{{throw 1;}},toString:()=>{{throw 2;}}}})")), Err(Error::Exception{kind:ExceptionKind::TypeError,..})));
         }
-        check(&format!(
+        assert_true(&format!(
             "let d=Object.getOwnPropertyDescriptor(String.prototype,'{name}');d.writable && !d.enumerable && d.configurable && d.value.name==='{name}' && d.value.length==={length} && !Object.hasOwn(d.value,'prototype')"
         ));
         assert!(matches!(

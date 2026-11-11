@@ -1,10 +1,8 @@
 //! Lazy map/filter closures with mathematical indices (27.1.3.3.4/8).
 
 use super::operations::IteratorRecord;
-use crate::{
-    Error, ExceptionKind, ObjectHandle, Realm, Value,
-    object::{CallbackIterator, CallbackKind, IteratorWrapper},
-};
+use crate::object::{CallbackIterator, CallbackKind, IteratorWrapper};
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_bigint::{Budget, Error as IntegerError};
 use spite_core::Span;
 
@@ -154,7 +152,8 @@ impl Realm {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Limits, iterator_count::Counter};
+    use crate::Limits;
+    use crate::iterator_count::Counter;
 
     #[test]
     fn suspended_callback_indices_remain_exact_beyond_u64_without_bigint_value_quota() {

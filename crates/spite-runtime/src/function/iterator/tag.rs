@@ -1,6 +1,7 @@
 //! Protected Iterator constructor/tag setters (27.1.3.3.2, 27.1.3.3.14, 7.3.37).
 
-use crate::{Error, ExceptionKind, Realm, Value, object::DataDescriptor};
+use crate::object::DataDescriptor;
+use crate::{Error, ExceptionKind, Realm, Value};
 use spite_core::{PropertyKey, Span};
 
 impl Realm {

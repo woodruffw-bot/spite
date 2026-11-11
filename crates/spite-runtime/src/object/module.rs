@@ -1,7 +1,8 @@
 //! Retained Source Text and JSON Synthetic Module records (16.2.1).
 
 use super::{Budget, Error, Objects};
-use crate::{Value, environment::EnvironmentHandle};
+use crate::Value;
+use crate::environment::EnvironmentHandle;
 use spite_core::JsString;
 use spite_heap::{Handle, Trace};
 use spite_parser::ast::{LocalExportEntry, Module, ModuleEntries, ModuleRequest};

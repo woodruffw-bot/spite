@@ -1,9 +1,8 @@
 //! Checked TZif offset histories, preserving explicit and recurring transitions.
 
-use super::{
-    LocalTimeZoneError, RecurringTimeZone, RecurringTimeZoneError, local::resolve_local,
-    posix::parse_with_syntax,
-};
+use super::local::resolve_local;
+use super::posix::parse_with_syntax;
+use super::{LocalTimeZoneError, RecurringTimeZone, RecurringTimeZoneError};
 
 /// An owned UTC offset history loaded from TZif bytes.
 ///

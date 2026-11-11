@@ -1,10 +1,8 @@
 //! Own private element storage; independent of properties and extensibility (7.3.27–31).
 
 use super::{Budget, Error, GetAction, Objects, SetAction};
-use crate::{
-    Value,
-    private::{PrivateMethod, PrivateMethodKind, PrivateName},
-};
+use crate::Value;
+use crate::private::{PrivateMethod, PrivateMethodKind, PrivateName};
 use spite_heap::{Handle, Trace};
 
 #[derive(Debug)]

@@ -1,6 +1,9 @@
 //! Prefix operators and primary-expression parsing use separate native frames.
 
-use super::*;
+use super::{
+    AwaitContext, Diagnostic, DiagnosticKind, Expr, ExprKind, Kind, Literal, Parser, Span, Token,
+    UnaryOp, UpdateOp, assignment_target, early, reserved,
+};
 
 impl Parser {
     #[inline(never)]

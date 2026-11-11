@@ -1,13 +1,14 @@
 //! Owned Realm data, separate from the Agent's heap, jobs and execution context (9.3).
 
-use crate::{
-    Error, ObjectHandle, Realm, TimeZone, environment::EnvironmentHandle, function::Intrinsics,
-    object::source_context::SourceExecutionContext,
-};
+use crate::environment::EnvironmentHandle;
+use crate::function::Intrinsics;
+use crate::object::source_context::SourceExecutionContext;
+use crate::{Error, ObjectHandle, Realm, TimeZone};
 use spite_core::{JsString, Span};
 use spite_heap::Trace;
 use spite_parser::ast::TemplateElement;
-use std::{collections::BTreeSet, rc::Rc};
+use std::collections::BTreeSet;
+use std::rc::Rc;
 
 #[derive(Debug, Default)]
 pub(crate) struct RealmRecord {

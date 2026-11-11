@@ -1,6 +1,10 @@
 //! Object data properties and ordinary method/accessor definitions (13.2.5, 15.4).
 
-use super::*;
+use super::{
+    AwaitContext, Diagnostic, Expr, ExprKind, Function, FunctionKind, FunctionSource, JsString,
+    Kind, Literal, ObjectElement, ObjectProperty, Parameter, Parser, PropertyKind, PropertyName,
+    Span, Token, YieldContext, early, reserved,
+};
 use std::rc::Rc;
 
 impl Parser {

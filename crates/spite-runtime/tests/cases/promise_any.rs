@@ -3,13 +3,7 @@
 use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, PromiseJobOutcome, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 fn drain(realm: &mut Realm) {
     loop {
@@ -45,7 +39,7 @@ fn exhausted_rejections_and_empty_input_create_ordered_branded_aggregate_errors(
 
 #[test]
 fn custom_capabilities_receive_original_resolve_and_guarded_reject_elements() {
-    check(
+    assert_true(
         r#"
         let callbacks=[],originalResolve,output,rejected=0,result={},sentinel={};
         function C(executor){
@@ -115,10 +109,10 @@ fn pending_reason_lists_and_completed_errors_trace_object_and_symbol_values() {
 
 #[test]
 fn iterator_language_errors_reject_directly_and_host_failures_skip_cleanup() {
-    check(
+    assert_true(
         "let original={},other={},closed=0,caught;function C(executor){executor(()=>{throw 1},e=>{caught=e})}C.resolve=()=>{throw original};Promise.any.call(C,{[Symbol.iterator](){return{next(){return{value:1,done:false}},return(){closed++;throw other}}}});caught===original&&closed===1",
     );
-    check(
+    assert_true(
         "let original={},closed=0,caught;function C(executor){executor(()=>{throw 1},e=>{caught=e})}C.resolve=v=>v;Promise.any.call(C,{[Symbol.iterator](){return{next(){throw original},return(){closed++;return{}}}}});caught===original&&closed===0",
     );
     let mut realm = Realm::with_unavailable_host();

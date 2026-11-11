@@ -1,10 +1,8 @@
 //! Default export declarations, synthetic bindings and expression grammar (16.2.3).
 
 use spite_core::{DiagnosticKind, JsString};
-use spite_parser::{
-    ast::{ExportKind, ExprKind, Literal, StatementKind},
-    parse_module, parse_module_utf16, parse_module_with_source_limit,
-};
+use spite_parser::ast::{ExportKind, ExprKind, Literal, StatementKind};
+use spite_parser::{parse_module, parse_module_utf16, parse_module_with_source_limit};
 
 #[test]
 fn default_records_distinguish_named_declarations_from_synthetic_bindings() {

@@ -1,7 +1,8 @@
 //! Mapped-argument aliases into checked environment cells (10.4.4).
 
 use super::{Budget, Error, Objects, array_index};
-use crate::{Value, environment::EnvironmentHandle};
+use crate::Value;
+use crate::environment::EnvironmentHandle;
 use spite_core::{JsString, PropertyKeyRef};
 use spite_heap::Handle;
 use std::collections::BTreeMap;
@@ -96,10 +97,8 @@ impl Objects {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        Realm,
-        object::{DataDescriptor, DescriptorKind, PropertyDescriptor},
-    };
+    use crate::Realm;
+    use crate::object::{DataDescriptor, DescriptorKind, PropertyDescriptor};
 
     fn setup() -> (Realm, Handle) {
         let mut realm = Realm::default();

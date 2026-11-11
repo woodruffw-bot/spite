@@ -3,13 +3,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn unicode_noncharacter_property_results_snapshot() {
@@ -54,16 +48,16 @@ fn unicode_noncharacter_property_results_snapshot() {
 #[test]
 fn unicode_noncharacter_properties_aliases_complements_and_unions() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let a=/\p{{Noncharacter_Code_Point}}/{mode},b=/\p{{NChar}}/i{mode},n=/\P{{NChar}}/i{mode};a.test('\uFDD0')&&a.test('\uFFFF')&&b.test('\uFDD0')&&!a.test('\uFDCF')&&!b.test('\uFDF0')&&!b.test('ſ')&&!b.test('K')&&!n.test('\uFDD0')&&n.test('😀')&&n.test('\uD800')&&n.test('\uFEFF')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let p=/\p{{Noncharacter_Code_Point}}/{mode},s=/\s/{mode};p.test('\uFDD0')&&p.test('\uFFFF')&&!s.test('\uFDD0')&&!s.test('\uFFFF')&&!p.test('\uFEFF')&&s.test('\uFEFF')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=/[\p{{NChar}}K]/i{mode},b=/[^\P{{Noncharacter_Code_Point}}K]/i{mode},c=/[\p{{NChar}}\P{{Noncharacter_Code_Point}}]/{mode};a.test('K')&&a.test('k')&&a.test('\uFDD0')&&!a.test('ſ')&&b.test('\uFFFF')&&!b.test('K')&&c.test('😀')&&c.test('A')&&c.test('\uD800')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=/^\p{{NChar}}$/{mode},b=/^\P{{NChar}}$/{mode};a.test('\uFDD0')&&!a.test('\uFFFF\n')&&!a.test('')&&!a.test('\n')&&b.test('😀')&&!b.test('AA')"
         ));
     }
@@ -72,23 +66,23 @@ fn unicode_noncharacter_properties_aliases_complements_and_unions() {
 #[test]
 fn unicode_noncharacter_properties_captures_context_and_pair_starts() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let p=/\p{{NChar}}/i{mode},good=true;for(let plane=0;plane<17;plane++){{let top=plane*65536+65535;good=good&&p.test(String.fromCodePoint(top))&&p.test(String.fromCodePoint(top-1))&&!p.test(String.fromCodePoint(top-2))}}good"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/(?<x>\p{{Noncharacter_Code_Point}})/d{mode}y;r.lastIndex=1;let m=r.exec('\u{{10ffff}}');m.index===0&&m[0]==='\u{{10ffff}}'&&m.indices.groups.x[0]===0&&m.indices.groups.x[1]===2&&r.lastIndex===2"
         ));
 
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^(?<x>([\p{{NChar}}K]))$/dim{mode}g,m=r.exec('x\r\nK\u2028');m.index===3&&m[1]==='K'&&m[2]==='K'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===4&&r.lastIndex===4"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/(?<__proto__>\P{{NChar}})/d{mode}y;r.lastIndex=1;let m=r.exec('😀\ufdd0');m.index===0&&m[1]==='😀'&&m.indices[1][1]===2&&r.lastIndex===2&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\p{{NChar}}/d{mode}g;r.lastIndex=1;let m=r.exec('😀\ufdd0');m.index===2&&m[0]==='\ufdd0'&&r.lastIndex===3"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\p{{NChar}}/{mode}y;r.lastIndex=1;r.exec('😀\ufdd0')===null&&r.lastIndex===0"
         ));
     }
@@ -97,16 +91,16 @@ fn unicode_noncharacter_properties_captures_context_and_pair_starts() {
 #[test]
 fn unicode_noncharacter_properties_consumers_original_text() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let a=[...'\uffff😀\ufdd0G'.matchAll(/(?<x>\P{{NChar}})/d{mode}g)];a.length===2&&a[0][1]==='😀'&&a[0].index===1&&a[0].indices[1][1]===3&&a[1][1]==='G'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'\uffff\ufdd0😀X'.replace(/(?<x>\p{{Noncharacter_Code_Point}})/{mode}g,'<$1:$<x>>')==='<\uffff:\uffff><\ufdd0:\ufdd0>😀X'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'😀\uffff\ufdd0G'.split(/(\p{{NChar}})/{mode}).join('|')==='😀|\uffff||\ufdd0|G'&&'😀\ufdd0'.search(/\p{{NChar}}/{mode})===2&&'\uffff\ufdd0😀'.match(/\p{{NChar}}/{mode}g).join('')==='\uffff\ufdd0'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let t='';let x='\ufdd0\uffff😀\ufdd0'.replace(/(\p{{NChar}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__😀_'&&t==='014'"
         ));
     }
@@ -114,16 +108,16 @@ fn unicode_noncharacter_properties_consumers_original_text() {
 
 #[test]
 fn unicode_noncharacter_properties_clones_coercions_and_strict_writes() {
-    check(
+    assert_true(
         r"let r=/^(?<x>\p{Noncharacter_Code_Point})$/dmu,c=new RegExp(r,'divy');c.source==='^(?<x>\\p{Noncharacter_Code_Point})$'&&c.unicodeSets&&!c.unicode&&!c.multiline&&c.exec('\ufdd0').groups.x==='\ufdd0'&&c.lastIndex===1",
     );
-    check(
+    assert_true(
         r"let t='',r=/\P{NChar}/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m[0]==='😀'&&m.index===0&&r.lastIndex===2",
     );
-    check(
+    assert_true(
         r"let r=/\p{NChar}/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('\ufdd0')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/\p{NChar}/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀\ufdd0')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
 }
@@ -145,18 +139,15 @@ fn unicode_noncharacter_properties_opted_work_and_remaining_sets() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
-    check(
+    assert_true(
         r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
     );
-    check(r"/[\p{NChar}&&A]/v.exec('A')===null");
-    check(r"/[\p{NChar}--A]/v.exec('A')===null");
-    check(
+    assert_true(r"/[\p{NChar}&&A]/v.exec('A')===null");
+    assert_true(r"/[\p{NChar}--A]/v.exec('A')===null");
+    assert_true(
         r"let s=String.fromCodePoint(0xfdd0),m=/[\p{NChar}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
     );
     for source in [r"/\p{NChar}+b/u.exec('AA')", r"/\p{NChar}A/v.exec('AA')"] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }

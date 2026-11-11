@@ -300,7 +300,7 @@ impl Hub {
             generation,
         });
         for id in &selected {
-            state.workers[*id].inbox = Some(message.clone())
+            state.workers[*id].inbox = Some(message.clone());
         }
         state.generation = generation;
         self.wake.notify_all();
@@ -379,7 +379,7 @@ impl Hub {
                 if !worker.finished
                     && let Some(control) = &worker.control
                 {
-                    control.terminate()
+                    control.terminate();
                 }
             }
             std::mem::take(&mut state.threads)

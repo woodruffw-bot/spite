@@ -1,6 +1,9 @@
 //! Arrow cover grammar for identifier parameters and concise bodies (15.3).
 
-use super::*;
+use super::{
+    ArrowBody, AwaitContext, Diagnostic, DiagnosticKind, Expr, ExprKind, FunctionKind,
+    FunctionSource, Kind, Parameter, Parser, Span, YieldContext, cover, early,
+};
 
 pub(super) type Head = std::rc::Rc<cover::Probe<std::rc::Rc<[Parameter]>>>;
 

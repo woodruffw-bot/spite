@@ -2,27 +2,21 @@
 
 use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn repetition_uses_integer_counts_and_preserves_code_units() {
-    check(
+    assert_true(
         "'ab'.repeat(3)==='ababab' && 'ab'.repeat(2.9)==='abab' && 'ab'.repeat('2')==='abab' && 'ab'.repeat(true)==='ab'",
     );
     for count in ["undefined", "NaN", "null", "false", "-0", "-0.9", "0"] {
-        check(&format!("'ab'.repeat({count})===''"));
+        assert_true(&format!("'ab'.repeat({count})===''"));
     }
-    check("''.repeat(1e308)==='' && ''.repeat(9007199254740991)==='' && 'ab'.repeat()===''");
-    check(
+    assert_true("''.repeat(1e308)==='' && ''.repeat(9007199254740991)==='' && 'ab'.repeat()===''");
+    assert_true(
         "'💩'.repeat(2)==='💩💩' && '\\uD800'.repeat(2)==='\\uD800\\uD800' && '\\uDC00\\uD800'.repeat(2)==='\\uDC00\\uD800\\uDC00\\uD800'",
     );
-    check("String.prototype.repeat.call(12,2)==='1212' && new String('a').repeat(2)==='aa'");
+    assert_true("String.prototype.repeat.call(12,2)==='1212' && new String('a').repeat(2)==='aa'");
     for count in ["-1", "-1.9", "-Infinity", "Infinity"] {
         for receiver in ["''", "'x'"] {
             assert!(matches!(
@@ -45,7 +39,7 @@ fn repetition_uses_integer_counts_and_preserves_code_units() {
 
 #[test]
 fn repetition_converts_receiver_before_count() {
-    check(
+    assert_true(
         "let log='';let r={toString:()=>{log+='r';return 'ab';}},n={valueOf:()=>{log+='n';return 2;},toString:()=>{throw 1;}};String.prototype.repeat.call(r,n)==='abab' && log==='rn'",
     );
     assert_eq!(
@@ -62,17 +56,17 @@ fn repetition_converts_receiver_before_count() {
 
 #[test]
 fn padding_uses_truncated_repeated_filler_and_default_space() {
-    check(
+    assert_true(
         "'abc'.padStart(7)==='    abc' && 'abc'.padEnd(7,undefined)==='abc    ' && 'abc'.padStart(8,'xy')==='xyxyxabc' && 'abc'.padEnd(8,'xy')==='abcxyxyx'",
     );
-    check(
+    assert_true(
         "'abc'.padStart(6,null)==='nulabc' && 'abc'.padEnd(5,false)==='abcfa' && 'abc'.padStart(5,12n)==='12abc'",
     );
-    check("'x'.padStart('3.9','a')==='aax' && 'x'.padEnd(3.9,'a')==='xaa'");
-    check(
+    assert_true("'x'.padStart('3.9','a')==='aax' && 'x'.padEnd(3.9,'a')==='xaa'");
+    assert_true(
         "'x'.padStart(2,'💩')==='\\uD83Dx' && 'x'.padEnd(4,'💩')==='x💩\\uD83D' && 'x'.padStart(3,'\\uDC00')==='\\uDC00\\uDC00x'",
     );
-    check(
+    assert_true(
         "''.padStart(3,'ab')==='aba' && ''.padEnd(3,'ab')==='aba' && String.prototype.padStart.call(12,4,0)==='0012' && new String('x').padEnd(2)==='x '",
     );
 }
@@ -91,18 +85,18 @@ fn padding_short_circuits_before_filler_coercion_and_after_empty_filler() {
             "2.9",
             "3",
         ] {
-            check(&format!(
+            assert_true(&format!(
                 "'abc'.{name}({max},{{toString:()=>{{throw 1;}}}})==='abc'"
             ));
         }
-        check(&format!(
+        assert_true(&format!(
             "'abc'.{name}(Infinity,'')==='abc' && ''.{name}(1e308,'')===''"
         ));
-        check(&format!(
+        assert_true(&format!(
             "let n=0;'abc'.{name}(Infinity,{{toString:()=>{{n++;return '';}}}})==='abc' && n===1"
         ));
         // Argument expressions run even when filler coercion is skipped.
-        check(&format!(
+        assert_true(&format!(
             "let n=0;'abc'.{name}(1,(n++,{{toString:()=>{{throw 1;}}}}))==='abc' && n===1"
         ));
         assert!(matches!(
@@ -118,7 +112,7 @@ fn padding_short_circuits_before_filler_coercion_and_after_empty_filler() {
 #[test]
 fn padding_observes_receiver_then_length_then_filler() {
     for (name, expected) in [("padStart", "xxa"), ("padEnd", "axx")] {
-        check(&format!(
+        assert_true(&format!(
             "let log='';let r={{toString:()=>{{log+='r';return 'a';}}}},n={{valueOf:()=>{{log+='n';return 3;}}}},f={{toString:()=>{{log+='f';return 'x';}},valueOf:()=>{{throw 1;}}}};String.prototype.{name}.call(r,n,f)==='{expected}' && log==='rnf'"
         ));
         assert_eq!(Realm::default().eval(&format!("String.prototype.{name}.call({{toString:()=>{{throw 7;}}}},{{valueOf:()=>{{throw 8;}}}},{{toString:()=>{{throw 9;}}}})")),Err(Error::Thrown(Value::Number(7.0))));
@@ -151,7 +145,7 @@ fn methods_reject_nullish_receivers_and_have_standard_metadata() {
                 })
             ));
         }
-        check(&format!(
+        assert_true(&format!(
             "let d=Object.getOwnPropertyDescriptor(String.prototype,'{name}');d.writable && !d.enumerable && d.configurable && d.value.name==='{name}' && d.value.length===1 && !Object.hasOwn(d.value,'prototype')"
         ));
         assert!(matches!(

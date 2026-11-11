@@ -2,14 +2,10 @@
 
 use crate::{Error, Realm, Value};
 use spite_core::Span;
-use std::{
-    collections::hash_map::RandomState,
-    hash::BuildHasher,
-    sync::{
-        OnceLock,
-        atomic::{AtomicU64, Ordering},
-    },
-};
+use std::collections::hash_map::RandomState;
+use std::hash::BuildHasher;
+use std::sync::OnceLock;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 static PROCESS_SEED: OnceLock<u64> = OnceLock::new();
 static NEXT_SEQUENCE: AtomicU64 = AtomicU64::new(0);

@@ -1,8 +1,8 @@
 //! Owned BindingInitialization state between computed-key and default Await jobs.
 
-use crate::{
-    ObjectHandle, Reference, Value, environment::EnvironmentHandle, function::IteratorRecord,
-};
+use crate::environment::EnvironmentHandle;
+use crate::function::IteratorRecord;
+use crate::{ObjectHandle, Reference, Value};
 use spite_core::{JsSymbol, PropertyKey, Span};
 use std::collections::HashSet;
 

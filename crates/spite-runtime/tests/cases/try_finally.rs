@@ -145,7 +145,7 @@ fn finalizers_run_once_after_normal_and_abrupt_language_completions() {
             );
             match body {
                 "throw 8;" => {
-                    assert_eq!(realm.eval(&source), Err(Error::Thrown(Value::Number(8.0))))
+                    assert_eq!(realm.eval(&source), Err(Error::Thrown(Value::Number(8.0))));
                 }
                 "missing;" => assert!(matches!(
                     realm.eval(&source),

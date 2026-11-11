@@ -3,28 +3,22 @@
 use spite_core::JsString;
 use spite_runtime::{Error, ExceptionKind, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn construction_distinguishes_nullish_object_and_primitive_arguments() {
-    check(
+    assert_true(
         "let a=Object(),b=new Object(null),c=Object(undefined);a!==b && b!==c && a instanceof Object && Object.prototype.isPrototypeOf(a) && a.constructor===Object",
     );
-    check(
+    assert_true(
         "let o={valueOf:()=>{throw 1;},toString:()=>{throw 2;}};Object(o)===o && new Object(o)===o && Object.call(null,o)===o && new (Object.bind(null,o))()===o",
     );
-    check(
+    assert_true(
         "let b=Object(false),n=new Object(-0);b instanceof Boolean && b.valueOf()===false && n instanceof Number && 1/n.valueOf()===-Infinity && n!==Object(-0)",
     );
-    check("let effect=0;Object(null,effect=1);effect===1");
+    assert_true("let effect=0;Object(null,effect=1);effect===1");
     for source in ["Object(1n)", "new Object(1n)"] {
-        check(&format!(
+        assert_true(&format!(
             "let b={source};b instanceof BigInt && b.valueOf()===1n"
         ));
     }
@@ -102,13 +96,13 @@ fn object_constructor_and_prototype_methods_have_standard_descriptors() {
 
 #[test]
 fn property_predicates_use_own_descriptors_and_convert_keys_before_receivers() {
-    check(
+    assert_true(
         "let o={__proto__:{inherited:1},own:2,1:3};o.hasOwnProperty('own') && o.propertyIsEnumerable('own') && o.hasOwnProperty(1n) && !o.hasOwnProperty('inherited') && !o.propertyIsEnumerable('inherited')",
     );
-    check(
+    assert_true(
         "Object.prototype.hasOwnProperty('constructor') && !Object.prototype.propertyIsEnumerable('constructor') && !({}).hasOwnProperty('constructor')",
     );
-    check(
+    assert_true(
         "!true.hasOwnProperty('valueOf') && !Object.prototype.propertyIsEnumerable.call(1,'valueOf')",
     );
     for method in ["hasOwnProperty", "propertyIsEnumerable"] {
@@ -134,7 +128,7 @@ fn property_predicates_use_own_descriptors_and_convert_keys_before_receivers() {
 #[test]
 fn prototype_predicate_checks_argument_before_receiver_and_walks_ancestors() {
     for argument in ["undefined", "null", "true", "1", "1n", "'x'"] {
-        check(&format!(
+        assert_true(&format!(
             "Object.prototype.isPrototypeOf.call(null,{argument})===false"
         ));
     }
@@ -145,23 +139,23 @@ fn prototype_predicate_checks_argument_before_receiver_and_walks_ancestors() {
             ..
         })
     ));
-    check(
+    assert_true(
         "let p={},child={__proto__:p},grandchild={__proto__:child};p.isPrototypeOf(child) && p.isPrototypeOf(grandchild) && !p.isPrototypeOf(p) && !child.isPrototypeOf(p) && !p.isPrototypeOf({__proto__:null})",
     );
-    check(
+    assert_true(
         "Object.prototype.isPrototypeOf(new TypeError) && Error.prototype.isPrototypeOf(new TypeError) && !TypeError.prototype.isPrototypeOf(new Error)",
     );
 }
 
 #[test]
 fn locale_string_invokes_the_current_method_without_forwarding_reserved_arguments() {
-    check(
+    assert_true(
         "let count=0;let o={toString:function(){'use strict';count++;return this;}};o.toLocaleString()===o && count===1",
     );
-    check(
+    assert_true(
         "let effect=0;let o={toString:function(){return arguments.length;}};o.toLocaleString(effect=1,effect=2)===0 && effect===2",
     );
-    check(
+    assert_true(
         "Object.prototype.toLocaleString.call(true)==='true' && Object.prototype.toLocaleString.call(12)==='12'",
     );
     for source in [
@@ -184,7 +178,7 @@ fn locale_string_invokes_the_current_method_without_forwarding_reserved_argument
 
 #[test]
 fn intrinsic_roots_survive_deleted_bindings_and_array_statics_are_reflectable() {
-    check("globalThis.hasOwnProperty('Proxy') && typeof Proxy==='function'");
+    assert_true("globalThis.hasOwnProperty('Proxy') && typeof Proxy==='function'");
     let mut realm = Realm::default();
     realm.eval("let C=Object;delete globalThis.Object").unwrap();
     realm.collect(usize::MAX).unwrap();
@@ -194,5 +188,5 @@ fn intrinsic_roots_survive_deleted_bindings_and_array_statics_are_reflectable() 
         ),
         Ok(Value::Boolean(true))
     );
-    check("typeof Array.fromAsync==='function'&&!Array.propertyIsEnumerable('fromAsync')");
+    assert_true("typeof Array.fromAsync==='function'&&!Array.propertyIsEnumerable('fromAsync')");
 }

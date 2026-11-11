@@ -1,10 +1,10 @@
 //! Assignment Reference capture, short circuiting and PutValue (13.15.2).
 
 use super::{AsyncExecutionData, child_path, expression_at, has_supported_await, push};
-use crate::{
-    Error, Realm, Reference, Value,
-    object::async_expression::{AsyncExpressionData, ExprChild, ExprPath, ExprTask, MemberAction},
+use crate::object::async_expression::{
+    AsyncExpressionData, ExprChild, ExprPath, ExprTask, MemberAction,
 };
+use crate::{Error, Realm, Reference, Value};
 use spite_core::Span;
 use spite_parser::ast::{BinaryOp, ExprKind};
 

@@ -1,7 +1,9 @@
 //! Execute unchanged pinned harness code and verify success/failure paths.
 
 use spite_test262::{Outcome, Runner, Stage};
-use std::{fmt::Write as _, fs, path::Path};
+use std::fmt::Write as _;
+use std::fs;
+use std::path::Path;
 
 fn run(body: &str) -> Vec<Outcome> {
     run_with_includes(body, "compareArray.js")

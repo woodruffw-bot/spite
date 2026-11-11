@@ -1,6 +1,7 @@
 //! Raw JSON creation and the unforgeable [[IsRawJSON]] brand (25.5.1, 25.5.3).
 
-use crate::{Error, ExceptionKind, Realm, Value, object::DataDescriptor};
+use crate::object::DataDescriptor;
+use crate::{Error, ExceptionKind, Realm, Value};
 use spite_core::{JsString, Span};
 
 impl Realm {

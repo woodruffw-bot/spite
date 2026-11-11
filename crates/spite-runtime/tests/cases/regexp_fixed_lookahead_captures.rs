@@ -1,14 +1,8 @@
 //! Fixed lookahead captures retain their forward iteration ranges.
+use crate::common::assert_true;
 use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
 
 #[test]
 fn fixed_lookahead_capture_result_snapshot() {
@@ -78,38 +72,38 @@ fn fixed_lookahead_capture_result_snapshot() {
 
 #[test]
 fn named_forward_ranges_after_the_match_backward_children_and_negative_restoration() {
-    check(
+    assert_true(
         r"let a=/(?<=a(?=(?<x>b){2}))b/d.exec('qabb');a.index===2&&a.groups.x==='b'&&a.indices.groups.x===a.indices[1]&&a.indices[1][0]===3&&a.indices[1][1]===4",
     );
-    check(
+    assert_true(
         r"let a=/(?<=a(?=(?:(?<x>b)|(?<x>c))))b/d.exec('qab');a.groups.x==='b'&&a[1]==='b'&&a[2]===undefined&&a.indices.groups.x===a.indices[1]&&a.indices[1][0]===2",
     );
-    check(
+    assert_true(
         r"let a=/(?<=a(?=(?<=(?<x>a){2})b))b/d.exec('qaab');a.groups.x==='a'&&a.index===3&&a.indices.groups.x[0]===1&&a.indices.groups.x[1]===2",
     );
-    check(
+    assert_true(
         r"let a=/(?<!(?=(?<x>b))q)c/d.exec('qbc');a.index===2&&a.groups.x===undefined&&Object.hasOwn(a.groups,'x')&&a.indices.groups.x===undefined&&Object.hasOwn(a.indices.groups,'x')",
     );
-    check(
+    assert_true(
         r"let a=/(?<=((?=(b))){2})b/d.exec('qb'),b=/(?<=((?=(b)))*)b/d.exec('qb');a[1]===''&&a[2]==='b'&&a.indices[1][0]===1&&a.indices[2][1]===2&&b[1]===undefined&&b[2]===undefined",
     );
 }
 
 #[test]
 fn consumers_callbacks_imported_ranges_sticky_and_empty_advancement() {
-    check(
+    assert_true(
         r"let r=/(?<=a(?=(b){2}))b/dg,a=[...'qabb abb'.matchAll(r)];a.length===2&&a[1].index===6&&a[1].indices[1][0]===7&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/(?<=a(?=(b){2}))b/dy;r.lastIndex=2;let a=r.exec('qabb');a.index===2&&a.indices[1][0]===3&&r.lastIndex===3&&r.exec('qabb')===null&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/(?<=((?=(b))){2})/dg,a=[...'bb'.matchAll(r)];a.length===2&&a[1].index===1&&a[1][1]===''&&a[1][2]==='b'&&a[1].indices[2][0]===1&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let seen=[];let s='qabb abb'.replace(/(?<=a(?=(b){2}))b/g,(m,c,i)=>{seen.push(c,i);return '_'});s==='qa_b a_b'&&seen.join('|')==='b|2|b|6'",
     );
-    check(
+    assert_true(
         r"'qabb'.replace(/(?<=a(?=(?<x>b){2}))b/,'<$<x>>')==='qa<b>b'&&'qabb'.search(/(?<=a(?=(b){2}))b/)===2&&'abb'.split(/(?<=a(?=(b){2}))b/).join('|')==='a|b|b'",
     );
 }
@@ -143,9 +137,6 @@ fn variable_width_dependent_continuations_and_unicode_modes_stay_unsupported() {
         r"/(?<=a(?=(b)))b/u.exec('ab')",
         r"/(?<=a(?=(b)))b/v.exec('ab')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }

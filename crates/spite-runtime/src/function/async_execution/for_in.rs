@@ -1,10 +1,8 @@
 //! Suspended EnumerateObjectProperties with live descriptors and prototypes (14.7.5.9–10).
 
 use super::{AsyncExecutionData, FrameStep, Step, active_statement, child_location};
-use crate::{
-    Completion, Error, Realm, Value,
-    object::async_execution::{AsyncStatementFrame, StatementChild},
-};
+use crate::object::async_execution::{AsyncStatementFrame, StatementChild};
+use crate::{Completion, Error, Realm, Value};
 
 impl Realm {
     pub(super) fn async_for_in_step(

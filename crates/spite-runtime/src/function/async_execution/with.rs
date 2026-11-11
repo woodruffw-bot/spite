@@ -1,10 +1,8 @@
 //! Suspended WithStatement object evaluation and scope restoration (14.11.2).
 
 use super::{AsyncExecutionData, Step, active_statement, child_location};
-use crate::{
-    Error, Realm, Value,
-    object::async_execution::{AsyncStatementFrame, StatementChild},
-};
+use crate::object::async_execution::{AsyncStatementFrame, StatementChild};
+use crate::{Error, Realm, Value};
 use spite_parser::ast::StatementKind;
 
 impl Realm {

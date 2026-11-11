@@ -3,13 +3,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn native_test_boolean_results_snapshot() {
@@ -68,42 +62,42 @@ fn native_test_boolean_results_snapshot() {
 
 #[test]
 fn native_test_preserves_conversion_lookup_and_last_index_order() {
-    check(
+    assert_true(
         "let t='',r=/a/g;Object.defineProperty(r,'exec',{get(){t+='e';return RegExp.prototype.exec;}});r.lastIndex={valueOf(){t+='i';return 0}};let b=r.test({toString(){t+='s';return 'a'}});b&&t==='sei'&&r.lastIndex===1",
     );
-    check(
+    assert_true(
         "let t='',r=/a/;Object.defineProperty(r,'exec',{get(){t+='e';return RegExp.prototype.exec;}});let i={valueOf(){t+='i';return 99}};r.lastIndex=i;let b=r.test({toString(){t+='s';return 'a'}});b&&t==='sei'&&r.lastIndex===i",
     );
-    check(
+    assert_true(
         "let t='',r=/a/g;r.lastIndex={valueOf(){t+='i';throw 7}};try{r.test({toString(){t+='s';return 'a'}})}catch(e){t+=e}t==='si7'",
     );
-    check(
+    assert_true(
         "let t='',r=/a/g;Object.defineProperty(r,'exec',{get(){t+='e';throw 8}});try{r.test({toString(){t+='s';throw 7}})}catch(e){t+=e}t==='s7'",
     );
-    check(
+    assert_true(
         "let r=/a/g;Object.defineProperty(r,'exec',{get(){r.lastIndex=1;return RegExp.prototype.exec}});!r.test('a')&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         "let r=/a/g,b=r.test({toString(){r.exec=function(s){return s==='a'?{}:null};return 'a'}});b&&r.lastIndex===0",
     );
 }
 
 #[test]
 fn custom_exec_results_and_bound_native_exec_keep_their_calls() {
-    check(
+    assert_true(
         "let r=/a/g,n=0;r.exec=function(s){n++;return this===r&&s==='a'&&arguments.length===1?{}:null};r.test('a')&&n===1&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         "let r=/a/g;r.exec=function(){return {get index(){throw 7},get length(){throw 8}}};r.test('')&&r.lastIndex===0",
     );
-    check("let r=/a/g;r.exec=function(){return null};!r.test('a')&&r.lastIndex===0");
-    check(
+    assert_true("let r=/a/g;r.exec=function(){return null};!r.test('a')&&r.lastIndex===0");
+    assert_true(
         "let r=/a/g,f=function(){return null};Object.defineProperty(f,'name',{value:'exec'});r.exec=f;!r.test('a')&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         "let r=/a/g,n=0,e=RegExp.prototype.exec;r.exec=function(s){n++;return e.call(this,s)};r.test('a')&&n===1&&r.lastIndex===1",
     );
-    check(
+    assert_true(
         "let r=/a/g,s=/b/g;r.exec=RegExp.prototype.exec.bind(s);r.test('b')&&r.lastIndex===0&&s.lastIndex===1",
     );
     for value in ["undefined", "true", "1", "'x'", "1n", "Symbol()"] {
@@ -122,7 +116,7 @@ fn custom_exec_results_and_bound_native_exec_keep_their_calls() {
 #[test]
 fn native_test_fallback_brand_checks_and_strict_index_writes() {
     for value in ["undefined", "null", "0", "{}"] {
-        check(&format!(
+        assert_true(&format!(
             "let r=/a/g;r.exec={value};r.test('a')&&r.lastIndex===1&&!r.test('a')&&r.lastIndex===0"
         ));
     }
@@ -144,11 +138,11 @@ fn native_test_fallback_brand_checks_and_strict_index_writes() {
             "{program}"
         );
     }
-    check(
+    assert_true(
         "let r=/a/;Object.defineProperty(r,'lastIndex',{writable:false});r.test('a')&&!r.test('b')&&r.lastIndex===0",
     );
-    check("let r=/()/dgy;r.lastIndex=1;r.test('a')&&r.lastIndex===1");
-    check("let r=/😀/duy;r.lastIndex=1;r.test('😀')&&r.lastIndex===2");
+    assert_true("let r=/()/dgy;r.lastIndex=1;r.test('a')&&r.lastIndex===1");
+    assert_true("let r=/😀/duy;r.lastIndex=1;r.test('😀')&&r.lastIndex===2");
 }
 
 #[test]
@@ -169,9 +163,9 @@ fn native_test_search_quota_and_unsupported_boundary_are_preserved() {
         realm.eval("r.lastIndex===1&&m===0"),
         Ok(Value::Boolean(true))
     );
-    assert!(crate::common::regexp_oracle::check(
+    crate::common::regexp_oracle::assert_matches_reference(
         &mut Realm::default(),
-        "/(a)+b/u.test('ab')"
-    ));
-    check("let r=/(a)+b/ug;r.lastIndex=10;!r.test('ab')&&r.lastIndex===0");
+        "/(a)+b/u.test('ab')",
+    );
+    assert_true("let r=/(a)+b/ug;r.lastIndex=10;!r.test('ab')&&r.lastIndex===0");
 }

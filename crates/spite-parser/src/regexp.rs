@@ -3,7 +3,10 @@
 use spite_core::{
     Diagnostic, DiagnosticKind, JsString, Span, is_identifier_part, is_identifier_start,
 };
-use std::{cmp::Ordering, collections::HashSet, mem, ops::Range};
+use std::cmp::Ordering;
+use std::collections::HashSet;
+use std::mem;
+use std::ops::Range;
 
 mod properties;
 mod property_data;

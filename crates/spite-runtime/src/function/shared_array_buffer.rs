@@ -1,10 +1,8 @@
 //! SharedArrayBuffer construction, branded lengths, growth and slicing (25.2).
 
 use super::global_metadata::Member;
-use crate::{
-    Error, ExceptionKind, ObjectHandle, Realm, Value,
-    object::{SharedArrayBufferData, SharedBufferError},
-};
+use crate::object::{SharedArrayBufferData, SharedBufferError};
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span};
 
 impl Realm {

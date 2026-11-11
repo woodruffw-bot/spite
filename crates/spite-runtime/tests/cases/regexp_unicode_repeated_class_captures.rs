@@ -3,13 +3,7 @@
 use spite_core::JsString;
 use spite_runtime::{Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn consuming_point_capture_count_families_keep_last_character_and_undefined_slots() {
@@ -84,7 +78,7 @@ fn consuming_point_capture_count_families_keep_last_character_and_undefined_slot
                 };
                 let pattern = JsString::from(format!("(?<whole>(?<each>{body}){count})").as_str());
                 let Some(whole) = whole else {
-                    check(&format!(
+                    assert_true(&format!(
                         "var r=new RegExp({pattern:?},'dvg');r.lastIndex=1;r.exec('aaa')===null&&r.lastIndex===0"
                     ));
                     continue;
@@ -101,7 +95,7 @@ fn consuming_point_capture_count_families_keep_last_character_and_undefined_slot
                     "m.indices.groups.each===undefined&&m.indices.groups.part===undefined"
                         .to_owned()
                 };
-                check(&format!(
+                assert_true(&format!(
                     r#"
                     var r=new RegExp({pattern:?},'dvg'),m=r.exec('aaa'),keys=Object.keys(m.groups);
                     var before='{before}'.split(','),after='{after}'.split(','),never='{never}'.split(','),ok=true;
@@ -126,35 +120,35 @@ fn consuming_point_capture_count_families_keep_last_character_and_undefined_slot
 
 #[test]
 fn consuming_point_captures_use_supplementary_boundaries_folding_gates_and_original_metadata() {
-    check(
+    assert_true(
         r"var r=/(?<whole>(?<each>(?<before>)(?<part>[\q{😀}])(?<after>))+)/dvgy;r.lastIndex=1;var m=r.exec('😀😀!');m[0]==='😀😀'&&m.groups.each==='😀'&&m.groups.before===''&&m.indices.groups.before[0]===2&&m.indices.groups.after[0]===4&&m.indices.groups.part[0]===2&&r.lastIndex===4",
     );
-    check(
+    assert_true(
         r"var r=/(?<each>(?<\u{1D49C}>)(?<part>[\q{s|k}])(?<after>))+/dvi;var m=r.exec('ſK!');m[0]==='ſK'&&m.groups.part==='K'&&m.groups.𝒜===''&&m.indices.groups.𝒜[0]===1&&m.indices.groups.after[0]===2&&r.source.indexOf('1D49C')!==-1",
     );
-    check(
+    assert_true(
         r"var m=/(?:(?<before>)(?<part>[^\q{ab}&&a])(?<after>)){1}/dv.exec('\ud800');m.groups.part==='\ud800'&&m.indices.groups.before[0]===0&&m.indices.groups.after[0]===1",
     );
-    check(
+    assert_true(
         r"var r=/^\b(?:(?<before>)(?<part>[\q{a|b}])(?<after>)){2,3}?\b$/dvm;var m=r.exec('!\r\naaa\u2028!');m[0]==='aaa'&&m.index===3&&m.indices.groups.before[0]===5&&m.indices.groups.after[0]===6",
     );
-    check(
+    assert_true(
         r"var r=/(?:()[\q{a}]())+/vg;Object.defineProperty(r,'lastIndex',{writable:false});var threw=false;try{r.exec('aaa')}catch(e){threw=e instanceof TypeError}threw&&r.lastIndex===0",
     );
 }
 
 #[test]
 fn consuming_point_captures_survive_string_consumers_callbacks_clones_and_collection() {
-    check(
+    assert_true(
         r"var r=/(?:(?<before>)(?<part>[\q{a}])(?<after>))+?/dvg;var all=Array.from('aa!a'.matchAll(r));all.length===3&&all[1].index===1&&all[1].groups.before===''&&all[1].indices.groups.after[0]===2&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"var calls=0;var out='aaa!a'.replace(/(?<each>(?<before>)(?<part>[\q{a}])(?<after>))+/vg,function(whole,each,before,part,after,offset,input,groups){calls++;return arguments.length===8&&each==='a'&&before===''&&part==='a'&&after===''&&groups.before===''&&input==='aaa!a'?String(offset):'bad'});out==='0!4'&&calls===2",
     );
-    check(
+    assert_true(
         r"'aa!a'.replace(/(?:(?<before>)(?<part>[\q{a}])(?<after>))+/vg,'[$<before>$<part>$<after>]')==='[a]![a]'&&'aaa'.match(/(?:()[\q{a}]())+/vg)[0]==='aaa'",
     );
-    check(
+    assert_true(
         r"var r=/(?:()[\q{a}]())+/vg;r.lastIndex=9;var index='!aaa'.search(r);var parts='!aa!'.split(r);index===1&&r.lastIndex===9&&parts.length===4&&parts[0]==='!'&&parts[1]===''&&parts[2]===''&&parts[3]==='!'",
     );
     let mut realm = Realm::default();
@@ -165,7 +159,7 @@ fn consuming_point_captures_survive_string_consumers_callbacks_clones_and_collec
 
 #[test]
 fn consuming_point_capture_host_failures_skip_handlers_and_supported_programs_finish_finalizers() {
-    check(
+    assert_true(
         r#"var marker=0,ok=false;try{ok=(function(){var pattern="(?:()[\\q{ab}&&\\q{cd}]){0}",rows=[],metadata=true;
 for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
 for(var input of ['ab!','','\n','x\nab']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
@@ -181,19 +175,18 @@ return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"\",\"<un
         r"(?:()([\q{a}])?)+",
     ] {
         let mut realm = Realm::default();
-        assert!(
-            crate::common::regexp_oracle::check(
-                &mut realm,
-                &format!(
-                    "var finished=0;try{{new RegExp({:?},'v').test('a')}}finally{{finished++}};finished",
-                    JsString::from(pattern)
-                )
+        crate::common::regexp_oracle::assert_matches_reference(
+            &mut realm,
+            &format!(
+                "var finished=0;try{{new RegExp({:?},'v').test('a')}}finally{{finished++}};finished",
+                JsString::from(pattern)
             ),
-            "{pattern}"
         );
     }
-    check("var finished=0;try{/(?:()[\\q{a}]())+$/v.test('aaa')}finally{finished++}finished===1");
-    check(
+    assert_true(
+        "var finished=0;try{/(?:()[\\q{a}]())+$/v.test('aaa')}finally{finished++}finished===1",
+    );
+    assert_true(
         "var yes=0;for(var p of ['(?:()[a]){3,2}','(?<x>)(?<x>[a])+']){try{new RegExp(p,'v')}catch(e){if(e instanceof SyntaxError)yes++}}yes===2",
     );
 }

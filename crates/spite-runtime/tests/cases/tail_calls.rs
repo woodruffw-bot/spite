@@ -2,20 +2,14 @@
 
 use spite_runtime::{Error, Limits, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn strict_functions_arrows_methods_and_forwarders_reuse_native_call_depth() {
     std::thread::Builder::new()
         .stack_size(2 * 1024 * 1024)
         .spawn(|| {
-            check(
+            assert_true(
                 r#"
             'use strict';
             function even(n){if(n===0)return true;return odd(n-1)}
@@ -29,7 +23,7 @@ fn strict_functions_arrows_methods_and_forwarders_reuse_native_call_depth() {
             let proxy=new Proxy(forwarded.bind(null),{});
             even(512)&&!odd(512)&&arrow(512)===7&&c.m(512)===c&&c.private(512)===c&&forwarded(512)===9
         "#,
-            )
+            );
         })
         .unwrap()
         .join()
@@ -38,7 +32,7 @@ fn strict_functions_arrows_methods_and_forwarders_reuse_native_call_depth() {
 
 #[test]
 fn tail_expressions_preserve_short_circuiting_receivers_and_argument_order() {
-    check(
+    assert_true(
         r#"
         'use strict';let log=[];
         function f(n){return n===0?17:(true&&true&&f(n-1))}
@@ -57,7 +51,7 @@ fn tail_expressions_preserve_short_circuiting_receivers_and_argument_order() {
 
 #[test]
 fn handlers_and_finalizers_observe_actual_call_results_before_tail_transfers() {
-    check(
+    assert_true(
         r#"
         'use strict';let log=[];
         function fail(){log.push('call');throw 7}
@@ -73,7 +67,7 @@ fn handlers_and_finalizers_observe_actual_call_results_before_tail_transfers() {
 
 #[test]
 fn iterator_closing_and_lexical_disposal_follow_the_called_function() {
-    check(
+    assert_true(
         r#"
         'use strict';let log=[];
         function called(){log.push('call');return 7}
@@ -138,7 +132,7 @@ fn ordinary_recursion_keeps_its_guard_and_tail_loops_keep_opted_in_work_limits()
                 assert!(
                     matches!(Realm::default().eval(source), Err(Error::Limit { .. })),
                     "{source}"
-                )
+                );
             })
             .unwrap()
             .join()
@@ -157,7 +151,7 @@ fn ordinary_recursion_keeps_its_guard_and_tail_loops_keep_opted_in_work_limits()
 
 #[test]
 fn optional_tail_calls_keep_receivers_and_distinguish_skipped_prefixes() {
-    std::thread::Builder::new().stack_size(2 * 1024 * 1024).spawn(|| check(r#"
+    std::thread::Builder::new().stack_size(2 * 1024 * 1024).spawn(|| assert_true(r#"
         'use strict';
         function f(n){if(n===0)return 7;return f?.(n-1)}
         let o={m(n){if(n===0)return this;return this?.m(n-1)}};
@@ -178,7 +172,7 @@ fn tagged_tail_calls_keep_template_identity_receivers_and_substitution_order() {
     std::thread::Builder::new()
         .stack_size(2 * 1024 * 1024)
         .spawn(|| {
-            check(
+            assert_true(
                 r#"
         'use strict';let saved;
         let o={tag(strings,n){
@@ -194,7 +188,7 @@ fn tagged_tail_calls_keep_template_identity_receivers_and_substitution_order() {
         function ordered(){return target.tag`a${(log.push('a'),3)}b${(log.push('b'),4)}c`}
         o.tag`${512}`===o&&ordered()===7&&log.join(',')==='get,a,b,call'
     "#,
-            )
+            );
         })
         .unwrap()
         .join()
@@ -223,7 +217,7 @@ fn optional_and_tagged_tail_values_survive_gc_and_keep_protected_cleanup() {
 
 #[test]
 fn derived_constructor_tail_returns_keep_lexical_super_this_and_new_target() {
-    std::thread::Builder::new().stack_size(2 * 1024 * 1024).spawn(|| check(r#"
+    std::thread::Builder::new().stack_size(2 * 1024 * 1024).spawn(|| assert_true(r#"
         'use strict';let observed;
         class C extends Object{
             #value=31;

@@ -1,14 +1,8 @@
 //! Proved empty counted reference terms in ordinary assertions.
+use crate::common::assert_true;
 use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
 #[test]
 fn undefined_counted_assertions_result_snapshot() {
     let mut rows = String::new();
@@ -55,27 +49,27 @@ fn undefined_counted_assertions_result_snapshot() {
 }
 #[test]
 fn named_alias_ranges_required_captures_negative_undo_and_consumers_are_exact() {
-    check(
+    assert_true(
         r"let a=/(?<=(?<x>\k<x>{1,2}))a/d.exec('a');a[1]===''&&a.groups.x===''&&a.indices[1][0]===0&&a.indices.groups.x===a.indices[1]",
     );
-    check(
+    assert_true(
         r"let a=/(?<=a(?=(\k<x>*(?<x>b))))b/d.exec('ab');a[1]==='b'&&a.groups.x==='b'&&a.indices[2][0]===1&&a.indices.groups.x===a.indices[2]",
     );
-    check(r"let a=/(?<!(\1{1,2}))a|a/d.exec('a');a[1]===undefined&&a.indices[1]===undefined");
-    check(
+    assert_true(r"let a=/(?<!(\1{1,2}))a|a/d.exec('a');a[1]===undefined&&a.indices[1]===undefined");
+    assert_true(
         r"let r=/(?<=(a)\1*)b/dy;r.lastIndex=1;let a=r.exec('ab');a[1]==='a'&&r.lastIndex===2&&r.exec('ab')===null&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/(?<=(\1{1,2}))a/dg,a=[...'a a'.matchAll(r)];a.length===2&&a[0][1]===''&&a[1].index===2&&a[1].indices[1][0]===2&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let a=[...'a'.matchAll(/(?<=(\1*))/dg)];a.length===2&&a[0].index===0&&a[1].index===1&&a[1][1]===''",
     );
-    check(
+    assert_true(
         r"let seen=[];let s='a a'.replace(/(?<=(\1{1,2}))a/g,(m,x,i)=>{seen.push(x,i);return '_'});s==='_ _'&&seen.join('|')==='|0||2'",
     );
-    check(r"'ab'.search(/(?<=(a)\1*)b/)===1&&'ab'.split(/(?<=(a)\1*)b/).join('|')==='a|a|'");
-    check(
+    assert_true(r"'ab'.search(/(?<=(a)\1*)b/)===1&&'ab'.split(/(?<=(a)\1*)b/).join('|')==='a|a|'");
+    assert_true(
         r"let a=/(?<=a(?=(\2*([\uD800]))))[\uD800]/d.exec('a\uD800\uDC00');a[1]===a[2]&&a.indices[2][0]===1&&a.indices[2][1]===2",
     );
 }
@@ -108,12 +102,9 @@ fn consuming_counts_choices_and_unicode_remain_pending_invalid_reads_stay_syntax
         r"/(?<=(\1{1,2}))a/u.exec('a')",
         r"/(?<=(\1{1,2}))a/v.exec('a')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
-    check(
+    assert_true(
         r"let ok=false;try{new RegExp('(?<=\\9{0})a','u')}catch(e){ok=e instanceof SyntaxError}ok",
     );
 }

@@ -1,11 +1,10 @@
 //! Traced source async-function state between Await jobs (27.7.5.3).
 
-use super::{Budget, Error, Objects, source_context::SourceExecutionContext};
-use crate::{
-    Completion, Reference, Value,
-    environment::EnvironmentHandle,
-    function::{IteratorRecord, PromiseCapability},
-};
+use super::source_context::SourceExecutionContext;
+use super::{Budget, Error, Objects};
+use crate::environment::EnvironmentHandle;
+use crate::function::{IteratorRecord, PromiseCapability};
+use crate::{Completion, Reference, Value};
 use spite_core::{JsSymbol, Span};
 use spite_heap::{Handle, Trace};
 use spite_parser::ast::ArrowBody;

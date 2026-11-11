@@ -1,14 +1,8 @@
 //! Word endpoints preserve repetition selection and final capture spans.
+use crate::common::assert_true;
 use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
 #[test]
 fn unicode_repeated_atom_word_boundary_results_snapshot() {
     let mut rows = String::new();
@@ -60,23 +54,23 @@ fn unicode_repeated_atom_word_boundary_results_snapshot() {
 #[test]
 fn unicode_repeated_atom_word_boundary_bounds_and_final_captures() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let a=/((a))+\B/{mode}.exec('aaaa');a.index===0&&a[0]==='aaa'&&a[1]==='a'&&a[2]==='a'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=/\b(a)+\b/{mode}.exec('baaa aaa');a.index===5&&a[0]==='aaa'&&a[1]==='a'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=/\B(a){{0,2}}?\B/{mode}.exec('aa');a.index===1&&a[0]===''&&a[1]===undefined&&Object.hasOwn(a,'1')"
         ));
-        check(&format!(r"/\B(a){{0}}\b/{mode}.exec('aa')===null"));
-        check(&format!(
+        assert_true(&format!(r"/\B(a){{0}}\b/{mode}.exec('aa')===null"));
+        assert_true(&format!(
             r"let a=/(a){{2,3}}\B/{mode}.exec('aaaa');a.index===0&&a[0]==='aaa'&&a[1]==='a'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=/^\b((\D))+?\b$/{mode}m.exec('ab\ncdef');a.index===0&&a[0]==='ab'&&a[1]==='b'&&a[2]==='b'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=/^\B((.))+\B$/s{mode}m.exec('\nabc\n');a.index===0&&a[0]==='\nabc\n'&&a[1]==='\n'"
         ));
     }
@@ -84,13 +78,13 @@ fn unicode_repeated_atom_word_boundary_bounds_and_final_captures() {
 #[test]
 fn unicode_repeated_atom_word_boundary_names_pairs_and_folding() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/(?<whole>(?<__proto__>😀)+\B)/d{mode}y;r.lastIndex=2;let m=r.exec('A😀😀😀B');m.index===1&&m.groups.whole==='😀😀'&&m.groups.__proto__==='😀'&&m.indices.groups.whole[0]===1&&m.indices.groups.__proto__[0]===3&&m.indices.groups.__proto__[1]===5&&m.indices.groups.__proto__===m.indices[2]&&r.lastIndex===5"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=/([sK])+\b/i{mode}.exec('ſK'),b=/([sK])+\B/i{mode}.exec('ſK');a[0]==='ſK'&&a[1]==='K'&&b[0]==='ſ'&&b[1]==='ſ'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=/(\uD800)+\B/{mode}.exec('A\uD800\uD800Z');a.index===1&&a[0]==='\uD800'&&a[1]==='\uD800'&&!/(\uD800)+\B/{mode}.test('A😀')"
         ));
     }
@@ -98,32 +92,32 @@ fn unicode_repeated_atom_word_boundary_names_pairs_and_folding() {
 #[test]
 fn unicode_repeated_atom_word_boundary_consumers_and_empty_advance() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"'aaaa aaa'.replace(/(?<whole>(?<last>a)+\B)/{mode}g,'<$1:$2:$<last>>')==='<aaa:a:a>a <aa:a:a>a'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'aaaa'.split(/((a))+\B/{mode}).join('|')==='|a|a|a'&&'baaa aaa'.search(/\b(a)+\b/{mode})===5"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=[...'aaaa\naa'.matchAll(/\B(?<x>a)+\b$/d{mode}mg)];a.length===2&&a[0].index===1&&a[0].indices.groups.x[0]===3&&a[1].index===6&&a[1].groups.x==='a'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=[...'😀'.matchAll(/(?<x>a){{0}}\B/d{mode}g)];a.length===2&&a[0].index===0&&a[1].index===2&&a.every(m=>m.groups.x===undefined&&m.indices[1]===undefined)"
         ));
     }
 }
 #[test]
 fn unicode_repeated_atom_word_boundary_clone_coercion_and_strict_writes() {
-    check(
+    assert_true(
         r"let r=/(?<x>a)+\b$/diumg,c=new RegExp(r,'dvmy'),b=new RegExp(c,'diumy');c.exec('AA\n')===null&&b.exec('AA\n').groups.x==='A'&&b.lastIndex===2",
     );
-    check(
+    assert_true(
         r"let t='',r=/(😀)+\B/uy;r.lastIndex={valueOf(){t+='i';return 2}};let m=r.exec({toString(){t+='s';return 'A😀😀😀B'}});t==='si'&&m.index===1&&m[1]==='😀'&&r.lastIndex===5",
     );
-    check(
+    assert_true(
         r"let r=/(a)*\B/vmy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/(a)+\b/vmy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('BBB')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
 }
@@ -156,10 +150,7 @@ fn unicode_repeated_atom_word_boundary_opted_work_and_unproved_scopes() {
         r"/\b(a)+b\b/u.exec('ab')",
         r"/\b(\b.)+\bb/v.exec('a')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }
 

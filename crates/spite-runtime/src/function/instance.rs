@@ -123,11 +123,9 @@ impl Realm {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        Limits,
-        function::BoundFunction,
-        object::{Budget, DescriptorKind, PropertyDescriptor},
-    };
+    use crate::Limits;
+    use crate::function::BoundFunction;
+    use crate::object::{Budget, DescriptorKind, PropertyDescriptor};
 
     #[test]
     fn prototype_getters_run_only_for_object_left_operands_and_receive_the_target() {

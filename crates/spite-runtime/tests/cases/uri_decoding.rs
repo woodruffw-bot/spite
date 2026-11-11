@@ -3,13 +3,7 @@
 use spite_core::JsString;
 use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn reserved_escapes_keep_their_original_spelling_only_for_decodeuri() {
@@ -17,19 +11,19 @@ fn reserved_escapes_keep_their_original_spelling_only_for_decodeuri() {
         ("%3B%2F%3F%3A%40%26%3D%2B%24%2C%23", ";/?:@&=+$,#"),
         ("%3b%2f%3f%3a%40%26%3d%2b%24%2c%23", ";/?:@&=+$,#"),
     ] {
-        check(&format!(
+        assert_true(&format!(
             "decodeURI('{encoded}')==='{encoded}' && decodeURIComponent('{encoded}')==='{decoded}'"
         ));
     }
     for name in ["decodeURI", "decodeURIComponent"] {
-        check(&format!(
+        assert_true(&format!(
             "{name}('%25%32%46')==='%2F' && {name}('%252f')==='%2f' && {name}('+')==='+'"
         ));
-        check(&format!(
+        assert_true(&format!(
             "{name}('%20%25%5b%5D%5c%5E%60%7b%7D%7c')===' %[]\\\\^`{{}}|'"
         ));
     }
-    check(
+    assert_true(
         "decodeURI('http%3a%2f%2fexample.com%2f%C3%A9%3fkey%3dvalue%23x')==='http%3a%2f%2fexample.com%2fé%3fkey%3dvalue%23x' && decodeURIComponent('http%3a%2f%2fexample.com%2f%C3%A9%3fkey%3dvalue%23x')==='http://example.com/é?key=value#x'",
     );
 }
@@ -37,16 +31,16 @@ fn reserved_escapes_keep_their_original_spelling_only_for_decodeuri() {
 #[test]
 fn valid_utf8_boundaries_and_literal_surrogates_are_preserved_without_normalization() {
     for name in ["decodeURI", "decodeURIComponent"] {
-        check(&format!(
+        assert_true(&format!(
             "{name}('%00%7f%c2%80%df%bf%e0%a0%80%ed%9f%bf%ee%80%80%ef%bf%bf%f0%90%80%80%f4%8f%bf%bf')==='\\0\\x7F\\u0080\\u07FF\\u0800\\uD7FF\\uE000\\uFFFF\\u{{10000}}\\u{{10FFFF}}'"
         ));
-        check(&format!(
+        assert_true(&format!(
             "{name}('%C3%A9%20e%CC%81%20%EF%BB%BF')==='é e\\u0301 \\uFEFF'"
         ));
-        check(&format!(
+        assert_true(&format!(
             "let s='x\\uD800\\uDC00\\uD800y\\uDC00';{name}(s)===s && {name}('\\uD800%41\\uDC00')==='\\uD800A\\uDC00'"
         ));
-        check(&format!(
+        assert_true(&format!(
             "let s='é😀_-.!~*()';{name}(encodeURIComponent(s))===s"
         ));
     }
@@ -114,10 +108,10 @@ fn malformed_percent_sequences_and_invalid_utf8_throw_urierror() {
                 "{source}"
             );
         }
-        check(&format!(
+        assert_true(&format!(
             "let flag=0,caught=false;try{{{name}('%ED%A0%80');}}catch(e){{caught=e instanceof URIError && e instanceof Error && Error.isError(e);flag++;}}finally{{flag++;}}caught && flag===2"
         ));
-        check(&format!(
+        assert_true(&format!(
             "let Original=URIError;URIError=TypeError;let caught=false;try{{{name}('%FF');}}catch(e){{caught=e instanceof Original && !(e instanceof TypeError);}}caught"
         ));
     }
@@ -126,16 +120,16 @@ fn malformed_percent_sequences_and_invalid_utf8_throw_urierror() {
 #[test]
 fn conversion_is_string_hinted_once_and_receivers_extra_values_are_ignored() {
     for name in ["decodeURI", "decodeURIComponent"] {
-        check(&format!(
+        assert_true(&format!(
             "{name}()==='undefined' && {name}(null)==='null' && {name}(7n)==='7' && {name}(-0)==='0' && {name}(new String('%C3%A9'))==='é'"
         ));
-        check(&format!(
+        assert_true(&format!(
             "let log='',o={{[Symbol.toPrimitive](hint){{log+=hint;return '%C3%A9';}},toString(){{throw 7;}}}};{name}(o)==='é' && log==='string'"
         ));
-        check(&format!(
+        assert_true(&format!(
             "let log='',o={{toString(){{log+='s';return {{}};}},valueOf(){{log+='v';return '%C3%A9';}}}};{name}(o)==='é' && log==='sv'"
         ));
-        check(&format!(
+        assert_true(&format!(
             "let sentinel={{}},o={{toString(){{throw sentinel;}}}},caught=false;try{{{name}(o);}}catch(e){{caught=e===sentinel;}}caught"
         ));
         for input in [
@@ -152,7 +146,7 @@ fn conversion_is_string_hinted_once_and_receivers_extra_values_are_ignored() {
                 })
             ));
         }
-        check(&format!(
+        assert_true(&format!(
             "let log='',o={{toString(){{throw 7;}}}};{name}.call(o,(log+='a','%C3%A9'),(log+='b',o))==='é' && log==='ab'"
         ));
     }
@@ -213,10 +207,10 @@ fn descriptors_nonconstruction_and_intrinsic_retention_follow_standard_globals()
 
 #[test]
 fn large_default_inputs_and_opted_in_host_failures_keep_their_distinct_behavior() {
-    check(
+    assert_true(
         "let s='%F0%9F%98%80%20'.repeat(3000),expected='😀 '.repeat(3000);decodeURI(s)===expected && decodeURIComponent(s)===expected",
     );
-    check("let s='é😀\\uD800+ '.repeat(3000);decodeURI(s)===s && decodeURIComponent(s)===s");
+    assert_true("let s='é😀\\uD800+ '.repeat(3000);decodeURI(s)===s && decodeURIComponent(s)===s");
     let mut realm = Realm::new(Limits {
         max_steps: Some(5000),
         ..Limits::default()

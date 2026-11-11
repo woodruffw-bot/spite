@@ -3,13 +3,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn unicode_extended_pictographic_property_results_snapshot() {
@@ -54,25 +48,25 @@ fn unicode_extended_pictographic_property_results_snapshot() {
 #[test]
 fn unicode_extended_pictographic_properties_aliases_complements_and_unions() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let p=/^\p{{Extended_Pictographic}}$/i{mode},n=/^\P{{Extended_Pictographic}}$/i{mode};[...'\u24C2\u24DC'].every(c=>p.test(c)&&n.test(c)===('{mode}'==='u'))"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let p=/[\p{{Extended_Pictographic}}K]/i{mode},n=/[\P{{Extended_Pictographic}}K]/i{mode},x=/[^\P{{Extended_Pictographic}}K]/i{mode};p.test('K')&&n.test('K')&&!x.test('K')&&[...'\u24C2\u24DC'].every(c=>p.test(c)&&n.test(c)===('{mode}'==='u')&&x.test(c)===('{mode}'==='v'))"
         ));
     }
 
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let a=/\p{{Extended_Pictographic}}/{mode},b=/\p{{ExtPict}}/i{mode},n=/\P{{ExtPict}}/i{mode};a.test('\u00A9')&&a.test('\u00AE')&&b.test('\u00A9')&&!a.test('\u200D')&&!b.test('\u005f')&&!b.test('ſ')&&!b.test('K')&&!n.test('\u00A9')&&n.test('\uDB40\uDC01')&&n.test('\uD800')&&n.test('\uFEFF')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let p=/\p{{Extended_Pictographic}}/{mode},s=/\s/{mode};p.test('\u00A9')&&p.test('\u00AE')&&!s.test('\u00A9')&&!s.test('\u00AE')&&!p.test('\uFEFF')&&s.test('\uFEFF')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=/[\p{{ExtPict}}K]/i{mode},b=/[^\P{{Extended_Pictographic}}K]/i{mode},c=/[\p{{ExtPict}}\P{{Extended_Pictographic}}]/{mode};a.test('K')&&a.test('k')&&a.test('\u00A9')&&!a.test('ſ')&&b.test('\u00AE')&&!b.test('K')&&c.test('\uDB40\uDC01')&&c.test('A')&&c.test('\uD800')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=/^\p{{ExtPict}}$/{mode},b=/^\P{{ExtPict}}$/{mode};a.test('\u00A9')&&!a.test('\u00AE\n')&&!a.test('')&&!a.test('\n')&&b.test('\uDB40\uDC01')&&!b.test('AA')"
         ));
     }
@@ -81,22 +75,22 @@ fn unicode_extended_pictographic_properties_aliases_complements_and_unions() {
 #[test]
 fn unicode_extended_pictographic_properties_captures_context_and_pair_starts() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/(?<x>\p{{Extended_Pictographic}})/d{mode}y;r.lastIndex=1;let m=r.exec('\uD83D\uDE00');m.index===0&&m[0]==='\uD83D\uDE00'&&m.groups.x===m[0]&&m.indices[1][0]===0&&m.indices[1][1]===2&&r.lastIndex===2"
         ));
     }
 
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^(?<x>([\p{{ExtPict}}K]))$/dim{mode}g,m=r.exec('\u200D\r\nK\u2028');m.index===3&&m[1]==='K'&&m[2]==='K'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===4&&r.lastIndex===4"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/(?<__proto__>\P{{ExtPict}})/d{mode}y;r.lastIndex=1;let m=r.exec('\uDB40\uDC01\u00A9');m.index===0&&m[1]==='\uDB40\uDC01'&&m.indices[1][1]===2&&r.lastIndex===2&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\p{{ExtPict}}/d{mode}g;r.lastIndex=1;let m=r.exec('\uDB40\uDC01\u00A9');m.index===2&&m[0]==='\u00A9'&&r.lastIndex===3"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\p{{ExtPict}}/{mode}y;r.lastIndex=1;r.exec('\uDB40\uDC01\u00A9')===null&&r.lastIndex===0"
         ));
     }
@@ -105,16 +99,16 @@ fn unicode_extended_pictographic_properties_captures_context_and_pair_starts() {
 #[test]
 fn unicode_extended_pictographic_properties_consumers_original_text() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let a=[...'\u00AE\uDB40\uDC01\u00A9\u200D'.matchAll(/(?<x>\P{{ExtPict}})/d{mode}g)];a.length===2&&a[0][1]==='\uDB40\uDC01'&&a[0].index===1&&a[0].indices[1][1]===3&&a[1][1]==='\u200D'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'\u00AE\u00A9\uDB40\uDC01\u200D'.replace(/(?<x>\p{{Extended_Pictographic}})/{mode}g,'<$1:$<x>>')==='<\u00AE:\u00AE><\u00A9:\u00A9>\uDB40\uDC01\u200D'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'\uDB40\uDC01\u00AE\u00A9\u200D'.split(/(\p{{ExtPict}})/{mode}).join('|')==='\uDB40\uDC01|\u00AE||\u00A9|\u200D'&&'\uDB40\uDC01\u00A9'.search(/\p{{ExtPict}}/{mode})===2&&'\u00AE\u00A9\uDB40\uDC01'.match(/\p{{ExtPict}}/{mode}g).join('')==='\u00AE\u00A9'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let t='';let x='\u00A9\u00AE\uDB40\uDC01\u00A9'.replace(/(\p{{ExtPict}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__\uDB40\uDC01_'&&t==='014'"
         ));
     }
@@ -122,16 +116,16 @@ fn unicode_extended_pictographic_properties_consumers_original_text() {
 
 #[test]
 fn unicode_extended_pictographic_properties_clones_coercions_and_strict_writes() {
-    check(
+    assert_true(
         r"let r=/^(?<x>\p{Extended_Pictographic})$/dmu,c=new RegExp(r,'divy');c.source==='^(?<x>\\p{Extended_Pictographic})$'&&c.unicodeSets&&!c.unicode&&!c.multiline&&c.exec('\u00A9').groups.x==='\u00A9'&&c.lastIndex===1",
     );
-    check(
+    assert_true(
         r"let t='',r=/\P{ExtPict}/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '\uDB40\uDC01'}});t==='si'&&m[0]==='\uDB40\uDC01'&&m.index===0&&r.lastIndex===2",
     );
-    check(
+    assert_true(
         r"let r=/\p{ExtPict}/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('\u00A9')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/\p{ExtPict}/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('\uDB40\uDC01\u00A9')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
 }
@@ -153,29 +147,26 @@ fn unicode_extended_pictographic_properties_opted_work_and_remaining_sets() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
-    check(
+    assert_true(
         r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
     );
-    check(r"/[\p{ExtPict}&&A]/v.exec('A')===null");
-    check(r"/[\p{ExtPict}--A]/v.exec('A')===null");
-    check(
+    assert_true(r"/[\p{ExtPict}&&A]/v.exec('A')===null");
+    assert_true(r"/[\p{ExtPict}--A]/v.exec('A')===null");
+    assert_true(
         r"let s=String.fromCodePoint(0xa9),m=/[\p{ExtPict}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
     );
     for source in [
         r"/\p{ExtPict}+b/u.exec('AA')",
         r"/\p{ExtPict}A/v.exec('AA')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }
 
 #[test]
 fn unicode_extended_pictographic_repetitions_retain_last_capture_and_outside_words() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\B(?<x>\p{{ExtPict}})+\B/d{mode}g,m=r.exec('\uDB40\uDC01\u00A9\u00AE\u00AE\uFEFF');m.index===2&&m[0]==='\u00A9\u00AE\u00AE'&&m.groups.x==='\u00AE'&&m.indices.groups.x[0]===4&&m.indices.groups.x[1]===5&&r.lastIndex===5"
         ));
     }
@@ -183,436 +174,436 @@ fn unicode_extended_pictographic_repetitions_retain_last_capture_and_outside_wor
 
 #[test]
 fn unicode_extended_pictographic_property_unicode18_membership_changes() {
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','u'),n=new RegExp('^\\P{Extended_Pictographic}$','u');p.test('\uD83C\uDDAE')===false&&n.test('\uD83C\uDDAE')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','ui'),n=new RegExp('^\\P{Extended_Pictographic}$','ui');p.test('\uD83C\uDDAE')===false&&n.test('\uD83C\uDDAE')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','v'),n=new RegExp('^\\P{Extended_Pictographic}$','v');p.test('\uD83C\uDDAE')===false&&n.test('\uD83C\uDDAE')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','vi'),n=new RegExp('^\\P{Extended_Pictographic}$','vi');p.test('\uD83C\uDDAE')===false&&n.test('\uD83C\uDDAE')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','u'),n=new RegExp('^\\P{ExtPict}$','u');p.test('\uD83C\uDDAE')===false&&n.test('\uD83C\uDDAE')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','ui'),n=new RegExp('^\\P{ExtPict}$','ui');p.test('\uD83C\uDDAE')===false&&n.test('\uD83C\uDDAE')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','v'),n=new RegExp('^\\P{ExtPict}$','v');p.test('\uD83C\uDDAE')===false&&n.test('\uD83C\uDDAE')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','vi'),n=new RegExp('^\\P{ExtPict}$','vi');p.test('\uD83C\uDDAE')===false&&n.test('\uD83C\uDDAE')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','u'),n=new RegExp('^\\P{Extended_Pictographic}$','u');p.test('\uD83D\uDFDA')===false&&n.test('\uD83D\uDFDA')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','ui'),n=new RegExp('^\\P{Extended_Pictographic}$','ui');p.test('\uD83D\uDFDA')===false&&n.test('\uD83D\uDFDA')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','v'),n=new RegExp('^\\P{Extended_Pictographic}$','v');p.test('\uD83D\uDFDA')===false&&n.test('\uD83D\uDFDA')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','vi'),n=new RegExp('^\\P{Extended_Pictographic}$','vi');p.test('\uD83D\uDFDA')===false&&n.test('\uD83D\uDFDA')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','u'),n=new RegExp('^\\P{ExtPict}$','u');p.test('\uD83D\uDFDA')===false&&n.test('\uD83D\uDFDA')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','ui'),n=new RegExp('^\\P{ExtPict}$','ui');p.test('\uD83D\uDFDA')===false&&n.test('\uD83D\uDFDA')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','v'),n=new RegExp('^\\P{ExtPict}$','v');p.test('\uD83D\uDFDA')===false&&n.test('\uD83D\uDFDA')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','vi'),n=new RegExp('^\\P{ExtPict}$','vi');p.test('\uD83D\uDFDA')===false&&n.test('\uD83D\uDFDA')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','u'),n=new RegExp('^\\P{Extended_Pictographic}$','u');p.test('\uD83D\uDFDB')===false&&n.test('\uD83D\uDFDB')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','ui'),n=new RegExp('^\\P{Extended_Pictographic}$','ui');p.test('\uD83D\uDFDB')===false&&n.test('\uD83D\uDFDB')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','v'),n=new RegExp('^\\P{Extended_Pictographic}$','v');p.test('\uD83D\uDFDB')===false&&n.test('\uD83D\uDFDB')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','vi'),n=new RegExp('^\\P{Extended_Pictographic}$','vi');p.test('\uD83D\uDFDB')===false&&n.test('\uD83D\uDFDB')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','u'),n=new RegExp('^\\P{ExtPict}$','u');p.test('\uD83D\uDFDB')===false&&n.test('\uD83D\uDFDB')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','ui'),n=new RegExp('^\\P{ExtPict}$','ui');p.test('\uD83D\uDFDB')===false&&n.test('\uD83D\uDFDB')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','v'),n=new RegExp('^\\P{ExtPict}$','v');p.test('\uD83D\uDFDB')===false&&n.test('\uD83D\uDFDB')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','vi'),n=new RegExp('^\\P{ExtPict}$','vi');p.test('\uD83D\uDFDB')===false&&n.test('\uD83D\uDFDB')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','u'),n=new RegExp('^\\P{Extended_Pictographic}$','u');p.test('\uD83D\uDFF1')===false&&n.test('\uD83D\uDFF1')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','ui'),n=new RegExp('^\\P{Extended_Pictographic}$','ui');p.test('\uD83D\uDFF1')===false&&n.test('\uD83D\uDFF1')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','v'),n=new RegExp('^\\P{Extended_Pictographic}$','v');p.test('\uD83D\uDFF1')===false&&n.test('\uD83D\uDFF1')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','vi'),n=new RegExp('^\\P{Extended_Pictographic}$','vi');p.test('\uD83D\uDFF1')===false&&n.test('\uD83D\uDFF1')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','u'),n=new RegExp('^\\P{ExtPict}$','u');p.test('\uD83D\uDFF1')===false&&n.test('\uD83D\uDFF1')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','ui'),n=new RegExp('^\\P{ExtPict}$','ui');p.test('\uD83D\uDFF1')===false&&n.test('\uD83D\uDFF1')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','v'),n=new RegExp('^\\P{ExtPict}$','v');p.test('\uD83D\uDFF1')===false&&n.test('\uD83D\uDFF1')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','vi'),n=new RegExp('^\\P{ExtPict}$','vi');p.test('\uD83D\uDFF1')===false&&n.test('\uD83D\uDFF1')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','u'),n=new RegExp('^\\P{Extended_Pictographic}$','u');p.test('\uD83D\uDFF2')===false&&n.test('\uD83D\uDFF2')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','ui'),n=new RegExp('^\\P{Extended_Pictographic}$','ui');p.test('\uD83D\uDFF2')===false&&n.test('\uD83D\uDFF2')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','v'),n=new RegExp('^\\P{Extended_Pictographic}$','v');p.test('\uD83D\uDFF2')===false&&n.test('\uD83D\uDFF2')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','vi'),n=new RegExp('^\\P{Extended_Pictographic}$','vi');p.test('\uD83D\uDFF2')===false&&n.test('\uD83D\uDFF2')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','u'),n=new RegExp('^\\P{ExtPict}$','u');p.test('\uD83D\uDFF2')===false&&n.test('\uD83D\uDFF2')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','ui'),n=new RegExp('^\\P{ExtPict}$','ui');p.test('\uD83D\uDFF2')===false&&n.test('\uD83D\uDFF2')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','v'),n=new RegExp('^\\P{ExtPict}$','v');p.test('\uD83D\uDFF2')===false&&n.test('\uD83D\uDFF2')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','vi'),n=new RegExp('^\\P{ExtPict}$','vi');p.test('\uD83D\uDFF2')===false&&n.test('\uD83D\uDFF2')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','u'),n=new RegExp('^\\P{Extended_Pictographic}$','u');p.test('\uD83D\uDFF3')===false&&n.test('\uD83D\uDFF3')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','ui'),n=new RegExp('^\\P{Extended_Pictographic}$','ui');p.test('\uD83D\uDFF3')===false&&n.test('\uD83D\uDFF3')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','v'),n=new RegExp('^\\P{Extended_Pictographic}$','v');p.test('\uD83D\uDFF3')===false&&n.test('\uD83D\uDFF3')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','vi'),n=new RegExp('^\\P{Extended_Pictographic}$','vi');p.test('\uD83D\uDFF3')===false&&n.test('\uD83D\uDFF3')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','u'),n=new RegExp('^\\P{ExtPict}$','u');p.test('\uD83D\uDFF3')===false&&n.test('\uD83D\uDFF3')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','ui'),n=new RegExp('^\\P{ExtPict}$','ui');p.test('\uD83D\uDFF3')===false&&n.test('\uD83D\uDFF3')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','v'),n=new RegExp('^\\P{ExtPict}$','v');p.test('\uD83D\uDFF3')===false&&n.test('\uD83D\uDFF3')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','vi'),n=new RegExp('^\\P{ExtPict}$','vi');p.test('\uD83D\uDFF3')===false&&n.test('\uD83D\uDFF3')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','u'),n=new RegExp('^\\P{Extended_Pictographic}$','u');p.test('\uD83D\uDFF4')===false&&n.test('\uD83D\uDFF4')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','ui'),n=new RegExp('^\\P{Extended_Pictographic}$','ui');p.test('\uD83D\uDFF4')===false&&n.test('\uD83D\uDFF4')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','v'),n=new RegExp('^\\P{Extended_Pictographic}$','v');p.test('\uD83D\uDFF4')===false&&n.test('\uD83D\uDFF4')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','vi'),n=new RegExp('^\\P{Extended_Pictographic}$','vi');p.test('\uD83D\uDFF4')===false&&n.test('\uD83D\uDFF4')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','u'),n=new RegExp('^\\P{ExtPict}$','u');p.test('\uD83D\uDFF4')===false&&n.test('\uD83D\uDFF4')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','ui'),n=new RegExp('^\\P{ExtPict}$','ui');p.test('\uD83D\uDFF4')===false&&n.test('\uD83D\uDFF4')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','v'),n=new RegExp('^\\P{ExtPict}$','v');p.test('\uD83D\uDFF4')===false&&n.test('\uD83D\uDFF4')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','vi'),n=new RegExp('^\\P{ExtPict}$','vi');p.test('\uD83D\uDFF4')===false&&n.test('\uD83D\uDFF4')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','u'),n=new RegExp('^\\P{Extended_Pictographic}$','u');p.test('\uD83D\uDFF5')===false&&n.test('\uD83D\uDFF5')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','ui'),n=new RegExp('^\\P{Extended_Pictographic}$','ui');p.test('\uD83D\uDFF5')===false&&n.test('\uD83D\uDFF5')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','v'),n=new RegExp('^\\P{Extended_Pictographic}$','v');p.test('\uD83D\uDFF5')===false&&n.test('\uD83D\uDFF5')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','vi'),n=new RegExp('^\\P{Extended_Pictographic}$','vi');p.test('\uD83D\uDFF5')===false&&n.test('\uD83D\uDFF5')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','u'),n=new RegExp('^\\P{ExtPict}$','u');p.test('\uD83D\uDFF5')===false&&n.test('\uD83D\uDFF5')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','ui'),n=new RegExp('^\\P{ExtPict}$','ui');p.test('\uD83D\uDFF5')===false&&n.test('\uD83D\uDFF5')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','v'),n=new RegExp('^\\P{ExtPict}$','v');p.test('\uD83D\uDFF5')===false&&n.test('\uD83D\uDFF5')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','vi'),n=new RegExp('^\\P{ExtPict}$','vi');p.test('\uD83D\uDFF5')===false&&n.test('\uD83D\uDFF5')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','u'),n=new RegExp('^\\P{Extended_Pictographic}$','u');p.test('\uD83D\uDFF6')===false&&n.test('\uD83D\uDFF6')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','ui'),n=new RegExp('^\\P{Extended_Pictographic}$','ui');p.test('\uD83D\uDFF6')===false&&n.test('\uD83D\uDFF6')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','v'),n=new RegExp('^\\P{Extended_Pictographic}$','v');p.test('\uD83D\uDFF6')===false&&n.test('\uD83D\uDFF6')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','vi'),n=new RegExp('^\\P{Extended_Pictographic}$','vi');p.test('\uD83D\uDFF6')===false&&n.test('\uD83D\uDFF6')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','u'),n=new RegExp('^\\P{ExtPict}$','u');p.test('\uD83D\uDFF6')===false&&n.test('\uD83D\uDFF6')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','ui'),n=new RegExp('^\\P{ExtPict}$','ui');p.test('\uD83D\uDFF6')===false&&n.test('\uD83D\uDFF6')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','v'),n=new RegExp('^\\P{ExtPict}$','v');p.test('\uD83D\uDFF6')===false&&n.test('\uD83D\uDFF6')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','vi'),n=new RegExp('^\\P{ExtPict}$','vi');p.test('\uD83D\uDFF6')===false&&n.test('\uD83D\uDFF6')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','u'),n=new RegExp('^\\P{Extended_Pictographic}$','u');p.test('\uD83D\uDFF7')===false&&n.test('\uD83D\uDFF7')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','ui'),n=new RegExp('^\\P{Extended_Pictographic}$','ui');p.test('\uD83D\uDFF7')===false&&n.test('\uD83D\uDFF7')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','v'),n=new RegExp('^\\P{Extended_Pictographic}$','v');p.test('\uD83D\uDFF7')===false&&n.test('\uD83D\uDFF7')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','vi'),n=new RegExp('^\\P{Extended_Pictographic}$','vi');p.test('\uD83D\uDFF7')===false&&n.test('\uD83D\uDFF7')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','u'),n=new RegExp('^\\P{ExtPict}$','u');p.test('\uD83D\uDFF7')===false&&n.test('\uD83D\uDFF7')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','ui'),n=new RegExp('^\\P{ExtPict}$','ui');p.test('\uD83D\uDFF7')===false&&n.test('\uD83D\uDFF7')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','v'),n=new RegExp('^\\P{ExtPict}$','v');p.test('\uD83D\uDFF7')===false&&n.test('\uD83D\uDFF7')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','vi'),n=new RegExp('^\\P{ExtPict}$','vi');p.test('\uD83D\uDFF7')===false&&n.test('\uD83D\uDFF7')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','u'),n=new RegExp('^\\P{Extended_Pictographic}$','u');p.test('\uD83D\uDFF8')===false&&n.test('\uD83D\uDFF8')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','ui'),n=new RegExp('^\\P{Extended_Pictographic}$','ui');p.test('\uD83D\uDFF8')===false&&n.test('\uD83D\uDFF8')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','v'),n=new RegExp('^\\P{Extended_Pictographic}$','v');p.test('\uD83D\uDFF8')===false&&n.test('\uD83D\uDFF8')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','vi'),n=new RegExp('^\\P{Extended_Pictographic}$','vi');p.test('\uD83D\uDFF8')===false&&n.test('\uD83D\uDFF8')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','u'),n=new RegExp('^\\P{ExtPict}$','u');p.test('\uD83D\uDFF8')===false&&n.test('\uD83D\uDFF8')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','ui'),n=new RegExp('^\\P{ExtPict}$','ui');p.test('\uD83D\uDFF8')===false&&n.test('\uD83D\uDFF8')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','v'),n=new RegExp('^\\P{ExtPict}$','v');p.test('\uD83D\uDFF8')===false&&n.test('\uD83D\uDFF8')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','vi'),n=new RegExp('^\\P{ExtPict}$','vi');p.test('\uD83D\uDFF8')===false&&n.test('\uD83D\uDFF8')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','u'),n=new RegExp('^\\P{Extended_Pictographic}$','u');p.test('\uD83D\uDFF9')===false&&n.test('\uD83D\uDFF9')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','ui'),n=new RegExp('^\\P{Extended_Pictographic}$','ui');p.test('\uD83D\uDFF9')===false&&n.test('\uD83D\uDFF9')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','v'),n=new RegExp('^\\P{Extended_Pictographic}$','v');p.test('\uD83D\uDFF9')===false&&n.test('\uD83D\uDFF9')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','vi'),n=new RegExp('^\\P{Extended_Pictographic}$','vi');p.test('\uD83D\uDFF9')===false&&n.test('\uD83D\uDFF9')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','u'),n=new RegExp('^\\P{ExtPict}$','u');p.test('\uD83D\uDFF9')===false&&n.test('\uD83D\uDFF9')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','ui'),n=new RegExp('^\\P{ExtPict}$','ui');p.test('\uD83D\uDFF9')===false&&n.test('\uD83D\uDFF9')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','v'),n=new RegExp('^\\P{ExtPict}$','v');p.test('\uD83D\uDFF9')===false&&n.test('\uD83D\uDFF9')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','vi'),n=new RegExp('^\\P{ExtPict}$','vi');p.test('\uD83D\uDFF9')===false&&n.test('\uD83D\uDFF9')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','u'),n=new RegExp('^\\P{Extended_Pictographic}$','u');p.test('\uD83D\uDFFA')===false&&n.test('\uD83D\uDFFA')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','ui'),n=new RegExp('^\\P{Extended_Pictographic}$','ui');p.test('\uD83D\uDFFA')===false&&n.test('\uD83D\uDFFA')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','v'),n=new RegExp('^\\P{Extended_Pictographic}$','v');p.test('\uD83D\uDFFA')===false&&n.test('\uD83D\uDFFA')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','vi'),n=new RegExp('^\\P{Extended_Pictographic}$','vi');p.test('\uD83D\uDFFA')===false&&n.test('\uD83D\uDFFA')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','u'),n=new RegExp('^\\P{ExtPict}$','u');p.test('\uD83D\uDFFA')===false&&n.test('\uD83D\uDFFA')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','ui'),n=new RegExp('^\\P{ExtPict}$','ui');p.test('\uD83D\uDFFA')===false&&n.test('\uD83D\uDFFA')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','v'),n=new RegExp('^\\P{ExtPict}$','v');p.test('\uD83D\uDFFA')===false&&n.test('\uD83D\uDFFA')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','vi'),n=new RegExp('^\\P{ExtPict}$','vi');p.test('\uD83D\uDFFA')===false&&n.test('\uD83D\uDFFA')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','u'),n=new RegExp('^\\P{Extended_Pictographic}$','u');p.test('\uD83D\uDFFB')===false&&n.test('\uD83D\uDFFB')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','ui'),n=new RegExp('^\\P{Extended_Pictographic}$','ui');p.test('\uD83D\uDFFB')===false&&n.test('\uD83D\uDFFB')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','v'),n=new RegExp('^\\P{Extended_Pictographic}$','v');p.test('\uD83D\uDFFB')===false&&n.test('\uD83D\uDFFB')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','vi'),n=new RegExp('^\\P{Extended_Pictographic}$','vi');p.test('\uD83D\uDFFB')===false&&n.test('\uD83D\uDFFB')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','u'),n=new RegExp('^\\P{ExtPict}$','u');p.test('\uD83D\uDFFB')===false&&n.test('\uD83D\uDFFB')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','ui'),n=new RegExp('^\\P{ExtPict}$','ui');p.test('\uD83D\uDFFB')===false&&n.test('\uD83D\uDFFB')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','v'),n=new RegExp('^\\P{ExtPict}$','v');p.test('\uD83D\uDFFB')===false&&n.test('\uD83D\uDFFB')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','vi'),n=new RegExp('^\\P{ExtPict}$','vi');p.test('\uD83D\uDFFB')===false&&n.test('\uD83D\uDFFB')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','u'),n=new RegExp('^\\P{Extended_Pictographic}$','u');p.test('\uD83D\uDFFC')===false&&n.test('\uD83D\uDFFC')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','ui'),n=new RegExp('^\\P{Extended_Pictographic}$','ui');p.test('\uD83D\uDFFC')===false&&n.test('\uD83D\uDFFC')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','v'),n=new RegExp('^\\P{Extended_Pictographic}$','v');p.test('\uD83D\uDFFC')===false&&n.test('\uD83D\uDFFC')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','vi'),n=new RegExp('^\\P{Extended_Pictographic}$','vi');p.test('\uD83D\uDFFC')===false&&n.test('\uD83D\uDFFC')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','u'),n=new RegExp('^\\P{ExtPict}$','u');p.test('\uD83D\uDFFC')===false&&n.test('\uD83D\uDFFC')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','ui'),n=new RegExp('^\\P{ExtPict}$','ui');p.test('\uD83D\uDFFC')===false&&n.test('\uD83D\uDFFC')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','v'),n=new RegExp('^\\P{ExtPict}$','v');p.test('\uD83D\uDFFC')===false&&n.test('\uD83D\uDFFC')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','vi'),n=new RegExp('^\\P{ExtPict}$','vi');p.test('\uD83D\uDFFC')===false&&n.test('\uD83D\uDFFC')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','u'),n=new RegExp('^\\P{Extended_Pictographic}$','u');p.test('\uD83D\uDFFD')===false&&n.test('\uD83D\uDFFD')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','ui'),n=new RegExp('^\\P{Extended_Pictographic}$','ui');p.test('\uD83D\uDFFD')===false&&n.test('\uD83D\uDFFD')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','v'),n=new RegExp('^\\P{Extended_Pictographic}$','v');p.test('\uD83D\uDFFD')===false&&n.test('\uD83D\uDFFD')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','vi'),n=new RegExp('^\\P{Extended_Pictographic}$','vi');p.test('\uD83D\uDFFD')===false&&n.test('\uD83D\uDFFD')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','u'),n=new RegExp('^\\P{ExtPict}$','u');p.test('\uD83D\uDFFD')===false&&n.test('\uD83D\uDFFD')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','ui'),n=new RegExp('^\\P{ExtPict}$','ui');p.test('\uD83D\uDFFD')===false&&n.test('\uD83D\uDFFD')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','v'),n=new RegExp('^\\P{ExtPict}$','v');p.test('\uD83D\uDFFD')===false&&n.test('\uD83D\uDFFD')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','vi'),n=new RegExp('^\\P{ExtPict}$','vi');p.test('\uD83D\uDFFD')===false&&n.test('\uD83D\uDFFD')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','u'),n=new RegExp('^\\P{Extended_Pictographic}$','u');p.test('\uD83D\uDFFE')===false&&n.test('\uD83D\uDFFE')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','ui'),n=new RegExp('^\\P{Extended_Pictographic}$','ui');p.test('\uD83D\uDFFE')===false&&n.test('\uD83D\uDFFE')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','v'),n=new RegExp('^\\P{Extended_Pictographic}$','v');p.test('\uD83D\uDFFE')===false&&n.test('\uD83D\uDFFE')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','vi'),n=new RegExp('^\\P{Extended_Pictographic}$','vi');p.test('\uD83D\uDFFE')===false&&n.test('\uD83D\uDFFE')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','u'),n=new RegExp('^\\P{ExtPict}$','u');p.test('\uD83D\uDFFE')===false&&n.test('\uD83D\uDFFE')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','ui'),n=new RegExp('^\\P{ExtPict}$','ui');p.test('\uD83D\uDFFE')===false&&n.test('\uD83D\uDFFE')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','v'),n=new RegExp('^\\P{ExtPict}$','v');p.test('\uD83D\uDFFE')===false&&n.test('\uD83D\uDFFE')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','vi'),n=new RegExp('^\\P{ExtPict}$','vi');p.test('\uD83D\uDFFE')===false&&n.test('\uD83D\uDFFE')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','u'),n=new RegExp('^\\P{Extended_Pictographic}$','u');p.test('\uD83D\uDFFF')===false&&n.test('\uD83D\uDFFF')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','ui'),n=new RegExp('^\\P{Extended_Pictographic}$','ui');p.test('\uD83D\uDFFF')===false&&n.test('\uD83D\uDFFF')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','v'),n=new RegExp('^\\P{Extended_Pictographic}$','v');p.test('\uD83D\uDFFF')===false&&n.test('\uD83D\uDFFF')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Extended_Pictographic}$','vi'),n=new RegExp('^\\P{Extended_Pictographic}$','vi');p.test('\uD83D\uDFFF')===false&&n.test('\uD83D\uDFFF')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','u'),n=new RegExp('^\\P{ExtPict}$','u');p.test('\uD83D\uDFFF')===false&&n.test('\uD83D\uDFFF')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','ui'),n=new RegExp('^\\P{ExtPict}$','ui');p.test('\uD83D\uDFFF')===false&&n.test('\uD83D\uDFFF')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','v'),n=new RegExp('^\\P{ExtPict}$','v');p.test('\uD83D\uDFFF')===false&&n.test('\uD83D\uDFFF')===true",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{ExtPict}$','vi'),n=new RegExp('^\\P{ExtPict}$','vi');p.test('\uD83D\uDFFF')===false&&n.test('\uD83D\uDFFF')===true",
     );
 }

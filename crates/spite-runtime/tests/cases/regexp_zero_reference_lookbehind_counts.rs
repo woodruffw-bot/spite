@@ -4,13 +4,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn zero_reference_lookbehind_count_result_snapshot() {
@@ -85,44 +79,44 @@ fn zero_reference_lookbehind_count_result_snapshot() {
 
 #[test]
 fn empty_lookbehind_references_keep_named_open_forward_chained_and_optional_slots() {
-    check(
+    assert_true(
         r"let a=/(?<=(?:((?<x>)\k<x>){2}){2})a\k<x>/d.exec('qa'),b=/(?<=(?:((?<x>)\k<x>){0,2}){2})a\k<x>/d.exec('qa');a[1]===''&&a.groups.x===''&&a.indices.groups.x===a.indices[2]&&a.indices[2][0]===1&&b[1]===undefined&&b.groups.x===undefined&&b.indices[2]===undefined",
     );
-    check(
+    assert_true(
         r"let a=/(?<=(?:(\k<x>(?<x>)){2}){2})a/d.exec('qa'),b=/(?<=(?:((?<x>\k<x>)){2}){2})a/d.exec('qa');a[1]===''&&a.groups.x===''&&a.indices.groups.x===a.indices[2]&&b[1]===''&&b.groups.x===''&&b.indices[2][0]===1",
     );
-    check(
+    assert_true(
         r"let a=/(?<=(?:((?<x>)(?<y>\k<x>)\k<y>){2}){2})a\k<x>\k<y>/d.exec('qa');a[1]===''&&a.groups.x===''&&a.groups.y===''&&a.indices.groups.x===a.indices[2]&&a.indices.groups.y===a.indices[3]&&a.indices[2]!==a.indices[3]",
     );
-    check(
+    assert_true(
         r"let a=/(?<=(?:(?:(?<x>)\k<x>){2}|(?<x>)){2})a\k<x>/d.exec('qa');a[1]===''&&a[2]===undefined&&a.groups.x===''&&a.indices.groups.x===a.indices[1]",
     );
-    check(
+    assert_true(
         r"let a=/(?<=((()\3){0,2}){2})a/d.exec('qa');a[1]===''&&a[2]===undefined&&a[3]===undefined&&a.indices[1][0]===1&&a.indices[2]===undefined",
     );
-    check(
+    assert_true(
         r"let a=/(?<!(?:(()\2){2}){2}q)a/d.exec('xa');a.index===1&&a[1]===undefined&&a[2]===undefined&&a.indices[2]===undefined",
     );
-    check(
+    assert_true(
         r"let a=/(?<=((^()\3){2}){2}a)b/d.exec('ab'),b=/(?<=a((()\3){2}){2})b/d.exec('ab');a.index===1&&a.indices[3][0]===0&&b.index===1&&b.indices[3][0]===1",
     );
 }
 
 #[test]
 fn empty_lookbehind_reference_consumers_keep_last_index_empty_advancement_and_callback_slots() {
-    check(
+    assert_true(
         r"let r=/(?<=(?:((?<x>)\k<x>){2}){2})a/dg,a=[...'qa a'.matchAll(r)];a.length===2&&a[1].index===3&&a[1].groups.x===''&&a[1].indices.groups.x[0]===3&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/(?<=((()\3){2}){2})a/dy;r.lastIndex=1;let a=r.exec('qa');a[3]===''&&a.index===1&&r.lastIndex===2&&r.exec('qa')===null&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/(?<=((()\3){0,2}){2})/dg,a=[...'ab'.matchAll(r)];a.length===3&&a[2].index===2&&a[2][1]===''&&a[2][3]===undefined&&a[2].indices[1][0]===2&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let seen=[];let s='qa a'.replace(/(?<=(?:((?<x>)\k<x>){2}){2})a/g,(m,c,d,i,s,g)=>{seen.push(c,d,i,g.x);return '_'});s==='q_ _'&&seen.length===8&&seen[0]===''&&seen[1]===''&&seen[2]===1&&seen[3]===''&&seen[6]===3",
     );
-    check(
+    assert_true(
         r"'qa a'.replace(/(?<=(?:((?<x>)\k<x>){2}){2})a/g,'<$<x>>')==='q<> <>'&&'qa'.search(/(?<=((()\3){2}){2})a/)===1&&'qa a'.split(/(?<=((()\3){2}){2})a/).join('|')==='q|||| ||||'",
     );
 }
@@ -157,9 +151,6 @@ fn consuming_reference_units_outside_reads_lookahead_and_unicode_are_pending() {
         r"/(?<=(()\2){2})a/u.exec('a')",
         r"/(?<=(()\2){2})a/v.exec('a')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }

@@ -217,10 +217,7 @@ fn unsupported_getters_skip_handlers_and_regular_expression_consumers_execute() 
         r"'abc'.match('(?:(?:(?:(?:x(x|yz)){2}){2})|){2,3}')",
         r"'abc'.matchAll('(?:(?:(?:(?:x(x|yz)){2}){2})|){2,3}').next()",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }
 

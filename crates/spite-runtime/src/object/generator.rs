@@ -1,6 +1,7 @@
 //! Source generator state and retained call environments (27.5.3).
 
-use super::{Budget, Error, Objects, source_context::SourceExecutionContext};
+use super::source_context::SourceExecutionContext;
+use super::{Budget, Error, Objects};
 use crate::environment::EnvironmentHandle;
 use spite_core::Span;
 use spite_heap::Handle;

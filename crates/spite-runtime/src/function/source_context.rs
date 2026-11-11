@@ -1,6 +1,7 @@
 //! Shared capture and caller restoration for resumable source functions.
 
-use crate::{Error, Realm, object::source_context::SourceExecutionContext};
+use crate::object::source_context::SourceExecutionContext;
+use crate::{Error, Realm};
 use spite_core::Span;
 
 impl Realm {

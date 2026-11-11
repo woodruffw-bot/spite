@@ -1,10 +1,8 @@
 //! Lossless source code points in CreateDynamicFunction (11.1, 20.2.1.1.1).
 
 use spite_core::{DiagnosticKind, JsString};
-use spite_parser::{
-    ast::{ExprKind, Literal, StatementKind},
-    parse_dynamic_function, parse_dynamic_function_utf16,
-};
+use spite_parser::ast::{ExprKind, Literal, StatementKind};
+use spite_parser::{parse_dynamic_function, parse_dynamic_function_utf16};
 
 fn string(parts: &[&[u16]]) -> JsString {
     JsString::from_code_units(parts.concat())

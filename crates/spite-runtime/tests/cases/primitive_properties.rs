@@ -190,10 +190,7 @@ fn unavailable_regexp_operations_are_distinct_from_absent_and_annex_b_properties
         r"'s'.search('(?:(?:(?:(?:x(x|yz)){2}){2})|){2,3}')",
         r"'s'.match('(?:(?:(?:(?:x(x|yz)){2}){2})|){2,3}')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
     for source in [
         "'s'.substr",

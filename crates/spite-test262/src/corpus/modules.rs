@@ -1,10 +1,12 @@
 //! Relative Test262 source identifiers, confined to the corpus test directory.
 
-use crate::{ModuleSource, runner::ModuleLoadError};
+use crate::ModuleSource;
+use crate::runner::ModuleLoadError;
 use spite_core::Span;
 use spite_parser::ast::ModuleRequest;
 use spite_runtime::{Error, ExceptionKind};
-use std::{fs, io, path::Path};
+use std::path::Path;
+use std::{fs, io};
 
 // A genuinely absent source is a host-selected loading exception. Broken
 // symlinks, escapes and other filesystem failures remain preparation errors.

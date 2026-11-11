@@ -2,95 +2,89 @@
 
 use spite_runtime::{Error, Limits, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn internal_line_assertions_use_complete_input_positions_and_empty_capture_ranges() {
-    check(
+    assert_true(
         r"let a=/(a)($)(\n)(^)(b)/dm.exec('xa\nbx');a.index===1&&a[0]==='a\nb'&&a[1]==='a'&&a[2]===''&&a[3]==='\n'&&a[4]===''&&a[5]==='b'&&a.indices[2][0]===2&&a.indices[4][0]===3",
     );
-    check(
+    assert_true(
         r"let a=/(a)($)(\n)(^)(b)/d.exec('a\nb');a===null&&/a^b/.exec('ab')===null&&/a$b/.exec('ab')===null",
     );
-    check(
+    assert_true(
         r"let a=/(^a)/d.exec('a'),b=/(a$)/d.exec('a');a[1]==='a'&&b[1]==='a'&&a.indices[1][0]===0&&b.indices[1][1]===1",
     );
 }
 
 #[test]
 fn multiline_handles_each_line_terminator_and_every_crlf_position() {
-    check(
+    assert_true(
         r"let a=/(\r)(^)(\n)(^)(a)/dm.exec('x\r\na');a.index===1&&a[1]==='\r'&&a[2]===''&&a[3]==='\n'&&a[4]===''&&a[5]==='a'&&a.indices[2][0]===2&&a.indices[4][0]===3",
     );
-    check(
+    assert_true(
         r"let a=/(a)($)(\r)($)(\n)/dm.exec('a\r\n');a[2]===''&&a[4]===''&&a.indices[2][0]===1&&a.indices[4][0]===2",
     );
-    check(
+    assert_true(
         r"let a=/(\u2028)(^)(a)/m.exec('\u2028a'),b=/(a)($)(\u2029)/m.exec('a\u2029');a[2]===''&&a[3]==='a'&&b[1]==='a'&&b[2]===''",
     );
 }
 
 #[test]
 fn dotall_ignore_case_word_and_input_assertions_keep_independent_flags() {
-    check(
+    assert_true(
         r"/(.)(^)(.)/ms.exec('\nA')[0]==='\nA'&&/(.)(^)(.)/m.exec('\nA')===null&&/(.)(^)(.)/s.exec('\nA')===null",
     );
-    check(
+    assert_true(
         r"let a=/(\r)(^\b)(a)/dmi.exec('\rA');a[1]==='\r'&&a[2]===''&&a[3]==='A'&&a.indices[2][0]===1&&/(\r)(^\B)(a)/mi.exec('\rA')===null",
     );
-    check(
+    assert_true(
         r"let a=/(\^)(a)(\$)/d.exec('^a$');a[1]==='^'&&a[3]==='$'&&/([\^$])(^)(a)/m.exec('^a')===null",
     );
 }
 
 #[test]
 fn sticky_assertions_keep_input_identity_and_ordered_last_index_writes() {
-    check(
+    assert_true(
         r"let r=/(^a)/my;r.lastIndex=2;let a=r.exec('x\na');a.index===2&&a[1]==='a'&&r.lastIndex===3&&r.exec('x\na')===null&&r.lastIndex===0",
     );
-    check(r"let r=/(^a)/y;r.lastIndex=1;r.exec('xaa')===null&&r.lastIndex===0");
-    check(
+    assert_true(r"let r=/(^a)/y;r.lastIndex=1;r.exec('xaa')===null&&r.lastIndex===0");
+    assert_true(
         r"let r=/(a$)/my;r.lastIndex=1;let a=r.exec('xa\ny');a.index===1&&a[1]==='a'&&r.lastIndex===2",
     );
-    check(
+    assert_true(
         r"let r=/(^a)/g;Object.defineProperty(r,'lastIndex',{writable:false});let failed=false;try{r.exec('a')}catch(e){failed=e instanceof TypeError}failed",
     );
 }
 
 #[test]
 fn zero_width_assertion_groups_nested_outer_anchors_and_alternatives_keep_slots() {
-    check(
+    assert_true(
         r"let a=/(^$\B)()/d.exec('');a[0]===''&&a[1]===''&&a[2]===''&&a.indices[1][0]===0&&a.indices[2][1]===0",
     );
-    check(
+    assert_true(
         r"let a=/^((^a))$/d.exec('a'),b=/^((a$))$/d.exec('a');a[1]==='a'&&a[2]==='a'&&b[1]==='a'&&b[2]==='a'&&a.indices[2][1]===1",
     );
-    check(
+    assert_true(
         r"let a=/(a$\n^b)|(a\nb)/dm.exec('a\nb');a[1]==='a\nb'&&a[2]===undefined&&Object.hasOwn(a,'2')&&a.indices[2]===undefined",
     );
-    check(
+    assert_true(
         r"let a=/([\s\S])(^)(a)/dm.exec('💩\na');a.index===2&&a[1]==='\n'&&a[2]===''&&a[3]==='a'&&a.indices[3][0]===3",
     );
 }
 
 #[test]
 fn generic_consumers_callbacks_and_intrinsic_arrays_preserve_empty_assertion_captures() {
-    check(
+    assert_true(
         r"'a\nb a\nb'.replace(/(a)($)(\n)(^)(b)/gm,'$5$1')==='ba ba'&&'a\nbxa\nb'.split(/(a)($)(\n)(^)(b)/m).join(',')===',a,,\n,,b,x,a,,\n,,b,'",
     );
-    check(
+    assert_true(
         r"let seen;let s='a\nb'.replace(/(a)($)(\n)(^)(b)/m,(whole,a,end,nl,start,b,index,input)=>{seen=[whole,a,end,nl,start,b,index,input];return 'x'});s==='x'&&seen[2]===''&&seen[4]===''&&seen[6]===0&&seen[7]==='a\nb'",
     );
-    check(
+    assert_true(
         r"let r=/(a)($)(\n)(^)(b)/dgm,a=[...'a\nb a\nb'.matchAll(r)];a.length===2&&a[1].index===4&&a[1].indices[4][0]===6&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let calls=0;Object.defineProperty(Array.prototype,'1',{set(){calls++},configurable:true});let a=/(^)a/d.exec('a');calls===0&&a[1]===''&&Object.hasOwn(a,'1')&&a.indices[1][1]===0",
     );
 }
@@ -120,9 +114,6 @@ fn optional_work_and_variable_assertion_gaps_remain_distinct_from_exceptions() {
         r"/(?:(?:(?:(?<n>a)^(?:\k<n>)+){2})|){2,3}/.test('a')",
         r"/(?:(^a))+b/u.test('a')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }

@@ -3,13 +3,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn lookahead_result_snapshot() {
@@ -58,39 +52,39 @@ fn lookahead_result_snapshot() {
 
 #[test]
 fn lookahead_atomic_choices_keep_external_ranges_and_negative_captures_undefined() {
-    check(
+    assert_true(
         r"let a=/a(?=(?<x>b))/d.exec('ab');a[0]==='a'&&a.groups.x==='b'&&a.indices[0][1]===1&&a.indices.groups.x===a.indices[1]&&a.indices[1][0]===1&&a.indices[1][1]===2",
     );
-    check(r"/(?=(a|ab))\1b$/.exec('abb')===null&&/(?=(ab|a))\1b$/.exec('abb')[1]==='ab'");
-    check(
+    assert_true(r"/(?=(a|ab))\1b$/.exec('abb')===null&&/(?=(ab|a))\1b$/.exec('abb')[1]==='ab'");
+    assert_true(
         r"let a=/(?=(a+))a*b\1/d.exec('baabac');a[0]==='aba'&&a.index===2&&a[1]==='a'&&a.indices[1][0]===2",
     );
-    check(
+    assert_true(
         r"let a=/(?!(?<x>a)b)\k<x>a/d.exec('a'),b=/(?=(?!(?<x>a)b)a)a/d.exec('a');a.groups.x===undefined&&a.indices.groups.x===undefined&&b.groups.x===undefined&&b.indices.groups.x===undefined",
     );
-    check(
+    assert_true(
         r"let a=/(?:(?=(?<x>a|b))a|b)+c/d.exec('abc'),b=/(?:(?=(?<x>a|b))\k<x>c)+/d.exec('acbc');a.groups.x===undefined&&a.indices.groups.x===undefined&&b[0]==='acbc'&&b.groups.x==='b'&&b.indices.groups.x[0]===2",
     );
-    check(
+    assert_true(
         r"let a=/(?:(?=(?<x>a))a|(?=(?<x>b))b){2}\k<x>/d.exec('abb');a[0]==='abb'&&a[1]===undefined&&a.groups.x==='b'&&a.indices.groups.x===a.indices[2]",
     );
 }
 
 #[test]
 fn lookahead_consumers_advance_empty_matches_and_preserve_prefix_captures() {
-    check(
+    assert_true(
         r"let r=/(?=(?<x>a))/dg,a=[...'aba'.matchAll(r)];a.length===2&&a[0][0]===''&&a[0].groups.x==='a'&&a[0].indices[0][1]===0&&a[0].indices.groups.x[1]===1&&a[1].index===2&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/(?=(a))/gy;r.lastIndex=1;let a=r.exec('ba');a[0]===''&&a[1]==='a'&&r.lastIndex===1&&r.exec('ba')[1]==='a'",
     );
-    check(
+    assert_true(
         r#"'aba'.replace(/(?=(?<x>a))/g,'<$<x>>')==='<a>ab<a>a'&&'aba'.search(/(?=(a))/)===0&&JSON.stringify('aba'.split(/(?=(a))/))==='["ab","a","a"]'"#,
     );
-    check(
+    assert_true(
         r#"let a=[];let text='aa'.replace(/(?=(a))/g,(m,c,i,s)=>{a.push(m,c,i,s);return '_'});text==='_a_a'&&JSON.stringify(a)==='["","a",0,"aa","","a",1,"aa"]'"#,
     );
-    check(
+    assert_true(
         r"let r=/(?<prefix>a)(?=\k<prefix>)/dy;r.lastIndex=1;let a=r.exec('qaa');a[0]==='a'&&a.groups.prefix==='a'&&r.lastIndex===2&&r.exec('qaa')===null&&r.lastIndex===0",
     );
 }
@@ -124,9 +118,6 @@ fn lookbehind_unicode_and_possibly_empty_repetitions_keep_their_unsupported_boun
         "/(?:(?<=(a+)))*/.exec('a')",
         "/(?:(?=(a))|b){2,3}/.exec('a')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }

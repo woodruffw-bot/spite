@@ -1,13 +1,10 @@
 //! Explicit filesystem paths for the command-line Module host.
 
-use spite::{
-    DiagnosticKind, Error, ExceptionKind, JsString, ModuleHandle, Realm, Span, ast::ModuleRequest,
-};
-use std::{
-    collections::{HashMap, HashSet},
-    fs,
-    path::{Path, PathBuf},
-};
+use spite::ast::ModuleRequest;
+use spite::{DiagnosticKind, Error, ExceptionKind, JsString, ModuleHandle, Realm, Span};
+use std::collections::{HashMap, HashSet};
+use std::fs;
+use std::path::{Path, PathBuf};
 
 struct Node {
     record: ModuleHandle,

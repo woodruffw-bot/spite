@@ -1,13 +1,11 @@
 //! Pinned corpus inventory and command-line failure semantics.
 
 use spite_test262::{Outcome, Stage, run_corpus, run_corpus_with_workers};
-use std::{
-    fs,
-    num::NonZeroUsize,
-    path::{Path, PathBuf},
-    process::Command,
-    sync::atomic::{AtomicUsize, Ordering},
-};
+use std::fs;
+use std::num::NonZeroUsize;
+use std::path::{Path, PathBuf};
+use std::process::Command;
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 fn empty_harness(root: &Path) {
     fs::create_dir_all(root.join("upstream/harness")).unwrap();

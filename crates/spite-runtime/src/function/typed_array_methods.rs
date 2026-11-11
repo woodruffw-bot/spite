@@ -1,6 +1,7 @@
 //! TypedArray traversal, callbacks, and species-backed results (23.2.3).
 
-use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, binary_data::ElementType};
+use crate::binary_data::ElementType;
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span, WellKnownSymbol};
 
 #[derive(Clone, Copy, Debug)]

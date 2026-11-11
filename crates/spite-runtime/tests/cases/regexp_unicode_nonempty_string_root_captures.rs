@@ -1,17 +1,11 @@
 //! Root string-class captures whose class result excludes the empty string.
+use crate::common::assert_true;
 use spite_core::JsString;
 use spite_runtime::{Realm, Value};
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
 
 #[test]
 fn nonempty_word_root_layouts_keep_longest_words_and_conditional_capture_ranges() {
-    let huge = 2u128;
+    let repeat_count = 2;
     for (class, input, word) in [
         (r"[\q{a|ab|abc}]", "abc!", Some("abc")),
         (r"[\q{ab}\q{a|abc}]", "abc!", Some("abc")),
@@ -61,7 +55,7 @@ fn nonempty_word_root_layouts_keep_longest_words_and_conditional_capture_ranges(
                     ),
                     4 => (
                         class.to_owned(),
-                        format!("(?<empty>(?<deep>)?)(?<required>){{{huge}}}"),
+                        format!("(?<empty>(?<deep>)?)(?<required>){{{repeat_count}}}"),
                         "",
                         "",
                         "",
@@ -70,7 +64,7 @@ fn nonempty_word_root_layouts_keep_longest_words_and_conditional_capture_ranges(
                     ),
                     _ => (
                         format!("(?:|)(?<part>(?<deep>{class}))(?<after>)"),
-                        format!("(?:(?:)|(?:)){{{huge}}}"),
+                        format!("(?:(?:)|(?:)){{{repeat_count}}}"),
                         "part,deep",
                         "",
                         "after",
@@ -91,7 +85,7 @@ fn nonempty_word_root_layouts_keep_longest_words_and_conditional_capture_ranges(
                 let end = 1 + whole.len();
                 let text = JsString::from(format!("!{input}").as_str());
                 let named = layout != 0;
-                check(&format!(
+                assert_true(&format!(
                     r#"
                 var r=new RegExp({pattern:?},'dvgy');r.lastIndex=1;var m=r.exec({text:?}),ok=true;
                 if({named}){{var keys=Object.keys(m.groups),characters='{characters}'.split(','),before='{before}'.split(','),after='{after}'.split(','),empty='{empties}'.split(','),never='{never}'.split(',');
@@ -115,35 +109,35 @@ fn nonempty_word_root_layouts_keep_longest_words_and_conditional_capture_ranges(
 
 #[test]
 fn nonempty_word_root_values_keep_original_utf16_folding_lone_surrogates_and_names() {
-    check(
+    assert_true(
         r"var r=/(?<before>)(?<part>[\q{😀|😀a}])(?<after>)|(?<empty>)/dvgy;r.lastIndex=1;var m=r.exec('😀a!');m[0]==='😀a'&&m.index===0&&m.groups.part==='😀a'&&m.groups.before===''&&m.groups.after===''&&m.groups.empty===undefined&&m.indices.groups.before[0]===0&&m.indices.groups.after[0]===3&&r.lastIndex===3",
     );
-    check(
+    assert_true(
         r"var r=/(?<empty>)|(?<part>[\q{😀|😀a}])/dvgy;r.lastIndex=1;var m=r.exec('😀a!');m[0]===''&&m.index===0&&m.groups.empty===''&&m.groups.part===undefined&&m.indices.groups.empty[0]===0&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"var r=/(?<\u{1D49C}>[\q{s|sa|k|ka}])|(?<empty>)/dvgi;var m=r.exec('ſaKa'),n=r.exec('ſaKa');m.groups.𝒜==='ſa'&&n.groups.𝒜==='Ka'&&n.indices.groups.𝒜[0]===2&&n.indices.groups.𝒜[1]===4&&r.source.indexOf('1D49C')!==-1",
     );
-    check(
+    assert_true(
         r"var m=/(?<part>[\q{\ud800|\ud800a}])|(?<empty>)/dv.exec('\ud800a!');m.groups.part==='\ud800a'&&m.groups.empty===undefined&&m.indices.groups.part[1]===2",
     );
-    check(
+    assert_true(
         r"var r=/(?<part>[\q{a|ab}])|(?<empty>)/vg;Object.defineProperty(r,'lastIndex',{writable:false});var caught=false;try{r.exec('ab')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
     );
 }
 
 #[test]
 fn nonempty_word_root_consumers_callbacks_clones_and_collection_keep_variable_widths() {
-    check(
+    assert_true(
         r"var r=/(?<before>)(?<part>[\q{a|ab}])(?<after>)|(?<empty>)/dvg;var all=Array.from('abXa'.matchAll(r));all.length===4&&all.map(m=>m[0]).join('|')==='ab||a|'&&all[0].groups.part==='ab'&&all[0].indices.groups.after[0]===2&&all[1].groups.before===undefined&&all[1].groups.empty===''&&all[2].groups.part==='a'&&all[2].indices.groups.after[0]===4&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"var all=Array.from('😀a'.matchAll(/(?<empty>)|(?<part>[\q{😀|😀a}])/dvg));all.length===3&&all.map(m=>m.index).join(',')==='0,2,3'&&all.every(m=>m[0]===''&&m.groups.empty===''&&m.groups.part===undefined)",
     );
-    check(
+    assert_true(
         r"var calls=0;var out='abXa'.replace(/(?<before>)(?<part>[\q{a|ab}])(?<after>)|(?<empty>)/vg,function(whole,before,part,after,empty,offset,input,groups){calls++;return arguments.length===8&&groups.part===part&&input==='abXa'&&(whole!==''?before===''&&part===whole&&after===''&&empty===undefined:before===undefined&&part===undefined&&after===undefined&&empty==='')?'#':'bad'});out==='##X##'&&calls===4",
     );
-    check(
+    assert_true(
         r"var r=/(?<part>[\q{a|ab}])|(?<empty>)/vg;r.lastIndex=9;var parts='abX'.split(r);'Xab'.search(r)===0&&r.lastIndex===9&&parts.length===4&&parts[0]===''&&parts[1]==='ab'&&parts[2]===undefined&&parts[3]==='X'&&'abXa'.match(r).join('|')==='ab||a|'&&'abXa'.replace(r,'<$<part>:$<empty>>')==='<ab:><:>X<a:><:>'",
     );
     let mut realm = Realm::default();
@@ -154,25 +148,25 @@ fn nonempty_word_root_consumers_callbacks_clones_and_collection_keep_variable_wi
 
 #[test]
 fn nonempty_word_root_proofs_finish_finalizers_and_keep_other_features_separate() {
-    check(
+    assert_true(
         r"var marker=0,m;try{m=/([\q{ab}&&\q{cd}])|()/dv.exec('ab')}finally{marker=3}marker===3&&m[0]===''&&m[1]===undefined&&m[2]===''&&m.indices[2][0]===0",
     );
-    check(
+    assert_true(
         r"var marker=0,m;try{m=/([\q{a|ab}])|()/dv.exec('ab!')}finally{marker=3}marker===3&&m[0]==='ab'&&m[1]==='ab'&&m[2]===undefined&&m.indices[1][1]===2",
     );
-    check(
+    assert_true(
         r"var marker=0,m;try{m=/([\q{a|ab}])|()/dv.exec('!')}finally{marker=3}marker===3&&m[0]===''&&m[1]===undefined&&m[2]===''&&m.indices[2][0]===0",
     );
-    check(
+    assert_true(
         r"var marker=0,m;try{m=/([\q{|a|ab}])\b|()/dv.exec('ab!')}finally{marker=3}var e=/([\q{|a|ab}])\b|()/dv.exec('!');marker===3&&m[0]==='ab'&&m[1]==='ab'&&m[2]===undefined&&e[0]===''&&e[1]===undefined&&e[2]===''&&e.index===0",
     );
-    check(
+    assert_true(
         r"var marker=0,m;try{m=/()|\b([\q{|ab}])/dv.exec('ab!')}finally{marker=3}marker===3&&m[0]===''&&m[1]===''&&m[2]===undefined&&m.indices[1][0]===0",
     );
-    check(
+    assert_true(
         r"var marker=0,m;try{m=/^([\q{ab}])|()/dv.exec('ab!')}finally{marker=3}var e=/^([\q{ab}])|()/dv.exec('!ab');marker===3&&m[0]==='ab'&&m[1]==='ab'&&m[2]===undefined&&e[0]===''&&e[1]===undefined&&e[2]===''&&e.index===0",
     );
-    check(
+    assert_true(
         r"var marker=0,m;try{m=/([\q{ab}])|()$/dv.exec('ab!')}finally{marker=3}var e=/([\q{ab}])|()$/dv.exec('!');marker===3&&m[0]==='ab'&&m[1]==='ab'&&m[2]===undefined&&e[0]===''&&e[1]===undefined&&e[2]===''&&e.index===1&&e.indices[2][0]===1",
     );
     for pattern in [
@@ -188,18 +182,15 @@ fn nonempty_word_root_proofs_finish_finalizers_and_keep_other_features_separate(
         r"([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])|()",
     ] {
         let mut realm = Realm::default();
-        assert!(
-            crate::common::regexp_oracle::check(
-                &mut realm,
-                &format!(
-                    "var marker=0;try{{new RegExp({:?},'v').test('ab')}}catch{{marker=1}}finally{{marker=2}};marker",
-                    JsString::from(pattern)
-                )
+        crate::common::regexp_oracle::assert_matches_reference(
+            &mut realm,
+            &format!(
+                "var marker=0;try{{new RegExp({:?},'v').test('ab')}}catch{{marker=1}}finally{{marker=2}};marker",
+                JsString::from(pattern)
             ),
-            "{pattern}"
         );
     }
-    check(
+    assert_true(
         "var yes=0;for(var p of ['(?<x>[a])|(?<x>)(?<x>)','[\\q{ab}&&a--a]|']){try{new RegExp(p,'v')}catch(e){if(e instanceof SyntaxError)yes++}}yes===2",
     );
 }

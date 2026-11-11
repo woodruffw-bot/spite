@@ -1,14 +1,8 @@
 //! Case-sensitive u/v literal atoms preserve scalar and capture boundaries.
+use crate::common::assert_true;
 use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
 
 #[test]
 fn unicode_scalar_literal_results_snapshot() {
@@ -49,57 +43,57 @@ fn unicode_scalar_literal_results_snapshot() {
 
 #[test]
 fn unicode_scalar_literal_consumers_and_original_metadata() {
-    check(
+    assert_true(
         r"let a=[...'😀a😀a'.matchAll(/(?<x>\u{1f600})(a)/dvg)];a.length===2&&a[0].index===0&&a[1].index===3&&a[0].groups.x==='😀'&&a[0].indices.groups.x===a[0].indices[1]",
     );
-    check(
+    assert_true(
         r"let r=/(\u{1f600})/dug;r.lastIndex=1;let a=[...'😀😀'.matchAll(r)];a.length===2&&a[0].index===0&&a[1].index===2&&r.lastIndex===1",
     );
-    check(r"'a😀b'.split(/(\uD83D\uDE00)()/v).join('|')==='a|😀||b'");
-    check(
+    assert_true(r"'a😀b'.split(/(\uD83D\uDE00)()/v).join('|')==='a|😀||b'");
+    assert_true(
         r"let seen=[];let x='😀a😀'.replace(/(\u{1f600})/ug,(m,a,i)=>{seen.push(i);return '_'});x==='_a_'&&seen.join(',')==='0,3'",
     );
-    check(r"'😀😀'.match(/\u{1f600}/vg).join('|')==='😀|😀'");
-    check(r"let r=/\u{1f600}/vy;r.lastIndex=1;'😀'.search(r)===0&&r.lastIndex===1");
-    check(
+    assert_true(r"'😀😀'.match(/\u{1f600}/vg).join('|')==='😀|😀'");
+    assert_true(r"let r=/\u{1f600}/vy;r.lastIndex=1;'😀'.search(r)===0&&r.lastIndex===1");
+    assert_true(
         r"let r=new RegExp('(?<x>\\u{1f600})','v'),c=new RegExp(r);c.source===r.source&&c.flags==='v'&&c.exec('😀').groups.x==='😀'",
     );
-    check(
+    assert_true(
         r"let r=/\u{1f600}/u;r.lastIndex=1;let a=r.exec('😀');a.index===0&&a[0]==='😀'&&r.lastIndex===1",
     );
 }
 
 #[test]
 fn unicode_scalar_literal_coercions_and_strict_last_index() {
-    check(
+    assert_true(
         r"let t='',r=/(?<x>\u{1f600})/dvy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m.index===0&&m[0]==='😀'&&m.groups.x==='😀'&&m.indices[0][0]===0&&m.indices[1][1]===2&&r.lastIndex===2",
     );
-    check(
+    assert_true(
         r"let r=/\u{1f600}/uy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
-    check(
+    assert_true(
         r"let r=/\u{1f600}/vy;r.lastIndex=4;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===4",
     );
-    check(
+    assert_true(
         r"let r=/\u{1f600}/vg;r.lastIndex=1;let mark={},caught=false;try{r.exec({toString(){throw mark}})}catch(e){caught=e===mark}caught&&r.lastIndex===1",
     );
-    check(
+    assert_true(
         r"let r=/\u{1f600}/uy;r.lastIndex={valueOf(){throw 42}};let caught=false;try{r.exec('😀')}catch(e){caught=e===42}caught&&typeof r.lastIndex==='object'",
     );
 }
 
 #[test]
 fn unicode_scalar_literal_lone_input_units_remain_distinct() {
-    check(
+    assert_true(
         r"let a=['\uD83D','\uDE00','\uD83Da\uDE00','\uD83D\uDE01'];a.every(s=>/\uD83D\uDE00/u.exec(s)===null)",
     );
-    check(
+    assert_true(
         r"let r=/😀/vy;r.lastIndex=1;let m=r.exec('\uD83D😀\uDE00');m.index===1&&m[0]==='😀'&&r.lastIndex===3",
     );
-    check(
+    assert_true(
         r"let r=/😀/uy;r.lastIndex=2;let m=r.exec('\uD83D😀\uDE00');m.index===1&&r.lastIndex===3",
     );
-    check(
+    assert_true(
         r"let r=/😀/vg;r.lastIndex=1;r.exec('😀x').index===0&&r.lastIndex===2&&r.exec('😀x')===null&&r.lastIndex===0",
     );
 }
@@ -121,7 +115,7 @@ fn unicode_scalar_literal_opted_work_abort_preserves_state_and_unproved_atoms() 
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
-    check(
+    assert_true(
         r#"let m=/(?=😀)/v.exec('😀');m!==null&&m.length===1&&m[0]===''&&m.index===0&&m.input==='😀'&&m.groups===undefined"#,
     );
     for source in [
@@ -135,10 +129,7 @@ fn unicode_scalar_literal_opted_work_abort_preserves_state_and_unproved_atoms() 
         r"/(😀)\1/u.exec('😀😀')",
         r"/\uD800()\uDC00/u.exec('\uD800')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }
 

@@ -1,7 +1,8 @@
 //! The supported syntax tree.
 
 use spite_core::{JsString, Span};
-use std::{fmt, rc::Rc};
+use std::fmt;
+use std::rc::Rc;
 
 /// A parsed Module body, distinct from Script execution input.
 ///
@@ -809,7 +810,7 @@ impl AssignmentPattern {
         ) {
             match target {
                 AssignmentTarget::Reference(expression) => {
-                    *depth = (*depth).max(offset + expression.depth)
+                    *depth = (*depth).max(offset + expression.depth);
                 }
                 AssignmentTarget::Pattern(pattern) => pending.push((pattern.as_ref(), offset + 1)),
             }

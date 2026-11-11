@@ -1,17 +1,11 @@
 //! Complete ordinary wrappers around asserted single string-class captures.
+use crate::common::assert_true;
 use spite_core::JsString;
 use spite_runtime::{Realm, Value};
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
 
 #[test]
 fn enclosed_asserted_single_string_class_layouts_keep_lexical_complete_ranges() {
-    let huge = 2u128;
+    let repeat_count = 2;
     for (class, _input, word) in [
         (r"[\q{|a|ab}]", "ab!", Some("ab")),
         (r"[\q{|a|ab}]", "!", Some("")),
@@ -67,7 +61,7 @@ fn enclosed_asserted_single_string_class_layouts_keep_lexical_complete_ranges() 
                         ),
                         4 => (
                             format!(
-                                "(?<required>){{{huge}}}(?<part>(?<deep>{class}))(?<optional>){{0,{huge}}}?(?<after>(?<first>)|(?<later>))"
+                                "(?<required>){{{repeat_count}}}(?<part>(?<deep>{class}))(?<optional>){{0,{repeat_count}}}?(?<after>(?<first>)|(?<later>))"
                             ),
                             "part,deep",
                             "required",
@@ -98,7 +92,7 @@ fn enclosed_asserted_single_string_class_layouts_keep_lexical_complete_ranges() 
                     let end = 1 + whole.len();
                     let text = JsString::from(format!("\n{}", word.unwrap_or("!")).as_str());
                     let named = true;
-                    check(&format!(
+                    assert_true(&format!(
                         r#"
             var r=new RegExp({pattern:?},'dvgym');r.lastIndex=1;var m=r.exec({text:?}),ok=true;
             if({matched}){{
@@ -126,50 +120,50 @@ fn enclosed_asserted_single_string_class_layouts_keep_lexical_complete_ranges() 
 }
 #[test]
 fn enclosed_asserted_single_string_class_values_consumers_and_scope_keep_prefix_slots() {
-    check(
+    assert_true(
         r"var m=/(?<enclosing>(?:(?<before>)(?<part>[\q{a|ab}])(?<after>)\B))/dv.exec('ab!');m[0]==='a'&&m[1]==='a'&&m.groups.enclosing==='a'&&m.groups.part==='a'&&m.groups.before===''&&m.indices.groups.enclosing===m.indices[1]&&m.indices.groups.after[0]===1",
     );
-    check(
+    assert_true(
         r"var m=/(?:(?<enclosing>()(?<part>[\q{}])()$))/dv.exec('!ab');m.index===3&&m[1]===''&&m[2]===''&&m.groups.part===''&&m[4]===''&&m.indices.groups.enclosing[0]===3",
     );
-    check(
+    assert_true(
         r"var m=/((?:^[\q{|ab}]$))/dv.exec('');m.length===2&&m[0]===''&&m[1]===''&&m.groups===undefined&&m.indices.groups===undefined",
     );
-    check(
+    assert_true(
         r"var r=/(?<enclosing>(?:^()(?<part>[\q{😀|😀a}])()$))/dvgy;r.lastIndex=1;var m=r.exec('😀a');m[1]==='😀a'&&m.groups.enclosing==='😀a'&&m.index===0&&m.indices.groups.part[1]===3&&m.indices[4][0]===3&&r.lastIndex===3",
     );
-    check(
+    assert_true(
         r"var m=/(?<\u{1D49C}>(?:\b(?<part>[\q{s|sa|k|ka}])\b))/dvi.exec('!ſa!');m.groups.𝒜==='ſa'&&m.groups.part==='ſa'&&Object.keys(m.groups).join(',')==='𝒜,part'&&m.indices.groups.𝒜[0]===1",
     );
-    check(
+    assert_true(
         r"var r=/((?:^(?<before>)(?<part>[\q{a|ab}])(?<after>)$))/dvgm;var a=Array.from('ab\na\n!'.matchAll(r));a.length===2&&a.every(m=>m[1]===m[0]&&m.groups.part===m[0]&&m.groups.before===''&&m.groups.after==='')&&a[1].indices[1][1]===4&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"var calls=0;var out='ab\na\n!'.replace(/((?:^(?<before>)(?<part>[\q{a|ab}])(?<after>)$))/vgm,function(all,outer,b,p,a,offset,input,groups){calls++;return arguments.length===8&&all===outer&&all===p&&b===''&&a===''&&groups.part===p&&input==='ab\na\n!'?'#':'bad'});out==='#\n#\n!'&&calls===2",
     );
-    check(
+    assert_true(
         r"var r=/(()([\q{a|ab}])()\B)/vg;r.lastIndex=9;var parts='ab!'.split(r);'!ab!'.search(r)===1&&r.lastIndex===9&&parts.length===6&&parts[0]===''&&parts[1]==='a'&&parts[2]===''&&parts[3]==='a'&&parts[4]===''&&parts[5]==='b!'&&'ab!'.replace(r,'<$1:$2:$3:$4>')==='<a::a:>b!'",
     );
     let mut realm = Realm::default();
     realm.eval(r"var r=/(?<enclosing>(()(?<part>[\q{|a|ab}])()$))/dvg,clone=new RegExp(r),m=r.exec('!ab')").unwrap();
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("m.groups.enclosing==='ab'&&m.groups.part==='ab'&&m.index===1&&m.indices.groups.enclosing[1]===3&&clone.exec('!')[1]===''&&r.lastIndex===3"),Ok(Value::Boolean(true)));
-    check(
+    assert_true(
         r"var marker=0,m;try{m=/((^()([\q{|a|ab}])()$))/dv.exec('')}finally{marker=3}marker===3&&m[1]===''&&m[2]===''&&m[3]===''&&m[4]===''&&m[5]===''&&m.indices[1][0]===0",
     );
-    check(
+    assert_true(
         r"var marker=0,m;try{m=/((^()([\q{a|ab}])()$)())/dv.exec('ab')}finally{marker=3}marker===3&&m.length===7&&m[0]==='ab'&&m[1]==='ab'&&m[2]==='ab'&&m[3]===''&&m[4]==='ab'&&m[5]===''&&m[6]===''&&m.indices[6][0]===2",
     );
-    check(
+    assert_true(
         r"var marker=0,m;try{m=/(^()\b([\q{a|ab}])$)/dv.exec('ab')}finally{marker=3}marker===3&&m.length===4&&m[0]==='ab'&&m[1]==='ab'&&m[2]===''&&m[3]==='ab'&&m.indices[3][1]===2",
     );
-    check(
+    assert_true(
         r"var marker=0,m;try{m=/(^()([\q{a|ab}])|())/dv.exec('ab!')}finally{marker=3}var e=/(^()([\q{a|ab}])|())/dv.exec('!ab');marker===3&&m.length===5&&m[0]==='ab'&&m[1]==='ab'&&m[2]===''&&m[3]==='ab'&&m[4]===undefined&&e[0]===''&&e[1]===''&&e[2]===undefined&&e[3]===undefined&&e[4]===''&&e.indices[1][0]===0&&e.indices[1]!==e.indices[4]",
     );
-    check(
+    assert_true(
         r"var marker=0,m;try{m=/(()([\q{a|ab}])|()$)/dv.exec('ab!')}finally{marker=3}var e=/(()([\q{a|ab}])|()$)/dv.exec('!');marker===3&&m.length===5&&m[0]==='ab'&&m[1]==='ab'&&m[2]===''&&m[3]==='ab'&&m[4]===undefined&&e[0]===''&&e[1]===''&&e[2]===undefined&&e[3]===undefined&&e[4]===''&&e.index===1&&e.indices[1][0]===1&&e.indices[4][0]===1",
     );
-    check(
+    assert_true(
         r#"var marker=0,ok=false;try{ok=(function(){var pattern="(^()([\\q{a|ab}])+()$)",rows=[],metadata=true;
 for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
 for(var input of ['aaaaaa','ababa','\nab\n','']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
@@ -186,15 +180,12 @@ return metadata&&JSON.stringify(rows)==="[[false,\"aaaaaa\",{\"values\":[\"aaaaa
         r"(^()([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])()$)",
     ] {
         let mut realm = Realm::default();
-        assert!(
-            crate::common::regexp_oracle::check(
-                &mut realm,
-                &format!(
-                    "var marker=0;try{{new RegExp({:?},'v').test('ab')}}catch{{marker=1}}finally{{marker=2}};marker",
-                    JsString::from(pattern)
-                )
+        crate::common::regexp_oracle::assert_matches_reference(
+            &mut realm,
+            &format!(
+                "var marker=0;try{{new RegExp({:?},'v').test('ab')}}catch{{marker=1}}finally{{marker=2}};marker",
+                JsString::from(pattern)
             ),
-            "{pattern}"
         );
     }
 }

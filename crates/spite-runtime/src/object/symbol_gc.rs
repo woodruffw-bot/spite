@@ -6,7 +6,9 @@ mod hooks;
 mod tests;
 mod walk;
 
-use super::{entry::Entry, finalization_registry::WeakTarget, weak_map::WeakMapData};
+use super::entry::Entry;
+use super::finalization_registry::WeakTarget;
+use super::weak_map::WeakMapData;
 use crate::Value;
 use spite_core::{JsSymbol, SymbolCollectionGuard, SymbolCollectionPin, WeakJsSymbol};
 use spite_heap::{Collection, Error, Handle, Heap, SweepSession, Trace};

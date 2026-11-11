@@ -1,24 +1,18 @@
 //! Complete consuming groups inside outer anchors preserve selected capture ranges.
 
-use spite_runtime::{Realm, Value};
+use spite_runtime::Realm;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn grouped_quantified_continuations_preserve_whole_and_inner_ranges() {
-    check(
+    assert_true(
         "let m=/^((a)+(b))$/d.exec('aaab');m.length===4&&m[1]==='aaab'&&m[2]==='a'&&m[3]==='b'&&m.indices[1][1]===4&&m.indices[2][0]===2&&m.indices[3][0]===3&&/^(?:a+b)$/.exec('aaab')[0]==='aaab'",
     );
-    check(
+    assert_true(
         "let m=/^((a)+?(aa))$/d.exec('aaaa');m[1]==='aaaa'&&m[2]==='a'&&m[3]==='aa'&&m.indices[2][0]===1&&m.indices[3][0]===2&&/^(a+?aa)$/.exec('aaaa')[1]==='aaaa'",
     );
-    check(
+    assert_true(
         "let a=/^(([ab])*?(ab))$/d.exec('abab'),b=/^(([ab])*?(ab))/.exec('abab');a[1]==='abab'&&a[2]==='b'&&a[3]==='ab'&&a.indices[3][0]===2&&b[1]==='ab'&&b[2]===undefined&&b[3]==='ab'",
     );
 }
@@ -26,61 +20,61 @@ fn grouped_quantified_continuations_preserve_whole_and_inner_ranges() {
 #[test]
 fn multiline_boundaries_and_exact_input_ends_constrain_grouped_bodies() {
     for boundary in [r"\n", r"\r", r"\u2028", r"\u2029"] {
-        check(&format!(
+        assert_true(&format!(
             "let m=/^((a)+(b))$/md.exec('x{boundary}aaab{boundary}y');m.index===2&&m[1]==='aaab'&&m[2]==='a'&&m[3]==='b'&&m.indices[3][0]===5"
         ));
     }
-    check(
+    assert_true(
         r"let a=/^([ab]*?ab)$/m.exec('abab\nab'),b=/^((a)+(b))$/m.exec('x\r\naaab\r\ny');a[1]==='abab'&&b.index===3&&b[1]==='aaab'&&/^(a+b)$/.exec('aaab\n')===null&&/^(a+b)$/.exec('xaaab')===null",
     );
 }
 
 #[test]
 fn empty_groups_and_zero_iterations_keep_capture_participation() {
-    check(
+    assert_true(
         "let a=/^((a)*())$/d.exec(''),b=/^((a*)())$/d.exec('');a[1]===''&&a[2]===undefined&&a[3]===''&&a.indices[1][0]===0&&a.indices[2]===undefined&&b[1]===''&&b[2]===''&&b[3]===''&&b.indices[2][1]===0",
     );
-    check(
+    assert_true(
         "let a=/^((?:))$/.exec(''),b=/^((?:a)*x)$/.exec('x');a[1]===''&&b[1]==='x'&&/^((?:))$/.exec('x')===null",
     );
 }
 
 #[test]
 fn global_sticky_state_and_strict_writes_preserve_anchor_boundaries() {
-    check(
+    assert_true(
         r"let r=/^(a+b)$/my;r.lastIndex=2;let m=r.exec('x\naaab\ny');m.index===2&&m[1]==='aaab'&&r.lastIndex===6&&r.exec('x\naaab\ny')===null&&r.lastIndex===0",
     );
-    check(r"let r=/^(a+b)$/my;r.lastIndex=3;r.exec('x\naaab\ny')===null&&r.lastIndex===0");
-    check(
+    assert_true(r"let r=/^(a+b)$/my;r.lastIndex=3;r.exec('x\naaab\ny')===null&&r.lastIndex===0");
+    assert_true(
         "let r=/^(a+b)$/g;Object.defineProperty(r,'lastIndex',{writable:false});let failed=false;try{r.exec('aaab')}catch(e){failed=e instanceof TypeError}failed",
     );
 }
 
 #[test]
 fn grouped_anchor_bodies_compose_with_branch_and_outer_capture_prefixes() {
-    check(
+    assert_true(
         r"let m=/([x])|^(a+b)$|([y])/md.exec('z\naaab\ny');m.index===2&&m[1]===undefined&&m[2]==='aaab'&&m[3]===undefined&&m.indices[2][0]===2",
     );
-    check(
+    assert_true(
         "let m=/(^(a+b)$)|x/d.exec('aaab'),n=/(?:(^(a+b)$))/.exec('aaab');m[1]==='aaab'&&m[2]==='aaab'&&m.indices[2][1]===4&&n[1]==='aaab'&&n[2]==='aaab'",
     );
 }
 
 #[test]
 fn original_source_pinned_flags_and_generic_consumers_preserve_captures() {
-    check(
+    assert_true(
         "let r=new RegExp('^((µ)+(x))$','di'),copy=new RegExp(r),m=copy.exec('ΜΜX');copy.source===r.source&&r.source==='^((µ)+(x))$'&&m[1]==='ΜΜX'&&m[2]==='Μ'&&m[3]==='X'&&m.indices[3][0]===2&&/^(ſ+x)$/i.exec('ssx')===null",
     );
-    check(
+    assert_true(
         r"let m=/^((.)+\uD800)$/sd.exec('a\n\uD800');m[1]==='a\n\uD800'&&m[2]==='\n'&&m.indices[2][0]===1",
     );
-    check(
+    assert_true(
         "'aaab'.replace(/^((a)+(b))$/,'$1-$2-$3')==='aaab-a-b'&&'aaab'.split(/^(a+b)$/).join(',')===',aaab,'",
     );
-    check(
+    assert_true(
         r"let r=/^(a+b)$/mg,m=[...'aaab\naab'.matchAll(r)];m.length===2&&m[0][1]==='aaab'&&m[1][1]==='aab'&&m[1].index===5&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         "let calls=0;Object.defineProperty(Array.prototype,'1',{set(){calls++},configurable:true});let m=/^((a)*())$/d.exec('');calls===0&&m[1]===''&&m[2]===undefined&&Object.hasOwn(m,'2')&&Object.hasOwn(m.indices,'2')&&m.indices[2]===undefined",
     );
 }
@@ -97,9 +91,6 @@ fn optional_work_aborts_and_complete_unsupported_bodies_remain_distinct() {
         "/^(a+b)$/u.test('ab')",
         r"/(?:(?:(?:^((a)(?:\1)+)$){2})|){2,3}/.test('aa')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }

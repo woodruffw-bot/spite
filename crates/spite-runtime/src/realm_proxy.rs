@@ -1,12 +1,9 @@
 //! Iterative object internal methods and Proxy invariant validation (10.5).
 
-use crate::{
-    Error, ExceptionKind, ObjectHandle, Realm, Value,
-    object::{
-        self, DataDescriptor, DescriptorKind, Property, PropertyDescriptor, ProxySnapshot,
-        ProxyState,
-    },
+use crate::object::{
+    self, DataDescriptor, DescriptorKind, Property, PropertyDescriptor, ProxySnapshot, ProxyState,
 };
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, PropertyKey, PropertyKeyRef, Span};
 
 struct ObjectRequest {

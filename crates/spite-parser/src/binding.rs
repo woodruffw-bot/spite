@@ -1,6 +1,10 @@
 //! Destructuring binding syntax and strict validation (14.3.3, 14.15.1).
 
-use super::*;
+use super::{
+    BindingElement, BindingPattern, BindingPatternKind, BindingProperty, Diagnostic, Expr, Kind,
+    Parser, PropertyName, Span, Token, YieldContext, early, reserved, validate_binding_name,
+    validate_expr,
+};
 
 impl Parser {
     pub(super) fn at_let_declaration(&mut self) -> bool {

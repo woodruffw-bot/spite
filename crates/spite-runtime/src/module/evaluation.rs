@@ -1,6 +1,6 @@
 //! InnerModuleEvaluation with persistent cycle roots and async dependencies (16.2.1.6.2).
 
-use super::*;
+use super::{Error, ObjectHandle, Realm, Span, Value};
 use crate::object::ModuleExecutionStatus;
 
 struct Frame {

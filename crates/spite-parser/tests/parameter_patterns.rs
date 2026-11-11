@@ -1,7 +1,8 @@
 //! Formal binding patterns, ContainsExpression, and non-simple early errors (15.1).
 
 use spite_core::DiagnosticKind;
-use spite_parser::{MAX_DEPTH, ast::StatementKind, parse_dynamic_function, parse_script};
+use spite_parser::ast::StatementKind;
+use spite_parser::{MAX_DEPTH, parse_dynamic_function, parse_script};
 
 #[test]
 fn parameter_pattern_syntax_snapshot() {

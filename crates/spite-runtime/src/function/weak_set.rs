@@ -1,7 +1,8 @@
 //! WeakSet construction and branded methods with CanBeHeldWeakly (24.4).
 
 use super::Builtin;
-use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, object::DataDescriptor};
+use crate::object::DataDescriptor;
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span, WellKnownSymbol};
 
 #[derive(Debug)]

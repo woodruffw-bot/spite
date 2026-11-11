@@ -1,9 +1,7 @@
 //! Lazy concat closure and iterator-helper resumes (27.1.3.2.1, 27.1.2.1).
 
-use crate::{
-    Error, ExceptionKind, ObjectHandle, Realm, Value,
-    object::{CallbackKind, ConcatIterable, HelperStatus, IteratorWrapper},
-};
+use crate::object::{CallbackKind, ConcatIterable, HelperStatus, IteratorWrapper};
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{Span, WellKnownSymbol};
 
 impl Realm {

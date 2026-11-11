@@ -1,6 +1,6 @@
 //! Host import completion uses intrinsic jobs and the cached Module evaluator.
 
-use super::*;
+use super::{Error, Realm, Span, Value};
 use crate::{Limits, PromiseJobOutcome, PromiseState};
 use spite_core::JsString;
 

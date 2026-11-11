@@ -267,7 +267,7 @@ fn host_abort_during_next_body_or_close_bypasses_handlers_finalizers_and_disposa
                             "{phase}: {error}"
                         );
                         if !limited {
-                            assert!(matches!(error, Error::Unsupported { .. }), "{error}")
+                            assert!(matches!(error, Error::Unsupported { .. }), "{error}");
                         }
                         reported = true;
                     }

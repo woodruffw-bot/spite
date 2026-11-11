@@ -2,13 +2,7 @@
 
 use spite_runtime::{Error, PromiseJobOutcome, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 fn drain(realm: &mut Realm) {
     loop {
@@ -55,7 +49,7 @@ fn absent_handlers_propagate_values_and_reasons_and_catch_recovers() {
 
 #[test]
 fn branding_precedes_hooks_and_species_construction_can_settle_the_parent() {
-    check(
+    assert_true(
         "let then=Promise.prototype.then,traps=0,fake=Object.create(Promise.prototype),proxy=new Proxy(Promise.resolve(1),{get(){traps++;throw 1}});Object.defineProperty(fake,'constructor',{get(){traps++;throw 2}});let caught=0;for(const value of [undefined,null,1,{},fake,proxy]){try{then.call(value)}catch(e){if(e instanceof TypeError)caught++}}caught===6&&traps===0",
     );
     let mut realm = Realm::default();

@@ -1,14 +1,11 @@
 use crate::{CaseResult, MetadataError, MetadataErrorKind, Outcome, ParseExpectation, Runner};
 use spite_core::Span;
 mod modules;
-use std::{
-    collections::{BTreeMap, BTreeSet},
-    fs, io,
-    num::NonZeroUsize,
-    path::Path,
-    sync::atomic::{AtomicUsize, Ordering},
-    thread,
-};
+use std::collections::{BTreeMap, BTreeSet};
+use std::num::NonZeroUsize;
+use std::path::Path;
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::{fs, io, thread};
 
 /// Results for one reviewed upstream source file.
 #[derive(Clone, Debug, Eq, PartialEq)]

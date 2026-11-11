@@ -1,7 +1,8 @@
 //! Tagged call evaluation and the realm's template registry (13.3.11, 13.2.8.4).
 
 use super::CallTarget;
-use crate::{Error, ObjectHandle, Realm, Value, object::DataDescriptor};
+use crate::object::DataDescriptor;
+use crate::{Error, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span};
 use spite_parser::ast::{Expr, TemplateElement};
 use std::rc::Rc;
@@ -157,7 +158,8 @@ impl Realm {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Limits, test_support::REALM_ENTRIES};
+    use crate::Limits;
+    use crate::test_support::REALM_ENTRIES;
 
     #[test]
     fn failed_array_or_raw_construction_does_not_publish_a_partial_template() {

@@ -3,13 +3,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn unicode_empty_results_snapshot() {
@@ -44,30 +38,30 @@ fn unicode_empty_consumers_advance_by_code_point() {
         Realm::default().eval("/(?:)/u.exec('a')"),
         Ok(Value::Object(_))
     ));
-    check(
+    assert_true(
         "let a=[...'😀a'.matchAll(/(?<x>)/dug)];a.length===3&&a[0].index===0&&a[1].index===2&&a[2].index===3&&a[1].groups.x===''&&a[1].indices.groups.x===a[1].indices[1]",
     );
-    check("JSON.stringify('😀a'.split(/(?:)/u))===JSON.stringify(['😀','a'])");
-    check("'😀a'.replace(/(?:)/ug,'-')==='-😀-a-'");
-    check("'😀a'.match(/(?:)/ug).length===3");
-    check("let r=/(?:)/uy;r.lastIndex=1;let m=r.exec('😀');m.index===0&&r.lastIndex===0");
-    check(
+    assert_true("JSON.stringify('😀a'.split(/(?:)/u))===JSON.stringify(['😀','a'])");
+    assert_true("'😀a'.replace(/(?:)/ug,'-')==='-😀-a-'");
+    assert_true("'😀a'.match(/(?:)/ug).length===3");
+    assert_true("let r=/(?:)/uy;r.lastIndex=1;let m=r.exec('😀');m.index===0&&r.lastIndex===0");
+    assert_true(
         r"let r=/(?:)/uy;r.lastIndex=2;let m=r.exec('\udc00\ud800');m.index===2&&r.lastIndex===2",
     );
 }
 
 #[test]
 fn unicode_empty_ordered_coercion_and_state() {
-    check(
+    assert_true(
         "let t='',r=/()/uy;r.lastIndex={valueOf(){t+='i';return 1;}};let m=r.exec({toString(){t+='s';return '😀';}});t==='si'&&m.index===0&&m[1]===''&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         "let t='',r=/()/u,i={valueOf(){t+='i';return 1;}};r.lastIndex=i;let m=r.exec({toString(){t+='s';return '😀';}});t==='si'&&m.index===0&&r.lastIndex===i",
     );
-    check(
+    assert_true(
         "let r=/()/uy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀');}catch(e){caught=e instanceof TypeError;}caught&&r.lastIndex===1",
     );
-    check("let r=/()/uy;r.lastIndex=3;let m=r.exec('😀');m===null&&r.lastIndex===0");
+    assert_true("let r=/()/uy;r.lastIndex=3;let m=r.exec('😀');m===null&&r.lastIndex===0");
 }
 
 #[test]

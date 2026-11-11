@@ -1,15 +1,12 @@
 //! Suspended ChainEvaluation preserving references and nullish suffix skipping (13.3.10).
 
 use super::{AsyncExecutionData, child_path, expression_at, has_supported_await, push};
-use crate::{
-    Error, Realm, Reference, Value,
-    function::CallTarget,
-    object::async_expression::{
-        AsyncExpressionData, ExprChild, ExprPath, ExprTask, InvocationTarget, MemberAction,
-        OptionalCallCursor,
-    },
-    reference_expression,
+use crate::function::CallTarget;
+use crate::object::async_expression::{
+    AsyncExpressionData, ExprChild, ExprPath, ExprTask, InvocationTarget, MemberAction,
+    OptionalCallCursor,
 };
+use crate::{Error, Realm, Reference, Value, reference_expression};
 use spite_parser::ast::{Argument, ChainStepKind, ExprKind, PropertyName};
 
 impl Realm {

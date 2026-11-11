@@ -1,9 +1,8 @@
 //! Owned strict tail transfers (15.10), dispatched after caller restoration.
 
 use super::CallTarget;
-use crate::{
-    Completion, CompletionKind, Error, ExceptionKind, Realm, Value, environment::EnvironmentHandle,
-};
+use crate::environment::EnvironmentHandle;
+use crate::{Completion, CompletionKind, Error, ExceptionKind, Realm, Value};
 use spite_core::Span;
 use spite_parser::ast::{BinaryOp, ChainStepKind, Expr, ExprKind};
 

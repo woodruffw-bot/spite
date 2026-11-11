@@ -4,13 +4,7 @@ use crate::common;
 use common::REALM_ENTRIES;
 use spite_runtime::{Error, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn thirty_two_nested_function_calls_fit_the_supported_native_stack() {
@@ -33,34 +27,34 @@ fn thirty_two_nested_function_calls_fit_the_supported_native_stack() {
 
 #[test]
 fn constructor_and_prototype_graph_has_standard_identity_and_descriptors() {
-    check(
+    assert_true(
         "typeof Function==='function' && Function.name==='Function' && Function.length===1 && Object.getPrototypeOf(Function)===Function.prototype && Object.getPrototypeOf(Function.prototype)===Object.prototype && Function.prototype.constructor===Function && Function.constructor===Function && Function.prototype()===undefined",
     );
-    check(
+    assert_true(
         "let p=Object.getOwnPropertyDescriptor(Function,'prototype'),c=Object.getOwnPropertyDescriptor(Function.prototype,'constructor'),g=Object.getOwnPropertyDescriptor(globalThis,'Function');p.value===Function.prototype && !p.writable && !p.enumerable && !p.configurable && c.value===Function && c.writable && !c.enumerable && c.configurable && g.value===Function && g.writable && !g.enumerable && g.configurable",
     );
     for (key, value) in [("name", "'Function'"), ("length", "1")] {
-        check(&format!(
+        assert_true(&format!(
             "let d=Object.getOwnPropertyDescriptor(Function,'{key}');d.value==={value} && !d.writable && !d.enumerable && d.configurable"
         ));
     }
-    check(
+    assert_true(
         "Function.toString()==='function Function() { [native code] }' && Object.prototype.toString.call(Function)==='[object Function]' && Function.prototype.name==='' && Function.prototype.length===0",
     );
-    check(
+    assert_true(
         "let caught=false;try{new Function.prototype();}catch(e){caught=e instanceof TypeError;}caught",
     );
 }
 
 #[test]
 fn branding_and_newtarget_validation_use_real_constructor_metadata() {
-    check(
+    assert_true(
         "function f(){}let arrow=()=>0,bound=f.bind(null);f instanceof Function && arrow instanceof Function && bound instanceof Function && Function instanceof Function && !(Function.prototype instanceof Function) && !(Math instanceof Function)",
     );
-    check(
+    assert_true(
         "let o=Reflect.construct(Object,[],Function);typeof o==='object' && Object.getPrototypeOf(o)===Function.prototype && o instanceof Function",
     );
-    check(
+    assert_true(
         "let caught=false;try{Reflect.construct(Function,[],()=>0);}catch(e){caught=e instanceof TypeError;}caught",
     );
     let mut realm = Realm::default();
@@ -73,19 +67,19 @@ fn branding_and_newtarget_validation_use_real_constructor_metadata() {
 
 #[test]
 fn complete_own_reflection_and_integrity_operations_do_not_invoke_accessors() {
-    check(
+    assert_true(
         "let keys=Reflect.ownKeys(Function.prototype);Object.getOwnPropertyNames(Function).join(',')==='length,name,prototype' && keys.length===10 && keys[9]===Symbol.hasInstance && Object.keys(Function.prototype).length===0 && Object.keys(Object.assign({},Function.prototype)).length===0",
     );
-    check(
+    assert_true(
         "let count=0;for(let k in Function.prototype)count++;count===0 && Object.getOwnPropertyDescriptor(Function.prototype,'caller').get===Object.getOwnPropertyDescriptor(Function.prototype,'arguments').get",
     );
-    check(
+    assert_true(
         "Object.freeze(Function);Object.freeze(Function.prototype);Object.isFrozen(Function) && Object.isFrozen(Function.prototype) && Function.prototype.constructor===Function && Function.prototype()===undefined",
     );
-    check(
+    assert_true(
         "let caught=false;Object.freeze(Function.prototype);try{Function.caller;}catch(e){caught=e instanceof TypeError;}caught",
     );
-    check(
+    assert_true(
         "let p=Function.prototype;delete p.constructor;!Object.hasOwn(p,'constructor') && p.constructor===Object && Reflect.set(p,'constructor',Function) && p.constructor===Function",
     );
 }

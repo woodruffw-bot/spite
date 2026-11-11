@@ -1,4 +1,6 @@
-use std::{borrow::Cow, collections::BTreeSet, fmt};
+use std::borrow::Cow;
+use std::collections::BTreeSet;
+use std::fmt;
 
 /// A stage at which a negative Test262 test expects an exception.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -395,7 +397,7 @@ fn negative(value: &str, block: &[&str]) -> Result<Negative, MetadataError> {
                     "resolution" => Phase::Resolution,
                     "runtime" => Phase::Runtime,
                     _ => return Err(error(Invalid, "unknown negative phase")),
-                })
+                });
             }
             "type" if error_type.is_none() => error_type = Some(value),
             "phase" | "type" => return Err(error(Invalid, "duplicate negative field")),

@@ -1,7 +1,8 @@
 //! ModuleRequests equality/order and ParseModule export entry rewriting (16.2).
 
 use spite_core::JsString;
-use spite_parser::{ast::ImportName, parse_module};
+use spite_parser::ast::ImportName;
+use spite_parser::parse_module;
 
 #[test]
 fn module_has_tla_finds_awaits_in_expressions_bindings_and_all_statement_positions() {

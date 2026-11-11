@@ -5,7 +5,11 @@ use spite_core::date::{
     LocalTimeZoneError, RecurringTimeZone, RecurringTimeZoneError, TzifTimeZone, TzifTimeZoneError,
     parse_posix_time_zone,
 };
-use std::{borrow::Cow, env, ffi::OsStr, fmt, fs, io, path::Path, path::PathBuf, sync::Arc};
+use std::borrow::Cow;
+use std::ffi::OsStr;
+use std::path::{Path, PathBuf};
+use std::sync::Arc;
+use std::{env, fmt, fs, io};
 
 #[cfg(test)]
 mod tests;

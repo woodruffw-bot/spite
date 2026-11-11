@@ -3,13 +3,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn unicode_positive_finite_nullable_alternative_results_snapshot() {
@@ -63,34 +57,34 @@ fn unicode_positive_finite_nullable_alternative_results_snapshot() {
 #[test]
 fn unicode_positive_finite_nullable_alternative_mandatory_empty_and_branch_order() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let m=/(a|){{2,3}}/d{mode}.exec('a');m[0]==='a'&&m[1]===''&&m.indices[1][0]===1&&m.indices[1][1]===1"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let m=/(|a){{2,3}}/{mode}.exec('a');m[0]==='a'&&m[1]==='a'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let m=/(a|){{2,3}}?/{mode}.exec('aaa');m[0]==='aa'&&m[1]==='a'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let m=/(|a){{2,3}}?/{mode}.exec('aaa');m[0]===''&&m[1]===''"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let m=/(a|){{0003,007}}?/{mode}.exec('aa');m[0]==='aa'&&m[1]===''"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let m=/(a|){{3,7}}?/{mode}.exec('baaa');m.index===0&&m[0]===''&&m[1]===''"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let m=/(a|){{2,3}}?$/{mode}.exec('aaa');m.index===0&&m[0]==='aaa'&&m[1]==='a'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let m=/\B(a|){{3,7}}?\B/{mode}.exec('baaa');m.index===1&&m[0]==='aa'&&m[1]===''"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let m=/\b(a|){{2,3}}?\b/{mode}.exec('ab');m.index===0&&m[0]===''&&m[1]===''"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let m=/(a|){{7,8}}/d{mode}.exec('');m[0]===''&&m[1]===''&&m.indices[1][0]===0"
         ));
     }
@@ -98,32 +92,36 @@ fn unicode_positive_finite_nullable_alternative_mandatory_empty_and_branch_order
 
 #[test]
 fn unicode_positive_finite_nullable_alternative_names_surrogates_and_scopes() {
-    check(
+    assert_true(
         r"let m=/(?<whole>(?<__proto__>a|(?:)){3,7})/dv.exec('aa');m.groups.whole==='aa'&&m.groups.__proto__===''&&m.indices.groups.__proto__[0]===2",
     );
-    check(
+    assert_true(
         r"let r=/(?<whole>(?<last>😀|(?:(?:))){2,3}?)/dvy;r.lastIndex=1;let m=r.exec('😀😀😀');m.index===0&&m[0]==='😀😀'&&m.groups.last==='😀'&&m.indices.groups.last[0]===2&&m.indices.groups.last[1]===4&&r.lastIndex===4",
     );
-    check(
+    assert_true(
         r"let r=/(😀|(?:)){3,7}/duy;r.lastIndex=1;let m=r.exec('😀');m.index===0&&m[0]==='😀'&&m[1]===''&&m.indices[1][0]===2&&r.lastIndex===2",
     );
-    check(r"let m=/([ſK]|(?:)){3,7}/div.exec('SK');m[0]==='SK'&&m[1]===''");
-    check(r"let m=/((?:.$)|(?:)){3,7}$/dvms.exec('\r\n');m.index===0&&m[0]==='\r\n'&&m[1]===''");
-    check(r"let m=/((?:\b(?:\Ba))|){3,7}/du.exec('a');m[0]===''&&m[1]===''");
+    assert_true(r"let m=/([ſK]|(?:)){3,7}/div.exec('SK');m[0]==='SK'&&m[1]===''");
+    assert_true(
+        r"let m=/((?:.$)|(?:)){3,7}$/dvms.exec('\r\n');m.index===0&&m[0]==='\r\n'&&m[1]===''",
+    );
+    assert_true(r"let m=/((?:\b(?:\Ba))|){3,7}/du.exec('a');m[0]===''&&m[1]===''");
 }
 
 #[test]
 fn unicode_positive_finite_nullable_alternative_consumers_and_coercions() {
-    check(r"let a='aaa'.match(/(a|){2,3}?/ug);a.length===3&&a[0]==='aa'&&a[1]==='a'&&a[2]===''");
-    check(r"'aaa'.replace(/(a|){2,3}?/vg,'<$1>')==='<a><><>'&&'ba'.search(/(a|){2,3}/u)===0");
-    check(
+    assert_true(
+        r"let a='aaa'.match(/(a|){2,3}?/ug);a.length===3&&a[0]==='aa'&&a[1]==='a'&&a[2]===''",
+    );
+    assert_true(r"'aaa'.replace(/(a|){2,3}?/vg,'<$1>')==='<a><><>'&&'ba'.search(/(a|){2,3}/u)===0");
+    assert_true(
         r"let a=[...'aa'.matchAll(/(?<x>(?:)|a){3,7}?/dvg)];a.length===3&&a[1].index===1&&a[1].groups.x===''&&a[1].indices.groups.x[0]===1",
     );
-    check(r"let a='aa'.split(/(a|){3,7}/u);a.length===3&&a.join('|')==='||'");
-    check(
+    assert_true(r"let a='aa'.split(/(a|){3,7}/u);a.length===3&&a.join('|')==='||'");
+    assert_true(
         r"let log='',r=/(a|){2,3}?/vgy;r.lastIndex={valueOf(){log+='i';return 0}};let m=r.exec({toString(){log+='s';return 'aaa'}});log==='si'&&m[0]==='aa'&&r.lastIndex===2",
     );
-    check(
+    assert_true(
         r"let r=/(a|){2,3}/ug;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
     );
 }

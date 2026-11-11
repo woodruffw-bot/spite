@@ -1,14 +1,8 @@
 //! Complete alternatives consume one Unicode character per selected iteration.
+use crate::common::assert_true;
 use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
 #[test]
 fn unicode_repeated_atom_alternatives_results_snapshot() {
     let mut rows = String::new();
@@ -61,68 +55,68 @@ fn unicode_repeated_atom_alternatives_results_snapshot() {
 #[test]
 fn unicode_repeated_atom_alternatives_counts_and_branch_scopes() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let m=/(a|b)+/{mode}.exec('abba');m[0]==='abba'&&m[1]==='a'&&m.index===0"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let m=/(\ba|b\b)+/{mode}.exec('aaa bbb');m[0]==='a'&&m[1]==='a'&&/(\ba|b\b){{2}}/{mode}.exec('aaa bbb')===null"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let m=/(^a|b$)+/{mode}m.exec('aa\nbb');m[0]==='a'&&m[1]==='a'&&m.index===0"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let m=/((a|b))*?/{mode}.exec('ab');m[0]===''&&m[1]===undefined&&m[2]===undefined"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let m=/(a|b){{2,3}}/{mode}.exec('abba');m[0]==='abb'&&m[1]==='b'&&/(a|b){{2,3}}?/{mode}.exec('abba')[0]==='ab'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let m=/([a\|]|b)+/{mode}.exec('a|b');m[0]==='a|b'&&m[1]==='b'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let m=/(\||a)+/{mode}.exec('|aa');m[0]==='|aa'&&m[1]==='a'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let m=/(^\B.$|\ba\b)+/{mode}ms.exec('\r\n');m[0]==='\r\n'&&m[1]==='\n'"
         ));
     }
 }
 #[test]
 fn unicode_repeated_atom_alternatives_fold_surrogates_and_names() {
-    check(
+    assert_true(
         r"let m=/(?<whole>(?<__proto__>ſ|K)+)/dvi.exec('Sk');m[0]==='Sk'&&m[1]==='Sk'&&m[2]==='k'&&m.groups.__proto__==='k'&&m.indices.groups.__proto__[0]===1&&m.indices.groups.__proto__[1]===2",
     );
-    check(
+    assert_true(
         r"let m=/(?<whole>(?<last>😀|a)+)/dvg.exec('😀a😀');m[0]==='😀a😀'&&m.groups.last==='😀'&&m.indices.groups.last[0]===3&&m.indices.groups.last[1]===5",
     );
-    check(
+    assert_true(
         r"let r=/(😀|a)+/duy;r.lastIndex=1;let m=r.exec('😀a');m.index===0&&m[0]==='😀a'&&m.indices[1][0]===2&&r.lastIndex===3",
     );
-    check(
+    assert_true(
         r"let m=/(?<x>a|b){0}/dv.exec('ab');m[0]===''&&m[1]===undefined&&m.groups.x===undefined&&m.indices[1]===undefined",
     );
-    check(
+    assert_true(
         r"let m=/(\uD800|\uDC00)+/du.exec('\uD800x\uDC00');m[0]==='\uD800'&&m.indices[1][1]===1&&/(\uD83D|\uDE00)+/u.exec('😀')===null",
     );
 }
 #[test]
 fn unicode_repeated_atom_alternatives_string_consumers() {
-    check(r"let a='ab ba'.match(/(a|b)+/ug);a.length===2&&a.join('|')==='ab|ba'");
-    check(r"'ab ba'.replace(/(a|b)+/vg,'<$1>')==='<b> <a>'&&'Xab'.search(/(a|b)+/v)===1");
-    check(r"let a='ab ba'.split(/(a|b)+/u);a.length===5&&a.join('|')==='|b| |a|'");
-    check(
+    assert_true(r"let a='ab ba'.match(/(a|b)+/ug);a.length===2&&a.join('|')==='ab|ba'");
+    assert_true(r"'ab ba'.replace(/(a|b)+/vg,'<$1>')==='<b> <a>'&&'Xab'.search(/(a|b)+/v)===1");
+    assert_true(r"let a='ab ba'.split(/(a|b)+/u);a.length===5&&a.join('|')==='|b| |a|'");
+    assert_true(
         r"let a=[...'ab ba'.matchAll(/(?<x>a|b)+/dvg)];a.length===2&&a[0].index===0&&a[1].index===3&&a[1].groups.x==='a'&&a[1].indices.groups.x[0]===4",
     );
 }
 #[test]
 fn unicode_repeated_atom_alternatives_coercions_and_last_index() {
-    check(
+    assert_true(
         r"let log='',r=/(a|b)+/vgy;r.lastIndex={valueOf(){log+='i';return 1}};let m=r.exec({toString(){log+='s';return 'Xab'}});log==='si'&&m.index===1&&r.lastIndex===3",
     );
-    check(
+    assert_true(
         r"let r=/(a|b)+/ug;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('Xab')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
-    check(
+    assert_true(
         r"let r=/(a|b)+/v;Object.defineProperty(r,'lastIndex',{value:100,writable:false});let m=r.exec('Xab');m.index===1&&r.lastIndex===100",
     );
 }

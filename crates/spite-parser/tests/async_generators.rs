@@ -1,11 +1,10 @@
 //! Combined Await/Yield grammar contexts and early errors (15.6).
 
 use spite_core::{DiagnosticKind, JsString};
+use spite_parser::ast::{FunctionKind, StatementKind};
 use spite_parser::{
-    MAX_DEPTH,
-    ast::{FunctionKind, StatementKind},
-    parse_dynamic_async_generator_function, parse_dynamic_async_generator_function_utf16,
-    parse_module, parse_script,
+    MAX_DEPTH, parse_dynamic_async_generator_function,
+    parse_dynamic_async_generator_function_utf16, parse_module, parse_script,
 };
 
 #[test]

@@ -1,10 +1,10 @@
 //! Try/Catch/Finally completion transitions across source suspension (14.15.3).
 
 use super::{AsyncExecutionData, FrameStep, Step, active_statement, child_location};
-use crate::{
-    Completion, CompletionKind, Error, Realm, Value,
-    object::async_execution::{AsyncStatementFrame, AsyncTryCursor, AsyncTryPhase, StatementChild},
+use crate::object::async_execution::{
+    AsyncStatementFrame, AsyncTryCursor, AsyncTryPhase, StatementChild,
 };
+use crate::{Completion, CompletionKind, Error, Realm, Value};
 use spite_core::Span;
 use spite_parser::ast::StatementKind;
 

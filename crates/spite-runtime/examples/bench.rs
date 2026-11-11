@@ -2,12 +2,10 @@
 
 use spite_parser::parse_script;
 use spite_runtime::{PromiseJobOutcome, Realm, Value};
-use std::{
-    error::Error,
-    hint::black_box,
-    num::NonZeroUsize,
-    time::{Duration, Instant},
-};
+use std::error::Error;
+use std::hint::black_box;
+use std::num::NonZeroUsize;
+use std::time::{Duration, Instant};
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
 

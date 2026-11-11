@@ -4,13 +4,7 @@ use crate::common;
 use common::REALM_ENTRIES;
 use spite_runtime::{Error, ExceptionKind, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 fn type_error(source: &str) {
     assert!(
@@ -27,21 +21,21 @@ fn type_error(source: &str) {
 
 #[test]
 fn constructor_graph_metadata_and_existing_iterator_inheritance_are_standard() {
-    check(
+    assert_true(
         "typeof Iterator==='function' && Iterator.name==='Iterator' && Iterator.length===0 && Object.getPrototypeOf(Iterator)===Function.prototype && Object.getPrototypeOf(Iterator.prototype)===Object.prototype && Iterator.prototype.constructor===Iterator && Iterator.toString()==='function Iterator() { [native code] }'",
     );
-    check(
+    assert_true(
         "let p=Object.getOwnPropertyDescriptor(Iterator,'prototype'),g=Object.getOwnPropertyDescriptor(globalThis,'Iterator');p.value===Iterator.prototype && !p.writable && !p.enumerable && !p.configurable && g.value===Iterator && g.writable && !g.enumerable && g.configurable",
     );
     for (key, value) in [("name", "'Iterator'"), ("length", "0")] {
-        check(&format!(
+        assert_true(&format!(
             "let d=Object.getOwnPropertyDescriptor(Iterator,'{key}');d.value==={value} && !d.writable && !d.enumerable && d.configurable"
         ));
     }
-    check(
+    assert_true(
         "let d=Object.getOwnPropertyDescriptor(Iterator.prototype,'constructor');!Object.hasOwn(d,'value') && !Object.hasOwn(d,'writable') && !d.enumerable && d.configurable && d.get.name==='get constructor' && d.get.length===0 && d.set.name==='set constructor' && d.set.length===1 && !Object.hasOwn(d.get,'prototype') && !Object.hasOwn(d.set,'prototype')",
     );
-    check(
+    assert_true(
         "[].values() instanceof Iterator && 'x'[Symbol.iterator]() instanceof Iterator && (function(){return arguments[Symbol.iterator]() instanceof Iterator;})() && Iterator.prototype[Symbol.iterator]()===Iterator.prototype",
     );
     let mut realm = Realm::default();
@@ -61,11 +55,11 @@ fn abstract_calls_and_construction_reject_after_argument_evaluation() {
         "new (Iterator.bind(null))(flag=3)",
         "Reflect.construct(Iterator,[flag=3])",
     ] {
-        check(&format!(
+        assert_true(&format!(
             "let flag=0,caught=false;try{{{expression};}}catch(e){{caught=e instanceof TypeError;}}caught && flag===3"
         ));
     }
-    check(
+    assert_true(
         "let I=Iterator;globalThis.Iterator=function(){};let caught=false;try{new I();}catch(e){caught=e instanceof TypeError;}caught",
     );
     for source in [
@@ -79,31 +73,31 @@ fn abstract_calls_and_construction_reject_after_argument_evaluation() {
 
 #[test]
 fn distinct_newtargets_select_prototypes_without_calling_or_coercing_arguments() {
-    check(
+    assert_true(
         "let calls=0;function F(){calls++;throw 7;}let p={},v={valueOf:()=>{throw 8;},toString:()=>{throw 9;}};F.prototype=p;let o=Reflect.construct(Iterator,[v],F);Object.getPrototypeOf(o)===p && calls===0 && Reflect.ownKeys(o).length===0",
     );
     for prototype in ["undefined", "null", "true", "1", "1n", "'x'", "Symbol()"] {
-        check(&format!(
+        assert_true(&format!(
             "function F(){{throw 7;}}F.prototype={prototype};let o=Reflect.construct(Iterator,[],F);Object.getPrototypeOf(o)===Iterator.prototype && o instanceof Iterator && o[Symbol.iterator]()===o && o.next===undefined"
         ));
     }
-    check(
+    assert_true(
         "let I=Iterator,p=I.prototype;globalThis.Iterator=null;delete p.constructor;function F(){}F.prototype=null;let o=Reflect.construct(I,[],F);Object.getPrototypeOf(o)===p && o instanceof I",
     );
 }
 
 #[test]
 fn bound_forwarding_and_prototype_getters_preserve_newtarget_order() {
-    check(
+    assert_true(
         "let B=Iterator.bind(null),caught=false;Object.defineProperty(B,'prototype',{get:()=>{throw 7;}});try{new B();}catch(e){caught=e instanceof TypeError;}caught",
     );
-    check(
+    assert_true(
         "function F(){}let B=Iterator.bind(null);Object.getPrototypeOf(Reflect.construct(B,[],F))===F.prototype",
     );
-    check(
+    assert_true(
         "let B=Iterator.bind(null);Object.getPrototypeOf(Reflect.construct(Iterator,[],B))===Iterator.prototype",
     );
-    check(
+    assert_true(
         "function F(){throw 7;}let B=F.bind(null),p={},reads=0;Object.defineProperty(B,'prototype',{get:()=>{reads++;return p;}});let o=Reflect.construct(Iterator,[],B);reads===1 && Object.getPrototypeOf(o)===p",
     );
     assert_eq!(Realm::default().eval("function F(){}let B=F.bind(null);Object.defineProperty(B,'prototype',{get:()=>{throw 7;}});Reflect.construct(Iterator,[],B)"), Err(Error::Thrown(Value::Number(7.0))));
@@ -126,14 +120,14 @@ fn constructor_getter_is_generic_and_setter_protects_the_intrinsic_home() {
         } else {
             receiver
         };
-        check(&format!(
+        assert_true(&format!(
             "let I=Iterator,d=Object.getOwnPropertyDescriptor(I.prototype,'constructor');globalThis.Iterator=null;d.get.call({getter_receiver})===I"
         ));
         type_error(&format!(
             "let d=Object.getOwnPropertyDescriptor(Iterator.prototype,'constructor');d.set.call({receiver},'x')"
         ));
     }
-    check(
+    assert_true(
         "let p=Iterator.prototype,get=Object.getOwnPropertyDescriptor(p,'constructor').get;let caught=false;try{p.constructor='x';}catch(e){caught=e instanceof TypeError;}caught && p.constructor===Iterator && get.call(null)===Iterator",
     );
     type_error(
@@ -143,19 +137,19 @@ fn constructor_getter_is_generic_and_setter_protects_the_intrinsic_home() {
 
 #[test]
 fn constructor_setter_bypasses_inherited_properties_and_strictly_updates_own_ones() {
-    check(
+    assert_true(
         "let p=Iterator.prototype,child=Object.create(p),v={toString:()=>{throw 7;}};child.constructor=v;let d=Object.getOwnPropertyDescriptor(child,'constructor');d.value===v && d.writable && d.enumerable && d.configurable && p.constructor===Iterator",
     );
-    check(
+    assert_true(
         "let set=Object.getOwnPropertyDescriptor(Iterator.prototype,'constructor').set,parent={};Object.defineProperty(parent,'constructor',{get:()=>{throw 7;},set:()=>{throw 8;}});let o=Object.create(parent);set.call(o,9)===undefined && Object.hasOwn(o,'constructor') && o.constructor===9",
     );
-    check(
+    assert_true(
         "let set=Object.getOwnPropertyDescriptor(Iterator.prototype,'constructor').set,parent={};Object.defineProperty(parent,'constructor',{value:7});let o=Object.create(parent);set.call(o)===undefined && Object.hasOwn(o,'constructor') && o.constructor===undefined && parent.constructor===7",
     );
-    check(
+    assert_true(
         "let set=Object.getOwnPropertyDescriptor(Iterator.prototype,'constructor').set,o={};Object.defineProperty(o,'constructor',{value:7,writable:true});Object.preventExtensions(o);set.call(o,8);let d=Object.getOwnPropertyDescriptor(o,'constructor');d.value===8 && d.writable && !d.enumerable && !d.configurable",
     );
-    check(
+    assert_true(
         "let set=Object.getOwnPropertyDescriptor(Iterator.prototype,'constructor').set,o={},receiver,value,count=0,v={};Object.defineProperty(o,'constructor',{get:()=>{throw 7;},set:function(x){'use strict';receiver=this;value=x;count++;}});set.call(o,v)===undefined && receiver===o && value===v && count===1",
     );
     for descriptor in ["{value:7}", "{get:()=>7}"] {
@@ -171,10 +165,10 @@ fn constructor_setter_bypasses_inherited_properties_and_strictly_updates_own_one
 
 #[test]
 fn global_keys_support_iterator_prototypes_and_reserved_host_gaps_abort_handlers() {
-    check(
+    assert_true(
         "let result,flag=0;try{result=Reflect.ownKeys(globalThis);flag=3;}catch{flag=1;}finally{flag+=4;}Array.isArray(result) && result.length===62 && result.includes('Iterator') && result.includes('Promise') && result.includes('Atomics') && flag===7",
     );
-    check(
+    assert_true(
         "let prototype,calls=0,result,flag=0;function F(){}let B=F.bind(null);Object.defineProperty(B,'prototype',{get(){calls++;prototype=Reflect.ownKeys(globalThis);return prototype;}});try{result=Reflect.construct(Iterator,[],B);flag=3;}catch{flag=1;}finally{flag+=4;}calls===1 && flag===7 && Array.isArray(prototype) && prototype.includes('F') && prototype.includes('Iterator') && Object.getPrototypeOf(result)===prototype && Object.getOwnPropertyNames(result).length===0",
     );
     for expression in [
@@ -195,7 +189,7 @@ fn global_keys_support_iterator_prototypes_and_reserved_host_gaps_abort_handlers
         );
         assert_eq!(realm.eval("flag"), Ok(Value::Number(0.0)));
     }
-    check(
+    assert_true(
         "'from' in Iterator && 'concat' in Iterator && !('zip' in Iterator) && Iterator.zip===undefined && Iterator.zipKeyed===undefined",
     );
 }

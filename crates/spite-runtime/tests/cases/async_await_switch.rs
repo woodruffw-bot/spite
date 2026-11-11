@@ -201,7 +201,7 @@ fn host_abort_skips_switch_disposal_handlers_and_pending_finalizers() {
                 PromiseJobOutcome::Reported(error) => {
                     assert!(matches!(error, Error::Limit { .. }) == limited, "{error}");
                     if !limited {
-                        assert!(matches!(error, Error::Unsupported { .. }), "{error}")
+                        assert!(matches!(error, Error::Unsupported { .. }), "{error}");
                     }
                     reported = true;
                 }

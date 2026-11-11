@@ -4,7 +4,8 @@ use super::{ClassField, ClassFieldName};
 use crate::object::{Budget, DataDescriptor, Error as ObjectError, Objects};
 use crate::{ObjectHandle, Realm, RootedValue, Value};
 use spite_core::{JsSymbol, PropertyKey, Span, WeakJsSymbol};
-use std::{cell::RefCell, rc::Rc};
+use std::cell::RefCell;
+use std::rc::Rc;
 
 type SharedFields = Rc<[ClassField]>;
 type RecoveredFields = (SharedFields, JsSymbol);

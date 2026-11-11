@@ -2,34 +2,32 @@
 
 use spite_runtime::{Error, ExceptionKind, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn join_preserves_holes_nullish_values_utf16_and_separator_rules() {
-    check(
+    assert_true(
         "[].join()==='' && [1,2,3].join()==='1,2,3' && [1,2].join(undefined)==='1,2' && [1,2].join(null)==='1null2'",
     );
-    check("[,,].join()===',' && [null,undefined,,3].join('|')==='|||3' && [1,2].join('')==='12'");
-    check(
+    assert_true(
+        "[,,].join()===',' && [null,undefined,,3].join('|')==='|||3' && [1,2].join('')==='12'",
+    );
+    assert_true(
         "['\\uD800','\\uDC00'].join('')==='\\uD800\\uDC00' && ['a','b'].join('\\uD800')==='a\\uD800b'",
     );
-    check("[true,false,-0,NaN,Infinity,1n].join()==='true,false,0,NaN,Infinity,1'");
-    check("[[1,2],[3],[]].join(';')==='1,2;3;' && String([1,,3])==='1,,3' && +[]===0 && +[2]===2");
-    check(
+    assert_true("[true,false,-0,NaN,Infinity,1n].join()==='true,false,0,NaN,Infinity,1'");
+    assert_true(
+        "[[1,2],[3],[]].join(';')==='1,2;3;' && String([1,,3])==='1,,3' && +[]===0 && +[2]===2",
+    );
+    assert_true(
         "Object.defineProperty(Array.prototype,'1',{value:9,writable:true,configurable:true});[1,,3].join()==='1,9,3'",
     );
 }
 
 #[test]
 fn join_is_generic_and_uses_length_of_array_like() {
-    check("Array.prototype.join.call({0:'a',2:'c',length:'3.8'},'|')==='a||c'");
-    check(
+    assert_true("Array.prototype.join.call({0:'a',2:'c',length:'3.8'},'|')==='a||c'");
+    assert_true(
         "Array.prototype.join.call('💩','|')==='\\uD83D|\\uDCA9' && Array.prototype.join.call(true)==='' && Array.prototype.join.call(3)===''",
     );
     for length in [
@@ -41,11 +39,11 @@ fn join_is_generic_and_uses_length_of_array_like() {
         "-3",
         "0.9",
     ] {
-        check(&format!(
+        assert_true(&format!(
             "Array.prototype.join.call({{0:'x',length:{length}}})===''"
         ));
     }
-    check(
+    assert_true(
         "let n=0;Array.prototype.join.call({length:0},{toString:()=>{n++;return ',';}})==='' && n===1",
     );
     for value in ["null", "undefined"] {
@@ -68,17 +66,17 @@ fn join_is_generic_and_uses_length_of_array_like() {
 
 #[test]
 fn join_reads_length_then_separator_then_live_elements_in_order() {
-    check(
+    assert_true(
         "let log='',o={0:{toString:()=>{log+='a';return 'A';}},1:{toString:()=>{log+='b';return 'B';}}};Object.defineProperty(o,'length',{get:()=>{log+='l';return {valueOf:()=>{log+='n';return 2;}};}});let s={toString:()=>{log+='s';return '|';}};Array.prototype.join.call(o,s)==='A|B' && log==='lnsab'",
     );
-    check("let a=[1,2,3],s={toString:()=>{a.length=1;return '|';}};a.join(s)==='1||'");
-    check(
+    assert_true("let a=[1,2,3],s={toString:()=>{a.length=1;return '|';}};a.join(s)==='1||'");
+    assert_true(
         "let a=[{toString:()=>{a[1]=9;a[3]=7;return 'x';}},2,3];a.join()==='x,9,3' && a.length===4",
     );
-    check(
+    assert_true(
         "let n=0,o={length:2};Object.defineProperty(o,'0',{get:()=>{n++;o[1]='b';return 'a';}});Array.prototype.join.call(o)==='a,b' && n===1",
     );
-    check(
+    assert_true(
         "let log='',o={length:2};Object.defineProperty(o,'0',{get:()=>{log+='0';return null;}});Object.defineProperty(o,'1',{get:()=>{log+='1';return undefined;}});Array.prototype.join.call(o)===',' && log==='01'",
     );
 }
@@ -110,14 +108,14 @@ fn abrupt_length_separator_and_element_operations_stop_immediately() {
 
 #[test]
 fn to_string_invokes_the_current_join_with_boxed_receiver_and_no_arguments() {
-    check("let a=[1,2];a.toString()==='1,2' && a.toString('|')==='1,2'");
-    check(
+    assert_true("let a=[1,2];a.toString()==='1,2' && a.toString('|')==='1,2'");
+    assert_true(
         "let a=[1];a.join=function(){'use strict';return this===a && arguments.length===0;};a.toString()===true",
     );
-    check(
+    assert_true(
         "let n=0,o={};Object.defineProperty(o,'join',{get:()=>{n++;return function(){return this===o?7:0;};}});Array.prototype.toString.call(o)===7 && n===1",
     );
-    check(
+    assert_true(
         "String.prototype.join=function(){'use strict';return typeof this==='object' && this.valueOf()==='x';};Array.prototype.toString.call('x')===true",
     );
     assert_eq!(
@@ -129,13 +127,13 @@ fn to_string_invokes_the_current_join_with_boxed_receiver_and_no_arguments() {
 
 #[test]
 fn to_string_falls_back_to_intrinsic_object_tag_and_accepts_generic_receivers() {
-    check(
+    assert_true(
         "let a=[1];a.join=null;Object.prototype.toString=()=>{throw 7;};a.toString()==='[object Array]'",
     );
-    check(
+    assert_true(
         "Array.prototype.toString.call({join:7})==='[object Object]' && Array.prototype.toString.call('x')==='[object String]' && Array.prototype.toString.call(3)==='[object Number]'",
     );
-    check(
+    assert_true(
         "let a=[];Object.setPrototypeOf(a,null);Array.prototype.toString.call(a)==='[object Array]'",
     );
     for value in ["null", "undefined"] {
@@ -152,7 +150,7 @@ fn to_string_falls_back_to_intrinsic_object_tag_and_accepts_generic_receivers() 
 #[test]
 fn methods_have_standard_descriptors_and_are_not_constructors() {
     for (name, length) in [("join", 1), ("toString", 0)] {
-        check(&format!(
+        assert_true(&format!(
             "let f=Array.prototype.{name},d=Object.getOwnPropertyDescriptor(Array.prototype,'{name}');f.name==='{name}' && f.length==={length} && f.prototype===undefined && d.value===f && d.writable && !d.enumerable && d.configurable"
         ));
         assert!(matches!(

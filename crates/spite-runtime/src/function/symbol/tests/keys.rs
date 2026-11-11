@@ -1,4 +1,4 @@
-use super::*;
+use super::{Error, ExceptionKind, JsString, JsSymbol, Value, check, realm_with_symbols};
 
 #[test]
 fn property_access_keeps_symbol_identity_and_string_names_separate() {

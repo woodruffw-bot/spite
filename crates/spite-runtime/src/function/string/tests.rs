@@ -1,4 +1,4 @@
-use super::*;
+use super::{Builtin, Error, JsString, Realm, Span, Value};
 
 #[test]
 fn new_target_prototype_is_observed_after_string_conversion_with_intrinsic_fallback() {

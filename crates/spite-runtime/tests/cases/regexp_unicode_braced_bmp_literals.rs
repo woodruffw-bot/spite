@@ -1,14 +1,8 @@
 //! Braced Unicode escapes decode only proved nonsurrogate BMP literal units.
+use crate::common::assert_true;
 use spite_core::JsString;
 use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
 use std::fmt::Write;
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
 
 #[test]
 fn unicode_braced_bmp_results_snapshot() {
@@ -55,34 +49,34 @@ fn unicode_braced_bmp_consumers_and_ordinary_escape_semantics() {
             ..
         })
     ));
-    check(
+    assert_true(
         r"let ok=true;for(let n of [94,36,92,46,42,43,63,40,41,91,93,123,125,124,47]){let c=String.fromCharCode(n),p='\\u{'+n.toString(16)+'}',m=new RegExp(p,'v').exec(c);if(m===null||m.length!==1||m[0]!==c)ok=false;}ok",
     );
-    check(
+    assert_true(
         r"let a=[...'😀ab😀ab'.matchAll(/(?<x>\u{61}())\u{62}/dvg)];a.length===2&&a[0].index===2&&a[1].index===6&&a[0].groups.x==='a'&&a[0].indices.groups.x===a[0].indices[1]",
     );
-    check(r"'😀ab'.split(/(\u{61}())\u{62}/u).join('|')==='😀|a||'");
-    check(
+    assert_true(r"'😀ab'.split(/(\u{61}())\u{62}/u).join('|')==='😀|a||'");
+    assert_true(
         r"let seen=[];let x='😀ab😀ab'.replace(/(\u{61}())\u{62}/vg,(m,a,b,i)=>{seen.push(i);return '_'});x==='😀_😀_'&&seen.join(',')==='2,6'",
     );
-    check(r"'😀aa'.match(/\u{61}/ug).join('|')==='a|a'");
-    check(r"let r=/\u{61}/vg;r.lastIndex=1;'😀a'.search(r)===2&&r.lastIndex===1");
-    check(r"new RegExp('\\u{61}','u').test('a')&&new RegExp('\\u{61}','v').test('a')");
+    assert_true(r"'😀aa'.match(/\u{61}/ug).join('|')==='a|a'");
+    assert_true(r"let r=/\u{61}/vg;r.lastIndex=1;'😀a'.search(r)===2&&r.lastIndex===1");
+    assert_true(r"new RegExp('\\u{61}','u').test('a')&&new RegExp('\\u{61}','v').test('a')");
 }
 
 #[test]
 fn unicode_braced_bmp_coercions_strict_state_and_names() {
-    check(
+    assert_true(
         r"let t='',r=/(?<x>\u{61})/dvy;r.lastIndex={valueOf(){t+='i';return 2;}};let m=r.exec({toString(){t+='s';return '😀a'}});t==='si'&&m.index===2&&m.groups.x==='a'&&m.indices.groups.x===m.indices[1]&&r.lastIndex===3",
     );
-    check(
+    assert_true(
         r"let r=/\u{61}/u,t='';r.lastIndex={valueOf(){t+='i';return 1;}};let m=r.exec({toString(){t+='s';return 'a'}});t==='si'&&m.index===0&&typeof r.lastIndex==='object'",
     );
-    check(
+    assert_true(
         r"let r=/\u{61}/uy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('ba')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
-    check(r"let r=/\u{61}/vy;r.lastIndex=1;r.exec('😀a')===null&&r.lastIndex===0");
-    check(
+    assert_true(r"let r=/\u{61}/vy;r.lastIndex=1;r.exec('😀a')===null&&r.lastIndex===0");
+    assert_true(
         r"let r=/\u{61}/vy;r.lastIndex=2;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('ba')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===2",
     );
 }
@@ -112,10 +106,7 @@ fn unicode_braced_bmp_opted_work_aborts_and_other_bodies_remain_distinct() {
         r"/\u{61}+b/v.exec('aa')",
         r"/(\u{61})\1/u.exec('aa')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }
 

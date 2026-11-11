@@ -1,7 +1,8 @@
 //! The host collects at execution boundaries and reports cleanup jobs faithfully.
 
 use spite_test262::{Outcome, Runner, Stage};
-use std::{fs, path::Path};
+use std::fs;
+use std::path::Path;
 
 fn outcomes(metadata: &str, body: &str) -> Vec<Outcome> {
     let source = format!("/*---\n{metadata}\n---*/\n{body}");

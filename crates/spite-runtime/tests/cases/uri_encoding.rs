@@ -3,30 +3,24 @@
 use spite_core::JsString;
 use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn escape_sets_differ_and_octets_use_uppercase_hex_without_normalization() {
-    check(
+    assert_true(
         "let s=\"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-.!~*'()\";encodeURI(s)===s && encodeURIComponent(s)===s",
     );
-    check(
+    assert_true(
         "let s=';/?:@&=+$,#';encodeURI(s)===s && encodeURIComponent(s)==='%3B%2F%3F%3A%40%26%3D%2B%24%2C%23'",
     );
     for name in ["encodeURI", "encodeURIComponent"] {
-        check(&format!(
+        assert_true(&format!(
             "{name}(' %[]\\\\^`{{}}|')==='%20%25%5B%5D%5C%5E%60%7B%7D%7C'"
         ));
-        check(&format!(
+        assert_true(&format!(
             "{name}('\\0\\x7F\\u0080\\u07FF\\u0800\\uD7FF\\uE000\\uFFFF\\u{{10000}}\\u{{10FFFF}}')==='%00%7F%C2%80%DF%BF%E0%A0%80%ED%9F%BF%EE%80%80%EF%BF%BF%F0%90%80%80%F4%8F%BF%BF'"
         ));
-        check(&format!(
+        assert_true(&format!(
             "{name}('é e\\u0301 \\uFEFF')==='%C3%A9%20e%CC%81%20%EF%BB%BF' && {name}('%20')==='%2520'"
         ));
     }
@@ -35,16 +29,16 @@ fn escape_sets_differ_and_octets_use_uppercase_hex_without_normalization() {
 #[test]
 fn primitive_and_object_inputs_use_once_only_string_hint_conversion() {
     for name in ["encodeURI", "encodeURIComponent"] {
-        check(&format!(
+        assert_true(&format!(
             "{name}()==='undefined' && {name}(null)==='null' && {name}(true)==='true' && {name}(7n)==='7' && {name}(-0)==='0' && {name}(Infinity)==='Infinity' && {name}(new String('é'))==='%C3%A9'"
         ));
-        check(&format!(
+        assert_true(&format!(
             "let log='',o={{[Symbol.toPrimitive](hint){{log+=hint;return 'é';}},toString(){{throw 7;}}}};{name}(o)==='%C3%A9' && log==='string'"
         ));
-        check(&format!(
+        assert_true(&format!(
             "let log='',o={{toString(){{log+='s';return {{}};}},valueOf(){{log+='v';return 'é';}}}};{name}(o)==='%C3%A9' && log==='sv'"
         ));
-        check(&format!(
+        assert_true(&format!(
             "let sentinel={{}},o={{toString(){{throw sentinel;}},valueOf(){{throw 7;}}}},caught=false;try{{{name}(o);}}catch(e){{caught=e===sentinel;}}caught"
         ));
         for input in [
@@ -64,7 +58,7 @@ fn primitive_and_object_inputs_use_once_only_string_hint_conversion() {
                 "{name}({input})"
             );
         }
-        check(&format!(
+        assert_true(&format!(
             "let log='',o={{toString(){{throw 7;}}}};{name}.call(o,(log+='a','é'),(log+='b',o))==='%C3%A9' && log==='ab'"
         ));
     }
@@ -95,14 +89,14 @@ fn lone_surrogates_throw_urierror_and_paired_surrogates_encode_normally() {
                 ),
                 "{source}"
             );
-            check(&format!(
+            assert_true(&format!(
                 "let flag=0,caught=false;try{{{source};}}catch(e){{caught=e instanceof URIError && e instanceof Error && Error.isError(e);flag++;}}finally{{flag++;}}caught && flag===2"
             ));
         }
-        check(&format!(
+        assert_true(&format!(
             "{name}('\\uD800\\uDC00\\uDBFF\\uDFFF')==='%F0%90%80%80%F4%8F%BF%BF'"
         ));
-        check(&format!(
+        assert_true(&format!(
             "let Original=URIError;URIError=TypeError;let caught=false;try{{{name}('\\uD800');}}catch(e){{caught=e instanceof Original && !(e instanceof TypeError);}}caught"
         ));
     }
@@ -175,7 +169,7 @@ fn globals_and_function_metadata_have_standard_descriptors() {
 
 #[test]
 fn large_default_outputs_are_allowed_and_opted_in_host_failures_abort_handlers() {
-    check(
+    assert_true(
         "let s='é😀 '.repeat(3000);encodeURI(s).length===63000 && encodeURIComponent(s).length===63000",
     );
     let mut realm = Realm::new(Limits {

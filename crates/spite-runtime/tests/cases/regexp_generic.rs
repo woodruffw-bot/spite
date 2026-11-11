@@ -3,29 +3,23 @@
 use spite_core::JsString;
 use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn flags_gets_follow_spec_order_without_coercing_truthy_values() {
-    check(
+    assert_true(
         "let get=Object.getOwnPropertyDescriptor(RegExp.prototype,'flags').get,t='',poison={[Symbol.toPrimitive](){throw 7;}},r={get hasIndices(){t+='d';return poison;},get global(){t+='g';return Symbol();},get ignoreCase(){t+='i';return 1n;},get multiline(){t+='m';return [];},get dotAll(){t+='s';return 'x';},get unicode(){t+='u';return 1;},get unicodeSets(){t+='v';return true;},get sticky(){t+='y';return {};}};get.call(r)==='dgimsuvy' && t==='dgimsuvy'",
     );
-    check(
+    assert_true(
         "let get=Object.getOwnPropertyDescriptor(RegExp.prototype,'flags').get;get.call({hasIndices:NaN,global:0,ignoreCase:0n,multiline:'',dotAll:null,unicode:undefined,unicodeSets:false,sticky:-0})==='' && get.call(Object.create(null))===''",
     );
-    check(
+    assert_true(
         "let get=Object.getOwnPropertyDescriptor(RegExp.prototype,'flags').get,r={get hasIndices(){delete this.global;this.unicodeSets=true;return true;},global:true};get.call(r)==='dv'",
     );
-    check(
+    assert_true(
         "let get=Object.getOwnPropertyDescriptor(RegExp.prototype,'flags').get,t='';try{get.call({get unicode(){t+='u';throw 7;},get unicodeSets(){t+='v';},get sticky(){t+='y';}});}catch(e){t+=e;}t==='u7'",
     );
-    check(
+    assert_true(
         "RegExp.prototype.flags==='' && RegExp.prototype.source==='(?:)' && RegExp.prototype.toString()==='/(?:)/'",
     );
     for name in [
@@ -82,10 +76,10 @@ fn tostring_orders_gets_and_string_hint_conversion_and_preserves_borrowed_source
         realm.eval("t"),
         Ok(Value::String(JsString::from("astringbc")))
     );
-    check(
+    assert_true(
         "RegExp.prototype.toString.call({})==='/undefined/undefined' && RegExp.prototype.toString.call({source:7,flags:null})==='/7/null'",
     );
-    check(
+    assert_true(
         "let t='';try{RegExp.prototype.toString.call({get source(){t+='s';return {toString(){t+='c';throw 7;}};},get flags(){t+='f';}});}catch(e){t+=e;}t==='sc7'",
     );
     for receiver in ["undefined", "null", "1", "'s'", "true", "1n", "Symbol()"] {
@@ -120,13 +114,13 @@ fn tostring_orders_gets_and_string_hint_conversion_and_preserves_borrowed_source
 
 #[test]
 fn test_delegates_to_exec_after_argument_conversion_and_validates_its_result() {
-    check(
+    assert_true(
         "let t='',r={get exec(){t+='e';return function(s){t+='c';return this===r && arguments.length===1 && s==='x'?{}:null;};}},s={[Symbol.toPrimitive](h){t+=h;return 'x';}};RegExp.prototype.test.call(r,s)===true && t==='stringec'",
     );
-    check(
+    assert_true(
         "RegExp.prototype.test.call({exec(s){return s==='undefined'?null:{};}},undefined)===false && RegExp.prototype.test.call({exec(){return []; }},'')===true",
     );
-    check(
+    assert_true(
         "let t='';try{RegExp.prototype.test.call({get exec(){t+='e';throw 8;}},{toString(){t+='s';throw 7;}});}catch(e){t+=e;}t==='s7'",
     );
     for result in ["undefined", "true", "7", "'x'", "1n", "Symbol()"] {
@@ -150,7 +144,7 @@ fn test_delegates_to_exec_after_argument_conversion_and_validates_its_result() {
             ..
         })
     ));
-    check(
+    assert_true(
         "let t='';try{RegExp.prototype.test.call(7,{toString(){t+='s';throw 9;}});}catch(e){t=e instanceof TypeError?'type':t;}t==='type'",
     );
 }

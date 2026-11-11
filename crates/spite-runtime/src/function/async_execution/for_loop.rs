@@ -4,13 +4,11 @@ use super::{
     AsyncAwaitAction, AsyncExecutionData, FrameStep, Step, active_statement, child_location,
     expression,
 };
-use crate::{
-    Completion, Error, Realm, Value,
-    object::{
-        async_execution::{AsyncForCursor, AsyncForPhase, AsyncStatementFrame, StatementChild},
-        async_expression::ExprRoot,
-    },
+use crate::object::async_execution::{
+    AsyncForCursor, AsyncForPhase, AsyncStatementFrame, StatementChild,
 };
+use crate::object::async_expression::ExprRoot;
+use crate::{Completion, Error, Realm, Value};
 use spite_core::Span;
 use spite_parser::ast::{Expr, ForInitializer, StatementKind};
 

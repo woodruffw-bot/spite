@@ -1,6 +1,9 @@
 //! Separate dynamic Function grammar goals and combined early errors (20.2.1.1.1).
 
-use super::*;
+use super::{
+    AwaitContext, Diagnostic, Function, FunctionKind, JsString, Kind, Parser, YieldContext,
+    function, source,
+};
 use std::rc::Rc;
 
 /// Parses ordinary dynamic Function source from a joined parameter list and body.

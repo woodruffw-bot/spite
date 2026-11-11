@@ -4,13 +4,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn repeated_reference_assertion_result_snapshot() {
@@ -64,41 +58,41 @@ fn repeated_reference_assertion_result_snapshot() {
 
 #[test]
 fn repeated_assertions_keep_named_positions_and_whole_body_retry_ranges() {
-    check(
+    assert_true(
         r"let a=/(?<x>a)(?<y>b)(?<last>(?<piece>a)\B\k<piece>\k<y>)*aab$/d.exec('abaabaab');a[0]==='abaabaab'&&a.groups.last==='aab'&&a.groups.piece==='a'&&a.indices.groups.last===a.indices[3]&&a.indices.groups.last[0]===2&&a.indices.groups.piece===a.indices[4]&&a.indices[4][0]===2&&a.indices[4][1]===3",
     );
-    check(
+    assert_true(
         r"let a=/((?<x>a)(?<y>b)(?<last>(?<piece>a)\B\k<piece>\k<y>)+?)\1/d.exec('abaababaab');a[0]==='abaababaab'&&a[1]==='abaab'&&a.groups.piece==='a'&&a.indices.groups.piece===a.indices[5]&&a.indices[5][0]===2",
     );
-    check(
+    assert_true(
         r"let a=/(?<x>a)(?<y>b)(?<last>(?<piece>[ab])\B\k<piece>\k<y>)+$/d.exec('abaabbbb');a[0]==='abaabbbb'&&a.groups.last==='bbb'&&a.groups.piece==='b'&&a.indices.groups.piece===a.indices[4]&&a.indices[4][0]===5&&a.indices[4][1]===6",
     );
-    check(
+    assert_true(
         r"let a=/(.)(a)((.)$\4\2){1,2}b/dms.exec('aa\n\nab');a[0]==='aa\n\nab'&&a[3]==='\n\na'&&a[4]==='\n'&&a.indices[4][0]===2&&/(.)(a)((.)$\4\2){1,2}b/ds.exec('aa\n\nab')===null",
     );
-    check(
+    assert_true(
         r"let r=/(?<x>)(?<last>(?<point>^)\k<x>)+/dmy;r.lastIndex=1;let a=r.exec('\nq');a.index===1&&a.groups.last===''&&a.indices.groups.point===a.indices[3]&&a.indices[3][0]===1&&r.lastIndex===1&&/(?<x>)(?<last>(?<point>^)\k<x>)+/dy.exec('\nq').index===0",
     );
-    check(
+    assert_true(
         r"let r=/()((\b)\1)+/dy;r.lastIndex=1;let a=r.exec('x');a.index===1&&a[2]===''&&a.indices[3][0]===1&&/()((\b)\1)+/.exec(' ')===null&&/()((\B)\1)+/.exec(' ')[2]===''",
     );
 }
 
 #[test]
 fn required_empty_assertions_and_consumers_preserve_zero_progress_rules() {
-    check(
+    assert_true(
         r"let a=[...'q'.matchAll(/(?<x>)(?<last>(?<point>^)\k<x>)*/dg)],b=[...'q'.matchAll(/(?<x>)(?<last>(?<point>^)\k<x>)+/dg)];a.length===2&&a[0].groups.last===undefined&&a[1].groups.point===undefined&&b.length===1&&b[0].groups.point===''&&b[0].indices.groups.point===b[0].indices[3]&&b[0].indices[3][0]===0",
     );
-    check(
+    assert_true(
         r"let r=/(?<x>)(?<last>(?<point>^)\k<x>){2,3}/dy;r.lastIndex=1;r.exec('q')===null&&r.lastIndex===0&&'q'.replace(/(?<x>)(?<last>(?<point>^)\k<x>)+/g,'<$<point>>')==='<>q'&&'q'.search(/()((^)\1)+/)===0",
     );
-    check(
+    assert_true(
         r"let a=/(?<x>)(?<last>(?<point>^)\k<x>){0,2}/dy,b=/(?<x>)(?<last>(?<point>^)\k<x>)+/dy;a.lastIndex=1;let x=a.exec('q');x.index===1&&x.groups.last===undefined&&x.groups.point===undefined&&a.lastIndex===1&&b.exec('q').groups.point===''",
     );
-    check(
+    assert_true(
         r"let r=/(?<x>a)(?<y>b)(?<last>(?<piece>[ab])\B\k<piece>\k<y>)+/dg,a=[...'abaab abaabbbb'.matchAll(r)];a.length===2&&a[1].groups.last==='bbb'&&a[1].indices.groups.piece[0]===11&&r.lastIndex===0&&'qabaabbbbZ'.split(r).join(',')==='q,a,b,bbb,b,Z'",
     );
-    check(
+    assert_true(
         r"let r=/(?<x>a)(?<y>b)(?<last>(?<piece>[ab])\B\k<piece>\k<y>)+/dy;r.lastIndex=1;let copy=new RegExp(r),a=r.exec('qabaabbbb');a.groups.piece==='b'&&a.indices.groups.piece[0]===6&&r.lastIndex===9&&copy.source===r.source&&copy.lastIndex===0",
     );
 }
@@ -121,7 +115,7 @@ fn explicit_repeated_assertion_work_aborts_before_last_index_and_handlers() {
 }
 
 #[test]
-fn repeated_choices_nested_quantifiers_and_lookaround_remain_unsupported() {
+fn repeated_choices_nested_quantifiers_and_lookaround_match_reference_results() {
     for source in [
         r"/(a)(b)(^\1|\2){2,3}/.test('abab')",
         r"/(?:(?:(a)(b)(a+\1\2)+)|){2,3}/.test('aabaab')",
@@ -130,10 +124,7 @@ fn repeated_choices_nested_quantifiers_and_lookaround_remain_unsupported() {
         r"/(a)(b)((?i:\1)\2)+/.test('abab')",
         r"/(a)(b)(\b\1\2)+/u.test('aabaab')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
-    check(r"/(a)(b)(\B\1\2)+/.exec('abc')===null");
+    assert_true(r"/(a)(b)(\B\1\2)+/.exec('abc')===null");
 }

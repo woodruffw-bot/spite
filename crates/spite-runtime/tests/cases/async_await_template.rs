@@ -175,7 +175,7 @@ fn template_host_abort_skips_later_substitutions_handlers_and_disposal_at_budget
                 PromiseJobOutcome::Reported(error) => {
                     assert!(matches!(error, Error::Limit { .. }) == limited, "{error}");
                     if !limited {
-                        assert!(matches!(error, Error::Unsupported { .. }), "{error}")
+                        assert!(matches!(error, Error::Unsupported { .. }), "{error}");
                     }
                     reported = true;
                 }

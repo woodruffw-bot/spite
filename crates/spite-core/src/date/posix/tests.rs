@@ -1,4 +1,4 @@
-use super::*;
+use super::{TransitionClock, parse_posix_time_zone};
 use std::fmt::Write;
 
 #[test]

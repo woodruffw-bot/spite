@@ -1,8 +1,8 @@
 //! Module goal strictness, lexical functions, Await and ImportMeta (16.2, 13.1.1).
 
 use spite_core::{DiagnosticKind, JsString, Span};
+use spite_parser::ast::{ExprKind, Literal, StatementKind};
 use spite_parser::{
-    ast::{ExprKind, Literal, StatementKind},
     parse_dynamic_function, parse_module, parse_module_utf16, parse_module_utf16_with_source_limit,
     parse_module_with_source_limit, parse_script, parse_script_utf16,
     parse_script_utf16_with_source_limit,

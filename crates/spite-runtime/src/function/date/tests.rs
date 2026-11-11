@@ -1,4 +1,4 @@
-use super::*;
+use super::{Error, JsString, Method, Realm, Span, Value};
 
 #[test]
 fn date_slot_survives_collection_and_stays_independent_of_prototype_identity() {

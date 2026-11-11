@@ -1,4 +1,6 @@
-use super::*;
+use super::{
+    DescriptorKind, Error, ExceptionKind, JsString, PropertyDescriptor, Realm, Span, Value,
+};
 use crate::object::Budget;
 
 #[test]
@@ -103,19 +105,14 @@ fn call_forwarding_is_iterative_and_budgeted() {
     let call = Value::Object(intrinsics.function_call.clone());
     let tag = Value::Object(intrinsics.object_to_string.clone());
     let mut arguments = vec![call.clone(); 10_000];
-    arguments.extend([tag.clone(), Value::Null]);
+    arguments.extend([tag, Value::Null]);
     assert_eq!(
         realm.call(call.clone(), call.clone(), arguments, Span::new(0, 0)),
         Ok(Value::String(JsString::from("[object Null]")))
     );
     realm.remaining_steps = Some(3);
     assert!(matches!(
-        realm.call(
-            call.clone(),
-            call.clone(),
-            vec![call.clone(); 10],
-            Span::new(0, 0)
-        ),
+        realm.call(call.clone(), call.clone(), vec![call; 10], Span::new(0, 0)),
         Err(Error::Limit { .. })
     ));
     // An abrupt host exit leaves no pending call state behind.

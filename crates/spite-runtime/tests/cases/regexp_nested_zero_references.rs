@@ -4,13 +4,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn nested_zero_reference_result_snapshot() {
@@ -84,50 +78,50 @@ fn nested_zero_reference_result_snapshot() {
 
 #[test]
 fn nested_empty_references_keep_named_aliases_forward_open_slots_and_negative_undo() {
-    check(
+    assert_true(
         r"let a=/(?:((?<x>)(?<y>\k<x>)\k<y>){2}){2}a\k<x>\k<y>/d.exec('qa'),b=/(?:(\k<y>(?<x>\k<y>)(?<y>)\k<x>){2}){2}a\k<x>\k<y>/d.exec('qa');a[1]===''&&a.groups.x===''&&a.groups.y===''&&a.indices.groups.x===a.indices[2]&&a.indices.groups.y===a.indices[3]&&a.indices[2]!==a.indices[3]&&b.groups.x===''&&b.groups.y===''&&b.indices.groups.y[0]===1",
     );
-    check(
+    assert_true(
         r"let a=/(?:((?<x>)\k<x>){2}){2}a\k<x>/d.exec('qa'),b=/(?:((?<x>)\k<x>){0,2}){2}a\k<x>/d.exec('qa');a[1]===''&&a.groups.x===''&&a.indices.groups.x===a.indices[2]&&a.indices[2][0]===1&&b[1]===undefined&&b.groups.x===undefined&&b.indices[2]===undefined",
     );
-    check(
+    assert_true(
         r"let a=/(?:(\k<x>(?<x>)){2}){2}a/d.exec('qa');a[1]===''&&a.groups.x===''&&a.indices.groups.x===a.indices[2]&&a.indices[2][0]===1",
     );
-    check(
+    assert_true(
         r"let a=/(?:((?<x>\k<x>)){2}){2}a/d.exec('qa');a[1]===''&&a.groups.x===''&&a.indices.groups.x===a.indices[2]&&a.index===1",
     );
-    check(
+    assert_true(
         r"let a=/(?:(?:(?<x>)\k<x>){2}|(?<x>)){2}a\k<x>/d.exec('qa');a[1]===''&&a[2]===undefined&&a.groups.x===''&&a.indices.groups.x===a.indices[1]",
     );
-    check(
+    assert_true(
         r"let a=/((\3()\3){2}){2}a/d.exec('qa');a[1]===''&&a[2]===''&&a[3]===''&&a.indices[1][0]===1&&a.indices[3][1]===1&&a.indices[1]!==a.indices[2]",
     );
-    check(
+    assert_true(
         r"let a=/((\b()\3){2}){2}a/d.exec(' a'),b=/((()^\3){0,2}){2}a/d.exec('qa');a.index===1&&a[3]===''&&a.indices[3][0]===1&&b[1]===''&&b[2]===undefined&&b[3]===undefined",
     );
-    check(
+    assert_true(
         r"let a=/(?!(?:(?:(?<x>)\k<x>){2}){2}q)a/d.exec('a');a[1]===undefined&&a.groups.x===undefined&&a.indices[1]===undefined&&a.indices.groups.x===undefined",
     );
-    check(
+    assert_true(
         r"let a=/(?<=(a))((()\4){2}){2}b/d.exec('ab');a.index===1&&a[1]==='a'&&a[2]===''&&a[3]===''&&a[4]===''&&a.indices[1][0]===0&&a.indices[4][0]===1",
     );
 }
 
 #[test]
 fn nested_empty_reference_consumers_keep_sticky_global_empty_advancement_and_callbacks() {
-    check(
+    assert_true(
         r"let r=/(?:((?<x>)\k<x>){2}){2}a/dg,a=[...'qa a'.matchAll(r)];a.length===2&&a[1].index===3&&a[1].groups.x===''&&a[1].indices.groups.x[0]===3&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/((()\3){2}){2}a/dy;r.lastIndex=1;let a=r.exec('qa');a[3]===''&&a.index===1&&r.lastIndex===2&&r.exec('qa')===null&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/((()\3){0,2}){2}/dg,a=[...'ab'.matchAll(r)];a.length===3&&a[2].index===2&&a[2][1]===''&&a[2][3]===undefined&&a[2].indices[1][0]===2&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let seen=[];let s='qa a'.replace(/(?:((?<x>)\k<x>){2}){2}a/g,(m,c,d,i,s,g)=>{seen.push(c,d,i,g.x);return '_'});s==='q_ _'&&seen.length===8&&seen[0]===''&&seen[1]===''&&seen[2]===1&&seen[3]===''&&seen[6]===3",
     );
-    check(
+    assert_true(
         r"'qa a'.replace(/(?:((?<x>)\k<x>){2}){2}a/g,'<$<x>>')==='q<> <>'&&'qa'.search(/((()\3){2}){2}a/)===1&&'qa a'.split(/((()\3){2}){2}a/).join('|')==='q|||| ||||'",
     );
 }
@@ -161,9 +155,6 @@ fn outside_references_unproved_local_spans_consuming_children_behind_and_unicode
         r"/((()\3){2}){2}a/u.exec('a')",
         r"/((()\3){2}){2}a/v.exec('a')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }

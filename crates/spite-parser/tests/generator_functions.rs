@@ -1,11 +1,8 @@
 //! Generator declarations/expressions and YieldExpression grammar (15.5).
 
 use spite_core::DiagnosticKind;
-use spite_parser::{
-    MAX_DEPTH,
-    ast::{ExprKind, FunctionKind, StatementKind},
-    parse_dynamic_function, parse_script,
-};
+use spite_parser::ast::{ExprKind, FunctionKind, StatementKind};
+use spite_parser::{MAX_DEPTH, parse_dynamic_function, parse_script};
 
 #[test]
 fn generator_kind_exact_source_and_yield_nodes_are_retained() {

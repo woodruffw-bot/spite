@@ -1,6 +1,6 @@
 //! GroupBy with collection keys and intrinsic result creation (24.1.2.1).
 
-use super::*;
+use super::{Error, ExceptionKind, Realm, Span, Value, WellKnownSymbol};
 use crate::object::CollectionKey;
 use std::collections::HashMap;
 

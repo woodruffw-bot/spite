@@ -1,4 +1,6 @@
-use super::*;
+use super::{
+    DataDescriptor, JsString, OrdinaryObject, Property, PropertyKey, PropertyLimit, Value,
+};
 
 fn define(object: &mut OrdinaryObject, key: impl Into<PropertyKey>, value: f64) {
     assert_eq!(

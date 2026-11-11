@@ -3,13 +3,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn unicode_pattern_syntax_property_results_snapshot() {
@@ -54,16 +48,16 @@ fn unicode_pattern_syntax_property_results_snapshot() {
 #[test]
 fn unicode_pattern_syntax_properties_aliases_complements_and_unions() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let a=/\p{{Pattern_Syntax}}/{mode},b=/\p{{Pat_Syn}}/i{mode},n=/\P{{Pat_Syn}}/i{mode};a.test('\u0021')&&a.test('\u0022')&&b.test('\u0021')&&!a.test('\u200D')&&!b.test('\u005f')&&!b.test('ſ')&&!b.test('K')&&!n.test('\u0021')&&n.test('😀')&&n.test('\uD800')&&n.test('\uFEFF')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let p=/\p{{Pattern_Syntax}}/{mode},s=/\s/{mode};p.test('\u0021')&&p.test('\u0022')&&!s.test('\u0021')&&!s.test('\u0022')&&!p.test('\uFEFF')&&s.test('\uFEFF')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=/[\p{{Pat_Syn}}K]/i{mode},b=/[^\P{{Pattern_Syntax}}K]/i{mode},c=/[\p{{Pat_Syn}}\P{{Pattern_Syntax}}]/{mode};a.test('K')&&a.test('k')&&a.test('\u0021')&&!a.test('ſ')&&b.test('\u0022')&&!b.test('K')&&c.test('😀')&&c.test('A')&&c.test('\uD800')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=/^\p{{Pat_Syn}}$/{mode},b=/^\P{{Pat_Syn}}$/{mode};a.test('\u0021')&&!a.test('\u0022\n')&&!a.test('')&&!a.test('\n')&&b.test('😀')&&!b.test('AA')"
         ));
     }
@@ -72,16 +66,16 @@ fn unicode_pattern_syntax_properties_aliases_complements_and_unions() {
 #[test]
 fn unicode_pattern_syntax_properties_captures_context_and_pair_starts() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^(?<x>([\p{{Pat_Syn}}K]))$/dim{mode}g,m=r.exec('x\r\nK\u2028');m.index===3&&m[1]==='K'&&m[2]==='K'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===4&&r.lastIndex===4"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/(?<__proto__>\P{{Pat_Syn}})/d{mode}y;r.lastIndex=1;let m=r.exec('😀\u0021');m.index===0&&m[1]==='😀'&&m.indices[1][1]===2&&r.lastIndex===2&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\p{{Pat_Syn}}/d{mode}g;r.lastIndex=1;let m=r.exec('😀\u0021');m.index===2&&m[0]==='\u0021'&&r.lastIndex===3"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\p{{Pat_Syn}}/{mode}y;r.lastIndex=1;r.exec('😀\u0021')===null&&r.lastIndex===0"
         ));
     }
@@ -90,16 +84,16 @@ fn unicode_pattern_syntax_properties_captures_context_and_pair_starts() {
 #[test]
 fn unicode_pattern_syntax_properties_consumers_original_text() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let a=[...'\u0022😀\u0021G'.matchAll(/(?<x>\P{{Pat_Syn}})/d{mode}g)];a.length===2&&a[0][1]==='😀'&&a[0].index===1&&a[0].indices[1][1]===3&&a[1][1]==='G'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'\u0022\u0021😀X'.replace(/(?<x>\p{{Pattern_Syntax}})/{mode}g,'<$1:$<x>>')==='<\u0022:\u0022><\u0021:\u0021>😀X'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'😀\u0022\u0021G'.split(/(\p{{Pat_Syn}})/{mode}).join('|')==='😀|\u0022||\u0021|G'&&'😀\u0021'.search(/\p{{Pat_Syn}}/{mode})===2&&'\u0022\u0021😀'.match(/\p{{Pat_Syn}}/{mode}g).join('')==='\u0022\u0021'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let t='';let x='\u0021\u0022😀\u0021'.replace(/(\p{{Pat_Syn}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__😀_'&&t==='014'"
         ));
     }
@@ -107,16 +101,16 @@ fn unicode_pattern_syntax_properties_consumers_original_text() {
 
 #[test]
 fn unicode_pattern_syntax_properties_clones_coercions_and_strict_writes() {
-    check(
+    assert_true(
         r"let r=/^(?<x>\p{Pattern_Syntax})$/dmu,c=new RegExp(r,'divy');c.source==='^(?<x>\\p{Pattern_Syntax})$'&&c.unicodeSets&&!c.unicode&&!c.multiline&&c.exec('\u0021').groups.x==='\u0021'&&c.lastIndex===1",
     );
-    check(
+    assert_true(
         r"let t='',r=/\P{Pat_Syn}/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m[0]==='😀'&&m.index===0&&r.lastIndex===2",
     );
-    check(
+    assert_true(
         r"let r=/\p{Pat_Syn}/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('\u0021')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/\p{Pat_Syn}/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀\u0021')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
 }
@@ -138,29 +132,26 @@ fn unicode_pattern_syntax_properties_opted_work_and_remaining_sets() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
-    check(
+    assert_true(
         r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
     );
-    check(r"/[\p{Pat_Syn}&&A]/v.exec('A')===null");
-    check(r"/[\p{Pat_Syn}--A]/v.exec('A')===null");
-    check(
+    assert_true(r"/[\p{Pat_Syn}&&A]/v.exec('A')===null");
+    assert_true(r"/[\p{Pat_Syn}--A]/v.exec('A')===null");
+    assert_true(
         r"let s=String.fromCodePoint(0x21),m=/[\p{Pat_Syn}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
     );
     for source in [
         r"/\p{Pat_Syn}+b/u.exec('AA')",
         r"/\p{Pat_Syn}A/v.exec('AA')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }
 
 #[test]
 fn unicode_pattern_syntax_repetitions_retain_last_capture_and_outside_words() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\B(?<x>\p{{Pat_Syn}})+\B/d{mode}g,m=r.exec('😀\u0021\u0022\u2337\uFEFF');m.index===2&&m[0]==='\u0021\u0022\u2337'&&m.groups.x==='\u2337'&&m.indices.groups.x[0]===4&&m.indices.groups.x[1]===5&&r.lastIndex===5"
         ));
     }

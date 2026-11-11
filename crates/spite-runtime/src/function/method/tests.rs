@@ -1,5 +1,6 @@
-use super::*;
-use crate::{function::Callable, object::Property};
+use super::{Error, JsString, MethodFunction, ObjectHandle, Realm, Span, Value};
+use crate::function::Callable;
+use crate::object::Property;
 
 fn object(value: Value) -> ObjectHandle {
     let Value::Object(handle) = value else {

@@ -1,10 +1,8 @@
 //! Async arrow cover selection, lexical contexts and source retention.
 
 use spite_core::DiagnosticKind;
-use spite_parser::{
-    ast::{ExprKind, FunctionKind, StatementKind},
-    parse_script,
-};
+use spite_parser::ast::{ExprKind, FunctionKind, StatementKind};
+use spite_parser::parse_script;
 
 #[test]
 fn async_arrow_syntax_snapshot_retains_prefix_defaults_and_expression_bodies() {

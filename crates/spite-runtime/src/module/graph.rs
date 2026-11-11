@@ -1,6 +1,6 @@
 //! Host-supplied dependency loading, separate from linking/evaluation (16.2.1).
 
-use super::*;
+use super::{Error, ExportKind, ModuleHandle, ObjectHandle, Realm, Span};
 use spite_parser::ast::ModuleRequest;
 use std::collections::HashSet;
 

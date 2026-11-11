@@ -1,14 +1,12 @@
 //! TypedArray intrinsic graph, state accessors, and iterator wrappers (23.2).
 
-use super::{
-    Builtin, typed_array_methods::Method, uint8_base64::Method as Base64Method,
-    uint8_hex::Method as HexMethod,
-};
-use crate::{
-    Error, ExceptionKind, ObjectHandle, Realm, Value,
-    binary_data::ElementType,
-    object::{ArrayIterationKind, DataDescriptor, DescriptorKind, PropertyDescriptor},
-};
+use super::Builtin;
+use super::typed_array_methods::Method;
+use super::uint8_base64::Method as Base64Method;
+use super::uint8_hex::Method as HexMethod;
+use crate::binary_data::ElementType;
+use crate::object::{ArrayIterationKind, DataDescriptor, DescriptorKind, PropertyDescriptor};
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, PropertyKey, Span, WellKnownSymbol};
 
 pub(crate) const ELEMENT_TYPES: [ElementType; 12] = [

@@ -1,7 +1,8 @@
 //! Observable linking, ResolveExport and active-component rollback.
 
-use super::*;
+use super::{Error, ExceptionKind, ModuleHandle, ModuleLinkState, Realm, Span};
 use crate::PromiseJobOutcome;
+use crate::Value;
 use spite_core::JsString;
 
 fn graph(realm: &mut Realm, sources: &[(&str, &str)]) -> Vec<ModuleHandle> {

@@ -1,10 +1,8 @@
 //! Set construction, intrinsics, and branded methods (24.2).
 
 use super::Builtin;
-use crate::{
-    Error, ExceptionKind, ObjectHandle, Realm, Value,
-    object::{DataDescriptor, DescriptorKind, PropertyDescriptor, SetData},
-};
+use crate::object::{DataDescriptor, DescriptorKind, PropertyDescriptor, SetData};
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, PropertyKey, Span, WellKnownSymbol};
 
 mod combine;

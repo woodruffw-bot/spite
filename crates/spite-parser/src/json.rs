@@ -1,7 +1,8 @@
 //! Strict ECMA-404 JSON grammar, with UTF-16 source ranges (25.5.1, ParseJSON).
 
 use spite_core::JsString;
-use std::{fmt, ops::Range};
+use std::fmt;
+use std::ops::Range;
 
 /// A flat, postorder JSON tree. Child indices always precede their parents.
 ///

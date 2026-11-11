@@ -3,17 +3,11 @@
 use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn quantified_zero_spines_keep_defined_prefixes_and_undefined_suffixes() {
-    check(
+    assert_true(
         r#"
         var cases=[
             ['(?<outer>(?<inner>[\\p{RGI_Emoji}]{0})?)+',[1,0]],
@@ -59,7 +53,7 @@ fn quantified_zero_spine_consumers_clones_and_gc_keep_both_capture_states() {
 
 #[test]
 fn syntax_errors_and_unerased_membership_requirements_keep_distinct_failures() {
-    check(
+    assert_true(
         r#"
         var invalid=['(?i:(?<x>[^\\p{RGI_Emoji}]){0})+','(?i:(\\P{RGI_Emoji})){0}','(([a]){2,1}){0}'],ok=true;
         for(var source of invalid){var caught=false;try{new RegExp(source,'v')}catch(e){caught=e instanceof SyntaxError}ok=ok&&caught}
@@ -72,19 +66,16 @@ fn syntax_errors_and_unerased_membership_requirements_keep_distinct_failures() {
         r"([\p{RGI_Emoji}]{0})a",
     ] {
         let source = JsString::from(source);
-        assert!(
-            crate::common::regexp_oracle::check(
-                &mut Realm::default(),
-                &format!("new RegExp({source:?},'v').test('')")
-            ),
-            "{source:?}"
+        crate::common::regexp_oracle::assert_matches_reference(
+            &mut Realm::default(),
+            &format!("new RegExp({source:?},'v').test('')"),
         );
     }
 }
 
 #[test]
 fn arbitrary_erased_bodies_reserve_duplicate_names_references_and_lookaround_slots() {
-    check(
+    assert_true(
         r#"
         var cases=[
             ['(?<outer>(?<erased>(?<x>a)|(?<x>b)(?<y>(?<=c))){0})+',[1,0,0,0,0]],
@@ -120,7 +111,7 @@ fn arbitrary_zero_group_consumers_and_collection_keep_erased_captures_undefined(
 
 #[test]
 fn concatenated_zero_spines_keep_interleaved_named_values_and_index_aliases() {
-    check(
+    assert_true(
         r#"
         var cases=[
             ['(?<skip>[\\p{RGI_Emoji}]{0})?(?<keep>[\\p{RGI_Emoji}]{0})+(?<gone>(?=(?<inner>a))b){0}',[0,1,0,0],['skip','keep','gone','inner']],
@@ -160,7 +151,7 @@ fn concatenated_zero_spine_string_consumers_and_collection_preserve_every_slot()
 
 #[test]
 fn sequence_erasure_still_requires_complete_original_early_error_validation() {
-    check(
+    assert_true(
         r#"
         var ok=true;for(var source of ['(?<x>\\p{RGI_Emoji}{0})?(?<x>\\p{RGI_Emoji}{0})+','[\\p{Not_A_Property}]{0}\\p{RGI_Emoji}{0}','(\\k<missing>){0}\\p{RGI_Emoji}{0}','[a]{0}([b]{3,2}){0}']){
             var caught=false;try{new RegExp(source,'v')}catch(e){caught=e instanceof SyntaxError}ok=ok&&caught;
@@ -172,16 +163,13 @@ fn sequence_erasure_still_requires_complete_original_early_error_validation() {
         r"new RegExp('[\\p{RGI_Emoji}]+[\\p{RGI_Emoji}]{0}','v').test('x')",
         r"new RegExp('[\\p{RGI_Emoji}]{0}[\\p{RGI_Emoji}]+','v').test('x')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }
 
 #[test]
 fn unconditional_first_alternatives_preserve_selected_and_unselected_capture_slots() {
-    check(
+    assert_true(
         r#"
         var cases=[
             ['|(?<never>[\\p{RGI_Emoji}]+)',[0],['never']],
@@ -221,7 +209,7 @@ fn first_empty_alternative_string_consumers_copies_and_gc_never_select_later_arm
 
 #[test]
 fn mandatory_enclosing_sequence_and_choice_captures_keep_full_named_layouts() {
-    check(
+    assert_true(
         r#"
         var cases=[
             ['(?<outside>(?<skip>\\p{RGI_Emoji}{0})?(?<keep>\\p{RGI_Emoji}{0})+)',[1,0,1],['outside','skip','keep']],
@@ -261,7 +249,7 @@ fn enclosing_empty_masks_preserve_string_consumer_slots_and_collection() {
 
 #[test]
 fn quantified_enclosing_masks_preserve_required_captures_and_roll_back_optional_ones() {
-    check(
+    assert_true(
         r#"
         var cases=[
             ['(?<outside>(?<skip>\\p{RGI_Emoji}{0})?(?<keep>\\p{RGI_Emoji}{0})+)+',[1,0,1],['outside','skip','keep']],
@@ -303,7 +291,7 @@ fn quantified_enclosing_empty_masks_keep_string_consumers_and_collection_consist
 
 #[test]
 fn quantified_enclosing_erasure_preserves_original_early_errors_and_host_aborts() {
-    check(
+    assert_true(
         r#"
         var invalid=['(?i:(?<x>[\\p{Not_A_Property}]{0})?[a]{0})+','(?:(?<x>a)(?<x>b)|){0,2}','(?:(\\k<missing>)|){2,3}'],ok=true;
         for(var source of invalid){var caught=false;try{new RegExp(source,'v')}catch(e){caught=e instanceof SyntaxError}ok=ok&&caught}ok
@@ -313,10 +301,7 @@ fn quantified_enclosing_erasure_preserves_original_early_errors_and_host_aborts(
         "new RegExp('(|a){2,3}').exec('a')",
         r"new RegExp('(?-i:(?<outside>|(?<never>[\\p{RGI_Emoji}]+)))+','v').exec('😀')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
     let count = "9".repeat(20_000);
     let pattern = JsString::from(
@@ -338,7 +323,7 @@ fn quantified_enclosing_erasure_preserves_original_early_errors_and_host_aborts(
 
 #[test]
 fn arbitrary_empty_trees_keep_named_branch_masks_and_original_erased_bindings() {
-    check(
+    assert_true(
         r#"
         var cases=[
             ['(?<outer>(?<left>a{0})?|(?<right>b{0})+)+(?<tail>[\\p{RGI_Emoji}]{0})',[1,0,0,1],['outer','left','right','tail']],
@@ -378,7 +363,7 @@ fn empty_tree_string_consumers_copies_and_gc_keep_branch_and_erasure_slots() {
 
 #[test]
 fn tree_erasure_keeps_original_early_errors_and_opt_in_host_aborts() {
-    check(
+    assert_true(
         r#"
         var invalid=['(?<x>[\\P{RGI_Emoji}]{0})a{0}','(?<same>a{0})(?<same>b{0})','(?:(\\k<missing>)){0}a{0}','(?:(a){3,2}){0}b{0}'],ok=true;
         for(var source of invalid){var caught=false;try{new RegExp(source,'v')}catch(e){caught=e instanceof SyntaxError}ok=ok&&caught}ok
@@ -403,7 +388,7 @@ fn tree_erasure_keeps_original_early_errors_and_opt_in_host_aborts() {
 
 #[test]
 fn empty_positive_assertion_trees_export_named_captures_in_both_directions() {
-    check(
+    assert_true(
         r#"
         var cases=[
             ['(?=(?<ahead>[\\p{RGI_Emoji}]{0}))(?<=(?<behind>a{0}))(?<tail>b{0})',[1,1,1],['ahead','behind','tail']],
@@ -443,7 +428,7 @@ fn empty_positive_assertion_string_consumers_clones_and_gc_keep_capture_aliases(
 
 #[test]
 fn positive_tree_early_errors_and_constructor_aborts_precede_matching_effects() {
-    check(
+    assert_true(
         r#"
         var invalid=['(?=(?<x>[\\P{RGI_Emoji}]{0}))','(?<=(?<same>a{0})(?<same>b{0}))','(?=((\\k<missing>){0}))'],ok=true;
         for(var source of invalid){var caught=false;try{new RegExp(source,'v')}catch(e){caught=e instanceof SyntaxError}ok=ok&&caught}ok
@@ -468,7 +453,7 @@ fn positive_tree_early_errors_and_constructor_aborts_precede_matching_effects() 
 
 #[test]
 fn escaped_empty_tree_atoms_keep_literal_delimiters_and_named_capture_masks() {
-    check(
+    assert_true(
         r#"
         var cases=[
             ['(?<outer>(?<left>\\x61{0})?|(?<right>\\u0062{0})+)+(?<tail>[\\p{RGI_Emoji}]{0})',[1,0,0,1],['outer','left','right','tail']],
@@ -508,7 +493,7 @@ fn escaped_empty_tree_consumers_clones_and_gc_preserve_source_and_capture_aliase
 
 #[test]
 fn escaped_tree_original_early_errors_and_host_aborts_precede_erasure() {
-    check(
+    assert_true(
         r#"
         var invalid=['(?=(\\u{110000}{0}))','(?<x>\\x6G{0})','(?<=\\u{})([a]){0}','(?<same>\\x61{0})(?<same>\\u0062{0})'],ok=true;
         for(var source of invalid){var caught=false;try{new RegExp(source,'v')}catch(e){caught=e instanceof SyntaxError}ok=ok&&caught}ok
@@ -532,7 +517,7 @@ fn escaped_tree_original_early_errors_and_host_aborts_precede_erasure() {
 
 #[test]
 fn surrogate_empty_tree_masks_follow_mode_specific_atom_boundaries() {
-    check(
+    assert_true(
         r#"
         var cases=[
             ['(?<pair>\\uD83D\\uDE00{0})(?<lead>\\uD800{0})(?<tail>\\u{DC00}{0})',[1,1,1],['pair','lead','tail'],'v'],
@@ -574,7 +559,7 @@ fn surrogate_empty_tree_consumers_clones_and_collection_keep_capture_aliases() {
 
 #[test]
 fn surrogate_tree_original_early_errors_and_host_aborts_precede_erasure() {
-    check(
+    assert_true(
         r#"
         var invalid=['(?=(\\uD800{0}))\\u{110000}{0}','(?<same>\\uD800{0})(?<same>\\uDC00{0})','(?<x>\\uD80G{0})','(?<=\\u{D800})(\\k<missing>){0}'],ok=true;
         for(var source of invalid){var caught=false;try{new RegExp(source,'v')}catch(e){caught=e instanceof SyntaxError}ok=ok&&caught}ok

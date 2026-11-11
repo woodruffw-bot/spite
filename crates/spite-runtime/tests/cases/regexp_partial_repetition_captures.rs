@@ -2,89 +2,85 @@
 
 use spite_runtime::{Error, Limits, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn partial_enclosing_prefix_and_sequel_captures_keep_source_order() {
-    check(
+    assert_true(
         r"let a=/((x)(ab)+)(c)/d.exec('xababc');a.length===5&&a[1]==='xabab'&&a[2]==='x'&&a[3]==='ab'&&a[4]==='c'&&a.indices[1][1]===5&&a.indices[3][0]===3&&a.indices[4][0]===5",
     );
-    check(
+    assert_true(
         r"let a=/(x)((ab)+(c))/d.exec('xababc');a[1]==='x'&&a[2]==='ababc'&&a[3]==='ab'&&a[4]==='c'&&a.indices[2][0]===1&&a.indices[2][1]===6&&a.indices[3][0]===3",
     );
-    check(
+    assert_true(
         r"let a=/(())((ab)+)()c()/d.exec('ababc');a.length===7&&a[1]===''&&a[2]===''&&a[3]==='abab'&&a[4]==='ab'&&a[5]===''&&a[6]===''&&a.indices[1][0]===0&&a.indices[5][0]===4&&a.indices[6][0]===5",
     );
 }
 
 #[test]
 fn greedy_lazy_bounded_and_overlapping_endpoints_preserve_partial_ranges() {
-    check(
+    assert_true(
         r"let a=/((ab)+)ab/d.exec('ababab'),b=/((ab)+?)ab/d.exec('ababab');a[1]==='abab'&&a[2]==='ab'&&a.indices[1][1]===4&&a.indices[2][0]===2&&b[1]==='ab'&&b.indices[1][1]===2&&b[0]==='abab'",
     );
-    check(
+    assert_true(
         r"let a=/((a)(aa){1,2})(ab)/d.exec('aaaaaaaab'),b=/((a)(aa){1,2}?)(ab)/d.exec('aaaaaaaab');a.index===2&&b.index===2&&a[1]==='aaaaa'&&a.indices[1][0]===2&&a.indices[1][1]===7&&a.indices[3][0]===5&&a.indices[4][0]===7",
     );
-    check(
+    assert_true(
         r"let a=/x((ab)*)(c)/d.exec('xababxc');a.index===5&&a[1]===''&&a[2]===undefined&&a[3]==='c'&&a.indices[1][0]===6&&a.indices[1][1]===6&&a.indices[2]===undefined&&Object.hasOwn(a,'2')",
     );
 }
 
 #[test]
 fn empty_required_repetitions_distinguish_enclosing_and_iteration_captures() {
-    check(
+    assert_true(
         r"let a=/x((\b\B)*)(a)/d.exec('xa');a[1]===''&&a[2]===undefined&&/x((\b\B)+)(a)/.exec('xa')===null&&/x((^){2})(a)/.exec('xa')===null",
     );
-    check(
+    assert_true(
         r"let a=/x((ab){0})(c)/d.exec('xc');a[1]===''&&a[2]===undefined&&a[3]==='c'&&a.indices[1][0]===1&&a.indices[3][0]===1",
     );
 }
 
 #[test]
 fn internal_outer_line_and_word_assertions_use_complete_input_neighbors() {
-    check(
+    assert_true(
         r"let a=/^((a)(a())+)($)(\n)/dm.exec('x\naaaa\n');a.index===2&&a[1]==='aaaa'&&a[2]==='a'&&a[3]==='a'&&a[4]===''&&a[5]===''&&a[6]==='\n'&&a.indices[1][1]===6&&a.indices[3][0]===5&&a.indices[5][0]===6&&/^((a)(a())+)($)(\n)/.exec('aaaa\n')===null",
     );
-    check(
+    assert_true(
         r"let a=/\b((a)(aa)+)(b)\b/d.exec('aaaaab');a[1]==='aaaaa'&&a[2]==='a'&&a[3]==='aa'&&a[4]==='b'&&a.indices[1][1]===5&&a.indices[3][0]===3&&/\b((a)(aa)+)(b)\b/.exec('aaaaabc')===null",
     );
-    check(
+    assert_true(
         r"let a=/(x)((a\B)+)(b)/d.exec('xaaab');a[2]==='aaa'&&a[3]==='a'&&a.indices[2][0]===1&&a.indices[2][1]===4&&a.indices[3][0]===3",
     );
 }
 
 #[test]
 fn complete_wrappers_alternatives_copies_global_and_sticky_keep_partial_slots() {
-    check(
+    assert_true(
         r"let a=/(((x)(ab)+)(c))|(ab)+/d.exec('xababc');a[1]==='xababc'&&a[2]==='xabab'&&a[3]==='x'&&a[4]==='ab'&&a[5]==='c'&&a[6]===undefined&&a.indices[2][1]===5&&a.indices[4][0]===3",
     );
-    check(
+    assert_true(
         r"let r=/(x)((ab)+)(c)/dg,copy=new RegExp(r),a=r.exec('xabc xababc'),b=r.exec('xabc xababc');a.indices[2][0]===1&&a.indices[2][1]===3&&b.index===5&&b.indices[2][0]===6&&b.indices[2][1]===10&&r.lastIndex===11&&copy.source===r.source&&copy.lastIndex===0&&r.exec('xabc xababc')===null&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/x((ab)+)(c)/dy;r.lastIndex=1;let a=r.exec('yxababc');a.index===1&&a.indices[1][0]===2&&a.indices[1][1]===6&&a.indices[2][0]===4&&r.lastIndex===7&&r.exec('yxababc')===null&&r.lastIndex===0",
     );
-    check(r"let a=/(?:x(?:ab)+)(c)/d.exec('xababc');a.length===2&&a[1]==='c'&&a.indices[1][0]===5");
+    assert_true(
+        r"let a=/(?:x(?:ab)+)(c)/d.exec('xababc');a.length===2&&a[1]==='c'&&a.indices[1][0]===5",
+    );
 }
 
 #[test]
 fn normalization_preserves_escape_boundaries_flags_and_utf16_offsets() {
-    check(
+    assert_true(
         r"let a=/\0()1((ab)+)c/d.exec('\x001ababc');a[0]==='\x001ababc'&&a[1]===''&&a[2]==='abab'&&a[3]==='ab'&&a.indices[1][0]===1&&a.indices[2][0]===2&&a.indices[3][0]===4&&/\0()1((ab)+)c/.exec('\x01ababc')===null",
     );
-    check(
+    assert_true(
         r"let a=/\((ab)+c\)/d.exec('(ababc)');a[0]==='(ababc)'&&a[1]==='ab'&&a.indices[1][0]===3&&a.indices[1][1]===5",
     );
-    check(
+    assert_true(
         r"let a=/(µ)(([µ][µ])+)(x)/di.exec('µΜµx'),b=/(.)((.a)+)([ab])/ds.exec('\n\na\nab');a[2]==='Μµ'&&a.indices[2][0]===1&&a.indices[4][0]===3&&b[2]==='\na\na'&&b.indices[2][0]===1&&b.indices[2][1]===5",
     );
-    check(
+    assert_true(
         r"let a=/💩((ab)+)(c)/d.exec('💩ababc'),b=/\uDCA9((ab)+)(\uDCA9)/d.exec('💩abab\uDCA9');a.indices[1][0]===2&&a.indices[1][1]===6&&a.indices[2][0]===4&&b.index===1&&b.indices[1][0]===2&&b.indices[3][0]===6",
     );
 }
@@ -114,9 +110,6 @@ fn optional_host_failures_and_remaining_variable_group_features_are_distinct() {
         r"/(?:(?:(?:((ab)+)\1){2})|){2,3}/.test('abab')",
         r"/x((ab)+)c/u.test('xabc')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }

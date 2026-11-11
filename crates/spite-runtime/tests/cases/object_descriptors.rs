@@ -5,13 +5,7 @@ use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
 
 use crate::common;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 fn type_error(source: &str) {
     assert!(
@@ -28,16 +22,16 @@ fn type_error(source: &str) {
 
 #[test]
 fn data_descriptors_default_preserve_and_reject_attributes_correctly() {
-    check(
+    assert_true(
         "let o={};Object.defineProperty(o,'x',{value:7})===o && o.x===7 && !o.propertyIsEnumerable('x') && !delete o.x",
     );
-    check(
+    assert_true(
         "let o={};Object.defineProperty(o,'x',{});let d=Object.getOwnPropertyDescriptor(o,'x');Object.hasOwn(o,'x') && d.value===undefined && !d.writable && !d.enumerable && !d.configurable && !Object.hasOwn(d,'get')",
     );
-    check(
+    assert_true(
         "let o={x:1};Object.defineProperty(o,'x',{value:2});let d=Object.getOwnPropertyDescriptor(o,'x');d.value===2 && d.writable && d.enumerable && d.configurable",
     );
-    check(
+    assert_true(
         "let o={};Object.defineProperty(o,'x',{value:NaN});Object.defineProperty(o,'x',{value:NaN});Object.is(o.x,NaN)",
     );
     type_error(
@@ -114,7 +108,7 @@ fn accessors_preserve_receiver_identity_and_survive_kind_changes_and_collection(
     );
     assert_eq!(realm.eval("Object.defineProperty(o,'x',{value:4});let d=Object.getOwnPropertyDescriptor(o,'x');d.value===4 && !d.writable && !d.enumerable && d.configurable && !Object.hasOwn(d,'get')"),Ok(Value::Boolean(true)));
     assert_eq!(realm.eval("Object.defineProperty(o,'x',{get:undefined});let e=Object.getOwnPropertyDescriptor(o,'x');o.x===undefined && Object.hasOwn(e,'get') && !Object.hasOwn(e,'value') && e.configurable"),Ok(Value::Boolean(true)));
-    check(
+    assert_true(
         "let getter=()=>3,o={};Object.defineProperty(o,'x',{get:getter});Object.defineProperty(o,'x',{get:getter});o.x===3",
     );
     type_error(
@@ -124,13 +118,13 @@ fn accessors_preserve_receiver_identity_and_survive_kind_changes_and_collection(
 
 #[test]
 fn descriptor_fields_use_ordered_inherited_reads_and_boolean_conversion() {
-    check(
+    assert_true(
         "let log='',proto={},d={__proto__:proto};function field(n,v){Object.defineProperty(proto,n,{get:function(){log+=n+':';if(this!==d)throw 1;return v;}});}field('enumerable',{});field('configurable',1);field('value',9);field('writable','');field('get',undefined);field('set',undefined);let o={},caught=false;try{Object.defineProperty(o,'x',d);}catch(e){caught=e instanceof TypeError;}caught && !Object.hasOwn(o,'x') && log==='enumerable:configurable:value:writable:get:set:'",
     );
-    check(
+    assert_true(
         "let d={value:4,writable:true};Object.defineProperty(d,'enumerable',{get:function(){delete this.value;this.configurable=true;return false;}});let o={};Object.defineProperty(o,'x',d);let r=Object.getOwnPropertyDescriptor(o,'x');r.value===undefined && r.writable && r.configurable && !r.enumerable",
     );
-    check(
+    assert_true(
         "let truthy={valueOf:()=>{throw 1;}};let o={};Object.defineProperty(o,'x',{value:1,writable:truthy,enumerable:truthy,configurable:truthy});let d=Object.getOwnPropertyDescriptor(o,'x');d.writable && d.enumerable && d.configurable",
     );
     let mut realm = Realm::default();
@@ -177,41 +171,43 @@ fn static_methods_convert_the_target_before_the_key_and_preserve_abrupt_completi
     ] {
         type_error(&format!("Object.defineProperty({{}},'x',{attributes})"));
     }
-    check(
+    assert_true(
         "!Object.hasOwn(true,'valueOf') && Object.getOwnPropertyDescriptor(1,'toString')===undefined && Object.hasOwn({__proto__:null,x:1},'x') && !Object.hasOwn({__proto__:{x:1}},'x')",
     );
-    check(
+    assert_true(
         "let log='',key={toString:()=>{log+='k';return 'x';}},d={};Object.defineProperty(d,'value',{get:()=>{log+='d';return 3;}});let o={};Object.defineProperty(o,key,d);log==='kd' && o.x===3",
     );
 }
 
 #[test]
 fn mapped_arguments_follow_live_values_and_detach_only_after_successful_definitions() {
-    check(
+    assert_true(
         "function f(a){let x=arguments;a=2;if(Object.getOwnPropertyDescriptor(x,'0').value!==2)return false;Object.defineProperty(x,'0',{value:3});if(a!==3)return false;Object.defineProperty(x,'0',{writable:false});a=4;return x[0]===3 && !Object.getOwnPropertyDescriptor(x,'0').writable;}f(1)",
     );
-    check(
+    assert_true(
         "function f(a){Object.defineProperty(arguments,'0',{get:()=>7});a=4;return arguments[0]===7 && a===4;}f(1)",
     );
-    check(
+    assert_true(
         "function f(a){Object.defineProperty(arguments,'0',{configurable:false});try{Object.defineProperty(arguments,'0',{get:()=>7});}catch{}a=4;return arguments[0]===4;}f(1)",
     );
-    check(
+    assert_true(
         "var x=1;Object.defineProperty(globalThis,'x',{value:2});x===2 && Object.getOwnPropertyDescriptor(globalThis,'x').value===2",
     );
 }
 
 #[test]
 fn same_value_does_not_coerce_and_distinguishes_negative_zero() {
-    check(
+    assert_true(
         "Object.is() && Object.is(NaN,NaN) && !Object.is(-0,0) && Object.is(-0,-0) && !Object.is(1,1n) && !Object.is(false,0) && Object.is(42n,42n) && !Object.is(42n,43n) && Object.is('\\uD800','\\uD800') && !Object.is('a','b')",
     );
-    check("let o={valueOf:()=>{throw 1;}};Object.is(o,o) && !Object.is(o,{}) && !Object.is(o,1)");
+    assert_true(
+        "let o={valueOf:()=>{throw 1;}};Object.is(o,o) && !Object.is(o,{}) && !Object.is(o,1)",
+    );
 }
 
 #[test]
 fn method_metadata_roots_and_array_descriptors_remain_correct() {
-    check(
+    assert_true(
         "let saved=Proxy;Object.defineProperty(globalThis,'Proxy',{});let d=Object.getOwnPropertyDescriptor(globalThis,'Proxy');d.value===saved && d.writable && !d.enumerable && d.configurable",
     );
     for (method, length) in [
@@ -220,7 +216,7 @@ fn method_metadata_roots_and_array_descriptors_remain_correct() {
         ("hasOwn", 2),
         ("is", 2),
     ] {
-        check(&format!(
+        assert_true(&format!(
             "let d=Object.getOwnPropertyDescriptor(Object,'{method}');d.writable && !d.enumerable && d.configurable && d.value.name==='{method}' && d.value.length==={length}"
         ));
         type_error(&format!("new Object.{method}()"));
@@ -229,10 +225,12 @@ fn method_metadata_roots_and_array_descriptors_remain_correct() {
     realm.eval("let C=Object;delete globalThis.Object").unwrap();
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("let o={};C.defineProperty(o,'x',{value:3});C.is(C.getOwnPropertyDescriptor(o,'x').value,3) && C.hasOwn(o,'x')"),Ok(Value::Boolean(true)));
-    check(
+    assert_true(
         "Object.getOwnPropertyDescriptor(Array,'fromAsync').value===Array.fromAsync&&Object.hasOwn(Array,'fromAsync')",
     );
-    check("let f=Array.fromAsync;Object.defineProperty(Array,'fromAsync',{});Array.fromAsync===f");
+    assert_true(
+        "let f=Array.fromAsync;Object.defineProperty(Array,'fromAsync',{});Array.fromAsync===f",
+    );
 }
 
 #[test]

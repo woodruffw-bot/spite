@@ -1,6 +1,11 @@
 //! Ordinary function expressions and shared formal-parameter/body parsing.
 
-use super::*;
+use super::{
+    AwaitContext, BTreeSet, BindingElement, BindingPattern, BindingPatternKind, ControlContext,
+    Diagnostic, Expr, ExprKind, Function, FunctionBody, FunctionKind, FunctionName, FunctionSource,
+    Kind, Parameter, Parser, ScopeKind, Span, StatementKind, YieldContext, binding, early,
+    has_use_strict, reject_legacy_tokens, reserved, validate_binding_name, validate_scope,
+};
 use std::rc::Rc;
 
 impl Parser {

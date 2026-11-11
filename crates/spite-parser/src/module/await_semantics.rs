@@ -1,6 +1,11 @@
 //! Module Contains `await` for ParseModule's HasTLA (16.2.1).
 
-use super::*;
+use super::{
+    ArrayElement, AssignmentElement, AssignmentPattern, AssignmentPatternKind, AssignmentTarget,
+    BindingElement, BindingPattern, BindingPatternKind, ChainStepKind, Class, ClassElement, Expr,
+    ExprKind, ForBinding, ForInitializer, Module, ObjectElement, PropertyName, Statement,
+    StatementKind,
+};
 
 enum Node<'a> {
     Statement(&'a Statement),
@@ -32,15 +37,15 @@ impl Module {
                     | StatementKind::Break(_)
                     | StatementKind::Continue(_) => (),
                     StatementKind::Expression(value) | StatementKind::Throw(value) => {
-                        pending.push(Node::Expression(value))
+                        pending.push(Node::Expression(value));
                     }
                     StatementKind::Return(value) => {
-                        pending.extend(value.iter().map(Node::Expression))
+                        pending.extend(value.iter().map(Node::Expression));
                     }
                     StatementKind::Var(bindings)
                     | StatementKind::Using(bindings)
                     | StatementKind::Lexical { bindings, .. } => {
-                        pending.extend(bindings.iter().map(Node::BindingElement))
+                        pending.extend(bindings.iter().map(Node::BindingElement));
                     }
                     StatementKind::Class(class) => pending.push(Node::Class(class)),
                     StatementKind::Block(body) => pending.extend(body.iter().map(Node::Statement)),
@@ -71,12 +76,12 @@ impl Module {
                         if let Some(initializer) = initializer {
                             match initializer {
                                 ForInitializer::Expression(value) => {
-                                    pending.push(Node::Expression(value))
+                                    pending.push(Node::Expression(value));
                                 }
                                 ForInitializer::Var(bindings)
                                 | ForInitializer::Using(bindings)
                                 | ForInitializer::Lexical { bindings, .. } => {
-                                    pending.extend(bindings.iter().map(Node::BindingElement))
+                                    pending.extend(bindings.iter().map(Node::BindingElement));
                                 }
                             }
                         }
@@ -147,7 +152,7 @@ impl Module {
                         for element in elements {
                             match element {
                                 ObjectElement::Spread(value) => {
-                                    pending.push(Node::Expression(value))
+                                    pending.push(Node::Expression(value));
                                 }
                                 ObjectElement::Property(property) => {
                                     pending.push(Node::Name(&property.name));
@@ -157,7 +162,7 @@ impl Module {
                         }
                     }
                     ExprKind::Template { substitutions, .. } => {
-                        pending.extend(substitutions.iter().map(Node::Expression))
+                        pending.extend(substitutions.iter().map(Node::Expression));
                     }
                     ExprKind::TaggedTemplate {
                         tag, substitutions, ..
@@ -221,7 +226,7 @@ impl Module {
                         pending.push(Node::Expression(value));
                     }
                     ExprKind::Yield { argument, .. } => {
-                        pending.extend(argument.iter().map(|value| Node::Expression(value)))
+                        pending.extend(argument.iter().map(|value| Node::Expression(value)));
                     }
                     ExprKind::Binary(_, left, right)
                     | ExprKind::Assign(left, right)

@@ -1,7 +1,8 @@
 //! Heap identity, generation reuse, borrowing, and capacity invariants.
 
 use spite_heap::{Error, Heap};
-use std::{cell::Cell, rc::Rc};
+use std::cell::Cell;
+use std::rc::Rc;
 
 #[test]
 fn insertion_access_mutation_and_moving_the_heap_preserve_identity() {

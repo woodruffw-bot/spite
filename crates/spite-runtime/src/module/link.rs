@@ -1,8 +1,9 @@
 //! Iterative InnerModuleLinking and SCC completion (16.2.1.6.1).
 
 use super::resolution::{ExportResolution, ModuleCatalog};
-use super::*;
-use crate::{ExceptionKind, object::ModuleLinkState};
+use super::{BTreeMap, Error, ModuleBinding, ModuleHandle, ObjectHandle, Realm, Span};
+use crate::ExceptionKind;
+use crate::object::ModuleLinkState;
 use spite_parser::ast::ImportName;
 
 struct LinkFrame {
@@ -114,7 +115,7 @@ impl Realm {
                             });
                         }
                         ModuleLinkState::Linking => {
-                            ancestors[node] = ancestors[node].min(ancestors[dependency])
+                            ancestors[node] = ancestors[node].min(ancestors[dependency]);
                         }
                         ModuleLinkState::Linked => (),
                     }

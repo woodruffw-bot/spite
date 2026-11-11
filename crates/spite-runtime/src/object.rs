@@ -5,7 +5,8 @@
 //! environments; TypedArray elements read and write their viewed buffer.
 //! Handles are unrooted and checked by the owning heap, not by these records.
 
-use crate::{Value, function::Callable};
+use crate::Value;
+use crate::function::Callable;
 use spite_bigint::BigInt;
 use spite_core::{JsString, JsSymbol, PropertyKey, PropertyKeyRef};
 use spite_heap::{Handle, Trace};

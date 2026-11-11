@@ -1,17 +1,11 @@
 //! Tagged class/empty selection for root string classes containing empty members.
+use crate::common::assert_true;
 use spite_core::JsString;
 use spite_runtime::{Realm, Value};
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
 
 #[test]
 fn empty_member_root_layouts_distinguish_defined_zero_width_class_captures() {
-    let huge = 2u128;
+    let repeat_count = 2;
     for (class, input, word) in [
         (r"[\q{|a|ab}]", "ab!", "ab"),
         (r"[\q{|a|ab}]", "!", ""),
@@ -61,7 +55,7 @@ fn empty_member_root_layouts_distinguish_defined_zero_width_class_captures() {
                     ),
                     4 => (
                         class.to_owned(),
-                        format!("(?<empty>(?<deep>)?)(?<required>){{{huge}}}"),
+                        format!("(?<empty>(?<deep>)?)(?<required>){{{repeat_count}}}"),
                         "",
                         "",
                         "",
@@ -70,7 +64,7 @@ fn empty_member_root_layouts_distinguish_defined_zero_width_class_captures() {
                     ),
                     _ => (
                         format!("(?:|)(?<part>(?<deep>{class}))(?<after>)"),
-                        format!("(?:(?:)|(?:)){{{huge}}}"),
+                        format!("(?:(?:)|(?:)){{{repeat_count}}}"),
                         "part,deep",
                         "",
                         "after",
@@ -91,7 +85,7 @@ fn empty_member_root_layouts_distinguish_defined_zero_width_class_captures() {
                 let end = 1 + whole.len();
                 let text = JsString::from(format!("!{input}").as_str());
                 let named = layout != 0;
-                check(&format!(
+                assert_true(&format!(
                     r#"
                 var r=new RegExp({pattern:?},'dvgy');r.lastIndex=1;var m=r.exec({text:?}),ok=true;
                 if({named}){{var keys=Object.keys(m.groups),characters='{characters}'.split(','),before='{before}'.split(','),after='{after}'.split(','),empty='{empties}'.split(','),never='{never}'.split(',');
@@ -116,41 +110,41 @@ fn empty_member_root_layouts_distinguish_defined_zero_width_class_captures() {
 
 #[test]
 fn empty_member_root_selection_keeps_class_identity_for_empty_and_longest_words() {
-    check(
+    assert_true(
         r"var m=/(?<before>)(?<part>[\q{|a|ab}])(?<after>)|(?<empty>)/dv.exec('!');m[0]===''&&m.groups.part===''&&m.groups.before===''&&m.groups.after===''&&m.groups.empty===undefined&&m.indices.groups.part[0]===0&&m.indices.groups.part[1]===0&&m.indices.groups.after[0]===0",
     );
-    check(
+    assert_true(
         r"var m=/(?<empty>)|(?<before>)(?<part>[\q{|a|ab}])(?<after>)/dv.exec('!');m[0]===''&&m.groups.empty===''&&m.groups.part===undefined&&m.groups.before===undefined&&m.groups.after===undefined&&m.indices.groups.empty[0]===0",
     );
-    check(
+    assert_true(
         r"var r=/(?<part>[\q{|😀|😀a}])|(?<empty>)/dvgy;r.lastIndex=1;var m=r.exec('😀a!');m[0]==='😀a'&&m.index===0&&m.groups.part==='😀a'&&m.groups.empty===undefined&&m.indices.groups.part[1]===3&&r.lastIndex===3",
     );
-    check(
+    assert_true(
         r"var r=/(?<\u{1D49C}>[\q{|s|sa|k|ka}])|(?<empty>)/dvgi;var m=r.exec('ſaKa'),n=r.exec('ſaKa'),e=r.exec('ſaKa');m.groups.𝒜==='ſa'&&n.groups.𝒜==='Ka'&&e.groups.𝒜===''&&e.groups.empty===undefined&&e.indices.groups.𝒜[0]===4&&r.source.indexOf('1D49C')!==-1",
     );
-    check(
+    assert_true(
         r"var m=/(?<part>[\q{|\ud800|\ud800a}])|(?<empty>)/dv.exec('\ud800a!');m.groups.part==='\ud800a'&&m.groups.empty===undefined&&m.indices.groups.part[1]===2",
     );
-    check(
+    assert_true(
         r"var r=/(?<part>[\q{}])|(?<empty>)/vg;Object.defineProperty(r,'lastIndex',{writable:false});var caught=false;try{r.exec('a')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
     );
 }
 
 #[test]
 fn empty_member_root_consumers_preserve_defined_empty_captures_and_unicode_progress() {
-    check(
+    assert_true(
         r"var r=/(?<before>)(?<part>[\q{|a|ab}])(?<after>)|(?<empty>)/dvg;var all=Array.from('abXa'.matchAll(r));all.length===4&&all.map(m=>m[0]).join('|')==='ab||a|'&&all.map(m=>m.groups.part).join('|')==='ab||a|'&&all.every(m=>m.groups.before===''&&m.groups.after===''&&m.groups.empty===undefined)&&all[1].indices.groups.part[0]===2&&all[1].indices.groups.part[1]===2&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"var all=Array.from('😀a'.matchAll(/(?<part>[\q{}])|(?<empty>)/dvg));all.length===3&&all.map(m=>m.index).join(',')==='0,2,3'&&all.every(m=>m.groups.part===''&&m.groups.empty===undefined)",
     );
-    check(
+    assert_true(
         r"var all=Array.from('😀a'.matchAll(/(?<empty>)|(?<part>[\q{|😀|😀a}])/dvg));all.length===3&&all.map(m=>m.index).join(',')==='0,2,3'&&all.every(m=>m.groups.empty===''&&m.groups.part===undefined)",
     );
-    check(
+    assert_true(
         r"var calls=0;var out='abXa'.replace(/(?<before>)(?<part>[\q{|a|ab}])(?<after>)|(?<empty>)/vg,function(whole,before,part,after,empty,offset,input,groups){calls++;return arguments.length===8&&whole===part&&before===''&&after===''&&empty===undefined&&groups.part===part&&input==='abXa'?'#':'bad'});out==='##X##'&&calls===4",
     );
-    check(
+    assert_true(
         r"var r=/(?<part>[\q{|a|ab}])|(?<empty>)/vg;r.lastIndex=9;var parts='abX'.split(r);'Xab'.search(r)===0&&r.lastIndex===9&&parts.length===4&&parts[0]===''&&parts[1]==='ab'&&parts[2]===undefined&&parts[3]==='X'&&'abXa'.match(r).join('|')==='ab||a|'&&'abXa'.replace(r,'<$<part>:$<empty>>')==='<ab:><:>X<a:><:>'",
     );
     let mut realm = Realm::default();
@@ -165,19 +159,19 @@ fn empty_member_root_consumers_preserve_defined_empty_captures_and_unicode_progr
 
 #[test]
 fn empty_member_root_proofs_finish_finalizers_and_keep_other_features_separate() {
-    check(
+    assert_true(
         r"var marker=0,m;try{m=/([\q{|a|ab}])|()/dv.exec('!')}finally{marker=3}marker===3&&m[0]===''&&m[1]===''&&m[2]===undefined&&m.indices[1][0]===0",
     );
-    check(
+    assert_true(
         r"var marker=0,m;try{m=/()|([\q{|ab}])/dv.exec('!')}finally{marker=3}marker===3&&m[0]===''&&m[1]===''&&m[2]===undefined&&m.indices[1][0]===0",
     );
-    check(
+    assert_true(
         r"var m=/(?<part>[\q{}--\q{}])|(?<empty>)/dv.exec('!');m.groups.part===undefined&&m.groups.empty===''&&m.indices.groups.empty[0]===0",
     );
-    check(
+    assert_true(
         r"var marker=0,m;try{m=/^([\q{|ab}])|()/dv.exec('!')}finally{marker=3}marker===3&&m[0]===''&&m[1]===''&&m[2]===undefined&&m.indices[1][0]===0",
     );
-    check(
+    assert_true(
         r"var marker=0,m;try{m=/([\q{|ab}])|()$/dv.exec('!')}finally{marker=3}marker===3&&m[0]===''&&m[1]===''&&m[2]===undefined&&m.indices[1][0]===0",
     );
     for pattern in [
@@ -191,18 +185,15 @@ fn empty_member_root_proofs_finish_finalizers_and_keep_other_features_separate()
         r"([\q{|ab}&&\p{Any}&&\p{RGI_Emoji}])|()",
     ] {
         let mut realm = Realm::default();
-        assert!(
-            crate::common::regexp_oracle::check(
-                &mut realm,
-                &format!(
-                    "var marker=0;try{{new RegExp({:?},'v').test('ab')}}catch{{marker=1}}finally{{marker=2}};marker",
-                    JsString::from(pattern)
-                )
+        crate::common::regexp_oracle::assert_matches_reference(
+            &mut realm,
+            &format!(
+                "var marker=0;try{{new RegExp({:?},'v').test('ab')}}catch{{marker=1}}finally{{marker=2}};marker",
+                JsString::from(pattern)
             ),
-            "{pattern}"
         );
     }
-    check(
+    assert_true(
         "var yes=0;for(var p of ['(?<x>[a])|(?<x>)(?<x>)','[\\q{|ab}&&a--a]|']){try{new RegExp(p,'v')}catch(e){if(e instanceof SyntaxError)yes++}}yes===2",
     );
 }

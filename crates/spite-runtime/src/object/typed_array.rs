@@ -8,7 +8,9 @@ use super::{
     ArrayBufferError, Budget, DataProperty, DescriptorKind, Error, Objects, Property,
     PropertyDescriptor,
 };
-use crate::{Value, binary_data::ElementType, value::number_to_string};
+use crate::Value;
+use crate::binary_data::ElementType;
+use crate::value::number_to_string;
 use spite_core::{JsString, PropertyKey, PropertyKeyRef};
 use spite_heap::Handle;
 

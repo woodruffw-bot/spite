@@ -1,6 +1,6 @@
 //! Prepared-sweep planning, marks and generation regressions.
 
-use super::*;
+use super::{Collection, Error, Handle, Heap};
 
 #[test]
 fn dropped_preparation_preserves_values_and_generations_after_invalid_marks() {

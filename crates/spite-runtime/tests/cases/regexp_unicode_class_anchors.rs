@@ -3,13 +3,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn unicode_class_assertion_results_snapshot() {
@@ -51,28 +45,28 @@ fn unicode_class_assertion_results_snapshot() {
 #[test]
 fn unicode_class_assertion_consumers_and_pair_boundaries() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"'😀\n\uD800\r\nx'.match(/^[^]$/{mode}mg).join('|')==='😀|\uD800|x'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=[...'😀\n\uD800\r\nx'.matchAll(/^[^]$/d{mode}mg)];a.length===3&&a[0].indices[0][1]===2&&a[1].index===3&&a[2].index===6"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'😀\n\uD800\r\nx'.split(/^[^]$/{mode}m).join('|')==='|\n|\r\n|'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let seen=[];let s='😀\n\uD800\r\nx'.replace(/^[^]$/{mode}mg,(m,i)=>{{seen.push(i);return '_'}});s==='_\n_\r\n_'&&seen.join(',')==='0,3,6'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^[😀]$/d{mode}y;r.lastIndex=1;let m=r.exec('😀');m.index===0&&m[0]==='😀'&&m.indices[0][1]===2&&r.lastIndex===2"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^[\uD800-\uDFFF]$/{mode}y;r.lastIndex=1;r.exec('😀')===null&&r.lastIndex===0"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^[😀]$/{mode}my;r.lastIndex=3;let m=r.exec('x\n😀');m.index===2&&r.lastIndex===4"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^[😀]$/{mode}m;r.lastIndex=2;'x\n😀'.search(r)===2&&r.lastIndex===2"
         ));
     }
@@ -80,46 +74,48 @@ fn unicode_class_assertion_consumers_and_pair_boundaries() {
 
 #[test]
 fn unicode_class_assertion_line_contexts_and_escaped_data() {
-    check(r"/^[^]$/um.test('\r\n')&&/^[^]$/vm.test('\r\n')");
-    check(r"/^[a]$/u.exec('a\n')===null&&/^[a]$/v.exec('a\r')===null");
-    check(r"/^[a]$/um.test('a\n')&&/^[a]$/vm.test('a\r')");
-    check(r"/^[a]$/um.test('\u2028a\u2029')&&/^[a]$/vm.test('\u2029a\u2028')");
-    check(r"/^[😀]$/u.test('😀')&&!/^[😀]$/u.test('\uD83D')&&!/^[😀]$/v.test('\uDE00')");
-    check(r"/^[\u{D800}\u{DC00}]$/v.test('\uD800')&&!/^[\u{D800}\u{DC00}]$/v.test('\uD800\uDC00')");
-    check(r"/^[\$\^]$/u.test('$')&&/^[\$\^]$/v.test('^')");
-    check(r"/^[\&\&\-\-]$/v.test('&')&&/^[\x2d\u005d\u{5b}]$/v.test(']')");
-    check(
+    assert_true(r"/^[^]$/um.test('\r\n')&&/^[^]$/vm.test('\r\n')");
+    assert_true(r"/^[a]$/u.exec('a\n')===null&&/^[a]$/v.exec('a\r')===null");
+    assert_true(r"/^[a]$/um.test('a\n')&&/^[a]$/vm.test('a\r')");
+    assert_true(r"/^[a]$/um.test('\u2028a\u2029')&&/^[a]$/vm.test('\u2029a\u2028')");
+    assert_true(r"/^[😀]$/u.test('😀')&&!/^[😀]$/u.test('\uD83D')&&!/^[😀]$/v.test('\uDE00')");
+    assert_true(
+        r"/^[\u{D800}\u{DC00}]$/v.test('\uD800')&&!/^[\u{D800}\u{DC00}]$/v.test('\uD800\uDC00')",
+    );
+    assert_true(r"/^[\$\^]$/u.test('$')&&/^[\$\^]$/v.test('^')");
+    assert_true(r"/^[\&\&\-\-]$/v.test('&')&&/^[\x2d\u005d\u{5b}]$/v.test(']')");
+    assert_true(
         r"/^[^❤️]$/u.exec('❤️')===null&&/^[^🧡]/u.exec('🧡')===null&&/[^💛]$/u.exec('💛')===null&&/[^💚]/u.exec('💚')===null",
     );
 }
 
 #[test]
 fn unicode_class_assertion_metadata_coercions_clones_and_strict_writes() {
-    check(
+    assert_true(
         r"let r=/^[^]$/dmv,c=new RegExp(r,'duy');c.source==='^[^]$'&&c.unicode&&!c.unicodeSets&&!c.multiline&&c.exec('😀')[0]==='😀'&&c.lastIndex===2",
     );
-    check(
+    assert_true(
         r"let r=/^[^]$/dvmg,m=r.exec('😀');m.length===1&&m.groups===undefined&&m.indices.groups===undefined",
     );
-    check(
+    assert_true(
         r"let t='',r=/^[^]$/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m.index===0&&r.lastIndex===2",
     );
-    check(
+    assert_true(
         r"let r=/^[^]$/uy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
-    check(
+    assert_true(
         r"let r=/^[\uD800]$/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
 }
 
 #[test]
 fn unicode_class_assertion_opted_work_and_unproved_syntax() {
-    check(
+    assert_true(
         r"let m=/^[\q{ab}]$/v.exec('ab');m.length===1 && m[0]==='ab' && m.index===0 && m.input==='ab' && m.groups===undefined && /^[\q{ab}]$/v.exec('xab')===null",
     );
     let original = Realm::default().eval(r"/^[a]b$/v.exec('ab')").unwrap();
     assert!(matches!(original, Value::Object(_)));
-    check(
+    assert_true(
         r#"let r=/^[a]b$/v,m=r.exec('ab');Array.isArray(m)&&m.length===1&&m[0]==='ab'&&m.index===0&&m.input==='ab'&&m.groups===undefined&&m.indices===undefined&&r.source==='^[a]b$'&&r.lastIndex===0&&r.exec('xb')===null&&r.exec('ax')===null&&r.exec('a')===null&&r.exec('xab')===null&&r.exec('abx')===null"#,
     );
     let mut realm = Realm::new(Limits {
@@ -137,11 +133,11 @@ fn unicode_class_assertion_opted_work_and_unproved_syntax() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
-    check(
+    assert_true(
         r#"let m=/^[\p{Script_Extensions=Latin}]$/u.exec('a');JSON.stringify(m)==='["a"]'&&m.index===0&&m.input==='a'"#,
     );
-    check(r"/^[a&&b]$/v.exec('a')===null");
-    check(
+    assert_true(r"/^[a&&b]$/v.exec('a')===null");
+    assert_true(
         r"let m=/^[[a]]$/v.exec('a');m!==null&&m.length===1&&m[0]==='a'&&m.index===0&&m.input==='a'&&/^[[a]]$/v.exec('aa')===null",
     );
     for source in [
@@ -150,10 +146,7 @@ fn unicode_class_assertion_opted_work_and_unproved_syntax() {
         r"/^[a]+b$/u.exec('a')",
         r"/^[a]$|b/u.exec('b')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }
 

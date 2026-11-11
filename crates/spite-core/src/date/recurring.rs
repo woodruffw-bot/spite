@@ -1,6 +1,7 @@
 //! Gregorian offset cycles for recurring TZif political time-zone rules.
 
-use super::{LocalTimeZoneError, MS_PER_DAY, PosixTimeZone, day_from_year, local::resolve_local};
+use super::local::resolve_local;
+use super::{LocalTimeZoneError, MS_PER_DAY, PosixTimeZone, day_from_year};
 
 // Gregorian dates and weekdays repeat exactly after 400 years (146097 days).
 const CYCLE_MILLISECONDS: i64 = 146_097 * MS_PER_DAY;

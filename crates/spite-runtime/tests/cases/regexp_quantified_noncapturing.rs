@@ -1,47 +1,41 @@
 //! Transparent noncapturing groups preserve a single consuming atom's repetition.
 
-use spite_runtime::{Realm, Value};
+use spite_runtime::Realm;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn quantifier_placement_preserves_greedy_lazy_and_bounded_runs() {
-    check(
+    assert_true(
         "/(?:a)+/.exec('baaab')[0]==='aaa'&&/(?:a+)/.exec('baaab')[0]==='aaa'&&/(?:(?:a)+?)/.exec('baaab')[0]==='a'&&/(?:(?:a+?))/.exec('baaab')[0]==='a'",
     );
-    check(
+    assert_true(
         "/(?:[ab]){2,3}/.exec('xbbaba')[0]==='bba'&&/(?:[ab]{2,3}?)/.exec('xbbaba')[0]==='bb'&&/(?:[])*/.exec('a')[0]===''",
     );
-    check(
+    assert_true(
         r"/(?:[^]{2})/.exec('\uD800\uDC00')[0].length===2&&/(?:.)+/s.exec('a\nb')[0]==='a\nb'&&/(?:[µ])+/i.exec('Μµμ')[0]==='Μµμ'",
     );
 }
 
 #[test]
 fn nested_groups_keep_no_capture_slots_and_original_state() {
-    check(
+    assert_true(
         "let r=/(?:(?:[ab])+)/dg,a=r.exec('aab xbb'),b=r.exec('aab xbb');a.length===1&&a.indices.length===1&&a.index===0&&a[0]==='aab'&&b.index===5&&b.indices[0][1]===7&&r.lastIndex===7&&r.exec('aab xbb')===null&&r.lastIndex===0&&r.source==='(?:(?:[ab])+)'&&r.flags==='dg'",
     );
-    check(
+    assert_true(
         "let r=/(?:[ab])+?/y;r.lastIndex=1;let m=r.exec('xaba');m[0]==='a'&&m.index===1&&r.lastIndex===2",
     );
 }
 
 #[test]
 fn generic_consumers_advance_empty_runs_and_share_grouped_plans() {
-    check(
+    assert_true(
         "'aa'.match(/(?:a*?)/g).length===3&&'aa'.replace(/(?:a)+?/g,'x')==='xx'&&'xaab'.search('(?:a)+')===1&&'xaab'.split(/(?:a)+/).join(',')==='x,b'&&[...'aa'.matchAll(/(?:a*?)/g)].length===3",
     );
 }
 
 #[test]
-fn multiple_quantifiers_choices_and_multi_atom_groups_remain_explicit_gaps() {
+fn multiple_quantifiers_choices_and_multi_atom_groups_match_reference_results() {
     for source in [
         r"/(?:(?:((?:(?:a|b)+)+){2})|){2,3}/.test('a')",
         "/(?:a*){2,3}/.test('a')",
@@ -51,9 +45,6 @@ fn multiple_quantifiers_choices_and_multi_atom_groups_remain_explicit_gaps() {
         r"/(?:(?:(?:(?<x>a)+\k<x>){2})|){2,3}/.test('a')",
         "/(?:a)+b/u.test('a')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }

@@ -1,17 +1,11 @@
 //! Branch-only captures in one nullable UnicodeSets group (22.2.2.3).
+use crate::common::assert_true;
 use spite_core::JsString;
 use spite_runtime::{Realm, Value};
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
 
 #[test]
 fn single_branch_capture_layouts_keep_lexical_slots_and_conditional_participation() {
-    let huge = 2u128;
+    let repeat_count = 2;
     for class in [
         r"[\q{a|b}]",
         r"[\q{a|b|ab}&&\p{Any}]",
@@ -52,7 +46,7 @@ fn single_branch_capture_layouts_keep_lexical_slots_and_conditional_participatio
                     ),
                     _ => (
                         format!("(?<part>{class})"),
-                        format!("(?<empty>(?<deep>)?)(?<required>){{{huge}}}"),
+                        format!("(?<empty>(?<deep>)?)(?<required>){{{repeat_count}}}"),
                         "part",
                         "empty,required",
                         "deep",
@@ -67,7 +61,7 @@ fn single_branch_capture_layouts_keep_lexical_slots_and_conditional_participatio
                     let pattern = JsString::from(format!("{open}(?:{branch}){close}").as_str());
                     let whole = if empty_first { "" } else { "a" };
                     let end = if empty_first { 1 } else { 2 };
-                    check(&format!(
+                    assert_true(&format!(
                         r#"
                     var r=new RegExp({pattern:?},'dvgy');r.lastIndex=1;var m=r.exec('aaa'),keys=Object.keys(m.groups),ok=true;
                     var character='{character_names}'.split(','),empty='{empty_names}'.split(','),never='{never}'.split(',');
@@ -86,7 +80,7 @@ fn single_branch_capture_layouts_keep_lexical_slots_and_conditional_participatio
         }
     }
     for pattern in [r"(?:[\q{a}]|()?)", r"(?:()?|[\q{a}])"] {
-        check(&format!(
+        assert_true(&format!(
             "var m=new RegExp({:?},'dv').exec('a');m.length===2&&m[1]===undefined&&m.indices[1]===undefined",
             JsString::from(pattern)
         ));
@@ -95,46 +89,46 @@ fn single_branch_capture_layouts_keep_lexical_slots_and_conditional_participatio
 
 #[test]
 fn single_branch_capture_values_keep_original_utf16_folding_gates_and_first_success() {
-    check(
+    assert_true(
         r"var r=/(?:(?<part>[\q{😀}])|(?<empty>))/dvgy;r.lastIndex=1;var m=r.exec('😀😀!');m[0]==='😀'&&m.index===0&&m.groups.part==='😀'&&m.groups.empty===undefined&&m.indices.groups.part[0]===0&&m.indices.groups.part[1]===2&&r.lastIndex===2",
     );
-    check(
+    assert_true(
         r"var r=/(?:(?<empty>)|(?<part>[\q{😀}]))/dvgy;r.lastIndex=1;var m=r.exec('😀😀!');m[0]===''&&m.index===0&&m.groups.part===undefined&&m.groups.empty===''&&m.indices.groups.empty[0]===0&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"var r=/(?:(?<\u{1D49C}>[\q{s|k}])|(?<empty>))/dvgi;var m=r.exec('ſK'),n=r.exec('ſK');m.groups.𝒜==='ſ'&&m.groups.empty===undefined&&n.groups.𝒜==='K'&&n.indices.groups.𝒜[0]===1&&r.source.indexOf('1D49C')!==-1",
     );
-    check(
+    assert_true(
         r"var m=/(?:(?<part>[^\q{ab}&&a])|(?<empty>))/dv.exec('\ud800');m.groups.part==='\ud800'&&m.groups.empty===undefined&&m.indices.groups.part[1]===1",
     );
     for branch in [
         r"(?<part>[\q{a}])|(?<empty>)",
         r"(?<empty>)|(?<part>[\q{a}])",
     ] {
-        check(&format!(
+        assert_true(&format!(
             r"var m=/^\b(?:{branch})\b$/dvm.exec('!\r\na\u2028!');m[0]==='a'&&m.index===3&&m.groups.part==='a'&&m.groups.empty===undefined&&m.indices.groups.part[0]===3&&m.indices.groups.part[1]===4"
         ));
     }
-    check(
+    assert_true(
         r"var m=/\b(?:(?<part>[\q{a}])|(?<empty>))\b/dv.exec(' aa');m[0]===''&&m.index===1&&m.groups.part===undefined&&m.groups.empty===''&&m.indices.groups.empty[0]===1",
     );
-    check(
+    assert_true(
         r"var r=/(?:(?<empty>)|(?<part>[\q{a}]))/vg;Object.defineProperty(r,'lastIndex',{writable:false});var caught=false;try{r.exec('a')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
     );
 }
 
 #[test]
 fn single_branch_captures_survive_consumers_callbacks_clones_and_collection() {
-    check(
+    assert_true(
         r"var r=/(?:(?<part>[\q{a}])|(?<empty>(?<first>)|(?<later>)))/dvg;var all=Array.from('aa!'.matchAll(r));all.length===4&&all.map(m=>m[0]).join('|')==='a|a||'&&all[0].groups.part==='a'&&all[0].groups.empty===undefined&&all[2].groups.part===undefined&&all[2].groups.empty===''&&all[2].groups.first===''&&all.every(m=>m.groups.later===undefined)&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"var all=Array.from('😀a'.matchAll(/(?:(?<empty>)|(?<part>[\q{😀}]))/dvg));all.length===3&&all.map(m=>m.index).join(',')==='0,2,3'&&all.every(m=>m[0]===''&&m.groups.empty===''&&m.groups.part===undefined)",
     );
-    check(
+    assert_true(
         r"var calls=0;var out='aa!'.replace(/(?:(?<part>[\q{a}])|(?<empty>(?<first>)|(?<later>)))/vg,function(whole,part,empty,first,later,offset,input,groups){calls++;return arguments.length===8&&groups.later===undefined&&input==='aa!'&&(whole==='a'?part==='a'&&empty===undefined&&first===undefined:part===undefined&&empty===''&&first==='')?'#':'bad'});out==='###!#'&&calls===4",
     );
-    check(
+    assert_true(
         r"var r=/(?:(?<part>[\q{a}])|(?<empty>))/vg;r.lastIndex=9;var parts='ab'.split(r);'baa'.search(r)===0&&r.lastIndex===9&&parts.length===4&&parts[0]===''&&parts[1]==='a'&&parts[2]===undefined&&parts[3]==='b'&&'aa!'.match(r).join('|')==='a|a||'&&'aa!'.replace(r,'<$<part>:$<empty>>')==='<a:><a:><:>!<:>'",
     );
     let mut realm = Realm::default();
@@ -145,13 +139,13 @@ fn single_branch_captures_survive_consumers_callbacks_clones_and_collection() {
 
 #[test]
 fn single_branch_proofs_finish_finalizers_and_keep_other_shapes_host_failures() {
-    check(
+    assert_true(
         r"var marker=0,m;try{m=/(([\q{a}])|())/dv.exec('a')}finally{marker=3}marker===3&&m[0]==='a'&&m[1]==='a'&&m[2]==='a'&&m[3]===undefined&&m.indices[2][1]===1",
     );
-    check(
+    assert_true(
         r"var marker=0,m;try{m=/(([\q{a}])|())/dv.exec('!')}finally{marker=3}marker===3&&m[0]===''&&m[1]===''&&m[2]===undefined&&m[3]===''&&m.indices[3][0]===0",
     );
-    check(
+    assert_true(
         r"var marker=0,m;try{m=/(?:([\q{ab}&&\q{cd}])|())/dv.exec('ab')}finally{marker=3}marker===3&&m[0]===''&&m[1]===undefined&&m[2]===''&&m.indices[1]===undefined&&m.indices[2][0]===0",
     );
     for pattern in [
@@ -165,18 +159,15 @@ fn single_branch_proofs_finish_finalizers_and_keep_other_shapes_host_failures() 
         r"(?:([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])|())",
     ] {
         let mut realm = Realm::default();
-        assert!(
-            crate::common::regexp_oracle::check(
-                &mut realm,
-                &format!(
-                    "var marker=0;try{{new RegExp({:?},'v').test('a')}}catch{{marker=1}}finally{{marker=2}};marker",
-                    JsString::from(pattern)
-                )
+        crate::common::regexp_oracle::assert_matches_reference(
+            &mut realm,
+            &format!(
+                "var marker=0;try{{new RegExp({:?},'v').test('a')}}catch{{marker=1}}finally{{marker=2}};marker",
+                JsString::from(pattern)
             ),
-            "{pattern}"
         );
     }
-    check(
+    assert_true(
         "var yes=0;for(var p of ['(?:(?<x>[a])|(?<x>))(?<x>)','(?:([\\q{ab}&&a--a])|())']){try{new RegExp(p,'v')}catch(e){if(e instanceof SyntaxError)yes++}}yes===2",
     );
 }

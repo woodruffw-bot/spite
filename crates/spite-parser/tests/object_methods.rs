@@ -1,11 +1,8 @@
 //! Ordinary method/accessor grammar, source capture, and scoped early errors.
 
 use spite_core::DiagnosticKind;
-use spite_parser::{
-    MAX_DEPTH,
-    ast::{ExprKind, ObjectElement, StatementKind},
-    parse_script,
-};
+use spite_parser::ast::{ExprKind, ObjectElement, StatementKind};
+use spite_parser::{MAX_DEPTH, parse_script};
 
 #[test]
 fn method_and_accessor_syntax_snapshot() {

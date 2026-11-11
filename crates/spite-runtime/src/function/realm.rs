@@ -1,11 +1,10 @@
 //! Restore a function's Realm before forwarding to its next target (9.3, 10.3).
 
 use super::Intrinsics;
-use crate::{
-    Error, ObjectHandle, Realm,
-    environment::EnvironmentHandle,
-    object::{Error as ObjectError, source_context::SourceExecutionContext},
-};
+use crate::environment::EnvironmentHandle;
+use crate::object::Error as ObjectError;
+use crate::object::source_context::SourceExecutionContext;
+use crate::{Error, ObjectHandle, Realm};
 use spite_core::Span;
 
 #[derive(Debug)]

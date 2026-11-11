@@ -3,13 +3,7 @@
 use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 fn drain(realm: &mut Realm) {
     loop {
@@ -23,7 +17,7 @@ fn drain(realm: &mut Realm) {
 
 #[test]
 fn async_objects_have_the_intrinsic_graph_metadata_and_no_construct_capability() {
-    check(
+    assert_true(
         r#"
         async function f(a,b=2,...rest){return a}
         let proto=Object.getPrototypeOf(f),C=proto.constructor;

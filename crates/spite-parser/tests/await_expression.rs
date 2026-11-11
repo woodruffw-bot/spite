@@ -1,10 +1,8 @@
 //! AwaitExpression grammar, context, operand precedence and early errors.
 
 use spite_core::DiagnosticKind;
-use spite_parser::{
-    ast::{BinaryOp, ExprKind, StatementKind},
-    parse_script,
-};
+use spite_parser::ast::{BinaryOp, ExprKind, StatementKind};
+use spite_parser::parse_script;
 
 #[test]
 fn await_operand_precedence_and_spans_are_retained() {

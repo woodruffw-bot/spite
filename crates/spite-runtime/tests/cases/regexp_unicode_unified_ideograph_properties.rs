@@ -3,13 +3,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn unicode_unified_ideograph_property_results_snapshot() {
@@ -54,16 +48,16 @@ fn unicode_unified_ideograph_property_results_snapshot() {
 #[test]
 fn unicode_unified_ideograph_properties_aliases_complements_and_unions() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let a=/\p{{Unified_Ideograph}}/{mode},b=/\p{{UIdeo}}/i{mode},n=/\P{{UIdeo}}/i{mode};a.test('\u4E00')&&a.test('\u4E8C')&&b.test('\u4E00')&&!a.test('\u200D')&&!b.test('\u005f')&&!b.test('ſ')&&!b.test('K')&&!n.test('\u4E00')&&n.test('😀')&&n.test('\uD800')&&n.test('\uFEFF')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let p=/\p{{Unified_Ideograph}}/{mode},s=/\s/{mode};p.test('\u4E00')&&p.test('\u4E8C')&&!s.test('\u4E00')&&!s.test('\u4E8C')&&!p.test('\uFEFF')&&s.test('\uFEFF')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=/[\p{{UIdeo}}K]/i{mode},b=/[^\P{{Unified_Ideograph}}K]/i{mode},c=/[\p{{UIdeo}}\P{{Unified_Ideograph}}]/{mode};a.test('K')&&a.test('k')&&a.test('\u4E00')&&!a.test('ſ')&&b.test('\u4E8C')&&!b.test('K')&&c.test('😀')&&c.test('A')&&c.test('\uD800')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=/^\p{{UIdeo}}$/{mode},b=/^\P{{UIdeo}}$/{mode};a.test('\u4E00')&&!a.test('\u4E8C\n')&&!a.test('')&&!a.test('\n')&&b.test('😀')&&!b.test('AA')"
         ));
     }
@@ -72,16 +66,16 @@ fn unicode_unified_ideograph_properties_aliases_complements_and_unions() {
 #[test]
 fn unicode_unified_ideograph_properties_captures_context_and_pair_starts() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^(?<x>([\p{{UIdeo}}K]))$/dim{mode}g,m=r.exec('x\r\nK\u2028');m.index===3&&m[1]==='K'&&m[2]==='K'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===4&&r.lastIndex===4"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/(?<__proto__>\P{{UIdeo}})/d{mode}y;r.lastIndex=1;let m=r.exec('😀\u4E00');m.index===0&&m[1]==='😀'&&m.indices[1][1]===2&&r.lastIndex===2&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\p{{UIdeo}}/d{mode}g;r.lastIndex=1;let m=r.exec('😀\u4E00');m.index===2&&m[0]==='\u4E00'&&r.lastIndex===3"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\p{{UIdeo}}/{mode}y;r.lastIndex=1;r.exec('😀\u4E00')===null&&r.lastIndex===0"
         ));
     }
@@ -90,16 +84,16 @@ fn unicode_unified_ideograph_properties_captures_context_and_pair_starts() {
 #[test]
 fn unicode_unified_ideograph_properties_consumers_original_text() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let a=[...'\u4E8C😀\u4E00G'.matchAll(/(?<x>\P{{UIdeo}})/d{mode}g)];a.length===2&&a[0][1]==='😀'&&a[0].index===1&&a[0].indices[1][1]===3&&a[1][1]==='G'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'\u4E8C\u4E00😀X'.replace(/(?<x>\p{{Unified_Ideograph}})/{mode}g,'<$1:$<x>>')==='<\u4E8C:\u4E8C><\u4E00:\u4E00>😀X'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'😀\u4E8C\u4E00G'.split(/(\p{{UIdeo}})/{mode}).join('|')==='😀|\u4E8C||\u4E00|G'&&'😀\u4E00'.search(/\p{{UIdeo}}/{mode})===2&&'\u4E8C\u4E00😀'.match(/\p{{UIdeo}}/{mode}g).join('')==='\u4E8C\u4E00'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let t='';let x='\u4E00\u4E8C😀\u4E00'.replace(/(\p{{UIdeo}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__😀_'&&t==='014'"
         ));
     }
@@ -107,16 +101,16 @@ fn unicode_unified_ideograph_properties_consumers_original_text() {
 
 #[test]
 fn unicode_unified_ideograph_properties_clones_coercions_and_strict_writes() {
-    check(
+    assert_true(
         r"let r=/^(?<x>\p{Unified_Ideograph})$/dmu,c=new RegExp(r,'divy');c.source==='^(?<x>\\p{Unified_Ideograph})$'&&c.unicodeSets&&!c.unicode&&!c.multiline&&c.exec('\u4E00').groups.x==='\u4E00'&&c.lastIndex===1",
     );
-    check(
+    assert_true(
         r"let t='',r=/\P{UIdeo}/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m[0]==='😀'&&m.index===0&&r.lastIndex===2",
     );
-    check(
+    assert_true(
         r"let r=/\p{UIdeo}/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('\u4E00')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/\p{UIdeo}/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀\u4E00')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
 }
@@ -138,26 +132,23 @@ fn unicode_unified_ideograph_properties_opted_work_and_remaining_sets() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
-    check(
+    assert_true(
         r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
     );
-    check(r"/[\p{UIdeo}&&A]/v.exec('A')===null");
-    check(r"/[\p{UIdeo}--A]/v.exec('A')===null");
-    check(
+    assert_true(r"/[\p{UIdeo}&&A]/v.exec('A')===null");
+    assert_true(r"/[\p{UIdeo}--A]/v.exec('A')===null");
+    assert_true(
         r"let s=String.fromCodePoint(0x4e00),m=/[\p{UIdeo}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
     );
     for source in [r"/\p{UIdeo}+b/u.exec('AA')", r"/\p{UIdeo}A/v.exec('AA')"] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }
 
 #[test]
 fn unicode_unified_ideograph_repetitions_retain_last_capture_and_outside_words() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\B(?<x>\p{{UIdeo}})+\B/d{mode}g,m=r.exec('😀\u4E00\u4E8C\u4E09\uFEFF');m.index===2&&m[0]==='\u4E00\u4E8C\u4E09'&&m.groups.x==='\u4E09'&&m.indices.groups.x[0]===4&&m.indices.groups.x[1]===5&&r.lastIndex===5"
         ));
     }
@@ -170,7 +161,7 @@ fn unicode_unified_ideograph_property_unicode18_addition() {
         let text = JsString::from(char::from_u32(point).unwrap().to_string().as_str());
         for name in ["Unified_Ideograph", "UIdeo"] {
             for flags in ["u", "ui", "v", "vi"] {
-                check(&format!(
+                assert_true(&format!(
                     r"let p=new RegExp('^\\p{{{name}}}$','{flags}'),n=new RegExp('^\\P{{{name}}}$','{flags}');p.test({text:?})&&!n.test({text:?})"
                 ));
                 comparisons += 1;

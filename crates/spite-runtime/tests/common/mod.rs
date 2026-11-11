@@ -5,6 +5,16 @@ pub use realm_entries::REALM_ENTRIES;
 
 pub mod regexp_oracle;
 
+/// Evaluates a behavioral assertion in a fresh Realm and reports its source.
+#[track_caller]
+pub fn assert_true(source: &str) {
+    assert_eq!(
+        spite_runtime::Realm::default().eval(source),
+        Ok(spite_runtime::Value::Boolean(true)),
+        "{source}"
+    );
+}
+
 /// Host-abort controls must remain independent of partially implemented globals.
 pub trait UnavailableHostRealm {
     fn with_unavailable_host() -> Self;

@@ -1,14 +1,8 @@
 //! Required counts of proved empty captured references retain effects once.
+use crate::common::assert_true;
 use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
 #[test]
 fn required_empty_captured_atoms_result_snapshot() {
     let mut rows = String::new();
@@ -59,41 +53,43 @@ fn required_effects_original_gap_names_open_reads_and_negative_rollback_are_exac
         Realm::default().eval(r"/((\1){1,2}){2}a()/.exec('a')"),
         Ok(Value::Object(_))
     ));
-    check(
+    assert_true(
         r"let a=/((\1){1,2}){2}a()/d.exec('a');a[1]===''&&a[2]===''&&a[3]===''&&a.indices[1][0]===0&&a.indices[2][0]===0&&a.indices[3][0]===1",
     );
-    check(
+    assert_true(
         r"let a=/(?<=(?<x>a)(?<y>\k<x>)+)b/d.exec('ab');a.groups.x==='a'&&a.groups.y===''&&a.indices.groups.y===a.indices[2]&&a.indices[2][0]===1",
     );
-    check(
+    assert_true(
         r"let a=/(?=(?<x>\k<y>)+(?<y>a))a/d.exec('a');a.groups.x===''&&a.groups.y==='a'&&a.indices.groups.x[0]===0",
     );
-    check(
+    assert_true(
         r"let a=/(?<=a(?=(?<x>\k<y>)+(?<y>b)))b/d.exec('ab');a.index===1&&a.groups.x===''&&a.indices.groups.y[0]===1",
     );
-    check(r"let a=/(?<=(\1){2}a)b/d.exec('ab');a[1]===''&&a.indices[1][0]===0");
-    check(
+    assert_true(r"let a=/(?<=(\1){2}a)b/d.exec('ab');a[1]===''&&a.indices[1][0]===0");
+    assert_true(
         r"let a=/(?<!(a)(\1){2})b/d.exec('b');a[1]===undefined&&a[2]===undefined&&a.indices[2]===undefined",
     );
-    check(
+    assert_true(
         r"let a=/(?<=([\uD800])(\1){2})b/d.exec('\uD800b');a.index===1&&a[2]===''&&a.indices[2][0]===1",
     );
 }
 #[test]
 fn consumers_empty_global_sticky_advancement_and_callbacks_keep_required_slots() {
-    check(
+    assert_true(
         r"let r=/(?<=(a)(\1)+)b/dy;r.lastIndex=1;let a=r.exec('ab');a[2]===''&&r.lastIndex===2&&r.exec('ab')===null&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/(?<=(a)(\1)+)b/dg,a=[...'ab ab'.matchAll(r)];a.length===2&&a[0].index===1&&a[1].index===4&&a[1].indices[2][0]===4&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let a=[...'aa'.matchAll(/(?=(\2)+(a))/dg)];a.length===2&&a[0][1]===''&&a[1].indices[1][0]===1",
     );
-    check(
+    assert_true(
         r"let seen=[];let s='ab ab'.replace(/(?<=(a)(\1)+)b/g,(m,x,y,i)=>{seen.push(x,y,i);return '_'});s==='a_ a_'&&seen.join('|')==='a||1|a||4'",
     );
-    check(r"'ab'.search(/(?<=(a)(\1)+)b/)===1&&'ab'.split(/(?<=(a)(\1)+)b/).join('|')==='a|a||'");
+    assert_true(
+        r"'ab'.search(/(?<=(a)(\1)+)b/)===1&&'ab'.split(/(?<=(a)(\1)+)b/).join('|')==='a|a||'",
+    );
 }
 
 #[test]
@@ -124,9 +120,6 @@ fn consuming_capture_children_optional_effects_partial_spans_and_unicode_stay_pe
         r"/(?<=(a)(\1){2})b/u.exec('ab')",
         r"/(?<=(a)(\1){2})b/v.exec('ab')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }

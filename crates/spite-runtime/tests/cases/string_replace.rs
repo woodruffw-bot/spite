@@ -5,86 +5,82 @@ use crate::common;
 use common::REALM_ENTRIES;
 use spite_runtime::{Error, Limits, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn string_searches_replace_only_the_first_match_and_preserve_utf16_units() {
-    check(
+    assert_true(
         "'ababa'.replace('ba','X')==='aXba' && 'abc'.replace('x','X')==='abc' && 'abc'.replace('','X')==='Xabc' && ''.replace('','X')==='X' && ''.replace('x','X')===''",
     );
-    check(
+    assert_true(
         "'anullb'.replace(null,7)==='a7b' && 'undefinedx'.replace(undefined,true)==='truex' && 'a1b1'.replace(1n,undefined)==='aundefinedb1'",
     );
-    check(
+    assert_true(
         "String.prototype.replace.call(1231,1,'x')==='x231' && String.prototype.replace.call(false,'a','X')==='fXlse' && String.prototype.replace.call(123n,2,'X')==='1X3'",
     );
-    check(
+    assert_true(
         "'A\\uD834\\uDF06B'.replace('\\uDF06','\\uD800')==='A\\uD834\\uD800B' && 'A\\uD834\\uDF06B'.replace('\\uD834\\uDF06','X')==='AXB' && 'a\\uD800b'.replace('\\uD800','\\uDC00')==='a\\uDC00b'",
     );
 }
 
 #[test]
 fn uncaptured_substitution_expands_supported_dollar_patterns_once() {
-    check(
+    assert_true(
         r#"'abc'.replace('b', "$$-$&-$`-$'-$0-$1-$01-$99-$<x>-$") === "a$-b-a-c-$0-$1-$01-$99-$<x>-$c""#,
     );
-    check(
+    assert_true(
         "'abc'.replace('b','$$$&')==='a$bc' && 'abc'.replace('b','$$$$')==='a$$c' && 'abc'.replace('b','$&$&')==='abbc'",
     );
-    check(
+    assert_true(
         r#"'abc'.replace('', "$'")==='abcabc' && 'abc'.replace('', '$`')==='abc' && 'abc'.replace('abc', '$`$&'+"$'")==='abc'"#,
     );
-    check(
+    assert_true(
         "'abc'.replace('b','$&$0$00$01$10$99$100$<name>')==='ab$0$00$01$10$99$100$<name>c' && 'abc'.replace('b','$x$-')==='a$x$-c'",
     );
 }
 
 #[test]
 fn functional_replacements_receive_exact_arguments_and_return_literal_text() {
-    check(
+    assert_true(
         "let calls=0;function f(m,p,s){'use strict';if(this!==undefined || arguments.length!==3 || m!=='b' || p!==1 || s!=='aba')throw 7;calls++;return 3;}let result='aba'.replace('b',f);result==='a3a' && calls===1",
     );
-    check(
+    assert_true(
         "let calls=0;function f(){if(this!==globalThis)throw 7;calls++;return 'X';}let result='aba'.replace('a',f);result==='Xba' && calls===1",
     );
-    check(r#"'aba'.replace('b',()=>"$$$&$`$'") === "a$$$&$`$'a""#);
-    check(
+    assert_true(r#"'aba'.replace('b',()=>"$$$&$`$'") === "a$$$&$`$'a""#);
+    assert_true(
         "function f(){throw 7;}Object.defineProperty(f,'toString',{get(){throw 8;}});'abc'.replace('x',f)==='abc'",
     );
-    check(
+    assert_true(
         "let log='',receiver={toString(){log+='s';return 'aba';}},search={toString(){log+='r';return 'b';}};let result=String.prototype.replace.call(receiver,search,(m,p,s)=>{log+='f';receiver.toString=()=> 'changed';if(m!=='b' || p!==1 || s!=='aba')throw 7;return {toString(){log+='v';return 'X';}};});result==='aXa' && log==='srfv'",
     );
-    check(
+    assert_true(
         "let caught=false;try{'aba'.replace('b',()=>Symbol());}catch(e){caught=e instanceof TypeError;}caught",
     );
-    check("let caught=false;try{'aba'.replace('b',()=>{throw 7;});}catch(e){caught=e===7;}caught");
+    assert_true(
+        "let caught=false;try{'aba'.replace('b',()=>{throw 7;});}catch(e){caught=e===7;}caught",
+    );
 }
 
 #[test]
 fn object_hooks_run_before_conversions_and_preserve_original_values() {
-    check(
+    assert_true(
         "let log='',receiver={toString(){throw 7;}},replace={toString(){throw 8;}},search={get [Symbol.replace](){log+='g';return function(o,r){'use strict';if(this!==search || o!==receiver || r!==replace || arguments.length!==2)throw 9;log+='c';return 3;};},toString(){throw 10;}};String.prototype.replace.call(receiver,search,replace)===3 && log==='gc'",
     );
-    check(
+    assert_true(
         "let marker={};'abc'.replace({[Symbol.replace](){return marker;}},'X')===marker && 'abc'.replace({[Symbol.replace](){return undefined;}},'X')===undefined",
     );
-    check(
+    assert_true(
         "let reads=0,caught=false,search={get [Symbol.replace](){reads++;throw 7;}};try{String.prototype.replace.call(null,search);}catch(e){caught=e instanceof TypeError;}caught && reads===0",
     );
-    check(
+    assert_true(
         "let caught=false,receiver={toString(){throw 8;}};try{String.prototype.replace.call(receiver,{get [Symbol.replace](){throw 7;}});}catch(e){caught=e===7;}caught",
     );
-    check(
+    assert_true(
         "let reads=0,caught=false,receiver={toString(){reads++;throw 8;}};try{String.prototype.replace.call(receiver,{[Symbol.replace]:7});}catch(e){caught=e instanceof TypeError;}caught && reads===0",
     );
-    check("'abc'.replace({[Symbol.replace]:null,toString(){return 'b';}},'X')==='aXc'");
-    check(
+    assert_true("'abc'.replace({[Symbol.replace]:null,toString(){return 'b';}},'X')==='aXc'");
+    assert_true(
         "let calls=0;'abc'.replace({get [Symbol.match](){calls++;throw 7;},toString(){return 'b';}},'X')==='aXc' && calls===0",
     );
 }
@@ -97,46 +93,46 @@ fn edition_seventeen_ignores_primitive_prototype_replace_hooks() {
         ("Boolean.prototype", "true", "atruebtruec", "aXbtruec"),
         ("BigInt.prototype", "1n", "a1b1c", "aXb1c"),
     ] {
-        check(&format!(
+        assert_true(&format!(
             "Object.defineProperty({prototype},Symbol.replace,{{get(){{throw 7;}}}});'{source}'.replace({search},'X')==='{expected}'"
         ));
     }
-    check(
+    assert_true(
         "Object.defineProperty(Symbol.prototype,Symbol.replace,{get(){throw 7;}});let caught=false;try{'abc'.replace(Symbol(),'X');}catch(e){caught=e instanceof TypeError;}caught",
     );
-    check(
+    assert_true(
         "Number.prototype[Symbol.replace]=function(o,r){'use strict';return this.valueOf()+o.length+r;};'abc'.replace(Object(1),2)===6",
     );
 }
 
 #[test]
 fn fallback_conversions_precede_search_and_callable_replacements_skip_stringification() {
-    check(
+    assert_true(
         "let log='',receiver={toString(){log+='s';return 'abc';}},search={get [Symbol.replace](){log+='g';return undefined;},toString(){log+='r';return 'x';}},replace={toString(){log+='v';return 'X';}};String.prototype.replace.call(receiver,search,replace)==='abc' && log==='gsrv'",
     );
-    check(
+    assert_true(
         "let log='',receiver={toString(){log+='s';throw 7;}},search={toString(){log+='r';throw 8;}},replace={toString(){log+='v';throw 9;}},caught=false;try{String.prototype.replace.call(receiver,search,replace);}catch(e){caught=e===7;}caught && log==='s'",
     );
-    check(
+    assert_true(
         "let reads=0,caught=false;try{'abc'.replace({toString(){throw 7;}},{toString(){reads++;throw 8;}});}catch(e){caught=e===7;}caught && reads===0",
     );
-    check(
+    assert_true(
         "let caught=false;try{'abc'.replace('x',{toString(){throw 7;}});}catch(e){caught=e===7;}caught",
     );
-    check(
+    assert_true(
         "function f(){return 'X';}Object.defineProperty(f,'toString',{get(){throw 7;}});'abc'.replace('b',f)==='aXc'",
     );
 }
 
 #[test]
 fn metadata_deletion_intrinsic_retention_and_large_default_outputs() {
-    check(
+    assert_true(
         "let d=Object.getOwnPropertyDescriptor(String.prototype,'replace'),n=Object.getOwnPropertyDescriptor(d.value,'name'),l=Object.getOwnPropertyDescriptor(d.value,'length');d.writable && !d.enumerable && d.configurable && n.value==='replace' && !n.writable && !n.enumerable && n.configurable && l.value===2 && !l.writable && !l.enumerable && l.configurable && !Object.hasOwn(d.value,'prototype')",
     );
-    check(
+    assert_true(
         "let caught=false;try{new String.prototype.replace();}catch(e){caught=e instanceof TypeError;}caught",
     );
-    check(
+    assert_true(
         "let s='a'.repeat(10000),r='x'.repeat(20000);s.replace('a',r).length===29999 && s.replace('b',r)===s",
     );
     let mut realm = Realm::default();

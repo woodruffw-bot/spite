@@ -1,9 +1,7 @@
 //! Private method/accessor definition and brand installation (15.7.14, 7.3.28/33).
 
-use crate::{
-    Error, ExceptionKind, ObjectHandle, Realm, Value,
-    private::{PrivateMethod, PrivateMethodKind, PrivateName},
-};
+use crate::private::{PrivateMethod, PrivateMethodKind, PrivateName};
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{PropertyKey, Span};
 use spite_parser::ast::{ExprKind, ObjectProperty, PropertyKind};
 
@@ -100,10 +98,8 @@ impl Realm {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        function::Callable,
-        object::{Budget, Error as ObjectError},
-    };
+    use crate::function::Callable;
+    use crate::object::{Budget, Error as ObjectError};
     use spite_core::JsString;
     use std::rc::Rc;
 

@@ -1,9 +1,7 @@
 //! Tests of the command-line host boundary.
 
-use std::{
-    io::Write,
-    process::{Command, Stdio},
-};
+use std::io::Write;
+use std::process::{Command, Stdio};
 
 #[test]
 fn evaluates_an_argument() {
@@ -1118,7 +1116,7 @@ fn local_setter_conversions_and_host_lookup_follow_their_specified_order() {
     }
     std::fs::remove_file(path).unwrap();
     for output in independent {
-        assert!(output.status.success(), "{:?}", output);
+        assert!(output.status.success(), "{output:?}");
         assert_eq!(String::from_utf8(output.stdout).unwrap().trim(), "true");
         assert!(output.stderr.is_empty());
     }

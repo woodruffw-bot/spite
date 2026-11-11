@@ -10,14 +10,10 @@ mod template;
 
 use super::{AsyncAwaitAction, AsyncExecutionData, Step, active_statement};
 use crate::function::CallTarget;
-use crate::{
-    Error, Realm, Value,
-    object::async_expression::{
-        AsyncExpressionData, ExprChild, ExprPath, ExprRoot, ExprTask, InvocationTarget,
-        MemberAction,
-    },
-    reference_expression,
+use crate::object::async_expression::{
+    AsyncExpressionData, ExprChild, ExprPath, ExprRoot, ExprTask, InvocationTarget, MemberAction,
 };
+use crate::{Error, Realm, Value, reference_expression};
 use spite_core::{JsString, Span};
 use spite_parser::ast::{
     Argument, ArrayElement, ArrowBody, BinaryOp, ChainStepKind, Expr, ExprKind, ObjectElement,
@@ -819,7 +815,9 @@ impl Realm {
                                     )?;
                                 }
                                 ExprKind::Assign(..) => {
-                                    self.begin_async_assignment(data, &mut state, path, None, span)?
+                                    self.begin_async_assignment(
+                                        data, &mut state, path, None, span,
+                                    )?;
                                 }
                                 ExprKind::CompoundAssign(op, ..) => self.begin_async_assignment(
                                     data,
@@ -1246,10 +1244,10 @@ impl Realm {
                     )?;
                 }
                 ExprTask::TemplateNext { path, index, units } => {
-                    self.async_template_next(data, &mut state, path, index, units)?
+                    self.async_template_next(data, &mut state, path, index, units)?;
                 }
                 ExprTask::TemplateAppend { path, index, units } => {
-                    self.async_template_append(data, &mut state, path, index, units)?
+                    self.async_template_append(data, &mut state, path, index, units)?;
                 }
                 ExprTask::ObjectNext {
                     path,
@@ -1334,10 +1332,10 @@ impl Realm {
                     )?;
                 }
                 ExprTask::OptionalArgumentNext(cursor) => {
-                    self.async_optional_argument_next(data, &mut state, cursor)?
+                    self.async_optional_argument_next(data, &mut state, cursor)?;
                 }
                 ExprTask::OptionalArgumentAppend(cursor) => {
-                    self.async_optional_argument_append(data, &mut state, cursor)?
+                    self.async_optional_argument_append(data, &mut state, cursor)?;
                 }
                 ExprTask::SuperKey {
                     this_value,
@@ -1380,7 +1378,7 @@ impl Realm {
                     self.apply_async_assignment(&mut state, reference, left, op, right, span)?;
                 }
                 ExprTask::CheckString(span) => {
-                    self.check_string(state.current.as_ref().expect("expression result"), span)?
+                    self.check_string(state.current.as_ref().expect("expression result"), span)?;
                 }
             }
         }

@@ -1,6 +1,7 @@
 //! Append-only GlobalSymbolRegistry shared across realms (20.4.2.2/6).
 
-use crate::{Error, ExceptionKind, Realm, Value, object::Budget};
+use crate::object::Budget;
+use crate::{Error, ExceptionKind, Realm, Value};
 use spite_core::{JsString, JsSymbol, Span};
 use std::sync::{Mutex, OnceLock};
 

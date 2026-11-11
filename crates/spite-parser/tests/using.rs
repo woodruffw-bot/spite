@@ -1,7 +1,8 @@
 //! Contextual resource bindings, scope early errors and loop grammar.
 
 use spite_core::{DiagnosticKind, JsString};
-use spite_parser::{ast::StatementKind, parse_module, parse_script, parse_script_utf16};
+use spite_parser::ast::StatementKind;
+use spite_parser::{parse_module, parse_script, parse_script_utf16};
 
 #[test]
 fn using_statements_and_both_loop_headers_snapshot() {

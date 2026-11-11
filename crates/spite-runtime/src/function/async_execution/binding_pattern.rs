@@ -1,18 +1,14 @@
 //! Binding patterns through the shared Await expression evaluator.
 
 use super::{AsyncAwaitAction, AsyncExecutionData, Step, active_statement, binding, expression};
-use crate::{
-    Completion, Error, Realm, Value,
-    environment::EnvironmentHandle,
-    object::{
-        async_binding::{
-            AsyncPatternBinding, BindingChild, BindingCursor, BindingCursorKind, BindingRoot,
-            ObjectBindingCursor, ObjectBindingPhase,
-        },
-        async_execution::{AsyncStatementFrame, StatementLocation},
-        async_expression::ExprRoot,
-    },
+use crate::environment::EnvironmentHandle;
+use crate::object::async_binding::{
+    AsyncPatternBinding, BindingChild, BindingCursor, BindingCursorKind, BindingRoot,
+    ObjectBindingCursor, ObjectBindingPhase,
 };
+use crate::object::async_execution::{AsyncStatementFrame, StatementLocation};
+use crate::object::async_expression::ExprRoot;
+use crate::{Completion, Error, Realm, Value};
 use spite_core::Span;
 use spite_parser::ast::{
     ArrowBody, BindingPattern, BindingPatternKind, Expr, ForBinding, PropertyName, StatementKind,

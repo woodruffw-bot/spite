@@ -1,6 +1,9 @@
 //! PrivateIdentifier spelling, lexical class scope, and early errors (15.7/16.1).
 
-use crate::*;
+use crate::{
+    ChainStepKind, Diagnostic, Expr, ExprKind, Kind, Literal, Parser, PrivateIdentifier,
+    PropertyKind, PropertyName, Span, Token, early,
+};
 use std::collections::BTreeMap;
 
 #[derive(Default)]

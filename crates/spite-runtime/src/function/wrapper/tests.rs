@@ -1,4 +1,4 @@
-use super::*;
+use super::{Error, Realm, Value};
 use crate::object::{Budget, DescriptorKind, PropertyDescriptor};
 use spite_core::JsString;
 

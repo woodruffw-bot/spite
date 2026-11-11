@@ -1,6 +1,6 @@
 //! Persistent evaluation status, errors, cycle roots and top-level capability.
 
-use super::*;
+use super::{Budget, Error, Handle, Objects, Value};
 use crate::function::PromiseCapability;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]

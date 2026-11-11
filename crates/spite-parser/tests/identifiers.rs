@@ -1,7 +1,8 @@
 //! ECMAScript identifier grammar and early errors.
 
 use spite_core::{DiagnosticKind, JsString, Span};
-use spite_parser::{ast::*, parse_script, parse_script_utf16};
+use spite_parser::ast::{BindingPatternKind, ExprKind, StatementKind};
+use spite_parser::{parse_script, parse_script_utf16};
 
 #[test]
 fn unicode_identifier_names_and_byte_spans() {

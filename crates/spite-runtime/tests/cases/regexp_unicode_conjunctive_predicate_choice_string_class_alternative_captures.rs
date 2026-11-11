@@ -1,158 +1,152 @@
 //! Required predicate choices preserve conditional lexical captures.
+use crate::common::assert_true;
 use spite_core::JsString;
 use spite_runtime::{Realm, Value};
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
 #[test]
 fn conjunctive_predicate_choice_string_class_alternatives_preserve_native_captures_and_string_consumers()
  {
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\b)|(?<n3>\\b))(?<n4>(?<n5>[\\q{a|ab}])|(?<n6>))(?<n7>(?<n8>\\B^)|(?<n9>^))",input="",r=new RegExp(pattern,"dgvym"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\b)|(?<n3>\\b))(?<n4>(?<n5>)|(?<n6>[\\q{|a|ab}])){1}(?<n7>(?<n8>\\B^)|(?<n9>^))",input="ab",r=new RegExp(pattern,"dgvi"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=1;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\b)|(?<n3>\\b))(?<n4>(?<n5>[\\p{Any}\\q{|ab}])|(?<n6>)){0001,0001}?(?<n7>(?<n8>\\B^)|(?<n9>^))",input="a\n!",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "n9"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"\",\"\",\"<undefined>\",\"\",\"\",\"<undefined>\",\"\",\"<undefined>\",\"\"],[[0,0],[0,0],[0,0],\"<undefined>\",[0,0],[0,0],\"<undefined>\",[0,0],\"<undefined>\",[0,0]],0,0]""####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\b)|(?<n3>\\b))(?<n4>(?<n5>)|(?<n6>[a-z\\q{ab}]){1}){1,1}?(?<n7>(?<n8>\\B^)|(?<n9>^))",input="\ud83d\ude00a",r=new RegExp(pattern,"dgvim"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=1;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\B)|(?<n3>\\b\\B)){2,3}?(?<n4>(?<n5>[\\q{a|ab}])|(?<n6>))(?<n7>(?<n8>\\b$)|(?<n9>$))",input="a",r=new RegExp(pattern,"dgvi"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=1;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\B)|(?<n3>\\b\\B)){2,3}?(?<n4>(?<n5>)|(?<n6>[\\q{|a|ab}])){1}(?<n7>(?<n8>\\b$)|(?<n9>$))",input="!ab!",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "n9"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"\",\"\",\"<undefined>\",\"\",\"\",\"<undefined>\",\"\",\"<undefined>\",\"\"],[[4,4],[4,4],[4,4],\"<undefined>\",[4,4],[4,4],\"<undefined>\",[4,4],\"<undefined>\",[4,4]],4,4]""####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\B)|(?<n3>\\b\\B)){2,3}?(?<n4>(?<n5>[\\p{Any}\\q{|ab}])|(?<n6>)){0001,0001}?(?<n7>(?<n8>\\b$)|(?<n9>$))",input="\u017fa",r=new RegExp(pattern,"dgvim"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=1;var m=r.exec(input);if(m!==null){var names=["n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "n9"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"a\",\"\",\"\",\"<undefined>\",\"a\",\"a\",\"<undefined>\",\"\",\"\",\"<undefined>\"],[[1,2],[1,1],[1,1],\"<undefined>\",[1,2],[1,2],\"<undefined>\",[2,2],[2,2],\"<undefined>\"],1,2]""####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\B)|(?<n3>\\b\\B)){2,3}?(?<n4>(?<n5>)|(?<n6>[a-z\\q{ab}]){1}){1,1}?(?<n7>(?<n8>\\b$)|(?<n9>$))",input="ab\r\n",r=new RegExp(pattern,"dgvy"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\b^)|(?<n3>^)){3}(?<n4>(?<n5>[\\q{a|ab}])|(?<n6>))(?<n7>(?<n8>\\B$)|(?<n9>$))",input="ab",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "n9"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"ab\",\"\",\"\",\"<undefined>\",\"ab\",\"ab\",\"<undefined>\",\"\",\"<undefined>\",\"\"],[[0,2],[0,0],[0,0],\"<undefined>\",[0,2],[0,2],\"<undefined>\",[2,2],\"<undefined>\",[2,2]],0,2]""####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\b^)|(?<n3>^)){3}(?<n4>(?<n5>)|(?<n6>[\\q{|a|ab}])){1}(?<n7>(?<n8>\\B$)|(?<n9>$))",input="a\n!",r=new RegExp(pattern,"dgvim"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=1;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\b^)|(?<n3>^)){3}(?<n4>(?<n5>[\\p{Any}\\q{|ab}])|(?<n6>)){0001,0001}?(?<n7>(?<n8>\\B$)|(?<n9>$))",input="\ud83d\ude00a",r=new RegExp(pattern,"dgvy"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\b^)|(?<n3>^)){3}(?<n4>(?<n5>)|(?<n6>[a-z\\q{ab}]){1}){1,1}?(?<n7>(?<n8>\\B$)|(?<n9>$))",input="",r=new RegExp(pattern,"dgvi"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=1;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\B^)|(?<n3>^))(?<n4>(?<n5>[\\q{a|ab}])|(?<n6>))(?<n7>(?<n8>\\b^$)|(?<n9>^$))",input="!ab!",r=new RegExp(pattern,"dgvim"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=1;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\B^)|(?<n3>^))(?<n4>(?<n5>)|(?<n6>[\\q{|a|ab}])){1}(?<n7>(?<n8>\\b^$)|(?<n9>^$))",input="\u017fa",r=new RegExp(pattern,"dgvy"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\B^)|(?<n3>^))(?<n4>(?<n5>[\\p{Any}\\q{|ab}])|(?<n6>)){0001,0001}?(?<n7>(?<n8>\\b^$)|(?<n9>^$))",input="ab\r\n",r=new RegExp(pattern,"dgvi"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=1;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\B^)|(?<n3>^))(?<n4>(?<n5>)|(?<n6>[a-z\\q{ab}]){1}){1,1}?(?<n7>(?<n8>\\b^$)|(?<n9>^$))",input="a",r=new RegExp(pattern,"dgvm"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\b$)|(?<n3>$))(?<n4>(?<n5>[\\q{a|ab}])|(?<n6>))(?<n7>(?<n8>\\b\\B)|(?<n9>\\b))",input="a\n!",r=new RegExp(pattern,"dgvy"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\b$)|(?<n3>$))(?<n4>(?<n5>)|(?<n6>[\\q{|a|ab}])){1}(?<n7>(?<n8>\\b\\B)|(?<n9>\\b))",input="\ud83d\ude00a",r=new RegExp(pattern,"dgvi"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=1;var m=r.exec(input);if(m!==null){var names=["n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "n9"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"\",\"\",\"<undefined>\",\"\",\"\",\"<undefined>\",\"\",\"<undefined>\",\"\"],[[3,3],[3,3],[3,3],\"<undefined>\",[3,3],[3,3],\"<undefined>\",[3,3],\"<undefined>\",[3,3]],3,3]""####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\b$)|(?<n3>$))(?<n4>(?<n5>[\\p{Any}\\q{|ab}])|(?<n6>)){0001,0001}?(?<n7>(?<n8>\\b\\B)|(?<n9>\\b))",input="",r=new RegExp(pattern,"dgvm"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\b$)|(?<n3>$))(?<n4>(?<n5>)|(?<n6>[a-z\\q{ab}]){1}){1,1}?(?<n7>(?<n8>\\b\\B)|(?<n9>\\b))",input="ab",r=new RegExp(pattern,"dgvi"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=1;var m=r.exec(input);if(m!==null){var names=["n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "n9"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"\",\"\",\"<undefined>\",\"\",\"\",\"<undefined>\",\"\",\"<undefined>\",\"\"],[[2,2],[2,2],[2,2],\"<undefined>\",[2,2],[2,2],\"<undefined>\",[2,2],\"<undefined>\",[2,2]],2,2]""####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\B$)|(?<n3>$))(?<n4>(?<n5>[\\q{a|ab}])|(?<n6>))(?<n7>(?<n8>\\b\\B)|(?<n9>\\B))",input="\u017fa",r=new RegExp(pattern,"dgvi"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=1;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\B$)|(?<n3>$))(?<n4>(?<n5>)|(?<n6>[\\q{|a|ab}])){1}(?<n7>(?<n8>\\b\\B)|(?<n9>\\B))",input="ab\r\n",r=new RegExp(pattern,"dgvm"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "n9"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"\",\"\",\"<undefined>\",\"\",\"\",\"<undefined>\",\"\",\"<undefined>\",\"\"],[[3,3],[3,3],[3,3],\"<undefined>\",[3,3],[3,3],\"<undefined>\",[3,3],\"<undefined>\",[3,3]],3,3]""####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\B$)|(?<n3>$))(?<n4>(?<n5>[\\p{Any}\\q{|ab}])|(?<n6>)){0001,0001}?(?<n7>(?<n8>\\b\\B)|(?<n9>\\B))",input="a",r=new RegExp(pattern,"dgvi"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=1;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\B$)|(?<n3>$))(?<n4>(?<n5>)|(?<n6>[a-z\\q{ab}]){1}){1,1}?(?<n7>(?<n8>\\b\\B)|(?<n9>\\B))",input="!ab!",r=new RegExp(pattern,"dgvy"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\b^$)|(?<n3>^$))(?<n4>(?<n5>[\\q{a|ab}])|(?<n6>))(?<n7>(?<n8>\\b\\B)|(?<n9>\\b\\B))",input="\ud83d\ude00a",r=new RegExp(pattern,"dgvm"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\b^$)|(?<n3>^$))(?<n4>(?<n5>)|(?<n6>[\\q{|a|ab}])){1}(?<n7>(?<n8>\\b\\B)|(?<n9>\\b\\B))",input="",r=new RegExp(pattern,"dgvi"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=1;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\b^$)|(?<n3>^$))(?<n4>(?<n5>[\\p{Any}\\q{|ab}])|(?<n6>)){0001,0001}?(?<n7>(?<n8>\\b\\B)|(?<n9>\\b\\B))",input="ab",r=new RegExp(pattern,"dgvy"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\b^$)|(?<n3>^$))(?<n4>(?<n5>)|(?<n6>[a-z\\q{ab}]){1}){1,1}?(?<n7>(?<n8>\\b\\B)|(?<n9>\\b\\B))",input="a\n!",r=new RegExp(pattern,"dgvim"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=1;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\b\\B)|(?<n3>\\b))(?<n4>(?<n5>[\\q{a|ab}])|(?<n6>))(?<n7>(?<n8>\\b)|(?<n9>\\b))",input="ab\r\n",r=new RegExp(pattern,"dgvi"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=1;var m=r.exec(input);if(m!==null){var names=["n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "n9"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"\",\"<undefined>\",\"\",\"\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\"],[[2,2],[2,2],\"<undefined>\",[2,2],[2,2],\"<undefined>\",[2,2],[2,2],[2,2],\"<undefined>\"],2,2]""####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\b\\B)|(?<n3>\\b))(?<n4>(?<n5>)|(?<n6>[\\q{|a|ab}])){1}(?<n7>(?<n8>\\b)|(?<n9>\\b))",input="a",r=new RegExp(pattern,"dgvy"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "n9"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"\",\"\",\"<undefined>\"],[[0,0],[0,0],\"<undefined>\",[0,0],[0,0],[0,0],\"<undefined>\",[0,0],[0,0],\"<undefined>\"],0,0]""####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\b\\B)|(?<n3>\\b))(?<n4>(?<n5>[\\p{Any}\\q{|ab}])|(?<n6>)){0001,0001}?(?<n7>(?<n8>\\b)|(?<n9>\\b))",input="!ab!",r=new RegExp(pattern,"dgvim"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=1;var m=r.exec(input);if(m!==null){var names=["n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "n9"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"ab\",\"\",\"<undefined>\",\"\",\"ab\",\"ab\",\"<undefined>\",\"\",\"\",\"<undefined>\"],[[1,3],[1,1],\"<undefined>\",[1,1],[1,3],[1,3],\"<undefined>\",[3,3],[3,3],\"<undefined>\"],1,3]""####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\b\\B)|(?<n3>\\b))(?<n4>(?<n5>)|(?<n6>[a-z\\q{ab}]){1}){1,1}?(?<n7>(?<n8>\\b)|(?<n9>\\b))",input="\u017fa",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "n9"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"\",\"\",\"<undefined>\"],[[1,1],[1,1],\"<undefined>\",[1,1],[1,1],[1,1],\"<undefined>\",[1,1],[1,1],\"<undefined>\"],1,1]""####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\b\\B)|(?<n3>\\B))(?<n4>(?<n5>[\\q{a|ab}])|(?<n6>))(?<n7>(?<n8>\\B)|(?<n9>\\b\\B)){2,3}?",input="",r=new RegExp(pattern,"dgvy"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "n9"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"\",\"<undefined>\",\"\",\"\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\"],[[0,0],[0,0],\"<undefined>\",[0,0],[0,0],\"<undefined>\",[0,0],[0,0],[0,0],\"<undefined>\"],0,0]""####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\b\\B)|(?<n3>\\B))(?<n4>(?<n5>)|(?<n6>[\\q{|a|ab}])){1}(?<n7>(?<n8>\\B)|(?<n9>\\b\\B)){2,3}?",input="ab",r=new RegExp(pattern,"dgvim"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=1;var m=r.exec(input);if(m!==null){var names=["n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "n9"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"\",\"\",\"<undefined>\"],[[1,1],[1,1],\"<undefined>\",[1,1],[1,1],[1,1],\"<undefined>\",[1,1],[1,1],\"<undefined>\"],1,1]""####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\b\\B)|(?<n3>\\B))(?<n4>(?<n5>[\\p{Any}\\q{|ab}])|(?<n6>)){0001,0001}?(?<n7>(?<n8>\\B)|(?<n9>\\b\\B)){2,3}?",input="a\n!",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "n9"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"!\",\"\",\"<undefined>\",\"\",\"!\",\"!\",\"<undefined>\",\"\",\"\",\"<undefined>\"],[[2,3],[2,2],\"<undefined>\",[2,2],[2,3],[2,3],\"<undefined>\",[3,3],[3,3],\"<undefined>\"],2,3]""####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\b\\B)|(?<n3>\\B))(?<n4>(?<n5>)|(?<n6>[a-z\\q{ab}]){1}){1,1}?(?<n7>(?<n8>\\B)|(?<n9>\\b\\B)){2,3}?",input="\ud83d\ude00a",r=new RegExp(pattern,"dgvi"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=1;var m=r.exec(input);if(m!==null){var names=["n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "n9"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"\",\"\",\"<undefined>\"],[[0,0],[0,0],\"<undefined>\",[0,0],[0,0],[0,0],\"<undefined>\",[0,0],[0,0],\"<undefined>\"],0,0]""####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\b\\B)|(?<n3>\\b\\B))(?<n4>(?<n5>[\\q{a|ab}])|(?<n6>))(?<n7>(?<n8>\\b^)|(?<n9>^)){3}",input="a",r=new RegExp(pattern,"dgvim"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=1;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\b\\B)|(?<n3>\\b\\B))(?<n4>(?<n5>)|(?<n6>[\\q{|a|ab}])){1}(?<n7>(?<n8>\\b^)|(?<n9>^)){3}",input="!ab!",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\b\\B)|(?<n3>\\b\\B))(?<n4>(?<n5>[\\p{Any}\\q{|ab}])|(?<n6>)){0001,0001}?(?<n7>(?<n8>\\b^)|(?<n9>^)){3}",input="\u017fa",r=new RegExp(pattern,"dgvi"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=1;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<n1>(?<n2>\\b\\B)|(?<n3>\\b\\B))(?<n4>(?<n5>)|(?<n6>[a-z\\q{ab}]){1}){1,1}?(?<n7>(?<n8>\\b^)|(?<n9>^)){3}",input="ab\r\n",r=new RegExp(pattern,"dgvym"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"(function(){function row(m){if(m===null)return null;var names=m.groups===undefined?[]:Object.keys(m.groups);return [Array.from(m,v=>v===undefined?'<undefined>':v),Array.from(m.indices,v=>v===undefined?'<undefined>':v),m.index,m.input,names,names.map(n=>m.groups[n]===undefined?'<undefined>':m.groups[n]),names.map(n=>m.indices.groups[n]===undefined?'<undefined>':m.indices.groups[n]),names.every((n,i)=>Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[i+1]&&m.indices.groups[n]===m.indices[i+1]),m.groups===undefined||Object.getPrototypeOf(m.groups)===null]}var P="(?<b>(?<w>^\\b)|(?<nw>\\b))(?<whole>(?<c>[\\q{|a|ab}])|(?<e>))(?<a>(?<end>\\b$)|(?<wb>\\b))";var r=new RegExp(P,"dvg"),a=Array.from("ab!aa".matchAll(r));return JSON.stringify([a.map(row),r.lastIndex]);})()==="[[[[\"ab\",\"\",\"\",\"<undefined>\",\"ab\",\"ab\",\"<undefined>\",\"\",\"<undefined>\",\"\"],[[0,2],[0,0],[0,0],\"<undefined>\",[0,2],[0,2],\"<undefined>\",[2,2],\"<undefined>\",[2,2]],0,\"ab!aa\",[\"b\",\"w\",\"nw\",\"whole\",\"c\",\"e\",\"a\",\"end\",\"wb\"],[\"\",\"\",\"<undefined>\",\"ab\",\"ab\",\"<undefined>\",\"\",\"<undefined>\",\"\"],[[0,0],[0,0],\"<undefined>\",[0,2],[0,2],\"<undefined>\",[2,2],\"<undefined>\",[2,2]],true,true],[[\"\",\"\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"\",\"<undefined>\",\"\"],[[2,2],[2,2],\"<undefined>\",[2,2],[2,2],[2,2],\"<undefined>\",[2,2],\"<undefined>\",[2,2]],2,\"ab!aa\",[\"b\",\"w\",\"nw\",\"whole\",\"c\",\"e\",\"a\",\"end\",\"wb\"],[\"\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"\",\"<undefined>\",\"\"],[[2,2],\"<undefined>\",[2,2],[2,2],[2,2],\"<undefined>\",[2,2],\"<undefined>\",[2,2]],true,true],[[\"\",\"\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"\",\"<undefined>\",\"\"],[[3,3],[3,3],\"<undefined>\",[3,3],[3,3],[3,3],\"<undefined>\",[3,3],\"<undefined>\",[3,3]],3,\"ab!aa\",[\"b\",\"w\",\"nw\",\"whole\",\"c\",\"e\",\"a\",\"end\",\"wb\"],[\"\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"\",\"<undefined>\",\"\"],[[3,3],\"<undefined>\",[3,3],[3,3],[3,3],\"<undefined>\",[3,3],\"<undefined>\",[3,3]],true,true],[[\"\",\"\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"\",\"\",\"<undefined>\"],[[5,5],[5,5],\"<undefined>\",[5,5],[5,5],[5,5],\"<undefined>\",[5,5],[5,5],\"<undefined>\"],5,\"ab!aa\",[\"b\",\"w\",\"nw\",\"whole\",\"c\",\"e\",\"a\",\"end\",\"wb\"],[\"\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"\",\"\",\"<undefined>\"],[[5,5],\"<undefined>\",[5,5],[5,5],[5,5],\"<undefined>\",[5,5],[5,5],\"<undefined>\"],true,true]],0]""####,
     );
-    check(
+    assert_true(
         r####"(function(){function row(m){if(m===null)return null;var names=m.groups===undefined?[]:Object.keys(m.groups);return [Array.from(m,v=>v===undefined?'<undefined>':v),Array.from(m.indices,v=>v===undefined?'<undefined>':v),m.index,m.input,names,names.map(n=>m.groups[n]===undefined?'<undefined>':m.groups[n]),names.map(n=>m.indices.groups[n]===undefined?'<undefined>':m.indices.groups[n]),names.every((n,i)=>Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[i+1]&&m.indices.groups[n]===m.indices[i+1]),m.groups===undefined||Object.getPrototypeOf(m.groups)===null]}var P="(?<b>(?<w>^\\b)|(?<nw>\\b))(?<whole>(?<c>[\\q{|a|ab}])|(?<e>))(?<a>(?<end>\\b$)|(?<wb>\\b))";var calls=[],r=new RegExp(P,"vg"),out="ab!aa".replace(r,function(){var a=Array.from(arguments);calls.push(a.map(v=>v===undefined?"<undefined>":typeof v==="object"?Object.keys(v).map(k=>[k,v[k]===undefined?"<undefined>":v[k]]):v));return "["+a[0]+"]"});return JSON.stringify([out,calls,r.lastIndex]);})()==="[\"[ab][]![]aa[]\",[[\"ab\",\"\",\"\",\"<undefined>\",\"ab\",\"ab\",\"<undefined>\",\"\",\"<undefined>\",\"\",0,\"ab!aa\",[[\"b\",\"\"],[\"w\",\"\"],[\"nw\",\"<undefined>\"],[\"whole\",\"ab\"],[\"c\",\"ab\"],[\"e\",\"<undefined>\"],[\"a\",\"\"],[\"end\",\"<undefined>\"],[\"wb\",\"\"]]],[\"\",\"\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"\",\"<undefined>\",\"\",2,\"ab!aa\",[[\"b\",\"\"],[\"w\",\"<undefined>\"],[\"nw\",\"\"],[\"whole\",\"\"],[\"c\",\"\"],[\"e\",\"<undefined>\"],[\"a\",\"\"],[\"end\",\"<undefined>\"],[\"wb\",\"\"]]],[\"\",\"\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"\",\"<undefined>\",\"\",3,\"ab!aa\",[[\"b\",\"\"],[\"w\",\"<undefined>\"],[\"nw\",\"\"],[\"whole\",\"\"],[\"c\",\"\"],[\"e\",\"<undefined>\"],[\"a\",\"\"],[\"end\",\"<undefined>\"],[\"wb\",\"\"]]],[\"\",\"\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"\",\"\",\"<undefined>\",5,\"ab!aa\",[[\"b\",\"\"],[\"w\",\"<undefined>\"],[\"nw\",\"\"],[\"whole\",\"\"],[\"c\",\"\"],[\"e\",\"<undefined>\"],[\"a\",\"\"],[\"end\",\"\"],[\"wb\",\"<undefined>\"]]]],0]""####,
     );
-    check(
+    assert_true(
         r####"(function(){function row(m){if(m===null)return null;var names=m.groups===undefined?[]:Object.keys(m.groups);return [Array.from(m,v=>v===undefined?'<undefined>':v),Array.from(m.indices,v=>v===undefined?'<undefined>':v),m.index,m.input,names,names.map(n=>m.groups[n]===undefined?'<undefined>':m.groups[n]),names.map(n=>m.indices.groups[n]===undefined?'<undefined>':m.indices.groups[n]),names.every((n,i)=>Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[i+1]&&m.indices.groups[n]===m.indices[i+1]),m.groups===undefined||Object.getPrototypeOf(m.groups)===null]}var P="(?<b>(?<w>^\\b)|(?<nw>\\b))(?<whole>(?<c>[\\q{|a|ab}])|(?<e>))(?<a>(?<end>\\b$)|(?<wb>\\b))";var r=new RegExp(P,"dvg");r.lastIndex=9;var a="!abaa!".split(r),b="!abaa!".search(r);return JSON.stringify([a.map(v=>v===undefined?"<undefined>":v),b,r.lastIndex]);})()==="[[\"!\",\"\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"\",\"<undefined>\",\"\",\"abaa\",\"\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"\",\"<undefined>\",\"\",\"!\"],1,9]""####,
     );
-    check(
+    assert_true(
         r####"(function(){function row(m){if(m===null)return null;var names=m.groups===undefined?[]:Object.keys(m.groups);return [Array.from(m,v=>v===undefined?'<undefined>':v),Array.from(m.indices,v=>v===undefined?'<undefined>':v),m.index,m.input,names,names.map(n=>m.groups[n]===undefined?'<undefined>':m.groups[n]),names.map(n=>m.indices.groups[n]===undefined?'<undefined>':m.indices.groups[n]),names.every((n,i)=>Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[i+1]&&m.indices.groups[n]===m.indices[i+1]),m.groups===undefined||Object.getPrototypeOf(m.groups)===null]}var P="(?<b>(?<w>^\\b)|(?<nw>\\b))(?<whole>(?<c>[\\q{|a|ab}])|(?<e>))(?<a>(?<end>\\b$)|(?<wb>\\b))";var r=new RegExp(P,"vg");Object.defineProperty(r,"lastIndex",{writable:false});var caught=false;try{r.exec("ab")}catch(e){caught=e instanceof TypeError}return JSON.stringify([caught,r.lastIndex]);})()==="[true,0]""####,
     );
-    check(
+    assert_true(
         r####"(function(){function row(m){if(m===null)return null;var names=m.groups===undefined?[]:Object.keys(m.groups);return [Array.from(m,v=>v===undefined?'<undefined>':v),Array.from(m.indices,v=>v===undefined?'<undefined>':v),m.index,m.input,names,names.map(n=>m.groups[n]===undefined?'<undefined>':m.groups[n]),names.map(n=>m.indices.groups[n]===undefined?'<undefined>':m.indices.groups[n]),names.every((n,i)=>Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[i+1]&&m.indices.groups[n]===m.indices[i+1]),m.groups===undefined||Object.getPrototypeOf(m.groups)===null]}var P="(?<b>(?<w>^\\b)|(?<nw>\\b))(?<whole>(?<c>[\\q{|a|ab}])|(?<e>))(?<a>(?<end>\\b$)|(?<wb>\\b))";var r=new RegExp(P,"dvg"),a=r.exec(""),b=r.exec("ab");return JSON.stringify([row(a),row(b),r.lastIndex]);})()==="[null,[[\"ab\",\"\",\"\",\"<undefined>\",\"ab\",\"ab\",\"<undefined>\",\"\",\"\",\"<undefined>\"],[[0,2],[0,0],[0,0],\"<undefined>\",[0,2],[0,2],\"<undefined>\",[2,2],[2,2],\"<undefined>\"],0,\"ab\",[\"b\",\"w\",\"nw\",\"whole\",\"c\",\"e\",\"a\",\"end\",\"wb\"],[\"\",\"\",\"<undefined>\",\"ab\",\"ab\",\"<undefined>\",\"\",\"\",\"<undefined>\"],[[0,0],[0,0],\"<undefined>\",[0,2],[0,2],\"<undefined>\",[2,2],[2,2],\"<undefined>\"],true,true],2]""####,
     );
-    check(
+    assert_true(
         r####"(function(){function row(m){if(m===null)return null;var names=m.groups===undefined?[]:Object.keys(m.groups);return [Array.from(m,v=>v===undefined?'<undefined>':v),Array.from(m.indices,v=>v===undefined?'<undefined>':v),m.index,m.input,names,names.map(n=>m.groups[n]===undefined?'<undefined>':m.groups[n]),names.map(n=>m.indices.groups[n]===undefined?'<undefined>':m.indices.groups[n]),names.every((n,i)=>Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[i+1]&&m.indices.groups[n]===m.indices[i+1]),m.groups===undefined||Object.getPrototypeOf(m.groups)===null]}var P="(?<b>(?<w>^\\b)|(?<nw>\\b))(?<whole>(?<c>[a-z\\q{|S|sa|aX}])|(?<e>))(?<a>(?<end>\\b$)|(?<wb>\\b))";var r=new RegExp(P,"dvgi"),a=r.exec("ſaX!");return JSON.stringify([row(a),r.lastIndex]);})()==="[[[\"\",\"\",\"\",\"<undefined>\",\"\",\"\",\"<undefined>\",\"\",\"<undefined>\",\"\"],[[0,0],[0,0],[0,0],\"<undefined>\",[0,0],[0,0],\"<undefined>\",[0,0],\"<undefined>\",[0,0]],0,\"\u017faX!\",[\"b\",\"w\",\"nw\",\"whole\",\"c\",\"e\",\"a\",\"end\",\"wb\"],[\"\",\"\",\"<undefined>\",\"\",\"\",\"<undefined>\",\"\",\"<undefined>\",\"\"],[[0,0],[0,0],\"<undefined>\",[0,0],[0,0],\"<undefined>\",[0,0],\"<undefined>\",[0,0]],true,true],0]""####,
     );
-    check(
+    assert_true(
         r####"(function(){function row(m){if(m===null)return null;var names=m.groups===undefined?[]:Object.keys(m.groups);return [Array.from(m,v=>v===undefined?'<undefined>':v),Array.from(m.indices,v=>v===undefined?'<undefined>':v),m.index,m.input,names,names.map(n=>m.groups[n]===undefined?'<undefined>':m.groups[n]),names.map(n=>m.indices.groups[n]===undefined?'<undefined>':m.indices.groups[n]),names.every((n,i)=>Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[i+1]&&m.indices.groups[n]===m.indices[i+1]),m.groups===undefined||Object.getPrototypeOf(m.groups)===null]}var P="(?<b>(?<w>^\\b)|(?<nw>\\b))(?<whole>(?<c>[\\q{|a|ab}])|(?<e>))(?<a>(?<end>\\b$)|(?<wb>\\b))";var r=new RegExp(P,"dvgm"),a=Array.from("ab\n\naa".matchAll(r));return JSON.stringify([a.map(row),r.lastIndex]);})()==="[[[[\"ab\",\"\",\"\",\"<undefined>\",\"ab\",\"ab\",\"<undefined>\",\"\",\"\",\"<undefined>\"],[[0,2],[0,0],[0,0],\"<undefined>\",[0,2],[0,2],\"<undefined>\",[2,2],[2,2],\"<undefined>\"],0,\"ab\\n\\naa\",[\"b\",\"w\",\"nw\",\"whole\",\"c\",\"e\",\"a\",\"end\",\"wb\"],[\"\",\"\",\"<undefined>\",\"ab\",\"ab\",\"<undefined>\",\"\",\"\",\"<undefined>\"],[[0,0],[0,0],\"<undefined>\",[0,2],[0,2],\"<undefined>\",[2,2],[2,2],\"<undefined>\"],true,true],[[\"\",\"\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"\",\"\",\"<undefined>\"],[[2,2],[2,2],\"<undefined>\",[2,2],[2,2],[2,2],\"<undefined>\",[2,2],[2,2],\"<undefined>\"],2,\"ab\\n\\naa\",[\"b\",\"w\",\"nw\",\"whole\",\"c\",\"e\",\"a\",\"end\",\"wb\"],[\"\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"\",\"\",\"<undefined>\"],[[2,2],\"<undefined>\",[2,2],[2,2],[2,2],\"<undefined>\",[2,2],[2,2],\"<undefined>\"],true,true],[[\"\",\"\",\"\",\"<undefined>\",\"\",\"\",\"<undefined>\",\"\",\"<undefined>\",\"\"],[[4,4],[4,4],[4,4],\"<undefined>\",[4,4],[4,4],\"<undefined>\",[4,4],\"<undefined>\",[4,4]],4,\"ab\\n\\naa\",[\"b\",\"w\",\"nw\",\"whole\",\"c\",\"e\",\"a\",\"end\",\"wb\"],[\"\",\"\",\"<undefined>\",\"\",\"\",\"<undefined>\",\"\",\"<undefined>\",\"\"],[[4,4],[4,4],\"<undefined>\",[4,4],[4,4],\"<undefined>\",[4,4],\"<undefined>\",[4,4]],true,true],[[\"\",\"\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"\",\"\",\"<undefined>\"],[[6,6],[6,6],\"<undefined>\",[6,6],[6,6],[6,6],\"<undefined>\",[6,6],[6,6],\"<undefined>\"],6,\"ab\\n\\naa\",[\"b\",\"w\",\"nw\",\"whole\",\"c\",\"e\",\"a\",\"end\",\"wb\"],[\"\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"\",\"\",\"<undefined>\"],[[6,6],\"<undefined>\",[6,6],[6,6],[6,6],\"<undefined>\",[6,6],[6,6],\"<undefined>\"],true,true]],0]""####,
     );
-    check(
+    assert_true(
         r####"(function(){function row(m){if(m===null)return null;var names=m.groups===undefined?[]:Object.keys(m.groups);return [Array.from(m,v=>v===undefined?'<undefined>':v),Array.from(m.indices,v=>v===undefined?'<undefined>':v),m.index,m.input,names,names.map(n=>m.groups[n]===undefined?'<undefined>':m.groups[n]),names.map(n=>m.indices.groups[n]===undefined?'<undefined>':m.indices.groups[n]),names.every((n,i)=>Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[i+1]&&m.indices.groups[n]===m.indices[i+1]),m.groups===undefined||Object.getPrototypeOf(m.groups)===null]}var P="(?<\\u{1D49C}>(?<w>^\\b)|(?<nw>\\b))(?<whole>(?<c>[\\q{|a|ab}])|(?<e>))(?<a>(?<end>\\b$)|(?<wb>\\b))";var r=new RegExp(P,"dvg"),s=new RegExp(r);r.lastIndex=3;var a=s.exec("ab!");return JSON.stringify([row(a),s.source===r.source,s.flags===r.flags,s.lastIndex,r.lastIndex]);})()==="[[[\"ab\",\"\",\"\",\"<undefined>\",\"ab\",\"ab\",\"<undefined>\",\"\",\"<undefined>\",\"\"],[[0,2],[0,0],[0,0],\"<undefined>\",[0,2],[0,2],\"<undefined>\",[2,2],\"<undefined>\",[2,2]],0,\"ab!\",[\"\ud835\udc9c\",\"w\",\"nw\",\"whole\",\"c\",\"e\",\"a\",\"end\",\"wb\"],[\"\",\"\",\"<undefined>\",\"ab\",\"ab\",\"<undefined>\",\"\",\"<undefined>\",\"\"],[[0,0],[0,0],\"<undefined>\",[0,2],[0,2],\"<undefined>\",[2,2],\"<undefined>\",[2,2]],true,true],true,true,2,3]""####,
     );
 
@@ -177,14 +171,11 @@ fn conjunctive_predicate_choice_string_class_alternatives_keep_branch_ownership_
     ] {
         let pattern = JsString::from(pattern);
         let mut realm = Realm::default();
-        assert!(
-            crate::common::regexp_oracle::check(
-                &mut realm,
-                &format!(
-                    "var marker=0;try{{new RegExp({pattern:?},'v').test('aba')}}catch{{marker=1}}finally{{marker=2}};marker"
-                )
+        crate::common::regexp_oracle::assert_matches_reference(
+            &mut realm,
+            &format!(
+                "var marker=0;try{{new RegExp({pattern:?},'v').test('aba')}}catch{{marker=1}}finally{{marker=2}};marker"
             ),
-            "{pattern:?}"
         );
     }
 }

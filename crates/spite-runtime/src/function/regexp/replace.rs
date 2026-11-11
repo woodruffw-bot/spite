@@ -1,7 +1,8 @@
 //! Generic RegExp replacement via custom exec (22.2.6.11).
 
 use super::advance_string_index;
-use crate::{Error, ObjectHandle, Realm, Value, function::string::Substitution};
+use crate::function::string::Substitution;
+use crate::{Error, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span};
 
 enum Replacement {

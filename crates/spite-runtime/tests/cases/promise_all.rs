@@ -3,13 +3,7 @@
 use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 fn drain(realm: &mut Realm) {
     loop {
@@ -46,7 +40,7 @@ fn results_follow_input_order_and_wait_for_all_values_including_empty_input() {
 
 #[test]
 fn generic_resolve_elements_are_guarded_and_delay_resolution_until_iteration_finishes() {
-    check(
+    assert_true(
         r#"
         let log='',callbacks=[],result={},sentinel={},resolved=0,output;
         function C(executor) {
@@ -84,13 +78,13 @@ fn generic_resolve_elements_are_guarded_and_delay_resolution_until_iteration_fin
 
 #[test]
 fn close_and_rejection_rules_distinguish_body_step_and_exhausted_resolve_failures() {
-    check(
+    assert_true(
         "let original={},other={},closed=0,caught;function C(executor){executor(()=>{},e=>{caught=e})}C.resolve=()=>{throw original};Promise.all.call(C,{[Symbol.iterator](){return{next(){return{value:1,done:false}},return(){closed++;throw other}}}});caught===original&&closed===1",
     );
-    check(
+    assert_true(
         "let original={},closed=0,caught;function C(executor){executor(()=>{},e=>{caught=e})}C.resolve=v=>v;Promise.all.call(C,{[Symbol.iterator](){return{next(){return{done:false,get value(){throw original}}},return(){closed++;return{}}}}});caught===original&&closed===0",
     );
-    check(
+    assert_true(
         "let original={},closed=0,caught;function C(executor){executor(()=>{throw original},e=>{caught=e})}C.resolve=v=>v;Promise.all.call(C,{[Symbol.iterator](){return{next(){return{done:true}},return(){closed++;return{}}}}});caught===original&&closed===0",
     );
 }
@@ -148,7 +142,7 @@ fn reentrant_callbacks_do_not_complete_aggregates_after_iteration_aborts() {
                 .replace("METHOD", method)
                 .replace("STAGE", stage)
                 .replace("CLOSE", close_failure);
-                check(&source);
+                assert_true(&source);
             }
         }
     }

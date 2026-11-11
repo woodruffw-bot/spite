@@ -1,4 +1,4 @@
-use super::*;
+use super::{Error, JsString, Realm, Span, Value};
 
 #[test]
 fn scanner_and_integer_failures_abort_and_restore_call_state() {

@@ -4,13 +4,7 @@ use spite_core::JsString;
 use spite_runtime::{Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn character_reference_result_snapshot() {
@@ -54,32 +48,32 @@ fn character_reference_result_snapshot() {
 
 #[test]
 fn classes_dot_case_and_surrogates_retain_input_captures_and_indices_aliases() {
-    check(
+    assert_true(
         r"let a=/(?<x>[a-z])\k<x>/di.exec('qAa');a[0]==='Aa'&&a.groups.x==='A'&&a.indices.groups.x===a.indices[1]&&a.indices[1][0]===1&&a.indices[1][1]===2",
     );
-    check(
+    assert_true(
         r"let a=/(?<x>.)\k<x>/ds.exec('\n\n');a[0]==='\n\n'&&a.groups.x==='\n'&&a.indices.groups.x===a.indices[1]&&a.indices[0][1]===2",
     );
-    check(
+    assert_true(
         r"let a=/(.)\1/d.exec('\uD800\uD800');a[0].length===2&&a[1].length===1&&a[1].charCodeAt(0)===0xD800&&a.indices[1][1]===1",
     );
-    check(
+    assert_true(
         r"/(\w)\1/i.exec('ſſ')===null&&/(\W)\1/i.exec('ſſ')[0]==='ſſ'&&/([^µ])\1/i.exec('µΜ')===null",
     );
-    check(
+    assert_true(
         r"let a=/([ab])(\1.)\2/d.exec('qaacac');a[0]==='aacac'&&a[1]==='a'&&a[2]==='ac'&&a.indices[2][0]===2&&a.indices[2][1]===4",
     );
 }
 
 #[test]
 fn generic_consumers_and_stateful_exec_use_character_reference_matches() {
-    check(
+    assert_true(
         r"let r=/(?<x>\w)\k<x>/dgi,a=[...'aa bB cc'.matchAll(r)];a.length===3&&a[1].groups.x==='b'&&a[1].indices.groups.x===a[1].indices[1]&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"'qaa'.replace(/(?<x>\w)\k<x>/,'<$<x>>')==='q<a>'&&'qaa'.split(/(\w)\1/).join(',')==='q,a,'&&'qaa'.search(/(\w)\1/)===1",
     );
-    check(
+    assert_true(
         r"let r=/(?<x>[ab])\k<x>/dy;r.lastIndex=1;let a=r.exec('qbb');a.index===1&&r.lastIndex===3&&r.exec('qbb')===null&&r.lastIndex===0",
     );
 }
@@ -92,10 +86,7 @@ fn remaining_reference_compositions_keep_explicit_unsupported_outcomes() {
         r"/(?:(?:(?:^([ab])(?:\1)+){2})|){2,3}/.test('aa')",
         r"/(?<x>[ab])\k<x>/u.test('aa')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
-    check(r"/([ab])\1/.exec('ab')===null&&/([])\1/.exec('aa')===null");
+    assert_true(r"/([ab])\1/.exec('ab')===null&&/([])\1/.exec('aa')===null");
 }

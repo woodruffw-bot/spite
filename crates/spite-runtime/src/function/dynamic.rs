@@ -2,10 +2,10 @@
 
 use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{DiagnosticKind, JsString, Span};
+use spite_parser::ast::FunctionKind;
 use spite_parser::{
-    ast::FunctionKind, parse_dynamic_async_function_utf16,
-    parse_dynamic_async_generator_function_utf16, parse_dynamic_function_utf16,
-    parse_dynamic_generator_function_utf16,
+    parse_dynamic_async_function_utf16, parse_dynamic_async_generator_function_utf16,
+    parse_dynamic_function_utf16, parse_dynamic_generator_function_utf16,
 };
 
 impl Realm {

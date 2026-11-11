@@ -2,17 +2,11 @@
 
 use spite_runtime::{Error, ExceptionKind, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn constructor_brands_fixed_and_growable_buffers_and_requires_new_before_conversion() {
-    check(
+    assert_true(
         r#"
         let hits=0,threw=false;
         try{SharedArrayBuffer({valueOf(){hits++;return 4}})}catch(e){threw=e instanceof TypeError}
@@ -24,7 +18,7 @@ fn constructor_brands_fixed_and_growable_buffers_and_requires_new_before_convers
     "#,
     );
     for name in ["byteLength", "maxByteLength", "growable"] {
-        check(&format!(
+        assert_true(&format!(
             "let getter=Object.getOwnPropertyDescriptor(SharedArrayBuffer.prototype,'{name}').get;let count=0;for(let value of [undefined,null,1,{{}},new ArrayBuffer(0),SharedArrayBuffer.prototype,new Proxy(new SharedArrayBuffer(0),{{}})]){{try{{getter.call(value)}}catch(e){{if(e instanceof TypeError)count++}}}}count===7"
         ));
     }
@@ -32,7 +26,7 @@ fn constructor_brands_fixed_and_growable_buffers_and_requires_new_before_convers
 
 #[test]
 fn constructor_orders_length_options_range_checks_and_prototype_lookup() {
-    check(
+    assert_true(
         r#"
         let log='',proto={};function F(){}let target=F.bind(null);
         Object.defineProperty(target,'prototype',{get(){log+='p';return proto}});
@@ -48,7 +42,7 @@ fn constructor_orders_length_options_range_checks_and_prototype_lookup() {
         threw&&log===''
     "#,
     );
-    check(
+    assert_true(
         r#"
         let hits=0;
         Object.defineProperty(Number.prototype,'maxByteLength',{get(){hits++;throw 1}});
@@ -61,7 +55,7 @@ fn constructor_orders_length_options_range_checks_and_prototype_lookup() {
 
 #[test]
 fn growth_rechecks_current_length_after_coercion_and_never_shrinks() {
-    check(
+    assert_true(
         r#"
         let b=new SharedArrayBuffer(4,{maxByteLength:16}),threw=false;
         try{b.grow({valueOf(){b.grow(12);return 8}})}catch(e){threw=e instanceof RangeError}
@@ -82,7 +76,7 @@ fn growth_rechecks_current_length_after_coercion_and_never_shrinks() {
 
 #[test]
 fn lengths_follow_the_safe_index_domain_without_eager_large_allocations() {
-    check(
+    assert_true(
         r#"
         let max=2**53-1,b=new SharedArrayBuffer(0,{maxByteLength:max});
         b.grow(max);
@@ -98,7 +92,7 @@ fn lengths_follow_the_safe_index_domain_without_eager_large_allocations() {
 
 #[test]
 fn subclasses_and_primitive_newtarget_prototypes_use_the_captured_intrinsic_fallback() {
-    check(
+    assert_true(
         r#"
         class Derived extends SharedArrayBuffer{}
         let a=new Derived(2,{maxByteLength:4});a.grow(4);
@@ -110,7 +104,7 @@ fn subclasses_and_primitive_newtarget_prototypes_use_the_captured_intrinsic_fall
         Object.getPrototypeOf(b)===proto&&b.byteLength===3
     "#,
     );
-    check(
+    assert_true(
         "let b=new SharedArrayBuffer(0,{maxByteLength:8});Object.freeze(b);b.grow(8);Object.isFrozen(b)&&b.byteLength===8",
     );
 }
@@ -139,7 +133,7 @@ fn shared_wait_records_ignore_public_buffer_hooks_and_keep_brand_errors() {
 
 #[test]
 fn shared_views_support_all_element_kinds_and_share_data_view_bytes() {
-    check(
+    assert_true(
         r#"
         for(let C of [Int8Array,Uint8Array,Uint8ClampedArray,Int16Array,Uint16Array,Int32Array,Uint32Array,Float16Array,Float32Array,Float64Array,BigInt64Array,BigUint64Array]){
             let b=new SharedArrayBuffer(32),a=new C(b,0,2),zero=typeof a[0]==='bigint'?0n:0,one=typeof zero==='bigint'?1n:1;
@@ -158,7 +152,7 @@ fn shared_views_support_all_element_kinds_and_share_data_view_bytes() {
 
 #[test]
 fn shared_growth_preserves_bytes_and_updates_auto_views_with_zero_filled_tails() {
-    check(
+    assert_true(
         r#"
         let b=new SharedArrayBuffer(4,{maxByteLength:16}),all=new Uint8Array(b);
         all.set([3,4,5,6]);
@@ -176,7 +170,7 @@ fn shared_growth_preserves_bytes_and_updates_auto_views_with_zero_filled_tails()
 
 #[test]
 fn shared_data_view_codecs_preserve_endianness_and_cross_sparse_page_boundaries() {
-    check(
+    assert_true(
         r#"
         let b=new SharedArrayBuffer(8192),d=new DataView(b);
         for(let [kind,value] of [['Int8',-7],['Uint8',255],['Int16',-1234],['Uint16',54321],['Int32',-1234567],['Uint32',3456789],['Float16',1.5],['Float32',1.5],['Float64',1.5],['BigInt64',-7n],['BigUint64',255n]]){
@@ -195,7 +189,7 @@ fn shared_data_view_codecs_preserve_endianness_and_cross_sparse_page_boundaries(
 
 #[test]
 fn shared_typed_arrays_support_iterators_callbacks_raw_moves_and_overlapping_set() {
-    check(
+    assert_true(
         r#"
         let b=new SharedArrayBuffer(16),a=new Uint8Array(b,0,4);a.set([4,1,3,2]);
         if([...a].join(',')!=='4,1,3,2')throw 1;
@@ -212,7 +206,7 @@ fn shared_typed_arrays_support_iterators_callbacks_raw_moves_and_overlapping_set
 
 #[test]
 fn shared_raw_clones_and_species_copies_preserve_nan_payloads() {
-    check(
+    assert_true(
         r#"
         let b=new SharedArrayBuffer(8),d=new DataView(b),bits=0x7ff8000000000001n;
         d.setBigUint64(0,bits,true);
@@ -228,7 +222,7 @@ fn shared_raw_clones_and_species_copies_preserve_nan_payloads() {
 
 #[test]
 fn shared_indexed_conversion_observes_growth_and_uint8_text_codecs_use_live_layouts() {
-    check(
+    assert_true(
         r#"
         let b=new SharedArrayBuffer(0,{maxByteLength:8}),a=new Uint8Array(b);
         a[0]={valueOf(){b.grow(4);return 7}};
@@ -244,7 +238,7 @@ fn shared_indexed_conversion_observes_growth_and_uint8_text_codecs_use_live_layo
 
 #[test]
 fn shared_views_ignore_arraylike_hooks_and_preserve_integer_indexed_integrity_rules() {
-    check(
+    assert_true(
         r#"
         let b=new SharedArrayBuffer(8,{maxByteLength:16}),hits=0;
         Object.defineProperty(b,'length',{get(){hits++;throw 1}});
@@ -263,7 +257,7 @@ fn shared_views_ignore_arraylike_hooks_and_preserve_integer_indexed_integrity_ru
 
 #[test]
 fn shared_and_ordinary_copy_directions_preserve_independent_values_and_conversion() {
-    check(
+    assert_true(
         r#"
         let source=new Uint8Array(new SharedArrayBuffer(8));source.set([1,2,3,4,5,6,7,8]);
         let ordinary=new Uint8Array(source),target=new Uint8Array(new SharedArrayBuffer(8));
@@ -278,7 +272,7 @@ fn shared_and_ordinary_copy_directions_preserve_independent_values_and_conversio
 
 #[test]
 fn slice_clamps_indices_copies_independently_and_returns_fixed_buffers() {
-    check(
+    assert_true(
         r#"
         let b=new SharedArrayBuffer(8,{maxByteLength:16}),a=new Uint8Array(b);a.set([1,2,3,4,5,6,7,8]);
         for(let [start,end,expected] of [[undefined,undefined,'1,2,3,4,5,6,7,8'],[-3,-1,'6,7'],[-Infinity,2,'1,2'],[2,Infinity,'3,4,5,6,7,8'],[6,2,''],[Infinity,undefined,''],[NaN,2.9,'1,2']]){
@@ -293,7 +287,7 @@ fn slice_clamps_indices_copies_independently_and_returns_fixed_buffers() {
 
 #[test]
 fn slice_snapshots_length_before_hooks_and_reads_bytes_after_species_effects() {
-    check(
+    assert_true(
         r#"
         let b=new SharedArrayBuffer(4,{maxByteLength:16}),a=new Uint8Array(b);a.set([1,2,3,4]);
         let order=[],target=new SharedArrayBuffer(8,{maxByteLength:16});new Uint8Array(target).fill(99);
@@ -307,7 +301,7 @@ fn slice_snapshots_length_before_hooks_and_reads_bytes_after_species_effects() {
 
 #[test]
 fn slice_brands_receivers_before_conversion_and_rejects_invalid_species_results() {
-    check(
+    assert_true(
         r#"
         let hits=0,argument={valueOf(){hits++;throw 1}},slice=SharedArrayBuffer.prototype.slice;
         for(let receiver of [undefined,null,0,{},new ArrayBuffer(4),new Proxy(new SharedArrayBuffer(4),{})]){
@@ -333,7 +327,7 @@ fn slice_brands_receivers_before_conversion_and_rejects_invalid_species_results(
 
 #[test]
 fn slice_preserves_abrupt_values_and_defaults_to_captured_intrinsic_constructor() {
-    check(
+    assert_true(
         r#"
         let b=new SharedArrayBuffer(4),original=SharedArrayBuffer,marker={},order='';
         Object.defineProperty(b,'constructor',{configurable:true,get(){order+='c';throw marker}});
@@ -353,7 +347,7 @@ fn slice_preserves_abrupt_values_and_defaults_to_captured_intrinsic_constructor(
 
 #[test]
 fn slice_keeps_raw_payloads_sparse_pages_and_safe_integer_offsets() {
-    check(
+    assert_true(
         r#"
         let b=new SharedArrayBuffer(8192),d=new DataView(b),bits=0x7ff8000000000001n;
         d.setBigUint64(4093,bits,true);

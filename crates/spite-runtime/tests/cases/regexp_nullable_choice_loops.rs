@@ -3,13 +3,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn nullable_choice_loops_result_snapshot() {
@@ -56,45 +50,49 @@ fn nullable_choice_loops_result_snapshot() {
 
 #[test]
 fn empty_attempts_restore_names_indices_nested_body_and_atomic_assertion_effects() {
-    check(
+    assert_true(
         r"let a=/(?<x>a|)*/d.exec('aa');a[0]==='aa'&&a.groups.x==='a'&&a.indices.groups.x===a.indices[1]&&a.indices[1][0]===1",
     );
-    check(
+    assert_true(
         r"let a=/(?<x>a|)*/d.exec('');a[0]===''&&a.groups.x===undefined&&a.indices.groups.x===undefined",
     );
-    check(r"let a=/(?<x>a|)+/d.exec('');a.groups.x===''&&a.indices[1][0]===0&&a.indices[1][1]===0");
-    check(
+    assert_true(
+        r"let a=/(?<x>a|)+/d.exec('');a.groups.x===''&&a.indices[1][0]===0&&a.indices[1][1]===0",
+    );
+    assert_true(
         r"let a=/((a?)|b)*c/d.exec('bbc');a[1]==='b'&&a[2]===undefined&&a.indices[1][0]===1&&a.indices[2]===undefined",
     );
-    check(r"let a=/(?=((a|)*))\1b/d.exec('aab');a[1]==='aa'&&a[2]==='a'&&a.indices[2][0]===1");
-    check(
+    assert_true(
+        r"let a=/(?=((a|)*))\1b/d.exec('aab');a[1]==='aa'&&a[2]==='a'&&a.indices[2][0]===1",
+    );
+    assert_true(
         r"let a=/(?!((a|)*c))(a|)*b/d.exec('aab');a[1]===undefined&&a[2]===undefined&&a[3]==='a'&&a.indices[3][0]===1",
     );
-    check(
+    assert_true(
         r"let a=/([\uD800]|)*/d.exec('\uD800\uD800\uDC00');a[0].length===2&&a.indices[1][0]===1&&a.indices[1][1]===2",
     );
 }
 
 #[test]
 fn consumers_global_sticky_empty_advancement_and_callbacks_keep_restored_slots() {
-    check(
+    assert_true(
         r"let r=/(a|)*b/dy;r.lastIndex=1;let a=r.exec('xaab');a.index===1&&a[1]==='a'&&a.indices[1][0]===2&&r.lastIndex===4&&r.exec('xaab')===null&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/(a|)*/dg,a=[...'aa b'.matchAll(r)];a.length===4&&a[0][0]==='aa'&&a[1].index===2&&a[1][1]===undefined&&a[3].index===4&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let rows=[],s='aa b'.replace(/(a|)*/g,(m,x,i)=>{rows.push([m,x,i]);return '#'});s==='## #b#'&&JSON.stringify(rows)===JSON.stringify([['aa','a',0],['',undefined,2],['',undefined,3],['',undefined,4]])",
     );
-    check(r"let a='aab'.split(/(a|)*b/);a.length===3&&a[0]===''&&a[1]==='a'&&a[2]===''");
-    check(
+    assert_true(r"let a='aab'.split(/(a|)*b/);a.length===3&&a[0]===''&&a[1]==='a'&&a[2]===''");
+    assert_true(
         r"let r=/(a|)*/g;r.lastIndex=1;let i='aa'.search(r);i===0&&r.lastIndex===1&&'aa'.match(r).length===2",
     );
 }
 
 #[test]
 fn nullable_composition_preserves_ordered_coercions_and_normal_eval_completion() {
-    check(
+    assert_true(
         "let it='x'.matchAll('(?:(?:(?:(?:a(a|bc)){2}){2})|)*'),flag=0,a;try{a=it.next()}catch{flag=1}finally{flag=2}a.value[0]===''&&!a.done&&flag===2&&it.next().value.index===1&&it.next().done",
     );
     for pattern in [
@@ -104,17 +102,17 @@ fn nullable_composition_preserves_ordered_coercions_and_normal_eval_completion()
         "(?:(?:((?:(?:[a]a+b+){2}){2}){2})|)*",
         "(?:(?:((?:(?:ab+c+){2}){2}){2})|)*",
     ] {
-        check(&format!(
+        assert_true(&format!(
             "let r=new RegExp('{pattern}'),t='';r.lastIndex={{valueOf(){{t+='i';return 0}}}};let a=r.exec({{toString(){{t+='s';return 'a'}}}});t==='si'&&a[0]===''&&typeof r.lastIndex==='object'"
         ));
     }
-    check(
+    assert_true(
         "let marker=0,result;try{result=eval('marker=1; /(?:(?:((?:(?:.a*b*){2}){2}){2})|)*/g.test(0);')}catch{marker=2}finally{marker=3}result===true&&marker===3",
     );
-    check(
+    assert_true(
         "let marker=0,result;try{result=eval('marker=1; /(?:(?:((?:(?:[a-z]a+b+){2}){2}){2})|)*/.test(0);')}catch{marker=2}finally{marker=3}result===true&&marker===3",
     );
-    check(
+    assert_true(
         r"let marker=0,result;try{result=eval('marker=1; /(?:(?:(?:(?<a>a)|(?<a>b)(?:\\k<a>)+){2})|)*/.test(0);')}catch{marker=2}finally{marker=3}result===true&&marker===3",
     );
 }
@@ -150,9 +148,6 @@ fn larger_required_nullable_counts_backward_bodies_and_unicode_remain_pending() 
         "new RegExp('(a|)*b','u').exec('aa')",
         "new RegExp('(a|)*b','v').exec('aa')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }

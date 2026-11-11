@@ -1,13 +1,11 @@
 //! Resource stacks (sec-disposablestack-objects, sec-disposeresources).
 
 use super::Builtin;
-use crate::{
-    Error, ExceptionKind, ObjectHandle, Realm, Value,
-    object::{
-        DataDescriptor, DescriptorKind, DisposableResource, DisposableStackKind as StackKind,
-        DisposalHint, PropertyDescriptor,
-    },
+use crate::object::{
+    DataDescriptor, DescriptorKind, DisposableResource, DisposableStackKind as StackKind,
+    DisposalHint, PropertyDescriptor,
 };
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span, WellKnownSymbol};
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]

@@ -184,7 +184,7 @@ fn host_abort_in_a_post_await_default_skips_iterator_close_put_handlers_and_disp
                 PromiseJobOutcome::Reported(error) => {
                     assert!(matches!(error, Error::Limit { .. }) == limited, "{error}");
                     if !limited {
-                        assert!(matches!(error, Error::Unsupported { .. }), "{error}")
+                        assert!(matches!(error, Error::Unsupported { .. }), "{error}");
                     }
                     reported = true;
                 }

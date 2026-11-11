@@ -1,6 +1,7 @@
 //! CopyDataProperties for object spread and rest bindings (7.3.25).
 
-use crate::{Error, ObjectHandle, Realm, Value, object::DataDescriptor};
+use crate::object::DataDescriptor;
+use crate::{Error, ObjectHandle, Realm, Value};
 use spite_core::{PropertyKey, Span};
 use std::collections::HashSet;
 

@@ -1,7 +1,8 @@
 //! JSON object, ParseJSON, and iterative reviver traversal (25.5.1).
 
 use super::Builtin;
-use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, object::DataDescriptor};
+use crate::object::DataDescriptor;
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span, WellKnownSymbol};
 use spite_parser::json::{JsonDocument, JsonKind, parse_json_with_work};
 

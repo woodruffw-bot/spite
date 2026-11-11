@@ -1,6 +1,10 @@
 //! Expression heads and continuations use separate native parser frames.
 
-use super::*;
+use super::{
+    BinaryOp, ChainStep, ChainStepKind, Diagnostic, Expr, ExprKind, Kind, Parser, Span, UpdateOp,
+    YieldContext, assignment_pattern, assignment_target, binary, compound_assignment, early,
+    forbidden_nullish_mix, member_base,
+};
 
 impl Parser {
     #[inline(never)]

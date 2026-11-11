@@ -4,13 +4,7 @@ use crate::common::REALM_ENTRIES;
 use spite_core::JsString;
 use spite_runtime::{Error, ExceptionKind, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn published_intrinsic_inventory_has_correct_roles_and_realm_local_identities() {
@@ -199,7 +193,7 @@ fn deferred_intrinsic_metadata_graph_matches_edition_17() {
 
 #[test]
 fn species_getters_are_distinct_generic_identity_functions_without_construct() {
-    check(
+    assert_true(
         r#"
         let a=Object.getOwnPropertyDescriptor(Promise,Symbol.species).get;
         let b=Object.getOwnPropertyDescriptor(SharedArrayBuffer,Symbol.species).get;
@@ -226,7 +220,7 @@ fn species_getters_are_distinct_generic_identity_functions_without_construct() {
 
 #[test]
 fn deferred_constructors_require_new_with_ordinary_type_error_completion() {
-    check(
+    assert_true(
         r#"
         let hits=0,catches=0,finalizers=0;
         for(let C of [Promise,Proxy,SharedArrayBuffer,WeakRef,FinalizationRegistry]){
@@ -308,7 +302,7 @@ fn shared_algorithms_execute_and_operand_host_failures_skip_language_handlers() 
 
 #[test]
 fn additional_metadata_functions_reject_construction_before_deferred_bodies() {
-    check(
+    assert_true(
         r#"
         let functions=[Proxy.revocable,WeakRef.prototype.deref,FinalizationRegistry.prototype.register,FinalizationRegistry.prototype.unregister];
         for(let name of ['all','allSettled','any','race','reject','resolve','try','withResolvers'])functions.push(Promise[name]);
@@ -338,7 +332,7 @@ fn global_inventory_has_exact_standard_names_and_data_descriptors() {
         panic!("global names must be a string: {value:?}")
     };
     insta::assert_snapshot!(names.to_utf8().unwrap(), @"AggregateError,Array,ArrayBuffer,AsyncDisposableStack,Atomics,BigInt,BigInt64Array,BigUint64Array,Boolean,DataView,Date,DisposableStack,Error,EvalError,FinalizationRegistry,Float16Array,Float32Array,Float64Array,Function,Infinity,Int16Array,Int32Array,Int8Array,Iterator,JSON,Map,Math,NaN,Number,Object,Promise,Proxy,RangeError,ReferenceError,Reflect,RegExp,Set,SharedArrayBuffer,String,SuppressedError,Symbol,SyntaxError,TypeError,URIError,Uint16Array,Uint32Array,Uint8Array,Uint8ClampedArray,WeakMap,WeakRef,WeakSet,decodeURI,decodeURIComponent,encodeURI,encodeURIComponent,eval,globalThis,isFinite,isNaN,parseFloat,parseInt,undefined");
-    check(
+    assert_true(
         r#"
         let names=Object.getOwnPropertyNames(this),keys=Reflect.ownKeys(this),descriptors=Object.getOwnPropertyDescriptors(this);
         if(names.length!==62 || keys.length!==62 || Object.getOwnPropertySymbols(this).length!==0 || Object.keys(this).length!==0 || Object.getPrototypeOf(this)!==Object.prototype)throw 1;
@@ -353,7 +347,7 @@ fn global_inventory_has_exact_standard_names_and_data_descriptors() {
 
 #[test]
 fn global_own_keys_order_indices_strings_symbols_and_lone_surrogates() {
-    check(
+    assert_true(
         r#"
         let g=this,base=Object.getOwnPropertyNames(g),first=Symbol('same'),second=Symbol('same');
         g[first]=1;g['10']=10;g['2']=2;g['4294967295']=1;g['01']=1;g['-0']=1;g['0']=0;g['4294967294']=1;g['\uD800']=1;g[second]=2;g[first]=3;
@@ -388,7 +382,7 @@ fn declarations_remain_separate_and_keep_ordinary_global_descriptors() {
 
 #[test]
 fn materialized_globals_can_be_deleted_recreated_and_redeclared_without_reservations() {
-    check(
+    assert_true(
         r#"
         let g=this,O=Object,run=eval,initial=O.getOwnPropertyNames(g);
         for(let name of ['Promise','Proxy','SharedArrayBuffer','WeakRef','FinalizationRegistry','Atomics']){
@@ -410,7 +404,7 @@ fn materialized_globals_can_be_deleted_recreated_and_redeclared_without_reservat
         d.value===undefined && d.writable && d.enumerable && d.configurable && f.value()===7 && f.writable && f.enumerable && f.configurable && O.getOwnPropertyNames(g).length===initial.length
     "#,
     );
-    check(
+    assert_true(
         "delete this.Proxy;let Proxy=7;Proxy===7 && !Object.hasOwn(this,'Proxy') && !('Proxy' in this)",
     );
 }
@@ -418,7 +412,7 @@ fn materialized_globals_can_be_deleted_recreated_and_redeclared_without_reservat
 #[test]
 fn unreserved_absent_names_are_ordinary_global_properties() {
     for name in ["AsyncFunction", "$262", "unconfiguredHost"] {
-        check(&format!(
+        assert_true(&format!(
             "let g=this;typeof {name}==='undefined' && !('{name}' in g) && !Object.hasOwn(g,'{name}') && Object.getOwnPropertyDescriptor(g,'{name}')===undefined && delete g.{name} && (g.{name}=7)===7 && {name}===7 && delete g.{name} && typeof {name}==='undefined'"
         ));
         let result = Realm::default().eval(name);
@@ -475,7 +469,7 @@ fn configured_host_reservations_remain_explicit_and_do_not_install_properties() 
 
 #[test]
 fn the_internal_global_identity_survives_global_this_replacement_and_deletion() {
-    check(
+    assert_true(
         r#"
         let g=this,base=Reflect.ownKeys(g),index=base.indexOf('globalThis');
         globalThis={user:7};
@@ -490,7 +484,7 @@ fn the_internal_global_identity_survives_global_this_replacement_and_deletion() 
 
 #[test]
 fn inherited_globals_and_non_enumerable_shadows_use_ordinary_lookup() {
-    check(
+    assert_true(
         r#"
         let g=this,proto={Proxy:17,ownBlocked:18},seen=[];
         delete g.Proxy;
@@ -505,7 +499,7 @@ fn inherited_globals_and_non_enumerable_shadows_use_ordinary_lookup() {
 
 #[test]
 fn global_for_in_is_getter_inert_and_rechecks_live_descriptors_and_prototypes() {
-    check(
+    assert_true(
         r#"
         let g=this,hits=0,seen=[],first=Symbol('ignored'),proto={doomed:1,hidden:2,later:3,protoTail:4};
         Object.setPrototypeOf(g,proto);
@@ -531,7 +525,7 @@ fn global_for_in_is_getter_inert_and_rechecks_live_descriptors_and_prototypes() 
 fn global_descriptor_enumerability_checks_run_without_harness_shortcuts() {
     // The ordinary for-in probe used by upstream propertyHelper must finish
     // even when all built-in global properties are non-enumerable.
-    check(
+    assert_true(
         r#"
         let names=['WeakMap','WeakSet','ArrayBuffer','DataView','Promise','Proxy','SharedArrayBuffer','WeakRef','FinalizationRegistry','Atomics'],seen=[];
         for(let key in this)seen.push(key);
@@ -546,10 +540,10 @@ fn global_descriptor_enumerability_checks_run_without_harness_shortcuts() {
 
 #[test]
 fn array_constructor_has_complete_reflection_and_deletable_from_async() {
-    check(
+    assert_true(
         "let keys=Reflect.ownKeys(Array),names=Object.getOwnPropertyNames(Array),symbols=Object.getOwnPropertySymbols(Array),d=Object.getOwnPropertyDescriptor(Array,'fromAsync');keys.length===8&&names.length===7&&symbols.length===1&&symbols[0]===Symbol.species&&keys.includes('fromAsync')&&d.value===Array.fromAsync&&d.writable&&!d.enumerable&&d.configurable",
     );
-    check(
+    assert_true(
         "delete Array.fromAsync;Array.fromAsync===undefined&&!Object.hasOwn(Array,'fromAsync')&&Object.getOwnPropertyDescriptor(Array,'fromAsync')===undefined",
     );
 }

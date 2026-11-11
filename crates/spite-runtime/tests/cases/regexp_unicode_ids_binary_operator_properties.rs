@@ -3,13 +3,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn unicode_ids_binary_operator_property_results_snapshot() {
@@ -54,16 +48,16 @@ fn unicode_ids_binary_operator_property_results_snapshot() {
 #[test]
 fn unicode_ids_binary_operator_properties_aliases_complements_and_unions() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let a=/\p{{IDS_Binary_Operator}}/{mode},b=/\p{{IDSB}}/i{mode},n=/\P{{IDSB}}/i{mode};a.test('\u2FF0')&&a.test('\u2FF4')&&b.test('\u2FF0')&&!a.test('\u200D')&&!b.test('\u005f')&&!b.test('ſ')&&!b.test('K')&&!n.test('\u2FF0')&&n.test('😀')&&n.test('\uD800')&&n.test('\uFEFF')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let p=/\p{{IDS_Binary_Operator}}/{mode},s=/\s/{mode};p.test('\u2FF0')&&p.test('\u2FF4')&&!s.test('\u2FF0')&&!s.test('\u2FF4')&&!p.test('\uFEFF')&&s.test('\uFEFF')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=/[\p{{IDSB}}K]/i{mode},b=/[^\P{{IDS_Binary_Operator}}K]/i{mode},c=/[\p{{IDSB}}\P{{IDS_Binary_Operator}}]/{mode};a.test('K')&&a.test('k')&&a.test('\u2FF0')&&!a.test('ſ')&&b.test('\u2FF4')&&!b.test('K')&&c.test('😀')&&c.test('A')&&c.test('\uD800')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=/^\p{{IDSB}}$/{mode},b=/^\P{{IDSB}}$/{mode};a.test('\u2FF0')&&!a.test('\u2FF4\n')&&!a.test('')&&!a.test('\n')&&b.test('😀')&&!b.test('AA')"
         ));
     }
@@ -72,16 +66,16 @@ fn unicode_ids_binary_operator_properties_aliases_complements_and_unions() {
 #[test]
 fn unicode_ids_binary_operator_properties_captures_context_and_pair_starts() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^(?<x>([\p{{IDSB}}K]))$/dim{mode}g,m=r.exec('x\r\nK\u2028');m.index===3&&m[1]==='K'&&m[2]==='K'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===4&&r.lastIndex===4"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/(?<__proto__>\P{{IDSB}})/d{mode}y;r.lastIndex=1;let m=r.exec('😀\u2FF0');m.index===0&&m[1]==='😀'&&m.indices[1][1]===2&&r.lastIndex===2&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\p{{IDSB}}/d{mode}g;r.lastIndex=1;let m=r.exec('😀\u2FF0');m.index===2&&m[0]==='\u2FF0'&&r.lastIndex===3"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\p{{IDSB}}/{mode}y;r.lastIndex=1;r.exec('😀\u2FF0')===null&&r.lastIndex===0"
         ));
     }
@@ -90,16 +84,16 @@ fn unicode_ids_binary_operator_properties_captures_context_and_pair_starts() {
 #[test]
 fn unicode_ids_binary_operator_properties_consumers_original_text() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let a=[...'\u2FF4😀\u2FF0G'.matchAll(/(?<x>\P{{IDSB}})/d{mode}g)];a.length===2&&a[0][1]==='😀'&&a[0].index===1&&a[0].indices[1][1]===3&&a[1][1]==='G'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'\u2FF4\u2FF0😀X'.replace(/(?<x>\p{{IDS_Binary_Operator}})/{mode}g,'<$1:$<x>>')==='<\u2FF4:\u2FF4><\u2FF0:\u2FF0>😀X'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'😀\u2FF4\u2FF0G'.split(/(\p{{IDSB}})/{mode}).join('|')==='😀|\u2FF4||\u2FF0|G'&&'😀\u2FF0'.search(/\p{{IDSB}}/{mode})===2&&'\u2FF4\u2FF0😀'.match(/\p{{IDSB}}/{mode}g).join('')==='\u2FF4\u2FF0'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let t='';let x='\u2FF0\u2FF4😀\u2FF0'.replace(/(\p{{IDSB}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__😀_'&&t==='014'"
         ));
     }
@@ -107,16 +101,16 @@ fn unicode_ids_binary_operator_properties_consumers_original_text() {
 
 #[test]
 fn unicode_ids_binary_operator_properties_clones_coercions_and_strict_writes() {
-    check(
+    assert_true(
         r"let r=/^(?<x>\p{IDS_Binary_Operator})$/dmu,c=new RegExp(r,'divy');c.source==='^(?<x>\\p{IDS_Binary_Operator})$'&&c.unicodeSets&&!c.unicode&&!c.multiline&&c.exec('\u2FF0').groups.x==='\u2FF0'&&c.lastIndex===1",
     );
-    check(
+    assert_true(
         r"let t='',r=/\P{IDSB}/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m[0]==='😀'&&m.index===0&&r.lastIndex===2",
     );
-    check(
+    assert_true(
         r"let r=/\p{IDSB}/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('\u2FF0')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/\p{IDSB}/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀\u2FF0')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
 }
@@ -138,26 +132,23 @@ fn unicode_ids_binary_operator_properties_opted_work_and_remaining_sets() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
-    check(
+    assert_true(
         r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
     );
-    check(r"/[\p{IDSB}&&A]/v.exec('A')===null");
-    check(r"/[\p{IDSB}--A]/v.exec('A')===null");
-    check(
+    assert_true(r"/[\p{IDSB}&&A]/v.exec('A')===null");
+    assert_true(r"/[\p{IDSB}--A]/v.exec('A')===null");
+    assert_true(
         r"let s=String.fromCodePoint(0x2ff0),m=/[\p{IDSB}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
     );
     for source in [r"/\p{IDSB}+b/u.exec('AA')", r"/\p{IDSB}A/v.exec('AA')"] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }
 
 #[test]
 fn unicode_ids_binary_operator_repetitions_retain_last_capture_and_outside_words() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\B(?<x>\p{{IDSB}})+\B/d{mode}g,m=r.exec('😀\u2FF0\u2FF4\u31EF\uFEFF');m.index===2&&m[0]==='\u2FF0\u2FF4\u31EF'&&m.groups.x==='\u31EF'&&m.indices.groups.x[0]===4&&m.indices.groups.x[1]===5&&r.lastIndex===5"
         ));
     }

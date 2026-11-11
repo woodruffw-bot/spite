@@ -1,9 +1,8 @@
 //! Promise construction, resolution, capabilities and protocol dispatch (27.2).
 
-use crate::{
-    Error, ExceptionKind, ObjectHandle, Realm, Value, environment::EnvironmentHandle,
-    object::PromiseReaction,
-};
+use crate::environment::EnvironmentHandle;
+use crate::object::PromiseReaction;
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span, WellKnownSymbol};
 
 mod aggregate;

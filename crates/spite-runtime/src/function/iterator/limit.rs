@@ -1,11 +1,9 @@
 //! Lazy exact-count take/drop closures (27.1.3.3.2/11).
 
 use super::operations::IteratorRecord;
-use crate::{
-    Error, ExceptionKind, ObjectHandle, Realm, Value,
-    iterator_count::Counter,
-    object::{IteratorWrapper, LimitKind},
-};
+use crate::iterator_count::Counter;
+use crate::object::{IteratorWrapper, LimitKind};
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_bigint::Budget;
 use spite_core::Span;
 

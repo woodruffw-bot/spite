@@ -1,10 +1,8 @@
 //! LabelledEvaluation without a lexical environment (14.13).
 
 use super::{AsyncExecutionData, Step, active_statement, child_location};
-use crate::{
-    Completion, CompletionKind, Error, Realm,
-    object::async_execution::{AsyncStatementFrame, StatementChild},
-};
+use crate::object::async_execution::{AsyncStatementFrame, StatementChild};
+use crate::{Completion, CompletionKind, Error, Realm};
 use spite_core::Span;
 use spite_parser::ast::StatementKind;
 

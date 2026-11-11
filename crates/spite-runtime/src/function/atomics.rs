@@ -1,7 +1,9 @@
 //! Atomics on ordinary and shared integer TypedArrays (25.4).
 
-use super::{global_metadata::Member, typed_array_methods::TypedArrayWitness};
-use crate::{Error, ExceptionKind, Realm, Value, binary_data::ElementType};
+use super::global_metadata::Member;
+use super::typed_array_methods::TypedArrayWitness;
+use crate::binary_data::ElementType;
+use crate::{Error, ExceptionKind, Realm, Value};
 use spite_core::Span;
 
 mod wait_queue;

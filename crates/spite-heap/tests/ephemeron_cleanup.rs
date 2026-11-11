@@ -1,7 +1,8 @@
 //! Release conditional ownership only after a successful reachability fixpoint.
 
 use spite_heap::{Error, Handle, Heap, Trace};
-use std::{cell::Cell, rc::Rc};
+use std::cell::Cell;
+use std::rc::Rc;
 
 struct Entry {
     key: Handle,
@@ -114,7 +115,7 @@ fn cleanup_uses_keys_reached_by_late_ephemeron_and_strong_edge_activation() {
     let payload = Rc::downgrade(&late.payload);
     let second = heap
         .insert(Node {
-            strong: vec![late_key.clone()],
+            strong: vec![late_key],
             ..Node::default()
         })
         .unwrap();

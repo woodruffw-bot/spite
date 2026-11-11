@@ -1,6 +1,8 @@
 //! ClassDefinitionEvaluation and immutable internal names (15.7.14–16).
 
-use crate::{Error, Realm, Value, environment::BindingState, object::DataDescriptor};
+use crate::environment::BindingState;
+use crate::object::DataDescriptor;
+use crate::{Error, Realm, Value};
 use spite_core::{JsString, PropertyKey};
 use spite_parser::ast::{Class, ClassElement, Expr, ExprKind, PropertyName};
 use std::collections::BTreeMap;
@@ -387,7 +389,7 @@ impl Realm {
         match element {
             ClassElement::Method { property, .. } => match name {
                 super::class_field::ClassFieldName::Public(key) => {
-                    self.define_method_property(home, key, property, false)?
+                    self.define_method_property(home, key, property, false)?;
                 }
                 super::class_field::ClassFieldName::Private(name) => {
                     let container = if element.is_static() {
@@ -511,7 +513,9 @@ pub(super) fn anonymous_class(expression: &Expr) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{ObjectHandle, function::Callable, object::Error as ObjectError};
+    use crate::ObjectHandle;
+    use crate::function::Callable;
+    use crate::object::Error as ObjectError;
 
     fn object(value: Value) -> ObjectHandle {
         let Value::Object(handle) = value else {

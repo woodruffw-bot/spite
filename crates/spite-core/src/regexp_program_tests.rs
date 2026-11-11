@@ -1,4 +1,4 @@
-use super::*;
+use super::{JsString, RegExpProgram, RegExpProgramMatch, RegExpProgramResult};
 
 fn compile(source: &str, flags: &str) -> RegExpProgram {
     RegExpProgram::compile_validated(&JsString::from(source), &JsString::from(flags))
@@ -182,9 +182,10 @@ fn work_limits_interrupt_search_and_negation_without_poisoning_shared_programs()
         program.find(&input, 0, true, Some(0)).0,
         RegExpProgramResult::WorkLimit
     );
+    let shared = program.clone();
     assert_eq!(
         program.find(&input, 0, true, None).0,
-        program.clone().find(&input, 0, true, None).0
+        shared.find(&input, 0, true, None).0
     );
 }
 

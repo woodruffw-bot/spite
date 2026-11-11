@@ -1,14 +1,8 @@
 //! Flat Unicode classes with simple/common folding (22.2.2.7.3, 22.2.2.9).
+use crate::common::assert_true;
 use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
 
 #[test]
 fn unicode_class_folding_results_snapshot() {
@@ -54,25 +48,25 @@ fn unicode_class_folding_results_snapshot() {
 #[test]
 fn unicode_class_folding_consumers_and_original_text() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"'ſK😀 9'.match(/[\w]/i{mode}g).join('|')==='ſ|K|9'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=[...'ſK😀 9'.matchAll(/[A-Z]/di{mode}g)];a.length===2&&a[0][0]==='ſ'&&a[1][0]==='K'&&a[1].indices[0][1]===2"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'ſK😀 9'.split(/[\w]/i{mode}).join('|')==='||😀 |'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let seen=[];let s='ſK😀 9'.replace(/[\w]/i{mode}g,(m,i)=>{{seen.push(i);return '_'}});s==='__😀 _'&&seen.join(',')==='0,1,5'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/[\W]/di{mode}y;r.lastIndex=3;let m=r.exec('ſK😀 9');m.index===2&&m[0]==='😀'&&m.indices[0][1]===4&&r.lastIndex===4"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/[^\W]/i{mode}y;r.lastIndex=3;r.exec('ſK😀 9')===null&&r.lastIndex===0"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^[A-Z]$/i{mode}m;r.lastIndex=2;'😀\nſ'.search(r)===3&&r.lastIndex===2"
         ));
     }
@@ -80,37 +74,39 @@ fn unicode_class_folding_consumers_and_original_text() {
 
 #[test]
 fn unicode_class_folding_ranges_inversion_and_word_complements() {
-    check(r"/[A-Z]/iu.test('ſK')&&/[^A-Z]/iv.exec('ſK')===null");
-    check(r"/[\W]/iu.exec('ſK')===null&&/[^\w]/iv.exec('ſK')===null");
-    check(r"/[^\W]/iu.test('ſ')&&/[\w]/iv.test('K')");
-    check(r"/[\u1fd3]/iu.test('\u0390')&&/[\u0390]/iv.test('\u1fd3')&&/[\ufb05]/iu.test('\ufb06')");
-    check(
+    assert_true(r"/[A-Z]/iu.test('ſK')&&/[^A-Z]/iv.exec('ſK')===null");
+    assert_true(r"/[\W]/iu.exec('ſK')===null&&/[^\w]/iv.exec('ſK')===null");
+    assert_true(r"/[^\W]/iu.test('ſ')&&/[\w]/iv.test('K')");
+    assert_true(
+        r"/[\u1fd3]/iu.test('\u0390')&&/[\u0390]/iv.test('\u1fd3')&&/[\ufb05]/iu.test('\ufb06')",
+    );
+    assert_true(
         r"/[\u{10400}-\u{10427}]/iu.test('\u{10428}')&&!/[^\u{10400}-\u{10427}]/iv.test('\u{10428}')",
     );
-    check(r"/[\uD800-\uDFFF]/iu.exec('😀')===null&&/[\uD800-\uDFFF]/iv.test('\uD800')");
-    check(r"/[ß]/iu.exec('ss')===null&&/[İ]/iv.exec('i')===null&&/[ı]/iu.exec('I')===null");
-    check(r"/^[A-Z]$/ium.test('\rſ\n')&&/^[A-Z]$/iv.exec('ſ\n')===null");
+    assert_true(r"/[\uD800-\uDFFF]/iu.exec('😀')===null&&/[\uD800-\uDFFF]/iv.test('\uD800')");
+    assert_true(r"/[ß]/iu.exec('ss')===null&&/[İ]/iv.exec('i')===null&&/[ı]/iu.exec('I')===null");
+    assert_true(r"/^[A-Z]$/ium.test('\rſ\n')&&/^[A-Z]$/iv.exec('ſ\n')===null");
 }
 
 #[test]
 fn unicode_class_folding_metadata_clones_coercions_and_strict_writes() {
-    check(
+    assert_true(
         r"let r=/^[A-Z]$/dimv,c=new RegExp(r,'diuy');c.source==='^[A-Z]$'&&c.ignoreCase&&c.unicode&&!c.unicodeSets&&!c.multiline&&c.exec('K')[0]==='K'&&c.lastIndex===1",
     );
-    check(
+    assert_true(
         r"let t='',r=/[A-Z]/iuy;r.lastIndex={valueOf(){t+='i';return 0}};let m=r.exec({toString(){t+='s';return 'ſ'}});t==='si'&&m[0]==='ſ'&&r.lastIndex===1",
     );
-    check(
+    assert_true(
         r"let r=/[A-Z]/iuy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('ſ')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/[A-Z]/ivy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
 }
 
 #[test]
 fn unicode_class_folding_opted_work_and_unproved_syntax() {
-    check(
+    assert_true(
         r"let m=/[\q{ab}]/iv.exec('ab');m.length===1 && m[0]==='ab' && m.index===0 && m.input==='ab' && m.groups===undefined && /[\q{ab}]/iv.exec('AB')[0]==='AB'",
     );
     let mut realm = Realm::new(Limits {
@@ -128,11 +124,11 @@ fn unicode_class_folding_opted_work_and_unproved_syntax() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
-    check(
+    assert_true(
         r#"let m=/[\p{Script_Extensions=Latin}]/iv.exec('a');JSON.stringify(m)==='["a"]'&&m.index===0&&m.input==='a'"#,
     );
-    check(r"/[a&&b]/iv.exec('a')===null");
-    check(
+    assert_true(r"/[a&&b]/iv.exec('a')===null");
+    assert_true(
         r"let m=/[[a]]/iv.exec('a');m!==null&&m.length===1&&m[0]==='a'&&m.index===0&&m.input==='a'&&/[[a]]/iv.test('A')&&!/[[a]]/iv.test('b')",
     );
     for source in [
@@ -140,10 +136,7 @@ fn unicode_class_folding_opted_work_and_unproved_syntax() {
         r"/[a]+b/iv.exec('a')",
         r"/[a]b/iu.exec('ab')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }
 

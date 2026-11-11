@@ -1,6 +1,7 @@
 //! Object.groupBy (20.1.2.13), GroupBy, and AddValueToKeyedGroup.
 
-use crate::{Error, ExceptionKind, Realm, Value, object::DataDescriptor};
+use crate::object::DataDescriptor;
+use crate::{Error, ExceptionKind, Realm, Value};
 use spite_core::{PropertyKey, Span, WellKnownSymbol};
 use std::collections::HashMap;
 

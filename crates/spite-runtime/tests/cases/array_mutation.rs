@@ -2,13 +2,7 @@
 
 use spite_runtime::{Error, ExceptionKind, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 fn type_error(realm: &mut Realm, source: &str) {
     assert!(
         matches!(
@@ -24,31 +18,31 @@ fn type_error(realm: &mut Realm, source: &str) {
 
 #[test]
 fn push_and_pop_preserve_element_identity_and_sparse_lengths() {
-    check(
+    assert_true(
         "let a=[],o={};a.push(1,undefined,o)===3 && a.length===3 && Object.hasOwn(a,'1') && a.pop()===o && a.pop()===undefined && a.pop()===1 && a.pop()===undefined && a.length===0",
     );
-    check(
+    assert_true(
         "let a=Array(4);a.push(7)===5 && !Object.hasOwn(a,'3') && a[4]===7 && a.pop()===7 && a.length===4 && a.pop()===undefined && a.length===3",
     );
-    check("let a=[1];a.push()===1 && a[0]===1 && a.length===1");
-    check(
+    assert_true("let a=[1];a.push()===1 && a[0]===1 && a.length===1");
+    assert_true(
         "let a=[{toString:()=>{throw 7;},valueOf:()=>{throw 8;}}],v=a.pop();a.push(v)===1 && a[0]===v",
     );
 }
 
 #[test]
 fn generic_receivers_convert_length_and_preserve_safe_integer_keys() {
-    check(
+    assert_true(
         "let o={length:'1.9',0:'a'};Array.prototype.push.call(o,'b')===2 && o.length===2 && o[0]==='a' && o[1]==='b' && Array.prototype.pop.call(o)==='b' && o.length===1 && !('1' in o)",
     );
-    check("let o={};Array.prototype.push.call(o,7)===1 && o[0]===7 && o.length===1");
-    check(
+    assert_true("let o={};Array.prototype.push.call(o,7)===1 && o[0]===7 && o.length===1");
+    assert_true(
         "let o={length:9007199254740990};Array.prototype.push.call(o,'last')===9007199254740991 && o[9007199254740990]==='last' && Array.prototype.pop.call(o)==='last' && o.length===9007199254740990",
     );
-    check(
+    assert_true(
         "let o={length:Infinity,9007199254740990:7};Array.prototype.pop.call(o)===7 && o.length===9007199254740990 && !('9007199254740990' in o)",
     );
-    check("Array.prototype.push.call(true,7)===1 && Array.prototype.pop.call(7)===undefined");
+    assert_true("Array.prototype.push.call(true,7)===1 && Array.prototype.pop.call(7)===undefined");
     for length in [
         "undefined",
         "null",
@@ -59,7 +53,7 @@ fn generic_receivers_convert_length_and_preserve_safe_integer_keys() {
         "0.9",
         "-0",
     ] {
-        check(&format!(
+        assert_true(&format!(
             "let o={{length:{length},0:7}};Array.prototype.pop.call(o)===undefined && Object.is(o.length,0) && o[0]===7"
         ));
     }
@@ -67,29 +61,29 @@ fn generic_receivers_convert_length_and_preserve_safe_integer_keys() {
 
 #[test]
 fn push_invokes_inherited_setters_in_order_and_sets_length_last() {
-    check(
+    assert_true(
         "let log='',p={};Object.defineProperty(p,'0',{set:function(v){log+='0'+v;this.saved=v;}});Object.defineProperty(p,'1',{set:function(v){log+='1'+v;}});let o=Object.create(p);Object.defineProperty(o,'length',{get:()=>{log+='l';return {valueOf:()=>{log+='n';return 0;}};},set:v=>{log+='L'+v;}});Array.prototype.push.call(o,'a','b')===2 && log==='ln0a1bL2' && o.saved==='a' && !Object.hasOwn(o,'0')",
     );
-    check(
+    assert_true(
         "let a=[];Object.defineProperty(Array.prototype,'0',{set:function(v){this.saved=v;},configurable:true});a.push(7)===1 && a.saved===7 && !Object.hasOwn(a,'0') && a.length===1",
     );
-    check(
+    assert_true(
         "let log='',o={};Object.defineProperty(o,'length',{get:()=>{log+='g';return 0;},set:v=>{log+='s'+v;}});Array.prototype.push.call(o)===0 && log==='gs0'",
     );
 }
 
 #[test]
 fn pop_reads_inherited_elements_and_uses_the_snapshotted_length() {
-    check(
+    assert_true(
         "let p={1:7},o=Object.create(p);o.length=2;Array.prototype.pop.call(o)===7 && o.length===1 && p[1]===7 && !Object.hasOwn(o,'1')",
     );
-    check(
+    assert_true(
         "let a=[1,2,3];Object.defineProperty(a,'2',{get:()=>{a.length=0;return 7;},configurable:true});a.pop()===7 && a.length===2 && !Object.hasOwn(a,'0') && !Object.hasOwn(a,'2')",
     );
-    check(
+    assert_true(
         "let log='',o={};Object.defineProperty(o,'length',{get:()=>{log+='l';return 1;},set:v=>{log+='L'+v;}});Object.defineProperty(o,'0',{get:()=>{log+='g';return 7;},configurable:true});Array.prototype.pop.call(o)===7 && log==='lgL0' && !Object.hasOwn(o,'0')",
     );
-    check(
+    assert_true(
         "let log='',o={};Object.defineProperty(o,'length',{get:()=>{log+='g';return -1;},set:v=>{log+='s'+v;}});Array.prototype.pop.call(o)===undefined && log==='gs0'",
     );
 }
@@ -238,7 +232,7 @@ fn invalid_receivers_and_bigint_lengths_throw_type_errors() {
 #[test]
 fn methods_have_standard_metadata_and_survive_collection() {
     for (method, length) in [("push", 1), ("pop", 0)] {
-        check(&format!(
+        assert_true(&format!(
             "let f=Array.prototype.{method},d=Object.getOwnPropertyDescriptor(Array.prototype,'{method}');f.name==='{method}' && f.length==={length} && f.prototype===undefined && d.value===f && d.writable && !d.enumerable && d.configurable"
         ));
         type_error(

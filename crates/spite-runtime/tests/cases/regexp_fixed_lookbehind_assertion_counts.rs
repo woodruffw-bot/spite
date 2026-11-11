@@ -3,13 +3,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn fixed_lookbehind_assertion_count_result_snapshot() {
@@ -68,47 +62,47 @@ fn fixed_lookbehind_assertion_count_result_snapshot() {
 
 #[test]
 fn counted_lookbehind_boundary_offsets_empty_captures_named_aliases_and_rollback_are_exact() {
-    check(
+    assert_true(
         r"let a=/(?<=((?<x>a)\B()){2})b/d.exec('aab');a.index===2&&a[1]==='a'&&a.groups.x==='a'&&a[3]===''&&a.indices[1][0]===0&&a.indices[1][1]===1&&a.indices.groups.x===a.indices[2]&&a.indices[3][0]===1&&a.indices[3][1]===1",
     );
-    check(
+    assert_true(
         r"let a=/(?<=((\b)a(\B)){1})b/d.exec('ab');a[1]==='a'&&a[2]===''&&a[3]===''&&a.indices[2][0]===0&&a.indices[2][1]===0&&a.indices[3][0]===1&&a.indices[3][1]===1",
     );
-    check(
+    assert_true(
         r"let a=/(?<=(?<x>^){2})a/d.exec('a');a.groups.x===''&&a.indices.groups.x===a.indices[1]&&a.indices[1][0]===0&&a.indices[1][1]===0",
     );
-    check(
+    assert_true(
         r"let a=/(?<=((?<x>^){0}))a/d.exec('qa');a.index===1&&a[1]===''&&a.groups.x===undefined&&a.indices.groups.x===undefined&&a.indices[1][0]===1&&a.indices[1][1]===1",
     );
-    check(
+    assert_true(
         r"let a=/(?<!((?<x>a)\B){2}q)c/d.exec('aaarc');a.index===4&&a[1]===undefined&&a[2]===undefined&&a.groups.x===undefined&&a.indices[1]===undefined&&a.indices.groups.x===undefined",
     );
-    check(
+    assert_true(
         r"let a=/(?<=((^)){2}|((\b)){2})a/d.exec(' a');a[1]===undefined&&a[2]===undefined&&a[3]===''&&a[4]===''&&a.indices[3][0]===1&&a.indices[4][0]===1",
     );
-    check(
+    assert_true(
         r"let a=/(?<=(?<x>^){2}|(?<x>\b){2})a/d.exec(' a');a[1]===undefined&&a[2]===''&&a.groups.x===''&&a.indices.groups.x===a.indices[2]&&a.indices[2][0]===1",
     );
-    check(
+    assert_true(
         r"let a=/((?<=(\b){2})){2}a\1\2/d.exec('a'),b=/((?<=(\b){2}))*a\1\2/d.exec('a');a[1]===''&&a[2]===''&&a.indices[1][0]===0&&a.indices[2][0]===0&&b[1]===undefined&&b[2]===undefined",
     );
 }
 
 #[test]
 fn counted_lookbehind_boundary_consumers_global_sticky_empty_and_callbacks_keep_positions() {
-    check(
+    assert_true(
         r"let r=/(?<=(?<x>\b){2})a/dg,a=[...'a a'.matchAll(r)];a.length===2&&a[0].index===0&&a[1].index===2&&a[1].groups.x===''&&a[1].indices.groups.x[0]===2&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/(?<=(a\B){2})b/dy;r.lastIndex=2;let a=r.exec('aab');a[1]==='a'&&a.index===2&&r.lastIndex===3&&r.exec('aab')===null&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/(?<=(\b){2})/dg,a=[...'ab cd'.matchAll(r)];a.length===4&&a[0].index===0&&a[1].index===2&&a[2].index===3&&a[3].index===5&&a[3][1]===''&&a[3].indices[1][0]===5&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let seen=[];let s='a a'.replace(/(?<=(?<x>\b){2})a/g,(m,c,i,s,g)=>{seen.push(m,c,i,s,g.x);return '_'});s==='_ _'&&seen.length===10&&seen[0]==='a'&&seen[1]===''&&seen[2]===0&&seen[4]===''&&seen[7]===2&&seen[9]===''",
     );
-    check(
+    assert_true(
         r"'a a'.replace(/(?<=(?<x>\b){2})a/g,'<$<x>>')==='<> <>'&&' a'.search(/(?<=(\b){2})a/)===1&&'a a'.split(/(?<=(\b){2})a/).join('|')==='|| ||'",
     );
 }
@@ -133,7 +127,7 @@ fn explicit_counted_lookbehind_assertion_work_aborts_before_last_index_and_handl
 }
 
 #[test]
-fn variable_counts_nested_lookahead_repeated_choices_empty_and_nested_counts_remain_unsupported() {
+fn variable_counts_nested_lookahead_repeated_choices_empty_and_nested_counts_match_reference_results() {
     for source in [
         r"/(?<=(?:a\B){1,2})b/.exec('aab')",
         r"/(?<=(?:(?=a+)){2})a/.exec('a')",
@@ -143,9 +137,6 @@ fn variable_counts_nested_lookahead_repeated_choices_empty_and_nested_counts_rem
         r"/(?<=(\b){2})a/u.exec('a')",
         r"/(?<=(\b){2})a/v.exec('a')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }

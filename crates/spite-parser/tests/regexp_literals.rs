@@ -1,11 +1,8 @@
 //! Validated RegExp literal ASTs retain original UTF-16 text and source ranges.
 
 use spite_core::{DiagnosticKind, JsString, Span};
-use spite_parser::{
-    EvalContext,
-    ast::{ExprKind, Literal, StatementKind},
-    parse_eval_utf16, parse_script, parse_script_utf16,
-};
+use spite_parser::ast::{ExprKind, Literal, StatementKind};
+use spite_parser::{EvalContext, parse_eval_utf16, parse_script, parse_script_utf16};
 use std::fmt::Write;
 
 fn literal(source: &JsString) -> (JsString, JsString, Span) {

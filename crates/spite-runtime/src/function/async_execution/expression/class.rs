@@ -1,12 +1,10 @@
 //! ClassExpression suspension uses the shared ordered class builder (15.7.14).
 
 use super::{AsyncExecutionData, child_path, expression_at, has_supported_await, object, push};
-use crate::{
-    Error, Realm, Value,
-    object::async_expression::{
-        AsyncClassExpression, AsyncExpressionData, ExprChild, ExprPath, ExprTask,
-    },
+use crate::object::async_expression::{
+    AsyncClassExpression, AsyncExpressionData, ExprChild, ExprPath, ExprTask,
 };
+use crate::{Error, Realm, Value};
 use spite_core::PropertyKey;
 use spite_parser::ast::{Expr, ExprKind, PropertyName};
 

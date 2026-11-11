@@ -363,7 +363,8 @@ mod tests {
     use crate::function::Builtin;
     use crate::object::DataDescriptor;
     use spite_core::{JsSymbol, WeakJsSymbol};
-    use std::{cell::RefCell, rc::Rc};
+    use std::cell::RefCell;
+    use std::rc::Rc;
 
     fn unlimited() -> Budget {
         Budget::with_work_limit(None)

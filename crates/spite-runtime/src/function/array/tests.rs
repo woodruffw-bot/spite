@@ -1,4 +1,4 @@
-use super::*;
+use super::{Builtin, Error, ExceptionKind, JsString, Realm, Span, Value};
 // Exercise the public constructor and real Script operations on its result.
 fn realm_with_array(length: u32) -> Realm {
     let mut realm = Realm::default();

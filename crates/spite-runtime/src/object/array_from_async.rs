@@ -1,7 +1,8 @@
 //! Traced continuation state for Array.fromAsync (23.1.2.2).
 
 use super::{Budget, Error, IteratorWrapper, Objects};
-use crate::{ObjectHandle, Value, function::PromiseCapability};
+use crate::function::PromiseCapability;
+use crate::{ObjectHandle, Value};
 use spite_heap::{Handle, Trace};
 
 #[derive(Debug)]

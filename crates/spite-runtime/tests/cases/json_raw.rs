@@ -2,13 +2,7 @@
 
 use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn valid_primitive_text_is_preserved_without_number_rounding() {
@@ -24,18 +18,18 @@ fn valid_primitive_text_is_preserved_without_number_rounding() {
         "-1e-400",
         "9007199254740993",
     ] {
-        check(&format!(
+        assert_true(&format!(
             "let value=JSON.rawJSON('{text}');JSON.isRawJSON(value) && value.rawJSON==='{text}'"
         ));
     }
-    check(
+    assert_true(
         "JSON.rawJSON(9007199254740993n).rawJSON==='9007199254740993' && JSON.rawJSON(-0).rawJSON==='0' && JSON.rawJSON(null).rawJSON==='null' && JSON.rawJSON(false).rawJSON==='false'",
     );
-    check(
+    assert_true(
         "let text=JSON.rawJSON(9007199254740993n).rawJSON;JSON.parse(text,function(k,v,c){return BigInt(c.source);})===9007199254740993n",
     );
-    check("let text='\"'+'a'.repeat(100000)+'\"';JSON.rawJSON(text).rawJSON===text");
-    check(
+    assert_true("let text='\"'+'a'.repeat(100000)+'\"';JSON.rawJSON(text).rawJSON===text");
+    assert_true(
         r#"JSON.rawJSON('"\\uD800"').rawJSON==='"\\uD800"' && JSON.rawJSON('"'+ '\uDC00' +'"').rawJSON==='"'+ '\uDC00' +'"' && JSON.rawJSON('"\\u0061"').rawJSON==='"\\u0061"'"#,
     );
 }
@@ -84,17 +78,17 @@ fn invalid_text_containers_and_surrounding_whitespace_throw_syntaxerror() {
             "{source}"
         );
     }
-    check(
+    assert_true(
         "let C=SyntaxError;globalThis.SyntaxError=function(){throw 7;};let caught=false;try{JSON.rawJSON(' ');}catch(e){caught=e instanceof C && e.constructor===C;}caught",
     );
 }
 
 #[test]
 fn conversion_is_ordered_once_and_symbol_or_abrupt_input_propagates() {
-    check(
+    assert_true(
         "let trace='',text={[Symbol.toPrimitive](hint){trace+=hint;return '1.0';}};let result=JSON.rawJSON.call(Symbol(),text,(trace+='argument',7));result.rawJSON==='1.0' && trace==='argumentstring'",
     );
-    check(
+    assert_true(
         "let marker={},caught=false;try{JSON.rawJSON({toString(){throw marker;}});}catch(e){caught=e===marker;}caught",
     );
     assert!(matches!(
@@ -104,32 +98,32 @@ fn conversion_is_ordered_once_and_symbol_or_abrupt_input_propagates() {
             ..
         })
     ));
-    check(
+    assert_true(
         "let count=0;JSON.rawJSON({toString(){count++;return '1';},valueOf(){throw 8;}}).rawJSON==='1' && count===1",
     );
 }
 
 #[test]
 fn raw_objects_have_null_prototypes_and_exact_frozen_descriptors() {
-    check(
+    assert_true(
         "let value=JSON.rawJSON('1'),d=Object.getOwnPropertyDescriptor(value,'rawJSON');Object.getPrototypeOf(value)===null && Reflect.ownKeys(value).join(',')==='rawJSON' && d.value==='1' && !d.writable && d.enumerable && !d.configurable && Object.isFrozen(value) && Object.isSealed(value) && !Object.isExtensible(value) && !Reflect.set(value,'rawJSON','2') && !Reflect.deleteProperty(value,'rawJSON') && !Reflect.defineProperty(value,'extra',{value:1}) && Reflect.setPrototypeOf(value,null) && !Reflect.setPrototypeOf(value,{}) && JSON.isRawJSON(value)",
     );
-    check(
+    assert_true(
         "Object.defineProperty(Object.prototype,'rawJSON',{set(){throw 7;}});let raw=JSON.rawJSON('true');raw.rawJSON==='true' && Object.getPrototypeOf(raw)===null",
     );
 }
 
 #[test]
 fn branding_never_reads_properties_or_coerces_and_cannot_be_inherited_or_copied() {
-    check(
+    assert_true(
         "let raw=JSON.rawJSON('1'),fake={get rawJSON(){throw 7;},get [Symbol.toStringTag](){throw 8;},[Symbol.toPrimitive](){throw 9;}};JSON.isRawJSON(raw) && !JSON.isRawJSON(fake) && !JSON.isRawJSON(Object.create(raw)) && !JSON.isRawJSON({...raw}) && !JSON.isRawJSON(Object.assign({},raw)) && !JSON.isRawJSON([]) && !JSON.isRawJSON(()=>{}) && !JSON.isRawJSON(new Number(1)) && !JSON.isRawJSON(null) && !JSON.isRawJSON(undefined) && !JSON.isRawJSON('1') && !JSON.isRawJSON(1n) && !JSON.isRawJSON(Symbol())",
     );
-    check("JSON.isRawJSON.call(Symbol(),JSON.rawJSON('1')) && !JSON.isRawJSON.call(null)");
+    assert_true("JSON.isRawJSON.call(Symbol(),JSON.rawJSON('1')) && !JSON.isRawJSON.call(null)");
 }
 
 #[test]
 fn function_metadata_nonconstruction_and_collection_are_standard() {
-    check(
+    assert_true(
         "JSON.rawJSON.name==='rawJSON' && JSON.rawJSON.length===1 && JSON.isRawJSON.name==='isRawJSON' && JSON.isRawJSON.length===1 && Object.getPrototypeOf(JSON.rawJSON)===Function.prototype && Object.getPrototypeOf(JSON.isRawJSON)===Function.prototype && !Object.hasOwn(JSON.rawJSON,'prototype') && !Object.hasOwn(JSON.isRawJSON,'prototype')",
     );
     for source in ["new JSON.rawJSON('1')", "new JSON.isRawJSON()"] {

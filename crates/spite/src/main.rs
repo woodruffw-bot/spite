@@ -3,15 +3,12 @@
 mod module_files;
 
 use spite::{Error, JsString, Limits, ObjectHandle, PromiseJobOutcome, PromiseState, Realm, Value};
-use std::{
-    env,
-    fs::File,
-    io::{self, Read},
-    path::{Path, PathBuf},
-    process::ExitCode,
-    thread,
-    time::Duration,
-};
+use std::fs::File;
+use std::io::{self, Read};
+use std::path::{Path, PathBuf};
+use std::process::ExitCode;
+use std::time::Duration;
+use std::{env, thread};
 
 const USAGE: &str = "Usage: spite [--max-steps N] [--max-source-bytes N] [--module] [--check] (--eval SOURCE | FILE | -)";
 

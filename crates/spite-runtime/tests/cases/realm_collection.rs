@@ -4,7 +4,8 @@ use crate::common;
 use common::REALM_ENTRIES;
 
 use spite_heap::Error as HeapError;
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value, object::Error as ObjectError};
+use spite_runtime::object::Error as ObjectError;
+use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
 
 #[test]
 fn suspended_class_metadata_consumes_collection_work() {

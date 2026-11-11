@@ -1,14 +1,6 @@
 //! GetFunctionRealm at constructor fallback and Array species joins (7.3.24).
 
-use spite_runtime::{Realm, Value};
-
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 // Every constructor uses a distinct ordinary function as newTarget's Proxy
 // target. Its writable prototype prevents an unrelated Proxy Get invariant
@@ -37,7 +29,7 @@ const FAMILIES: &str = r#"
 
 #[test]
 fn fallback_invalidated_constructor_proxies_reject_for_every_family() {
-    check(&format!(
+    assert_true(&format!(
         "{FAMILIES}{}",
         r#"
         for(let family of families){
@@ -59,7 +51,7 @@ fn fallback_invalidated_constructor_proxies_reject_for_every_family() {
 
 #[test]
 fn object_prototype_results_skip_realm_validation_even_if_revoked() {
-    check(&format!(
+    assert_true(&format!(
         "{FAMILIES}{}",
         r#"
         for(let family of families){
@@ -81,7 +73,7 @@ fn object_prototype_results_skip_realm_validation_even_if_revoked() {
 
 #[test]
 fn bound_and_mixed_targets_validate_without_public_traps() {
-    check(
+    assert_true(
         r#"
         for(let mixed of [false,true]){
             for(let objectResult of [false,true]){
@@ -111,7 +103,7 @@ fn bound_and_mixed_targets_validate_without_public_traps() {
 
 #[test]
 fn array_species_validates_constructor_realm_before_reading_species() {
-    check(
+    assert_true(
         r#"
         let operations=[
             ['map',a=>a.map(x=>x*2),3,'2,4,6'],
@@ -165,7 +157,7 @@ fn deeply_nested_bound_proxy_targets_use_the_normal_stack() {
     std::thread::Builder::new()
         .stack_size(2 * 1024 * 1024)
         .spawn(|| {
-            check(
+            assert_true(
                 r#"
                 let tail=Proxy.revocable(function(){},{}),N=tail.proxy;
                 for(let i=0;i<4096;i++){
@@ -192,7 +184,7 @@ fn deeply_nested_bound_proxy_targets_use_the_normal_stack() {
 
 #[test]
 fn constructor_realm_validation_preserves_conversion_and_error_order() {
-    check(
+    assert_true(
         r#"
         let log='',marker={};
         function newTarget(){

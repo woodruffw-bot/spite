@@ -1,14 +1,13 @@
 //! Arrow closures, shared formal binding initialization, and function name inference.
 
-use crate::{BindingState, CompletionKind, Error, Realm, Value, environment::EnvironmentHandle};
+use crate::environment::EnvironmentHandle;
+use crate::{BindingState, CompletionKind, Error, Realm, Value};
 use spite_core::{JsString, Span};
 use spite_parser::ast::{
     ArrowBody, Expr, ExprKind, FunctionBody, FunctionSource, Parameter, StatementKind,
 };
-use std::{
-    collections::{BTreeMap, BTreeSet},
-    rc::Rc,
-};
+use std::collections::{BTreeMap, BTreeSet};
+use std::rc::Rc;
 
 #[derive(Clone, Debug)]
 pub(crate) struct ScriptFunction {
@@ -361,10 +360,8 @@ fn anonymous_definition(expression: &Expr) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        ExceptionKind,
-        object::{Budget, DescriptorKind, PropertyDescriptor},
-    };
+    use crate::ExceptionKind;
+    use crate::object::{Budget, DescriptorKind, PropertyDescriptor};
 
     #[test]
     fn user_getters_and_setters_execute_in_order_and_apply_snapshots_length_once() {

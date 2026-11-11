@@ -1,11 +1,8 @@
 //! Array literals, elisions, and AssignmentExpression[+In] parsing (13.2.4).
 
 use spite_core::DiagnosticKind;
-use spite_parser::{
-    MAX_DEPTH,
-    ast::{ArrayElement, ExprKind, StatementKind},
-    parse_script,
-};
+use spite_parser::ast::{ArrayElement, ExprKind, StatementKind};
+use spite_parser::{MAX_DEPTH, parse_script};
 
 #[test]
 fn array_literal_snapshot() {

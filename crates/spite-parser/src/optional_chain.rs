@@ -1,6 +1,9 @@
 //! Optional-chain syntax and flat continuation steps (13.3.10).
 
-use crate::*;
+use crate::{
+    ChainStep, ChainStepKind, Diagnostic, DiagnosticKind, Expr, ExprKind, JsString, Kind, Literal,
+    Parser, PropertyName, Span, early,
+};
 
 impl Parser {
     pub(super) fn optional_chain_step(&mut self, left: Expr) -> Result<Expr, Diagnostic> {

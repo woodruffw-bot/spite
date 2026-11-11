@@ -3,36 +3,30 @@
 use spite_core::JsString;
 use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn all_forms_handle_recursive_mappings_reordering_blocking_and_hangul() {
-    check(
+    assert_true(
         "let text=Array.from({length:128},(_,i)=>String.fromCharCode(i)).join('').repeat(16);['NFC','NFD','NFKC','NFKD'].every(form=>text.normalize(form)===text)",
     );
-    check(
+    assert_true(
         "'e\\u0301'.normalize()==='é' && 'é'.normalize('NFD')==='e\\u0301' && 'é'.normalize(undefined)==='é'",
     );
-    check(
+    assert_true(
         "'Å'.normalize()==='Å' && 'ﬃ①'.normalize('NFKC')==='ffi1' && 'ﬃ①'.normalize('NFD')==='ﬃ①'",
     );
-    check(
+    assert_true(
         "'Ḋ\\u0323'.normalize()==='Ḍ\\u0307' && 'D\\u0307\\u0323'.normalize('NFD')==='D\\u0323\\u0307'",
     );
-    check(
+    assert_true(
         "'A\\u030A\\u0301'.normalize()==='Ǻ' && 'A\\u030B\\u030A'.normalize()==='A\\u030B\\u030A'",
     );
-    check("'\\u0344'.normalize()==='\\u0308\\u0301' && 'क़'.normalize()==='क़'");
-    check(
+    assert_true("'\\u0344'.normalize()==='\\u0308\\u0301' && 'क़'.normalize()==='क़'");
+    assert_true(
         "'각'.normalize()==='각' && '각'.normalize('NFD')==='각' && '가'.normalize()==='가' && '힣'.normalize('NFD')==='힣'",
     );
-    check(
+    assert_true(
         "'𝕬'.normalize('NFKD')==='A' && '\\u{10FFFF}😀'.normalize()==='\\u{10FFFF}😀' && ''.normalize()===''",
     );
 }
@@ -40,33 +34,33 @@ fn all_forms_handle_recursive_mappings_reordering_blocking_and_hangul() {
 #[test]
 fn lone_surrogates_preserve_identity_and_separate_ordering_sequences() {
     for form in ["NFC", "NFD", "NFKC", "NFKD"] {
-        check(&format!(
+        assert_true(&format!(
             "'\\uD800\\uD800\\uDC00\\uDC00'.normalize('{form}')==='\\uD800\\uD800\\uDC00\\uDC00'"
         ));
-        check(&format!(
+        assert_true(&format!(
             "'a\\uD800\\u0301\\uDC00'.normalize('{form}')==='a\\uD800\\u0301\\uDC00'"
         ));
     }
-    check(
+    assert_true(
         "'e\\uD800\\u0301'.normalize()==='e\\uD800\\u0301' && '\\u0301\\uD800\\u0323'.normalize('NFD')==='\\u0301\\uD800\\u0323'",
     );
 }
 
 #[test]
 fn receiver_precedes_form_conversion_and_both_use_the_string_hint_once() {
-    check(
+    assert_true(
         "let log='',s={[Symbol.toPrimitive](hint){log+='s'+hint;return 'é';}},f={[Symbol.toPrimitive](hint){log+='f'+hint;return 'NFD';}};String.prototype.normalize.call(s,f)==='e\\u0301' && log==='sstringfstring'",
     );
-    check(
+    assert_true(
         "let log='',caught=false,s={toString(){log+='s';throw 7;}},f={toString(){log+='f';throw 8;}};try{String.prototype.normalize.call(s,f);}catch(e){caught=e===7;}caught && log==='s'",
     );
-    check(
+    assert_true(
         "let log='',caught=false;try{String.prototype.normalize.call(null,{toString(){log+='f';throw 8;}});}catch(e){caught=e instanceof TypeError;}caught && log===''",
     );
-    check(
+    assert_true(
         "let marker={},caught=false;try{'abc'.normalize({toString(){throw marker;}});}catch(e){caught=e===marker;}caught",
     );
-    check(
+    assert_true(
         "String.prototype.normalize.call(7)==='7' && String.prototype.normalize.call(true)==='true' && String.prototype.normalize.call(7n)==='7' && new String('e\\u0301').normalize()==='é'",
     );
     for receiver in [
@@ -131,10 +125,10 @@ fn invalid_forms_throw_rangeerror_after_conversion_without_case_folding() {
             "{form}"
         );
     }
-    check(
+    assert_true(
         "let Original=RangeError;RangeError=TypeError;let caught=false;try{'x'.normalize('wrong');}catch(e){caught=e instanceof Original && !(e instanceof TypeError);}caught",
     );
-    check(
+    assert_true(
         "let log='',o={toString(){throw 7;}};'e\\u0301'.normalize((log+='a',undefined),(log+='b',o))==='é' && log==='ab'",
     );
 }
@@ -160,7 +154,7 @@ fn metadata_descriptors_deletion_and_retention_are_standard() {
         assert_eq!(d.value, value);
         assert!(!d.writable && !d.enumerable && d.configurable);
     }
-    check(
+    assert_true(
         "let d=Object.getOwnPropertyDescriptor(String.prototype,'normalize');d.writable && !d.enumerable && d.configurable",
     );
     assert!(matches!(
@@ -181,7 +175,7 @@ fn metadata_descriptors_deletion_and_retention_are_standard() {
 
 #[test]
 fn long_default_inputs_work_and_opted_in_failures_bypass_cleanup() {
-    check(
+    assert_true(
         "'é'.repeat(10000).normalize('NFD').length===20000 && ('x'+'\\u0301\\u0323'.repeat(5000)).normalize('NFD')==='x'+'\\u0323'.repeat(5000)+'\\u0301'.repeat(5000)",
     );
     let mut realm = Realm::new(Limits {

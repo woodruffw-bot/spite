@@ -84,15 +84,11 @@ impl Trace for Environment {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        Error, Limits, Realm, Reference,
-        object::{Budget, DataDescriptor, Error as ObjectError, Objects},
-    };
+    use crate::object::{Budget, DataDescriptor, Error as ObjectError, Objects};
+    use crate::{Error, Limits, Realm, Reference};
     use spite_core::{JsString, JsSymbol, Span};
-    use spite_parser::{
-        ast::{ForInitializer, StatementKind},
-        parse_script,
-    };
+    use spite_parser::ast::{ForInitializer, StatementKind};
+    use spite_parser::parse_script;
 
     fn binding(value: Value) -> BindingState {
         BindingState {

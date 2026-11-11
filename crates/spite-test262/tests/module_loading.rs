@@ -98,7 +98,9 @@ fn json_source_errors_preserve_phase_and_host_failure_accounting() {
         match expected {
             None => assert_eq!(result[0].outcome, Outcome::Passed, "{body}"),
             Some(expected) => {
-                assert!(matches!(&result[0].outcome, Outcome::Failed{stage,..} if *stage==expected))
+                assert!(
+                    matches!(&result[0].outcome, Outcome::Failed{stage,..} if *stage==expected)
+                );
             }
         }
     }

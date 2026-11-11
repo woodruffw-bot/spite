@@ -1,6 +1,16 @@
 //! Module grammar goal, strict code and retained ordinary items (16.2).
 
-use super::*;
+use super::{
+    ArrayElement, AssignmentElement, AssignmentPattern, AssignmentPatternKind, AssignmentTarget,
+    AwaitContext, BTreeSet, BindingElement, BindingPattern, BindingPatternKind, ChainStepKind,
+    Class, ClassElement, ControlContext, Diagnostic, DiagnosticKind, ExportDeclaration, ExportKind,
+    ExportSpecifier, Expr, ExprKind, ForBinding, ForInitializer, ImportAttribute, ImportBinding,
+    ImportDeclaration, ImportEntry, ImportName, IndirectExportEntry, JsString, Kind, Literal,
+    LocalExportEntry, Module, ModuleEntries, ModuleExportName, ModuleRequest, ObjectElement,
+    Parser, PropertyName, ScopeKind, Span, Statement, StatementKind, block_lexical_names, early,
+    reject_legacy_tokens, reserved, source, strict_reserved, validate_binding_name,
+    validate_scope_with_bindings,
+};
 
 mod await_semantics;
 mod exports;

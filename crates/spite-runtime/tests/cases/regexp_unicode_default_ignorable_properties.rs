@@ -3,13 +3,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn unicode_default_ignorable_property_results_snapshot() {
@@ -54,16 +48,16 @@ fn unicode_default_ignorable_property_results_snapshot() {
 #[test]
 fn unicode_default_ignorable_properties_aliases_complements_and_unions() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let a=/\p{{Default_Ignorable_Code_Point}}/{mode},b=/\p{{DI}}/i{mode},n=/\P{{DI}}/i{mode};a.test('\u200C')&&a.test('\u200D')&&b.test('\u200C')&&!a.test('\u005f')&&!b.test('\u005f')&&!b.test('ſ')&&!b.test('K')&&!n.test('\u200C')&&n.test('😀')&&n.test('\uD800')&&n.test('\u0020')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let p=/\p{{Default_Ignorable_Code_Point}}/{mode},s=/\s/{mode};p.test('\u200C')&&p.test('\u200D')&&!s.test('\u200C')&&!s.test('\u200D')&&!p.test('\u0020')&&s.test('\u0020')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=/[\p{{DI}}K]/i{mode},b=/[^\P{{Default_Ignorable_Code_Point}}K]/i{mode},c=/[\p{{DI}}\P{{Default_Ignorable_Code_Point}}]/{mode};a.test('K')&&a.test('k')&&a.test('\u200C')&&!a.test('ſ')&&b.test('\u200D')&&!b.test('K')&&c.test('😀')&&c.test('A')&&c.test('\uD800')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=/^\p{{DI}}$/{mode},b=/^\P{{DI}}$/{mode};a.test('\u200C')&&!a.test('\u200D\n')&&!a.test('')&&!a.test('\n')&&b.test('😀')&&!b.test('AA')"
         ));
     }
@@ -72,22 +66,22 @@ fn unicode_default_ignorable_properties_aliases_complements_and_unions() {
 #[test]
 fn unicode_default_ignorable_properties_captures_context_and_pair_starts() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/(?<x>\p{{DI}})/d{mode}y;r.lastIndex=1;let m=r.exec('\uDB40\uDC01');m.index===0&&m[0]==='\uDB40\uDC01'&&m.groups.x===m[0]&&m.indices[1][0]===0&&m.indices[1][1]===2&&r.lastIndex===2"
         ));
     }
 
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^(?<x>([\p{{DI}}K]))$/dim{mode}g,m=r.exec('x\r\nK\u2028');m.index===3&&m[1]==='K'&&m[2]==='K'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===4&&r.lastIndex===4"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/(?<__proto__>\P{{DI}})/d{mode}y;r.lastIndex=1;let m=r.exec('😀\u200C');m.index===0&&m[1]==='😀'&&m.indices[1][1]===2&&r.lastIndex===2&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\p{{DI}}/d{mode}g;r.lastIndex=1;let m=r.exec('😀\u200C');m.index===2&&m[0]==='\u200C'&&r.lastIndex===3"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\p{{DI}}/{mode}y;r.lastIndex=1;r.exec('😀\u200C')===null&&r.lastIndex===0"
         ));
     }
@@ -96,16 +90,16 @@ fn unicode_default_ignorable_properties_captures_context_and_pair_starts() {
 #[test]
 fn unicode_default_ignorable_properties_consumers_original_text() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let a=[...'\u200D😀\u200CG'.matchAll(/(?<x>\P{{DI}})/d{mode}g)];a.length===2&&a[0][1]==='😀'&&a[0].index===1&&a[0].indices[1][1]===3&&a[1][1]==='G'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'\u200D\u200C😀X'.replace(/(?<x>\p{{Default_Ignorable_Code_Point}})/{mode}g,'<$1:$<x>>')==='<\u200D:\u200D><\u200C:\u200C>😀X'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'😀\u200D\u200CG'.split(/(\p{{DI}})/{mode}).join('|')==='😀|\u200D||\u200C|G'&&'😀\u200C'.search(/\p{{DI}}/{mode})===2&&'\u200D\u200C😀'.match(/\p{{DI}}/{mode}g).join('')==='\u200D\u200C'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let t='';let x='\u200C\u200D😀\u200C'.replace(/(\p{{DI}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__😀_'&&t==='014'"
         ));
     }
@@ -113,16 +107,16 @@ fn unicode_default_ignorable_properties_consumers_original_text() {
 
 #[test]
 fn unicode_default_ignorable_properties_clones_coercions_and_strict_writes() {
-    check(
+    assert_true(
         r"let r=/^(?<x>\p{Default_Ignorable_Code_Point})$/dmu,c=new RegExp(r,'divy');c.source==='^(?<x>\\p{Default_Ignorable_Code_Point})$'&&c.unicodeSets&&!c.unicode&&!c.multiline&&c.exec('\u200C').groups.x==='\u200C'&&c.lastIndex===1",
     );
-    check(
+    assert_true(
         r"let t='',r=/\P{DI}/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m[0]==='😀'&&m.index===0&&r.lastIndex===2",
     );
-    check(
+    assert_true(
         r"let r=/\p{DI}/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('\u200C')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/\p{DI}/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀\u200C')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
 }
@@ -144,26 +138,23 @@ fn unicode_default_ignorable_properties_opted_work_and_remaining_sets() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
-    check(
+    assert_true(
         r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
     );
-    check(r"/[\p{DI}&&A]/v.exec('A')===null");
-    check(r"/[\p{DI}--A]/v.exec('A')===null");
-    check(
+    assert_true(r"/[\p{DI}&&A]/v.exec('A')===null");
+    assert_true(r"/[\p{DI}--A]/v.exec('A')===null");
+    assert_true(
         r"let s=String.fromCodePoint(0x200c),m=/[\p{DI}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
     );
     for source in [r"/\p{DI}+b/u.exec('AA')", r"/\p{DI}A/v.exec('AA')"] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }
 
 #[test]
 fn unicode_default_ignorable_repetitions_retain_last_capture_and_outside_words() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\B(?<x>\p{{DI}})+\B/d{mode}g,m=r.exec('😀\u200C\u200D\u200D\u0020');m.index===2&&m[0]==='\u200C\u200D\u200D'&&m.groups.x==='\u200D'&&m.indices.groups.x[0]===4&&m.indices.groups.x[1]===5&&r.lastIndex===5"
         ));
     }

@@ -1,14 +1,8 @@
 //! Unicode lone surrogate atoms match only complete input characters.
+use crate::common::assert_true;
 use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
 #[test]
 fn unicode_surrogate_literal_results_snapshot() {
     let mut rows = String::new();
@@ -44,38 +38,38 @@ fn unicode_surrogate_literal_results_snapshot() {
 }
 #[test]
 fn unicode_surrogate_literal_consumers_preserve_complete_input_boundaries() {
-    check(
+    assert_true(
         r"let ok=true;for(let f of ['u','v'])for(let n=0xD800;n<=0xDFFF;n++){let c=String.fromCharCode(n),r=new RegExp(c,f);if(r.source!==c||r.exec(c)[0]!==c)ok=false;if(n<0xDC00&&r.exec(c+'\uDC00')!==null)ok=false;if(n>=0xDC00&&r.exec('\uD800'+c)!==null)ok=false;}ok",
     );
-    check(r"'😀\uDE00a'.split(/(\uDE00)/u).join('|')==='😀|\uDE00|a'");
-    check(r"'😀\uDE00😀\uDE00'.match(/\uDE00/vg).length===2");
-    check(
+    assert_true(r"'😀\uDE00a'.split(/(\uDE00)/u).join('|')==='😀|\uDE00|a'");
+    assert_true(r"'😀\uDE00😀\uDE00'.match(/\uDE00/vg).length===2");
+    assert_true(
         r"let a=[...'😀\uDE00😀\uDE00'.matchAll(/(?<x>\uDE00)/dug)];a.length===2&&a[0].index===2&&a[1].index===5&&a[0].groups.x==='\uDE00'&&a[0].indices.groups.x===a[0].indices[1]",
     );
-    check(
+    assert_true(
         r"let seen=[];let s='😀\uDE00😀\uDE00'.replace(/(\uDE00)/vg,(m,a,i)=>{seen.push(i);return '_'});s==='😀_😀_'&&seen.join(',')==='2,5'",
     );
-    check(
+    assert_true(
         r"let r=/\uD83D/vg;r.lastIndex=1;let m=r.exec('😀\uD83D');m.index===2&&m[0]==='\uD83D'&&r.lastIndex===3",
     );
-    check(r"let r=/\uDE00/uy;r.lastIndex=1;r.exec('😀')===null&&r.lastIndex===0");
-    check(r"let r=/\uDE00/vg;r.lastIndex=1;'😀\uDE00'.search(r)===2&&r.lastIndex===1");
-    check(
+    assert_true(r"let r=/\uDE00/uy;r.lastIndex=1;r.exec('😀')===null&&r.lastIndex===0");
+    assert_true(r"let r=/\uDE00/vg;r.lastIndex=1;'😀\uDE00'.search(r)===2&&r.lastIndex===1");
+    assert_true(
         r"let r=new RegExp('(?<x>\\u{D800})','u'),c=new RegExp(r);c.source===r.source&&c.flags==='u'&&c.exec('\uD800').groups.x==='\uD800'",
     );
 }
 #[test]
 fn unicode_surrogate_literal_coercions_and_strict_writes() {
-    check(
+    assert_true(
         r"let t='',r=/(?<x>\uDE00)/dvg;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀\uDE00'}});t==='si'&&m.index===2&&m[0]==='\uDE00'&&m.indices.groups.x===m.indices[1]&&r.lastIndex===3",
     );
-    check(
+    assert_true(
         r"let r=/\uDE00/uy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('a\uDE00')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
-    check(
+    assert_true(
         r"let r=/\uDE00/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
-    check(
+    assert_true(
         r"let r=/\uD800/ug;r.lastIndex=1;let mark={},caught=false;try{r.exec({toString(){throw mark}})}catch(e){caught=e===mark}caught&&r.lastIndex===1",
     );
 }
@@ -97,7 +91,7 @@ fn unicode_surrogate_opted_work_aborts_and_unproved_atom_joins() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
-    check(
+    assert_true(
         r#"let m=/(?=\uD800)/v.exec('\uD800');m!==null&&m.length===1&&m[0]===''&&m.index===0&&m.input.length===1&&m.input.charCodeAt(0)===0xd800&&m.groups===undefined"#,
     );
     for source in [
@@ -109,10 +103,7 @@ fn unicode_surrogate_opted_work_aborts_and_unproved_atom_joins() {
         r"/\uDE00+b/u.exec('\uDE00')",
         r"/(\uDE00)\1/u.exec('\uDE00\uDE00')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }
 

@@ -1,16 +1,12 @@
 //! Shared suspended ForIn/Of head evaluation and iteration binding setup (14.7.5.6–7).
 
 use super::{AsyncAwaitAction, AsyncExecutionData, Step, active_statement, expression};
-use crate::{
-    Completion, Error, ExceptionKind, Realm, Value,
-    object::{
-        async_execution::{
-            AsyncForAwaitCursor, AsyncForAwaitPhase, AsyncForInCursor, AsyncForOfCursor,
-            AsyncIterationHead, AsyncStatementFrame,
-        },
-        async_expression::ExprRoot,
-    },
+use crate::object::async_execution::{
+    AsyncForAwaitCursor, AsyncForAwaitPhase, AsyncForInCursor, AsyncForOfCursor,
+    AsyncIterationHead, AsyncStatementFrame,
 };
+use crate::object::async_expression::ExprRoot;
+use crate::{Completion, Error, ExceptionKind, Realm, Value};
 use spite_core::{Span, WellKnownSymbol};
 use spite_parser::ast::{ArrowBody, Expr, ForBinding, StatementKind};
 

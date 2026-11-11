@@ -4,13 +4,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn nested_zero_count_result_snapshot() {
@@ -76,47 +70,47 @@ fn nested_zero_count_result_snapshot() {
 
 #[test]
 fn nested_zero_counts_keep_required_enclosures_optional_names_and_negative_undo() {
-    check(
+    assert_true(
         r"let a=/(([a-z]){0}){2}b/d.exec('qb'),b=/((.){0}){2}b/d.exec('qb');a.index===1&&a[1]===''&&a[2]===undefined&&b.index===1&&b[1]===''&&b[2]===undefined",
     );
-    check(
+    assert_true(
         r"let a=/((?<x>){2}){2}a\k<x>/d.exec('qa'),b=/((?<x>){0,2}){2}a\k<x>/d.exec('qa');a[1]===''&&a.groups.x===''&&a.indices.groups.x===a.indices[2]&&a.indices[2][0]===1&&b[1]===''&&b.groups.x===undefined&&b.indices[2]===undefined",
     );
-    check(
+    assert_true(
         r"let a=/((^){1,2}){2}a/dm.exec('q\na'),b=/((^){0,2}){2}a/d.exec('qa');a.index===2&&a[1]===''&&a[2]===''&&a.indices[2][0]===2&&b.index===1&&b[1]===''&&b[2]===undefined",
     );
-    check(
+    assert_true(
         r"let a=/((a\2){0}){2}b/d.exec('qb'),b=/((ab){0}){1,3}b/d.exec('qb');a.index===1&&a[1]===''&&a[2]===undefined&&b[1]===''&&b[2]===undefined",
     );
-    check(
+    assert_true(
         r"let a=/(((){0}){2}){3}a/d.exec('qa'),b=/(((){2})?){2}a/d.exec('qa');a[1]===''&&a[2]===''&&a[3]===undefined&&b[1]===''&&b[2]===undefined&&b[3]===undefined",
     );
-    check(
+    assert_true(
         r"let a=/(?:(?<x>){2}|(?<x>){0}){2}a\k<x>/d.exec('qa');a[1]===''&&a[2]===undefined&&a.groups.x===''&&a.indices.groups.x===a.indices[1]",
     );
-    check(
+    assert_true(
         r"let a=/(?!((){2}){2}q)a/d.exec('a');a[1]===undefined&&a[2]===undefined&&a.indices[1]===undefined&&a.indices[2]===undefined",
     );
-    check(
+    assert_true(
         r"let a=/(?<=(a))((){2}){2}b/d.exec('ab');a.index===1&&a[1]==='a'&&a[2]===''&&a[3]===''&&a.indices[1][0]===0&&a.indices[2][0]===1",
     );
 }
 
 #[test]
 fn nested_zero_count_consumers_keep_sticky_global_empty_advancement_and_callback_slots() {
-    check(
+    assert_true(
         r"let r=/((?<x>){2}){2}a/dg,a=[...'qa a'.matchAll(r)];a.length===2&&a[1].index===3&&a[1].groups.x===''&&a[1].indices.groups.x[0]===3&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/((){2}){2}a/dy;r.lastIndex=1;let a=r.exec('qa');a[1]===''&&a[2]===''&&r.lastIndex===2&&r.exec('qa')===null&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/((){0,2}){2}/dg,a=[...'ab'.matchAll(r)];a.length===3&&a[2].index===2&&a[2][1]===''&&a[2][2]===undefined&&a[2].indices[1][0]===2&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let seen=[];let s='qa a'.replace(/((?<x>){2}){2}a/g,(m,c,d,i,s,g)=>{seen.push(c,d,i,g.x);return '_'});s==='q_ _'&&seen.length===8&&seen[0]===''&&seen[1]===''&&seen[2]===1&&seen[3]===''&&seen[6]===3",
     );
-    check(
+    assert_true(
         r"'qa a'.replace(/((?<x>){2}){2}a/g,'<$<x>>')==='q<> <>'&&'qa'.search(/((){2}){2}a/)===1&&'qa a'.split(/((){2}){2}a/).join('|')==='q||| |||'",
     );
 }
@@ -150,9 +144,6 @@ fn consuming_nested_counts_nonzero_internal_references_behind_wrappers_and_unico
         r"/((){2}){2}a/u.exec('a')",
         r"/((){2}){2}a/v.exec('a')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }

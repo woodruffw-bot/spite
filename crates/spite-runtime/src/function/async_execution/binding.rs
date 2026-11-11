@@ -3,13 +3,9 @@
 use crate::object::async_binding::BindingRoot;
 
 use super::{AsyncAwaitAction, AsyncExecutionData, Step, active_statement, expression};
-use crate::{
-    Completion, Error, Realm, Value,
-    object::{
-        async_execution::{AsyncForPhase, AsyncStatementFrame, StatementLocation},
-        async_expression::ExprRoot,
-    },
-};
+use crate::object::async_execution::{AsyncForPhase, AsyncStatementFrame, StatementLocation};
+use crate::object::async_expression::ExprRoot;
+use crate::{Completion, Error, Realm, Value};
 use spite_parser::ast::{
     ArrowBody, BindingElement, BindingPatternKind, ForInitializer, StatementKind,
 };

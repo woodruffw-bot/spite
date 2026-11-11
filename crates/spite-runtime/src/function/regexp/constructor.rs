@@ -1,12 +1,11 @@
 //! RegExp allocation and initialization (22.2.3.1–3, 22.2.4.1).
 
-use crate::{
-    Error, ExceptionKind, ObjectHandle, Realm, Value,
-    object::{DataDescriptor, RegExpData, RegExpMatcher, RegExpNamedGroup},
-};
+use crate::object::{DataDescriptor, RegExpData, RegExpMatcher, RegExpNamedGroup};
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{DiagnosticKind, JsString, RegExpProgram, Span};
 use spite_parser::parse_regexp_pattern;
-use std::{collections::HashMap, sync::Arc};
+use std::collections::HashMap;
+use std::sync::Arc;
 
 impl Realm {
     #[inline(never)]

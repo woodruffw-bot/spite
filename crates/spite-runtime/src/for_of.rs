@@ -1,6 +1,7 @@
 //! Synchronous ForIn/OfHeadEvaluation and ForIn/OfBodyEvaluation (14.7.5.6–7).
 
-use crate::{Completion, Error, ExceptionKind, Realm, Value, environment::EnvironmentHandle};
+use crate::environment::EnvironmentHandle;
+use crate::{Completion, Error, ExceptionKind, Realm, Value};
 use spite_core::{Span, WellKnownSymbol};
 use spite_parser::ast::{Expr, ForBinding, Statement};
 

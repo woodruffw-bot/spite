@@ -3,14 +3,14 @@
 use super::{
     AsyncExecutionData, allocation_error, class, expression_at, has_supported_await, push,
 };
-use crate::{
-    Error, Realm, Value,
-    object::{
-        async_assignment::{AssignmentPosition, AsyncAssignmentPattern},
-        async_binding::{BindingChild, BindingCursorKind, ObjectBindingPhase, PatternLayout},
-        async_expression::{AsyncExpressionData, ExprChild, ExprPath, ExprTask, MemberAction},
-    },
+use crate::object::async_assignment::{AssignmentPosition, AsyncAssignmentPattern};
+use crate::object::async_binding::{
+    BindingChild, BindingCursorKind, ObjectBindingPhase, PatternLayout,
 };
+use crate::object::async_expression::{
+    AsyncExpressionData, ExprChild, ExprPath, ExprTask, MemberAction,
+};
+use crate::{Error, Realm, Value};
 use spite_core::{PropertyKey, Span};
 use spite_parser::ast::{
     AssignmentElement, AssignmentPattern, AssignmentPatternKind, AssignmentTarget, Expr, ExprKind,

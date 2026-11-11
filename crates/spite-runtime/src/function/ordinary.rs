@@ -1,10 +1,9 @@
 //! Ordinary function allocation, prototype properties, and declaration instantiation.
 
 use super::ScriptFunction;
-use crate::{
-    BindingState, Error, ObjectHandle, Realm, Value, environment::EnvironmentHandle,
-    object::DataDescriptor,
-};
+use crate::environment::EnvironmentHandle;
+use crate::object::DataDescriptor;
+use crate::{BindingState, Error, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span};
 use spite_parser::ast::{ArrowBody, BindingPattern, BindingPatternKind, Function, Parameter};
 use std::collections::{BTreeMap, BTreeSet};
@@ -430,7 +429,8 @@ impl Realm {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{ExceptionKind, Reference, function::Callable};
+    use crate::function::Callable;
+    use crate::{ExceptionKind, Reference};
 
     #[test]
     fn named_expression_self_binding_ignores_sloppy_writes_but_rejects_strict_writes() {

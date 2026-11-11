@@ -1,11 +1,10 @@
 //! Synchronous GeneratorMethod grammar and context boundaries (15.5).
 
 use spite_core::DiagnosticKind;
-use spite_parser::{
-    MAX_DEPTH,
-    ast::{ClassElement, ExprKind, FunctionKind, ObjectElement, ObjectProperty, StatementKind},
-    parse_script,
+use spite_parser::ast::{
+    ClassElement, ExprKind, FunctionKind, ObjectElement, ObjectProperty, StatementKind,
 };
+use spite_parser::{MAX_DEPTH, parse_script};
 
 fn summary(property: &ObjectProperty) -> (FunctionKind, String, bool) {
     let ExprKind::Function(function) = &property.value.kind else {

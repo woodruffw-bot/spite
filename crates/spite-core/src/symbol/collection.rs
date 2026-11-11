@@ -1,15 +1,11 @@
 //! Workspace collector support; never an embedding rooting requirement.
 
 use super::{JsSymbol, WeakJsSymbol};
-use std::{
-    hint::spin_loop,
-    marker::PhantomData,
-    rc::Rc,
-    sync::{
-        Arc,
-        atomic::{AtomicBool, Ordering},
-    },
-};
+use std::hint::spin_loop;
+use std::marker::PhantomData;
+use std::rc::Rc;
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 static UPGRADE_GATE: AtomicBool = AtomicBool::new(false);
 

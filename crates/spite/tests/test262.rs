@@ -1,7 +1,8 @@
 //! A pinned lexical smoke suite, not a general Test262 runner.
 
 use spite::{DiagnosticKind, Realm, parse_script};
-use std::{fs, path::Path};
+use std::fs;
+use std::path::Path;
 
 // Keep this standalone API smoke suite independent of the full runner inventory.
 // All other raw fixtures, including Modules, run through spite-test262.

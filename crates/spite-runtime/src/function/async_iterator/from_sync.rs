@@ -1,9 +1,8 @@
 //! Async-from-Sync method forwarding and awaited IteratorResult values (27.1.4.5).
 
-use crate::{
-    Error, ExceptionKind, ObjectHandle, Realm, Value,
-    function::{PromiseCapability, iterator::IteratorRecord},
-};
+use crate::function::PromiseCapability;
+use crate::function::iterator::IteratorRecord;
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span};
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]

@@ -3,13 +3,7 @@
 use spite_core::JsString;
 use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 fn type_error(source: &str) {
     assert!(
@@ -26,16 +20,16 @@ fn type_error(source: &str) {
 
 #[test]
 fn call_and_construction_distinguish_missing_undefined_and_object_arguments() {
-    check(
+    assert_true(
         "String()==='' && String(undefined)==='undefined' && String(null)==='null' && String(true)==='true' && String(-0)==='0' && String(42n)==='42' && String(NaN)==='NaN'",
     );
-    check(
+    assert_true(
         "let a=new String,b=new String(undefined),c=Object('x');a.valueOf()==='' && b.valueOf()==='undefined' && c.valueOf()==='x' && c instanceof String && new String('x')!==c && typeof c==='object'",
     );
-    check(
+    assert_true(
         "let log='',o={toString:()=>{log+='s';return 'x';},valueOf:()=>{throw 1;}};String(o)==='x' && new String(o).valueOf()==='x' && log==='ss'",
     );
-    check(
+    assert_true(
         "let F=String.bind(null,'bound');new F().valueOf()==='bound' && String.call(null,7)==='7' && new String('x').constructor===String",
     );
     assert_eq!(
@@ -67,10 +61,10 @@ fn wrappers_expose_immutable_utf16_indices_length_and_exact_key_order() {
     for key in ["0", "1", "2", "length"] {
         assert_eq!(realm.eval(&format!("var d=Object.getOwnPropertyDescriptor(s,'{key}');!d.writable && !d.configurable && d.enumerable==={}",key!="length")),Ok(Value::Boolean(true)));
     }
-    check(
+    assert_true(
         "let s=Object('abc');s[0]='z';s.length=7;s[0]==='a' && s.length===3 && !delete s[0] && !delete s.length && s.hasOwnProperty('1') && !s.hasOwnProperty('-0') && !s.hasOwnProperty('01')",
     );
-    check(
+    assert_true(
         "let s=Object('x');Object.defineProperty(s,'0',{value:'x'});Object.defineProperty(s,'length',{value:1});Object.freeze(s);Object.isFrozen(s) && s.valueOf()==='x'",
     );
     for change in [
@@ -87,7 +81,7 @@ fn wrappers_expose_immutable_utf16_indices_length_and_exact_key_order() {
 
 #[test]
 fn branded_methods_reject_fakes_and_keep_string_data_after_prototype_changes() {
-    check(
+    assert_true(
         "String.prototype.valueOf()==='' && String.prototype.toString()==='' && 'x'.valueOf()==='x' && 'x'.toString()==='x' && 'x'.toLocaleString()==='x'",
     );
     for method in ["toString", "valueOf"] {
@@ -103,45 +97,47 @@ fn branded_methods_reject_fakes_and_keep_string_data_after_prototype_changes() {
             type_error(&format!("String.prototype.{method}.call({value})"));
         }
     }
-    check(
+    assert_true(
         "let s=Object('abc');Object.setPrototypeOf(s,null);String.prototype.valueOf.call(s)==='abc' && Object.prototype.toString.call(s)==='[object String]' && s.length===3",
     );
-    check(
+    assert_true(
         "Object.prototype.toString.call(String.prototype)==='[object String]' && Object.prototype.toString.call(Object.create(String.prototype))==='[object Object]'",
     );
 }
 
 #[test]
 fn primitive_property_getters_and_setters_preserve_receivers_and_own_index_precedence() {
-    check(
+    assert_true(
         "Object.defineProperty(String.prototype,'x',{get:function(){'use strict';return this;}});'abc'.x==='abc'",
     );
-    check(
+    assert_true(
         "Object.defineProperty(String.prototype,'x',{get:function(){return this;}});let a='abc'.x,b='abc'.x;a instanceof String && a.valueOf()==='abc' && a!==b",
     );
-    check(
+    assert_true(
         "'use strict';let receiver,value;Object.defineProperty(String.prototype,'x',{set:function(v){receiver=this;value=v;}});'abc'.x=7;receiver==='abc' && value===7",
     );
-    check(
+    assert_true(
         "let count=0;Object.defineProperty(String.prototype,'0',{get:()=>{count++;return 'p';},set:()=>{count++;}});let s='abc';s[0]='z';s[0]==='a' && count===0 && ''[0]==='p' && count===1",
     );
-    check(
+    assert_true(
         "function f(){return this;}let s=f.call('abc');s instanceof String && s.length===3 && s[1]==='b' && Object.getPrototypeOf(s)===String.prototype",
     );
-    check("function f(){'use strict';return this;}f.call('abc')==='abc' && f.apply('abc')==='abc'");
+    assert_true(
+        "function f(){'use strict';return this;}f.call('abc')==='abc' && f.apply('abc')==='abc'",
+    );
 }
 
 #[test]
 fn object_algorithms_on_strings_use_index_descriptors_without_special_substitutions() {
-    check(
+    assert_true(
         "let ds=Object.getOwnPropertyDescriptors('💩');ds[0].value==='\\uD83D' && ds[1].value==='\\uDCA9' && ds.length.value===2 && !ds.length.enumerable && ds[0].enumerable",
     );
-    check(
+    assert_true(
         "let o=Object.assign({},'ab','x');o[0]==='x' && o[1]==='b' && !Object.hasOwn(o,'length') && 'ab'.hasOwnProperty('1') && Object.hasOwn('ab','length')",
     );
     type_error("Object.assign('x',{0:'z'})");
     type_error("Object.defineProperties({},'x')");
-    check(
+    assert_true(
         "Object.getPrototypeOf('abc')===String.prototype && Object.getPrototypeOf(Object.create(null,''))===null",
     );
 }
@@ -172,17 +168,17 @@ fn wrapper_property_capacity_is_a_host_limit_while_primitive_reads_remain_availa
 
 #[test]
 fn metadata_rooting_and_array_property_controls_remain_correct() {
-    check(
+    assert_true(
         "String.name==='String' && String.length===1 && String.prototype.constructor===String && String.prototype.length===0 && String.prototype.toString.length===0 && String.prototype.valueOf.length===0",
     );
-    check(
+    assert_true(
         "let d=Object.getOwnPropertyDescriptor(String,'prototype');!d.writable && !d.enumerable && !d.configurable",
     );
     type_error("new String.prototype.toString()");
-    check(
+    assert_true(
         "typeof Array.fromAsync==='function'&&Object.getOwnPropertyDescriptors(Array).fromAsync.value===Array.fromAsync",
     );
-    check(
+    assert_true(
         "Array.fromAsync=1;Array.fromAsync===1&&delete Array.fromAsync&&Array.fromAsync===undefined",
     );
     let mut realm = Realm::default();

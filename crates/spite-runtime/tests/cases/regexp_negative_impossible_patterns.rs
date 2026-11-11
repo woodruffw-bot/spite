@@ -3,17 +3,11 @@
 use spite_core::JsString;
 use spite_runtime::{Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn negative_impossible_assertions_keep_undefined_names_indices_and_unicode_boundaries() {
-    check(
+    assert_true(
         r#"
         var patterns=[
             '(?!(?<inside>[\\p{RGI_Emoji}]+)(?!(?<zero>a{0})))',
@@ -52,7 +46,7 @@ fn negative_impossible_consumers_callbacks_clones_and_collection_keep_empty_resu
 
 #[test]
 fn enclosing_negative_impossible_assertions_keep_required_optional_and_named_capture_masks() {
-    check(
+    assert_true(
         r#"
         var rows=[
             ['(?<outside>(?!(?<inside>[\\p{RGI_Emoji}]+)(?!(?<zero>a{0}))))+', [true,false,false]],
@@ -86,7 +80,7 @@ fn enclosing_negative_impossible_consumers_clones_and_collection_keep_capture_ro
 
 #[test]
 fn first_negative_impossible_choices_keep_first_captures_and_skip_later_named_slots() {
-    check(
+    assert_true(
         r#"
         var rows=[
             ['(?!(?<inside>[\\p{RGI_Emoji}]+)(?!(?<zero>a{0})))|(?<later>[\\p{RGI_Emoji}]+)', [false,false,false]],
@@ -123,7 +117,7 @@ fn first_negative_impossible_choice_consumers_clones_and_collection_keep_skipped
 
 #[test]
 fn negative_impossible_sequences_keep_interleaved_capture_roles_and_original_bindings() {
-    check(
+    assert_true(
         r#"
         var rows=[
             ['(?<before>a{0})(?!(?<inside>[\\p{RGI_Emoji}]+)(?!a{0}))(?<after>b{0})',[true,false,true]],
@@ -159,7 +153,7 @@ fn negative_impossible_sequence_consumers_clones_and_collection_keep_capture_ord
 
 #[test]
 fn many_negative_impossible_sequence_terms_keep_full_masks_without_default_quotas() {
-    check(
+    assert_true(
         r#"
         var count=10,pattern='(?!(?!([\\p{RGI_Emoji}]{0})))'.repeat(count)+'(?<tail>a{0})',r=new RegExp(pattern,'dgv');
         r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length===count+2&&m[1]===undefined&&m[count]===undefined&&m[count+1]===''&&m.groups.tail===''&&r.lastIndex===0&&r.source===pattern
@@ -168,7 +162,7 @@ fn many_negative_impossible_sequence_terms_keep_full_masks_without_default_quota
     let count = 1000;
     let pattern =
         JsString::from((r"(?!(?!([\p{RGI_Emoji}]{0})))".repeat(count) + r"(?<tail>a{0})").as_str());
-    check(&format!(
+    assert_true(&format!(
         "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length==={}&&m[{}]===undefined&&m[{}]===''&&m.indices[{}][0]===0&&m.groups.tail===''&&r.lastIndex===0&&r.source==={pattern:?}",
         count + 2,
         count,
@@ -179,7 +173,7 @@ fn many_negative_impossible_sequence_terms_keep_full_masks_without_default_quota
 
 #[test]
 fn enclosing_negative_impossible_sequences_keep_required_optional_and_inner_capture_masks() {
-    check(
+    assert_true(
         r#"
         var rows=[
             ['(?<outside>(?<before>a{0})(?!(?<inside>[\\p{RGI_Emoji}]+)(?!a{0}))(?<after>b{0}))+',[true,true,false,true]],

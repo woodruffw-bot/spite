@@ -3,17 +3,11 @@
 use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn compositional_choices_select_first_successful_empty_arm_with_original_duplicate_names() {
-    check(
+    assert_true(
         r#"
         var rows=[
             ['(?<same>(?![\\p{RGI_Emoji}]*))|(?<same>[\\p{RGI_Emoji}]{0})',[false,true]],
@@ -35,7 +29,7 @@ fn compositional_choices_select_first_successful_empty_arm_with_original_duplica
 
 #[test]
 fn compositional_impossible_arms_and_nested_assertions_preserve_source_flags_and_last_index() {
-    check(
+    assert_true(
         r#"
         var patterns=[
             '(?<outside>(?!(?<slot>[\\p{RGI_Emoji}]*))|(?<!(?<zero>[\\p{RGI_Emoji}]{0})))+',
@@ -65,7 +59,7 @@ fn compositional_string_consumers_copies_and_collection_keep_first_successful_ar
 
 #[test]
 fn compositional_proofs_preserve_original_errors_coercions_and_opt_in_abort_state() {
-    check(
+    assert_true(
         r#"
         var invalid=['(?<skip>(?!a*))|[\\p{Not_A_Property}]{0}','(?<skip>(?!a*))|(?<x>a)(?<x>b){0}','(?<skip>(?!a*))|\\k<missing>{0}'],ok=true;
         for(var source of invalid){var caught=false;try{new RegExp(source,'v')}catch(e){caught=e instanceof SyntaxError}ok=ok&&caught}
@@ -91,7 +85,7 @@ fn compositional_proofs_preserve_original_errors_coercions_and_opt_in_abort_stat
 
 #[test]
 fn capture_free_positive_operands_compose_as_empty_without_exporting_consumed_data() {
-    check(
+    assert_true(
         r#"
         var rows=[
             ['(?=[\\p{RGI_Emoji}]*)',[]],
@@ -115,7 +109,7 @@ fn capture_free_positive_operands_compose_as_empty_without_exporting_consumed_da
 
 #[test]
 fn capture_free_positive_extension_preserves_capturing_assertions_and_original_errors() {
-    check(
+    assert_true(
         r#"
         var consuming=/(?=(?<value>a*))/d,m=consuming.exec('aaa'),zero=/(?=(?<empty>[\p{RGI_Emoji}]{0}))/dv,z=zero.exec('😀');
         var ok=m[0]===''&&m.groups.value==='aaa'&&m.indices.groups.value[0]===0&&m.indices.groups.value[1]===3&&z[0]===''&&z.groups.empty===''&&z.indices.groups.empty[0]===0&&z.indices.groups.empty[1]===0;
@@ -141,7 +135,7 @@ fn capture_free_positive_consumers_clones_and_collection_keep_only_outside_empty
 
 #[test]
 fn successful_positive_operands_export_only_undefined_negative_erased_and_skipped_captures() {
-    check(
+    assert_true(
         r#"
         var rows=[
             ['(?=(?!(?<never>[\\p{RGI_Emoji}]))|[\\p{RGI_Emoji}]*)',[false]],
@@ -179,7 +173,7 @@ fn undefined_capture_positive_consumers_clones_and_collection_keep_outside_and_b
 
 #[test]
 fn undefined_capture_positive_operands_preserve_original_errors_and_coercion_order() {
-    check(
+    assert_true(
         r#"
         var invalid=['(?=(?!(?<never>a))|[\\p{Not_A_Property}]*)','(?=(?!(?<x>a)(?<x>b))|b*)','(?=(?!(\\k<missing>))|b*)'],ok=true;
         for(var source of invalid){var caught=false;try{new RegExp(source,'v')}catch(e){caught=e instanceof SyntaxError}ok=ok&&caught}

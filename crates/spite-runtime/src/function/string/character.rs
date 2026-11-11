@@ -1,7 +1,8 @@
 //! UTF-16 character construction/access (22.1.2.1–2, 22.1.3.1–4).
 
 use super::Builtin;
-use crate::{Error, ExceptionKind, Realm, Value, value::to_uint32};
+use crate::value::to_uint32;
+use crate::{Error, ExceptionKind, Realm, Value};
 use spite_core::{JsString, Span};
 
 impl Realm {

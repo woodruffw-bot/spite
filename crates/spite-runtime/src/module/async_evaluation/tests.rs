@@ -1,6 +1,6 @@
 //! Module body completion and top-level Promise settlement are separate jobs.
 
-use super::*;
+use super::{Error, ModuleExecutionStatus, Realm, Value};
 use crate::{Limits, PromiseJobOutcome, PromiseState};
 
 fn state<'a>(realm: &'a Realm, promise: &Value) -> &'a PromiseState {

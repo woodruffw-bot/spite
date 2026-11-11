@@ -1,6 +1,7 @@
 //! Shared RawBytesToNumeric and NumericToRawBytes element codecs (25.1.3).
 
-use crate::{Value, value::to_uint32};
+use crate::Value;
+use crate::value::to_uint32;
 use spite_bigint::{BigInt, Budget, Error};
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]

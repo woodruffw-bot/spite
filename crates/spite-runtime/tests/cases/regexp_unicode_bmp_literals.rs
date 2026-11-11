@@ -4,13 +4,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn unicode_bmp_literal_results_snapshot() {
@@ -104,45 +98,53 @@ fn unicode_bmp_names_lone_surrogates_and_matching_boundaries_are_exact() {
     };
     writeln!(rows, "{script:?} {result:?}").unwrap();
     insta::assert_snapshot!("original_unicode_literal_programs", rows);
-    check(r"let r=/a/ug;r.lastIndex=1;let a=r.exec('\uD800a\uDC00');a.index===1&&r.lastIndex===2");
-    check(r"let r=/a/uy;r.lastIndex=1;let a=r.exec('\uD800a\uDC00');a.index===1&&r.lastIndex===2");
-    check(
+    assert_true(
+        r"let r=/a/ug;r.lastIndex=1;let a=r.exec('\uD800a\uDC00');a.index===1&&r.lastIndex===2",
+    );
+    assert_true(
+        r"let r=/a/uy;r.lastIndex=1;let a=r.exec('\uD800a\uDC00');a.index===1&&r.lastIndex===2",
+    );
+    assert_true(
         r"let r=/(?<x>a(?<y>()))b/dug;r.lastIndex=1;let a=r.exec('\uD83D\uDE00ab');a.index===2&&a.groups.x==='a'&&a.groups.y===''&&a.indices.groups.x===a.indices[1]&&a.indices.groups.y===a.indices[2]&&a.indices[2][0]===3",
     );
-    check(r"let r=/a/uy;r.lastIndex=1;r.exec('\uD83D\uDE00a')===null&&r.lastIndex===0");
-    check(r"let r=/a/ug;r.lastIndex=1;let a=r.exec('\uD83D\uDE00a');a.index===2&&r.lastIndex===3");
-    check(r"let r=/a/uy;r.lastIndex=2;let a=r.exec('\uD83D\uDE00a');a.index===2&&r.lastIndex===3");
-    check(r"let r=/a/u;r.exec('A')===null&&r.unicode===true&&r.unicodeSets===false");
+    assert_true(r"let r=/a/uy;r.lastIndex=1;r.exec('\uD83D\uDE00a')===null&&r.lastIndex===0");
+    assert_true(
+        r"let r=/a/ug;r.lastIndex=1;let a=r.exec('\uD83D\uDE00a');a.index===2&&r.lastIndex===3",
+    );
+    assert_true(
+        r"let r=/a/uy;r.lastIndex=2;let a=r.exec('\uD83D\uDE00a');a.index===2&&r.lastIndex===3",
+    );
+    assert_true(r"let r=/a/u;r.exec('A')===null&&r.unicode===true&&r.unicodeSets===false");
 }
 
 #[test]
 fn unicode_bmp_consumers_callbacks_species_and_copies_keep_code_unit_indices() {
-    check(
+    assert_true(
         r"let r=/(a())b/ug;r.lastIndex=1;let a=[...'\uD83D\uDE00ab\uD83D\uDE00ab'.matchAll(r)];a.length===2&&a[0].index===2&&a[1].index===6&&a[0][1]==='a'&&a[0][2]===''&&r.lastIndex===1",
     );
-    check(
+    assert_true(
         r"let seen=[];let s='\uD83D\uDE00ab\uD83D\uDE00ab'.replace(/(a())b/ug,(m,x,y,i)=>{seen.push(i);return '_'});s==='\uD83D\uDE00_\uD83D\uDE00_'&&seen.join(',')==='2,6'",
     );
-    check(r"'\uD83D\uDE00ab\uD83D\uDE00ab'.match(/ab/ug).join('|')==='ab|ab'");
-    check(r"'\uD83D\uDE00ab'.split(/(a())b/u).join('|')==='\uD83D\uDE00|a||'");
-    check(r"let r=/ab/ug;r.lastIndex=1;'\uD83D\uDE00ab'.search(r)===2&&r.lastIndex===1");
-    check(
+    assert_true(r"'\uD83D\uDE00ab\uD83D\uDE00ab'.match(/ab/ug).join('|')==='ab|ab'");
+    assert_true(r"'\uD83D\uDE00ab'.split(/(a())b/u).join('|')==='\uD83D\uDE00|a||'");
+    assert_true(r"let r=/ab/ug;r.lastIndex=1;'\uD83D\uDE00ab'.search(r)===2&&r.lastIndex===1");
+    assert_true(
         r"let r=/(?<x>ab)/dug,c=new RegExp(r);let a=c.exec('\uD83D\uDE00ab');a.groups.x==='ab'&&a.indices.groups.x===a.indices[1]&&r.lastIndex===0&&c.lastIndex===4",
     );
 }
 
 #[test]
 fn unicode_bmp_input_index_coercion_and_strict_writes_remain_ordered() {
-    check(
+    assert_true(
         "let r=/a/u,t='';r.lastIndex={valueOf(){t+='i';return 2;}};let a=r.exec({toString(){t+='s';return 'ba'}});t==='si'&&a.index===1&&typeof r.lastIndex==='object'",
     );
-    check(
+    assert_true(
         "let r=/a/ug,t='';r.lastIndex={valueOf(){t+='i';return 1;}};let a=r.exec({toString(){t+='s';return 'ba'}});t==='si'&&a.index===1&&r.lastIndex===2",
     );
-    check(
+    assert_true(
         "let r=/a/uy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('ba')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
-    check(
+    assert_true(
         "let r=/a/uy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('bb')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
 }
@@ -172,9 +174,6 @@ fn unicode_bmp_opted_in_work_abort_and_unproved_modes_remain_distinct() {
         r"/(?:^a)+b/u.exec('a')",
         r"/(a)\1/u.exec('aa')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }

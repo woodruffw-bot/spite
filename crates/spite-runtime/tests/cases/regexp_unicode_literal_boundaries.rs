@@ -3,13 +3,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn unicode_literal_boundary_results_snapshot() {
@@ -56,22 +50,22 @@ fn unicode_literal_boundary_results_snapshot() {
 #[test]
 fn unicode_literal_boundary_exact_context_and_capture_aliases() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^((A)b)$/dm{mode}g,m=r.exec('ab\r\nAb\u2028AB\u2029');m.index===4&&m[1]==='Ab'&&m[2]==='A'&&m.indices[1][0]===4&&m.indices[2][1]===5&&r.lastIndex===6"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/A(A)$/d{mode}g,m=r.exec('AAAA');m.index===2&&m[1]==='A'&&m.indices[1][0]===3&&r.lastIndex===4"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"/^A(b)$/m{mode}.test('xAb\nAb')&&!/^A(b)$/{mode}.test('Ab\n')&&!/^A(b)$/m{mode}.test('aB')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^(?<x>\u{{10400}})(?<y>\u{{10428}})$/d{mode}y;r.lastIndex=1;let m=r.exec('\u{{10400}}\u{{10428}}');m.index===0&&m[1]==='\u{{10400}}'&&m[2]==='\u{{10428}}'&&m.indices.groups.x===m.indices[1]&&m.indices[1][1]===2&&r.lastIndex===4"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^(?<__proto__>A)(())b$/dm{mode}g,m=r.exec('x\nAb');m.groups.__proto__==='A'&&Object.getPrototypeOf(m.groups)===null&&m[2]===''&&m[3]===''&&m.indices[2][0]===3&&m.indices.groups.__proto__===m.indices[1]"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^(\uD800)(A)$/d{mode},m=r.exec('\uD800A');m[1]==='\uD800'&&m.indices[1][1]===1&&!r.test('\uD800\uDC00A')"
         ));
     }
@@ -80,19 +74,19 @@ fn unicode_literal_boundary_exact_context_and_capture_aliases() {
 #[test]
 fn unicode_literal_boundary_escaped_anchors_and_consumers() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"/^(\$)(A)\$$/{mode}.exec('$A$')[2]==='A'&&!/^(\$)(A)\$$/{mode}.test('$a$')&&/^(A)\\$/{mode}.exec('A\\')[1]==='A'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=[...'Ab\r\nAb\u2028Ab\u2029'.matchAll(/^(A)(b)$/dm{mode}g)];a.length===3&&a[0].index===0&&a[1].index===4&&a[2].index===7&&a[2].indices[2][1]===9"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'Ab\naB\nAb'.replace(/^(?<x>A)(b)$/m{mode}g,'<$1:$2:$<x>>')==='<A:b:A>\naB\n<A:b:A>'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^A(b)$/m{mode};r.lastIndex=99;'x\nAb'.search(r)===2&&r.lastIndex===99"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'Ab\nAb'.split(/^(A)(b)$/m{mode}).join('|')==='|A|b|\n|A|b|'"
         ));
     }
@@ -100,19 +94,19 @@ fn unicode_literal_boundary_escaped_anchors_and_consumers() {
 
 #[test]
 fn unicode_literal_boundary_metadata_flag_clones_coercions_and_writes() {
-    check(
+    assert_true(
         r"let r=/^(?<x>A)(b)$/dmv,c=new RegExp(r,'diuy');c.source==='^(?<x>A)(b)$'&&c.ignoreCase&&c.unicode&&!c.multiline&&c.exec('aB').groups.x==='a'&&c.lastIndex===2",
     );
-    check(
+    assert_true(
         r"let r=/^(?<x>A)(b)$/dimv,c=new RegExp(r,'duy');c.source==='^(?<x>A)(b)$'&&!c.ignoreCase&&c.exec('aB')===null&&c.exec('Ab').groups.x==='A'&&c.lastIndex===2",
     );
-    check(
+    assert_true(
         r"let t='',r=/^A(b)$/uy;r.lastIndex={valueOf(){t+='i';return 0}};let m=r.exec({toString(){t+='s';return 'Ab'}});t==='si'&&m[1]==='b'&&r.lastIndex===2",
     );
-    check(
+    assert_true(
         r"let r=/^A(b)$/uy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('Ab')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/^A(b)$/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('xAb')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
 }
@@ -120,20 +114,20 @@ fn unicode_literal_boundary_metadata_flag_clones_coercions_and_writes() {
 #[test]
 fn unicode_literal_boundary_exact_unicode_and_ignore_case_are_distinct() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"/^(ſ)(K)$/{mode}.test('ſK')&&!/^(ſ)(K)$/{mode}.test('SK')&&/^(ſ)(K)$/i{mode}.test('SK')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"/^(ß)(S)$/{mode}.test('ßS')&&!/^(ß)(S)$/{mode}.test('\u{{1df95}}S')&&!/^(ß)(S)$/{mode}.test('ßs')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^(\u{{10400}})(\u{{10428}})$/{mode};r.test('\u{{10400}}\u{{10428}}')&&!r.test('\u{{10428}}\u{{10400}}')"
         ));
     }
 }
 
 #[test]
-fn unicode_literal_boundary_opted_work_and_remaining_gaps() {
+fn unicode_literal_boundary_opted_work_and_additional_compositions() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
         ..Limits::default()
@@ -158,9 +152,6 @@ fn unicode_literal_boundary_opted_work_and_remaining_gaps() {
         r"/^(A)\1$/v.exec('AA')",
         r"/^(?=Ab)/u.exec('Ab')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }

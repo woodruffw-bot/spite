@@ -1,9 +1,7 @@
 //! Ordinary global object and the object half of the global environment (9.1.1.4).
 
-use crate::{
-    Error, ExceptionKind, ObjectHandle, Realm, Value,
-    object::{DataDescriptor, Property},
-};
+use crate::object::{DataDescriptor, Property};
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span};
 use std::collections::BTreeMap;
 
@@ -623,10 +621,8 @@ impl Realm {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        Reference,
-        object::{Budget, DescriptorKind, PropertyDescriptor},
-    };
+    use crate::Reference;
+    use crate::object::{Budget, DescriptorKind, PropertyDescriptor};
 
     fn define(realm: &mut Realm, name: &str, descriptor: impl Into<PropertyDescriptor>) {
         let global = realm.global_object();

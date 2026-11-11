@@ -4,13 +4,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn unicode_sets_bmp_literal_results_snapshot() {
@@ -66,7 +60,7 @@ fn unicode_sets_bmp_literal_results_snapshot() {
 
 #[test]
 fn unicode_sets_bmp_names_lone_surrogates_and_matching_boundaries_are_exact() {
-    check(
+    assert_true(
         "let r=/a/v,c=new RegExp(r),u=new RegExp(r,'u');r.unicodeSets&&!r.unicode&&r.flags==='v'&&c.unicodeSets&&!c.unicode&&u.unicode&&!u.unicodeSets&&u.exec('a')[0]==='a'",
     );
     let mut rows = String::new();
@@ -107,45 +101,53 @@ fn unicode_sets_bmp_names_lone_surrogates_and_matching_boundaries_are_exact() {
     };
     writeln!(rows, "{script:?} {result:?}").unwrap();
     insta::assert_snapshot!("original_unicode_sets_literal_programs", rows);
-    check(r"let r=/a/vg;r.lastIndex=1;let a=r.exec('\uD800a\uDC00');a.index===1&&r.lastIndex===2");
-    check(r"let r=/a/vy;r.lastIndex=1;let a=r.exec('\uD800a\uDC00');a.index===1&&r.lastIndex===2");
-    check(
+    assert_true(
+        r"let r=/a/vg;r.lastIndex=1;let a=r.exec('\uD800a\uDC00');a.index===1&&r.lastIndex===2",
+    );
+    assert_true(
+        r"let r=/a/vy;r.lastIndex=1;let a=r.exec('\uD800a\uDC00');a.index===1&&r.lastIndex===2",
+    );
+    assert_true(
         r"let r=/(?<x>a(?<y>()))b/dvg;r.lastIndex=1;let a=r.exec('\uD83D\uDE00ab');a.index===2&&a.groups.x==='a'&&a.groups.y===''&&a.indices.groups.x===a.indices[1]&&a.indices.groups.y===a.indices[2]&&a.indices[2][0]===3",
     );
-    check(r"let r=/a/vy;r.lastIndex=1;r.exec('\uD83D\uDE00a')===null&&r.lastIndex===0");
-    check(r"let r=/a/vg;r.lastIndex=1;let a=r.exec('\uD83D\uDE00a');a.index===2&&r.lastIndex===3");
-    check(r"let r=/a/vy;r.lastIndex=2;let a=r.exec('\uD83D\uDE00a');a.index===2&&r.lastIndex===3");
-    check(r"let r=/a/v;r.exec('A')===null&&r.unicode===false&&r.unicodeSets===true");
+    assert_true(r"let r=/a/vy;r.lastIndex=1;r.exec('\uD83D\uDE00a')===null&&r.lastIndex===0");
+    assert_true(
+        r"let r=/a/vg;r.lastIndex=1;let a=r.exec('\uD83D\uDE00a');a.index===2&&r.lastIndex===3",
+    );
+    assert_true(
+        r"let r=/a/vy;r.lastIndex=2;let a=r.exec('\uD83D\uDE00a');a.index===2&&r.lastIndex===3",
+    );
+    assert_true(r"let r=/a/v;r.exec('A')===null&&r.unicode===false&&r.unicodeSets===true");
 }
 
 #[test]
 fn unicode_sets_bmp_consumers_callbacks_species_and_copies_keep_code_unit_indices() {
-    check(
+    assert_true(
         r"let r=/(a())b/vg;r.lastIndex=1;let a=[...'\uD83D\uDE00ab\uD83D\uDE00ab'.matchAll(r)];a.length===2&&a[0].index===2&&a[1].index===6&&a[0][1]==='a'&&a[0][2]===''&&r.lastIndex===1",
     );
-    check(
+    assert_true(
         r"let seen=[];let s='\uD83D\uDE00ab\uD83D\uDE00ab'.replace(/(a())b/vg,(m,x,y,i)=>{seen.push(i);return '_'});s==='\uD83D\uDE00_\uD83D\uDE00_'&&seen.join(',')==='2,6'",
     );
-    check(r"'\uD83D\uDE00ab\uD83D\uDE00ab'.match(/ab/vg).join('|')==='ab|ab'");
-    check(r"'\uD83D\uDE00ab'.split(/(a())b/v).join('|')==='\uD83D\uDE00|a||'");
-    check(r"let r=/ab/vg;r.lastIndex=1;'\uD83D\uDE00ab'.search(r)===2&&r.lastIndex===1");
-    check(
+    assert_true(r"'\uD83D\uDE00ab\uD83D\uDE00ab'.match(/ab/vg).join('|')==='ab|ab'");
+    assert_true(r"'\uD83D\uDE00ab'.split(/(a())b/v).join('|')==='\uD83D\uDE00|a||'");
+    assert_true(r"let r=/ab/vg;r.lastIndex=1;'\uD83D\uDE00ab'.search(r)===2&&r.lastIndex===1");
+    assert_true(
         r"let r=/(?<x>ab)/dvg,c=new RegExp(r);let a=c.exec('\uD83D\uDE00ab');a.groups.x==='ab'&&a.indices.groups.x===a.indices[1]&&r.lastIndex===0&&c.lastIndex===4",
     );
 }
 
 #[test]
 fn unicode_sets_bmp_input_index_coercion_and_strict_writes_remain_ordered() {
-    check(
+    assert_true(
         "let r=/a/v,t='';r.lastIndex={valueOf(){t+='i';return 2;}};let a=r.exec({toString(){t+='s';return 'ba'}});t==='si'&&a.index===1&&typeof r.lastIndex==='object'",
     );
-    check(
+    assert_true(
         "let r=/a/vg,t='';r.lastIndex={valueOf(){t+='i';return 1;}};let a=r.exec({toString(){t+='s';return 'ba'}});t==='si'&&a.index===1&&r.lastIndex===2",
     );
-    check(
+    assert_true(
         "let r=/a/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('ba')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
-    check(
+    assert_true(
         "let r=/a/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('bb')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
 }
@@ -175,9 +177,6 @@ fn unicode_sets_bmp_opted_in_work_abort_and_unproved_modes_remain_distinct() {
         r"/(?:^a)+b/v.exec('a')",
         r"/(a)\1/v.exec('aa')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }

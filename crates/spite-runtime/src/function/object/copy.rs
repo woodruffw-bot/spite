@@ -1,6 +1,7 @@
 //! Object.assign and Object.getOwnPropertyDescriptors (20.1.2.1/9).
 
-use crate::{Error, ExceptionKind, Realm, Value, object::DataDescriptor};
+use crate::object::DataDescriptor;
+use crate::{Error, ExceptionKind, Realm, Value};
 use spite_core::Span;
 
 impl Realm {

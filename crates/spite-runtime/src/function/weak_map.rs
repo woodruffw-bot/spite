@@ -1,7 +1,8 @@
 //! WeakMap constructor and object/Symbol-key methods (24.3).
 
 use super::Builtin;
-use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, object::DataDescriptor};
+use crate::object::DataDescriptor;
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span, WellKnownSymbol};
 
 #[derive(Debug)]

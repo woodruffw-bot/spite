@@ -1,13 +1,11 @@
 //! Ordinary DataView construction and live buffer witnesses (25.3).
 
 use super::Builtin;
-use crate::{
-    Error, ExceptionKind, ObjectHandle, Realm, Value,
-    binary_data::ElementType,
-    object::{
-        ArrayBufferError, Budget, DataDescriptor, DescriptorKind, Objects, PropertyDescriptor,
-    },
+use crate::binary_data::ElementType;
+use crate::object::{
+    ArrayBufferError, Budget, DataDescriptor, DescriptorKind, Objects, PropertyDescriptor,
 };
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span, WellKnownSymbol};
 
 const ELEMENT_TYPES: [ElementType; 11] = [

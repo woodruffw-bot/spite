@@ -4,30 +4,24 @@ use crate::common;
 use common::REALM_ENTRIES;
 use spite_runtime::{Error, Limits, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn signed_zero_and_nonfinite_results_follow_full_iteration() {
-    check(
+    assert_true(
         "Object.is(Math.sumPrecise([]),-0) && Object.is(Math.sumPrecise([-0,-0]),-0) && Object.is(Math.sumPrecise([-0,0]),0) && Object.is(Math.sumPrecise([1,-1,-0]),0) && Number.isNaN(Math.sumPrecise([NaN,Infinity])) && Number.isNaN(Math.sumPrecise([Infinity,-Infinity])) && Math.sumPrecise([1,Infinity,2])===Infinity && Math.sumPrecise([-Infinity,-Infinity])===-Infinity",
     );
-    check(
+    assert_true(
         "let calls=0,items={[Symbol.iterator](){return {next(){calls++;if(calls===1)return {value:NaN};if(calls===2)return {value:Infinity};return {done:true};},return(){throw 8;}};}};Number.isNaN(Math.sumPrecise(items)) && calls===3",
     );
 }
 
 #[test]
 fn exact_cancellation_and_halfway_rounding_do_not_round_intermediate_sums() {
-    check(
+    assert_true(
         "Math.sumPrecise([1e308,1e308,0.1,0.1,1e30,0.1,-1e30,-1e308,-1e308])===0.30000000000000004 && Math.sumPrecise([1e30,0.1,-1e30])===0.1 && Math.sumPrecise([Number.MAX_VALUE,Number.MAX_VALUE,-Number.MAX_VALUE])===Number.MAX_VALUE && Math.sumPrecise([Number.MIN_VALUE,-Number.MIN_VALUE,Number.MIN_VALUE])===Number.MIN_VALUE",
     );
-    check(
+    assert_true(
         "Math.sumPrecise([1,2**-53])===1 && Math.sumPrecise([1,2**-53,Number.MIN_VALUE])===1+Number.EPSILON && Math.sumPrecise([1+Number.EPSILON,2**-53])===1+2*Number.EPSILON && Math.sumPrecise([Number.MAX_VALUE,2**970,-Number.MIN_VALUE])===Number.MAX_VALUE && Math.sumPrecise([Number.MAX_VALUE,2**970])===Infinity",
     );
 }
@@ -43,11 +37,11 @@ fn element_types_are_validated_without_coercion_even_after_nonfinite_values() {
         "Symbol()",
         "Object(3)",
     ] {
-        check(&format!(
+        assert_true(&format!(
             "let caught=false;try{{Math.sumPrecise([NaN,Infinity,{value}]);}}catch(e){{caught=e instanceof TypeError;}}caught"
         ));
     }
-    check(
+    assert_true(
         "let calls=0,caught=false,o={[Symbol.toPrimitive](){calls++;throw 7;},valueOf(){calls++;throw 8;}};try{Math.sumPrecise([o]);}catch(e){caught=e instanceof TypeError;}caught && calls===0",
     );
     for input in [
@@ -58,7 +52,7 @@ fn element_types_are_validated_without_coercion_even_after_nonfinite_values() {
         "'3'",
         "{[Symbol.iterator]:7}",
     ] {
-        check(&format!(
+        assert_true(&format!(
             "let caught=false;try{{Math.sumPrecise({input});}}catch(e){{caught=e instanceof TypeError;}}caught"
         ));
     }
@@ -66,10 +60,10 @@ fn element_types_are_validated_without_coercion_even_after_nonfinite_values() {
 
 #[test]
 fn iterator_method_and_next_are_captured_with_exact_receivers_and_live_steps() {
-    check(
+    assert_true(
         "let log='',steps=0,iterator={get next(){log+='n';return function(){if(this!==iterator)throw 7;steps++;return steps<3?{value:steps}:{done:true,get value(){throw 8;}};};}},items={get [Symbol.iterator](){log+='i';return function(){if(this!==items)throw 9;log+='c';return iterator;};}};Math.sumPrecise.call(Symbol(),items,{valueOf(){throw 10;}})===3 && steps===3 && log==='icn'",
     );
-    check(
+    assert_true(
         "let a=[1,2];a[Symbol.iterator]=function(){let i=0;return {next(){i++;return i===1?{value:7}:{done:true};}};};Math.sumPrecise(a)===7",
     );
 }
@@ -77,11 +71,11 @@ fn iterator_method_and_next_are_captured_with_exact_receivers_and_live_steps() {
 #[test]
 fn element_errors_close_but_step_errors_leave_the_iterator_open() {
     for cleanup in ["return {};", "return 7;", "throw 8;"] {
-        check(&format!(
+        assert_true(&format!(
             "let closed=0,steps=0,caught=false,items={{[Symbol.iterator](){{return {{next(){{steps++;return {{value:{{}}}};}},return(){{closed++;{cleanup}}}}};}}}};try{{Math.sumPrecise(items);}}catch(e){{caught=e instanceof TypeError;}}caught && steps===1 && closed===1"
         ));
     }
-    check(
+    assert_true(
         "let closed=0,caught=false,items={[Symbol.iterator](){return {next(){return {value:{}};},get return(){closed++;throw 8;}};}};try{Math.sumPrecise(items);}catch(e){caught=e instanceof TypeError;}caught && closed===1",
     );
     for result in [
@@ -89,11 +83,11 @@ fn element_errors_close_but_step_errors_leave_the_iterator_open() {
         "return {get done(){throw 7;}};",
         "return {done:false,get value(){throw 7;}};",
     ] {
-        check(&format!(
+        assert_true(&format!(
             "let closed=0,caught=false,items={{[Symbol.iterator](){{return {{next(){{{result}}},return(){{closed++;return {{}};}}}};}}}};try{{Math.sumPrecise(items);}}catch(e){{caught=e===7;}}caught && closed===0"
         ));
     }
-    check(
+    assert_true(
         "let closed=0,caught=false,items={[Symbol.iterator](){return {next(){return 7;},return(){closed++;return {};}};}};try{Math.sumPrecise(items);}catch(e){caught=e instanceof TypeError;}caught && closed===0",
     );
 }
@@ -149,10 +143,10 @@ fn number_summation_does_not_use_the_host_bigint_magnitude_quota() {
 
 #[test]
 fn standard_descriptors_non_constructibility_and_intrinsic_roots_are_preserved() {
-    check(
+    assert_true(
         "let d=Object.getOwnPropertyDescriptor(Math,'sumPrecise'),n=Object.getOwnPropertyDescriptor(d.value,'name'),l=Object.getOwnPropertyDescriptor(d.value,'length');d.writable && !d.enumerable && d.configurable && n.value==='sumPrecise' && !n.writable && !n.enumerable && n.configurable && l.value===1 && !l.writable && !l.enumerable && l.configurable && !Object.hasOwn(d.value,'prototype')",
     );
-    check(
+    assert_true(
         "let caught=false;try{new Math.sumPrecise();}catch(e){caught=e instanceof TypeError;}caught",
     );
     let mut realm = Realm::default();

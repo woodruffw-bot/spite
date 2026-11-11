@@ -1,8 +1,6 @@
-use super::*;
-use crate::{
-    Limits,
-    object::{Budget, DescriptorKind, PropertyDescriptor},
-};
+use super::{Error, ErrorConstructor, JsString, ObjectHandle, Realm, Span, Value};
+use crate::Limits;
+use crate::object::{Budget, DescriptorKind, PropertyDescriptor};
 
 fn getter(realm: &mut Realm, object: &ObjectHandle, name: &str, source: &str) {
     let Value::Object(get) = realm.eval(source).unwrap() else {

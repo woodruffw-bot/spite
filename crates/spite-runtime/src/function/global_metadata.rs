@@ -5,10 +5,8 @@
 //! Atomics dispatch their algorithms while retaining the intrinsic identities.
 
 use super::Builtin;
-use crate::{
-    Error, ObjectHandle, Realm, Value,
-    object::{DataDescriptor, DescriptorKind, PropertyDescriptor},
-};
+use crate::object::{DataDescriptor, DescriptorKind, PropertyDescriptor};
+use crate::{Error, ObjectHandle, Realm, Value};
 use spite_core::{JsString, PropertyKey, Span, WellKnownSymbol};
 
 #[derive(Clone, Copy, Debug)]

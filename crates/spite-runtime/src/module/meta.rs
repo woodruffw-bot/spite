@@ -1,6 +1,6 @@
 //! Per-record import.meta with the default host hooks (13.3.12).
 
-use super::*;
+use super::{Error, ObjectHandle, Realm, Span, Value};
 
 impl Realm {
     pub(crate) fn import_meta_value(&mut self, span: Span) -> Result<Value, Error> {

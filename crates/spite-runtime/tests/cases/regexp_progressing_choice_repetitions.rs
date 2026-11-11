@@ -4,13 +4,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn progressing_choice_repetition_result_snapshot() {
@@ -57,47 +51,47 @@ fn progressing_choice_repetition_result_snapshot() {
 
 #[test]
 fn choice_iteration_retries_restore_counts_named_enclosures_and_source_order() {
-    check(
+    assert_true(
         r"let a=/(?<all>(?:\k<all>a|b)+)\k<all>/d.exec('abab');a[0]==='abab'&&a.groups.all==='ab'&&a.indices.groups.all===a.indices[1]&&a.indices.groups.all[1]===2",
     );
-    check(
+    assert_true(
         r"let a=/(?<x>a)(?:\k<later>b|a)+(?<later>\k<x>)/d.exec('abbaa');a[0]==='abbaa'&&a.groups.x==='a'&&a.groups.later==='a'&&a.indices.groups.x===a.indices[1]&&a.indices.groups.later===a.indices[2]&&a.indices.groups.later[0]===4",
     );
-    check(
+    assert_true(
         r"let a=/(?<all>(?:ab|a)+)b/d.exec('ab'),b=/(?<all>(?:ab|a)+)b/d.exec('abb');a[0]==='ab'&&a.groups.all==='a'&&a.indices.groups.all===a.indices[1]&&a.indices.groups.all[1]===1&&b[0]==='abb'&&b.groups.all==='ab'&&b.indices.groups.all[1]===2",
     );
-    check(
+    assert_true(
         r"let a=/(?<all>(?:a|ab)+)b/d.exec('abb'),b=/(?<all>(?:ab|a)+?)b/d.exec('ababb');a[0]==='ab'&&a.groups.all==='a'&&b[0]==='ababb'&&b.groups.all==='abab'&&b.indices.groups.all[1]===4",
     );
-    check(
+    assert_true(
         r"let a=/(?<x>a)(?:\k<x>b|b)+\k<x>/d.exec('aaba');a[0]==='aaba'&&a.groups.x==='a'&&a.indices.groups.x===a.indices[1]&&a.indices.groups.x[0]===0&&a.indices.groups.x[1]===1",
     );
-    check(
+    assert_true(
         r"let a=/(?:(?<x>(?:ab|c)+)d|(?<x>a+))\k<x>/d.exec('abcdabc');a[0]==='abcdabc'&&a.groups.x==='abc'&&a[2]===undefined&&a.indices.groups.x===a.indices[1]&&a.indices.groups.x[1]===3",
     );
-    check(
+    assert_true(
         r"let a=/(?<all>(?:ab|c)+(?:ab|c)+)/d.exec('abc');a[0]==='abc'&&a.groups.all==='abc'&&a.indices.groups.all===a.indices[1]&&a.indices.groups.all[1]===3",
     );
-    check(
+    assert_true(
         r"let a=/(?<all>(?:.b|a)+)c/ds.exec('\uD800bac'),b=/(?<all>(?:^a|b$)+)/dm.exec('q\na');a.groups.all.length===3&&a.groups.all.charCodeAt(0)===0xD800&&a.indices.groups.all[1]===3&&b.index===2&&b.groups.all==='a'",
     );
 }
 
 #[test]
 fn progressing_choices_consumers_sticky_counts_and_zero_advancement_keep_semantics() {
-    check(
+    assert_true(
         r"let r=/(?<all>(?:ab|c)+)d/dg,a=[...'abccd abd'.matchAll(r)];a.length===2&&a[0][0]==='abccd'&&a[0].groups.all==='abcc'&&a[0].indices.groups.all[1]===4&&a[1].index===6&&a[1].groups.all==='ab'&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"'qabccdZ'.replace(/(?<all>(?:ab|c)+)d/,'<$<all>>')==='q<abcc>Z'&&'qabccdZ'.search(/((?:ab|c)+)d/)===1&&'qabccdZ'.split(/((?:ab|c)+)d/).join(',')==='q,abcc,Z'",
     );
-    check(
+    assert_true(
         r"let r=/(?<all>(?:ab|c)+)d/dy;r.lastIndex=1;let copy=new RegExp(r),a=r.exec('qabccd');a.groups.all==='abcc'&&a.indices.groups.all[0]===1&&r.lastIndex===6&&r.exec('qabccd')===null&&r.lastIndex===0&&copy.source===r.source&&copy.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let a=[...'q'.matchAll(/(?<all>(?:ab|c)*)/dg)];a.length===2&&a[0].groups.all===''&&a[1].groups.all===''&&a[1].indices.groups.all[0]===1&&a[1].indices.groups.all[1]===1",
     );
-    check(
+    assert_true(
         r"let a=/((?:ab|c){2,3})d/d.exec('abccd'),b=/(?:ab|c)*d|a/.exec('a');a[0]==='abccd'&&a[1]==='abcc'&&a.indices[1][1]===4&&b[0]==='a'",
     );
 }
@@ -122,7 +116,7 @@ fn explicit_choice_iteration_work_aborts_before_last_index_and_handlers() {
 }
 
 #[test]
-fn empty_capturing_and_nested_repeated_choices_remain_unsupported() {
+fn empty_capturing_and_nested_repeated_choices_match_reference_results() {
     for source in [
         r"/(?:ab|){2,3}/.test('ab')",
         r"/(?:(?:((ab)|(a))+)|){2,3}/.test('ab')",
@@ -131,10 +125,7 @@ fn empty_capturing_and_nested_repeated_choices_remain_unsupported() {
         r"/(?:(?<=(a+))a|b)+/.test('a')",
         r"/(?:ab|c)+/u.test('ab')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
-    check(r"/(?:ab|c)+d/.exec('ab')===null");
+    assert_true(r"/(?:ab|c)+d/.exec('ab')===null");
 }

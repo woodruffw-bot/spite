@@ -3,13 +3,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn outside_lookahead_in_lookbehind_result_snapshot() {
@@ -53,39 +47,39 @@ fn outside_lookahead_in_lookbehind_result_snapshot() {
 
 #[test]
 fn imported_named_ranges_local_dependencies_negative_rollback_and_surrogates_are_exact() {
-    check(
+    assert_true(
         r"let a=/(?<x>a)(?<=a(?=(?<y>(?<z>\k<x>)\k<z>){2}))a/d.exec('aaaaa');a.groups.x==='a'&&a.groups.y==='aa'&&a.groups.z==='a'&&a.indices.groups.z===a.indices[3]&&a.indices[2][0]===3&&a.indices[3][0]===3",
     );
-    check(
+    assert_true(
         r"let a=/(a)(?<=a(?!((\1)b){2}q))a/d.exec('aabab');a[1]==='a'&&a[2]===undefined&&a[3]===undefined&&a.indices[2]===undefined",
     );
-    check(
+    assert_true(
         r"let a=/(a)(?<=a(?=((\1)b){0}))b/d.exec('ab');a[1]==='a'&&a[2]===undefined&&a[3]===undefined",
     );
-    check(
+    assert_true(
         r"let a=/([\uD800])(?<=[\uD800](?=((\1)\3){2}))[\uD800]/d.exec('\uD800\uD800\uD800\uD800\uD800\uDC00');a.index===0&&a.indices[2][0]===3&&a.indices[3][0]===3",
     );
-    check(r"let a=/(a)(?<=a(?=(?=(\1))\1))a/d.exec('aa');a[2]==='a'&&a.indices[2][0]===1");
+    assert_true(r"let a=/(a)(?<=a(?=(?=(\1))\1))a/d.exec('aa');a[2]==='a'&&a.indices[2][0]===1");
 }
 
 #[test]
 fn consumers_sticky_global_empty_advance_and_callbacks_keep_imported_and_future_ranges() {
-    check(
+    assert_true(
         r"let a=[...'aabab'.matchAll(/(?=(a))(?<=a(?=((\1)b){2}))/dg)];a.length===1&&a[0].index===1&&a[0][0]===''&&a[0].indices[2][0]===3",
     );
-    check(
+    assert_true(
         r"let r=/(a)(?<=a(?=((\1)b){2}))a/dy;let a=r.exec('aabab');a.index===0&&r.lastIndex===2&&r.exec('aabab')===null&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/(a)(?<=a(?=((\1)b){2}))a/dg,a=[...'aabab aabab'.matchAll(r)];a.length===2&&a[1].index===6&&a[1].indices[2][0]===9&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let a=[...'aabab'.matchAll(/()(a)(?<=a(?=((\2)b){2}))/dg)];a.length===1&&a[0].index===0&&a[0].indices[3][0]===3",
     );
-    check(
+    assert_true(
         r"let seen=[];let s='aabab aabab'.replace(/(a)(?<=a(?=((\1)b){2}))a/g,(m,x,y,z,i)=>{seen.push(x,y,z,i);return '_'});s==='_bab _bab'&&seen.join('|')==='a|ab|a|0|a|ab|a|6'",
     );
-    check(
+    assert_true(
         r"'aabab'.search(/(a)(?<=a(?=((\1)b){2}))a/)===0&&'aabab'.split(/(a)(?<=a(?=((\1)b){2}))a/).join('|')==='|a|ab|a|bab'",
     );
 }
@@ -119,9 +113,6 @@ fn changing_owner_targets_variable_counts_choices_and_unicode_remain_pending() {
         r"/(a)(?<=a(?=\1))a/u.exec('aa')",
         r"/(a)(?<=a(?=\1))a/v.exec('aa')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }

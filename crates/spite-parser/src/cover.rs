@@ -1,6 +1,6 @@
 //! Grammar-driven cover probes retain scanner results but isolate semantic uses.
 
-use super::*;
+use super::{Diagnostic, Parser, PrivateIdentifier};
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub(super) struct Key {
@@ -118,6 +118,8 @@ impl Parser {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use spite_core::DiagnosticKind;
+    use std::collections::BTreeSet;
 
     #[test]
     fn selected_and_cached_heads_replay_each_private_use_once() {

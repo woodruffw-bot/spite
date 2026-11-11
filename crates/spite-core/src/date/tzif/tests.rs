@@ -1,4 +1,4 @@
-use super::*;
+use super::{TzifTimeZone, TzifTimeZoneError};
 use crate::date::{DateTimeString, DateTimeZone, MAX_TIME_VALUE};
 
 struct Data {

@@ -1,7 +1,9 @@
 //! Command-line gate for the reviewed Test262 corpus, not a whole-suite pass rate.
 
 use spite_test262::run_corpus;
-use std::{env, path::Path, process::ExitCode};
+use std::env;
+use std::path::Path;
+use std::process::ExitCode;
 
 fn main() -> ExitCode {
     let args: Vec<_> = env::args_os().skip(1).collect();

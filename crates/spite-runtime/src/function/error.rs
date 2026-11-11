@@ -1,7 +1,8 @@
 //! Standard Error objects, native constructors, and methods (20.5).
 
 use super::Builtin;
-use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, object::DataDescriptor};
+use crate::object::DataDescriptor;
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span};
 
 mod aggregate;

@@ -3,17 +3,11 @@
 use spite_core::JsString;
 use spite_runtime::{Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn optional_impossible_operands_keep_required_outside_and_undefined_inside_masks() {
-    check(
+    assert_true(
         r#"
         var rows=[
             ['(?<skipped>[\\p{RGI_Emoji}]+(?!(?<zero>a{0})))?',[false,false]],
@@ -51,7 +45,7 @@ fn optional_impossible_consumers_clones_and_collection_preserve_rolled_back_capt
 
 #[test]
 fn optional_impossible_sequences_keep_interleaved_required_skipped_and_original_forward_bindings() {
-    check(
+    assert_true(
         r#"
         var rows=[
             ['(?<before>a{0})(?<skipped>[\\p{RGI_Emoji}]+(?!(?<zero>a{0})))?(?<after>b{0})',[true,false,false,true]],
@@ -87,7 +81,7 @@ fn optional_impossible_sequence_consumers_clones_and_collection_keep_capture_ord
 
 #[test]
 fn many_optional_impossible_sequence_terms_keep_full_interleaved_masks_without_default_quotas() {
-    check(
+    assert_true(
         r#"
         var count=10,pattern='([\\p{RGI_Emoji}]+(?!(a{0})))?'.repeat(count)+'(?<tail>b{0})',r=new RegExp(pattern,'dgv');
         r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length===count*2+2&&m[count*2]===undefined&&m[count*2+1]===''&&m.groups.tail===''&&r.lastIndex===0&&r.source===pattern
@@ -97,7 +91,7 @@ fn many_optional_impossible_sequence_terms_keep_full_interleaved_masks_without_d
     let pattern = JsString::from(
         (r"([\p{RGI_Emoji}]+(?!(a{0})))?".repeat(count) + r"(?<tail>b{0})").as_str(),
     );
-    check(&format!(
+    assert_true(&format!(
         "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length==={}&&m[{}]===undefined&&m[{}]===''&&m.indices[{}][0]===0&&m.groups.tail===''&&r.lastIndex===0&&r.source==={pattern:?}",
         count * 2 + 2,
         count * 2,
@@ -108,7 +102,7 @@ fn many_optional_impossible_sequence_terms_keep_full_interleaved_masks_without_d
 
 #[test]
 fn enclosing_optional_impossible_sequences_keep_required_optional_and_descendant_masks() {
-    check(
+    assert_true(
         r#"
         var rows=[
             ['(?<outside>(?<before>a{0})(?<skipped>[\\p{RGI_Emoji}]+(?!(?<zero>a{0})))?(?<after>b{0}))+',[true,true,false,false,true]],
@@ -141,7 +135,7 @@ fn enclosing_optional_impossible_sequence_consumers_clones_and_collection_keep_i
 
 #[test]
 fn first_optional_impossible_choices_keep_first_masks_and_all_later_undefined_names() {
-    check(
+    assert_true(
         r#"
         var rows=[
             ['(?<skipped>[\\p{RGI_Emoji}]+(?!(?<zero>a{0})))?|(?<later>[\\p{RGI_Emoji}]+)',[false,false,false]],
@@ -180,7 +174,7 @@ fn first_optional_impossible_choice_consumers_clones_and_collection_keep_skipped
 
 #[test]
 fn positive_optional_impossible_assertions_export_original_masks_names_and_directions() {
-    check(
+    assert_true(
         r#"
         var rows=[
             ['(?=(?<skipped>[\\p{RGI_Emoji}]+(?!(?<zero>a{0})))?)',[false,false]],
@@ -218,7 +212,7 @@ fn positive_optional_impossible_consumers_clones_and_collection_keep_exported_ma
 
 #[test]
 fn optional_established_impossible_bodies_keep_required_prefix_and_all_skipped_descendants() {
-    check(
+    assert_true(
         r#"
         var rows=[
             ['(?<skip>(?![\\p{RGI_Emoji}]*))?',[false]],
@@ -256,7 +250,7 @@ fn optional_established_impossible_consumers_clones_and_collection_keep_rolled_b
 
 #[test]
 fn optional_known_impossible_sequences_keep_original_interleaved_masks_bindings_and_errors() {
-    check(
+    assert_true(
         r#"
         var rows=[
             ['(?<skip>(?![\\p{RGI_Emoji}]*))?(?<erased>(a)\\3){0}',[false,false,false]],
@@ -291,7 +285,7 @@ fn optional_known_impossible_sequence_consumers_clones_and_collection_keep_inter
 
 #[test]
 fn optional_known_impossible_sequences_keep_many_masks_without_default_quotas() {
-    check(
+    assert_true(
         r#"
         var count=10,pattern='(((?![\\p{RGI_Emoji}]*))?)+((a)\\1){0}'.repeat(count),r=new RegExp(pattern,'dgv');r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length===4*count+1&&m[1]===''&&m[2]===undefined&&m[4*count]===undefined&&r.lastIndex===0&&r.source===pattern
     "#,
@@ -302,7 +296,7 @@ fn optional_known_impossible_sequences_keep_many_masks_without_default_quotas() 
             .repeat(count)
             .as_str(),
     );
-    check(&format!(
+    assert_true(&format!(
         "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length==={}&&m[1]===''&&m[2]===undefined&&m[{}]===undefined&&r.lastIndex===0&&r.source==={pattern:?}",
         4 * count + 1,
         4 * count
@@ -311,7 +305,7 @@ fn optional_known_impossible_sequences_keep_many_masks_without_default_quotas() 
 
 #[test]
 fn enclosing_optional_known_sequences_keep_required_and_optional_prefix_masks() {
-    check(
+    assert_true(
         r#"
         var body='(?<skip>(?![\\p{RGI_Emoji}]*))?(?<last>[a]{0})+',rows=[
             ['(?<outside>'+body+')+',[true,false,true]],
@@ -346,7 +340,7 @@ fn enclosing_optional_known_sequence_consumers_clones_and_collection_keep_rolled
 
 #[test]
 fn first_optional_known_choices_keep_first_masks_duplicate_names_and_later_original_slots() {
-    check(
+    assert_true(
         r#"
         var rows=[
             ['(?<skip>(?![\\p{RGI_Emoji}]*))?|(?<later>(a)\\1)+',[false,false,false]],
@@ -381,7 +375,7 @@ fn first_optional_known_choice_consumers_clones_and_collection_keep_unselected_a
 
 #[test]
 fn first_optional_known_choices_keep_many_unselected_slots_without_default_quotas() {
-    check(
+    assert_true(
         r#"
         var count=10,pattern='(?<skip>(?![\\p{RGI_Emoji}]*))?|'+Array(count).fill('(a)').join('|'),r=new RegExp(pattern,'dgv');
         r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length===count+2&&m[1]===undefined&&m[count+1]===undefined&&r.lastIndex===0&&r.source===pattern
@@ -397,7 +391,7 @@ fn first_optional_known_choices_keep_many_unselected_slots_without_default_quota
         )
         .as_str(),
     );
-    check(&format!(
+    assert_true(&format!(
         "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length==={}&&m[1]===undefined&&m[{}]===undefined&&r.lastIndex===0&&r.source==={pattern:?}",
         count + 2,
         count + 1
@@ -406,7 +400,7 @@ fn first_optional_known_choices_keep_many_unselected_slots_without_default_quota
 
 #[test]
 fn positive_optional_known_assertions_export_both_direction_masks_and_later_lexical_slots() {
-    check(
+    assert_true(
         r#"
         var operands=[
             ['(?<skip>(?![\\p{RGI_Emoji}]*))?',[false]],
@@ -441,7 +435,7 @@ fn positive_optional_known_assertion_consumers_clones_and_collection_keep_export
 
 #[test]
 fn optional_established_negative_failures_keep_required_prefix_and_all_skipped_slots() {
-    check(
+    assert_true(
         r#"
         var rows=[
             ['(?<skip>(?!(?<inner>(?![\\p{RGI_Emoji}]*))?))?',[false,false]],
@@ -476,7 +470,7 @@ fn optional_established_negative_consumers_clones_and_collection_keep_rolled_bac
 
 #[test]
 fn optional_established_negative_sequences_keep_interleaved_original_masks_and_bindings() {
-    check(
+    assert_true(
         r#"
         var rows=[
             ['(?<skip>(?!(?<inner>(?![\\p{RGI_Emoji}]*))?))?(?<erased>(a)\\4){0}',[false,false,false,false]],
@@ -511,7 +505,7 @@ fn optional_established_negative_sequence_consumers_clones_and_collection_keep_i
 
 #[test]
 fn optional_established_negative_sequences_keep_many_masks_without_default_quotas() {
-    check(
+    assert_true(
         r#"
         var count=10,pattern='(((?!((?![\\p{RGI_Emoji}]*))?))?)+([a]{0})+'.repeat(count),r=new RegExp(pattern,'dgv');r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length===4*count+1&&m[1]===''&&m[2]===undefined&&m[4*count]===''&&r.lastIndex===0&&r.source===pattern
     "#,
@@ -522,7 +516,7 @@ fn optional_established_negative_sequences_keep_many_masks_without_default_quota
             .repeat(count)
             .as_str(),
     );
-    check(&format!(
+    assert_true(&format!(
         "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;var m=r.exec('😀');m.index===0&&m.length==={}&&m[1]===''&&m[2]===undefined&&m[{}]===''&&r.lastIndex===0&&r.source==={pattern:?}",
         4 * count + 1,
         4 * count
@@ -531,7 +525,7 @@ fn optional_established_negative_sequences_keep_many_masks_without_default_quota
 
 #[test]
 fn enclosing_optional_established_negative_sequences_keep_required_and_optional_prefix_masks() {
-    check(
+    assert_true(
         r#"
         var body='(?<skip>(?!(?<inner>(?![\\p{RGI_Emoji}]*))?))?(?<last>[a]{0})+',rows=[
             ['(?<outside>'+body+')+',[true,false,false,true]],

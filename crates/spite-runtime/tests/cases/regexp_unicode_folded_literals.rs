@@ -3,13 +3,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn unicode_folded_literal_results_snapshot() {
@@ -83,24 +77,24 @@ fn unicode_folded_literal_unicode_18_capture_widths_snapshot() {
 
 #[test]
 fn unicode_folded_literal_prefix_retries_empty_captures_and_fold_distinctions() {
-    check(
+    assert_true(
         r"let m=/(a)A(b)/diu.exec('aaab');m[0]==='aab'&&m.index===1&&m[1]==='a'&&m[2]==='b'&&m.indices[1][0]===1&&m.indices[2][0]===3",
     );
-    check(
+    assert_true(
         r"let m=/(a())(A)/div.exec('aA');m.length===4&&m[1]==='a'&&m[2]===''&&m[3]==='A'&&m.indices[2][0]===1&&m.indices[2][1]===1",
     );
-    check(
+    assert_true(
         r"let m=/(())a(A)/diu.exec('aA');m[1]===''&&m[2]===''&&m[3]==='A'&&m.indices[1][0]===0&&m.indices[2][1]===0",
     );
-    check(r"let r=/(a)A(b)/iuy;r.lastIndex=0;r.exec('aaab')===null&&r.lastIndex===0");
-    check(
+    assert_true(r"let r=/(a)A(b)/iuy;r.lastIndex=0;r.exec('aaab')===null&&r.lastIndex===0");
+    assert_true(
         r"let m=/(?<x>ſ)(?<y>K)/div.exec('SK');m.groups.x==='S'&&m.groups.y==='K'&&m.indices.groups.x===m.indices[1]&&m.indices.groups.y===m.indices[2]",
     );
-    check(
+    assert_true(
         r"/(ß)s/iu.test('ẞS')&&!/(ß)s/iv.test('sss')&&!/(İ)i/iu.test('ii')&&!/(ı)i/iv.test('Ii')",
     );
-    check(r"/(\u1fd3)(\ufb05)/iu.test('\u0390\ufb06')");
-    check(
+    assert_true(r"/(\u1fd3)(\ufb05)/iu.test('\u0390\ufb06')");
+    assert_true(
         r"let m=/(\uD800)(a)/div.exec('\uD800A');m[1]==='\uD800'&&m[2]==='A'&&m.indices[2][0]===1&&!/(\uD800)(a)/iu.test('\uD800\uDC00a')",
     );
 }
@@ -108,19 +102,19 @@ fn unicode_folded_literal_prefix_retries_empty_captures_and_fold_distinctions() 
 #[test]
 fn unicode_folded_literal_consumers_named_groups_and_original_text() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/(?<x>\u{{10400}})(?<y>s)()/di{mode}y;r.lastIndex=1;let m=r.exec('\u{{10428}}ſ');m[1]==='\u{{10428}}'&&m[2]==='ſ'&&m[3]===''&&m.index===0&&m.indices[1][1]===2&&m.indices[2][0]===2&&m.indices[3][0]===3&&m.indices.groups.x===m.indices[1]&&r.lastIndex===3"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=[...'ſKSK'.matchAll(/(?<x>s)(k)/di{mode}g)];a.length===2&&a[0][1]==='ſ'&&a[0][2]==='K'&&a[1][1]==='S'&&a[1].indices[2][1]===4"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'ſKSK'.replace(/(?<x>s)(k)/i{mode}g,'<$1:$2:$<x>>')==='<ſ:K:ſ><S:K:S>'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'ſKSK'.split(/(s)(k)/i{mode}).join('|')==='|ſ|K||S|K|'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/(s)(k)/i{mode};r.lastIndex=8;'😀ſK'.search(r)===2&&r.lastIndex===8"
         ));
     }
@@ -128,22 +122,22 @@ fn unicode_folded_literal_consumers_named_groups_and_original_text() {
 
 #[test]
 fn unicode_folded_literal_metadata_coercions_and_strict_writes() {
-    check(
+    assert_true(
         r"let r=/(?<x>s)(k)/dimv,c=new RegExp(r,'diuy');c.source==='(?<x>s)(k)'&&c.ignoreCase&&c.unicode&&!c.multiline&&c.exec('ſK').groups.x==='ſ'&&c.lastIndex===2",
     );
-    check(
+    assert_true(
         r"let t='',r=/(s)(k)/iuy;r.lastIndex={valueOf(){t+='i';return 0}};let m=r.exec({toString(){t+='s';return 'ſK'}});t==='si'&&m[1]==='ſ'&&m[2]==='K'&&r.lastIndex===2",
     );
-    check(
+    assert_true(
         r"let r=/(s)(k)/iuy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('ſK')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/(s)(k)/ivy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
 }
 
 #[test]
-fn unicode_folded_literal_opted_work_and_remaining_gaps() {
+fn unicode_folded_literal_opted_work_and_additional_compositions() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
         ..Limits::default()
@@ -168,10 +162,7 @@ fn unicode_folded_literal_opted_work_and_remaining_gaps() {
         r"/(a)\1/iv.exec('AA')",
         r"/(?=ab)/iu.exec('AB')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }
 

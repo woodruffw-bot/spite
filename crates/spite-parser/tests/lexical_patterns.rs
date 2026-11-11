@@ -1,7 +1,8 @@
 //! Lexical binding patterns and declaration/loop early errors (14.3.1, 14.7).
 
 use spite_core::DiagnosticKind;
-use spite_parser::{MAX_DEPTH, ast::*, parse_script};
+use spite_parser::ast::{ForBinding, StatementKind};
+use spite_parser::{MAX_DEPTH, parse_script};
 
 #[test]
 fn lexical_binding_pattern_syntax_snapshot() {

@@ -1,14 +1,8 @@
 //! Unicode dot and character escapes with i (22.2.2.7.3, 22.2.2.9).
+use crate::common::assert_true;
 use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
 
 #[test]
 fn unicode_character_folding_results_snapshot() {
@@ -43,25 +37,25 @@ fn unicode_character_folding_results_snapshot() {
 #[test]
 fn unicode_character_folding_consumers_and_original_text() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"'ſK😀 9'.match(/\w/i{mode}g).join('|')==='ſ|K|9'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=[...'ſK😀 9'.matchAll(/\w/di{mode}g)];a.length===3&&a[0][0]==='ſ'&&a[1][0]==='K'&&a[2].index===5&&a[1].indices[0][1]===2"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'ſK😀 9'.split(/\w/i{mode}).join('|')==='||😀 |'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let seen=[];let s='ſK😀 9'.replace(/\w/i{mode}g,(m,i)=>{{seen.push(i);return '_'}});s==='__😀 _'&&seen.join(',')==='0,1,5'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\W/di{mode}y;r.lastIndex=3;let m=r.exec('ſK😀 9');m.index===2&&m[0]==='😀'&&m.indices[0][1]===4&&r.lastIndex===4"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\w/i{mode}y;r.lastIndex=3;r.exec('ſK😀 9')===null&&r.lastIndex===0"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^\w$/i{mode}m;r.lastIndex=2;'😀\nſ'.search(r)===3&&r.lastIndex===2"
         ));
     }
@@ -69,29 +63,29 @@ fn unicode_character_folding_consumers_and_original_text() {
 
 #[test]
 fn unicode_word_folding_is_simple_common_and_has_complete_boundaries() {
-    check(r"/\w/iu.test('ſ')&&/\w/iv.test('K')&&!/\w/u.test('ſ')&&!/\w/v.test('K')");
-    check(r"/\W/iu.exec('ſ')===null&&/\W/iv.exec('K')===null");
-    check(r"/\w/iu.exec('ßẞİıﬀ\u{1df95}')===null&&/\W/iv.test('ßẞİıﬀ\u{1df95}')");
-    check(r"/^\w$/ium.test('\rſ\n')&&/^\w$/ivm.test('\u2028K\u2029')");
-    check(r"/^\w$/iu.exec('ſ\n')===null&&/^\w$/iv.exec('K\r')===null");
-    check(r"/^.$/iu.test('😀')&&!/^.$/iv.test('\n')&&/^.$/ivs.test('\n')");
-    check(
+    assert_true(r"/\w/iu.test('ſ')&&/\w/iv.test('K')&&!/\w/u.test('ſ')&&!/\w/v.test('K')");
+    assert_true(r"/\W/iu.exec('ſ')===null&&/\W/iv.exec('K')===null");
+    assert_true(r"/\w/iu.exec('ßẞİıﬀ\u{1df95}')===null&&/\W/iv.test('ßẞİıﬀ\u{1df95}')");
+    assert_true(r"/^\w$/ium.test('\rſ\n')&&/^\w$/ivm.test('\u2028K\u2029')");
+    assert_true(r"/^\w$/iu.exec('ſ\n')===null&&/^\w$/iv.exec('K\r')===null");
+    assert_true(r"/^.$/iu.test('😀')&&!/^.$/iv.test('\n')&&/^.$/ivs.test('\n')");
+    assert_true(
         r"/^\d$/iu.test('9')&&/^\D$/iv.test('😀')&&/^\s$/iu.test('\uFEFF')&&/^\S$/iv.test('\u180E')",
     );
 }
 
 #[test]
 fn unicode_character_folding_metadata_clones_coercions_and_strict_writes() {
-    check(
+    assert_true(
         r"let r=/^\w$/dimv,c=new RegExp(r,'diuy');c.source==='^\\w$'&&c.ignoreCase&&c.unicode&&!c.unicodeSets&&!c.multiline&&c.exec('K')[0]==='K'&&c.lastIndex===1",
     );
-    check(
+    assert_true(
         r"let t='',r=/\w/iuy;r.lastIndex={valueOf(){t+='i';return 0}};let m=r.exec({toString(){t+='s';return 'ſ'}});t==='si'&&m[0]==='ſ'&&r.lastIndex===1",
     );
-    check(
+    assert_true(
         r"let r=/\w/iuy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('ſ')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/\w/ivy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
 }
@@ -113,7 +107,7 @@ fn unicode_character_folding_opted_work_and_unproved_syntax() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
-    check(
+    assert_true(
         r#"let m=/\p{Script_Extensions=Latin}/iv.exec('a');JSON.stringify(m)==='["a"]'&&m.index===0&&m.input==='a'"#,
     );
     for source in [
@@ -124,10 +118,7 @@ fn unicode_character_folding_opted_work_and_unproved_syntax() {
         r"/\w\d/iu.exec('a9')",
         r"/(?:\b)+/iu.exec('a')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }
 

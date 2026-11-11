@@ -1,8 +1,11 @@
 //! Script_Extensions from independent pinned aliases, Script fallback and overrides.
 use spite_core::JsString;
 use spite_heap::Error as HeapError;
-use spite_runtime::{Error, Limits, Realm, Value, object::Error as ObjectError};
-use std::{collections::BTreeMap, fmt::Write, sync::OnceLock};
+use spite_runtime::object::Error as ObjectError;
+use spite_runtime::{Error, Limits, Realm, Value};
+use std::collections::BTreeMap;
+use std::fmt::Write;
+use std::sync::OnceLock;
 
 const LIMIT: usize = 0x110000;
 
@@ -251,13 +254,7 @@ fn reference() -> &'static ExtensionReference {
     REFERENCE.get_or_init(ExtensionReference::load)
 }
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn script_extensions_all_exact_aliases_positive_and_complement_modes() {
@@ -277,7 +274,7 @@ fn script_extensions_all_exact_aliases_positive_and_complement_modes() {
             raw.push(true);
         }
         for flags in ["u", "v"] {
-            check(&format!(
+            assert_true(&format!(
                 r#"let names={names:?},points={points:?},raw={raw:?},flags={flags:?};names.every(name=>{{let forms=["\\p{{"+name+"}}","\\P{{"+name+"}}"];return forms.every((body,k)=>{{let r=new RegExp('^'+body+'$',flags);return points.every((cp,j)=>r.test(String.fromCodePoint(cp))===(raw[j]!==[false,true][k]))}})}})"#,
             ));
         }
@@ -299,13 +296,13 @@ fn script_extensions_overrides_replace_script_fallback_and_overlap() {
         assert!(!reference.contains(reference.index(no), point));
     }
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"/\p{{sc=Common}}/{mode}.test('ー')&&/\p{{scx=Hira}}/{mode}.test('ー')&&/\p{{scx=Kana}}/{mode}.test('ー')&&!/\p{{scx=Zyyy}}/{mode}.test('ー')&&/\P{{scx=Common}}/{mode}.test('ー')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"/\p{{sc=Inherited}}/{mode}.test('\u0300')&&/\p{{scx=Latin}}/{mode}.test('\u0300')&&/\p{{scx=Greek}}/{mode}.test('\u0300')&&/\p{{scx=Coptic}}/{mode}.test('\u0300')&&!/\p{{scx=Inherited}}/{mode}.test('\u0300')&&/\p{{scx=Grek}}/{mode}.test('\u0345')&&!/\p{{scx=Zinh}}/{mode}.test('\u0345')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"/\p{{scx=Proto_Cuneiform}}/{mode}.test('\u{{12550}}')&&/\p{{scx=Cuneiform}}/{mode}.test('\u{{12550}}')&&/\p{{sc=Cuneiform}}/{mode}.test('\u{{12550}}')&&!/\p{{sc=Proto_Cuneiform}}/{mode}.test('\u{{12550}}')&&/\p{{scx=Han}}/{mode}.test('一')&&/\p{{scx=Latin}}/{mode}.test('A')&&!/\p{{scx=Greek}}/{mode}.test('A')"
         ));
     }
@@ -314,7 +311,7 @@ fn script_extensions_overrides_replace_script_fallback_and_overlap() {
 #[test]
 fn script_extensions_extra_aliases_follow_extension_membership() {
     for flags in ["u", "ui", "v", "vi"] {
-        check(&format!(
+        assert_true(&format!(
             r"/\p{{scx=Qaac}}/{flags}.test('Ⲁ')&&/\p{{Script_Extensions=Qaac}}/{flags}.test('\u0300')&&!/\p{{sc=Qaac}}/{flags}.test('\u0300')&&/\p{{scx=Qaai}}/{flags}.test('\u034F')&&!/\p{{Script_Extensions=Qaai}}/{flags}.test('\u0300')&&!/\p{{scx=Qaai}}/{flags}.test('\u0345')&&/\P{{scx=Qaai}}/{flags}.test('\u0300')"
         ));
     }
@@ -337,18 +334,18 @@ fn script_extensions_casefold_images_preimages_and_outer_complements() {
                 .iter()
                 .map(|&point| reference.folded(index, point, true, sets))
                 .collect();
-            check(&format!(
+            assert_true(&format!(
                 r#"let points={points:?},p={positive:?},n={negative:?},forms=["^\\p{{scx={name}}}$","^\\P{{scx={name}}}$","^[\\p{{scx={name}}}]$","^[\\P{{scx={name}}}]$","^[^\\p{{scx={name}}}]$","^[^\\P{{scx={name}}}]$"],want=[p,n,p,n,p.map(x=>!x),n.map(x=>!x)];forms.every((body,k)=>{{let r=new RegExp(body,{flags:?});return points.every((cp,j)=>r.test(String.fromCodePoint(cp))===want[k][j])}})"#,
             ));
         }
     }
-    check(
+    assert_true(
         r"/\P{sc=Greek}/ui.test('ι')&&!/\P{scx=Greek}/ui.test('ι')&&!/\P{scx=Greek}/vi.test('ι')",
     );
-    check(
+    assert_true(
         r"/[\P{scx=Greek}A]/ui.test('µ')&&!/[\P{scx=Greek}A]/vi.test('µ')&&/[\P{scx=Common}A]/ui.test('μ')&&!/[\P{scx=Common}A]/vi.test('μ')",
     );
-    check(
+    assert_true(
         r"!/[\P{scx=Greek}\p{scx=Inherited}]/vi.test('ι')&&/[\P{scx=Greek}\p{sc=Inherited}]/vi.test('ι')&&/[\P{scx=Greek}\p{Lu}]/vi.test('μ')&&/[\P{scx=Common}\p{sc=Greek}]/vi.test('µ')",
     );
 }
@@ -360,10 +357,10 @@ fn script_extensions_unknown_keeps_missing_surrogates_private_use_and_noncharact
     let points = [0x378, 0xd800, 0xdfff, 0xe000, 0xf0000, 0x10fffd, 0x10ffff];
     assert!(points.iter().all(|&point| reference.contains(index, point)));
     for flags in ["u", "ui", "v", "vi"] {
-        check(&format!(
+        assert_true(&format!(
             r"let points={points:?};points.every(cp=>{{let s=String.fromCodePoint(cp);return /^\p{{scx=Zzzz}}$/{flags}.test(s)&&!/^\P{{Script_Extensions=Unknown}}$/{flags}.test(s)&&/^[^\P{{scx=Unknown}}]$/{flags}.test(s)}})&&!/^\p{{scx=Unknown}}$/{flags}.test('A')&&!/^\p{{scx=Unknown}}$/{flags}.test('😀')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"/^\p{{scx=Unknown}}$/{flags}.test('\uE000')&&!/^\p{{Cn}}$/{flags}.test('\uE000')&&/^\p{{scx=Unknown}}$/{flags}.test('\uD800')&&!/^\p{{Cn}}$/{flags}.test('\uD800')"
         ));
     }
@@ -372,10 +369,10 @@ fn script_extensions_unknown_keeps_missing_surrogates_private_use_and_noncharact
 #[test]
 fn script_extensions_empty_hrkt_is_not_the_hiragana_katakana_union() {
     for flags in ["u", "ui", "v", "vi"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\p{{scx=Hrkt}}/{flags}g;r.lastIndex=1;r.exec('あアー😀\uD800')===null&&r.lastIndex===0&&'あアー😀\uD800'.replace(/\p{{Script_Extensions=Katakana_Or_Hiragana}}/{flags}g,'x')==='あアー😀\uD800'&&/\p{{scx=Hira}}/{flags}.test('ー')&&/\p{{scx=Kana}}/{flags}.test('ー')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=[...'あアー😀\uD800'.matchAll(/(?<x>\P{{scx=Hrkt}})/d{flags}g)];a.length===5&&a[2][1]==='ー'&&a[3][1]==='😀'&&a[3].index===3&&a[3].indices[1][1]===5&&a[4][1]==='\uD800'&&a[4].index===5&&a[4].indices[1][1]===6&&/^[^\p{{scx=Hrkt}}]$/{flags}.test('😀')&&!/^[^\P{{scx=Hrkt}}]$/{flags}.test('😀')"
         ));
     }
@@ -393,7 +390,7 @@ fn script_extensions_cased_captures_repetitions_keep_original_text() {
         assert!(reference.contains(index, source) && reference.contains(index, target));
         assert!(reference.folds.contains(&(source, target)));
         for mode in ["u", "v"] {
-            check(&format!(
+            assert_true(&format!(
                 r"let a=String.fromCodePoint({source}),b=String.fromCodePoint({target}),w=a.length,r=/\B(?<x>\p{{scx={name}}})+\B/di{mode}g,m=r.exec('µ'+a+b+'µ');m.index===1&&m[0]===a+b&&m.groups.x===b&&m.indices.groups.x[0]===1+w&&m.indices.groups.x[1]===1+2*w&&r.lastIndex===1+2*w"
             ));
         }
@@ -403,16 +400,16 @@ fn script_extensions_cased_captures_repetitions_keep_original_text() {
 #[test]
 fn script_extensions_capture_indices_and_pair_starts_keep_utf16_widths() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/(?<__proto__>\p{{scx=Dsrt}})/di{mode}y;r.lastIndex=1;let m=r.exec('\u{{10400}}A');m.index===0&&m[0]==='\u{{10400}}'&&m[1]==='\u{{10400}}'&&m.indices[1][0]===0&&m.indices[1][1]===2&&r.lastIndex===2&&Object.getPrototypeOf(m.groups)===null&&Object.getPrototypeOf(m.indices.groups)===null&&m.indices.groups.__proto__===m.indices[1]"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\P{{scx=Deseret}}/d{mode}g;r.lastIndex=1;let m=r.exec('\u{{10400}}\uD800');m.index===2&&m[0]==='\uD800'&&m.indices[0][1]===3&&r.lastIndex===3"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\P{{scx=Deseret}}/{mode}y;r.lastIndex=1;r.exec('\u{{10400}}A')===null&&r.lastIndex===0"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^(?<x>([\p{{scx=Hira}}K]))$/dim{mode}g,m=r.exec('A\r\nー\u2028');m.index===3&&m[1]==='ー'&&m[2]==='ー'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===4&&r.lastIndex===4"
         ));
     }
@@ -421,13 +418,13 @@ fn script_extensions_capture_indices_and_pair_starts_keep_utf16_widths() {
 #[test]
 fn script_extensions_consumers_preserve_shared_marks_and_original_text() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let a=[...'あー😀アA'.matchAll(/(?<x>\p{{scx=Hira}})/d{mode}g)];a.length===2&&a[0][1]==='あ'&&a[1][1]==='ー'&&a[1].index===1&&a[1].indices[1][1]===2&&'あー😀アA'.replace(/(?<x>\p{{scx=Hira}})/{mode}g,'<$1:$<x>>')==='<あ:あ><ー:ー>😀アA'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'AあーA'.split(/(\p{{scx=Hira}})/{mode}).join('|')==='A|あ||ー|A'&&'A😀ー'.search(/\p{{scx=Hira}}/{mode})===3&&'あーア'.match(/\p{{scx=Hira}}/{mode}g).join('')==='あー'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let t='',x='あーAあ'.replace(/(\p{{scx=Hira}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__A_'&&t==='013'"
         ));
     }
@@ -435,16 +432,16 @@ fn script_extensions_consumers_preserve_shared_marks_and_original_text() {
 
 #[test]
 fn script_extensions_clones_source_coercions_and_readonly_last_index() {
-    check(
+    assert_true(
         r"let r=/^(?<x>\p{Script_Extensions=Hira})$/dmu,c=new RegExp(r,'divy');c.source==='^(?<x>\\p{Script_Extensions=Hira})$'&&c.flags==='divy'&&c.unicodeSets&&!c.unicode&&!c.multiline&&c.exec('ー').groups.x==='ー'&&c.lastIndex===1&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let t='',r=/\P{scx=Hira}/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m[0]==='😀'&&m.index===0&&r.lastIndex===2",
     );
-    check(
+    assert_true(
         r"let r=/\p{scx=Hira}/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('ー')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/\P{scx=Deseret}/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('\u{10400}A')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
 }
@@ -467,11 +464,11 @@ fn script_extensions_high_mask_words_and_negative_aliases_keep_every_set() {
         assert!(reference.contains(left_index, a) && !reference.contains(right_index, a));
         assert!(reference.contains(right_index, b) && !reference.contains(left_index, b));
         for flags in ["u", "ui", "v", "vi"] {
-            check(&format!(
+            assert_true(&format!(
                 r"let points=[{a},{b},65,55296,128512],want=[true,true,true,true,false],r=/^[\p{{scx={left}}}\p{{Script_Extensions={right}}}\p{{sc=Latn}}\p{{Cs}}]$/{flags};points.every((cp,i)=>r.test(String.fromCodePoint(cp))===want[i])"
             ));
             for (name, member, other) in [(left, a, b), (right, b, a)] {
-                check(&format!(
+                assert_true(&format!(
                     r"let points=[{member},{other},65,128512],want=[true,false,false,false],r=/^[^\P{{scx={name}}}]$/{flags};points.every((cp,i)=>r.test(String.fromCodePoint(cp))===want[i])"
                 ));
             }
@@ -537,24 +534,21 @@ fn script_extensions_exact_names_and_unadmitted_compositions() {
             "scx=Script=Latin",
         ] {
             let pattern = JsString::from(format!(r"\p{{{name}}}").as_str());
-            check(&format!(
+            assert_true(&format!(
                 "let caught=false;try{{new RegExp({pattern:?},{mode:?})}}catch(e){{caught=e instanceof SyntaxError}}caught"
             ));
         }
     }
-    check(r"/[\p{scx=Hira}&&A]/v.exec('A')===null");
-    check(r"/[\p{scx=Greek}--A]/v.exec('A')===null");
-    check(
+    assert_true(r"/[\p{scx=Hira}&&A]/v.exec('A')===null");
+    assert_true(r"/[\p{scx=Greek}--A]/v.exec('A')===null");
+    assert_true(
         r"let s=String.fromCodePoint(0x300),m=/[\p{scx=Greek}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
     );
     for source in [
         r"/\p{scx=Latin}A/u.exec('AA')",
         r"/\p{scx=Latin}+b/u.exec('AA')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }
 

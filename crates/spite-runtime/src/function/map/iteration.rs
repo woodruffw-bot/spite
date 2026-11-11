@@ -1,6 +1,6 @@
 //! Live Map cursors, forEach, and MapIterator.next (24.1.3.5, 24.1.5).
 
-use super::*;
+use super::{Error, ExceptionKind, Realm, Span, Value};
 use crate::object::ArrayIterationKind;
 
 impl Realm {

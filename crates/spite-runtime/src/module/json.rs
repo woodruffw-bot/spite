@@ -1,6 +1,8 @@
 //! JSON default-export Synthetic Modules (ParseJSONModule).
 
-use super::*;
+use super::{
+    BTreeMap, BindingState, Error, ModuleHandle, ObjectHandle, Realm, Span, ThisBinding, Value,
+};
 use spite_core::JsString;
 
 impl Realm {

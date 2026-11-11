@@ -1,106 +1,100 @@
 //! Required empty iterations preserve class-versus-empty capture identity.
+use crate::common::assert_true;
 use spite_core::JsString;
 use spite_runtime::{Realm, Value};
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
 #[test]
 fn zero_minimum_asserted_single_string_class_native_tables_consumers_and_required_empty_identity() {
-    check(
+    assert_true(
         r####"var pattern="(?<before>^)(?<z>(?<z1>^)|(?<z2>\\b\\B))?(?<whole>(?<iteration>(?<c>[\\q{|a|ab}])))(?<after>$)",input="",r=new RegExp(pattern,"dgvym"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "z", "z1", "z2", "whole", "iteration", "c", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\",\"\",\"\",\"\"],[[0,0],[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\",[0,0],[0,0],[0,0],[0,0]],0,0]""####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<before>^)(?<z>(?<z1>^)|(?<z2>\\b\\B))?(?<whole>(?<iteration>(?<c>[\\q{a|ab}])){1})(?<after>$)",input="aba",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<before>^)(?<z>(?<z1>^)|(?<z2>\\b\\B))?(?<whole>(?<iteration>(?<c>[\\p{Any}\\q{|ab}])){1}?)(?<after>$)",input="aaaa",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<before>^)(?<whole>(?<iteration>(?<c>[a-z\\q{|S|sa|aX}])){1,1})(?<z>(?<z1>\\B)*|(?<z2>\\b)+)*?(?<after>$)",input="\ud83d\ude00aX",r=new RegExp(pattern,"dgvyi"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=1;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<before>\\b)(?<whole>(?<iteration>(?<c>[\\q{|a|ab}])){0001,0001}?)(?<z>(?<z1>\\B)*|(?<z2>\\b)+)*?(?<after>\\b)",input="\u017faX",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "whole", "iteration", "c", "z", "z1", "z2", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"\",\"\",\"\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\"],[[1,1],[1,1],[1,1],[1,1],[1,1],\"<undefined>\",\"<undefined>\",\"<undefined>\",[1,1]],1,1]""####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<before>\\b)(?<whole>(?<iteration>(?<c>[\\q{a|ab}])))(?<z>(?<z1>\\B)*|(?<z2>\\b)+)*?(?<after>\\b)",input="\n\nab\n",r=new RegExp(pattern,"dgvm"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "whole", "iteration", "c", "z", "z1", "z2", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"ab\",\"\",\"ab\",\"ab\",\"ab\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\"],[[2,4],[2,2],[2,4],[2,4],[2,4],\"<undefined>\",\"<undefined>\",\"<undefined>\",[4,4]],2,4]""####,
     );
 
-    check(
+    assert_true(
         r####"var pattern="(?<before>^)(?<z>(?<z1>^)|(?<z2>\\b\\B))?(?<whole>(?<iteration>(?<c>[\\q{|a|ab}])){1}?)(?<after>\\b)",input="\u017faX",r=new RegExp(pattern,"dgvy"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<before>^)(?<z>(?<z1>^)|(?<z2>\\b\\B))?(?<whole>(?<iteration>(?<c>[\\q{a|ab}])){1,1})(?<after>\\b)",input="\n\nab\n",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<before>^)(?<z>(?<z1>^)|(?<z2>\\b\\B))?(?<whole>(?<iteration>(?<c>[\\p{Any}\\q{|ab}])){0001,0001}?)(?<after>\\b)",input="a",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "z", "z1", "z2", "whole", "iteration", "c", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"a\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"a\",\"a\",\"a\",\"\"],[[0,1],[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\",[0,1],[0,1],[0,1],[1,1]],0,1]""####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<before>^)(?<whole>(?<iteration>(?<c>[a-z\\q{|S|sa|aX}])))(?<z>(?<z1>\\B)*|(?<z2>\\b)+)*?(?<after>\\b)",input="!ab!",r=new RegExp(pattern,"dgvyim"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<before>^)(?<whole>(?<iteration>(?<c>[\\q{|a|ab}])){1})(?<z>(?<z1>\\B)*|(?<z2>\\b)+)*?(?<after>$)",input="",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "whole", "iteration", "c", "z", "z1", "z2", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"\",\"\",\"\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\"],[[0,0],[0,0],[0,0],[0,0],[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\",[0,0]],0,0]""####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<before>^)(?<whole>(?<iteration>(?<c>[\\q{a|ab}])){1}?)(?<z>(?<z1>\\B)*|(?<z2>\\b)+)*?(?<after>$)",input="aba",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
 
-    check(
+    assert_true(
         r####"var pattern="(?<before>\\B)(?<z>(?<z1>^)|(?<z2>\\b\\B))?(?<whole>(?<iteration>(?<c>[\\q{|a|ab}])){0001,0001}?)(?<after>\\B)",input="",r=new RegExp(pattern,"dgvy"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "z", "z1", "z2", "whole", "iteration", "c", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\",\"\",\"\",\"\"],[[0,0],[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\",[0,0],[0,0],[0,0],[0,0]],0,0]""####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<before>\\B)(?<z>(?<z1>^)|(?<z2>\\b\\B))?(?<whole>(?<iteration>(?<c>[\\q{a|ab}])))(?<after>\\B)",input="aba",r=new RegExp(pattern,"dgvm"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<before>\\B)(?<z>(?<z1>^)|(?<z2>\\b\\B))?(?<whole>(?<iteration>(?<c>[\\p{Any}\\q{|ab}])){1})(?<after>\\B)",input="aaaa",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "z", "z1", "z2", "whole", "iteration", "c", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"a\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"a\",\"a\",\"a\",\"\"],[[1,2],[1,1],\"<undefined>\",\"<undefined>\",\"<undefined>\",[1,2],[1,2],[1,2],[2,2]],1,2]""####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<before>\\B)(?<whole>(?<iteration>(?<c>[a-z\\q{|S|sa|aX}])){1}?)(?<z>(?<z1>\\B)*|(?<z2>\\b)+)*?(?<after>\\B)",input="\ud83d\ude00aX",r=new RegExp(pattern,"dgvyi"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=1;var m=r.exec(input);if(m!==null){var names=["before", "whole", "iteration", "c", "z", "z1", "z2", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"\",\"\",\"\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\"],[[0,0],[0,0],[0,0],[0,0],[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\",[0,0]],0,0]""####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<before>^)(?<whole>(?<iteration>(?<c>[\\q{|a|ab}])){1,1})(?<z>(?<z1>\\B)*|(?<z2>\\b)+)*?(?<after>\\b)",input="\u017faX",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<before>^)(?<whole>(?<iteration>(?<c>[\\q{a|ab}])){0001,0001}?)(?<z>(?<z1>\\B)*|(?<z2>\\b)+)*?(?<after>\\b)",input="\n\nab\n",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
 
-    check(
+    assert_true(
         r####"var pattern="(?<before>\\b)(?<z>(?<z1>^)|(?<z2>\\b\\B))?(?<whole>(?<iteration>(?<c>[\\q{|a|ab}])){1})(?<after>\\b)",input="\u017faX",r=new RegExp(pattern,"dgvy"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<before>\\b)(?<z>(?<z1>^)|(?<z2>\\b\\B))?(?<whole>(?<iteration>(?<c>[\\q{a|ab}])){1}?)(?<after>\\b)",input="\n\nab\n",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "z", "z1", "z2", "whole", "iteration", "c", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"ab\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"ab\",\"ab\",\"ab\",\"\"],[[2,4],[2,2],\"<undefined>\",\"<undefined>\",\"<undefined>\",[2,4],[2,4],[2,4],[4,4]],2,4]""####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<before>\\b)(?<z>(?<z1>^)|(?<z2>\\b\\B))?(?<whole>(?<iteration>(?<c>[\\p{Any}\\q{|ab}])){1,1})(?<after>\\b)",input="a",r=new RegExp(pattern,"dgv"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);if(m!==null){var names=["before", "z", "z1", "z2", "whole", "iteration", "c", "after"];for(var n of names){var slot=names.indexOf(n)+1;ok=ok&&Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[slot]&&m.indices.groups[n]===m.indices[slot]}ok=ok&&Object.getPrototypeOf(m.groups)===null&&m.input===input}else ok=false;ok&&m!==null&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"a\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"a\",\"a\",\"a\",\"\"],[[0,1],[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\",[0,1],[0,1],[0,1],[1,1]],0,1]""####,
     );
-    check(
+    assert_true(
         r####"var pattern="(?<before>\\b)(?<whole>(?<iteration>(?<c>[a-z\\q{|S|sa|aX}])){0001,0001}?)(?<z>(?<z1>\\B)*|(?<z2>\\b)+)*?(?<after>\\b)",input="!ab!",r=new RegExp(pattern,"dgvyi"),ok=r.source===pattern&&r.global&&r.hasIndices&&r.unicodeSets===true&&r.unicode===false;r.lastIndex=0;var m=r.exec(input);ok&&m===null&&r.lastIndex===0"####,
     );
-    check(
+    assert_true(
         r####"(function(){function row(m){if(m===null)return null;var names=m.groups===undefined?[]:Object.keys(m.groups);return [Array.from(m,v=>v===undefined?'<undefined>':v),Array.from(m.indices,v=>v===undefined?'<undefined>':v),m.index,m.input,names,names.map(n=>m.groups[n]===undefined?'<undefined>':m.groups[n]),names.map(n=>m.indices.groups[n]===undefined?'<undefined>':m.indices.groups[n]),names.every((n,i)=>Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[i+1]&&m.indices.groups[n]===m.indices[i+1]),m.groups===undefined||Object.getPrototypeOf(m.groups)===null]}var r=/(?:(?:\b)|(?:\B))?(?<before>\b)(?<whole>(?<iteration>(?<e>){0}(?<c>[\p{Any}\q{a|ab}])){1})(?<after>\b)/dvg,a=Array.from('ab!aa!'.matchAll(r));return JSON.stringify([a.map(row),r.lastIndex]);})()==="[[[[\"ab\",\"\",\"ab\",\"ab\",\"<undefined>\",\"ab\",\"\"],[[0,2],[0,0],[0,2],[0,2],\"<undefined>\",[0,2],[2,2]],0,\"ab!aa!\",[\"before\",\"whole\",\"iteration\",\"e\",\"c\",\"after\"],[\"\",\"ab\",\"ab\",\"<undefined>\",\"ab\",\"\"],[[0,0],[0,2],[0,2],\"<undefined>\",[0,2],[2,2]],true,true],[[\"!\",\"\",\"!\",\"!\",\"<undefined>\",\"!\",\"\"],[[2,3],[2,2],[2,3],[2,3],\"<undefined>\",[2,3],[3,3]],2,\"ab!aa!\",[\"before\",\"whole\",\"iteration\",\"e\",\"c\",\"after\"],[\"\",\"!\",\"!\",\"<undefined>\",\"!\",\"\"],[[2,2],[2,3],[2,3],\"<undefined>\",[2,3],[3,3]],true,true]],0]""####,
     );
-    check(
+    assert_true(
         r####"(function(){function row(m){if(m===null)return null;var names=m.groups===undefined?[]:Object.keys(m.groups);return [Array.from(m,v=>v===undefined?'<undefined>':v),Array.from(m.indices,v=>v===undefined?'<undefined>':v),m.index,m.input,names,names.map(n=>m.groups[n]===undefined?'<undefined>':m.groups[n]),names.map(n=>m.indices.groups[n]===undefined?'<undefined>':m.indices.groups[n]),names.every((n,i)=>Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[i+1]&&m.indices.groups[n]===m.indices[i+1]),m.groups===undefined||Object.getPrototypeOf(m.groups)===null]}var calls=[],r=/(?:(?:\b)|(?:\B))?(?<before>\b)(?<whole>(?<iteration>(?<c>[\p{Any}\q{|a|ab}])(?<e>){0}){1})(?<after>\b)/vg,out='ab!X!'.replace(r,function(all,b,w,it,c,e,a,offset,input,g){calls.push([all,b,w,it,c===undefined?'<undefined>':c,e===undefined?'<undefined>':e,a,offset,input,arguments.length,g.c===c,g.e===e,Object.getPrototypeOf(g)===null]);return c===undefined?'<E>':'<C:'+c+'>'});return JSON.stringify([out,calls,r.lastIndex]);})()==="[\"<C:ab><C:!><C:X><C:>!\",[[\"ab\",\"\",\"ab\",\"ab\",\"ab\",\"<undefined>\",\"\",0,\"ab!X!\",10,true,true,true],[\"!\",\"\",\"!\",\"!\",\"!\",\"<undefined>\",\"\",2,\"ab!X!\",10,true,true,true],[\"X\",\"\",\"X\",\"X\",\"X\",\"<undefined>\",\"\",3,\"ab!X!\",10,true,true,true],[\"\",\"\",\"\",\"\",\"\",\"<undefined>\",\"\",4,\"ab!X!\",10,true,true,true]],0]""####,
     );
-    check(
+    assert_true(
         r####"(function(){function row(m){if(m===null)return null;var names=m.groups===undefined?[]:Object.keys(m.groups);return [Array.from(m,v=>v===undefined?'<undefined>':v),Array.from(m.indices,v=>v===undefined?'<undefined>':v),m.index,m.input,names,names.map(n=>m.groups[n]===undefined?'<undefined>':m.groups[n]),names.map(n=>m.indices.groups[n]===undefined?'<undefined>':m.indices.groups[n]),names.every((n,i)=>Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[i+1]&&m.indices.groups[n]===m.indices[i+1]),m.groups===undefined||Object.getPrototypeOf(m.groups)===null]}var r=/(?:(?:\b)|(?:\B))?(?<before>\b)(?<whole>(?<iteration>(?<e>){0}(?<c>[\p{Any}\q{a|ab}])){1})(?<after>\b)/dvg;r.lastIndex=9;var a='!ab!X!'.split(r),at='!ab!X!'.search(r);return JSON.stringify([a.map(v=>v===undefined?'<undefined>':v),at,r.lastIndex]);})()==="[[\"!\",\"\",\"ab\",\"ab\",\"<undefined>\",\"ab\",\"\",\"\",\"\",\"!\",\"!\",\"<undefined>\",\"!\",\"\",\"\",\"\",\"X\",\"X\",\"<undefined>\",\"X\",\"\",\"!\"],1,9]""####,
     );
-    check(
+    assert_true(
         r####"(function(){function row(m){if(m===null)return null;var names=m.groups===undefined?[]:Object.keys(m.groups);return [Array.from(m,v=>v===undefined?'<undefined>':v),Array.from(m.indices,v=>v===undefined?'<undefined>':v),m.index,m.input,names,names.map(n=>m.groups[n]===undefined?'<undefined>':m.groups[n]),names.map(n=>m.indices.groups[n]===undefined?'<undefined>':m.indices.groups[n]),names.every((n,i)=>Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[i+1]&&m.indices.groups[n]===m.indices[i+1]),m.groups===undefined||Object.getPrototypeOf(m.groups)===null]}var r=/(?:(?:\b)|(?:\B))?^((){0}([\p{Any}\q{a|ab}])){1}\b/vg;Object.defineProperty(r,'lastIndex',{writable:false});var caught=false;try{r.exec('x')}catch(e){caught=e instanceof TypeError}return JSON.stringify([caught,r.lastIndex]);})()==="[true,0]""####,
     );
-    check(
+    assert_true(
         r####"(function(){function row(m){if(m===null)return null;var names=m.groups===undefined?[]:Object.keys(m.groups);return [Array.from(m,v=>v===undefined?'<undefined>':v),Array.from(m.indices,v=>v===undefined?'<undefined>':v),m.index,m.input,names,names.map(n=>m.groups[n]===undefined?'<undefined>':m.groups[n]),names.map(n=>m.indices.groups[n]===undefined?'<undefined>':m.indices.groups[n]),names.every((n,i)=>Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[i+1]&&m.indices.groups[n]===m.indices[i+1]),m.groups===undefined||Object.getPrototypeOf(m.groups)===null]}var r=/(?:(?:\b)|(?:\B))?^(?<\u{1D49C}>)(?<whole>(?<iteration>(?<e>){0}(?<c>[\p{Any}\q{|😀|😀a|aX}])){1})(?<after>)$/dvgy;r.lastIndex=1;var m=r.exec('😀aX');return JSON.stringify([row(m),r.lastIndex,r.source.indexOf('1D49C')!==-1]);})()==="[null,0,true]""####,
     );
-    check(
+    assert_true(
         r####"(function(){function row(m){if(m===null)return null;var names=m.groups===undefined?[]:Object.keys(m.groups);return [Array.from(m,v=>v===undefined?'<undefined>':v),Array.from(m.indices,v=>v===undefined?'<undefined>':v),m.index,m.input,names,names.map(n=>m.groups[n]===undefined?'<undefined>':m.groups[n]),names.map(n=>m.indices.groups[n]===undefined?'<undefined>':m.indices.groups[n]),names.every((n,i)=>Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[i+1]&&m.indices.groups[n]===m.indices[i+1]),m.groups===undefined||Object.getPrototypeOf(m.groups)===null]}var r=/(?:(?:\b)|(?:\B))?(?<before>\b)(?<whole>(?<iteration>(?<e>){0}(?<c>[\p{Any}\q{|S|sa|aX}])){1})(?<after>\b)/dvi,m=r.exec('ſaX!');return JSON.stringify([row(m)]);})()==="[[[\"\",\"\",\"\",\"\",\"<undefined>\",\"\",\"\"],[[0,0],[0,0],[0,0],[0,0],\"<undefined>\",[0,0],[0,0]],0,\"\u017faX!\",[\"before\",\"whole\",\"iteration\",\"e\",\"c\",\"after\"],[\"\",\"\",\"\",\"<undefined>\",\"\",\"\"],[[0,0],[0,0],[0,0],\"<undefined>\",[0,0],[0,0]],true,true]]""####,
     );
-    check(
+    assert_true(
         r####"(function(){function row(m){if(m===null)return null;var names=m.groups===undefined?[]:Object.keys(m.groups);return [Array.from(m,v=>v===undefined?'<undefined>':v),Array.from(m.indices,v=>v===undefined?'<undefined>':v),m.index,m.input,names,names.map(n=>m.groups[n]===undefined?'<undefined>':m.groups[n]),names.map(n=>m.indices.groups[n]===undefined?'<undefined>':m.indices.groups[n]),names.every((n,i)=>Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[i+1]&&m.indices.groups[n]===m.indices[i+1]),m.groups===undefined||Object.getPrototypeOf(m.groups)===null]}var z=/(?:(?:\b)|(?:\B))?^(?<whole>(?<iteration>(?<c>[\p{Any}\q{|a|ab}])(?<e>){0}){1})\b/dv.exec('x'),e=/(?:(?:\b)|(?:\B))?^(?<whole>(?<iteration>(?<e>){0}(?<c>[\p{Any}\q{|a|ab}])){1})\b/dv.exec('x'),c=/(?:(?:\b)|(?:\B))?^(?<whole>(?<iteration>(?<c>[\p{Any}\q{|a|ab}])(?<e>){0}){1})\b/dv.exec('x');return JSON.stringify([row(z),row(e),row(c)]);})()==="[[[\"x\",\"x\",\"x\",\"x\",\"<undefined>\"],[[0,1],[0,1],[0,1],[0,1],\"<undefined>\"],0,\"x\",[\"whole\",\"iteration\",\"c\",\"e\"],[\"x\",\"x\",\"x\",\"<undefined>\"],[[0,1],[0,1],[0,1],\"<undefined>\"],true,true],[[\"x\",\"x\",\"x\",\"<undefined>\",\"x\"],[[0,1],[0,1],[0,1],\"<undefined>\",[0,1]],0,\"x\",[\"whole\",\"iteration\",\"e\",\"c\"],[\"x\",\"x\",\"<undefined>\",\"x\"],[[0,1],[0,1],\"<undefined>\",[0,1]],true,true],[[\"x\",\"x\",\"x\",\"x\",\"<undefined>\"],[[0,1],[0,1],[0,1],[0,1],\"<undefined>\"],0,\"x\",[\"whole\",\"iteration\",\"c\",\"e\"],[\"x\",\"x\",\"x\",\"<undefined>\"],[[0,1],[0,1],[0,1],\"<undefined>\"],true,true]]""####,
     );
-    check(
+    assert_true(
         r####"(function(){function row(m){if(m===null)return null;var names=m.groups===undefined?[]:Object.keys(m.groups);return [Array.from(m,v=>v===undefined?'<undefined>':v),Array.from(m.indices,v=>v===undefined?'<undefined>':v),m.index,m.input,names,names.map(n=>m.groups[n]===undefined?'<undefined>':m.groups[n]),names.map(n=>m.indices.groups[n]===undefined?'<undefined>':m.indices.groups[n]),names.every((n,i)=>Object.hasOwn(m.groups,n)&&Object.hasOwn(m.indices.groups,n)&&m.groups[n]===m[i+1]&&m.indices.groups[n]===m.indices[i+1]),m.groups===undefined||Object.getPrototypeOf(m.groups)===null]}var e=/(?:(?:\b)|(?:\B))?^(?<whole>(?<iteration>(?<e>){0}(?<c>[\q{ab}&&\q{cd}])){1})$/dv.exec(''),c=/(?:(?:\b)|(?:\B))?^(?<whole>(?<c>[\p{Any}\q{}]){1})$/dv.exec('');return JSON.stringify([row(e),row(c)]);})()==="[null,[[\"\",\"\",\"\"],[[0,0],[0,0],[0,0]],0,\"\",[\"whole\",\"c\"],[\"\",\"\"],[[0,0],[0,0]],true,true]]""####,
     );
 
@@ -125,14 +119,11 @@ fn zero_minimum_asserted_single_string_class_conditional_body_predicates_unknown
     ] {
         let pattern = JsString::from(format!(r"^(?:(?:\b)|(?:\B))?{pattern}$").as_str());
         let mut realm = Realm::default();
-        assert!(
-            crate::common::regexp_oracle::check(
-                &mut realm,
-                &format!(
-                    "var marker=0;try{{new RegExp({pattern:?},'v').test('aba')}}catch{{marker=1}}finally{{marker=2}};marker"
-                )
+        crate::common::regexp_oracle::assert_matches_reference(
+            &mut realm,
+            &format!(
+                "var marker=0;try{{new RegExp({pattern:?},'v').test('aba')}}catch{{marker=1}}finally{{marker=2}};marker"
             ),
-            "{pattern:?}"
         );
     }
 }

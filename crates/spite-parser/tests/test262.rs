@@ -1,7 +1,10 @@
 //! Reviewed upstream parser regressions, not full Test262 harness executions.
 
-use spite_parser::{ast::*, parse_script};
-use std::{collections::BTreeSet, fs, path::Path};
+use spite_parser::ast::{Expr, ExprKind, StatementKind};
+use spite_parser::parse_script;
+use std::collections::BTreeSet;
+use std::fs;
+use std::path::Path;
 
 #[test]
 fn pinned_let_statement_lookahead() {

@@ -4,13 +4,11 @@ use super::{
     AsyncAwaitAction, AsyncExecutionData, FrameStep, Step, active_statement, child_location,
     expression,
 };
-use crate::{
-    Completion, CompletionKind, Error, Realm, Value,
-    object::{
-        async_execution::{AsyncLoopCursor, AsyncLoopPhase, AsyncStatementFrame, StatementChild},
-        async_expression::ExprRoot,
-    },
+use crate::object::async_execution::{
+    AsyncLoopCursor, AsyncLoopPhase, AsyncStatementFrame, StatementChild,
 };
+use crate::object::async_expression::ExprRoot;
+use crate::{Completion, CompletionKind, Error, Realm, Value};
 use spite_core::Span;
 use spite_parser::ast::StatementKind;
 
@@ -56,9 +54,10 @@ impl Realm {
             unreachable!("loop condition frame");
         };
         debug_assert!(matches!(cursor.phase, AsyncLoopPhase::Test));
-        let test = match &active_statement(&data.body, Some(&cursor.location)).kind {
-            StatementKind::While { test, .. } | StatementKind::DoWhile { test, .. } => test,
-            _ => unreachable!("loop condition source"),
+        let (StatementKind::While { test, .. } | StatementKind::DoWhile { test, .. }) =
+            &active_statement(&data.body, Some(&cursor.location)).kind
+        else {
+            unreachable!("loop condition source");
         };
         if expression::has_supported_await(test) {
             self.start_async_expression(data, ExprRoot::LoopTest, AsyncAwaitAction::LoopTest)

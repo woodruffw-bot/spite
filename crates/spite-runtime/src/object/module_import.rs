@@ -1,6 +1,6 @@
 //! Traced host import capabilities and their eventual target Module record.
 
-use super::*;
+use super::{Budget, Error, Handle, Objects, Trace, Value};
 use crate::function::PromiseCapability;
 
 #[derive(Debug)]

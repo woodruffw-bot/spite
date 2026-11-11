@@ -1,7 +1,8 @@
 //! Parser regression tests.
 
 use spite_core::{DiagnosticKind, JsString};
-use spite_parser::{MAX_DEPTH, ast::*, parse_script, parse_script_with_source_limit};
+use spite_parser::ast::{Expr, ExprKind, Literal, StatementKind};
+use spite_parser::{MAX_DEPTH, parse_script, parse_script_with_source_limit};
 
 #[test]
 fn syntax_snapshot() {

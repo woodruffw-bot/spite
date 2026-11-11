@@ -1,6 +1,7 @@
 //! Safe arbitrary-precision integers with optional size and work budgets.
 
-use std::{cmp::Ordering, fmt};
+use std::cmp::Ordering;
+use std::fmt;
 
 mod native;
 mod width;

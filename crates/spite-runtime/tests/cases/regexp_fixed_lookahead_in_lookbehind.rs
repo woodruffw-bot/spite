@@ -1,14 +1,8 @@
 //! Capture-free fixed lookahead inside fixed ordinary lookbehind.
+use crate::common::assert_true;
 use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
 
 #[test]
 fn fixed_lookahead_in_lookbehind_result_snapshot() {
@@ -79,35 +73,35 @@ fn fixed_lookahead_in_lookbehind_result_snapshot() {
 
 #[test]
 fn parent_named_ranges_optional_slots_atomic_negative_and_full_input_context() {
-    check(
+    assert_true(
         r"let a=/(?<=(?=ab)(?<x>a))b/d.exec('qab');a.groups.x==='a'&&a.indices.groups.x===a.indices[1]&&a.indices[1][0]===1&&a.indices[1][1]===2&&a.index===2",
     );
-    check(
+    assert_true(
         r"let a=/(?<=((?=b)){2})b/d.exec('qb'),b=/(?<=((?=b))*)b/d.exec('qb');a[1]===''&&a.indices[1][0]===1&&b[1]===undefined&&b.indices[1]===undefined",
     );
-    check(
+    assert_true(
         r"let a=/(?<=a(?=b.)|a(?!b.))b/d.exec('ab');a.index===1&&a[0]==='b'&&/(?<!a(?=b))b/.exec('ab')===null&&/(?<!a(?!b))b/.exec('ab').index===1",
     );
-    check(
+    assert_true(
         r"/(?<=a(?=b$))b/m.exec('ab\nq').index===1&&/(?<=a(?=b.))b/s.exec('ab\n').index===1&&/(?<=a(?=b.))b/.exec('ab\n')===null",
     );
 }
 
 #[test]
 fn shared_consumers_sticky_global_empty_advancement_and_callback_ranges() {
-    check(
+    assert_true(
         r"let r=/(?<=(?=ab)(a))b/dg,a=[...'qab ab'.matchAll(r)];a.length===2&&a[1].index===5&&a[1].indices[1][0]===4&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/(?<=a(?=b))b/dy;r.lastIndex=2;let a=r.exec('qab');a.index===2&&r.lastIndex===3&&r.exec('qab')===null&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/(?<=((?=b)){2})/dg,a=[...'bb'.matchAll(r)];a.length===2&&a[1].index===1&&a[1][1]===''&&a[1].indices[1][0]===1&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let seen=[];let s='qab ab'.replace(/(?<=(?=ab)(a))b/g,(m,c,i)=>{seen.push(c,i);return '_'});s==='qa_ a_'&&seen.join('|')==='a|2|a|5'",
     );
-    check(
+    assert_true(
         r"'qab'.search(/(?<=a(?=b))b/)===2&&'ab ab'.split(/(?<=a(?=b))b/).join('|')==='a| a|'&&'qab'.replace(/(?<=(?=ab)(?<x>a))b/,'<$<x>>')==='qa<a>'",
     );
 }
@@ -142,9 +136,6 @@ fn capture_dependent_variable_width_and_unicode_lookahead_stay_unsupported() {
         r"/(?<=a(?=b))b/u.exec('ab')",
         r"/(?<=a(?=b))b/v.exec('ab')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }

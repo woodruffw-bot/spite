@@ -5,19 +5,15 @@ use super::{
     DataDescriptor, DataProperty, DescriptorKind, OrdinaryObject, PrimitiveData, Property,
     PropertyDescriptor,
 };
+use crate::Value;
+use crate::environment::{BindingState, Environment, EnvironmentHandle};
 use crate::function::{BoundFunction, Builtin, Callable, MethodFunction, ScriptFunction};
-use crate::{
-    Value,
-    environment::{BindingState, Environment, EnvironmentHandle},
-};
 use spite_bigint::BigInt;
 use spite_core::{JsString, JsSymbol, PropertyKey, PropertyKeyRef};
 use spite_heap::{Collection, Handle, Heap};
 use std::collections::BTreeMap;
-use std::{
-    fmt,
-    rc::{Rc, Weak},
-};
+use std::fmt;
+use std::rc::{Rc, Weak};
 
 /// A host-held root that keeps an object reachable until its last clone is dropped.
 ///

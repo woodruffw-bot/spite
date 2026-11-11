@@ -1,7 +1,8 @@
 //! String construction, StringData wrappers, and branded methods (22.1.1/3).
 
 use super::Builtin;
-use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, object::DataDescriptor};
+use crate::object::DataDescriptor;
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 pub(crate) use replace::Substitution;
 use spite_core::{JsString, Span, WellKnownSymbol};
 

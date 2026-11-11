@@ -1,11 +1,8 @@
 //! Template components, restricted escapes, and substitution syntax.
 
 use spite_core::{DiagnosticKind, JsString};
-use spite_parser::{
-    MAX_DEPTH,
-    ast::{Expr, ExprKind, StatementKind},
-    parse_script,
-};
+use spite_parser::ast::{Expr, ExprKind, StatementKind};
+use spite_parser::{MAX_DEPTH, parse_script};
 
 #[test]
 fn template_syntax_snapshot() {

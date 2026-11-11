@@ -1,11 +1,11 @@
 //! Ordinary construction and iterative bound/default forwarding (10.2.2, 10.4.1.2).
 
-use super::{Builtin, Callable, ordinary::OrdinaryInvocation, realm::RealmTransition};
-use crate::{
-    Error, ExceptionKind, ObjectHandle, Realm, Value,
-    environment::{EnvironmentHandle, FunctionContext},
-    object::ProxyState,
-};
+use super::ordinary::OrdinaryInvocation;
+use super::realm::RealmTransition;
+use super::{Builtin, Callable};
+use crate::environment::{EnvironmentHandle, FunctionContext};
+use crate::object::ProxyState;
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span};
 
 enum FunctionRealmStep {
@@ -574,11 +574,9 @@ impl Realm {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        Limits,
-        function::BoundFunction,
-        object::{Budget, DescriptorKind, PropertyDescriptor},
-    };
+    use crate::Limits;
+    use crate::function::BoundFunction;
+    use crate::object::{Budget, DescriptorKind, PropertyDescriptor};
 
     #[test]
     fn creation_realm_survives_prototype_changes_and_proxy_bound_forwarding() {

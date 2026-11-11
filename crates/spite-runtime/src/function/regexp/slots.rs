@@ -1,7 +1,8 @@
 //! Native original-slot getters and RegExpBuiltinExec (22.2.6–7).
 
 use super::Member;
-use crate::{Error, ExceptionKind, Realm, Value, object::RegExpData};
+use crate::object::RegExpData;
+use crate::{Error, ExceptionKind, Realm, Value};
 use spite_core::{JsString, Span, regexp_pattern_source_units};
 
 impl Realm {

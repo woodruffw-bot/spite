@@ -1,7 +1,8 @@
 //! Explicit HostLoadImportedModule requests and ContinueDynamicImport jobs.
 
-use super::*;
-use crate::function::{PromiseCapability, async_native::AsyncResumeKind};
+use super::{Error, ModuleHandle, ObjectHandle, Realm, Span, Value};
+use crate::function::PromiseCapability;
+use crate::function::async_native::AsyncResumeKind;
 use spite_parser::ast::ModuleRequest;
 use std::collections::VecDeque;
 

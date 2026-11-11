@@ -3,13 +3,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn unicode_one_minimum_open_nullable_alternative_results_snapshot() {
@@ -63,34 +57,34 @@ fn unicode_one_minimum_open_nullable_alternative_results_snapshot() {
 #[test]
 fn unicode_one_minimum_open_nullable_alternative_mandatory_empty_and_source_order() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let m=/(a|){{01,}}/d{mode}.exec('');m[0]===''&&m[1]===''&&m.indices[1][0]===0&&m.indices[1][1]===0"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let m=/(a|){{1,}}/d{mode}.exec('');m[0]===''&&m[1]===''&&m.indices[1][0]===0&&m.indices[1][1]===0"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let m=/(|a){{1,}}?/d{mode}.exec('aaa');m[0]===''&&m[1]===''"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let m=/(a|){{1,}}?/{mode}.exec('baaa');m.index===0&&m[0]===''&&m[1]===''"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let m=/(a|){{1,}}?/{mode}.exec('aaa');m[0]==='a'&&m[1]==='a'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let m=/(|a){{1,}}?/{mode}.exec('aaa');m[0]===''&&m[1]===''"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let m=/(|a){{0001,}}/{mode}.exec('aaa');m[0]==='aaa'&&m[1]==='a'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let m=/(|a){{1,}}?$/{mode}.exec('aaa');m.index===0&&m[0]==='aaa'&&m[1]==='a'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let m=/\B(a|){{1,}}?\B/{mode}.exec('baaa');m.index===1&&m[0]==='a'&&m[1]==='a'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let m=/\B(|a){{1,}}?\B/{mode}.exec('baaa');m.index===1&&m[0]===''&&m[1]===''"
         ));
     }
@@ -98,32 +92,34 @@ fn unicode_one_minimum_open_nullable_alternative_mandatory_empty_and_source_orde
 
 #[test]
 fn unicode_one_minimum_open_nullable_alternative_names_surrogates_and_scopes() {
-    check(
+    assert_true(
         r"let m=/(?<whole>(?<__proto__>a|){1,}?)/dv.exec('');m.groups.whole===''&&m.groups.__proto__===''&&m.indices.groups.__proto__[0]===0&&m.source===undefined",
     );
-    check(
+    assert_true(
         r"let r=/(?<whole>(?<last>😀|){01,}?)/dvy;r.lastIndex=1;let m=r.exec('😀😀');m.index===0&&m[0]==='😀'&&m.groups.last==='😀'&&m.indices.groups.last[0]===0&&m.indices.groups.last[1]===2&&r.lastIndex===2",
     );
-    check(
+    assert_true(
         r"let m=/((?:)|\uD800){1,}/du.exec('\uD800x');m[0]==='\uD800'&&m[1]==='\uD800'&&/(\uD83D|){1,}/u.exec('😀')[0]===''",
     );
-    check(r"let m=/((?:)|[ſK]){1,}/div.exec('Sk');m[0]==='Sk'&&m[1]==='k'");
-    check(r"let m=/\B((?:\B^(?:.$)$)|(?:)){1,}\B$/dvms.exec('\r\n');m[0]==='\r\n'&&m[1]==='\n'");
-    check(r"let m=/((?:\b(?:\Ba))|){1,}/du.exec('a');m[0]===''&&m[1]===''");
+    assert_true(r"let m=/((?:)|[ſK]){1,}/div.exec('Sk');m[0]==='Sk'&&m[1]==='k'");
+    assert_true(
+        r"let m=/\B((?:\B^(?:.$)$)|(?:)){1,}\B$/dvms.exec('\r\n');m[0]==='\r\n'&&m[1]==='\n'",
+    );
+    assert_true(r"let m=/((?:\b(?:\Ba))|){1,}/du.exec('a');m[0]===''&&m[1]===''");
 }
 
 #[test]
 fn unicode_one_minimum_open_nullable_alternative_consumers_and_coercions() {
-    check(r"let a='aa'.match(/(a|){01,}/ug);a.length===2&&a[0]==='aa'&&a[1]===''");
-    check(r"'aa'.replace(/(a|){01,}/vg,'<$1>')==='<a><>'&&'ba'.search(/(a|){1,}?/u)===0");
-    check(
+    assert_true(r"let a='aa'.match(/(a|){01,}/ug);a.length===2&&a[0]==='aa'&&a[1]===''");
+    assert_true(r"'aa'.replace(/(a|){01,}/vg,'<$1>')==='<a><>'&&'ba'.search(/(a|){1,}?/u)===0");
+    assert_true(
         r"let a=[...'aa'.matchAll(/(?<x>(?:)|a){1,}?/dvg)];a.length===3&&a[1].index===1&&a[1].groups.x===''&&a[1].indices.groups.x[0]===1",
     );
-    check(r"let a='aa'.split(/(a|){01,}/u);a.length===3&&a[0]===''&&a[1]==='a'&&a[2]===''");
-    check(
+    assert_true(r"let a='aa'.split(/(a|){01,}/u);a.length===3&&a[0]===''&&a[1]==='a'&&a[2]===''");
+    assert_true(
         r"let log='',r=/(a|){1,}?/vgy;r.lastIndex={valueOf(){log+='i';return 0}};let m=r.exec({toString(){log+='s';return 'aaa'}});log==='si'&&m[0]==='a'&&r.lastIndex===1",
     );
-    check(
+    assert_true(
         r"let r=/(a|){01,}/ug;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
     );
 }

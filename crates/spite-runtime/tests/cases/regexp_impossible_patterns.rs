@@ -3,17 +3,11 @@
 use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn impossible_sequences_keep_original_source_flags_names_and_last_index_rules() {
-    check(
+    assert_true(
         r#"
         var patterns=[
             '(?!(?<x>[\\p{RGI_Emoji}]{0}))',
@@ -43,7 +37,7 @@ fn impossible_string_consumers_copies_and_collection_skip_replacement_callbacks(
 
 #[test]
 fn impossible_proofs_preserve_early_errors_coercions_and_opt_in_aborts() {
-    check(
+    assert_true(
         r#"
         var invalid=['[\\p{Not_A_Property}]+(?!)','(?<x>a)(?<x>b)(?!)','(?!)\\k<missing>','(?!)\\u{110000}'],ok=true;
         for(var source of invalid){var caught=false;try{new RegExp(source,'v')}catch(e){caught=e instanceof SyntaxError}ok=ok&&caught}
@@ -70,7 +64,7 @@ fn impossible_proofs_preserve_early_errors_coercions_and_opt_in_aborts() {
 
 #[test]
 fn enclosing_impossible_sequences_keep_original_outside_and_inside_bindings() {
-    check(
+    assert_true(
         r#"
         var patterns=[
             '(?<outside>[\\p{RGI_Emoji}]+(?!(?<x>a{0})))',
@@ -99,7 +93,7 @@ fn enclosing_impossible_consumers_clones_and_collection_keep_no_match_behavior()
 
 #[test]
 fn impossible_root_choices_preserve_every_arm_and_validate_original_early_errors() {
-    check(
+    assert_true(
         r#"
         var patterns=[
             '(?!(?<left>[\\p{RGI_Emoji}]{0}))|[\\p{RGI_Emoji}]+(?<!(?<right>a{0}))',
@@ -131,7 +125,7 @@ fn impossible_root_choice_consumers_clones_and_collection_keep_no_match_state() 
 
 #[test]
 fn many_impossible_alternatives_keep_duplicate_name_inventories_without_default_quotas() {
-    check(
+    assert_true(
         r#"
         var pattern=Array(5).fill('(?!(?<same>[\\p{RGI_Emoji}]{0}))').join('|'),r=new RegExp(pattern,'dgv');
         r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source===pattern
@@ -143,14 +137,14 @@ fn many_impossible_alternatives_keep_duplicate_name_inventories_without_default_
             .join("|")
             .as_str(),
     );
-    check(&format!(
+    assert_true(&format!(
         "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
     ));
 }
 
 #[test]
 fn required_impossible_groups_keep_modifiers_counts_bindings_and_original_errors() {
-    check(
+    assert_true(
         r#"
         var patterns=[
             '(?<outer>[\\p{RGI_Emoji}]+(?!(?<zero>a{0})))+',
@@ -183,7 +177,7 @@ fn required_impossible_consumers_clones_and_collection_preserve_no_match_state()
 
 #[test]
 fn positive_impossible_assertions_keep_directions_original_bindings_and_early_errors() {
-    check(
+    assert_true(
         r#"
         var patterns=[
             '[\\p{RGI_Emoji}]+(?=(?!(?<zero>a{0})))(?<tail>b)',
@@ -216,7 +210,7 @@ fn positive_impossible_consumers_clones_and_collection_keep_no_match_state() {
 
 #[test]
 fn composite_negative_assertions_keep_original_bindings_inventories_and_early_errors() {
-    check(
+    assert_true(
         r#"
         var patterns=[
             '[\\p{RGI_Emoji}]+(?!(?!(?!(?<zero>a{0}))))(?<tail>b)',
@@ -249,7 +243,7 @@ fn composite_negative_consumers_clones_and_collection_keep_no_match_state() {
 
 #[test]
 fn wrapped_composite_negative_assertions_keep_required_counts_modifiers_and_original_bindings() {
-    check(
+    assert_true(
         r#"
         var patterns=[
             '(?<outside>[\\p{RGI_Emoji}]+(?!(?!(?!(?<zero>a{0})))))+',
@@ -281,7 +275,7 @@ fn wrapped_composite_negative_consumers_clones_and_collection_keep_no_match_stat
 
 #[test]
 fn composite_negative_root_alternatives_keep_original_cross_arm_and_duplicate_name_bindings() {
-    check(
+    assert_true(
         r#"
         var patterns=[
             '(?!(?!(?!(?<same>[\\p{RGI_Emoji}]{0}))))|(?<same>[\\p{RGI_Emoji}]+)(?<!(?!(?!)))',
@@ -314,7 +308,7 @@ fn composite_negative_root_alternative_consumers_clones_and_collection_keep_no_m
 #[test]
 fn many_composite_negative_root_alternatives_keep_duplicate_name_inventories_without_default_quotas()
  {
-    check(
+    assert_true(
         r#"
         var pattern=Array(5).fill('(?!(?!(?!(?<same>[\\p{RGI_Emoji}]{0}))))').join('|'),r=new RegExp(pattern,'dgv');
         r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source===pattern
@@ -326,7 +320,7 @@ fn many_composite_negative_root_alternatives_keep_duplicate_name_inventories_wit
             .join("|")
             .as_str(),
     );
-    check(&format!(
+    assert_true(&format!(
         "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
     ));
 }
@@ -334,7 +328,7 @@ fn many_composite_negative_root_alternatives_keep_duplicate_name_inventories_wit
 #[test]
 fn enclosing_composite_alternatives_keep_required_counts_modifiers_and_original_cross_arm_bindings()
 {
-    check(
+    assert_true(
         r#"
         var patterns=[
             '(?<outer>(?!(?!(?!(?<same>[\\p{RGI_Emoji}]{0}))))|(?<same>[\\p{RGI_Emoji}]+)(?<!(?!(?!))))+',
@@ -366,7 +360,7 @@ fn enclosing_composite_alternative_consumers_clones_and_collection_keep_no_match
 
 #[test]
 fn negative_nullable_group_spines_keep_original_bindings_even_when_operands_could_consume() {
-    check(
+    assert_true(
         r#"
         var patterns=[
             '(?!(?<many>[\\p{RGI_Emoji}]+(?<tail>a)?){0,3})',
@@ -399,7 +393,7 @@ fn negative_nullable_group_consumers_clones_and_collection_keep_no_match_state()
 
 #[test]
 fn negative_nullable_atoms_keep_modes_wrappers_and_original_full_inventories() {
-    check(
+    assert_true(
         r#"
         var patterns=[
             '(?<prefix>a{0})(?![\\p{RGI_Emoji}]*)(?<tail>b)',
@@ -432,7 +426,7 @@ fn negative_nullable_atom_consumers_clones_and_collection_keep_no_match_state() 
 
 #[test]
 fn negative_nullable_sequences_keep_original_references_counts_and_mode_aware_term_boundaries() {
-    check(
+    assert_true(
         r#"
         var patterns=[
             '(?!(?<maybe>a)?[\\p{RGI_Emoji}]*[\\q{ab}]?)',
@@ -465,7 +459,7 @@ fn negative_nullable_sequence_consumers_clones_and_collection_keep_no_match_stat
 
 #[test]
 fn negative_nullable_choices_keep_all_original_slots_while_only_one_arm_must_succeed() {
-    check(
+    assert_true(
         r#"
         var patterns=[
             '(?!(?<word>[\\p{RGI_Emoji}]+)|(?<maybe>a)?)',
@@ -500,7 +494,7 @@ fn negative_nullable_choice_consumers_clones_and_collection_keep_no_match_state(
 #[test]
 fn negative_successful_positive_assertions_keep_both_directions_and_original_variable_capture_bindings()
  {
-    check(
+    assert_true(
         r#"
         var patterns=[
             '(?!(?=(?<maybe>[\\p{RGI_Emoji}]*)))',
@@ -533,7 +527,7 @@ fn negative_successful_positive_consumers_clones_and_collection_keep_no_match_st
 
 #[test]
 fn wrapped_nullable_negative_failures_keep_required_counts_modifiers_and_full_original_bindings() {
-    check(
+    assert_true(
         r#"
         var patterns=[
             '(?<outside>(?!(?<many>[\\p{RGI_Emoji}]+)?))+',
@@ -568,7 +562,7 @@ fn wrapped_nullable_negative_consumers_clones_and_collection_keep_no_match_state
 
 #[test]
 fn known_impossible_alternatives_mix_old_and_nullable_guards_with_original_bindings() {
-    check(
+    assert_true(
         r#"
         var patterns=[
             '(?![\\p{RGI_Emoji}]*)|(?!(?<zero>[\\p{RGI_Emoji}]{0}))',
@@ -601,7 +595,7 @@ fn known_impossible_alternative_consumers_clones_and_collection_keep_no_match_st
 
 #[test]
 fn many_known_impossible_alternatives_keep_full_inventories_without_default_quotas() {
-    check(
+    assert_true(
         r#"
         var pattern=Array(5).fill('(?![\\p{RGI_Emoji}]*)|(?!(?<same>[\\p{RGI_Emoji}]{0}))').join('|'),r=new RegExp(pattern,'dgv');
         r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source===pattern
@@ -613,14 +607,14 @@ fn many_known_impossible_alternatives_keep_full_inventories_without_default_quot
             .join("|")
             .as_str(),
     );
-    check(&format!(
+    assert_true(&format!(
         "var r=new RegExp({pattern:?},'dgv');r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source==={pattern:?}"
     ));
 }
 
 #[test]
 fn required_established_impossible_operands_keep_mixed_choices_counts_and_original_bindings() {
-    check(
+    assert_true(
         r#"
         var patterns=[
             '((?![\\p{RGI_Emoji}]*)|(?!(?<slot>[\\p{RGI_Emoji}]{0})))+',
@@ -653,7 +647,7 @@ fn required_established_impossible_consumers_clones_and_collection_preserve_no_m
 
 #[test]
 fn negative_established_optional_empty_operands_keep_full_original_bindings_and_inventories() {
-    check(
+    assert_true(
         r#"
         var operands=[
             '(?<skip>(?![\\p{RGI_Emoji}]*))?',
@@ -688,7 +682,7 @@ fn negative_established_optional_empty_consumers_clones_and_collection_keep_no_m
 #[test]
 fn required_negative_established_optional_empty_spines_keep_counts_original_bindings_and_inventory()
 {
-    check(
+    assert_true(
         r#"
         var patterns=[
             '((?!(?<skip>(?![\\p{RGI_Emoji}]*))?))+',

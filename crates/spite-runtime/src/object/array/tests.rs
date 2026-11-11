@@ -1,4 +1,4 @@
-use super::*;
+use super::{Budget, DescriptorKind, Error, PropertyDescriptor, PropertyKey, Value};
 use crate::object::{DataDescriptor, Objects};
 use spite_core::JsString;
 use spite_heap::Handle;

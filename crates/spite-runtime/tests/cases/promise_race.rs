@@ -3,13 +3,7 @@
 use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 fn drain(realm: &mut Realm) {
     loop {
@@ -23,10 +17,10 @@ fn drain(realm: &mut Realm) {
 
 #[test]
 fn capability_resolve_lookup_and_all_subscriptions_are_ordered_and_generic() {
-    check(
+    assert_true(
         "let log='',firstResolve,firstReject,values=[],result={};function C(executor){log+='c';executor(function(v){'use strict';if(this!==undefined||arguments.length!==1)throw 1;values.push(v)},()=>{throw 2});return result}Object.defineProperty(C,'resolve',{get(){log+='g';return function(v){'use strict';if(this!==C||arguments.length!==1)throw 3;log+='r'+v;return{then(a,b){if(arguments.length!==2)throw 4;if(!firstResolve){firstResolve=a;firstReject=b}else if(a!==firstResolve||b!==firstReject)throw 5;log+='t';a(v)}}}}});let out=Promise.race.call(C,{[Symbol.iterator](){log+='i';let n=0;return{next(){log+='n';return n<3?{value:++n,done:false}:{done:true}},return(){throw 6}}}});out===result&&log==='cginr1tnr2tnr3tn'&&values.join(',')==='1,2,3'",
     );
-    check(
+    assert_true(
         "let log='',result={};function C(executor){log+='c';executor(()=>{},()=>{});return result}Object.defineProperty(C,'resolve',{get(){log+='g';return()=>{throw 1}}});Promise.race.call(C,[])===result&&log==='cg'",
     );
 }
@@ -44,13 +38,13 @@ fn first_settlement_wins_asynchronously_and_empty_input_stays_pending() {
 
 #[test]
 fn body_errors_close_but_step_errors_do_not_and_original_throws_win() {
-    check(
+    assert_true(
         "let original={},other={},caught,closed=0;function C(executor){executor(()=>{},e=>{caught=e})}C.resolve=v=>v;let iterable={[Symbol.iterator](){return{next(){return{value:{get then(){throw original}},done:false}},get return(){closed++;throw other}}}};Promise.race.call(C,iterable);caught===original&&closed===1",
     );
-    check(
+    assert_true(
         "let original={},caught,closed=0;function C(executor){executor(()=>{},e=>{caught=e})}C.resolve=v=>v;Promise.race.call(C,{[Symbol.iterator](){return{next(){return{done:false,get value(){throw original}}},return(){closed++;return{}}}}});caught===original&&closed===0",
     );
-    check(
+    assert_true(
         "let original={},other={},touched=false;function C(executor){executor(()=>{},e=>{if(e!==original)throw 1;throw other})}Object.defineProperty(C,'resolve',{get(){throw original}});let caught;try{Promise.race.call(C,{get [Symbol.iterator](){touched=true}})}catch(e){caught=e}caught===other&&!touched",
     );
 }

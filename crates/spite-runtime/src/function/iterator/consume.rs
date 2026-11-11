@@ -1,7 +1,9 @@
 //! Eager direct-iterator consumers (27.1.3.3).
 
-use super::{Builtin, operations::IteratorRecord};
-use crate::{Error, ExceptionKind, Realm, Value, iterator_count::Counter};
+use super::Builtin;
+use super::operations::IteratorRecord;
+use crate::iterator_count::Counter;
+use crate::{Error, ExceptionKind, Realm, Value};
 use spite_bigint::{Budget, Error as IntegerError};
 use spite_core::Span;
 

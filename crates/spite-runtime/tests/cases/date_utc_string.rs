@@ -3,13 +3,7 @@
 use spite_core::JsString;
 use spite_runtime::{Error, ExceptionKind, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn utc_strings_use_standard_names_signed_years_and_containing_seconds() {
@@ -25,11 +19,11 @@ fn utc_strings_use_standard_names_signed_years_and_containing_seconds() {
         (-MAX_TIME, "Tue, 20 Apr -271821 00:00:00 GMT", -MAX_TIME),
         (MAX_TIME, "Sat, 13 Sep 275760 00:00:00 GMT", MAX_TIME),
     ] {
-        check(&format!(
+        assert_true(&format!(
             "let d=new Date({time}); d.toUTCString()==='{text}' && Date.parse(d.toUTCString())==={parsed} && new Date('{text}').getTime()==={parsed} && d.getTime()==={time}"
         ));
     }
-    check(
+    assert_true(
         "new Date(NaN).toUTCString()==='Invalid Date' && Number.isNaN(Date.parse('Invalid Date'))",
     );
 }
@@ -53,7 +47,7 @@ fn utc_string_round_trips_preserve_literal_short_and_expanded_years() {
         "-012345-01-01",
         "-123456-01-01",
     ] {
-        check(&format!(
+        assert_true(&format!(
             "let d=new Date('{text}'),s=d.toUTCString(); Date.parse(s)===d.getTime() && new Date(s).toISOString()===d.toISOString()"
         ));
     }
@@ -61,10 +55,10 @@ fn utc_string_round_trips_preserve_literal_short_and_expanded_years() {
 
 #[test]
 fn formatting_checks_own_date_brand_and_ignores_conversion_hooks_and_arguments() {
-    check(
+    assert_true(
         "let d=new Date(0);Object.defineProperty(d,Symbol.toPrimitive,{value(){throw 1;}});d.valueOf=()=>{throw 2;};Object.freeze(d);Object.setPrototypeOf(d,Date.prototype); Date.prototype.toUTCString.call(d,{toString(){throw 3;}})==='Thu, 01 Jan 1970 00:00:00 GMT'",
     );
-    check(
+    assert_true(
         "let d=new Date(0);Object.setPrototypeOf(d,null);Date.prototype.toUTCString.call(d)==='Thu, 01 Jan 1970 00:00:00 GMT'",
     );
     for receiver in [
@@ -96,13 +90,15 @@ fn formatting_checks_own_date_brand_and_ignores_conversion_hooks_and_arguments()
 
 #[test]
 fn parsing_converts_once_with_string_hint_and_propagates_abrupt_completions() {
-    check(
+    assert_true(
         "let trace='',o={ [Symbol.toPrimitive](hint){trace+=hint;return 'Thu, 01 Jan 1970 00:00:00 GMT';},toString(){throw 1;}};Date.parse(o)===0 && trace==='string'",
     );
-    check(
+    assert_true(
         "let trace='',o={toString(){trace+='s';return 'Thu, 01 Jan 1970 00:00:00 GMT';},valueOf(){throw 1;}};Date.parse(o)===0 && trace==='s'",
     );
-    check("let caught=false;try{Date.parse({toString(){throw 7;}});}catch(e){caught=e===7;}caught");
+    assert_true(
+        "let caught=false;try{Date.parse({toString(){throw 7;}});}catch(e){caught=e===7;}caught",
+    );
     assert_eq!(
         Realm::default().eval("Date.parse({toString(){throw 7;}})"),
         Err(Error::Thrown(Value::Number(7.0)))
@@ -111,7 +107,7 @@ fn parsing_converts_once_with_string_hint_and_propagates_abrupt_completions() {
         Realm::default().eval("Date.parse('Thu, 01 Jan 1970 00:00:00 GMT')"),
         Ok(Value::Number(0.0))
     );
-    check(
+    assert_true(
         "Number.isNaN(Date.parse('Wed, 01 Jan 1970 00:00:00 GMT')) && Number.isNaN(Date.parse('Wed, 31 Apr 2024 00:00:00 GMT')) && Number.isNaN(Date.parse('Thu, 01 Jan 1970 00:00:00 UTC'))",
     );
 }

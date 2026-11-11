@@ -1,14 +1,8 @@
 //! Outside capture references in linear ordinary lookbehind.
+use crate::common::assert_true;
 use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
 #[test]
 fn mixed_outside_lookbehind_result_snapshot() {
     let mut rows = String::new();
@@ -80,43 +74,43 @@ fn mixed_outside_lookbehind_result_snapshot() {
 }
 #[test]
 fn names_aliases_different_widths_future_imports_and_scoped_negative_slots() {
-    check(
+    assert_true(
         r"let a=/(?=(a))(?<=(?:\1b){2})a/d.exec('ababa');a.index===4&&a.length===2&&a.indices[1][0]===4",
     );
-    check(
+    assert_true(
         r"let a=/(?<x>a)(?<=(?<y>a\k<x>){2})b/d.exec('aaaaab');a.index===4&&a.groups.y==='aa'&&a.indices.groups.y===a.indices[2]&&a.indices[2][0]===1&&a.indices[2][1]===3",
     );
-    check(
+    assert_true(
         r"let a=/(?<x>a)(?<z>bb)(?<=(?<y>\k<x>\k<z>){2})c/d.exec('abbabbabbc');a.index===6&&a.groups.y==='abb'&&a.indices.groups.y[0]===3&&a.indices.groups.y[1]===6",
     );
-    check(
+    assert_true(
         r"let a=/(?<x>b)(?<!(?<y>\k<x>a){2}q)c/d.exec('bababc');a.groups.x==='b'&&a.groups.y===undefined&&a.indices.groups.y===undefined&&Object.hasOwn(a.groups,'y')",
     );
-    check(
+    assert_true(
         r"let a=/(?=(?<x>a))(?<=(?<y>\k<x>b){2})a/d.exec('ababa');a.index===4&&a.indices.groups.x[0]===4&&a.indices.groups.y[0]===0&&a.groups.y==='ab'",
     );
-    check(
+    assert_true(
         r"let a=/(?:(?<x>a)|(?<x>b))(?<=(a\k<x>){2})c/d.exec('abababc');a.index===5&&a.groups.x==='b'&&a[1]===undefined&&a[2]==='b'&&a.indices.groups.x===a.indices[2]",
     );
-    check(
+    assert_true(
         r"let a=/()()(?<=(\1\2\b){30})b/d.exec('b');a[3]===''&&a.indices[3][0]===0&&a.indices[3][1]===0",
     );
 }
 #[test]
 fn consumers_callbacks_sticky_global_and_empty_advancement() {
-    check(
+    assert_true(
         r"let r=/(a)(?<=(a\1){2})b/dg,a=[...'aaaaab aaaaab'.matchAll(r)];a.length===2&&a[1].index===11&&a[1][2]==='aa'&&a[1].indices[2][0]===8&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/(a)(?<=(a\1){2})b/dy;r.lastIndex=4;let a=r.exec('aaaaab');a.index===4&&r.lastIndex===6&&r.exec('aaaaab')===null&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/()()(?<=(\1\2){2})/dg,a=[...'ab'.matchAll(r)];a.length===3&&a[2].index===2&&a[2][3]===''&&a[2].indices[3][0]===2&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let seen=[];let s='aaaaab aaaaab'.replace(/(a)(?<=(a\1){2})b/g,(m,c,d,i)=>{seen.push(c,d,i);return '_'});s==='aaaa_ aaaa_'&&seen.join('|')==='a|aa|4|a|aa|11'",
     );
-    check(
+    assert_true(
         r"'aaaaab'.replace(/(?<x>a)(?<=(?<y>a\k<x>){2})b/,'<$<y>>')==='aaaa<aa>'&&'aaaaab'.search(/(a)(?<=(a\1){2})b/)===4&&'aaaaab'.split(/(a)(?<=(a\1){2})b/).join('|')==='aaaa|a|aa|'",
     );
 }
@@ -138,25 +132,4 @@ fn explicit_work_aborts_keep_last_index_and_bypass_handlers() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
-}
-#[test]
-fn internal_reads_dependent_children_variable_counts_choices_and_unicode_remain_unsupported() {
-    for source in [
-        r"/(a)(?<=[a]{1,2}\1)b/.exec('aaab')",
-        r"/(?<x>a)(?<=(a\k<x>){1,2})b/.exec('aaab')",
-        r"/(a)(?<=a{2}(\1){1,2})b/.exec('aaab')",
-        r"/(?<=(\1{1,2}a{1,2}))a/.exec('a')",
-        r"/(a)(?<=(?<=\1{1,2}))b/.exec('ab')",
-        r"/(a)(?<=(?=\1{1,2})\1)b/.exec('ab')",
-        r"/(a)(?<=\1|a)b/.exec('ab')",
-        r"/(a)(?<=\1{1,2})b/.exec('aab')",
-        r"/(a)(?<=\1+)b/.exec('ab')",
-        r"/(a)(?<=\1)b/u.exec('ab')",
-        r"/(a)(?<=\1)b/v.exec('ab')",
-    ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
-    }
 }

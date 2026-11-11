@@ -1,10 +1,8 @@
 //! Iterative left-associated BinaryExpression syntax (13.6–13.13, 13.16).
 
 use spite_core::DiagnosticKind;
-use spite_parser::{
-    ast::{ExprKind, StatementKind},
-    parse_script,
-};
+use spite_parser::ast::{ExprKind, StatementKind};
+use spite_parser::parse_script;
 
 #[test]
 fn binary_grouping_and_prefix_spans_snapshot() {

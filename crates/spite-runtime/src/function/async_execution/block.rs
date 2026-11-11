@@ -1,12 +1,10 @@
 //! Nested source BlockStatement cursors and lexical disposal (14.2.3).
 
 use super::{AsyncExecutionData, Step, active_statement, child_location};
-use crate::{
-    Completion, Error, Realm,
-    object::async_execution::{
-        AsyncBlockCursor, AsyncStatementFrame, StatementChild, StatementLocation,
-    },
+use crate::object::async_execution::{
+    AsyncBlockCursor, AsyncStatementFrame, StatementChild, StatementLocation,
 };
+use crate::{Completion, Error, Realm};
 use spite_core::Span;
 use spite_parser::ast::{ArrowBody, StatementKind};
 use std::collections::BTreeMap;

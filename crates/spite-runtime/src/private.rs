@@ -1,9 +1,7 @@
 //! Private names, ResolvePrivateIdentifier, PrivateGet/Set, and private-in (6.2.10/9.2/13.10).
 
-use crate::{
-    Error, ExceptionKind, ObjectHandle, Realm, Value,
-    object::{GetAction, SetAction},
-};
+use crate::object::{GetAction, SetAction};
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, JsSymbol, Span};
 use std::collections::BTreeSet;
 

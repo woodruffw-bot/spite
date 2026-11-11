@@ -23,13 +23,7 @@ fn child_realm_targets_share_the_agents_kept_object_checkpoint() {
     assert_eq!(realm.eval("reference.deref()"), Ok(Value::Undefined));
 }
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 fn type_error(source: &str) {
     let result = Realm::default().eval(source);
@@ -63,18 +57,18 @@ fn construction_requires_new_and_rejects_invalid_targets_without_coercion() {
         "'target'",
         "Symbol.for('weak-ref-registered')",
     ] {
-        check(&format!(
+        assert_true(&format!(
             "let hits=0,registered=Symbol.for('weak-ref-registered');Symbol.keyFor=function(){{hits++;throw 7;}};let caught=false;try{{new WeakRef({target});}}catch(e){{caught=e instanceof TypeError;}}caught && hits===0"
         ));
     }
-    check(
+    assert_true(
         "let hits=0,caught=false;try{WeakRef((hits++,{}),(hits++,7));}catch(e){caught=e instanceof TypeError;}caught && hits===2",
     );
 }
 
 #[test]
 fn all_supported_object_kinds_and_nonregistered_symbols_preserve_identity() {
-    check(
+    assert_true(
         r#"
         let registered=Symbol.for('weak-ref-boxed'),targets=[
             {},Object.create(null),[],function(){},()=>7,class C{},function(){}.bind(null),
@@ -96,7 +90,7 @@ fn all_supported_object_kinds_and_nonregistered_symbols_preserve_identity() {
         "#,
     );
     for symbol in WellKnownSymbol::ALL {
-        check(&format!(
+        assert_true(&format!(
             "let target=Symbol.{},reference=new WeakRef(target);reference.deref()===target",
             symbol.name()
         ));
@@ -106,11 +100,11 @@ fn all_supported_object_kinds_and_nonregistered_symbols_preserve_identity() {
 #[test]
 fn target_validation_precedes_new_target_prototype_get() {
     for target in ["undefined", "7", "Symbol.for('weak-ref-invalid')"] {
-        check(&format!(
+        assert_true(&format!(
             "let reads=0;function C(){{}}let N=C.bind(null);Object.defineProperty(N,'prototype',{{get(){{reads++;throw 7;}}}});let caught=false;try{{Reflect.construct(WeakRef,[{target}],N);}}catch(e){{caught=e instanceof TypeError;}}caught && reads===0"
         ));
     }
-    check(
+    assert_true(
         r#"
         let log='',target={},prototype=Object.create(WeakRef.prototype);
         function C(){}let N=C.bind(null);
@@ -124,7 +118,7 @@ fn target_validation_precedes_new_target_prototype_get() {
 
 #[test]
 fn prototype_getter_abrupts_propagate_and_cannot_change_the_original_target() {
-    check(
+    assert_true(
         r#"
         let target={},original=target,other={},marker={},calls=0;
         function C(){}let N=C.bind(null);
@@ -143,7 +137,7 @@ fn prototype_getter_abrupts_propagate_and_cannot_change_the_original_target() {
 
 #[test]
 fn subclassing_initializes_only_instances_that_call_the_constructor() {
-    check(
+    assert_true(
         r#"
         let target={};class Derived extends WeakRef{constructor(value){super(value);this.marker=7;}}
         let reference=new Derived(target);
@@ -160,7 +154,7 @@ fn subclassing_initializes_only_instances_that_call_the_constructor() {
 
 #[test]
 fn prototype_fallback_uses_the_intrinsic_after_global_replacement_and_deletion() {
-    check(
+    assert_true(
         r#"
         let C=WeakRef,prototype=C.prototype,deref=prototype.deref,target={};
         this.WeakRef=function(){throw 7;};delete this.WeakRef;
@@ -179,7 +173,7 @@ fn prototype_fallback_uses_the_intrinsic_after_global_replacement_and_deletion()
 
 #[test]
 fn proxy_targets_are_valid_even_when_revoked_and_are_not_inspected() {
-    check(
+    assert_true(
         r#"
         let hits=0,handler={get(){hits++;throw 7;},getPrototypeOf(){hits++;throw 8;},
             ownKeys(){hits++;throw 9;},isExtensible(){hits++;throw 10;}},target={};
@@ -193,7 +187,7 @@ fn proxy_targets_are_valid_even_when_revoked_and_are_not_inspected() {
 
 #[test]
 fn callable_proxy_new_targets_observe_only_the_required_prototype_lookup() {
-    check(
+    assert_true(
         r#"
         let log='',target={},prototype=Object.create(WeakRef.prototype);
         let N=new Proxy(function(){},{get(t,k,r){log+=String(k)+',';if(k==='prototype')return prototype;throw 7;},
@@ -207,7 +201,7 @@ fn callable_proxy_new_targets_observe_only_the_required_prototype_lookup() {
     );
     // GetPrototypeFromConstructor (10.1.14) queries the function Realm only
     // for a nonobject result, after the observable prototype Get has finished.
-    check(
+    assert_true(
         r#"
         for(let bound of [false,true]){
             for(let objectResult of [false,true]){
@@ -256,7 +250,7 @@ fn deref_requires_an_own_real_slot_and_does_not_unwrap_proxy_receivers() {
     ] {
         type_error(&format!("WeakRef.prototype.deref.call({receiver})"));
     }
-    check(
+    assert_true(
         r#"
         let reference=new WeakRef({}),hits=0,handler={get(){hits++;throw 7;},getPrototypeOf(){hits++;throw 8;}};
         let revoked=Proxy.revocable(reference,handler),receivers=[new Proxy(reference,handler),revoked.proxy];
@@ -270,7 +264,7 @@ fn deref_requires_an_own_real_slot_and_does_not_unwrap_proxy_receivers() {
 
 #[test]
 fn deref_ignores_arguments_and_public_target_properties_and_survives_integrity_changes() {
-    check(
+    assert_true(
         r#"
         let target={},reference=new WeakRef(target),deref=reference.deref,hits=0;
         Object.defineProperty(reference,'target',{get(){hits++;throw 7;}});
@@ -286,7 +280,7 @@ fn deref_ignores_arguments_and_public_target_properties_and_survives_integrity_c
 fn instance_surface_is_ordinary_and_the_prototype_tag_does_not_supply_the_brand() {
     // The complete descriptor graph remains covered by the existing metadata
     // snapshot; this checks its behavior with newly constructible instances.
-    check(
+    assert_true(
         r#"
         let target={},reference=new WeakRef(target),prototype=WeakRef.prototype;
         if(Object.getPrototypeOf(reference)!==prototype || Reflect.ownKeys(reference).length!==0 || !Object.isExtensible(reference))throw 1;

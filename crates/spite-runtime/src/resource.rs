@@ -1,10 +1,8 @@
 //! Synchronous lexical resource registration and DisposeResources completions.
 
-use crate::{
-    Completion, Error, Realm, Value,
-    environment::EnvironmentHandle,
-    object::{DisposableResource, DisposableStackKind, DisposalHint},
-};
+use crate::environment::EnvironmentHandle;
+use crate::object::{DisposableResource, DisposableStackKind, DisposalHint};
+use crate::{Completion, Error, Realm, Value};
 use spite_core::{JsString, Span};
 use spite_parser::ast::{BindingElement, BindingPattern, BindingPatternKind};
 

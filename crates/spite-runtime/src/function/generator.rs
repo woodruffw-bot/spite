@@ -1,17 +1,11 @@
 //! Generator objects, suspension and abrupt resumption (15.5, 27.3, 27.5).
 
-use super::{
-    Builtin,
-    async_execution::{AsyncBodyOutcome, SourceResume},
-    ordinary::OrdinaryInvocation,
-};
-use crate::{
-    Error, ExceptionKind, ObjectHandle, Realm, Value,
-    object::{
-        DataDescriptor,
-        generator::{GeneratorStart, GeneratorStatus},
-    },
-};
+use super::Builtin;
+use super::async_execution::{AsyncBodyOutcome, SourceResume};
+use super::ordinary::OrdinaryInvocation;
+use crate::object::DataDescriptor;
+use crate::object::generator::{GeneratorStart, GeneratorStatus};
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span, WellKnownSymbol};
 
 #[derive(Debug)]

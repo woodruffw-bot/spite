@@ -2,13 +2,7 @@
 
 use spite_runtime::{PromiseJobOutcome, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 fn drain(realm: &mut Realm) {
     loop {
@@ -22,13 +16,13 @@ fn drain(realm: &mut Realm) {
 
 #[test]
 fn generic_dispatch_observes_species_before_then_and_preserves_noncallable_arguments() {
-    check(
+    assert_true(
         "let f=Promise.prototype.finally,log='',marker={},x={get constructor(){log+='c';return{get [Symbol.species](){log+='s';return null}}},get then(){log+='t';return function(a,b){'use strict';return this===x&&arguments.length===2&&a===marker&&b===marker}}};f.call(x,marker)&&log==='cst'",
     );
-    check(
+    assert_true(
         "let f=Promise.prototype.finally,caught=0;for(const x of [undefined,null,0,'',true,Symbol(),1n]){try{f.call(x)}catch(e){if(e instanceof TypeError)caught++}}caught===7",
     );
-    check(
+    assert_true(
         "let marker={},called=false,x={get constructor(){throw marker},get then(){called=true}};try{Promise.prototype.finally.call(x)}catch(e){if(e!==marker)throw 1}!called",
     );
 }
@@ -55,7 +49,7 @@ fn cleanup_preserves_settlement_and_waits_for_thenables_with_zero_callback_argum
 
 #[test]
 fn wrappers_capture_species_and_invoke_cleanup_then_with_one_native_continuation() {
-    check(
+    assert_true(
         "let log='',handlers,result={},reason=Symbol(),continuation;function C(executor){log+='c';executor(function(v){'use strict';if(this!==undefined||arguments.length!==1||v!==9)throw 1;log+='r'},()=>{});return{then(f){if(arguments.length!==1)throw 2;continuation=f;return result}}}let x={constructor:{[Symbol.species]:C},then(a,b){handlers=[a,b];return result}},callback=function(){'use strict';if(this!==undefined||arguments.length)throw 3;log+='f';return 9};let returned=Promise.prototype.finally.call(x,callback);x.constructor=null;let value=handlers[0](reason);let a=continuation;let rejected=handlers[1](reason);let b=continuation,caught=false;try{b()}catch(e){caught=e===reason}returned===result&&value===result&&rejected===result&&a()===reason&&a.length===0&&a.name===''&&b.length===0&&b.name===''&&log==='fcrfcr'&&caught",
     );
 }

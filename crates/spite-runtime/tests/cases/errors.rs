@@ -13,31 +13,25 @@ const NAMES: [&str; 7] = [
     "URIError",
 ];
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn calls_and_construction_create_distinct_error_instances() {
     for name in NAMES {
-        check(&format!(
+        assert_true(&format!(
             "let a={name}('detail'),b=new {name}('detail');a!==b && a instanceof {name} && a instanceof Error && b instanceof {name} && Error.isError(a) && Error.isError(b) && a.name==='{name}' && a.message==='detail' && a.toString()==='{name}: detail'"
         ));
-        check(&format!(
+        assert_true(&format!(
             "let F={name}.bind({{}},'bound');let e=new F;e instanceof {name} && e.message==='bound' && {name}.call(null,'call').message==='call'"
         ));
-        check(&format!(
+        assert_true(&format!(
             "{name}().toString()==='{name}' && {name}(undefined).message==='' && {name}(null).message==='null' && {name}(42n).message==='42'"
         ));
-        check(&format!(
+        assert_true(&format!(
             "!Error.isError({name}.prototype) && !Error.isError({{__proto__:{name}.prototype}}) && ({{}}).toString.call({name}.prototype)==='[object Object]' && ({{}}).toString.call({name}())==='[object Error]'"
         ));
     }
-    check(
+    assert_true(
         "!Error.isError() && !Error.isError(null) && !Error.isError(1) && !Error.isError('Error') && !Error.isError({toString:()=>{throw 1;}})",
     );
 }
@@ -116,7 +110,7 @@ fn constructors_and_instances_have_only_standard_properties() {
             assert!(descriptor.writable && !descriptor.enumerable && descriptor.configurable);
         }
     }
-    check(
+    assert_true(
         "Error.isError.length===1 && Error.isError.name==='isError' && Error.prototype.toString.length===0 && Error.prototype.toString.name==='toString'",
     );
     for source in ["new Error.isError()", "new Error.prototype.toString()"] {
@@ -132,16 +126,16 @@ fn constructors_and_instances_have_only_standard_properties() {
 
 #[test]
 fn causes_use_presence_without_coercing_values_or_primitive_options() {
-    check(
+    assert_true(
         "let cause={};let e=TypeError('text',{__proto__:{cause:cause}});e.cause===cause && 'cause' in e && delete e.cause && !('cause' in e)",
     );
-    check(
+    assert_true(
         "let unused={valueOf:()=>{throw 1;},toString:()=>{throw 2;}};let e=Error('text',{cause:unused});e.cause===unused",
     );
     for options in ["undefined", "null", "true", "1", "1n", "'text'", "{}"] {
-        check(&format!("!('cause' in Error(undefined,{options}))"));
+        assert_true(&format!("!('cause' in Error(undefined,{options}))"));
     }
-    check(
+    assert_true(
         "let order='';let e=Error({toString:()=>{order+='m';return 'text';},valueOf:()=>{throw 1;}},{cause:3});e.message==='text' && e.cause===3 && order==='m'",
     );
     assert_eq!(
@@ -166,8 +160,10 @@ fn stringification_is_generic_and_preserves_utf16_and_empty_fields() {
             Ok(Value::String(JsString::from(expected)))
         );
     }
-    check("Error.prototype.toString.call({name:'\\uD800',message:'\\uDC00'})==='\\uD800: \\uDC00'");
-    check(
+    assert_true(
+        "Error.prototype.toString.call({name:'\\uD800',message:'\\uDC00'})==='\\uD800: \\uDC00'",
+    );
+    assert_true(
         "Error.prototype.toString.call({name:'',message:{toString:()=> 'converted'}})==='converted'",
     );
     for value in ["undefined", "null", "true", "1", "1n", "'text'"] {

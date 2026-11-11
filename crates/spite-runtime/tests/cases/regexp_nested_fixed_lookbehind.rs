@@ -3,13 +3,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn nested_fixed_lookbehind_result_snapshot() {
@@ -64,41 +58,41 @@ fn nested_fixed_lookbehind_result_snapshot() {
 
 #[test]
 fn nested_fixed_lookbehind_child_positions_negation_and_outside_aliases_are_exact() {
-    check(
+    assert_true(
         r"let a=/(?<=a(?<=a))(?<x>b)\k<x>/d.exec('abb');a[0]==='bb'&&a.index===1&&a.groups.x==='b'&&a.indices.groups.x===a.indices[1]&&a.indices[1][0]===1&&a.indices[1][1]===2",
     );
-    check(
+    assert_true(
         r"let a=/(?:(?<x>a)(?<!a(?<=a))|(?<x>a)(?<=a(?<=a)))\k<x>/d.exec('aa');a[0]==='aa'&&a[1]===undefined&&a[2]==='a'&&a.indices[1]===undefined&&a.indices.groups.x===a.indices[2]",
     );
-    check(
+    assert_true(
         r"let a=/((?<=a(?<=a))){2}b\1/d.exec('ab'),b=/((?<=a(?<=a)))*b\1/d.exec('ab');a[1]===''&&a.indices[1][0]===1&&a.indices[1][1]===1&&b[1]===undefined&&b.indices[1]===undefined",
     );
-    check(
+    assert_true(
         r"/(?<=(?<=a))b/.test('ab')&&!/(?<!(?<=a))b/.test('ab')&&/(?<=(?<!a))b/.test('qb')&&/(?<!(?<!a))b/.test('ab')&&!/(?<=a(?<!a))b/.test('ab')",
     );
-    check(
+    assert_true(
         r"/(?<=(?<=^a)b)c/m.exec('q\nabc').index===4&&/(?<=(?<=^a)b)c/.exec('q\nabc')===null&&/(?<=\B)(?<=c(?<=\w))\w{3}/.exec('ab cdef')[0]==='def'",
     );
-    check(
+    assert_true(
         r"let a=/(?=(?<x>a(?<=a(?<=a))b))\k<x>/d.exec('ab');a[0]==='ab'&&a.groups.x==='ab'&&a.indices.groups.x[1]===2",
     );
 }
 
 #[test]
 fn nested_fixed_lookbehind_consumers_global_sticky_and_empty_matches_preserve_positions() {
-    check(
+    assert_true(
         r"let r=/(?<=a(?<=a))(?<x>b)/dg,a=[...'abqab'.matchAll(r)];a.length===2&&a[0].index===1&&a[1].index===4&&a[1].groups.x==='b'&&a[1].indices.groups.x[0]===4&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/(?<=a(?<=a))b/dy;r.lastIndex=1;let a=r.exec('ab');a.index===1&&r.lastIndex===2&&r.exec('ab')===null&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/(?<=a(?<=a))/dg,a=[...'aa'.matchAll(r)];a.length===2&&a[0][0]===''&&a[0].index===1&&a[1].index===2&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let seen=[];let s='abqab'.replace(/(?<=a(?<=a))(?<x>b)/g,(m,c,i,s,g)=>{seen.push(m,c,i,s,g.x);return '_'});s==='a_qa_'&&seen.length===10&&seen[2]===1&&seen[4]==='b'&&seen[7]===4",
     );
-    check(
+    assert_true(
         r"'abqab'.replace(/(?<=a(?<=a))(?<x>b)/g,'<$<x>>')==='a<b>qa<b>'&&'abqab'.search(/(?<=a(?<=a))b/)===1&&'abqab'.split(/(?<=a(?<=a))b/).join('|')==='a|qa|'",
     );
 }
@@ -123,7 +117,7 @@ fn explicit_nested_fixed_lookbehind_work_aborts_before_last_index_and_handlers()
 }
 
 #[test]
-fn captures_choices_variable_counts_references_inner_lookahead_and_unicode_remain_unsupported() {
+fn captures_choices_variable_counts_references_inner_lookahead_and_unicode_match_reference_results() {
     for source in [
         r"/(?<=(?<=(a+)))b/.exec('ab')",
         r"/(?<=(?<=a|bb))c/.exec('ac')",
@@ -133,9 +127,6 @@ fn captures_choices_variable_counts_references_inner_lookahead_and_unicode_remai
         r"/(?<=a(?<=a))b/u.exec('ab')",
         r"/(?<=a(?<=a))b/v.exec('ab')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }

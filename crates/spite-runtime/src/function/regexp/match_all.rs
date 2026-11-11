@@ -1,7 +1,8 @@
 //! Generic RegExp matchAll and the RegExp String Iterator (22.2.6.9, 22.2.9).
 
 use super::advance_string_index;
-use crate::{Error, ExceptionKind, Realm, Value, object::RegExpStringIterator};
+use crate::object::RegExpStringIterator;
+use crate::{Error, ExceptionKind, Realm, Value};
 use spite_core::{JsString, Span};
 
 impl Realm {

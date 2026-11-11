@@ -1,15 +1,9 @@
 //! Grouped-empty string-class ranges with finite overflowing maxima (22.2.2.3).
 
 use spite_core::JsString;
-use spite_runtime::{Realm, Value};
+use spite_runtime::Realm;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn complete_grouped_overflowing_maximum_proofs_finish_finalizers_and_prove_every_leaf() {
@@ -24,12 +18,9 @@ fn complete_grouped_overflowing_maximum_proofs_finish_finalizers_and_prove_every
         r"\b[\q{a|ab}&&a]|(?:(?:))",
     ] {
         let source = format!(r"({inner}){{2,1000}}");
-        assert!(
-            crate::common::regexp_oracle::check(
-                &mut Realm::default(),
-                &format!("/{source}/v.test('a')")
-            ),
-            "{source}"
+        crate::common::regexp_oracle::assert_matches_reference(
+            &mut Realm::default(),
+            &format!("/{source}/v.test('a')"),
         );
     }
     for pattern in [
@@ -38,7 +29,7 @@ fn complete_grouped_overflowing_maximum_proofs_finish_finalizers_and_prove_every
         r"([\q{\d}&&a]|(?:(?:)))",
     ] {
         let source = JsString::from(format!("marker=1;/{pattern}{{2,1000}}/v.test('a');").as_str());
-        check(&format!(
+        assert_true(&format!(
             "let marker=0,caught=false;try{{eval({source:?});}}catch(e){{caught=e instanceof SyntaxError;}}caught && marker===0"
         ));
     }

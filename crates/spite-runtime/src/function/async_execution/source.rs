@@ -1,9 +1,7 @@
 //! Typed paths into the immutable async source body.
 
-use crate::{
-    Error,
-    object::async_execution::{StatementChild, StatementLocation},
-};
+use crate::Error;
+use crate::object::async_execution::{StatementChild, StatementLocation};
 use spite_core::Span;
 use spite_parser::ast::{ArrowBody, Statement, StatementKind};
 

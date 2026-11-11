@@ -1,7 +1,8 @@
 //! Object construction and mandatory prototype methods (20.1.1, 20.1.3).
 
 use super::Builtin;
-use crate::{Error, ObjectHandle, Realm, Value, object::DataDescriptor};
+use crate::object::DataDescriptor;
+use crate::{Error, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span};
 
 mod copy;

@@ -3,13 +3,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn unicode_math_property_results_snapshot() {
@@ -54,25 +48,25 @@ fn unicode_math_property_results_snapshot() {
 #[test]
 fn unicode_math_properties_aliases_complements_and_unions() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let p=/^\p{{Math}}$/i{mode},n=/^\P{{Math}}$/i{mode};'\u0392\u0395\u0398\u039A\u03A1\u03A6\u03B2\u03B5\u03B8\u03BA\u03C1\u03C6\u03D0\u03D1\u03D5\u03F0\u03F1\u03F4\u03F5'.split('').every(c=>p.test(c)&&n.test(c)===('{mode}'==='u'))"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let p=/[\p{{Math}}K]/i{mode},n=/[\P{{Math}}K]/i{mode},x=/[^\P{{Math}}K]/i{mode};p.test('K')&&n.test('K')&&!x.test('K')&&'\u0392\u0395\u0398\u039A\u03A1\u03A6\u03B2\u03B5\u03B8\u03BA\u03C1\u03C6\u03D0\u03D1\u03D5\u03F0\u03F1\u03F4\u03F5'.split('').every(c=>p.test(c)&&n.test(c)===('{mode}'==='u')&&x.test(c)===('{mode}'==='v'))"
         ));
     }
 
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let a=/\p{{Math}}/{mode},b=/\p{{Math}}/i{mode},n=/\P{{Math}}/i{mode};a.test('\u002B')&&a.test('\u00D7')&&b.test('\u002B')&&!a.test('\u200D')&&!b.test('\u005f')&&!b.test('ſ')&&!b.test('K')&&!n.test('\u002B')&&n.test('\uDB40\uDC01')&&n.test('\uD800')&&n.test('\uFEFF')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let p=/\p{{Math}}/{mode},s=/\s/{mode};p.test('\u002B')&&p.test('\u00D7')&&!s.test('\u002B')&&!s.test('\u00D7')&&!p.test('\uFEFF')&&s.test('\uFEFF')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=/[\p{{Math}}K]/i{mode},b=/[^\P{{Math}}K]/i{mode},c=/[\p{{Math}}\P{{Math}}]/{mode};a.test('K')&&a.test('k')&&a.test('\u002B')&&!a.test('ſ')&&b.test('\u00D7')&&!b.test('K')&&c.test('\uDB40\uDC01')&&c.test('A')&&c.test('\uD800')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=/^\p{{Math}}$/{mode},b=/^\P{{Math}}$/{mode};a.test('\u002B')&&!a.test('\u00D7\n')&&!a.test('')&&!a.test('\n')&&b.test('\uDB40\uDC01')&&!b.test('AA')"
         ));
     }
@@ -81,22 +75,22 @@ fn unicode_math_properties_aliases_complements_and_unions() {
 #[test]
 fn unicode_math_properties_captures_context_and_pair_starts() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/(?<x>\p{{Math}})/d{mode}y;r.lastIndex=1;let m=r.exec('\uD835\uDC00');m.index===0&&m[0]==='\uD835\uDC00'&&m.groups.x===m[0]&&m.indices[1][0]===0&&m.indices[1][1]===2&&r.lastIndex===2"
         ));
     }
 
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^(?<x>([\p{{Math}}K]))$/dim{mode}g,m=r.exec('\u200D\r\nK\u2028');m.index===3&&m[1]==='K'&&m[2]==='K'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===4&&r.lastIndex===4"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/(?<__proto__>\P{{Math}})/d{mode}y;r.lastIndex=1;let m=r.exec('\uDB40\uDC01\u002B');m.index===0&&m[1]==='\uDB40\uDC01'&&m.indices[1][1]===2&&r.lastIndex===2&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\p{{Math}}/d{mode}g;r.lastIndex=1;let m=r.exec('\uDB40\uDC01\u002B');m.index===2&&m[0]==='\u002B'&&r.lastIndex===3"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\p{{Math}}/{mode}y;r.lastIndex=1;r.exec('\uDB40\uDC01\u002B')===null&&r.lastIndex===0"
         ));
     }
@@ -105,16 +99,16 @@ fn unicode_math_properties_captures_context_and_pair_starts() {
 #[test]
 fn unicode_math_properties_consumers_original_text() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let a=[...'\u00D7\uDB40\uDC01\u002B\u200D'.matchAll(/(?<x>\P{{Math}})/d{mode}g)];a.length===2&&a[0][1]==='\uDB40\uDC01'&&a[0].index===1&&a[0].indices[1][1]===3&&a[1][1]==='\u200D'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'\u00D7\u002B\uDB40\uDC01\u200D'.replace(/(?<x>\p{{Math}})/{mode}g,'<$1:$<x>>')==='<\u00D7:\u00D7><\u002B:\u002B>\uDB40\uDC01\u200D'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'\uDB40\uDC01\u00D7\u002B\u200D'.split(/(\p{{Math}})/{mode}).join('|')==='\uDB40\uDC01|\u00D7||\u002B|\u200D'&&'\uDB40\uDC01\u002B'.search(/\p{{Math}}/{mode})===2&&'\u00D7\u002B\uDB40\uDC01'.match(/\p{{Math}}/{mode}g).join('')==='\u00D7\u002B'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let t='';let x='\u002B\u00D7\uDB40\uDC01\u002B'.replace(/(\p{{Math}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__\uDB40\uDC01_'&&t==='014'"
         ));
     }
@@ -122,16 +116,16 @@ fn unicode_math_properties_consumers_original_text() {
 
 #[test]
 fn unicode_math_properties_clones_coercions_and_strict_writes() {
-    check(
+    assert_true(
         r"let r=/^(?<x>\p{Math})$/dmu,c=new RegExp(r,'divy');c.source==='^(?<x>\\p{Math})$'&&c.unicodeSets&&!c.unicode&&!c.multiline&&c.exec('\u002B').groups.x==='\u002B'&&c.lastIndex===1",
     );
-    check(
+    assert_true(
         r"let t='',r=/\P{Math}/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '\uDB40\uDC01'}});t==='si'&&m[0]==='\uDB40\uDC01'&&m.index===0&&r.lastIndex===2",
     );
-    check(
+    assert_true(
         r"let r=/\p{Math}/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('\u002B')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/\p{Math}/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('\uDB40\uDC01\u002B')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
 }
@@ -153,26 +147,23 @@ fn unicode_math_properties_opted_work_and_remaining_sets() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
-    check(
+    assert_true(
         r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
     );
-    check(r"/[\p{Math}&&A]/v.exec('A')===null");
-    check(r"/[\p{Math}--A]/v.exec('A')===null");
-    check(
+    assert_true(r"/[\p{Math}&&A]/v.exec('A')===null");
+    assert_true(r"/[\p{Math}--A]/v.exec('A')===null");
+    assert_true(
         r"let s=String.fromCodePoint(0x2b),m=/[\p{Math}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
     );
     for source in [r"/\p{Math}+b/u.exec('AA')", r"/\p{Math}A/v.exec('AA')"] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }
 
 #[test]
 fn unicode_math_repetitions_retain_last_capture_and_outside_words() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\B(?<x>\p{{Math}})+\B/d{mode}g,m=r.exec('\uDB40\uDC01\u002B\u00D7\u00D7\uFEFF');m.index===2&&m[0]==='\u002B\u00D7\u00D7'&&m.groups.x==='\u00D7'&&m.indices.groups.x[0]===4&&m.indices.groups.x[1]===5&&r.lastIndex===5"
         ));
     }
@@ -188,7 +179,7 @@ fn unicode_math_property_unicode18_addition() {
         let text = JsString::from(char::from_u32(point).unwrap().to_string().as_str());
         for name in ["Math"] {
             for flags in ["u", "ui", "v", "vi"] {
-                check(&format!(
+                assert_true(&format!(
                     r"let p=new RegExp('^\\p{{{name}}}$','{flags}'),n=new RegExp('^\\P{{{name}}}$','{flags}');p.test({text:?})&&!n.test({text:?})"
                 ));
                 comparisons += 1;

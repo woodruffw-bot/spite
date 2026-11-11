@@ -1,9 +1,7 @@
 //! SetIntegrityLevel/TestIntegrityLevel (7.3.15–16).
 
-use crate::{
-    Error, ExceptionKind, Realm, Value,
-    object::{DataDescriptor, Property},
-};
+use crate::object::{DataDescriptor, Property};
+use crate::{Error, ExceptionKind, Realm, Value};
 use spite_core::Span;
 
 impl Realm {

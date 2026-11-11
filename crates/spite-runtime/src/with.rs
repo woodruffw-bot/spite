@@ -1,8 +1,7 @@
 //! WithStatement and its Object Environment Record (14.11, 9.1.1.2).
 
-use crate::{
-    Completion, Error, ExceptionKind, ObjectHandle, Realm, Value, environment::EnvironmentHandle,
-};
+use crate::environment::EnvironmentHandle;
+use crate::{Completion, Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span, WellKnownSymbol};
 use spite_parser::ast::{Expr, Statement};
 

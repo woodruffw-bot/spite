@@ -1,14 +1,8 @@
 //! Case-sensitive v-mode single atoms with nonsurrogate BMP membership.
+use crate::common::assert_true;
 use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
 
 #[test]
 fn unicode_sets_bmp_character_results_snapshot() {
@@ -49,45 +43,45 @@ fn unicode_sets_bmp_character_results_snapshot() {
 
 #[test]
 fn unicode_sets_bmp_character_consumers_and_unicode_boundaries() {
-    check(r"'😀a😀b'.match(/[a-b]/vg).join('|')==='a|b'");
-    check(
+    assert_true(r"'😀a😀b'.match(/[a-b]/vg).join('|')==='a|b'");
+    assert_true(
         r"let a=[...'😀a😀b'.matchAll(/[a-b]/dvg)];a.length===2&&a[0].index===2&&a[1].index===5&&a[0].indices[0][0]===2&&a[0].indices[0][1]===3",
     );
-    check(r"'😀a😀b'.split(/[a-b]/v).join('|')==='😀|😀|'");
-    check(
+    assert_true(r"'😀a😀b'.split(/[a-b]/v).join('|')==='😀|😀|'");
+    assert_true(
         r"let seen=[];let s='😀a😀b'.replace(/[a-b]/vg,(m,i)=>{seen.push(i);return '_'});s==='😀_😀_'&&seen.join(',')==='2,5'",
     );
-    check(r"let r=/[a-b]/vg;r.lastIndex=1;'😀b'.search(r)===2&&r.lastIndex===1");
-    check(r"let r=/[a-b]/vy;r.lastIndex=1;let a=r.exec('😀a');a===null&&r.lastIndex===0");
-    check(r"/[a-b]/v.exec('\uDC00a').index===1&&/[a-b]/v.exec('\uD800a').index===1");
-    check(r"let r=/[]/vy;r.lastIndex=1;r.exec('😀')===null&&r.lastIndex===0");
+    assert_true(r"let r=/[a-b]/vg;r.lastIndex=1;'😀b'.search(r)===2&&r.lastIndex===1");
+    assert_true(r"let r=/[a-b]/vy;r.lastIndex=1;let a=r.exec('😀a');a===null&&r.lastIndex===0");
+    assert_true(r"/[a-b]/v.exec('\uDC00a').index===1&&/[a-b]/v.exec('\uD800a').index===1");
+    assert_true(r"let r=/[]/vy;r.lastIndex=1;r.exec('😀')===null&&r.lastIndex===0");
 }
 
 #[test]
 fn unicode_sets_bmp_character_sets_metadata_clones_and_state() {
-    check(
+    assert_true(
         r"let r=/[a-b]/dvg,c=new RegExp(r,'vy');!c.unicode&&c.unicodeSets&&c.source==='[a-b]'&&c.exec('a')[0]==='a'&&c.lastIndex===1",
     );
-    check(
+    assert_true(
         r"let r=/[\w\s]/dvms;let m=r.exec('😀\u2028');m.length===1&&m.index===2&&m.indices[0][1]===3&&m.groups===undefined&&m.indices.groups===undefined",
     );
-    check(
+    assert_true(
         r"let r=/[a]/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('ba')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
-    check(
+    assert_true(
         r"let r=/[a]/vy;r.lastIndex=2;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('ba')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===2",
     );
 }
 
 #[test]
 fn unicode_sets_bmp_character_ordered_coercions_and_abrupt_input() {
-    check(
+    assert_true(
         r"let t='',r=/[a]/vy;r.lastIndex={valueOf(){t+='i';return 2;}};let m=r.exec({toString(){t+='s';return '😀a';}});t==='si'&&m.index===2&&r.lastIndex===3",
     );
-    check(
+    assert_true(
         r"let t='',r=/[a]/v;r.lastIndex={valueOf(){t+='i';return 1;}};let m=r.exec({toString(){t+='s';return 'a';}});t==='si'&&m.index===0&&typeof r.lastIndex==='object'",
     );
-    check(
+    assert_true(
         r"let r=/\d/v,n=0,e={};r.lastIndex={valueOf(){n++;return 0;}};let caught=false;try{r.exec({toString(){throw e;}})}catch(x){caught=x===e}caught&&n===0&&typeof r.lastIndex==='object'",
     );
 }
@@ -96,7 +90,7 @@ fn unicode_sets_bmp_character_ordered_coercions_and_abrupt_input() {
 fn unicode_sets_bmp_character_opted_work_and_unproved_atoms() {
     let original = Realm::default().eval(r"/[a]b/v.exec('ab')").unwrap();
     assert!(matches!(original, Value::Object(_)));
-    check(
+    assert_true(
         r#"let r=/[a]b/v,m=r.exec('ab');Array.isArray(m)&&m.length===1&&m[0]==='ab'&&m.index===0&&m.input==='ab'&&m.groups===undefined&&m.indices===undefined&&r.source==='[a]b'&&r.lastIndex===0&&r.exec('xb')===null&&r.exec('ax')===null&&r.exec('a')===null&&r.exec('xab').index===1"#,
     );
     let mut realm = Realm::new(Limits {
@@ -114,16 +108,16 @@ fn unicode_sets_bmp_character_opted_work_and_unproved_atoms() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
-    check(
+    assert_true(
         r#"let m=/[\p{Script_Extensions=Latin}]/v.exec('a');JSON.stringify(m)==='["a"]'&&m.index===0&&m.input==='a'"#,
     );
-    check(
+    assert_true(
         r"let m=/[a&&a]/v.exec('a');m!==null&&m.length===1&&m[0]==='a'&&m.index===0&&m.input==='a'",
     );
-    check(
+    assert_true(
         r"let m=/[a--b]/v.exec('a');m!==null&&m.length===1&&m[0]==='a'&&m.index===0&&m.input==='a'",
     );
-    check(
+    assert_true(
         r"let m=/[[a]]/v.exec('a');m!==null&&m.length===1&&m[0]==='a'&&m.index===0&&m.input==='a'",
     );
     for source in [
@@ -137,10 +131,7 @@ fn unicode_sets_bmp_character_opted_work_and_unproved_atoms() {
         r"/[a]*b/v.exec('a')",
         r"/(.)+b/v.exec('a')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }
 

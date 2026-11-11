@@ -1,14 +1,8 @@
 //! Exact positive child counts retain final-iteration capture ranges.
+use crate::common::assert_true;
 use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
 #[test]
 fn exact_count_captured_atoms_result_snapshot() {
     let mut rows = String::new();
@@ -60,37 +54,37 @@ fn exact_count_captured_atoms_result_snapshot() {
 
 #[test]
 fn final_iteration_ranges_names_indices_original_programs_and_rollback_are_exact() {
-    check(
+    assert_true(
         "let a=/(?<=a(?=(?<x>b)(?<y>\\k<x>){2}))b/d.exec('abbb');a.groups.x==='b'&&a.groups.y==='b'&&a.indices.groups.y===a.indices[2]&&a.indices[2][0]===3",
     );
-    check(
+    assert_true(
         "let a=/(?<=a(?=(?<x>b)(?<y>\\k<x>(?<z>\\k<x>)){2}))b/d.exec('abbbbb');a.groups.y==='bb'&&a.groups.z==='b'&&a.indices.groups.z===a.indices[3]&&a.indices[2][0]===4&&a.indices[3][0]===5",
     );
-    check(
+    assert_true(
         "let a=/(?<=(?<x>\\k<z>(?<y>\\k<z>)){2}(?<z>a))b/d.exec('aaaaab');a.groups.x==='aa'&&a.groups.y==='a'&&a.indices[2][0]===1&&a.indices[3][0]===4",
     );
-    check(
+    assert_true(
         "let a=/(?<=a(?=(b)(\\1()\\1){2}))b/d.exec('abbbbb');a[2]==='bb'&&a[3]===''&&a.indices[3][0]===5&&a.indices[3][1]===5",
     );
-    check(
+    assert_true(
         "let a=/(?<=a(?!(b)(\\1(\\1)){2}))b/d.exec('ab');a[1]===undefined&&a[2]===undefined&&a.indices[3]===undefined",
     );
-    check(
+    assert_true(
         "let a=/(?<=a(?=([\\uD800])(\\1(\\1)){2}))[\\uD800]/d.exec('a\\uD800\\uD800\\uD800\\uD800\\uD800');a.index===1&&a[2].length===2&&a[3].charCodeAt(0)===55296&&a.indices[3][0]===5",
     );
-    check(
+    assert_true(
         "let a=/(?<=a(?=(bc)(\\1(\\1)){2}))b/d.exec('a'+'bc'.repeat(5));a.index===1&&a.indices[2][0]===7&&a.indices[2][1]===11&&a.indices[3][0]===9&&a.indices[3][1]===11",
     );
-    check(
+    assert_true(
         "let a=/(?<=(\\3(\\3)){2}(bc))a/d.exec('bc'.repeat(5)+'a');a.index===10&&a.indices[1][0]===0&&a.indices[1][1]===4&&a.indices[2][0]===2&&a.indices[2][1]===4&&a.indices[3][0]===8",
     );
-    check(
+    assert_true(
         "let a=/(?<=a(?=(bc)(\\1){3}))b/d.exec('a'+'bc'.repeat(4));a.index===1&&a.indices[2][0]===7&&a.indices[2][1]===9",
     );
-    check(
+    assert_true(
         "let a=/(?<=(\\2){3}(bc))a/d.exec('bc'.repeat(4)+'a');a.index===8&&a.indices[1][0]===0&&a.indices[1][1]===2&&a.indices[2][0]===6",
     );
-    check(
+    assert_true(
         "let a=/(?<=a(?=(bc)(\\1()\\1){2}))b/d.exec('a'+'bc'.repeat(5));a.indices[3][0]===9&&a.indices[3][1]===9",
     );
     let mut rows = String::new();
@@ -124,23 +118,23 @@ fn final_iteration_ranges_names_indices_original_programs_and_rollback_are_exact
 
 #[test]
 fn consumers_sticky_global_callbacks_and_required_empty_paths_keep_last_effects() {
-    check(
+    assert_true(
         "let r=/(?<=a(?=(b)(\\1(\\1)){2}))b/dy;r.lastIndex=1;let a=r.exec('abbbbb');a[3]==='b'&&a.indices[3][0]===5&&r.lastIndex===2&&r.exec('abbbbb')===null&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         "let r=/(?<=a(?=(b)(\\1(\\1)){2}))b/dg,a=[...'abbbbb abbbbb'.matchAll(r)];a.length===2&&a[0].index===1&&a[1].index===8&&a[1].indices[3][0]===12&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         "let seen=[];let s='abbbbb abbbbb'.replace(/(?<=a(?=(b)(\\1(\\1)){2}))b/g,(m,x,y,z,i)=>{seen.push(x,y,z,i);return '_'});s==='a_bbbb a_bbbb'&&seen.join('|')==='b|bb|b|1|b|bb|b|8'",
     );
-    check(
+    assert_true(
         "'abbbbb'.search(/(?<=a(?=(b)(\\1(\\1)){2}))b/)===1&&'abbbbb'.split(/(?<=a(?=(b)(\\1(\\1)){2}))b/).join('|')==='a|b|bb|b|bbbb'",
     );
-    check(
+    assert_true(
         "let a=/(a)((\\1(\\1)){2}b)+/d.exec('aaaaabaaaab');a[2]==='aaaab'&&a[3]==='aa'&&a[4]==='a'&&a.indices[4][0]===9",
     );
-    check("let a=/(?=(\\3(\\3)){2}(a))a/d.exec('a');a[1]===''&&a[2]===''&&a[3]==='a'");
-    check("/(?<=a(?=(b)(\\1){1000000}))b/.exec('abbb')===null");
+    assert_true("let a=/(?=(\\3(\\3)){2}(a))a/d.exec('a');a[1]===''&&a[2]===''&&a[3]==='a'");
+    assert_true("/(?<=a(?=(b)(\\1){1000000}))b/.exec('abbb')===null");
 }
 
 #[test]
@@ -167,9 +161,6 @@ fn variable_child_counts_optional_effects_and_unicode_remain_pending() {
         r"/(?<=a(?=(b)(\1(\1)){2}))b/u.exec('abbbbb')",
         r"/(?<=a(?=(b)(\1(\1)){2}))b/v.exec('abbbbb')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }

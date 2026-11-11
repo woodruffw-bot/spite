@@ -1,10 +1,8 @@
 //! Untagged template substitution evaluation and immediate ToString (13.2.8.6).
 
 use super::{AsyncExecutionData, child_path, expression_at, push};
-use crate::{
-    Error, Realm, Value,
-    object::async_expression::{AsyncExpressionData, ExprChild, ExprPath, ExprTask},
-};
+use crate::object::async_expression::{AsyncExpressionData, ExprChild, ExprPath, ExprTask};
+use crate::{Error, Realm, Value};
 use spite_core::JsString;
 use spite_parser::ast::ExprKind;
 

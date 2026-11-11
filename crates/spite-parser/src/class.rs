@@ -1,6 +1,11 @@
 //! Class definitions and their strict early errors (15.7).
 
-use super::*;
+use super::{
+    AwaitContext, BTreeSet, Class, ClassElement, Diagnostic, Expr, ExprKind, Function,
+    FunctionBody, FunctionKind, FunctionName, FunctionSource, JsString, Kind, Literal,
+    ObjectProperty, Parser, PropertyKind, PropertyName, Span, YieldContext, early, function,
+    has_use_strict, reject_legacy_tokens, reserved, validate_binding_name, validate_expr,
+};
 use std::rc::Rc;
 
 impl Parser {
@@ -389,7 +394,7 @@ pub(super) fn validate_class(class: &Class) -> Result<(), Diagnostic> {
                 initializer: None, ..
             } => {}
             ClassElement::StaticBlock { body, .. } => {
-                function::validate_body(body, true, &BTreeSet::new())?
+                function::validate_body(body, true, &BTreeSet::new())?;
             }
         }
     }

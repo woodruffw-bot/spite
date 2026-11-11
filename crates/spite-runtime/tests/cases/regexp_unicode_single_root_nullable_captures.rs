@@ -1,17 +1,11 @@
 //! Ungrouped class-versus-empty alternatives (22.2.2).
+use crate::common::assert_true;
 use spite_core::JsString;
 use spite_runtime::{Realm, Value};
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
 
 #[test]
 fn root_nullable_capture_layouts_keep_zero_branch_point_and_undefined_slots() {
-    let huge = 2u128;
+    let repeat_count = 2;
     for class in [
         r"[\q{a|b}]",
         r"[\q{a|b|ab}&&\p{Any}]",
@@ -52,7 +46,7 @@ fn root_nullable_capture_layouts_keep_zero_branch_point_and_undefined_slots() {
                         ),
                         4 => (
                             class.to_owned(),
-                            format!("(?<empty>(?<deep>)?)(?<required>){{{huge}}}"),
+                            format!("(?<empty>(?<deep>)?)(?<required>){{{repeat_count}}}"),
                             "",
                             "",
                             "",
@@ -61,7 +55,7 @@ fn root_nullable_capture_layouts_keep_zero_branch_point_and_undefined_slots() {
                         ),
                         _ => (
                             format!("(?:|)(?<part>(?<deep>{class}))(?<after>)"),
-                            format!("(?:(?:)|(?:)){{{huge}}}"),
+                            format!("(?:(?:)|(?:)){{{repeat_count}}}"),
                             "part,deep",
                             "",
                             "after",
@@ -80,7 +74,7 @@ fn root_nullable_capture_layouts_keep_zero_branch_point_and_undefined_slots() {
                 let whole = if empty_first { "" } else { "a" };
                 let end = if empty_first { 1 } else { 2 };
                 let named = layout != 0;
-                check(&format!(
+                assert_true(&format!(
                     r#"
                 var r=new RegExp({pattern:?},'dvgy');r.lastIndex=1;var m=r.exec('aaa'),ok=true;
                 if({named}){{
@@ -101,45 +95,45 @@ fn root_nullable_capture_layouts_keep_zero_branch_point_and_undefined_slots() {
             }
         }
     }
-    check(
+    assert_true(
         r"var m=/([\q{a}])|()/dv.exec('a');m.length===3&&m[1]==='a'&&m[2]===undefined&&m.indices[1][1]===1",
     );
-    check(
+    assert_true(
         r"var m=/()|([\q{a}])/dv.exec('a');m[0]===''&&m[1]===''&&m[2]===undefined&&m.indices[1][0]===0",
     );
 }
 
 #[test]
 fn root_nullable_ranges_keep_utf16_folding_names_and_original_source() {
-    check(
+    assert_true(
         r"var r=/(?<before>)(?<part>[\q{😀}])(?<after>)|(?<empty>)/dvgy;r.lastIndex=1;var m=r.exec('😀😀!');m[0]==='😀'&&m.index===0&&m.groups.before===''&&m.groups.part==='😀'&&m.groups.after===''&&m.groups.empty===undefined&&m.indices.groups.before[0]===0&&m.indices.groups.after[0]===2&&r.lastIndex===2",
     );
-    check(
+    assert_true(
         r"var r=/(?<empty>)|(?<before>)(?<part>[\q{😀}])(?<after>)/dvgy;r.lastIndex=1;var m=r.exec('😀😀!');m[0]===''&&m.index===0&&m.groups.empty===''&&m.groups.before===undefined&&m.groups.part===undefined&&m.groups.after===undefined&&m.indices.groups.empty[0]===0&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"var r=/(?<\u{1D49C}>[\q{s|k}])|(?<empty>)/dvgi;var m=r.exec('ſK'),n=r.exec('ſK');m.groups.𝒜==='ſ'&&n.groups.𝒜==='K'&&n.groups.empty===undefined&&n.indices.groups.𝒜[0]===1&&r.source.indexOf('1D49C')!==-1",
     );
-    check(
+    assert_true(
         r"var m=/[^\q{ab}&&a]|/dv.exec('\ud800');m[0]==='\ud800'&&m.length===1&&m.indices[0][1]===1&&m.groups===undefined",
     );
-    check(
+    assert_true(
         r"var r=/(?<empty>)|(?<part>[\q{a}])/vg;Object.defineProperty(r,'lastIndex',{writable:false});var caught=false;try{r.exec('a')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
     );
 }
 
 #[test]
 fn root_nullable_consumers_callbacks_clones_and_collection_keep_branch_priority() {
-    check(
+    assert_true(
         r"var r=/(?<part>[\q{a}])|(?<empty>(?<first>)|(?<later>))/dvg;var all=Array.from('aa!'.matchAll(r));all.length===4&&all.map(m=>m[0]).join('|')==='a|a||'&&all[0].groups.part==='a'&&all[0].groups.empty===undefined&&all[2].groups.part===undefined&&all[2].groups.empty===''&&all[2].groups.first===''&&all.every(m=>m.groups.later===undefined)&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"var all=Array.from('😀a'.matchAll(/(?<empty>)|(?<part>[\q{😀}])/dvg));all.length===3&&all.map(m=>m.index).join(',')==='0,2,3'&&all.every(m=>m[0]===''&&m.groups.empty===''&&m.groups.part===undefined)",
     );
-    check(
+    assert_true(
         r"var calls=0;var out='aa!'.replace(/(?<part>[\q{a}])|(?<empty>(?<first>)|(?<later>))/vg,function(whole,part,empty,first,later,offset,input,groups){calls++;return arguments.length===8&&groups.later===undefined&&input==='aa!'&&(whole==='a'?part==='a'&&empty===undefined&&first===undefined:part===undefined&&empty===''&&first==='')?'#':'bad'});out==='###!#'&&calls===4",
     );
-    check(
+    assert_true(
         r"var r=/(?<part>[\q{a}])|(?<empty>)/vg;r.lastIndex=9;var parts='ab'.split(r);'baa'.search(r)===0&&r.lastIndex===9&&parts.length===4&&parts[0]===''&&parts[1]==='a'&&parts[2]===undefined&&parts[3]==='b'&&'aa!'.match(r).join('|')==='a|a||'&&'aa!'.replace(r,'<$<part>:$<empty>>')==='<a:><a:><:>!<:>'",
     );
     let mut realm = Realm::default();
@@ -152,10 +146,10 @@ fn root_nullable_consumers_callbacks_clones_and_collection_keep_branch_priority(
 
 #[test]
 fn root_nullable_proofs_finish_finalizers_and_keep_branch_assertions_in_scope() {
-    check(
+    assert_true(
         r"var marker=0,m;try{m=/([\q{a}])|()/dv.exec('a')}finally{marker=3}marker===3&&m[0]==='a'&&m[1]==='a'&&m[2]===undefined&&m.indices[1][1]===1",
     );
-    check(
+    assert_true(
         r"var marker=0,m;try{m=/([\q{a}])|()/dv.exec('!')}finally{marker=3}marker===3&&m[0]===''&&m[1]===undefined&&m[2]===''&&m.indices[2][0]===0",
     );
     for pattern in [
@@ -173,18 +167,15 @@ fn root_nullable_proofs_finish_finalizers_and_keep_branch_assertions_in_scope() 
         r"()|([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])",
     ] {
         let mut realm = Realm::default();
-        assert!(
-            crate::common::regexp_oracle::check(
-                &mut realm,
-                &format!(
-                    "var marker=0;try{{new RegExp({:?},'v').test('a')}}catch{{marker=1}}finally{{marker=2}};marker",
-                    JsString::from(pattern)
-                )
+        crate::common::regexp_oracle::assert_matches_reference(
+            &mut realm,
+            &format!(
+                "var marker=0;try{{new RegExp({:?},'v').test('a')}}catch{{marker=1}}finally{{marker=2}};marker",
+                JsString::from(pattern)
             ),
-            "{pattern}"
         );
     }
-    check(
+    assert_true(
         "var yes=0;for(var p of ['(?<x>[a])|(?<x>)(?<x>)','[\\q{ab}&&a--a]|']){try{new RegExp(p,'v')}catch(e){if(e instanceof SyntaxError)yes++}}yes===2",
     );
 }

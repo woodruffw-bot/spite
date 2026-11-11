@@ -1,18 +1,10 @@
 //! Symbol/BigInt [[Construct]] capability differs from invoking that method.
 
-use spite_runtime::{Realm, Value};
-
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn symbol_and_bigint_are_valid_new_targets_and_superclasses() {
-    check(
+    assert_true(
         r#"
         for(let C of [Symbol,BigInt]){
             function F(value){this.value=value;this.target=new.target}
@@ -35,7 +27,7 @@ fn symbol_and_bigint_are_valid_new_targets_and_superclasses() {
 
 #[test]
 fn construction_rejects_before_coercion_or_new_target_prototype_lookup() {
-    check(
+    assert_true(
         r#"
         let log=[],value=new Proxy({},{get(){throw 1}});
         let NewTarget=new Proxy(function(){},{get(target,key,receiver){if(key==='prototype')throw 2;return Reflect.get(target,key,receiver)}});
@@ -52,7 +44,7 @@ fn construction_rejects_before_coercion_or_new_target_prototype_lookup() {
 
 #[test]
 fn bound_proxy_capabilities_and_array_factories_use_the_constructor_predicate() {
-    check(
+    assert_true(
         r#"
         for(let C of [Symbol,BigInt]){
             let pair=Proxy.revocable(C,{construct(target,args,newTarget){return {target,args,newTarget}}});

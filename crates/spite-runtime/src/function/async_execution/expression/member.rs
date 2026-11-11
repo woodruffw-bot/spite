@@ -1,12 +1,10 @@
 //! Awaited member Reference evaluation shared by GetValue, calls and deletion.
 
 use super::{AsyncExecutionData, child_path, expression_at, push};
-use crate::{
-    Error, Realm, Reference, Value,
-    object::async_expression::{
-        AsyncExpressionData, ExprChild, ExprPath, ExprTask, InvocationTarget, MemberAction,
-    },
+use crate::object::async_expression::{
+    AsyncExpressionData, ExprChild, ExprPath, ExprTask, InvocationTarget, MemberAction,
 };
+use crate::{Error, Realm, Reference, Value};
 use spite_core::Span;
 use spite_parser::ast::{ExprKind, PropertyName};
 
@@ -126,7 +124,7 @@ impl Realm {
             }
             MemberAction::Value => state.current = Some(self.get(&mut reference, span)?),
             MemberAction::OptionalBase { path, action } => {
-                self.async_optional_step(data, state, path, 0, reference, *action)?
+                self.async_optional_step(data, state, path, 0, reference, *action)?;
             }
             MemberAction::Update {
                 op,
@@ -135,10 +133,10 @@ impl Realm {
                 argument_span,
             } => {
                 state.current =
-                    Some(self.update_reference(reference, op, prefix, span, argument_span)?)
+                    Some(self.update_reference(reference, op, prefix, span, argument_span)?);
             }
             MemberAction::Assignment { path, op, span } => {
-                self.finish_async_assignment_target(data, state, reference, path, op, span)?
+                self.finish_async_assignment_target(data, state, reference, path, op, span)?;
             }
             MemberAction::Delete { span } => {
                 state.current = Some(Value::Boolean(self.delete_reference(reference, span)?));

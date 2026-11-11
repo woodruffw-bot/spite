@@ -1,6 +1,7 @@
 //! References share ordinary GetValue/PutValue and can own names through suspension.
 
-use crate::{Error, ObjectHandle, Value, environment::EnvironmentHandle, private};
+use crate::environment::EnvironmentHandle;
+use crate::{Error, ObjectHandle, Value, private};
 use spite_core::{JsString, JsSymbol, Span};
 use std::borrow::Cow;
 

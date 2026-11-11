@@ -3,13 +3,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn fixed_lookbehind_result_snapshot() {
@@ -64,38 +58,38 @@ fn fixed_lookbehind_result_snapshot() {
 
 #[test]
 fn fixed_lookbehind_keeps_outside_ranges_named_aliases_and_source_order_retries() {
-    check(
+    assert_true(
         r"let a=/(?<=a)(?<x>b)\k<x>/d.exec('abb');a[0]==='bb'&&a.index===1&&a.groups.x==='b'&&a.indices.groups.x===a.indices[1]&&a.indices[1][0]===1&&a.indices[1][1]===2",
     );
-    check(
+    assert_true(
         r"let a=/(?:(?<x>a)(?<!a)|(?<x>a)(?<=a))\k<x>/d.exec('aa');a[0]==='aa'&&a[1]===undefined&&a[2]==='a'&&a.groups.x==='a'&&a.indices[1]===undefined&&a.indices.groups.x===a.indices[2]",
     );
-    check(
+    assert_true(
         r"let a=/((?<=a)){2}b\1/d.exec('ab'),b=/((?<=a))*b\1/d.exec('ab');a[1]===''&&a.indices[1][0]===1&&a.indices[1][1]===1&&b[1]===undefined&&b.indices[1]===undefined",
     );
-    check(
+    assert_true(
         r"/(?<=a\b)b/.exec('ab')===null&&/(?<=a\B)b/.exec('ab').index===1&&/(?<=^a)b/m.exec('q\nab').index===3&&/(?<=a$)/m.exec('a\nb').index===1",
     );
-    check(
+    assert_true(
         r"let a=/(?=(?<x>a(?<=a)b))\k<x>/d.exec('ab');a[0]==='ab'&&a.groups.x==='ab'&&a.indices.groups.x[1]===2",
     );
 }
 
 #[test]
 fn fixed_lookbehind_consumers_global_sticky_empty_advancement_and_callback_arguments() {
-    check(
+    assert_true(
         r"let r=/(?<=a)(?<x>b)/dg,a=[...'abqab'.matchAll(r)];a.length===2&&a[0].index===1&&a[1].index===4&&a[0].groups.x==='b'&&a[1].indices.groups.x[0]===4&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/(?<=a)b/dy;r.lastIndex=1;let a=r.exec('ab');a.index===1&&r.lastIndex===2&&r.exec('ab')===null&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/(?<=a)/dg,a=[...'aa'.matchAll(r)];a.length===2&&a[0][0]===''&&a[0].index===1&&a[1].index===2&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let seen=[];let s='abqab'.replace(/(?<=a)(?<x>b)/g,(m,c,i,s,g)=>{seen.push(m,c,i,s,g.x);return '_'});s==='a_qa_'&&seen.length===10&&seen[0]==='b'&&seen[1]==='b'&&seen[2]===1&&seen[4]==='b'&&seen[7]===4",
     );
-    check(
+    assert_true(
         r"'abqab'.replace(/(?<=a)(?<x>b)/g,'<$<x>>')==='a<b>qa<b>'&&'abqab'.search(/(?<=a)b/)===1&&'abqab'.split(/(?<=a)b/).join('|')==='a|qa|'",
     );
 }
@@ -120,7 +114,7 @@ fn explicit_fixed_lookbehind_work_aborts_before_last_index_and_handlers() {
 }
 
 #[test]
-fn capturing_alternative_repeated_nested_and_unicode_lookbehind_remain_unsupported() {
+fn capturing_alternative_repeated_nested_and_unicode_lookbehind_match_reference_results() {
     for source in [
         r"/(?<=(a+))b/.exec('ab')",
         r"/(?<=a|bb)c/.exec('ac')",
@@ -130,9 +124,6 @@ fn capturing_alternative_repeated_nested_and_unicode_lookbehind_remain_unsupport
         r"/(?<=a)b/u.exec('ab')",
         r"/(?<=a)b/v.exec('ab')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }

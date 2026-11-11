@@ -1,7 +1,8 @@
 //! Loaded-record namespace completion from ContinueDynamicImport (13.3.10).
 
-use super::*;
-use crate::function::{PromiseCapability, async_native::AsyncResumeKind};
+use super::{Error, ModuleHandle, ObjectHandle, Realm, Span, Value};
+use crate::function::PromiseCapability;
+use crate::function::async_native::AsyncResumeKind;
 
 impl Realm {
     /// Evaluates a loaded record and resolves a fresh Promise to its namespace.

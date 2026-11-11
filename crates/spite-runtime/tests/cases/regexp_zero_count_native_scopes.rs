@@ -4,13 +4,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn zero_count_native_scope_result_snapshot() {
@@ -80,38 +74,38 @@ fn zero_count_native_scope_result_snapshot() {
 
 #[test]
 fn zero_scopes_keep_named_inventory_owned_undefined_slots_and_outside_ranges() {
-    check(
+    assert_true(
         r"let a=/(?<=(?:(?<x>)|(?<x>a)){0})b\k<x>/d.exec('qb');a.groups.x===undefined&&a[1]===undefined&&a[2]===undefined&&a.indices.groups.x===undefined&&Object.hasOwn(a.groups,'x')&&Object.hasOwn(a.indices.groups,'x')",
     );
-    check(
+    assert_true(
         r"let a=/(?<=((?:(?<x>)|(?<x>a)){0}){2})b\k<x>/d.exec('qb'),b=/(?<=((?:(?<x>)|(?<x>a)){0})*)b\k<x>/d.exec('qb');a[1]===''&&a[2]===undefined&&a[3]===undefined&&a.indices[1][0]===1&&a.groups.x===undefined&&b[1]===undefined&&b.indices[1]===undefined",
     );
-    check(
+    assert_true(
         r"let a=/(?<x>a)(?<=((?=a)\k<x>){0})b\k<x>/d.exec('aba');a[0]==='aba'&&a.groups.x==='a'&&a[2]===undefined&&a.indices.groups.x===a.indices[1]&&a.indices[1][0]===0&&a.indices[1][1]===1",
     );
-    check(
+    assert_true(
         r"let a=/(?<=((?=a)(?<x>\k<x>)){0})b\k<x>/d.exec('qb');a[1]===undefined&&a[2]===undefined&&a.groups.x===undefined&&a.indices.groups.x===undefined",
     );
-    check(
+    assert_true(
         r"let a=/(?<=((a|){0}){2}q)b/d.exec('qb'),b=/(?<!((?=a)(?<x>\k<x>)){0}q)b/d.exec('xb');a[1]===''&&a[2]===undefined&&a.indices[1][0]===0&&b[1]===undefined&&b.groups.x===undefined",
     );
 }
 
 #[test]
 fn zero_scope_consumers_keep_last_index_empty_advancement_and_callback_slots() {
-    check(
+    assert_true(
         r"let r=/(?<=((a|){0}){2})b/dg,a=[...'qb b'.matchAll(r)];a.length===2&&a[1].index===3&&a[1][1]===''&&a[1][2]===undefined&&a[1].indices[1][0]===3&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/(?<=((?=a)\1){0})b/dy;r.lastIndex=1;let a=r.exec('qb');a[1]===undefined&&a.index===1&&r.lastIndex===2&&r.exec('qb')===null&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/(?<=((a|){0}){2})/dg,a=[...'ab'.matchAll(r)];a.length===3&&a[2].index===2&&a[2][1]===''&&a[2][2]===undefined&&a[2].indices[1][0]===2&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let seen=[];let s='qb b'.replace(/(?<=((a|){0}){2})b/g,(m,c,d,i,s)=>{seen.push(c,d,i);return '_'});s==='q_ _'&&seen.length===6&&seen[0]===''&&seen[1]===undefined&&seen[2]===1&&seen[5]===3",
     );
-    check(
+    assert_true(
         r"'qb b'.replace(/(?<=(?:(?<x>)|(?<x>a)){0})b/g,'<$<x>>')==='q<> <>'&&'qb'.search(/(?<=((?=a)\1){0})b/)===1&&'qb b'.split(/(?<=((?=a)\1){0})b/).join('|')==='q|| ||'",
     );
 }
@@ -137,7 +131,7 @@ fn explicit_zero_scope_work_aborts_before_last_index_and_handlers() {
 
 #[test]
 fn syntax_validation_and_unlowered_children_nonzero_choices_and_unicode_stay_separate() {
-    check(
+    assert_true(
         r"let n=0;for(let p of ['(a|{0}','(?<x>)(?<x>){0}','(?:(a){0}){2,1}']){try{new RegExp(p)}catch(e){if(e instanceof SyntaxError)n++}}n===3",
     );
     for source in [
@@ -148,9 +142,6 @@ fn syntax_validation_and_unlowered_children_nonzero_choices_and_unicode_stay_sep
         r"/(?<=(|a){0})b/u.exec('b')",
         r"/(?<=(|a){0})b/v.exec('b')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }

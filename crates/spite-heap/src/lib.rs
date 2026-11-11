@@ -4,12 +4,10 @@
 //! not keep its stored value alive; collection roots are supplied explicitly.
 //! Allocation never performs implicit collection.
 
-use std::{
-    collections::HashMap,
-    fmt,
-    hash::{Hash, Hasher},
-    rc::Rc,
-};
+use std::collections::HashMap;
+use std::fmt;
+use std::hash::{Hash, Hasher};
+use std::rc::Rc;
 
 mod sweep;
 #[doc(hidden)]

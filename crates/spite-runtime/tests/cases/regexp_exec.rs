@@ -186,10 +186,7 @@ fn unsupported_patterns_remain_host_failures_after_ordered_coercions() {
         let program = format!(
             "let r=new RegExp('{source}','{flags}'),t='';r.lastIndex={{valueOf(){{t+='i';return 0;}}}};let m=r.exec({{toString(){{t+='s';return 'a';}}}});[m,t]"
         );
-        assert!(crate::common::regexp_oracle::check(
-            &mut Realm::default(),
-            &program
-        ));
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), &program);
     }
     check("let r=new RegExp('a(a|b)','g');r.lastIndex=2;r.exec('a')===null && r.lastIndex===0");
 }

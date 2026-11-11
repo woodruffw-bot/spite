@@ -1,4 +1,4 @@
-use super::*;
+use super::{Error, JsString, ModuleHandle, Realm, Span, Value};
 use crate::{ExceptionKind, Limits, PromiseJobOutcome};
 
 fn drain(realm: &mut Realm) {
@@ -43,7 +43,7 @@ fn scalar_defaults_preserve_json_number_and_utf16_semantics() {
         drain(&mut realm);
         match (default_value(&mut realm, &module), expected) {
             (Value::Number(actual), Value::Number(expected)) => {
-                assert_eq!(actual.to_bits(), expected.to_bits())
+                assert_eq!(actual.to_bits(), expected.to_bits());
             }
             (actual, expected) => assert_eq!(actual, expected),
         }

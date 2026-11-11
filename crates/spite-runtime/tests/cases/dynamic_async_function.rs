@@ -2,13 +2,7 @@
 
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 fn drain(realm: &mut Realm) {
     loop {
         match realm.run_next_promise_job().unwrap() {
@@ -39,7 +33,7 @@ fn calls_and_construction_produce_async_functions_with_standard_source_and_fresh
 
 #[test]
 fn conversions_finish_before_parsing_and_newtarget_prototype_lookup() {
-    check(
+    assert_true(
         r#"
         let AF=(async function(){}).constructor,log='',proto={},target=(function(){}).bind(null);
         Object.defineProperty(target,'prototype',{get(){log+='p';return proto}});
@@ -86,7 +80,7 @@ fn generated_source_preserves_utf16_literals_and_comment_code_points() {
 
 #[test]
 fn syntax_errors_throw_synchronously_and_async_source_overhead_obeys_opt_in_limits() {
-    check(
+    assert_true(
         "let AF=(async function(){}).constructor,caught=0;for(const args of [['await','return 1'],['a,a','\"use strict\"'],['a=1','\"use strict\"'],['a) {}','return 1'],['a','return a; } evil(); {']]){try{AF(...args)}catch(e){if(e instanceof SyntaxError)caught++}}caught===5",
     );
     for limits in [

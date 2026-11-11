@@ -1,9 +1,7 @@
 //! Proxy creation, revocation and invocation (10.5.12–15, 28.2).
 
-use crate::{
-    Error, ExceptionKind, ObjectHandle, Realm, Value,
-    object::{DataDescriptor, ProxyState},
-};
+use crate::object::{DataDescriptor, ProxyState};
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span};
 
 pub(super) enum ProxyInvocation {

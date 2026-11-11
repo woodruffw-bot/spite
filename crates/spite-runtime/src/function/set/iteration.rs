@@ -1,6 +1,6 @@
 //! Set live iteration and exact callback arguments (24.2.4.7, 24.2.6).
 
-use super::*;
+use super::{Error, ExceptionKind, Realm, Span, Value};
 use crate::object::ArrayIterationKind;
 
 impl Realm {

@@ -1,4 +1,4 @@
-use super::*;
+use super::{Error, ExceptionKind, Value, check, realm_with_symbols};
 use spite_core::WellKnownSymbol;
 
 #[test]

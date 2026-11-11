@@ -1,10 +1,8 @@
 //! Map construction, intrinsics, and keyed methods (24.1).
 
 use super::Builtin;
-use crate::{
-    Error, ExceptionKind, ObjectHandle, Realm, Value,
-    object::{DataDescriptor, DescriptorKind, PropertyDescriptor},
-};
+use crate::object::{DataDescriptor, DescriptorKind, PropertyDescriptor};
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, PropertyKey, Span, WellKnownSymbol};
 
 mod group_by;

@@ -1,6 +1,9 @@
 //! Array species and unscopables properties (23.1.2.6, 23.1.3.41).
 
-use super::*;
+use super::{
+    Builtin, DataDescriptor, DescriptorKind, Error, ObjectHandle, PropertyDescriptor, Realm, Span,
+    Value,
+};
 use spite_core::WellKnownSymbol;
 
 impl Realm {

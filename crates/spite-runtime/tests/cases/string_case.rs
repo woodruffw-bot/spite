@@ -3,23 +3,19 @@
 use spite_core::JsString;
 use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn full_mappings_expand_without_normalization_and_cover_supplementary_planes() {
-    check("'aBcXYZ09'.toLowerCase()==='abcxyz09' && 'aBcXYZ09'.toUpperCase()==='ABCXYZ09'");
-    check("'ßﬃŉΐև'.toUpperCase()==='SSFFIʼNΪ́ԵՒ' && 'İẞK'.toLowerCase()==='i̇ßk'");
-    check("'𐐀𐐨😀'.toLowerCase()==='𐐨𐐨😀' && '𐐀𐐨😀'.toUpperCase()==='𐐀𐐀😀'");
+    assert_true("'aBcXYZ09'.toLowerCase()==='abcxyz09' && 'aBcXYZ09'.toUpperCase()==='ABCXYZ09'");
+    assert_true("'ßﬃŉΐև'.toUpperCase()==='SSFFIʼNΪ́ԵՒ' && 'İẞK'.toLowerCase()==='i̇ßk'");
+    assert_true("'𐐀𐐨😀'.toLowerCase()==='𐐨𐐨😀' && '𐐀𐐨😀'.toUpperCase()==='𐐀𐐀😀'");
     // U+1DF95 was added to the project's pinned Unicode 18 data.
-    check("'\\u{1DF95}'.toUpperCase()==='SS'");
-    check("'ÉE\\u0301'.toLowerCase()==='ée\\u0301' && 'ée\\u0301'.toUpperCase()==='ÉE\\u0301'");
-    check(
+    assert_true("'\\u{1DF95}'.toUpperCase()==='SS'");
+    assert_true(
+        "'ÉE\\u0301'.toLowerCase()==='ée\\u0301' && 'ée\\u0301'.toUpperCase()==='ÉE\\u0301'",
+    );
+    assert_true(
         "'\\0\\uFFFF\\u{10FFFF}'.toUpperCase()==='\\0\\uFFFF\\u{10FFFF}' && ''.toLowerCase()==='' && ''.toUpperCase()===''",
     );
 }
@@ -49,20 +45,20 @@ fn sigma_context_uses_original_cased_and_case_ignorable_properties() {
         ("AΣ\\u02B0B", "aσ\\u02B0b"),
         ("ΣAΣ", "σaς"),
     ] {
-        check(&format!("\"{input}\".toLowerCase()===\"{lower}\""));
+        assert_true(&format!("\"{input}\".toLowerCase()===\"{lower}\""));
     }
-    check("'AΣ'.toLowerCase().toUpperCase()==='AΣ' && 'ςσ'.toUpperCase()==='ΣΣ'");
+    assert_true("'AΣ'.toLowerCase().toUpperCase()==='AΣ' && 'ςσ'.toUpperCase()==='ΣΣ'");
 }
 
 #[test]
 fn lone_surrogates_are_preserved_and_form_context_boundaries() {
-    check(
+    assert_true(
         "'A\\uD800B\\uDC00'.toLowerCase()==='a\\uD800b\\uDC00' && 'a\\uD800b\\uDC00'.toUpperCase()==='A\\uD800B\\uDC00'",
     );
-    check(
+    assert_true(
         "'AΣ\\uD800B'.toLowerCase()==='aς\\uD800b' && 'A\\uD800Σ'.toLowerCase()==='a\\uD800σ' && 'AΣ\\uDC00B'.toLowerCase()==='aς\\uDC00b'",
     );
-    check("'\\uD800\\uD800\\uDC00\\uDC00'.toLowerCase()==='\\uD800\\uD800\\uDC00\\uDC00'");
+    assert_true("'\\uD800\\uD800\\uDC00\\uDC00'.toLowerCase()==='\\uD800\\uD800\\uDC00\\uDC00'");
 }
 
 #[test]
@@ -73,7 +69,7 @@ fn generic_receivers_convert_once_with_string_hint_and_propagate_abrupt_results(
         "toLocaleLowerCase",
         "toLocaleUpperCase",
     ] {
-        check(&format!(
+        assert_true(&format!(
             "String.prototype.{method}.call(12)==='12' && String.prototype.{method}.call(true)==='{}' && String.prototype.{method}.call(7n)==='7'",
             if method.contains("Upper") {
                 "TRUE"
@@ -82,10 +78,10 @@ fn generic_receivers_convert_once_with_string_hint_and_propagate_abrupt_results(
             }
         ));
         let expected = if method.contains("Upper") { "SS" } else { "ß" };
-        check(&format!(
+        assert_true(&format!(
             "let log='',o={{[Symbol.toPrimitive](hint){{log+=hint;return 'ß';}},toString(){{throw 7;}}}};String.prototype.{method}.call(o)==='{expected}' && log==='string'"
         ));
-        check(&format!(
+        assert_true(&format!(
             "let marker={{}},caught=false;try{{String.prototype.{method}.call({{toString(){{throw marker;}},valueOf(){{throw 7;}}}});}}catch(e){{caught=e===marker;}}caught"
         ));
         for receiver in [
@@ -107,19 +103,23 @@ fn generic_receivers_convert_once_with_string_hint_and_propagate_abrupt_results(
             );
         }
     }
-    check(
+    assert_true(
         "new String('ABC').toLowerCase()==='abc' && String.prototype.toUpperCase.call({toString(){return {};},valueOf(){return 'ß';}})==='SS'",
     );
 }
 
 #[test]
 fn locale_methods_use_fixed_neutral_casing_and_ignore_reserved_arguments() {
-    check("'Iİiı'.toLocaleLowerCase('tr')==='ii̇iı' && 'Iİiı'.toLocaleUpperCase('tr')==='IİII'");
-    check("'I\\u0301'.toLocaleLowerCase('lt')==='i\\u0301' && 'ΟΣ'.toLocaleLowerCase()==='ος'");
-    check(
+    assert_true(
+        "'Iİiı'.toLocaleLowerCase('tr')==='ii̇iı' && 'Iİiı'.toLocaleUpperCase('tr')==='IİII'",
+    );
+    assert_true(
+        "'I\\u0301'.toLocaleLowerCase('lt')==='i\\u0301' && 'ΟΣ'.toLocaleLowerCase()==='ος'",
+    );
+    assert_true(
         "let log='',o={toString(){throw 7;},[Symbol.iterator](){throw 8;}};'ß'.toLocaleUpperCase((log+='a',o),(log+='b',o))==='SS' && 'ABC'.toLocaleLowerCase(o,o)==='abc' && log==='ab'",
     );
-    check(
+    assert_true(
         "String.prototype.toLowerCase!==String.prototype.toLocaleLowerCase && String.prototype.toUpperCase!==String.prototype.toLocaleUpperCase",
     );
 }
@@ -153,7 +153,7 @@ fn method_descriptors_and_retained_intrinsics_are_standard() {
             assert_eq!(d.value, value);
             assert!(!d.writable && !d.enumerable && d.configurable);
         }
-        check(&format!(
+        assert_true(&format!(
             "let d=Object.getOwnPropertyDescriptor(String.prototype,'{method}');d.writable && !d.enumerable && d.configurable"
         ));
         assert!(matches!(
@@ -181,7 +181,7 @@ fn method_descriptors_and_retained_intrinsics_are_standard() {
 
 #[test]
 fn large_default_expansions_work_and_opted_in_failures_skip_language_cleanup() {
-    check(
+    assert_true(
         "'ß'.repeat(10000).toUpperCase().length===20000 && ('AΣ'+'\\u0301'.repeat(10000)).toLowerCase().slice(0,2)==='aς'",
     );
     let mut realm = Realm::new(Limits {

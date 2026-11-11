@@ -1,6 +1,7 @@
 //! RegExp character Canonicalize (22.2.2.7.3), using pinned Unicode data.
 
-use crate::{case_data::SIMPLE_CASE_FOLD, unicode_case_mapping};
+use crate::case_data::SIMPLE_CASE_FOLD;
+use crate::unicode_case_mapping;
 
 /// Returns the character used for RegExp comparisons under the supplied flags.
 ///

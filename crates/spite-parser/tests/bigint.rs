@@ -1,7 +1,8 @@
 //! Exact BigInt syntax and numeric-token boundaries (ECMA-262 12.9.3).
 
 use spite_core::DiagnosticKind;
-use spite_parser::{ast::*, parse_script};
+use spite_parser::ast::{Expr, ExprKind, Literal, StatementKind};
+use spite_parser::parse_script;
 
 #[test]
 fn bigint_literals_preserve_exact_digits_and_radix() {

@@ -1,11 +1,8 @@
 //! Member references, assignment targets, precedence, and line-terminator rules.
 
 use spite_core::DiagnosticKind;
-use spite_parser::{
-    MAX_DEPTH,
-    ast::{ExprKind, StatementKind},
-    parse_script,
-};
+use spite_parser::ast::{ExprKind, StatementKind};
+use spite_parser::{MAX_DEPTH, parse_script};
 
 #[test]
 fn member_reference_snapshot() {

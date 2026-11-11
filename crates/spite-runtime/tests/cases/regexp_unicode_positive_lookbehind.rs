@@ -2,17 +2,11 @@
 
 use spite_runtime::{Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn named_predecessor_and_outside_captures_keep_original_source_and_ranges() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var mode of ['u','v'])for(var state of ['','g','gy'])for(var row of [['a','a'],['[a-z]','a'],['\\d','2'],['.','😀'],['\\u{1F600}','😀'],['\\uD83D\\uDE00','😀'],['\\uD800','\ud800']]){
@@ -26,7 +20,7 @@ fn named_predecessor_and_outside_captures_keep_original_source_and_ranges() {
 
 #[test]
 fn predecessor_search_sticky_end_and_initial_pair_candidates_are_complete() {
-    check(
+    assert_true(
         r#"
         var ok=true,input='😀a';
         for(var mode of ['u','v'])for(var state of ['','g','gy'])for(var start=0;start<=input.length+1;start++){
@@ -42,7 +36,7 @@ fn predecessor_search_sticky_end_and_initial_pair_candidates_are_complete() {
 
 #[test]
 fn predecessor_line_dot_property_and_lone_surrogate_contexts_remain_original() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var mode of ['u','v']){
@@ -77,7 +71,7 @@ fn predecessor_string_consumers_copies_and_collection_keep_captures_before_match
 
 #[test]
 fn word_predecessor_captures_keep_boundary_polarity_source_and_outside_ranges() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var mode of ['u','v'])for(var state of ['','g','gy'])for(var row of [['\\ba\\B','aaa',1],['\\Ba\\B','aaaa',2],['\\b[a-z]\\b','!a!',2]]){
@@ -90,7 +84,7 @@ fn word_predecessor_captures_keep_boundary_polarity_source_and_outside_ranges() 
 
 #[test]
 fn word_predecessor_line_fold_property_and_backspace_contexts_remain_original() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var mode of ['u','v']){
@@ -121,14 +115,14 @@ fn word_predecessor_string_consumers_copies_and_collection_keep_preceding_captur
 
 #[test]
 fn word_predecessor_search_retains_complete_character_and_initial_pair_boundaries() {
-    check(
+    assert_true(
         "var ok=true;for(var mode of ['u','v']){var r=new RegExp('(?<=(?<run>\\\\B.\\\\b))','dg'+mode),m=r.exec('a😀ab!');ok=ok&&m.index===5&&m.groups.run==='b'&&m.indices.groups.run[0]===4&&m.indices.groups.run[1]===5&&r.lastIndex===5;r=new RegExp('(?<=(?<run>\\\\B.\\\\b))','dgy'+mode);r.lastIndex=2;ok=ok&&r.exec('a😀ab!')===null&&r.lastIndex===0}ok",
     );
 }
 
 #[test]
 fn q_class_predecessors_keep_original_source_names_and_independent_capture_ranges() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var state of ['','g','gy'])for(var atom of ['[\\q{a|😀}]','[[\\q{a|😀}]--[b]]','[[\\q{a|😀}]&&[a😀]]','[x\\q{a|😀}]']){
@@ -142,7 +136,7 @@ fn q_class_predecessors_keep_original_source_names_and_independent_capture_range
 
 #[test]
 fn q_class_predecessors_retain_original_line_fold_property_and_surrogate_context() {
-    check(
+    assert_true(
         r#"
         var m=/(?<=(?<run>^[\q{a|😀}]$))/dimv.exec('\nA\n'),ok=m.index===2&&m.groups.run==='A'&&m.indices.groups.run[0]===1&&m.indices.groups.run[1]===2;
         for(var text of ['S','ſ','K','K']){var m=/(?<=(?<run>[\q{ſ|k}]))/div.exec(text);ok=ok&&m.index===1&&m.groups.run===text&&m.indices.groups.run[0]===0}
@@ -170,7 +164,7 @@ fn q_class_predecessor_string_consumers_copies_and_collection_keep_preceding_ext
 
 #[test]
 fn word_q_class_predecessors_keep_original_polarity_source_and_named_ranges() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var state of ['','g','gy'])for(var row of [['\\b[\\q{a|b}]\\b','ab a!',4,'a'],['\\b[\\q{a|b}]\\B','ab!',1,'a'],['\\B[\\q{a|😀}]\\B','😀😀',2,'😀']]){
@@ -184,7 +178,7 @@ fn word_q_class_predecessors_keep_original_polarity_source_and_named_ranges() {
 
 #[test]
 fn word_q_class_predecessor_line_fold_property_and_backspace_context_stay_original() {
-    check(
+    assert_true(
         r#"
         var m=/(?<=(?<run>^\b[\q{a|😀}]\b$))/dimv.exec('\nA\n'),ok=m.index===2&&m.groups.run==='A'&&m.indices.groups.run[0]===1&&m.indices.groups.run[1]===2;
         for(var text of ['S','ſ','K','K']){var m=/(?<=(?<run>\b[\q{ſ|k}]\b))/div.exec('!'+text+'!');ok=ok&&m.index===2&&m.groups.run===text&&m.indices.groups.run[0]===1}
@@ -209,14 +203,14 @@ fn word_q_class_predecessor_string_consumers_copies_and_collection_keep_precedin
 
 #[test]
 fn word_q_class_predecessor_search_preserves_complete_candidates_and_initial_pair_rewind() {
-    check(
+    assert_true(
         "var r=new RegExp('(?<=(?<run>\\\\B[\\\\q{😀|a}]\\\\B))','dgyv');r.lastIndex=3;var m=r.exec('😀😀');m.index===2&&m.groups.run==='😀'&&m.indices.groups.run[0]===0&&m.indices.groups.run[1]===2&&r.lastIndex===2",
     );
 }
 
 #[test]
 fn scalar_v_set_predecessors_keep_original_source_and_named_independent_ranges() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var state of ['','g','gy'])for(var row of [['[[a-z]--[aeiou]]','!ab',3,'b'],['[[a-z]&&[ab]]','!ab',2,'a'],['[[a][b]]','!ab',2,'a'],['[[😀a]--[a]]','!😀a',3,'😀'],['[^[a-z]]','😀abc',2,'😀']]){
@@ -230,7 +224,7 @@ fn scalar_v_set_predecessors_keep_original_source_and_named_independent_ranges()
 
 #[test]
 fn scalar_v_set_predecessors_keep_original_line_fold_property_and_surrogate_context() {
-    check(
+    assert_true(
         r#"
         var m=/(?<=(?<run>^[[a-z]--[aeiou]]$))/dimv.exec('\nB\n'),ok=m.index===2&&m.groups.run==='B'&&m.indices.groups.run[0]===1&&m.indices.groups.run[1]===2;
         var m=/(?<=(?<run>[[\p{ASCII}]--[x]]))/div.exec('ſK');ok=ok&&m.index===1&&m.groups.run==='ſ';
@@ -259,7 +253,7 @@ fn scalar_v_set_predecessor_consumers_copies_and_collection_keep_preceding_exten
 
 #[test]
 fn word_scalar_v_set_predecessors_keep_original_polarity_source_and_named_ranges() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var state of ['','g','gy'])for(var row of [['\\b[[a-z]--[aeiou]]\\b','ab b!',4,'b'],['\\B[[a-z]--[aeiou]]\\b','ab!',2,'b'],['\\b[[a-z]--[aeiou]]\\B','bb!',1,'b']]){
@@ -273,7 +267,7 @@ fn word_scalar_v_set_predecessors_keep_original_polarity_source_and_named_ranges
 
 #[test]
 fn word_scalar_v_set_predecessors_keep_original_line_fold_property_and_backspace_context() {
-    check(
+    assert_true(
         r#"
         var m=/(?<=(?<run>^\b[[a-z]--[aeiou]]\b$))/dimv.exec('\nB\n'),ok=m.index===2&&m.groups.run==='B'&&m.indices.groups.run[0]===1&&m.indices.groups.run[1]===2;
         for(var text of ['S','ſ','K','K']){var m=/(?<=(?<run>\b[[\p{ASCII}]--[x]]\b))/div.exec('!'+text+'!');ok=ok&&m.index===2&&m.groups.run===text&&m.indices.groups.run[0]===1&&m.indices.groups.run[1]===2}
@@ -297,14 +291,14 @@ fn word_scalar_v_set_predecessor_consumers_copies_and_collection_keep_preceding_
 
 #[test]
 fn word_scalar_v_set_predecessor_search_keeps_complete_candidates_and_initial_pair_rewind() {
-    check(
+    assert_true(
         "var r=new RegExp('(?<=(?<run>\\\\B[[😀a]--[a]]\\\\B))','dgyv');r.lastIndex=3;var m=r.exec('😀😀');m.index===2&&m.groups.run==='😀'&&m.indices.groups.run[0]===0&&m.indices.groups.run[1]===2&&r.lastIndex===2",
     );
 }
 
 #[test]
 fn character_result_predecessors_keep_original_source_and_named_independent_capture_ranges() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var state of ['','g','gy'])for(var row of [['[\\q{a|ab|}&&\\p{Any}]','!a',2,'a'],['[[\\q{ab}&&a]b]','!b',2,'b'],['[^\\q{ab}&&a]','😀',2,'😀'],['[[\\q{😀x|😀}&&\\p{Any}]a]','!😀a',3,'😀']]){
@@ -318,7 +312,7 @@ fn character_result_predecessors_keep_original_source_and_named_independent_capt
 
 #[test]
 fn character_result_predecessors_keep_original_line_fold_empty_set_and_surrogate_context() {
-    check(
+    assert_true(
         r#"
         var m=/(?<=(?<run>^[\q{a|ab|}&&\p{Any}]$))/dimv.exec('\nA\n'),ok=m.index===2&&m.groups.run==='A'&&m.indices.groups.run[1]===2;
         var m=/(?<=(?<run>[^\q{k|sK|}&&\p{ASCII}]))/div.exec('KKſ');ok=ok&&m.index===3&&m.groups.run==='ſ'&&m.indices.groups.run[1]===3;
@@ -345,7 +339,7 @@ fn character_result_predecessor_consumers_copies_and_collection_keep_original_ex
 
 #[test]
 fn word_character_result_predecessors_keep_original_polarity_source_and_named_independent_ranges() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var state of ['','g','gy'])for(var row of [['\\b[\\q{b|c|bc|}&&\\p{Any}]\\b','ab b!',4,'b'],['\\B[\\q{b|c|bc|}&&\\p{Any}]\\b','ab!',2,'b'],['\\b[\\q{b|c|bc|}&&\\p{Any}]\\B','bb!',1,'b']]){
@@ -359,7 +353,7 @@ fn word_character_result_predecessors_keep_original_polarity_source_and_named_in
 
 #[test]
 fn word_character_result_predecessor_lines_folds_properties_and_backspace_keep_original_context() {
-    check(
+    assert_true(
         r#"
         var m=/(?<=(?<run>^\b[\q{b|c|bc|}&&\p{Any}]\b$))/dimv.exec('\nB\n'),ok=m.index===2&&m.groups.run==='B'&&m.indices.groups.run[1]===2;
         for(var text of ['S','ſ']){var m=/(?<=(?<run>\b[\q{S|sK|}&&\p{ASCII}]\b))/div.exec('!'+text+'!');ok=ok&&m.index===2&&m.groups.run===text&&m.indices.groups.run[1]===2}
@@ -385,7 +379,7 @@ fn word_character_result_predecessor_string_consumers_copies_and_collection_keep
 #[test]
 fn word_character_result_predecessor_search_preserves_complete_candidates_and_initial_pair_rewind()
 {
-    check(
+    assert_true(
         "var r=new RegExp('(?<=(?<run>\\\\B[\\\\q{😀|😀x|}&&\\\\p{Any}]\\\\B))','dgyv');r.lastIndex=3;var m=r.exec('😀😀');m.index===2&&m.groups.run==='😀'&&m.indices.groups.run[0]===0&&m.indices.groups.run[1]===2&&r.lastIndex===2",
     );
 }

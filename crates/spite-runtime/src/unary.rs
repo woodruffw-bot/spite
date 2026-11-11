@@ -1,6 +1,7 @@
 //! Unary value operations shared by synchronous and resumed expression evaluation.
 
-use crate::{Error, ExceptionKind, Realm, Reference, Value, value::to_uint32};
+use crate::value::to_uint32;
+use crate::{Error, ExceptionKind, Realm, Reference, Value};
 use spite_bigint::BigInt;
 use spite_core::{JsString, Span};
 use spite_parser::ast::{BinaryOp, UnaryOp, UpdateOp};

@@ -3,11 +3,9 @@
 use super::{
     AsyncAwaitAction, AsyncExecutionData, FrameStep, Step, active_statement, child_location,
 };
-use crate::{
-    Completion, Error, ExceptionKind, Realm, Value,
-    function::IteratorRecord,
-    object::async_execution::{AsyncForAwaitPhase, AsyncStatementFrame, StatementChild},
-};
+use crate::function::IteratorRecord;
+use crate::object::async_execution::{AsyncForAwaitPhase, AsyncStatementFrame, StatementChild};
+use crate::{Completion, Error, ExceptionKind, Realm, Value};
 use spite_core::{JsString, Span, WellKnownSymbol};
 
 impl Realm {

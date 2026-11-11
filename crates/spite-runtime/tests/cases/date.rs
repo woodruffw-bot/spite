@@ -3,13 +3,7 @@
 use spite_core::JsString;
 use spite_runtime::{Error, ExceptionKind, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 fn type_error(source: &str) {
     assert!(
@@ -26,10 +20,10 @@ fn type_error(source: &str) {
 
 #[test]
 fn timestamp_inputs_clip_preserve_brand_and_distinguish_absent_undefined() {
-    check(
+    assert_true(
         "let d=new Date; Number.isFinite(d.getTime()) && Number.isInteger(d.getTime()) && Math.abs(d.getTime())<=8640000000000000 && Number.isFinite(Date.now()) && Number.isInteger(Date.now())",
     );
-    check(
+    assert_true(
         "new Date(null).getTime()===0 && new Date(false).getTime()===0 && new Date(true).getTime()===1 && new Date(1.9).valueOf()===1 && new Date(-1.9).getTime()===-1 && 1/new Date(-0).getTime()===Infinity && 1/new Date(-0.9).getTime()===Infinity",
     );
     for value in [
@@ -40,14 +34,14 @@ fn timestamp_inputs_clip_preserve_brand_and_distinguish_absent_undefined() {
         "8640000000000001",
         "-8640000000000001",
     ] {
-        check(&format!(
+        assert_true(&format!(
             "let d=new Date({value}); Number.isNaN(d.getTime()) && ({{}}).toString.call(d)==='[object Date]'"
         ));
     }
     for source in ["new Date(Symbol())", "new Date(1n)"] {
         type_error(source);
     }
-    check(
+    assert_true(
         "let D=Date.bind(null,-1); new D().getTime()===-1 && new D instanceof Date && new D instanceof D",
     );
 }
@@ -65,7 +59,7 @@ fn interchange_strings_parse_with_offsets_rollover_and_full_domain_clipping() {
         ("-271821-04-20T00:00:00.000Z", -8640000000000000.0),
         ("+275760-09-13T00:00:00.000Z", 8640000000000000.0),
     ] {
-        check(&format!(
+        assert_true(&format!(
             "Date.parse('{text}')==={value} && new Date('{text}').getTime()==={value}"
         ));
     }
@@ -79,11 +73,11 @@ fn interchange_strings_parse_with_offsets_rollover_and_full_domain_clipping() {
         "+275760-09-13T00:00:00.001Z",
         "-271821-04-19T23:59:59.999Z",
     ] {
-        check(&format!(
+        assert_true(&format!(
             "Number.isNaN(Date.parse('{text}')) && Number.isNaN(new Date('{text}').getTime())"
         ));
     }
-    check(
+    assert_true(
         "let hint='',calls=0; Date.parse({[Symbol.toPrimitive](h){hint=h;calls++;return '1970';}})===0 && hint==='string' && calls===1",
     );
     type_error("Date.parse(Symbol())");
@@ -91,19 +85,19 @@ fn interchange_strings_parse_with_offsets_rollover_and_full_domain_clipping() {
 
 #[test]
 fn copying_dates_bypasses_hooks_but_other_inputs_observe_default_hint() {
-    check(
+    assert_true(
         "let original=new Date(7); Object.defineProperty(original,Symbol.toPrimitive,{value(){throw 1;}}); original.valueOf=()=>{throw 2;}; let copied=new Date(original); copied!==original && copied.getTime()===7",
     );
-    check(
+    assert_true(
         "let original=new Date(NaN); Object.defineProperty(original,Symbol.toPrimitive,{value(){throw 1;}}); Number.isNaN(new Date(original).getTime())",
     );
-    check(
+    assert_true(
         "let trace=''; let d=new Date({[Symbol.toPrimitive](hint){trace+=hint;return '1970';},valueOf(){throw 1;}}); d.getTime()===0 && trace==='default'",
     );
-    check(
+    assert_true(
         "let trace=''; new Date({valueOf(){trace+='v';return {};},toString(){trace+='s';return '1970';}}).getTime()===0 && trace==='vs'",
     );
-    check(
+    assert_true(
         "let original=new Date(7), inherited=Object.create(original); Object.defineProperty(inherited,Symbol.toPrimitive,{value:()=>9});new Date(inherited).getTime()===9",
     );
     type_error("new Date({[Symbol.toPrimitive](){return {};}})");
@@ -111,13 +105,13 @@ fn copying_dates_bypasses_hooks_but_other_inputs_observe_default_hint() {
 
 #[test]
 fn constructor_converts_before_selecting_newtarget_prototype_and_supports_subclasses() {
-    check(
+    assert_true(
         "let trace='',p={}; function C(){} let input={valueOf(){trace+='v'; C.prototype=p;return 7;}}; let d=Reflect.construct(Date,[input],C); trace==='v' && Object.getPrototypeOf(d)===p && Date.prototype.getTime.call(d)===7 && ({}).toString.call(d)==='[object Date]'",
     );
-    check(
+    assert_true(
         "function C(){} C.prototype=3; Object.getPrototypeOf(Reflect.construct(Date,[0],C))===Date.prototype",
     );
-    check(
+    assert_true(
         "class D extends Date { #x=3; read(){return this.#x+this.getTime();} } let d=new D(7); d instanceof Date && d instanceof D && d.read()===10",
     );
     let mut realm = Realm::default();
@@ -132,13 +126,13 @@ fn constructor_converts_before_selecting_newtarget_prototype_and_supports_subcla
 
 #[test]
 fn utc_getters_decompose_epoch_negative_milliseconds_leap_days_and_extremes() {
-    check(
+    assert_true(
         "let d=new Date(-1); d.getUTCFullYear()===1969 && d.getUTCMonth()===11 && d.getUTCDate()===31 && d.getUTCDay()===3 && d.getUTCHours()===23 && d.getUTCMinutes()===59 && d.getUTCSeconds()===59 && d.getUTCMilliseconds()===999",
     );
-    check(
+    assert_true(
         "let d=new Date('2000-02-29T12:34:56.789Z'); d.getUTCFullYear()===2000 && d.getUTCMonth()===1 && d.getUTCDate()===29 && d.getUTCDay()===2 && d.getUTCHours()===12 && d.getUTCMinutes()===34 && d.getUTCSeconds()===56 && d.getUTCMilliseconds()===789",
     );
-    check(
+    assert_true(
         "let lo=new Date(-8640000000000000),hi=new Date(8640000000000000);lo.getUTCFullYear()===-271821 && lo.getUTCMonth()===3 && lo.getUTCDate()===20 && hi.getUTCFullYear()===275760 && hi.getUTCMonth()===8 && hi.getUTCDate()===13",
     );
     for method in [
@@ -151,7 +145,7 @@ fn utc_getters_decompose_epoch_negative_milliseconds_leap_days_and_extremes() {
         "getUTCSeconds",
         "getUTCMilliseconds",
     ] {
-        check(&format!(
+        assert_true(&format!(
             "Number.isNaN(new Date(NaN).{method}({{valueOf(){{throw 1;}}}}))"
         ));
     }
@@ -185,25 +179,27 @@ fn branded_methods_reject_inherited_slots_and_primitive_receivers_before_argumen
             ));
         }
     }
-    check(
+    assert_true(
         "let d=new Date(0);Object.setPrototypeOf(d,null); Date.prototype.getTime.call(d)===0 && ({}).toString.call(d)==='[object Date]'",
     );
-    check(
+    assert_true(
         "let d=new Date(0); d[Symbol.toStringTag]='Custom'; ({}).toString.call(d)==='[object Custom]' && d.getTime()===0",
     );
-    check("({}).toString.call(Date.prototype)==='[object Object]'");
+    assert_true("({}).toString.call(Date.prototype)==='[object Object]'");
 }
 
 #[test]
 fn settime_converts_once_clips_and_commits_only_after_successful_conversion() {
-    check(
+    assert_true(
         "let d=new Date(7),calls=0; Object.freeze(d);d.setTime({valueOf(){calls++;d.setTime(9);return -1.9;}})===-1 && d.getTime()===-1 && calls===1 && 1/d.setTime(-0)===Infinity && 1/d.getTime()===Infinity && Number.isNaN(d.setTime()) && Number.isNaN(d.getTime()) && d.setTime(3)===3",
     );
-    check(
+    assert_true(
         "let d=new Date(7),caught=false;try{d.setTime({valueOf(){throw 9;}});}catch(e){caught=e===9;}caught && d.getTime()===7",
     );
     type_error("new Date(0).setTime(1n)");
-    check("let d=new Date(0); Number.isNaN(d.setTime(Infinity)) && Number.isNaN(d.getTime())");
+    assert_true(
+        "let d=new Date(0); Number.isNaN(d.setTime(Infinity)) && Number.isNaN(d.getTime())",
+    );
 }
 
 #[test]
@@ -214,11 +210,11 @@ fn iso_and_json_serialization_preserve_expanded_years_and_invalid_dates() {
         (-8640000000000000.0, "-271821-04-20T00:00:00.000Z"),
         (8640000000000000.0, "+275760-09-13T00:00:00.000Z"),
     ] {
-        check(&format!(
+        assert_true(&format!(
             "let d=new Date({time}); d.toISOString()==='{text}' && d.toJSON()==='{text}' && JSON.stringify([d])==='[\"{text}\"]'"
         ));
     }
-    check(
+    assert_true(
         "let d=new Date(NaN); d.toJSON()===null && JSON.stringify(d)==='null' && d.toString()==='Invalid Date' && d.toDateString()==='Invalid Date' && d.toTimeString()==='Invalid Date' && d.toUTCString()==='Invalid Date'",
     );
     assert!(matches!(
@@ -232,16 +228,16 @@ fn iso_and_json_serialization_preserve_expanded_years_and_invalid_dates() {
 
 #[test]
 fn json_conversion_is_generic_observes_numeric_hint_and_invokes_original_object() {
-    check(
+    assert_true(
         "let trace='',o={valueOf(){trace+='v';return 1;},get toISOString(){trace+='g';return function(){trace+='c';return this===o && arguments.length===0;};}}; Date.prototype.toJSON.call(o,{toString(){throw 1;}})===true && trace==='vgc'",
     );
     for number in ["NaN", "Infinity", "-Infinity"] {
-        check(&format!(
+        assert_true(&format!(
             "Date.prototype.toJSON.call({{valueOf(){{return {number};}},get toISOString(){{throw 7;}}}})===null"
         ));
     }
     for primitive in ["'text'", "true", "undefined", "null", "Symbol()", "1n"] {
-        check(&format!(
+        assert_true(&format!(
             "let h='',o={{[Symbol.toPrimitive](hint){{h=hint;return {primitive};}},toISOString(){{return 7;}}}};Date.prototype.toJSON.call(o)===7 && h==='number'"
         ));
     }
@@ -257,11 +253,11 @@ fn primitive_conversion_is_generic_validates_hint_without_coercion_and_orders_me
         ("string", "s", "'text'"),
         ("number", "v", "7"),
     ] {
-        check(&format!(
+        assert_true(&format!(
             "let trace='',o={{toString(){{trace+='s';return 'text';}},valueOf(){{trace+='v';return 7;}}}};Date.prototype[Symbol.toPrimitive].call(o,'{hint}')==={expected} && trace==='{trace}'"
         ));
     }
-    check(
+    assert_true(
         "let trace='',o={toString(){trace+='s';return {};},valueOf(){trace+='v';return 7;}};Date.prototype[Symbol.toPrimitive].call(o,'default')===7 && trace==='sv'",
     );
     for hint in [
@@ -281,10 +277,10 @@ fn primitive_conversion_is_generic_validates_hint_without_coercion_and_orders_me
             "Date.prototype[Symbol.toPrimitive].call({receiver},'number')"
         ));
     }
-    check(
+    assert_true(
         "let d=new Date(7);d.toString=()=> 'text'; +d===7 && d+1==='text1' && `${d}`==='text' && String(d)==='text'",
     );
-    check(
+    assert_true(
         "String(new Date(NaN))==='Invalid Date' && Number(new Date(NaN))!==Number(new Date(NaN))",
     );
 }
@@ -300,8 +296,8 @@ fn calendar_coercion_keeps_order_and_propagates_abrupt_completions() {
         assert_eq!(realm.eval(source), Err(Error::Thrown(Value::Number(7.0))));
         assert_eq!(realm.eval("trace"), Ok(Value::String(JsString::from("ab"))));
     }
-    check(
+    assert_true(
         "let flag=0,caught=false;try{new Date(2026,Symbol(),flag++);}catch(e){caught=e instanceof TypeError;}caught && flag===1",
     );
-    check("let flag=0;try{Date.parse({toString(){flag=1;throw 9;}});}catch(e){}flag===1");
+    assert_true("let flag=0;try{Date.parse({toString(){flag=1;throw 9;}});}catch(e){}flag===1");
 }

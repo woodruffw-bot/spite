@@ -2,17 +2,11 @@
 
 use spite_runtime::{Error, ExceptionKind, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn input_species_flags_construction_and_limit_follow_the_specification_order() {
-    check(
+    assert_true(
         r"
         let f=RegExp.prototype[Symbol.split],t='',r={get constructor(){t+='c';return {get [Symbol.species](){t+='p';return C;}};},get flags(){t+='f';return {toString(){t+='F';return 'gy';}};},
             get lastIndex(){throw 7;},get source(){throw 8;},get global(){throw 9;},get sticky(){throw 10;}};
@@ -21,7 +15,7 @@ fn input_species_flags_construction_and_limit_follow_the_specification_order() {
         Array.isArray(a)&&a.length===0&&t==='scpfFnl'
     ",
     );
-    check(
+    assert_true(
         r"
         let t='',r={get constructor(){t+='c';throw 7;},get flags(){throw 8;}},ok=false;
         try{RegExp.prototype[Symbol.split].call(r,{toString(){t+='s';return 'x';}});}catch(e){ok=e===7;}
@@ -47,7 +41,7 @@ fn input_species_flags_construction_and_limit_follow_the_specification_order() {
 #[test]
 fn species_checks_precede_flags_and_defaults_use_the_intrinsic_constructor() {
     for constructor in ["null", "false", "1", "''", "1n", "Symbol()"] {
-        check(&format!(
+        assert_true(&format!(
             "let ok=false;try{{RegExp.prototype[Symbol.split].call({{constructor:{constructor},get flags(){{throw 7;}}}},'');}}catch(e){{ok=e instanceof TypeError;}}ok"
         ));
     }
@@ -61,7 +55,7 @@ fn species_checks_precede_flags_and_defaults_use_the_intrinsic_constructor() {
         "()=>{}",
         "({m(){}}).m",
     ] {
-        check(&format!(
+        assert_true(&format!(
             "let ok=false;try{{RegExp.prototype[Symbol.split].call({{constructor:{{[Symbol.species]:{species}}},get flags(){{throw 7;}}}},'');}}catch(e){{ok=e instanceof TypeError;}}ok"
         ));
     }
@@ -82,7 +76,7 @@ fn species_checks_precede_flags_and_defaults_use_the_intrinsic_constructor() {
         );
         assert_eq!(realm.eval("called"), Ok(Value::Boolean(false)));
     }
-    check(
+    assert_true(
         r"
         let r={flags:'',constructor:{[Symbol.species]:function(){throw 7;}}},ok=false;
         try{RegExp.prototype[Symbol.split].call(r,'',{valueOf(){throw 8;}});}catch(e){ok=e===7;}ok
@@ -101,7 +95,7 @@ fn sticky_flag_addition_preserves_the_original_utf16_flags() {
         ("abycd", "abycd"),
         (r"\ud800", r"\ud800y"),
     ] {
-        check(&format!(
+        assert_true(&format!(
             "let seen,r={{flags:'{flags}',constructor:{{[Symbol.species]:function(p,f){{seen=f;return {{exec(){{return null;}}}};}}}}}};RegExp.prototype[Symbol.split].call(r,'').length===1&&seen==='{expected}'"
         ));
     }
@@ -122,17 +116,17 @@ fn limits_use_uint32_and_stop_before_later_result_reads() {
         ("true", 1),
         ("-4294967295", 1),
     ] {
-        check(&format!(
+        assert_true(&format!(
             "let r={{flags:'',constructor:{{[Symbol.species]:function(){{return {{exec(){{this.lastIndex=1;return {{length:3,1:'A',2:'B'}};}}}};}}}}}};RegExp.prototype[Symbol.split].call(r,'a',{limit}).length==={length}"
         ));
     }
-    check(
+    assert_true(
         r"
         let r={flags:'',constructor:{[Symbol.species]:function(){return {exec(){this.lastIndex=1;return {get length(){throw 7;}};}};}}};
         RegExp.prototype[Symbol.split].call(r,'a',1).length===1
     ",
     );
-    check(
+    assert_true(
         r"
         let r={flags:'',constructor:{[Symbol.species]:function(){return {exec(){this.lastIndex=1;return {length:Infinity,1:9,get 2(){throw 7;}};}};}}};
         let a=RegExp.prototype[Symbol.split].call(r,'a',2);a.length===2&&a[0]===''&&a[1]===9
@@ -149,7 +143,7 @@ fn empty_input_executes_once_without_lastindex_or_capture_accesses() {
         ("null", 1),
         ("{get length(){throw 7;},get 0(){throw 8;}}", 0),
     ] {
-        check(&format!(
+        assert_true(&format!(
             "let n=0,fake={{get lastIndex(){{throw 9;}},set lastIndex(v){{throw 10;}},exec(s){{if(this!==fake||s!==''||arguments.length!==1)throw 11;n++;return {result};}}}},r={{flags:'',constructor:{{[Symbol.species]:function(){{return fake;}}}}}};let a=RegExp.prototype[Symbol.split].call(r,'');a.length==={length}&&n===1"
         ));
     }
@@ -160,7 +154,7 @@ fn empty_input_executes_once_without_lastindex_or_capture_accesses() {
 
 #[test]
 fn captures_stay_uncoerced_and_reads_remain_live_and_ordered() {
-    check(
+    assert_true(
         r"
         let t='',end=0,c={toString(){throw 7;}},s=Symbol(),z={get 0(){throw 8;},get index(){throw 9;},get groups(){throw 10;},get length(){t+='L';return {valueOf(){t+='l';return 5.9;}};},
             get 1(){t+='A';this[2]=s;return c;},2:'old',get 3(){t+='C';return undefined;},4:1n},
@@ -170,7 +164,7 @@ fn captures_stay_uncoerced_and_reads_remain_live_and_ordered() {
         a.length===6&&a[0]===''&&a[1]===c&&a[2]===s&&Object.hasOwn(a,3)&&a[3]===undefined&&a[4]===1n&&a[5]===''&&t==='SExGgLlAC'
     ",
     );
-    check(
+    assert_true(
         r"
         let n=0,fake={exec(){if(this.lastIndex===1){this.lastIndex=2;return {length:1};}this.exec=function(){return null;};n++;return null;}},
             r={flags:'',constructor:{[Symbol.species]:function(){return fake;}}};
@@ -202,18 +196,18 @@ fn failure_and_empty_matches_advance_by_code_point_only_with_unicode_flags() {
                 indices
             };
             let expected_length = if matches { length } else { 1 };
-            check(&format!(
+            assert_true(&format!(
                 r"let seen='',end=0,fake={{set lastIndex(v){{seen+=v+',';end=v;}},get lastIndex(){{return end;}},exec(){{return {result};}}}},r={{flags:'{flags}',constructor:{{[Symbol.species]:function(){{return fake;}}}}}};let a=RegExp.prototype[Symbol.split].call(r,'\ud800\udc00\ud800X\udc00');a.length==={expected_length}&&seen==='{indices}'"
             ));
         }
     }
-    check(
+    assert_true(
         r"
         let fake={set lastIndex(v){},get lastIndex(){throw 7;},exec(){return null;}},r={flags:'',constructor:{[Symbol.species]:function(){return fake;}}};
         RegExp.prototype[Symbol.split].call(r,'abc')[0]==='abc'
     ",
     );
-    check(
+    assert_true(
         r"
         let fake={exec(){return {length:0};}},r={flags:'u',constructor:{[Symbol.species]:function(){return fake;}}};
         let a=RegExp.prototype[Symbol.split].call(r,'\ud800\udc00');a.length===1&&a[0]==='\ud800\udc00'
@@ -230,17 +224,17 @@ fn lastindex_is_clamped_and_backward_results_follow_the_algorithm() {
         ("NaN", "a.length===1&&a[0]==='abcd'"),
         ("-1", "a.length===1&&a[0]==='abcd'"),
     ] {
-        check(&format!(
+        assert_true(&format!(
             "let fake={{set lastIndex(v){{}},get lastIndex(){{return {end};}},exec(){{return {{length:0}};}}}},r={{flags:'',constructor:{{[Symbol.species]:function(){{return fake;}}}}}};let a=RegExp.prototype[Symbol.split].call(r,'abcd');{expected}"
         ));
     }
-    check(
+    assert_true(
         r"
         let n=0,seen='',fake={exec(){seen+=this.lastIndex+',';if(n++===0){this.lastIndex=2;return {length:0};}if(n===2){this.lastIndex=1;return {length:0};}return null;}},r={flags:'',constructor:{[Symbol.species]:function(){return fake;}}};
         let a=RegExp.prototype[Symbol.split].call(r,'abcd');a.length===3&&a[0]===''&&a[1]===''&&a[2]==='bcd'&&seen==='0,2,1,2,3,'
     ",
     );
-    check(
+    assert_true(
         r"
         let r={flags:'',constructor:{[Symbol.species]:function(){return {set lastIndex(v){},get lastIndex(){return Symbol();},exec(){return {};}};}}},ok=false;
         try{RegExp.prototype[Symbol.split].call(r,'a');}catch(e){ok=e instanceof TypeError;}ok
@@ -250,14 +244,14 @@ fn lastindex_is_clamped_and_backward_results_follow_the_algorithm() {
 
 #[test]
 fn strict_writes_hooks_and_poisoned_libraries_preserve_native_semantics() {
-    check(
+    assert_true(
         r"
         let n=0,fake={exec(){n++;return null;}},r={flags:'',constructor:{[Symbol.species]:function(){return fake;}}},ok=false;
         Object.defineProperty(fake,'lastIndex',{value:0,writable:false});
         try{RegExp.prototype[Symbol.split].call(r,'a');}catch(e){ok=e instanceof TypeError;}ok&&n===0
     ",
     );
-    check(
+    assert_true(
         r"
         let f=RegExp.prototype[Symbol.split],fake={exec(){this.lastIndex++;return {length:2,1:'C'};}},r={flags:'',[Symbol.split]:f,constructor:{[Symbol.species]:function(){return fake;}}};
         delete Array.prototype.push;delete Array.prototype[Symbol.iterator];delete String.prototype.slice;delete String.prototype.substring;delete Function.prototype.apply;

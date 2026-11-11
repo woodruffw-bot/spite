@@ -4,11 +4,9 @@ mod random;
 mod sum;
 
 use super::Builtin;
-use crate::{
-    Error, ObjectHandle, Realm, Value,
-    object::DataDescriptor,
-    value::{exponentiate, to_uint32},
-};
+use crate::object::DataDescriptor;
+use crate::value::{exponentiate, to_uint32};
+use crate::{Error, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span, WellKnownSymbol};
 
 #[derive(Debug)]

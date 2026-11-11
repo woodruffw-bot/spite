@@ -4,13 +4,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn ordinary_fallback_result_snapshot() {
@@ -57,41 +51,41 @@ fn ordinary_fallback_result_snapshot() {
 
 #[test]
 fn nested_choices_and_quantified_prefixes_keep_complete_original_capture_layouts() {
-    check(
+    assert_true(
         r"let a=/((1)|(12))((3)|(23))/d.exec('123');a[0]==='123'&&a.length===7&&a[1]==='1'&&a[2]==='1'&&a[3]===undefined&&a[4]==='23'&&a[5]===undefined&&a[6]==='23'&&a.indices[4][0]===1&&a.indices[6][1]===3",
     );
-    check(
+    assert_true(
         r"let a=/(?<all>(?<x>a+)(?<y>b*))/d.exec('aaabb');a[0]==='aaabb'&&a.groups.all==='aaabb'&&a.groups.x==='aaa'&&a.groups.y==='bb'&&a.indices.groups.all===a.indices[1]&&a.indices.groups.x===a.indices[2]&&a.indices.groups.y===a.indices[3]&&a.indices[3][0]===3",
     );
-    check(
+    assert_true(
         r"let a=/(?:(?<x>a+)|(?<x>b+))(c|)/d.exec('bbbc');a[0]==='bbbc'&&a[1]===undefined&&a.groups.x==='bbb'&&a.indices.groups.x===a.indices[2]&&a[3]==='c'&&a.indices[3][0]===3",
     );
-    check(
+    assert_true(
         r"let a=/(a|ab)b/d.exec('abb'),b=/(ab|a)b/d.exec('abb');a[0]==='ab'&&a[1]==='a'&&b[0]==='abb'&&b[1]==='ab'&&b.indices[1][1]===2",
     );
-    check(
+    assert_true(
         r"let a=/(a+?)(b+?)/d.exec('aaabbbb');a[0]==='aaab'&&a[1]==='aaa'&&a[2]==='b'&&a.indices[1][1]===3&&a.indices[2][0]===3&&a.indices[2][1]===4",
     );
-    check(
+    assert_true(
         r"let a=/(?<x>.+)(.)/d.exec('\uD800\uD800\uD800'),b=/(?<x>.+)(.)/ds.exec('\n\n');a.groups.x.length===2&&a[2].charCodeAt(0)===0xD800&&a.indices.groups.x===a.indices[1]&&b.groups.x==='\n'&&b[2]==='\n'",
     );
 }
 
 #[test]
 fn ordinary_fallback_consumers_sticky_positions_and_empty_slots_keep_semantics() {
-    check(
+    assert_true(
         r"let r=/(?:ab|cd)\d?/dg,a=[...'ab cd2 ab34 cd'.matchAll(r)];a.length===4&&a[0][0]==='ab'&&a[1][0]==='cd2'&&a[1].index===3&&a[2][0]==='ab3'&&a[2].index===7&&a[3].index===12&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"'qaaabbZ'.replace(/(?<x>a+)(?<y>b*)/,'<$<x>:$<y>>')==='q<aaa:bb>Z'&&'qaaabbZ'.search(/(a+)(b*)/)===1&&'qaaabbZ'.split(/(a+)(b*)/).join(',')==='q,aaa,bb,Z'",
     );
-    check(
+    assert_true(
         r"let r=/(?<x>a+)(?<y>b*)/dy;r.lastIndex=1;let copy=new RegExp(r),a=r.exec('qaaabb');a.groups.x==='aaa'&&a.groups.y==='bb'&&a.indices.groups.x[0]===1&&a.indices.groups.y[0]===4&&r.lastIndex===6&&r.exec('qaaabb')===null&&r.lastIndex===0&&copy.source===r.source&&copy.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let a=[...'q'.matchAll(/(?<x>a?)/dg)],b=[...'q'.matchAll(/(?<x>)?/dg)],c=[...'q'.matchAll(/(?<x>)+/dg)];a.length===2&&a[1].groups.x===''&&a[1].indices.groups.x[0]===1&&b.length===2&&b[1].groups.x===undefined&&b[1].indices.groups.x===undefined&&c.length===2&&c[1].groups.x===''&&c[1].indices.groups.x[0]===1",
     );
-    check(
+    assert_true(
         r"let r=/^(?<x>a|ab)b$/dmy;r.lastIndex=2;let a=r.exec('q\nabb\nz');a.index===2&&a[0]==='abb'&&a.groups.x==='ab'&&a.indices.groups.x===a.indices[1]&&a.indices.groups.x[0]===2&&r.lastIndex===5",
     );
 }
@@ -116,7 +110,7 @@ fn explicit_ordinary_fallback_work_aborts_before_last_index_and_handlers() {
 }
 
 #[test]
-fn general_repeated_choices_nested_quantifiers_and_lookaround_remain_unsupported() {
+fn general_repeated_choices_nested_quantifiers_and_lookaround_match_reference_results() {
     for source in [
         r"/(?:(?:(ab|a)+)|){2,3}/.test('abaa')",
         r"/(?:(?:(a+)+)|){2,3}/.test('aaaa')",
@@ -125,10 +119,7 @@ fn general_repeated_choices_nested_quantifiers_and_lookaround_remain_unsupported
         r"/(?i:a)/.test('a')",
         r"/(a+)(b*)/u.test('ab')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
-    check(r"/(a+)(b+)c/.exec('ab')===null");
+    assert_true(r"/(a+)(b+)c/.exec('ab')===null");
 }

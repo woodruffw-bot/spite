@@ -1,6 +1,9 @@
 //! Host-provided sources, with shared static/dynamic identity caches per Realm.
 
-use super::*;
+use super::{
+    DiagnosticKind, Error, JsString, Negative, Outcome, Realm, Runner, Span, Stage,
+    exception_constructor_name, failed, host_failure,
+};
 use spite_parser::ast::{Module, ModuleRequest};
 use spite_runtime::ModuleHandle;
 use std::collections::{HashMap, HashSet};

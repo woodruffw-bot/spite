@@ -3,13 +3,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn dependent_outside_lookbehind_result_snapshot() {
@@ -53,45 +47,45 @@ fn dependent_outside_lookbehind_result_snapshot() {
 
 #[test]
 fn nested_dependencies_import_retries_named_aliases_and_negative_effects_keep_ranges() {
-    check(
+    assert_true(
         r"let a=/(?<x>a)(?<=(?<y>\k<z>(?<z>b)\k<x>){2})c/d.exec('bbabbac');a.index===5&&a.groups.x==='a'&&a.groups.y==='bba'&&a.groups.z==='b'&&a.indices.groups.z===a.indices[3]&&a.indices[3][0]===1&&a.indices[1][0]===5",
     );
-    check(
+    assert_true(
         r"let a=/(?<x>ab)(?<=(?<y>\k<z>(?<z>\k<x>)){2})c/d.exec('ababababc');a.groups.y==='abab'&&a.groups.z==='ab'&&a.indices[1][0]===6&&a.indices[2][0]===0&&a.indices[3][0]===2",
     );
-    check(
+    assert_true(
         r"let a=/(a+)(?<=(\3(\1)){2})b/d.exec('aaaaaaaab');a.index===6&&a[1]==='aa'&&a[2]==='aaaa'&&a[3]==='aa'&&a.indices[3][0]===2",
     );
-    check(
+    assert_true(
         r"let a=/(?:(?<x>a)|(?<x>b))(?<=(\4(\k<x>)){2})c/d.exec('bbbbc');a.index===3&&a[1]===undefined&&a[2]==='b'&&a[3]==='bb'&&a[4]==='b'&&a.groups.x==='b'&&a.indices.groups.x===a.indices[2]",
     );
-    check(
+    assert_true(
         r"let a=/(a)(?<!(\3(b)\1){2}q)c/d.exec('bbabbaac');a.index===6&&a[1]==='a'&&a[2]===undefined&&a[3]===undefined&&a.indices[1][0]===6",
     );
-    check(r"/(a)(?<=(\1\3(b)){2})c/.exec('ababc')===null");
-    check(
+    assert_true(r"/(a)(?<=(\1\3(b)){2})c/.exec('ababc')===null");
+    assert_true(
         r"let a=/([\uD800])(?<=(\3([\uDC00])\1){2})c/d.exec('\uDC00\uDC00\uD800\uDC00\uDC00\uD800c');a.index===5&&a.indices[2][0]===0&&a.indices[3][0]===1",
     );
 }
 
 #[test]
 fn consumers_global_sticky_empty_skip_and_callbacks_use_resolved_unit_ranges() {
-    check(
+    assert_true(
         r"let r=/(a)(?<=(\3(b)\1){2})c/dy;r.lastIndex=5;let a=r.exec('bbabbac');a.index===5&&r.lastIndex===7&&r.exec('bbabbac')===null&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/(a)(?<=(\3(b)\1){2})c/dg,a=[...'bbabbac bbabbac'.matchAll(r)];a.length===2&&a[1].index===13&&a[1].indices[3][0]===9&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let a=/(a)(?<=(\3(\1)){0})b/d.exec('ab');a[1]==='a'&&a[2]===undefined&&a.indices[3]===undefined",
     );
-    check(
+    assert_true(
         r"let a=[...'ab'.matchAll(/()(?<=(\3(\1)){2})/dg)];a.length===3&&a[2].index===2&&a[2].indices[3][0]===2",
     );
-    check(
+    assert_true(
         r"let seen=[];let s='bbabbac bbabbac'.replace(/(a)(?<=(\3(b)\1){2})c/g,(m,x,y,z,i)=>{seen.push(x,y,z,i);return '_'});s==='bbabb_ bbabb_'&&seen.join('|')==='a|bba|b|5|a|bba|b|13'",
     );
-    check(
+    assert_true(
         r"'bbabbac'.search(/(a)(?<=(\3(b)\1){2})c/)===5&&'bbabbac'.split(/(a)(?<=(\3(b)\1){2})c/).join('|')==='bbabb|a|bba|b|'",
     );
 }
@@ -127,9 +121,6 @@ fn variable_counts_choices_dependent_children_and_unicode_remain_pending() {
         r"/(a)(?<=(\3(b)\1){2})c/u.exec('bbabbac')",
         r"/(a)(?<=(\3(b)\1){2})c/v.exec('bbabbac')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }

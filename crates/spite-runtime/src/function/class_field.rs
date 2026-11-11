@@ -1,6 +1,7 @@
 //! ClassFieldDefinitionEvaluation, DefineField, and instance initialization.
 
-use crate::{Error, ObjectHandle, Realm, Value, environment::EnvironmentHandle};
+use crate::environment::EnvironmentHandle;
+use crate::{Error, ObjectHandle, Realm, Value};
 use spite_core::{PropertyKey, Span};
 use spite_parser::ast::Expr;
 use std::rc::Rc;

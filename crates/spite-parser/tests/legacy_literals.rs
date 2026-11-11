@@ -1,7 +1,8 @@
 //! Edition 17 legacy literals are required in non-strict code, not Annex B options.
 
 use spite_core::{DiagnosticKind, JsString};
-use spite_parser::{ast::*, parse_script};
+use spite_parser::ast::{Expr, ExprKind, Literal, StatementKind};
+use spite_parser::parse_script;
 
 fn literal(source: &str) -> Literal {
     let script = parse_script(source).unwrap();

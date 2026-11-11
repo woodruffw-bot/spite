@@ -3,13 +3,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn unicode_repeated_atom_multiline_end_results_snapshot() {
@@ -64,22 +58,22 @@ fn unicode_repeated_atom_multiline_end_results_snapshot() {
 #[test]
 fn unicode_repeated_atom_multiline_ends_order_bounds_and_terminators() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"/\D+$/{mode}m.exec('ab\ncd')[0]==='ab\ncd'&&/\D+?$/{mode}m.exec('ab\ncd')[0]==='ab'&&/.+$/{mode}m.exec('ab\ncd')[0]==='ab'&&/.+?$/{mode}sm.exec('ab\ncd')[0]==='ab'&&/.+$/{mode}sm.exec('ab\ncd')[0]==='ab\ncd'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=/a{{2,3}}$/{mode}m.exec('aaaa\nbb'),b=/a{{2,3}}?$/{mode}m.exec('aaaa\nbb');a.index===1&&a[0]==='aaa'&&b.index===1&&b[0]==='aaa'&&/^a{{2,3}}$/{mode}m.exec('aaaa\nbb')===null"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=/.{{2,4}}$/{mode}sm.exec('ab\ncdef');a.index===0&&a[0]==='ab'&&/a*?$/{mode}m.exec('aaa\n')[0]==='aaa'&&/a??$/{mode}m.exec('aaa\n').index===2"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"['\n','\r','\u2028','\u2029'].every(t=>/a+$/{mode}m.exec('aaa'+t)[0]==='aaa')&&/^a{{2}}$/{mode}m.exec('aaa\naa\nA').index===4"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=[...'\r\n'.matchAll(/^a{{0}}$/{mode}mg)];a.length===3&&a[0].index===0&&a[1].index===1&&a[2].index===2"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"/^\w+$/i{mode}m.exec('ſK\n')[0]==='ſK'&&/^\w+$/{mode}m.exec('ſK\n')===null&&/^\W+$/{mode}m.exec('ſK\n')[0]==='ſK\n'"
         ));
     }
@@ -88,19 +82,19 @@ fn unicode_repeated_atom_multiline_ends_order_bounds_and_terminators() {
 #[test]
 fn unicode_repeated_atom_multiline_ends_captures_sticky_and_original_pairs() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^(?<__proto__>(😀+))$/d{mode}my;r.lastIndex=1;let m=r.exec('😀😀\n');m.index===0&&m[0]==='😀😀'&&m[2]==='😀😀'&&m.indices[2][1]===4&&m.indices.groups.__proto__===m.indices[1]&&r.lastIndex===4"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/a{{2,3}}$/{mode}my;r.exec('aaaa\n')===null&&r.lastIndex===0&&(r.lastIndex=1,r.exec('aaaa\n')[0]==='aaa')&&r.lastIndex===4"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/a{{0}}$/{mode}my;r.lastIndex=1;r.exec('😀\n')===null&&r.lastIndex===0&&(r.lastIndex=2,r.exec('😀\n').index===2)&&r.lastIndex===2"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\uD800+$/{mode}mg,m=r.exec('B\uD800\uD800\n');m.index===1&&m[0]==='\uD800\uD800'&&r.lastIndex===3&&!/\uD800+$/{mode}m.test('😀\n')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=/^\p{{Join_C}}+$/{mode}m.exec('A\n\u200c\u200d\n');a.index===2&&a[0]==='\u200c\u200d'&&/\p{{NChar}}{{2}}$/{mode}m.exec('A\uFFFF\u{{10FFFF}}\n')[0]==='\uFFFF\u{{10FFFF}}'"
         ));
     }
@@ -109,16 +103,16 @@ fn unicode_repeated_atom_multiline_ends_captures_sticky_and_original_pairs() {
 #[test]
 fn unicode_repeated_atom_multiline_end_consumers_and_empty_advance() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let a=[...'A\r\nB'.matchAll(/(?<x>a{{0}}$)/d{mode}mg)];a.length===3&&a[0].index===1&&a[1].index===2&&a[2].index===4&&a.every(m=>m.groups.x===''&&m.indices.groups.x===m.indices[1])"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'aa\nbb'.replace(/(?<x>.+?$)/{mode}mg,'<$1:$<x>>')==='<aa:aa>\n<bb:bb>'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'Baaa\nC'.split(/(a+$)/{mode}m).join('|')==='B|aaa|\nC'&&'Baaa\nC'.search(/a+$/{mode}m)===1&&'aa\naaaa'.match(/a+$/g{mode}m).join(',')==='aa,aaaa'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let t='',a='B😀😀\n'.replace(/(?<x>😀+?$)/{mode}mg,(m,c,p,text,g)=>{{t+=p;return '['+g.x+']'}});a==='B[😀😀]\n'&&t==='1'"
         ));
     }
@@ -126,16 +120,16 @@ fn unicode_repeated_atom_multiline_end_consumers_and_empty_advance() {
 
 #[test]
 fn unicode_repeated_atom_multiline_end_clones_coercions_and_strict_writes() {
-    check(
+    assert_true(
         r"let r=/^(?<x>a+)$/diumg,c=new RegExp(r,'dvmy'),b=new RegExp(c,'divy');c.multiline&&!c.ignoreCase&&c.exec('AA\n')===null&&b.exec('AA\n')===null&&(c.lastIndex=0,c.exec('aa\n').groups.x==='aa')&&c.lastIndex===2",
     );
-    check(
+    assert_true(
         r"let t='',r=/^😀+$/umy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀😀\n'}});t==='si'&&m.index===0&&m[0]==='😀😀'&&r.lastIndex===4",
     );
-    check(
+    assert_true(
         r"let r=/a*$/vmy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/a+$/vmy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('BBB\n')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
 }
@@ -164,10 +158,7 @@ fn unicode_repeated_atom_multiline_ends_opted_work_and_remaining_compositions() 
         r"/a+$$/um.exec('a')",
         r"/\ba+b$/um.exec('a')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }
 

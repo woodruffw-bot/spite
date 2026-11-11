@@ -5,7 +5,8 @@
 //! raw pointer reaches the atomic step; pages are never replaced or removed.
 
 use super::ArrayBufferError;
-use std::sync::{Arc, atomic::Ordering};
+use std::sync::Arc;
+use std::sync::atomic::Ordering;
 
 #[cfg(not(target_has_atomic = "64"))]
 use std::sync::atomic::AtomicU32 as Word;

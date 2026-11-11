@@ -1,9 +1,8 @@
 //! StatementList completion values and lexical/conditional frame unwinding.
 
 use super::{AsyncExecutionData, FrameStep};
-use crate::{
-    Completion, CompletionKind, Error, Realm, Value, object::async_execution::AsyncStatementFrame,
-};
+use crate::object::async_execution::AsyncStatementFrame;
+use crate::{Completion, CompletionKind, Error, Realm, Value};
 
 impl Realm {
     pub(super) fn handle_async_completion(

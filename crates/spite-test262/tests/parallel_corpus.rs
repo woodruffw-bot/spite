@@ -1,12 +1,10 @@
 //! Explicit parallel execution preserves complete serial reports and failures.
 
 use spite_test262::{Mode, Outcome, Stage, run_corpus, run_corpus_with_workers};
-use std::{
-    fs,
-    num::NonZeroUsize,
-    path::PathBuf,
-    sync::atomic::{AtomicUsize, Ordering},
-};
+use std::fs;
+use std::num::NonZeroUsize;
+use std::path::PathBuf;
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 struct TemporaryCorpus(PathBuf);
 

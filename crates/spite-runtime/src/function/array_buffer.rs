@@ -1,12 +1,10 @@
 //! Ordinary ArrayBuffer construction, resizing, species copies, and transfer (25.1).
 
 use super::Builtin;
-use crate::{
-    Error, ExceptionKind, ObjectHandle, Realm, Value,
-    object::{
-        ArrayBufferError, Budget, DataDescriptor, DescriptorKind, Objects, PropertyDescriptor,
-    },
+use crate::object::{
+    ArrayBufferError, Budget, DataDescriptor, DescriptorKind, Objects, PropertyDescriptor,
 };
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, PropertyKey, Span, WellKnownSymbol};
 
 #[derive(Clone, Copy, Debug)]

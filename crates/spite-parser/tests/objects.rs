@@ -1,11 +1,10 @@
 //! Object-literal names, computed keys, shorthand, and prototype early errors.
 
 use spite_core::{DiagnosticKind, JsString};
-use spite_parser::{
-    MAX_DEPTH,
-    ast::{ExprKind, Literal, ObjectElement, PropertyKind, PropertyName, StatementKind},
-    parse_script,
+use spite_parser::ast::{
+    ExprKind, Literal, ObjectElement, PropertyKind, PropertyName, StatementKind,
 };
+use spite_parser::{MAX_DEPTH, parse_script};
 
 #[test]
 fn object_literal_snapshot() {

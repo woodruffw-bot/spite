@@ -1,7 +1,7 @@
 //! Ordinary metadata objects, lexical module identity and retained continuations.
 
-use super::*;
-use crate::{ExceptionKind, PromiseJobOutcome};
+use super::{Error, Realm, Span, Value};
+use crate::{ExceptionKind, ModuleHandle, PromiseJobOutcome};
 use spite_core::JsString;
 
 fn expose(realm: &mut Realm, module: &ModuleHandle) {

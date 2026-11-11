@@ -1,8 +1,11 @@
 //! Async dependencies, cycles, ready ordering and host aborts.
 
-use super::*;
+use super::{
+    Error, Limits, ModuleExecutionStatus, PromiseJobOutcome, PromiseState, Realm, Value, check,
+    collect, fulfilled, next, pending, state,
+};
 use crate::ModuleHandle;
-use spite_core::JsString;
+use spite_core::{JsString, Span};
 
 fn graph(realm: &mut Realm, sources: &[(&str, &str)]) -> Vec<ModuleHandle> {
     let modules: Vec<_> = sources

@@ -4,13 +4,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn named_capture_result_snapshot() {
@@ -69,46 +63,46 @@ fn named_capture_result_snapshot() {
 
 #[test]
 fn slots_aliases_key_order_and_descriptors_follow_original_names() {
-    check(
+    assert_true(
         r"let a=/(?<x>a)/d.exec('a'),p=a.indices[1];a.groups.x='z';a.indices.groups.x[0]=7;a.indices[1]=[8,9];a[1]==='a'&&p[0]===7&&a.indices.groups.x===p&&a.indices[1]!==p&&delete a.groups.x&&Object.hasOwn(a,'1')",
     );
-    check(
+    assert_true(
         r"let a=/(?<x>a)(b)(?<y>c)/d.exec('qabc'),p=Object.getOwnPropertyDescriptor(a.groups,'x');Object.getPrototypeOf(a.groups)===null&&Object.getPrototypeOf(a.indices.groups)===null&&a.groups.x==='a'&&a.groups.y==='c'&&a.indices.groups.x===a.indices[1]&&a.indices.groups.y===a.indices[3]&&Object.keys(a.groups).join(',')==='x,y'&&p.writable&&p.enumerable&&p.configurable&&p.value==='a'",
     );
-    check(
+    assert_true(
         r"let a=/(?<x>a)|(?<x>b)/d.exec('b');a[1]===undefined&&a[2]==='b'&&a.groups.x==='b'&&a.indices.groups.x===a.indices[2]&&Object.keys(a.groups).join(',')==='x'",
     );
-    check(
+    assert_true(
         r"let a=/(?<x>a)|(?<y>b)/d.exec('b');a.groups.x===undefined&&Object.hasOwn(a.groups,'x')&&a.indices.groups.x===undefined&&Object.hasOwn(a.indices.groups,'x')&&a.indices.groups.y===a.indices[2]",
     );
-    check(
+    assert_true(
         r"let a=/(?<x>)(?<y>a)/d.exec('a'),b=/(?<x>a)*/d.exec('');a.groups.x===''&&a.indices.groups.x===a.indices[1]&&a.indices.groups.x[0]===0&&a.indices.groups.x[1]===0&&b.groups.x===undefined&&Object.hasOwn(b.groups,'x')&&b.indices.groups.x===undefined",
     );
-    check(
+    assert_true(
         r"let a=/(?<__proto__>a)(?<constructor>b)(?<toString>c)/d.exec('abc');a.groups.__proto__==='a'&&a.groups.constructor==='b'&&a.groups.toString==='c'&&Object.getPrototypeOf(a.groups)===null&&Object.keys(a.groups).join(',')==='__proto__,constructor,toString'&&a.indices.groups.__proto__===a.indices[1]",
     );
 }
 
 #[test]
 fn consumers_replacements_and_copies_observe_live_named_values() {
-    check(r"'qabc'.replace(/(?<x>a)(b)(?<y>c)/,'<$<y>,$<x>>')==='q<c,a>'");
-    check(
+    assert_true(r"'qabc'.replace(/(?<x>a)(b)(?<y>c)/,'<$<y>,$<x>>')==='q<c,a>'");
+    assert_true(
         r"let seen;let s='qabc'.replace(/(?<x>a)(b)(?<y>c)/,(whole,x,b,y,index,input,groups)=>{seen=[whole,x,b,y,index,input,groups.x,groups.y,Object.getPrototypeOf(groups)===null];return 'z'});s==='qz'&&seen.join(',')==='abc,a,b,c,1,qabc,a,c,true'",
     );
-    check(
+    assert_true(
         r"let r=/(?<x>a|b)/dg,a=[...'qab'.matchAll(r)];a.length===2&&a[0].groups.x==='a'&&a[1].groups.x==='b'&&a[1].indices.groups.x===a[1].indices[1]&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/(?<x>a|b)/dg;Object.defineProperty(r,'source',{get(){throw 7}});let copy=new RegExp(r);copy.source==='(?<x>a|b)'&&copy.exec('b').groups.x==='b'&&copy.lastIndex===1&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"'qabc'.split(/(?<x>a)(b)(?<y>c)/).join(',')==='q,a,b,c,'&&'qabc'.search(/(?<x>a)(b)(?<y>c)/)===1",
     );
 }
 
 #[test]
 fn intrinsic_result_creation_does_not_call_prototype_setters() {
-    check(
+    assert_true(
         r"let calls=0;Object.defineProperty(Object.prototype,'x',{set(){calls++},configurable:true});Object.defineProperty(Array.prototype,'1',{set(){calls++},configurable:true});let a=/(?<x>a)/d.exec('a');calls===0&&a.groups.x==='a'&&a.indices.groups.x===a.indices[1]&&Object.getPrototypeOf(a.groups)===null",
     );
 }
@@ -121,10 +115,7 @@ fn unsupported_backreferences_modes_and_conditionally_captured_local_choices_rem
         r"/(?:(?:(?:(?:x(?:(?<n>a)|(?<n>b))y){2}){2})|){2,3}/.test('xay')",
         "/(?<x>\\u{D800}\\u{DC00})/u.test('a')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
     let mut realm = Realm::new(Limits {
         max_properties: Some(200),

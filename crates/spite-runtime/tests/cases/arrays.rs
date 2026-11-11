@@ -4,21 +4,15 @@ use crate::common;
 use common::REALM_ENTRIES;
 use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn constructors_distinguish_lengths_from_single_elements() {
-    check(
+    assert_true(
         "let a=Array(),b=new Array;a!==b && a.length===0 && b.length===0 && a instanceof Array && Object.getPrototypeOf(a)===Array.prototype",
     );
-    check("let a=Array(3);a.length===3 && !('0' in a) && !('1' in a) && !('2' in a)");
-    check(
+    assert_true("let a=Array(3);a.length===3 && !('0' in a) && !('1' in a) && !('2' in a)");
+    assert_true(
         "let a=new Array(4294967295);a.length===4294967295 && !('4294967294' in a) && Object.is(Array(-0).length,0)",
     );
     for value in [
@@ -30,17 +24,17 @@ fn constructors_distinguish_lengths_from_single_elements() {
         "{}",
         "new Number(3)",
     ] {
-        check(&format!(
+        assert_true(&format!(
             "let v={value},a=Array(v);a.length===1 && a[0]===v && Object.hasOwn(a,'0')"
         ));
     }
-    check(
+    assert_true(
         "let o={valueOf:()=>{throw 1;},toString:()=>{throw 2;}},a=new Array(o);a[0]===o && a.length===1",
     );
-    check(
+    assert_true(
         "let a=Array(1,undefined,3);a.length===3 && a[0]===1 && a[1]===undefined && Object.hasOwn(a,'1') && a[2]===3",
     );
-    check(
+    assert_true(
         "let n=0;function f(){return ++n;}let a=new Array(f(),f());n===2 && a[0]===1 && a[1]===2",
     );
 }
@@ -62,41 +56,41 @@ fn invalid_numeric_lengths_throw_range_errors() {
             );
         }
     }
-    check("let ok=false;try{Array(0.5);}catch(e){ok=e instanceof RangeError;}ok");
+    assert_true("let ok=false;try{Array(0.5);}catch(e){ok=e instanceof RangeError;}ok");
 }
 
 #[test]
 fn calls_apply_and_bound_construction_preserve_array_identity() {
-    check("let a=Array.call({x:1},'x');a[0]==='x' && a.length===1 && a instanceof Array");
-    check("let a=Array.apply(null,{0:3,1:4,length:2});a.length===2 && a[0]===3 && a[1]===4");
-    check(
+    assert_true("let a=Array.call({x:1},'x');a[0]==='x' && a.length===1 && a instanceof Array");
+    assert_true("let a=Array.apply(null,{0:3,1:4,length:2});a.length===2 && a[0]===3 && a[1]===4");
+    assert_true(
         "let F=Array.bind(null,'a');F.prototype={};let a=new F('b');a[0]==='a' && a[1]==='b' && a.length===2 && Object.getPrototypeOf(a)===Array.prototype && a instanceof F",
     );
-    check("let F=Array.bind(null,4);new F().length===4 && F().length===4");
+    assert_true("let F=Array.bind(null,4);new F().length===4 && F().length===4");
 }
 
 #[test]
 fn constructor_uses_own_data_definitions_without_inherited_setters() {
-    check(
+    assert_true(
         "let n=0;Object.defineProperty(Array.prototype,'0',{set:()=>{n++;},configurable:true});let a=Array('x'),b=Array(1,2);n===0 && a[0]==='x' && b[0]===1 && b[1]===2 && Object.hasOwn(a,'0')",
     );
-    check(
+    assert_true(
         "Object.defineProperty(Array.prototype,'0',{value:9,writable:false,configurable:true});let a=Array(1,2);a[0]===1 && a[1]===2",
     );
-    check(
+    assert_true(
         "Object.defineProperty(Array.prototype,'length',{writable:false});let a=Array(2,3);a.length===2 && a[0]===2 && a[1]===3",
     );
 }
 
 #[test]
 fn array_brand_survives_prototype_changes_and_rejects_impostors() {
-    check(
+    assert_true(
         "Array.isArray(Array.prototype) && Array.prototype.length===0 && Object.getPrototypeOf(Array.prototype)===Object.prototype",
     );
-    check(
+    assert_true(
         "let a=Array(2);Object.setPrototypeOf(a,null);Array.isArray(a) && Object.prototype.toString.call(a)==='[object Array]'",
     );
-    check(
+    assert_true(
         "!Array.isArray(Object.create(Array.prototype)) && !Array.isArray({length:0}) && !Array.isArray(Array) && !Array.isArray()",
     );
     for value in [
@@ -109,35 +103,35 @@ fn array_brand_survives_prototype_changes_and_rejects_impostors() {
         "new String('x')",
         "(function(){return arguments;})()",
     ] {
-        check(&format!("!Array.isArray({value})"));
+        assert_true(&format!("!Array.isArray({value})"));
     }
-    check("let o={valueOf:()=>{throw 1;},toString:()=>{throw 2;}};!Array.isArray(o)");
-    check(
+    assert_true("let o={valueOf:()=>{throw 1;},toString:()=>{throw 2;}};!Array.isArray(o)");
+    assert_true(
         "Object.prototype.toString.call(Array.prototype)==='[object Array]' && Object.prototype.toString.call(Object.create(Array.prototype))==='[object Object]'",
     );
 }
 
 #[test]
 fn intrinsic_names_lengths_descriptors_and_key_order_are_exact() {
-    check(
+    assert_true(
         "Array.name==='Array' && Array.length===1 && Array.isArray.name==='isArray' && Array.isArray.length===1 && Array.prototype.constructor===Array && Array.isArray.prototype===undefined",
     );
-    check(
+    assert_true(
         "let d=Object.getOwnPropertyDescriptor(Array,'prototype');d.value===Array.prototype && !d.writable && !d.enumerable && !d.configurable",
     );
-    check(
+    assert_true(
         "let d=Object.getOwnPropertyDescriptor(Array.prototype,'length');d.value===0 && d.writable && !d.enumerable && !d.configurable",
     );
-    check(
+    assert_true(
         "let d=Object.getOwnPropertyDescriptor(Array,'isArray');d.value===Array.isArray && d.writable && !d.enumerable && d.configurable",
     );
-    check(
+    assert_true(
         "let d=Object.getOwnPropertyDescriptor(globalThis,'Array');d.value===Array && d.writable && !d.enumerable && d.configurable",
     );
-    check(
+    assert_true(
         "let d=Object.getOwnPropertyDescriptor(Array(1,2),'0');d.value===1 && d.writable && d.enumerable && d.configurable",
     );
-    check(
+    assert_true(
         "Array.toString()==='function Array() { [native code] }' && Array.isArray.toString()==='function isArray() { [native code] }'",
     );
     assert!(matches!(
@@ -159,27 +153,29 @@ fn intrinsic_names_lengths_descriptors_and_key_order_are_exact() {
 
 #[test]
 fn index_growth_readonly_lengths_and_integrity_operations_use_array_rules() {
-    check("let a=Array();a[3]=9;a['01']=8;a[4294967295]=7;a.length===4 && a[3]===9 && !('0' in a)");
-    check("let a=Array(1,2,3);delete a[2];a.length===3 && !('2' in a)");
-    check("let a=Array(1,2,3);a.length='1';a.length===1 && !('1' in a) && !('2' in a)");
-    check(
+    assert_true(
+        "let a=Array();a[3]=9;a['01']=8;a[4294967295]=7;a.length===4 && a[3]===9 && !('0' in a)",
+    );
+    assert_true("let a=Array(1,2,3);delete a[2];a.length===3 && !('2' in a)");
+    assert_true("let a=Array(1,2,3);a.length='1';a.length===1 && !('1' in a) && !('2' in a)");
+    assert_true(
         "let a=Array(1,2);Object.freeze(a);a[0]=8;a[2]=9;a.length=0;Object.isFrozen(a) && a[0]===1 && a.length===2 && !('2' in a)",
     );
-    check(
+    assert_true(
         "let a=Array(1,2);Object.seal(a);a[0]=8;a.length=0;Object.isSealed(a) && a[0]===8 && a.length===2",
     );
-    check(
+    assert_true(
         "let a=Array(1);Object.preventExtensions(a);a.length=5;a[0]=8;!Object.isExtensible(a) && a.length===5 && !('0' in a)",
     );
 }
 
 #[test]
 fn array_intrinsic_descriptors_and_ordinary_missing_properties_are_observable() {
-    check(
+    assert_true(
         "let d=Object.getOwnPropertyDescriptors(Array);d.fromAsync.value===Array.fromAsync&&d.fromAsync.writable&&!d.fromAsync.enumerable&&d.fromAsync.configurable",
     );
-    check("Object.defineProperty(Array,'fromAsync',{value:7});Array.fromAsync===7");
-    check("let a=Array();a.join=7;a.join===7&&a.random===undefined");
+    assert_true("Object.defineProperty(Array,'fromAsync',{value:7});Array.fromAsync===7");
+    assert_true("let a=Array();a.join=7;a.join===7&&a.random===undefined");
 }
 
 #[test]

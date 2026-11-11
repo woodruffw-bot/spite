@@ -1,7 +1,9 @@
 //! Async function intrinsics and Promise body completion (27.7, 15.8).
 
-use super::{Builtin, PromiseCapability, async_execution::AsyncBodyOutcome};
-use crate::{Error, ObjectHandle, Realm, Value, object::DataDescriptor};
+use super::async_execution::AsyncBodyOutcome;
+use super::{Builtin, PromiseCapability};
+use crate::object::DataDescriptor;
+use crate::{Error, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span, WellKnownSymbol};
 
 #[derive(Debug)]

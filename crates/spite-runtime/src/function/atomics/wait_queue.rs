@@ -147,7 +147,7 @@ impl Realm {
             .expect("local registered waiter");
         let wait = waits.pending.remove(position);
         self.call(
-            wait.capability.resolve.clone(),
+            wait.capability.resolve,
             Value::Undefined,
             vec![Value::String(JsString::from(result))],
             span,

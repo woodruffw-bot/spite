@@ -1,10 +1,8 @@
 //! ImportCall grammar, retained source operands and Script lexical goals (13.3.10).
 
 use spite_core::DiagnosticKind;
-use spite_parser::{
-    ast::{ExprKind, StatementKind},
-    parse_script,
-};
+use spite_parser::ast::{ExprKind, StatementKind};
+use spite_parser::parse_script;
 
 #[test]
 fn specifier_options_and_exact_import_call_span_are_retained() {

@@ -1,7 +1,8 @@
 //! BigInt construction, wrappers, and branded prototype methods (21.2).
 
 use super::Builtin;
-use crate::{Error, ExceptionKind, Hint, ObjectHandle, Realm, Value, object::DataDescriptor};
+use crate::object::DataDescriptor;
+use crate::{Error, ExceptionKind, Hint, ObjectHandle, Realm, Value};
 use spite_bigint::BigInt;
 use spite_core::{JsString, Span, WellKnownSymbol};
 

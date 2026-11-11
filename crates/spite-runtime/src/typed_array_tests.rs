@@ -1,6 +1,8 @@
 //! TypedArray essential internal methods before public constructors (10.4.5).
 
-use crate::{Error, ObjectHandle, Realm, Value, binary_data::ElementType, object::Budget};
+use crate::binary_data::ElementType;
+use crate::object::Budget;
+use crate::{Error, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span};
 
 // Construct only test fixtures through the internal slot API. These globals are
@@ -117,9 +119,8 @@ fn define_keeps_its_success_result_when_value_conversion_invalidates_the_element
 #[test]
 fn fixed_and_auto_witnesses_drop_partial_elements_and_recover_after_regrowth() {
     let (mut realm, _) = fixture(ElementType::Uint16, 6, Some(10), 2, Some(2));
-    let buffer = match realm.eval("buffer").unwrap() {
-        Value::Object(buffer) => buffer,
-        _ => unreachable!(),
+    let Value::Object(buffer) = realm.eval("buffer").unwrap() else {
+        unreachable!("fixture creates an ArrayBuffer");
     };
     let prototype = realm
         .record

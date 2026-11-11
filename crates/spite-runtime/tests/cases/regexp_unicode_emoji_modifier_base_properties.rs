@@ -3,13 +3,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn unicode_emoji_modifier_base_property_results_snapshot() {
@@ -54,16 +48,16 @@ fn unicode_emoji_modifier_base_property_results_snapshot() {
 #[test]
 fn unicode_emoji_modifier_base_properties_aliases_complements_and_unions() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let a=/\p{{Emoji_Modifier_Base}}/{mode},b=/\p{{EBase}}/i{mode},n=/\P{{EBase}}/i{mode};a.test('\u261D')&&a.test('\u270A')&&b.test('\u261D')&&!a.test('\u005f')&&!b.test('\u005f')&&!b.test('ſ')&&!b.test('K')&&!n.test('\u261D')&&n.test('😀')&&n.test('\uD800')&&n.test('\u0020')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let p=/\p{{Emoji_Modifier_Base}}/{mode},s=/\s/{mode};p.test('\u261D')&&p.test('\u270A')&&!s.test('\u261D')&&!s.test('\u270A')&&!p.test('\u0020')&&s.test('\u0020')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=/[\p{{EBase}}K]/i{mode},b=/[^\P{{Emoji_Modifier_Base}}K]/i{mode},c=/[\p{{EBase}}\P{{Emoji_Modifier_Base}}]/{mode};a.test('K')&&a.test('k')&&a.test('\u261D')&&!a.test('ſ')&&b.test('\u270A')&&!b.test('K')&&c.test('😀')&&c.test('A')&&c.test('\uD800')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=/^\p{{EBase}}$/{mode},b=/^\P{{EBase}}$/{mode};a.test('\u261D')&&!a.test('\u270A\n')&&!a.test('')&&!a.test('\n')&&b.test('😀')&&!b.test('AA')"
         ));
     }
@@ -72,22 +66,22 @@ fn unicode_emoji_modifier_base_properties_aliases_complements_and_unions() {
 #[test]
 fn unicode_emoji_modifier_base_properties_captures_context_and_pair_starts() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/(?<x>\p{{EBase}})/d{mode}y;r.lastIndex=1;let m=r.exec('\uD83C\uDFC3');m.index===0&&m[0]==='\uD83C\uDFC3'&&m.groups.x===m[0]&&m.indices[1][0]===0&&m.indices[1][1]===2&&r.lastIndex===2"
         ));
     }
 
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^(?<x>([\p{{EBase}}K]))$/dim{mode}g,m=r.exec('x\r\nK\u2028');m.index===3&&m[1]==='K'&&m[2]==='K'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===4&&r.lastIndex===4"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/(?<__proto__>\P{{EBase}})/d{mode}y;r.lastIndex=1;let m=r.exec('😀\u261D');m.index===0&&m[1]==='😀'&&m.indices[1][1]===2&&r.lastIndex===2&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\p{{EBase}}/d{mode}g;r.lastIndex=1;let m=r.exec('😀\u261D');m.index===2&&m[0]==='\u261D'&&r.lastIndex===3"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\p{{EBase}}/{mode}y;r.lastIndex=1;r.exec('😀\u261D')===null&&r.lastIndex===0"
         ));
     }
@@ -96,16 +90,16 @@ fn unicode_emoji_modifier_base_properties_captures_context_and_pair_starts() {
 #[test]
 fn unicode_emoji_modifier_base_properties_consumers_original_text() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let a=[...'\u270A😀\u261DG'.matchAll(/(?<x>\P{{EBase}})/d{mode}g)];a.length===2&&a[0][1]==='😀'&&a[0].index===1&&a[0].indices[1][1]===3&&a[1][1]==='G'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'\u270A\u261D😀X'.replace(/(?<x>\p{{Emoji_Modifier_Base}})/{mode}g,'<$1:$<x>>')==='<\u270A:\u270A><\u261D:\u261D>😀X'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'😀\u270A\u261DG'.split(/(\p{{EBase}})/{mode}).join('|')==='😀|\u270A||\u261D|G'&&'😀\u261D'.search(/\p{{EBase}}/{mode})===2&&'\u270A\u261D😀'.match(/\p{{EBase}}/{mode}g).join('')==='\u270A\u261D'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let t='';let x='\u261D\u270A😀\u261D'.replace(/(\p{{EBase}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__😀_'&&t==='014'"
         ));
     }
@@ -113,16 +107,16 @@ fn unicode_emoji_modifier_base_properties_consumers_original_text() {
 
 #[test]
 fn unicode_emoji_modifier_base_properties_clones_coercions_and_strict_writes() {
-    check(
+    assert_true(
         r"let r=/^(?<x>\p{Emoji_Modifier_Base})$/dmu,c=new RegExp(r,'divy');c.source==='^(?<x>\\p{Emoji_Modifier_Base})$'&&c.unicodeSets&&!c.unicode&&!c.multiline&&c.exec('\u261D').groups.x==='\u261D'&&c.lastIndex===1",
     );
-    check(
+    assert_true(
         r"let t='',r=/\P{EBase}/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m[0]==='😀'&&m.index===0&&r.lastIndex===2",
     );
-    check(
+    assert_true(
         r"let r=/\p{EBase}/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('\u261D')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/\p{EBase}/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀\u261D')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
 }
@@ -144,26 +138,23 @@ fn unicode_emoji_modifier_base_properties_opted_work_and_remaining_sets() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
-    check(
+    assert_true(
         r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
     );
-    check(r"/[\p{EBase}&&A]/v.exec('A')===null");
-    check(r"/[\p{EBase}--A]/v.exec('A')===null");
-    check(
+    assert_true(r"/[\p{EBase}&&A]/v.exec('A')===null");
+    assert_true(r"/[\p{EBase}--A]/v.exec('A')===null");
+    assert_true(
         r"let s=String.fromCodePoint(0x261d),m=/[\p{EBase}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
     );
     for source in [r"/\p{EBase}+b/u.exec('AA')", r"/\p{EBase}A/v.exec('AA')"] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }
 
 #[test]
 fn unicode_emoji_modifier_base_repetitions_retain_last_capture_and_outside_words() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\B(?<x>\p{{EBase}})+\B/d{mode}g,m=r.exec('😀\u261D\u270A\u270A\u0020');m.index===2&&m[0]==='\u261D\u270A\u270A'&&m.groups.x==='\u270A'&&m.indices.groups.x[0]===4&&m.indices.groups.x[1]===5&&r.lastIndex===5"
         ));
     }
@@ -171,52 +162,52 @@ fn unicode_emoji_modifier_base_repetitions_retain_last_capture_and_outside_words
 
 #[test]
 fn unicode_emoji_modifier_base_property_unicode18_addition() {
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Emoji_Modifier_Base}$','u'),n=new RegExp('^\\P{Emoji_Modifier_Base}$','u');p.test('\uD83E\uDEF9')===true&&n.test('\uD83E\uDEF9')===false",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Emoji_Modifier_Base}$','ui'),n=new RegExp('^\\P{Emoji_Modifier_Base}$','ui');p.test('\uD83E\uDEF9')===true&&n.test('\uD83E\uDEF9')===false",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Emoji_Modifier_Base}$','v'),n=new RegExp('^\\P{Emoji_Modifier_Base}$','v');p.test('\uD83E\uDEF9')===true&&n.test('\uD83E\uDEF9')===false",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Emoji_Modifier_Base}$','vi'),n=new RegExp('^\\P{Emoji_Modifier_Base}$','vi');p.test('\uD83E\uDEF9')===true&&n.test('\uD83E\uDEF9')===false",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{EBase}$','u'),n=new RegExp('^\\P{EBase}$','u');p.test('\uD83E\uDEF9')===true&&n.test('\uD83E\uDEF9')===false",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{EBase}$','ui'),n=new RegExp('^\\P{EBase}$','ui');p.test('\uD83E\uDEF9')===true&&n.test('\uD83E\uDEF9')===false",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{EBase}$','v'),n=new RegExp('^\\P{EBase}$','v');p.test('\uD83E\uDEF9')===true&&n.test('\uD83E\uDEF9')===false",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{EBase}$','vi'),n=new RegExp('^\\P{EBase}$','vi');p.test('\uD83E\uDEF9')===true&&n.test('\uD83E\uDEF9')===false",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Emoji_Modifier_Base}$','u'),n=new RegExp('^\\P{Emoji_Modifier_Base}$','u');p.test('\uD83E\uDEFA')===true&&n.test('\uD83E\uDEFA')===false",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Emoji_Modifier_Base}$','ui'),n=new RegExp('^\\P{Emoji_Modifier_Base}$','ui');p.test('\uD83E\uDEFA')===true&&n.test('\uD83E\uDEFA')===false",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Emoji_Modifier_Base}$','v'),n=new RegExp('^\\P{Emoji_Modifier_Base}$','v');p.test('\uD83E\uDEFA')===true&&n.test('\uD83E\uDEFA')===false",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{Emoji_Modifier_Base}$','vi'),n=new RegExp('^\\P{Emoji_Modifier_Base}$','vi');p.test('\uD83E\uDEFA')===true&&n.test('\uD83E\uDEFA')===false",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{EBase}$','u'),n=new RegExp('^\\P{EBase}$','u');p.test('\uD83E\uDEFA')===true&&n.test('\uD83E\uDEFA')===false",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{EBase}$','ui'),n=new RegExp('^\\P{EBase}$','ui');p.test('\uD83E\uDEFA')===true&&n.test('\uD83E\uDEFA')===false",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{EBase}$','v'),n=new RegExp('^\\P{EBase}$','v');p.test('\uD83E\uDEFA')===true&&n.test('\uD83E\uDEFA')===false",
     );
-    check(
+    assert_true(
         r"let p=new RegExp('^\\p{EBase}$','vi'),n=new RegExp('^\\P{EBase}$','vi');p.test('\uD83E\uDEFA')===true&&n.test('\uD83E\uDEFA')===false",
     );
 }

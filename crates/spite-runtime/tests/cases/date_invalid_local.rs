@@ -22,13 +22,7 @@ const SETTERS: [(&str, usize); 6] = [
     ("setMilliseconds", 1),
 ];
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn numeric_construction_creates_invalid_dates_for_nonfinite_calendar_or_time_results() {
@@ -36,7 +30,7 @@ fn numeric_construction_creates_invalid_dates_for_nonfinite_calendar_or_time_res
         for value in ["undefined", "NaN", "Infinity", "-Infinity"] {
             let mut args = ["1970", "0", "1", "0", "0", "0", "0"];
             args[index] = value;
-            check(&format!(
+            assert_true(&format!(
                 "let d=new Date({});d instanceof Date && Number.isNaN(d.getTime()) && d.toJSON()===null",
                 args.join(",")
             ));
@@ -51,9 +45,9 @@ fn numeric_construction_creates_invalid_dates_for_nonfinite_calendar_or_time_res
         "1970,0,1,0,0,Number.MAX_VALUE",
         "1e100,0,-3.652425e102",
     ] {
-        check(&format!("Number.isNaN(new Date({args}).getTime())"));
+        assert_true(&format!("Number.isNaN(new Date({args}).getTime())"));
     }
-    check(
+    assert_true(
         "let d=new Date(NaN,0),caught=false;try{d.toISOString();}catch(e){caught=e instanceof RangeError;}caught && d.toString()==='Invalid Date'",
     );
 }
@@ -68,22 +62,22 @@ fn numeric_construction_coerces_all_seven_fields_in_order_before_prototype_looku
         })
         .collect::<Vec<_>>()
         .join(",");
-    check(&format!(
+    assert_true(&format!(
         "let trace='',count=0;let d=new Date({args},count++,{{valueOf(){{throw 7;}}}});trace==='0123456' && count===1 && Number.isNaN(d.getTime())"
     ));
-    check(
+    assert_true(
         "let p={},trace='';function C(){}let x={valueOf(){trace+='y';return NaN;}},y={valueOf(){trace+='m';C.prototype=p;return 0;}};let d=Reflect.construct(Date,[x,y],C);trace==='ym' && Object.getPrototypeOf(d)===p && Number.isNaN(Date.prototype.getTime.call(d))",
     );
-    check(
+    assert_true(
         "function C(){}C.prototype=3;let d=Reflect.construct(Date,[NaN,0],C);Object.getPrototypeOf(d)===Date.prototype && Number.isNaN(d.getTime())",
     );
-    check(
+    assert_true(
         "let trace='',p={},C=(function(){}).bind(null);Object.defineProperty(C,'prototype',{get(){trace+='p';return p;}});let d=Reflect.construct(Date,[{valueOf(){trace+='y';return NaN;}},{valueOf(){trace+='m';return 0;}}],C);trace==='ymp' && Object.getPrototypeOf(d)===p && Number.isNaN(Date.prototype.getTime.call(d))",
     );
-    check(
+    assert_true(
         "let trace='',caught=false,C=(function(){}).bind(null);Object.defineProperty(C,'prototype',{get(){trace+='p';throw 9;}});try{Reflect.construct(Date,[{valueOf(){trace+='y';return NaN;}},0],C);}catch(e){caught=e===9;}caught && trace==='yp'",
     );
-    check(
+    assert_true(
         "class D extends Date{#x=7;read(){return this.#x;}}let d=new D(NaN,0);d instanceof D && d instanceof Date && d.read()===7 && Number.isNaN(d.getTime())",
     );
 }
@@ -105,7 +99,7 @@ fn later_abrupt_conversions_still_throw_after_an_earlier_nonfinite_field() {
             .collect::<Vec<_>>()
             .join(",");
         let expected = (0..=failure).map(|i| i.to_string()).collect::<String>();
-        check(&format!(
+        assert_true(&format!(
             "let trace='',caught=false;try{{new Date({args});}}catch(e){{caught=e===7;}}caught && trace==='{expected}'"
         ));
     }
@@ -123,7 +117,7 @@ fn later_abrupt_conversions_still_throw_after_an_earlier_nonfinite_field() {
 #[test]
 fn local_getters_return_nan_for_invalid_dates_and_check_their_own_slot() {
     for method in GETTERS {
-        check(&format!(
+        assert_true(&format!(
             "let d=new Date(NaN);Number.isNaN(d.{method}({{valueOf(){{throw 7;}}}})) && Number.isNaN(d.getTime())"
         ));
         for receiver in [
@@ -145,7 +139,7 @@ fn local_getters_return_nan_for_invalid_dates_and_check_their_own_slot() {
                 "{method}: {receiver}"
             );
         }
-        check(&format!(
+        assert_true(&format!(
             "let d=new Date(NaN);Object.setPrototypeOf(d,null);Object.freeze(d);Number.isNaN(Date.prototype.{method}.call(d))"
         ));
     }
@@ -154,13 +148,13 @@ fn local_getters_return_nan_for_invalid_dates_and_check_their_own_slot() {
 #[test]
 fn invalid_local_setters_convert_present_fields_and_preserve_hook_revival() {
     for (method, arity) in SETTERS {
-        check(&format!(
+        assert_true(&format!(
             "let d=new Date(NaN);Number.isNaN(d.{method}()) && Number.isNaN(d.getTime())"
         ));
         let args=(0..arity).map(|i|format!("{{[Symbol.toPrimitive](h){{if(h!=='number')throw 1;trace+='{i}';d.setTime({i}+7);return NaN;}}}}"))
             .collect::<Vec<_>>().join(",");
         let expected = (0..arity).map(|i| i.to_string()).collect::<String>();
-        check(&format!(
+        assert_true(&format!(
             "let trace='',count=0,d=new Date(NaN);Number.isNaN(d.{method}({args},count++,{{valueOf(){{throw 7;}}}})) && trace==='{expected}' && d.getTime()==={} && count===1",
             arity + 6
         ));
@@ -179,7 +173,7 @@ fn invalid_local_setters_convert_present_fields_and_preserve_hook_revival() {
                 .collect::<Vec<_>>()
                 .join(",");
             let expected = (0..=failure).map(|i| i.to_string()).collect::<String>();
-            check(&format!(
+            assert_true(&format!(
                 "let trace='',caught=false,d=new Date(NaN);try{{d.{method}({args});}}catch(e){{caught=e===7;}}caught && trace==='{expected}' && d.getTime()===77"
             ));
         }
@@ -208,7 +202,7 @@ fn invalid_local_setters_convert_present_fields_and_preserve_hook_revival() {
                 })
             ));
         }
-        check(&format!(
+        assert_true(&format!(
             "let d=new Date(NaN);Object.setPrototypeOf(d,null);Object.freeze(d);Number.isNaN(Date.prototype.{method}.call(d,1)) && Number.isNaN(Date.prototype.getTime.call(d))"
         ));
     }

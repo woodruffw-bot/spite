@@ -1,14 +1,8 @@
 //! Boundary assertions outside complete single Unicode atom captures.
+use crate::common::assert_true;
 use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
 
 #[test]
 fn unicode_atom_outer_assertion_results_snapshot() {
@@ -50,16 +44,16 @@ fn unicode_atom_outer_assertion_results_snapshot() {
 #[test]
 fn unicode_atom_outer_assertion_original_named_captures_context_and_widths() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^(?<x>(.))$/dm{mode}g,m=r.exec('xx\r\n😀\u2028A\u2029');m.index===4&&m[1]==='😀'&&m[2]==='😀'&&m.groups.x==='😀'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===6&&r.lastIndex===6"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^(?<__proto__>(\p{{Any}}))$/d{mode}y;r.lastIndex=1;let m=r.exec('😀');m.index===0&&m[1]==='😀'&&m[2]==='😀'&&m.indices[2][1]===2&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]&&r.lastIndex===2"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^((\w))$/dim{mode}g,m=r.exec('xx\nſ\n');m.index===3&&m[1]==='ſ'&&m[2]==='ſ'&&m.indices[1][1]===4&&!/^((\w))$/{mode}.test('ſ')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^(\uD800)$/d{mode},m=r.exec('\uD800');m[1]==='\uD800'&&m.indices[1][1]===1&&!r.test('\uD800\uDC00')"
         ));
     }
@@ -68,16 +62,16 @@ fn unicode_atom_outer_assertion_original_named_captures_context_and_widths() {
 #[test]
 fn unicode_atom_outer_assertion_dollar_escape_parity_and_dot_all() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"/^(\$)$/{mode}.exec('$')[1]==='$'&&!/^(\$)$/{mode}.test('$x')&&/^(\\)$/{mode}.exec('\\')[1]==='\\'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"/^(.)$/s{mode}.exec('\n')[1]==='\n'&&!/^(.)$/{mode}.test('\n')&&!/^(.)$/{mode}.test('A\n')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"/(.)$/{mode}.exec('xA')[1]==='A'&&/^([A])/{mode}.exec('Ax')[1]==='A'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^([\P{{ASCII}}K])$/im{mode};r.exec('x\nK')[1]==='K'"
         ));
     }
@@ -86,16 +80,16 @@ fn unicode_atom_outer_assertion_dollar_escape_parity_and_dot_all() {
 #[test]
 fn unicode_atom_outer_assertion_consumers_original_substrings_and_indices() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let a=[...'A\n😀\n\uD800'.matchAll(/^(?<x>.)$/dm{mode}g)];a.length===3&&a[0][1]==='A'&&a[1][1]==='😀'&&a[1].index===2&&a[1].indices[1][1]===4&&a[2][1]==='\uD800'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'A\n😀'.replace(/^(?<x>.)$/m{mode}g,'<$1:$<x>>')==='<A:A>\n<😀:😀>'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'A\n😀'.split(/^(.)$/m{mode}).join('|')==='|A|\n|😀|'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^(.)$/m{mode};r.lastIndex=99;'xx\n😀'.search(r)===3&&r.lastIndex===99"
         ));
     }
@@ -103,23 +97,23 @@ fn unicode_atom_outer_assertion_consumers_original_substrings_and_indices() {
 
 #[test]
 fn unicode_atom_outer_assertion_metadata_mode_clones_coercions_and_writes() {
-    check(
+    assert_true(
         r"let r=/^(?<x>\p{Any})$/dmu,c=new RegExp(r,'dvy');c.source==='^(?<x>\\p{Any})$'&&!c.multiline&&c.unicodeSets&&!c.unicode&&c.exec('😀').groups.x==='😀'&&c.lastIndex===2",
     );
-    check(
+    assert_true(
         r"let t='',r=/^(.)$/uy;r.lastIndex={valueOf(){t+='i';return 0}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m[1]==='😀'&&r.lastIndex===2",
     );
-    check(
+    assert_true(
         r"let r=/^(.)$/uy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/^([A])$/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('xA')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
 }
 
 #[test]
 fn unicode_atom_outer_assertion_opted_work_and_remaining_bodies() {
-    check(
+    assert_true(
         r"let m=/^([\q{a\)b}])$/v.exec('a)b');m.length===2 && m[0]==='a)b' && m[1]==='a)b' && m.index===0 && m.input==='a)b' && m.groups===undefined",
     );
     let mut realm = Realm::new(Limits {
@@ -137,7 +131,7 @@ fn unicode_atom_outer_assertion_opted_work_and_remaining_bodies() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
-    check(
+    assert_true(
         r#"let m=/^(\p{Script_Extensions=Latin})$/u.exec('A');JSON.stringify(m)==='["A","A"]'&&m.index===0&&m.input==='A'"#,
     );
     for source in [
@@ -146,10 +140,7 @@ fn unicode_atom_outer_assertion_opted_work_and_remaining_bodies() {
         r"/^(a|b)$/v.exec('a')",
         r"/^(^.$)$/u.exec('A')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }
 

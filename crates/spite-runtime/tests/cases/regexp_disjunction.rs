@@ -2,71 +2,65 @@
 
 use spite_runtime::{Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn source_order_wins_equal_start_ties_without_preferring_longest_matches() {
-    check(
+    assert_true(
         "/a|ab/.exec('ab')[0]==='a' && /ab|a/.exec('ab')[0]==='ab' && /ll|l/.exec('null')[0]==='ll'",
     );
-    check(
+    assert_true(
         "let r=/a|ab/dg,m=r.exec('ab');m.length===1 && m[0]==='a' && m.index===0 && m.groups===undefined && m.indices.length===1 && m.indices[0].join(',')==='0,1' && m.indices.groups===undefined && r.lastIndex===1",
     );
 }
 
 #[test]
 fn an_earlier_start_wins_over_an_earlier_source_alternative() {
-    check(
+    assert_true(
         "let m=/2|12/.exec(1.012);m[0]==='12' && m.index===3 && m.input==='1.012' && /z|a/.exec('az')[0]==='a'",
     );
-    check(
+    assert_true(
         "let r=/b|a/y;r.lastIndex=1;let m=r.exec('xab');m[0]==='a' && m.index===1 && r.lastIndex===2 && r.exec('xab')[0]==='b' && r.lastIndex===3 && r.exec('xab')===null && r.lastIndex===0",
     );
 }
 
 #[test]
 fn empty_alternatives_follow_source_order_and_generic_empty_match_advancement() {
-    check(
+    assert_true(
         "/|a/.exec('a')[0]==='' && /a|/.exec('a')[0]==='a' && /a|/.exec('ba').index===0 && /a|/.exec('ba')[0]===''",
     );
-    check(
+    assert_true(
         "let r=/a|/dg,m=r.exec('a');let n=r.exec('a');m[0]==='a' && n[0]==='' && n.index===1 && n.indices[0].join(',')==='1,1' && r.lastIndex===1",
     );
-    check(
+    assert_true(
         "'ab'.match(/|a/g).length===3 && [...'ab'.matchAll(/|a/g)].map(m=>m.index).join(',')==='0,1,2' && 'ab'.replace(/|a/g,'-')==='-a-b-'",
     );
 }
 
 #[test]
 fn noncapturing_branches_escaped_delimiters_and_surrogate_halves_keep_utf16_ranges() {
-    check(
+    assert_true(
         "let r=/(?:ab)|(?:c)/d,m=r.exec('xc');r.source==='(?:ab)|(?:c)' && m.length===1 && m.index===1 && m[0]==='c' && m.indices[0].join(',')==='1,2'",
     );
-    check(r"/a\|b|c/.exec('xa|b')[0]==='a|b'");
-    check(
+    assert_true(r"/a\|b|c/.exec('xa|b')[0]==='a|b'");
+    assert_true(
         r"let m=/\uD800|\uDC00/d.exec('x\uD800\uDC00');m[0]==='\uD800' && m.index===1 && m.indices[0].join(',')==='1,2'",
     );
 }
 
 #[test]
 fn ignore_case_uses_pinned_ordinary_rules_across_all_alternatives() {
-    check(
+    assert_true(
         "let r=/x|σ/i;let m=r.exec('ς');m[0]==='ς' && m.index===0 && /µ|z/i.test('Μ') && /s|x/i.exec('ſ')===null && /k|x/i.exec('K')===null",
     );
 }
 
 #[test]
 fn all_generic_consumers_and_string_fallbacks_use_literal_choices() {
-    check(
+    assert_true(
         "'aba'.match(/a|b/g).join(',')==='a,b,a' && 'aba'.search(/b|z/)===1 && 'aba'.replaceAll(/a|b/g,'x')==='xxx' && 'a,b;c'.split(/,|;/).join('|')==='a|b|c'",
     );
-    check(
+    assert_true(
         "[...'aba'.matchAll('a|b')].map(m=>m[0]+m.index).join(',')==='a0,b1,a2' && 'aba'.match('b|z')[0]==='b' && 'aba'.search('b|z')===1",
     );
 }
@@ -91,9 +85,6 @@ fn unsupported_alternatives_captures_nested_choices_and_unicode_remain_host_gaps
         "/a|b/u.test('a')",
         "/a|b/v.test('a')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }

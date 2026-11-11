@@ -4,13 +4,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn inner_alternative_reference_result_snapshot() {
@@ -55,35 +49,35 @@ fn inner_alternative_reference_result_snapshot() {
 
 #[test]
 fn common_enclosing_and_inactive_capture_slots_survive_failed_continuations() {
-    check(
+    assert_true(
         r"let a=/(?:(?<x>a)|(?<x>ab))\k<x>/d.exec('qabab');a.index===1&&a[1]===undefined&&a[2]==='ab'&&a.groups.x==='ab'&&a.indices.groups.x===a.indices[2]&&a.indices[2][0]===1&&a.indices[2][1]===3",
     );
-    check(
+    assert_true(
         r"let a=/((a)|(ab))\1/d.exec('qabab');a[0]==='abab'&&a[1]==='ab'&&a[2]===undefined&&a[3]==='ab'&&a.indices[1][0]===1&&a.indices[1][1]===3",
     );
-    check(
+    assert_true(
         r"let a=/(?<q>q)(?:(?<x>a)|(?<x>b))\k<q>\k<x>/d.exec('qbqb');a.groups.q==='q'&&a.groups.x==='b'&&a[2]===undefined&&a.indices.groups.q===a.indices[1]&&a.indices.groups.x===a.indices[3]",
     );
-    check(
+    assert_true(
         r"let a=/((a)|())\1/d.exec('b');a[0]===''&&a[1]===''&&a[2]===undefined&&a[3]===''&&a.indices[3][0]===0&&a.indices[3][1]===0",
     );
-    check(
+    assert_true(
         r"let a=/(?:(?<x>a)|\B(?<x>.)\B)\k<x>/d.exec('\uD800\uD800');a.groups.x.charCodeAt(0)===0xD800&&a.indices.groups.x===a.indices[2]&&a.indices[2][1]===1",
     );
 }
 
 #[test]
 fn consumers_sticky_positions_and_empty_choices_keep_order_and_original_sources() {
-    check(
+    assert_true(
         r"let r=/(?:(?<x>a)|(?<x>ab))\k<x>/dg,a=[...'abab aa'.matchAll(r)];a.length===2&&a[0].groups.x==='ab'&&a[1].groups.x==='a'&&a[0].indices.groups.x===a[0].indices[2]&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"'qabab'.replace(/(?:(?<x>a)|(?<x>ab))\k<x>/,'<$<x>>')==='q<ab>'&&'qabab'.search(/(a|ab)\1/)===1&&'qababz'.split(/(?:(a)|(ab))\1\2/).join(',')==='q,,ab,z'",
     );
-    check(
+    assert_true(
         r"let r=/(?:(?<x>a)|(?<x>b))\k<x>/dy;r.lastIndex=1;let copy=new RegExp(r),a=r.exec('qbb');a.groups.x==='b'&&r.lastIndex===3&&r.exec('qbb')===null&&r.lastIndex===0&&copy.source===r.source&&copy.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let a=[...'q'.matchAll(/(?:(?<x>a)|)\k<x>/dg)];a.length===2&&a[0].index===0&&a[1].index===1&&a[0].groups.x===undefined",
     );
 }
@@ -115,10 +109,7 @@ fn additional_inner_choices_and_repeated_reference_bodies_keep_unsupported_outco
         r"/(?:(?:(?:(?:(?<x>a)|(?<x>b))(?:\k<x>)+){2})|){2,3}/.test('bb')",
         r"/(?:(?<x>a)|(?<x>b))\k<x>/u.test('bb')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
-    check(r"/(?:(?<x>a)|(?<x>b))\k<x>/.exec('ab')===null");
+    assert_true(r"/(?:(?<x>a)|(?<x>b))\k<x>/.exec('ab')===null");
 }

@@ -1,14 +1,8 @@
 //! Count-one reference atoms preserve full capture spans and empty boundaries.
+use crate::common::assert_true;
 use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
 #[test]
 fn count_one_multi_copy_captured_atoms_result_snapshot() {
     let mut rows = String::new();
@@ -55,40 +49,42 @@ fn count_one_multi_copy_captured_atoms_result_snapshot() {
 }
 #[test]
 fn full_spans_boundary_aliases_and_original_program_keep_values() {
-    check(
+    assert_true(
         r"let a=/(?<x>a)(?<y>\k<x>\k<x>){1}/d.exec('aaa');a.groups.x==='a'&&a.groups.y==='aa'&&a.indices.groups.y===a.indices[2]&&a.indices[2][0]===1&&a.indices[2][1]===3",
     );
-    check(r"let a=/(a)(()\1\1){1}/d.exec('aaa');a[2]==='aa'&&a[3]===''&&a.indices[3][0]===1");
-    check(r"let a=/(a)(\1\1()){1}/d.exec('aaa');a[3]===''&&a.indices[3][0]===3");
-    check(
+    assert_true(r"let a=/(a)(()\1\1){1}/d.exec('aaa');a[2]==='aa'&&a[3]===''&&a.indices[3][0]===1");
+    assert_true(r"let a=/(a)(\1\1()){1}/d.exec('aaa');a[3]===''&&a.indices[3][0]===3");
+    assert_true(
         r"let a=/(?<=(\3\3()){1}(a))b/d.exec('aaab');a[1]==='aa'&&a[2]===''&&a[3]==='a'&&a.indices[2][0]===2",
     );
-    check(
+    assert_true(
         r"let a=/(?<=a(?=(b)(\1\1){1}))b/d.exec('abbb');a.index===1&&a[1]==='b'&&a[2]==='bb'&&a.indices[2][0]===2&&a.indices[2][1]===4",
     );
     assert!(matches!(
         Realm::default().eval(r"/(?<=a(?=(b)(\1\1){1}))b/.exec('abbb')"),
         Ok(Value::Object(_))
     ));
-    check(
+    assert_true(
         r"let a=/((\1\1){2})*a()/d.exec('a');a[1]===undefined&&a[2]===undefined&&a[3]===''&&a.indices[3][0]===1",
     );
-    check(
+    assert_true(
         r"let a=/([\uD800])(\1\1){1}/d.exec('\uD800\uD800\uD800');a[2].length===2&&a.indices[2][1]===3",
     );
 }
 #[test]
 fn consumers_sticky_callbacks_and_full_capture_ranges_agree() {
-    check(
+    assert_true(
         r"let r=/(a)(\1\1){1}/dy;r.lastIndex=1;let a=r.exec('caaa');a[2]==='aa'&&a.indices[2][0]===2&&r.lastIndex===4&&r.exec('caaa')===null&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/(a)(\1\1){1}/dg,a=[...'aaa aaa'.matchAll(r)];a.length===2&&a[1].index===4&&a[1].indices[2][1]===7&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let seen=[];let s='aaa aaa'.replace(/(a)(\1\1){1}/g,(m,x,y,i)=>{seen.push(x,y,i);return '_'});s==='_ _'&&seen.join('|')==='a|aa|0|a|aa|4'",
     );
-    check(r"'caaa'.search(/(a)(\1\1){1}/)===1&&'aaa'.split(/(a)(\1\1){1}/).join('|')==='|a|aa|'");
+    assert_true(
+        r"'caaa'.search(/(a)(\1\1){1}/)===1&&'aaa'.split(/(a)(\1\1){1}/).join('|')==='|a|aa|'",
+    );
 }
 
 #[test]
@@ -118,9 +114,6 @@ fn partial_consuming_spans_optional_counts_and_unicode_stay_pending() {
         r"/(?<=(a)(\1\1){1})b/u.exec('ab')",
         r"/(?<=(a)(\1\1){1})b/v.exec('ab')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }

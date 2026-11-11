@@ -1,7 +1,8 @@
 use spite_bigint::{BigInt, Budget, Error as IntegerError};
 use spite_core::{JsString, JsSymbol, is_line_terminator, is_whitespace, parse_radix_integer};
 use spite_heap::{Handle, Trace};
-use std::{cmp::Ordering, fmt};
+use std::cmp::Ordering;
+use std::fmt;
 
 /// A conversion that failed or needs access to an object's realm.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]

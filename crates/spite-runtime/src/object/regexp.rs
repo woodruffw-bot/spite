@@ -1,9 +1,11 @@
 //! Native RegExp slots and one shared regress program.
 
-use super::{Error, Objects, store::Budget};
+use super::store::Budget;
+use super::{Error, Objects};
 use spite_core::{JsString, RegExpProgram, RegExpProgramResult};
 use spite_heap::Handle;
-use std::{ops::Range, sync::Arc};
+use std::ops::Range;
+use std::sync::Arc;
 
 #[derive(Clone, Debug)]
 pub(crate) struct RegExpMatcher {

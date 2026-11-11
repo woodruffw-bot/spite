@@ -107,10 +107,8 @@ impl Callable {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        Limits,
-        object::{Budget, DataDescriptor, DescriptorKind, PropertyDescriptor},
-    };
+    use crate::Limits;
+    use crate::object::{Budget, DataDescriptor, DescriptorKind, PropertyDescriptor};
 
     fn target(realm: &mut Realm) -> ObjectHandle {
         let Value::Object(target) = realm.eval("let target = ({}).toString; target").unwrap()

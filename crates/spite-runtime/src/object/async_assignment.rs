@@ -1,9 +1,7 @@
 //! Destructuring assignment state shares binding iterator/property cursors.
 
-use super::{
-    async_binding::BindingCursor,
-    async_expression::{ExprPath, ExprRoot},
-};
+use super::async_binding::BindingCursor;
+use super::async_expression::{ExprPath, ExprRoot};
 use crate::Value;
 
 #[derive(Clone, Copy, Debug)]

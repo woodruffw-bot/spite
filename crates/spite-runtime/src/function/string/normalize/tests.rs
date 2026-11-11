@@ -1,6 +1,6 @@
 //! Independent invariants from the complete, unchanged Unicode normalization suite.
 
-use super::*;
+use super::{Error, Form, JsString, Realm, Span};
 
 fn text(field: &str) -> JsString {
     JsString::from_code_units(

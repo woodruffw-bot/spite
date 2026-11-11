@@ -1,6 +1,7 @@
 //! Dependency execution, SCC identity and persistent abrupt completions.
 
-use super::*;
+use super::{Error, ModuleExecutionStatus, Realm, Span, Value};
+use crate::ModuleHandle;
 use crate::{Limits, PromiseState};
 use spite_core::JsString;
 

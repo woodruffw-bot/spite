@@ -4,7 +4,7 @@
 //! Prepared atomic accesses own their pages and run after releasing that lock.
 //! Backing clones retain their identity and the same implicit-zero storage.
 
-use super::*;
+use super::{ArrayBufferData, ArrayBufferError, Budget, Error, Handle, Objects, WaitOwner};
 use std::sync::{Arc, Mutex, Weak};
 
 #[derive(Debug)]

@@ -1,10 +1,8 @@
 //! Arguments objects and their intrinsic Array values iterator (10.4.4.6–7).
 
-use crate::{
-    Error, ObjectHandle, Realm, Value,
-    environment::EnvironmentHandle,
-    object::{DataDescriptor, DescriptorKind, PropertyDescriptor},
-};
+use crate::environment::EnvironmentHandle;
+use crate::object::{DataDescriptor, DescriptorKind, PropertyDescriptor};
+use crate::{Error, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span, WellKnownSymbol};
 use spite_parser::ast::{BindingPatternKind, Parameter};
 use std::collections::{BTreeMap, BTreeSet};

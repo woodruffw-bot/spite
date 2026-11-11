@@ -15,12 +15,11 @@ mod resolution;
 pub(crate) use binding::ModuleBinding;
 mod namespace;
 
-use crate::{BindingState, Error, ObjectHandle, Realm, Value, environment::ThisBinding};
+use crate::environment::ThisBinding;
+use crate::{BindingState, Error, ObjectHandle, Realm, Value};
 use spite_core::Span;
-use spite_parser::{
-    ast::{BindingPattern, BindingPatternKind, ExportKind, Module, StatementKind},
-    parse_module, parse_module_with_source_limit,
-};
+use spite_parser::ast::{BindingPattern, BindingPatternKind, ExportKind, Module, StatementKind};
+use spite_parser::{parse_module, parse_module_with_source_limit};
 use std::collections::BTreeMap;
 
 /// A retained Source Text or JSON Synthetic Module record owned by one Realm.
@@ -241,7 +240,8 @@ fn module_default_index(module: &Module) -> Option<usize> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{PromiseJobOutcome, PromiseState, function::Callable};
+    use crate::function::Callable;
+    use crate::{PromiseJobOutcome, PromiseState};
     use spite_core::JsString;
 
     fn default_value(realm: &mut Realm) -> Option<Value> {

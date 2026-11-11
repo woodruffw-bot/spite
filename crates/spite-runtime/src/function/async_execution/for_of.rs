@@ -1,10 +1,8 @@
 //! Synchronous ForOf iteration with suspended source expressions and bodies.
 
 use super::{AsyncExecutionData, FrameStep, Step, active_statement, child_location};
-use crate::{
-    Completion, CompletionKind, Error, Realm, Value,
-    object::async_execution::{AsyncStatementFrame, StatementChild},
-};
+use crate::object::async_execution::{AsyncStatementFrame, StatementChild};
+use crate::{Completion, CompletionKind, Error, Realm, Value};
 
 impl Realm {
     pub(super) fn async_for_of_step(

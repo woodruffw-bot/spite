@@ -1,14 +1,8 @@
 //! Capture-free pure-empty Unicode alternatives preserve original boundaries.
+use crate::common::assert_true;
 use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
 
 #[test]
 fn unicode_pure_empty_disjunction_results_snapshot() {
@@ -57,35 +51,37 @@ fn unicode_pure_empty_disjunction_results_snapshot() {
 
 #[test]
 fn unicode_pure_empty_disjunction_results_and_consumers() {
-    check(
+    assert_true(
         "let m=/(?:|)*|/du.exec('😀');m.length===1&&m[0]===''&&m.index===0&&m.groups===undefined&&m.indices.length===1&&m.indices.groups===undefined",
     );
-    check(
+    assert_true(
         "let a=[...'😀a'.matchAll(/|(?:|)+?/dvg)];a.length===3&&a[0].index===0&&a[1].index===2&&a[2].index===3&&a[1].length===1&&a[1].indices[0][0]===2",
     );
-    check("JSON.stringify('😀a'.split(/(?:|)*|/u))===JSON.stringify(['😀','a'])");
-    check("'😀a'.replace(/(?:|)+|(?:){3,}/ug,'-')==='-😀-a-'&&'😀a'.match(/|(?:)+?/vg).length===3");
-    check("'😀a'.search(/(?:){2,4}?|/v)===0&&/||/u.test('')");
-    check(
+    assert_true("JSON.stringify('😀a'.split(/(?:|)*|/u))===JSON.stringify(['😀','a'])");
+    assert_true(
+        "'😀a'.replace(/(?:|)+|(?:){3,}/ug,'-')==='-😀-a-'&&'😀a'.match(/|(?:)+?/vg).length===3",
+    );
+    assert_true("'😀a'.search(/(?:){2,4}?|/v)===0&&/||/u.test('')");
+    assert_true(
         "let r=/(?:|)*|/dvy;r.lastIndex=1;let m=r.exec('😀');m.index===0&&m.length===1&&m.indices[0][0]===0&&r.lastIndex===0",
     );
 }
 
 #[test]
 fn unicode_pure_empty_disjunction_coercion_and_strict_last_index() {
-    check(
+    assert_true(
         "let log='',r=/(?:){3,}|/uy;r.lastIndex={valueOf(){log+='i';return 1}};let m=r.exec({toString(){log+='s';return '😀'}});log==='si'&&m.index===0&&m.length===1&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         "let log='',r=/|(?:)+/vi,i={valueOf(){log+='i';return 1}};r.lastIndex=i;let m=r.exec({toString(){log+='s';return '😀'}});log==='si'&&m[0]===''&&r.lastIndex===i",
     );
-    check(
+    assert_true(
         "let r=/(?:|)*|/uy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.test('😀')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
-    check(
+    assert_true(
         "let r=/|(?:)+/v;r.lastIndex=99;Object.defineProperty(r,'lastIndex',{writable:false});r.test('😀')&&r.lastIndex===99",
     );
-    check("let r=/(?:|)*|/uy;r.lastIndex=3;r.exec('😀')===null&&r.lastIndex===0");
+    assert_true("let r=/(?:|)*|/uy;r.lastIndex=3;r.exec('😀')===null&&r.lastIndex===0");
 }
 
 #[test]
@@ -109,13 +105,13 @@ fn unicode_pure_empty_disjunction_explicit_work_abort_preserves_state() {
 
 #[test]
 fn unicode_pure_empty_disjunction_preserves_earlier_empty_and_capture_results() {
-    check(
+    assert_true(
         "let m=/(())()/du.exec('a');m.length===4&&m[1]===''&&m[2]===''&&m[3]===''&&m.indices[3][0]===0&&m.indices[3][1]===0",
     );
-    check(
+    assert_true(
         "let m=/(?<x>(?:|))()/dvi.exec('😀');m.length===3&&m.groups.x===''&&m[2]===''&&m.indices.groups.x===m.indices[1]",
     );
-    check(
+    assert_true(
         "let m=/(?<x>)+()/du.exec('');m.length===3&&m.groups.x===''&&m[2]===''&&m.indices.groups.x===m.indices[1]",
     );
 }

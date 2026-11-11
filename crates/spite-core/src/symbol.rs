@@ -1,14 +1,10 @@
 //! Immutable symbol identity and property-key representation (6.1.5, 6.1.7).
 
 use crate::JsString;
-use std::{
-    fmt,
-    hash::{Hash, Hasher},
-    sync::{
-        Arc, Weak,
-        atomic::{AtomicBool, Ordering},
-    },
-};
+use std::fmt;
+use std::hash::{Hash, Hasher};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Weak};
 
 mod collection;
 #[doc(hidden)]

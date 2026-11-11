@@ -4,13 +4,9 @@ use super::{
     AsyncAwaitAction, AsyncExecutionData, FrameStep, Step, active_statement, child_location,
     expression,
 };
-use crate::{
-    Completion, CompletionKind, Error, Realm, Value,
-    object::{
-        async_execution::{AsyncStatementFrame, AsyncSwitchCursor, StatementChild},
-        async_expression::ExprRoot,
-    },
-};
+use crate::object::async_execution::{AsyncStatementFrame, AsyncSwitchCursor, StatementChild};
+use crate::object::async_expression::ExprRoot;
+use crate::{Completion, CompletionKind, Error, Realm, Value};
 use spite_parser::ast::StatementKind;
 use std::collections::BTreeMap;
 

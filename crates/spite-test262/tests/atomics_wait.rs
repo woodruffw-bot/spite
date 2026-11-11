@@ -1,7 +1,8 @@
 //! Explicit native timeout jobs in the Test262 host loop.
 
 use spite_test262::{Outcome, Runner};
-use std::{fs, path::Path};
+use std::fs;
+use std::path::Path;
 
 fn run(metadata: &str, body: &str) -> Vec<Outcome> {
     let source = format!("/*---\n{metadata}\n---*/\n{body}");

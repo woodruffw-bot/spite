@@ -1,7 +1,8 @@
 //! Shared UTF-16 adapter for the regress ECMAScript matching engine.
 
 use crate::JsString;
-use std::{ops::Range, sync::Arc};
+use std::ops::Range;
+use std::sync::Arc;
 
 /// An immutable compiled expression with inexpensive shared Rust clones.
 ///

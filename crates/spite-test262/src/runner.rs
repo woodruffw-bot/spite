@@ -3,10 +3,8 @@ use spite_core::{Diagnostic, DiagnosticKind, JsString, Span};
 use spite_parser::{
     parse_module, parse_module_with_source_limit, parse_script, parse_script_with_source_limit,
 };
-use spite_runtime::{
-    Error, FinalizationCleanupOutcome, Limits, PromiseJobOutcome, Realm, Value,
-    object::PromiseState,
-};
+use spite_runtime::object::PromiseState;
+use spite_runtime::{Error, FinalizationCleanupOutcome, Limits, PromiseJobOutcome, Realm, Value};
 
 enum ParsedSource {
     Script(spite_parser::ast::Script),

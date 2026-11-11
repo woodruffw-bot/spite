@@ -1,6 +1,9 @@
 //! ModuleRequests and ParseModule's import/export entry normalization (16.2).
 
-use super::*;
+use super::{
+    BTreeSet, ExportKind, ImportEntry, ImportName, IndirectExportEntry, JsString, LocalExportEntry,
+    Module, ModuleEntries, ModuleRequest,
+};
 use std::collections::BTreeMap;
 
 impl Module {
@@ -115,13 +118,13 @@ impl Module {
             .map(|declaration| (declaration.span.start, &declaration.request))
             .collect();
         requests.extend(self.exports.iter().filter_map(|declaration| {
-            let request = match &declaration.kind {
-                ExportKind::Named {
-                    request: Some(request),
-                    ..
-                }
-                | ExportKind::Star { request, .. } => request,
-                _ => return None,
+            let (ExportKind::Named {
+                request: Some(request),
+                ..
+            }
+            | ExportKind::Star { request, .. }) = &declaration.kind
+            else {
+                return None;
             };
             Some((declaration.span.start, request))
         }));

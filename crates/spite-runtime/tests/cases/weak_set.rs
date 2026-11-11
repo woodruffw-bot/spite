@@ -2,13 +2,7 @@
 
 use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 fn type_error(source: &str) {
     assert!(
@@ -25,13 +19,13 @@ fn type_error(source: &str) {
 
 #[test]
 fn objects_and_non_registered_symbols_preserve_identity_without_coercion() {
-    check(
+    assert_true(
         "let a={toString(){throw 7;},valueOf(){throw 8;}},b={},x=Symbol('x'),y=Symbol('x'),s=new WeakSet([a,b,x,y,x]);s.has(a) && s.has(b) && s.has(x) && s.has(y) && !s.has({}) && !s.has(Symbol('x')) && s.add(a)===s && s.add(x)===s && s.delete(a) && !s.delete(a) && s.delete(x) && !s.delete(x) && s.has(y) && s.add(a)===s && s.has(a)",
     );
-    check(
+    assert_true(
         "let s=new WeakSet([Symbol.iterator]);s.has(Symbol.iterator) && s.delete(Symbol.iterator)",
     );
-    check(
+    assert_true(
         "let s=new WeakSet([Object(Symbol()),Object(1)]),k=Object.freeze({});Object.freeze(s);s.add(k)===s && s.has(k) && s.delete(k) && Object.isFrozen(s)",
     );
 }
@@ -48,14 +42,14 @@ fn registered_symbols_and_other_primitives_are_rejected_without_conversion() {
         "Symbol.for('weak-set-registered')",
     ] {
         type_error(&format!("new WeakSet().add({key})"));
-        check(&format!(
+        assert_true(&format!(
             "let s=new WeakSet();!s.has({key}) && !s.delete({key})"
         ));
     }
-    check(
+    assert_true(
         "let x=Symbol('weak-set-registered'),r=Symbol.for('weak-set-registered'),s=new WeakSet([x]);s.has(x) && !s.has(r)",
     );
-    check(
+    assert_true(
         "Symbol.keyFor=function(){throw 7;};let x=Symbol(),s=new WeakSet([x]);s.has(x) && !s.has(Symbol.for('weak-set-registered'))",
     );
 }
@@ -82,32 +76,32 @@ fn receivers_require_their_own_slot_before_key_validation() {
 #[test]
 fn construction_orders_prototype_adder_and_iterator_and_caches_the_adder() {
     type_error("WeakSet()");
-    check(
+    assert_true(
         "let effects=0,caught=false;try{WeakSet(effects++);}catch(e){caught=e instanceof TypeError;}caught && effects===1",
     );
-    check(
+    assert_true(
         "let trace='',key={},p=Object.create(WeakSet.prototype);Object.defineProperty(p,'add',{get(){trace+='a';return function(v){trace+='c';if(arguments.length!==1)throw 7;WeakSet.prototype.add.call(this,v);};}});function C(){}C.prototype=p;let items={[Symbol.iterator](){trace+='i';let n=0;return {get next(){trace+='n';return function(){return n++===0?{value:key}:{done:true};};}};}};let s=Reflect.construct(WeakSet,[items],C);trace==='ainc' && Object.getPrototypeOf(s)===p && s.has(key)",
     );
-    check(
+    assert_true(
         "let p=Object.create(WeakSet.prototype);Object.defineProperty(p,'add',{get(){throw 7;}});function C(){}C.prototype=p;Object.getPrototypeOf(Reflect.construct(WeakSet,[null],C))===p && Object.getPrototypeOf(Reflect.construct(WeakSet,[],C))===p",
     );
-    check(
+    assert_true(
         "let touched=false,p={add:1};function C(){}C.prototype=p;let items={get [Symbol.iterator](){touched=true;throw 7;}},caught=false;try{Reflect.construct(WeakSet,[items],C);}catch(e){caught=e instanceof TypeError;}caught && !touched",
     );
-    check(
+    assert_true(
         "let calls=0,a={},b={},add=WeakSet.prototype.add;WeakSet.prototype.add=function(v){calls++;WeakSet.prototype.add=null;return add.call(this,v);};let s=new WeakSet([a,b]);calls===2 && s.has(a) && s.has(b)",
     );
-    check(
+    assert_true(
         "function C(){}C.prototype=1;Object.getPrototypeOf(Reflect.construct(WeakSet,[],C))===WeakSet.prototype",
     );
 }
 
 #[test]
 fn construction_closes_adder_failures_and_preserves_escaped_partial_sets() {
-    check(
+    assert_true(
         "let key={},escaped,closed=0,n=0,add=WeakSet.prototype.add;WeakSet.prototype.add=function(v){escaped=this;return add.call(this,v);};let i={next(){return {value:n++===0?key:1};},return(){closed++;throw 7;}},caught=false;try{new WeakSet({[Symbol.iterator](){return i;}});}catch(e){caught=e instanceof TypeError;}caught && closed===1 && escaped.has(key)",
     );
-    check(
+    assert_true(
         "let marker={},closed=0;WeakSet.prototype.add=function(){throw marker;};let i={next(){return {value:{}};},return(){closed++;throw 7;}},caught=false;try{new WeakSet({[Symbol.iterator](){return i;}});}catch(e){caught=e===marker;}caught && closed===1",
     );
     for step in [
@@ -115,7 +109,7 @@ fn construction_closes_adder_failures_and_preserves_escaped_partial_sets() {
         "return {get done(){throw marker;}};",
         "return {get value(){throw marker;}};",
     ] {
-        check(&format!(
+        assert_true(&format!(
             "let marker={{}},closed=0,i={{next(){{{step}}},return(){{closed++;return {{}};}}}},caught=false;try{{new WeakSet({{[Symbol.iterator](){{return i;}}}});}}catch(e){{caught=e===marker;}}caught && closed===0"
         ));
     }
@@ -123,36 +117,38 @@ fn construction_closes_adder_failures_and_preserves_escaped_partial_sets() {
 
 #[test]
 fn subclasses_bound_construction_and_custom_new_target_keep_the_internal_slot() {
-    check(
+    assert_true(
         "let key={},symbol=Symbol();class C extends WeakSet{#n=this.has(key);read(){return this.#n;}}let s=new C([key,symbol]);s instanceof C && s instanceof WeakSet && s.read() && s.has(symbol)",
     );
-    check(
+    assert_true(
         "let key={};class C extends WeakSet{constructor(items){super(items);this.n=this.has(key);}}let s=new C([key]);s.n && s.delete(key)",
     );
-    check("let key={},B=WeakSet.bind(null,[key]),s=new B();s instanceof WeakSet && s.has(key)");
-    check(
+    assert_true(
+        "let key={},B=WeakSet.bind(null,[key]),s=new B();s instanceof WeakSet && s.has(key)",
+    );
+    assert_true(
         "let key={},p={};function C(){}C.prototype=p;let s=Reflect.construct(WeakSet,[],C);Object.getPrototypeOf(s)===p && WeakSet.prototype.add.call(s,key)===s && WeakSet.prototype.has.call(s,key)",
     );
 }
 
 #[test]
 fn intrinsic_metadata_reflection_and_integrity_are_complete() {
-    check(
+    assert_true(
         "let c=Object.getOwnPropertyDescriptor(globalThis,'WeakSet'),p=Object.getOwnPropertyDescriptor(WeakSet,'prototype'),t=Object.getOwnPropertyDescriptor(WeakSet.prototype,Symbol.toStringTag);WeakSet.length===0 && WeakSet.name==='WeakSet' && Object.getPrototypeOf(WeakSet)===Function.prototype && Object.getPrototypeOf(WeakSet.prototype)===Object.prototype && WeakSet.prototype.constructor===WeakSet && c.value===WeakSet && c.writable && !c.enumerable && c.configurable && p.value===WeakSet.prototype && !p.writable && !p.enumerable && !p.configurable && t.value==='WeakSet' && !t.writable && !t.enumerable && t.configurable",
     );
-    check(
+    assert_true(
         "Object.getOwnPropertyNames(WeakSet).join()==='length,name,prototype' && Object.getOwnPropertySymbols(WeakSet).length===0 && Object.getOwnPropertyNames(WeakSet.prototype).join()==='constructor,add,delete,has' && Object.getOwnPropertySymbols(WeakSet.prototype)[0]===Symbol.toStringTag && Reflect.ownKeys(new WeakSet()).length===0 && Object.prototype.toString.call(new WeakSet())==='[object WeakSet]' && Object.keys(WeakSet.prototype).length===0",
     );
     for method in ["add", "delete", "has"] {
-        check(&format!(
+        assert_true(&format!(
             "let f=WeakSet.prototype.{method},d=Object.getOwnPropertyDescriptor(WeakSet.prototype,'{method}');f.name==='{method}' && f.length===1 && !Object.hasOwn(f,'prototype') && d.writable && !d.enumerable && d.configurable"
         ));
         type_error(&format!("new WeakSet.prototype.{method}()"));
     }
-    check(
+    assert_true(
         "Object.freeze(WeakSet);Object.freeze(WeakSet.prototype);let key={},s=new WeakSet([key]);Object.isFrozen(WeakSet) && Object.isFrozen(WeakSet.prototype) && s.has(key) && s.delete(key)",
     );
-    check(
+    assert_true(
         "delete WeakSet.prototype[Symbol.toStringTag];Object.prototype.toString.call(new WeakSet())==='[object Object]'",
     );
 }
@@ -180,7 +176,7 @@ fn collection_keeps_live_keys_usable_but_does_not_retain_unreachable_key_cycles(
 
 #[test]
 fn unlimited_defaults_support_large_collections_and_opted_in_abort_skips_cleanup() {
-    check(
+    assert_true(
         "let keys=Array.from({length:4000},()=>({})),s=new WeakSet(keys);keys.every(k=>s.has(k)) && keys.every(k=>s.delete(k)) && keys.every(k=>!s.has(k))",
     );
     let mut realm = Realm::new(Limits {

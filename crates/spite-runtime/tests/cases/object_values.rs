@@ -3,10 +3,8 @@
 use spite_bigint::Budget as IntegerBudget;
 use spite_core::JsString;
 use spite_heap::Error as HeapError;
-use spite_runtime::{
-    ConversionError, Value,
-    object::{Budget, DataDescriptor, Error, GetAction, Objects},
-};
+use spite_runtime::object::{Budget, DataDescriptor, Error, GetAction, Objects};
+use spite_runtime::{ConversionError, Value};
 
 fn data(value: Value) -> DataDescriptor {
     DataDescriptor {

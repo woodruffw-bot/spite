@@ -4,13 +4,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn local_reference_target_result_snapshot() {
@@ -68,41 +62,41 @@ fn local_reference_target_result_snapshot() {
 
 #[test]
 fn local_named_targets_use_current_iteration_ranges_and_restore_retries() {
-    check(
+    assert_true(
         r"let a=/(?<x>a)(?<y>b)(?<last>(?<piece>\k<x>)\k<piece>\k<y>)*aab$/d.exec('abaabaab');a[0]==='abaabaab'&&a.groups.last==='aab'&&a.groups.piece==='a'&&a.indices.groups.last===a.indices[3]&&a.indices.groups.last[0]===2&&a.indices.groups.piece===a.indices[4]&&a.indices[4][0]===2&&a.indices[4][1]===3",
     );
-    check(
+    assert_true(
         r"let a=/((?<x>a)(?<y>b)(?<last>(?<piece>\k<x>)\k<piece>\k<y>)+?)\1/d.exec('abaababaab');a[0]==='abaababaab'&&a[1]==='abaab'&&a.groups.last==='aab'&&a.groups.piece==='a'&&a.indices.groups.piece===a.indices[5]&&a.indices[5][0]===2",
     );
-    check(
+    assert_true(
         r"let a=/(?<x>a)(?<y>b)(?<last>\k<x>(?<piece>\k<y>\k<x>)\k<piece>)+$/d.exec('abababa');a.groups.last==='ababa'&&a.groups.piece==='ba'&&a.indices.groups.piece===a.indices[4]&&a.indices[4][0]===3&&a.indices[4][1]===5",
     );
-    check(
+    assert_true(
         r"let a=/(?:(?<x>a)|(?<x>b))(?<y>c)(?<last>(?<piece>\k<x>)\k<piece>\k<y>)+/d.exec('bcbbc');a[1]===undefined&&a.groups.last==='bbc'&&a.groups.piece==='b'&&a.indices.groups.piece===a.indices[5]&&a.indices[5][0]===2",
     );
-    check(
+    assert_true(
         r"let a=/(?<x>a)(?<y>b)(?<last>(?<piece>\k<x>)\4\k<piece>\k<y>)+/d.exec('abaaab');a[0]==='abaaab'&&a.groups.last==='aaab'&&a.groups.piece==='a'&&a.indices.groups.piece===a.indices[4]&&a.indices[4][0]===2",
     );
-    check(
+    assert_true(
         r"let a=/(?<x>.)(?<y>a)(?<last>(?<piece>\k<x>)\k<piece>\k<y>)+/d.exec('\uD800a\uD800\uD800a');a[0].length===5&&a.groups.piece.charCodeAt(0)===0xD800&&a.indices.groups.piece===a.indices[4]&&a.indices[4][0]===2&&a.indices[4][1]===3",
     );
 }
 
 #[test]
 fn local_reference_consumers_and_following_captures_keep_original_numbering() {
-    check(
+    assert_true(
         r"let r=/(?<x>a)(?<y>b)(?<last>(?<piece>\k<x>)\k<piece>\k<y>)+/dg,a=[...'abaab abaabaab'.matchAll(r)];a.length===2&&a[0].groups.last==='aab'&&a[0].indices.groups.piece===a[0].indices[4]&&a[0].indices[4][0]===2&&a[1].indices[4][0]===11&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"'qabaabaab'.replace(/(?<x>a)(?<y>b)(?<last>(?<piece>\k<x>)\k<piece>\k<y>)+/,'<$<last>:$<piece>>')==='q<aab:a>'&&'qabaabaab'.search(/(a)(b)((\1)\4\2)+/)===1&&'qabaabaabZ'.split(/(a)(b)((\1)\4\2)+/).join(',')==='q,a,b,aab,a,Z'",
     );
-    check(
+    assert_true(
         r"let r=/(?<x>a)(?<y>b)(?<last>(?<piece>\k<x>)\k<piece>\k<y>)+/dy;r.lastIndex=1;let copy=new RegExp(r),a=r.exec('qabaabaab');a.indices.groups.piece[0]===6&&a.indices.groups.piece[1]===7&&r.lastIndex===9&&r.exec('qabaabaab')===null&&r.lastIndex===0&&copy.source===r.source&&copy.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let a=/(?<x>a)(?<y>b)(?<last>(?<piece>\k<x>)\k<piece>\k<y>)*\k<piece>$/d.exec('abaaba'),b=/(?<x>a)(?<y>b)(?<last>(?<piece>\k<x>)\k<piece>\k<y>)*?\k<piece>$/d.exec('abaaba');a[0]==='abaaba'&&b[0]==='abaaba'&&a.groups.piece==='a'&&b.groups.piece==='a'&&a.indices.groups.piece[0]===2&&b.indices.groups.piece[0]===2",
     );
-    check(
+    assert_true(
         r"let a=[...'q'.matchAll(/(?<x>)(?<y>)(?<last>(?<piece>\k<x>)\k<piece>\k<y>)*/dg)];a.length===2&&a[0].groups.piece===undefined&&a[0].indices.groups.piece===undefined&&a[1].index===1",
     );
 }
@@ -125,7 +119,7 @@ fn explicit_local_reference_work_aborts_before_last_index_and_handlers() {
 }
 
 #[test]
-fn other_consuming_terms_choices_and_nested_repetition_remain_unsupported() {
+fn other_consuming_terms_choices_and_nested_repetition_match_reference_results() {
     for source in [
         r"/(?:(?:(?:(a)(b)(a(\1)\4\2)+){2})|){2,3}/.test('aabaab')",
         r"/(a)(b)((\1)|\2){2,3}/.test('abab')",
@@ -134,10 +128,7 @@ fn other_consuming_terms_choices_and_nested_repetition_remain_unsupported() {
         r"/(a)(b)((?i:\1)\2)+/.test('abab')",
         r"/(a)(b)((\1)\4\2)+/u.test('aabaab')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
-    check(r"/(a)(b)((\1)\4\2)+/.exec('abc')===null");
+    assert_true(r"/(a)(b)((\1)\4\2)+/.exec('abc')===null");
 }

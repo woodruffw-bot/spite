@@ -1,6 +1,6 @@
 //! Side-effect-free export names and ResolveExport, using explicit stacks (16.2.1).
 
-use super::*;
+use super::{Error, ModuleBinding, ObjectHandle, Realm, Span};
 use crate::object::{Budget, Error as StoreError};
 use spite_core::JsString;
 use spite_parser::ast::{ModuleEntries, ModuleRequest};
@@ -178,7 +178,7 @@ impl ModuleCatalog {
                     } else {
                         result = Some(
                             candidate.map_or(ExportResolution::Missing, ExportResolution::Binding),
-                        )
+                        );
                     };
                 }
             }

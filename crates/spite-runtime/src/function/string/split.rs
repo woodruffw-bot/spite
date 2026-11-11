@@ -1,6 +1,7 @@
 //! String.prototype.split: Symbol.split delegation and UTF-16 splitting (22.1.3.23).
 
-use crate::{Error, Realm, Value, value::to_uint32};
+use crate::value::to_uint32;
+use crate::{Error, Realm, Value};
 use spite_core::{Span, WellKnownSymbol};
 
 impl Realm {

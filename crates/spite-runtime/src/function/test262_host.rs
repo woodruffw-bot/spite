@@ -1,12 +1,9 @@
 //! Explicit Test262 host capabilities; ordinary Realms receive no host object.
 
 use super::Builtin;
-use crate::{
-    Error, ExceptionKind, Realm, Value,
-    object::{
-        DataDescriptor, DescriptorKind, PropertyDescriptor, source_context::SourceExecutionContext,
-    },
-};
+use crate::object::source_context::SourceExecutionContext;
+use crate::object::{DataDescriptor, DescriptorKind, PropertyDescriptor};
+use crate::{Error, ExceptionKind, Realm, Value};
 use spite_core::{DiagnosticKind, JsString, Span};
 use spite_parser::parse_script_utf16;
 

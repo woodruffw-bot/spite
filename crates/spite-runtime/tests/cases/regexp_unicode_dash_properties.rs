@@ -3,13 +3,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn unicode_dash_property_results_snapshot() {
@@ -54,16 +48,16 @@ fn unicode_dash_property_results_snapshot() {
 #[test]
 fn unicode_dash_properties_aliases_complements_and_unions() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let a=/\p{{Dash}}/{mode},b=/\p{{Dash}}/i{mode},n=/\P{{Dash}}/i{mode};a.test('\u2010')&&a.test('\u2011')&&b.test('\u2010')&&!a.test('\u200D')&&!b.test('\u2016')&&!b.test('ſ')&&!b.test('K')&&!n.test('\u2010')&&n.test('😀')&&n.test('\uD800')&&n.test('\uFEFF')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let p=/\p{{Dash}}/{mode},s=/\s/{mode};p.test('\u2010')&&p.test('\u2011')&&!s.test('\u2010')&&!s.test('\u2011')&&!p.test('\uFEFF')&&s.test('\uFEFF')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=/[\p{{Dash}}K]/i{mode},b=/[^\P{{Dash}}K]/i{mode},c=/[\p{{Dash}}\P{{Dash}}]/{mode};a.test('K')&&a.test('k')&&a.test('\u2010')&&!a.test('ſ')&&b.test('\u2011')&&!b.test('K')&&c.test('😀')&&c.test('A')&&c.test('\uD800')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=/^\p{{Dash}}$/{mode},b=/^\P{{Dash}}$/{mode};a.test('\u2010')&&!a.test('\u2011\n')&&!a.test('')&&!a.test('\n')&&b.test('😀')&&!b.test('AA')"
         ));
     }
@@ -72,21 +66,21 @@ fn unicode_dash_properties_aliases_complements_and_unions() {
 #[test]
 fn unicode_dash_properties_captures_context_and_pair_starts() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/(?<x>\p{{Dash}})/d{mode}y;r.lastIndex=1;let m=r.exec('\uD803\uDD6E');m.index===0&&m[0]==='\uD803\uDD6E'&&m.groups.x===m[0]&&m.indices[1][0]===0&&m.indices[1][1]===2&&r.lastIndex===2"
         ));
     }
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^(?<x>([\p{{Dash}}K]))$/dim{mode}g,m=r.exec('x\r\nK\u2028');m.index===3&&m[1]==='K'&&m[2]==='K'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===4&&r.lastIndex===4"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/(?<__proto__>\P{{Dash}})/d{mode}y;r.lastIndex=1;let m=r.exec('😀\u2010');m.index===0&&m[1]==='😀'&&m.indices[1][1]===2&&r.lastIndex===2&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\p{{Dash}}/d{mode}g;r.lastIndex=1;let m=r.exec('😀\u2010');m.index===2&&m[0]==='\u2010'&&r.lastIndex===3"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\p{{Dash}}/{mode}y;r.lastIndex=1;r.exec('😀\u2010')===null&&r.lastIndex===0"
         ));
     }
@@ -95,16 +89,16 @@ fn unicode_dash_properties_captures_context_and_pair_starts() {
 #[test]
 fn unicode_dash_properties_consumers_original_text() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let a=[...'\u2011😀\u2010G'.matchAll(/(?<x>\P{{Dash}})/d{mode}g)];a.length===2&&a[0][1]==='😀'&&a[0].index===1&&a[0].indices[1][1]===3&&a[1][1]==='G'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'\u2011\u2010😀X'.replace(/(?<x>\p{{Dash}})/{mode}g,'<$1:$<x>>')==='<\u2011:\u2011><\u2010:\u2010>😀X'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'😀\u2011\u2010G'.split(/(\p{{Dash}})/{mode}).join('|')==='😀|\u2011||\u2010|G'&&'😀\u2010'.search(/\p{{Dash}}/{mode})===2&&'\u2011\u2010😀'.match(/\p{{Dash}}/{mode}g).join('')==='\u2011\u2010'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let t='';let x='\u2010\u2011😀\u2010'.replace(/(\p{{Dash}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__😀_'&&t==='014'"
         ));
     }
@@ -112,16 +106,16 @@ fn unicode_dash_properties_consumers_original_text() {
 
 #[test]
 fn unicode_dash_properties_clones_coercions_and_strict_writes() {
-    check(
+    assert_true(
         r"let r=/^(?<x>\p{Dash})$/dmu,c=new RegExp(r,'divy');c.source==='^(?<x>\\p{Dash})$'&&c.unicodeSets&&!c.unicode&&!c.multiline&&c.exec('\u2010').groups.x==='\u2010'&&c.lastIndex===1",
     );
-    check(
+    assert_true(
         r"let t='',r=/\P{Dash}/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m[0]==='😀'&&m.index===0&&r.lastIndex===2",
     );
-    check(
+    assert_true(
         r"let r=/\p{Dash}/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('\u2010')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/\p{Dash}/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀\u2010')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
 }
@@ -143,26 +137,23 @@ fn unicode_dash_properties_opted_work_and_remaining_sets() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
-    check(
+    assert_true(
         r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
     );
-    check(r"/[\p{Dash}&&A]/v.exec('A')===null");
-    check(r"/[\p{Dash}--A]/v.exec('A')===null");
-    check(
+    assert_true(r"/[\p{Dash}&&A]/v.exec('A')===null");
+    assert_true(r"/[\p{Dash}--A]/v.exec('A')===null");
+    assert_true(
         r"let s=String.fromCodePoint(0x2010),m=/[\p{Dash}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
     );
     for source in [r"/\p{Dash}+b/u.exec('AA')", r"/\p{Dash}A/v.exec('AA')"] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }
 
 #[test]
 fn unicode_dash_repetitions_retain_last_capture_and_outside_words() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\B(?<x>\p{{Dash}})+\B/d{mode}g,m=r.exec('😀\u2010\u2011\u2015!');m.index===2&&m[0]==='\u2010\u2011\u2015'&&m.groups.x==='\u2015'&&m.indices.groups.x[0]===4&&m.indices.groups.x[1]===5&&r.lastIndex===5"
         ));
     }

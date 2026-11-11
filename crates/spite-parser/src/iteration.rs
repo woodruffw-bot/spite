@@ -1,6 +1,9 @@
 //! Three-clause, for-in, and synchronous/asynchronous for-of headers (14.7.4–5).
 
-use crate::*;
+use crate::{
+    AwaitContext, BindingPatternKind, Diagnostic, Expr, ExprKind, ForBinding, ForInitializer, Kind,
+    Parser, Statement, StatementKind, Token, assignment_target, early,
+};
 
 pub(super) enum ForHeader {
     ThreeClause {

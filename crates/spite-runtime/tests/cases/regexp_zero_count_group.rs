@@ -1,18 +1,10 @@
 //! A validated whole group repeated zero times never executes its body.
 
-use spite_runtime::{Realm, Value};
-
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn arbitrary_validated_bodies_keep_every_capture_and_name_undefined() {
-    check(
+    assert_true(
         r#"
         var bodies = [
             '(?<root>(?=(?<ahead>a))(?<=(?<behind>b))\\k<ahead>|(?<tail>c))',
@@ -39,7 +31,7 @@ fn arbitrary_validated_bodies_keep_every_capture_and_name_undefined() {
 
 #[test]
 fn modes_lastindex_and_string_consumers_use_the_empty_match() {
-    check(
+    assert_true(
         r#"
         var ok=true, body='(?<root>(?=(?<x>a))b|(?<=c)d){0}';
         for(var mode of ['','u','v']) for(var sticky of ['','y']) {
@@ -60,7 +52,7 @@ fn modes_lastindex_and_string_consumers_use_the_empty_match() {
 
 #[test]
 fn full_syntax_validation_precedes_erasure() {
-    check(
+    assert_true(
         r#"
         var ok=true, invalid=[
             ['(?:(?<x>a)\\k<missing>){0}','u'],
@@ -82,7 +74,7 @@ fn full_syntax_validation_precedes_erasure() {
 
 #[test]
 fn escaped_and_duplicate_names_keep_undefined_aliases() {
-    check(
+    assert_true(
         r#"
         var r=new RegExp('(?:(?<x>a)|(?<x>b)(?<\\u0079>c)\\k<y>){0}','dgu'),m=r.exec('x');
         m.length===4&&m[1]===undefined&&m[2]===undefined&&m[3]===undefined&&
@@ -94,7 +86,7 @@ fn escaped_and_duplicate_names_keep_undefined_aliases() {
 
 #[test]
 fn mandatory_enclosing_captures_select_empty_spans_and_inner_names_stay_undefined() {
-    check(
+    assert_true(
         r#"
         var ok=true,body='(?<root>(?=(?<x>a))b|(?<=(?<y>c))d)';
         for(var mode of ['','u','v']) for(var count of ['{0}','{000,000}?']) {
@@ -119,7 +111,7 @@ fn mandatory_enclosing_captures_select_empty_spans_and_inner_names_stay_undefine
 
 #[test]
 fn enclosing_empty_captures_flow_through_matchall_replace_search_and_split() {
-    check(
+    assert_true(
         r#"
         var pattern='(?<outside>(?<root>(?=(?<x>a))b){0})',r=new RegExp(pattern,'dgu');
         var ms=Array.from('a😀'.matchAll(r)),ok=ms.length===3&&ms.map(m=>m.index).join(',')==='0,1,3';

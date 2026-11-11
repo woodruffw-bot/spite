@@ -1,7 +1,8 @@
 //! Boolean constructor, prototype methods, and Boolean wrapper objects (20.3).
 
 use super::Builtin;
-use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, object::DataDescriptor};
+use crate::object::DataDescriptor;
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span};
 
 #[cfg(test)]

@@ -1,11 +1,8 @@
 //! Tagged call/member precedence, cooked escape handling, and site identity.
 
 use spite_core::DiagnosticKind;
-use spite_parser::{
-    MAX_DEPTH,
-    ast::{ExprKind, StatementKind},
-    parse_script,
-};
+use spite_parser::ast::{ExprKind, StatementKind};
+use spite_parser::{MAX_DEPTH, parse_script};
 use std::rc::Rc;
 
 #[test]

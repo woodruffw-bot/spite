@@ -1,18 +1,14 @@
 //! Async-generator request serialization and completion (27.6.3).
 
-use super::{
-    Builtin,
-    async_execution::{AsyncBodyOutcome, SourceResume},
-    async_native::AsyncResumeKind,
+use super::Builtin;
+use super::async_execution::{AsyncBodyOutcome, SourceResume};
+use super::async_native::AsyncResumeKind;
+use crate::object::async_execution::SourceFunctionMode;
+use crate::object::async_generator::{
+    AsyncGeneratorRequest, AsyncGeneratorStatus as Status, RequestKind,
 };
-use crate::{
-    Error, ExceptionKind, ObjectHandle, Realm, Value,
-    object::{
-        async_execution::SourceFunctionMode,
-        async_generator::{AsyncGeneratorRequest, AsyncGeneratorStatus as Status, RequestKind},
-        generator::GeneratorStart,
-    },
-};
+use crate::object::generator::GeneratorStart;
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::Span;
 
 impl Realm {

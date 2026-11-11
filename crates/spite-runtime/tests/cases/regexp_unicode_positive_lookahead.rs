@@ -3,17 +3,11 @@
 use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn single_character_q_classes_keep_original_source_names_and_independent_capture_ranges() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var state of ['','g','gy'])for(var atom of ['[\\q{a|😀}]','[[\\q{a|😀}]--[b]]','[[\\q{a|😀}]&&[a😀]]','[x\\q{a|😀}]']){
@@ -27,7 +21,7 @@ fn single_character_q_classes_keep_original_source_names_and_independent_capture
 
 #[test]
 fn single_character_q_lookahead_retains_original_line_fold_and_surrogate_context() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         var m=/(?=(?<run>^[\q{a|😀}]$))/dimv.exec('\nA\n');ok=ok&&m.index===1&&m.groups.run==='A'&&m.indices.groups.run[0]===1&&m.indices.groups.run[1]===2;
@@ -56,7 +50,7 @@ fn single_character_q_lookahead_string_consumers_copies_and_collection_keep_orig
 
 #[test]
 fn word_q_classes_keep_original_polarity_source_and_named_capture_ranges() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var state of ['','g','gy'])for(var row of [['\\b[\\q{a|b}]\\b','ab a!',3,'a'],['\\b[\\q{a|b}]\\B','ab!',0,'a'],['\\B[\\q{a|😀}]\\B','😀😀',0,'😀']]){
@@ -70,7 +64,7 @@ fn word_q_classes_keep_original_polarity_source_and_named_capture_ranges() {
 
 #[test]
 fn word_q_class_line_fold_property_and_backspace_context_remain_original() {
-    check(
+    assert_true(
         r#"
         var m=/(?=(?<run>^\b[\q{a|😀}]\b$))/dimv.exec('\nA\n'),ok=m.index===1&&m.groups.run==='A'&&m.indices.groups.run[0]===1&&m.indices.groups.run[1]===2;
         for(var text of ['S','ſ','K','K']){var m=/(?=(?<run>\b[\q{ſ|k}]\b))/div.exec('!'+text+'!');ok=ok&&m.index===1&&m.groups.run===text&&m.indices.groups.run[1]===2}
@@ -95,14 +89,14 @@ fn word_q_class_string_consumers_copies_and_collection_keep_original_extents() {
 
 #[test]
 fn word_q_class_search_preserves_complete_unicode_candidates_and_initial_pair_rewind() {
-    check(
+    assert_true(
         "var r=new RegExp('(?=(?<run>\\\\B[\\\\q{😀|a}]\\\\B))','dgyv');r.lastIndex=1;var m=r.exec('😀😀');m.index===0&&m.groups.run==='😀'&&m.indices.groups.run[0]===0&&m.indices.groups.run[1]===2&&r.lastIndex===0",
     );
 }
 
 #[test]
 fn named_operand_and_outside_captures_keep_independent_indices_and_greediness() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var mode of ['u','v'])for(var state of ['','g','gy'])for(var row of [['a+','aaa'],['a+?','a'],['a{2,3}','aaa'],['a{2,3}?','aa']]){
@@ -119,7 +113,7 @@ fn named_operand_and_outside_captures_keep_independent_indices_and_greediness() 
 
 #[test]
 fn astral_operand_captures_use_leading_pair_candidates_and_empty_last_index() {
-    check(
+    assert_true(
         r#"
         var ok=true,input='😀😀!';
         for(var mode of ['u','v'])for(var state of ['','g','gy'])for(var start=0;start<=input.length+1;start++){
@@ -134,7 +128,7 @@ fn astral_operand_captures_use_leading_pair_candidates_and_empty_last_index() {
 
 #[test]
 fn flags_and_positive_ascii_property_follow_original_context_and_fold_rules() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var mode of ['u','v']){
@@ -149,7 +143,7 @@ fn flags_and_positive_ascii_property_follow_original_context_and_fold_rules() {
 
 #[test]
 fn string_consumers_observe_zero_width_progress_and_consuming_operand_values() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var mode of ['u','v']){
@@ -177,7 +171,7 @@ fn cloning_and_collection_preserve_named_operand_capture_storage() {
 
 #[test]
 fn coercions_last_index_errors_and_original_validation_precede_execution() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var mode of ['u','v']){
@@ -209,7 +203,7 @@ fn opted_in_construction_abort_cannot_publish_partial_capture_state() {
 
 #[test]
 fn word_endpoints_select_lazy_captures_and_keep_original_outside_slots() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var mode of ['u','v'])for(var state of ['','g','gy']){
@@ -225,7 +219,7 @@ fn word_endpoints_select_lazy_captures_and_keep_original_outside_slots() {
 
 #[test]
 fn word_lookahead_flags_empty_operands_and_string_consumers_keep_original_context() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var mode of ['u','v']){
@@ -253,14 +247,14 @@ fn word_lookahead_copies_and_collection_retain_operand_extents() {
 #[test]
 fn word_lookahead_search_uses_complete_unicode_candidates_and_initial_pair_rewind() {
     // Independent specification expectation: V8 can search inside this pair.
-    check(
+    assert_true(
         "var ok=true;for(var mode of ['u','v']){var r=new RegExp('(?=(?<run>\\\\Bſ*?\\\\B))','dg'+mode);var m=r.exec('a😀ab!');ok=ok&&m.index===4&&m.groups.run===''&&m.indices.groups.run[0]===4&&r.lastIndex===4;r.lastIndex=2;var m=r.exec('a😀ab!');ok=ok&&m.index===4;r=new RegExp('(?=(?<run>\\\\ba+\\\\b))','dgy'+mode);r.lastIndex=1;ok=ok&&r.exec('😀a!')===null&&r.lastIndex===0}ok",
     );
 }
 
 #[test]
 fn bare_atoms_capture_one_character_and_preserve_original_source_and_names() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var mode of ['u','v'])for(var state of ['','g','gy'])for(var row of [['a','a'],['[a-z]','a'],['\\d','2'],['.','😀'],['\\u{1F600}','😀'],['\\uD83D\\uDE00','😀'],['\\uD800','\ud800']]){
@@ -274,7 +268,7 @@ fn bare_atoms_capture_one_character_and_preserve_original_source_and_names() {
 
 #[test]
 fn bare_atom_line_dot_property_and_lone_surrogate_contexts_are_preserved() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var mode of ['u','v']){
@@ -291,7 +285,7 @@ fn bare_atom_line_dot_property_and_lone_surrogate_contexts_are_preserved() {
 
 #[test]
 fn bare_atom_string_consumers_progress_over_complete_input_characters() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var mode of ['u','v']){
@@ -305,7 +299,7 @@ fn bare_atom_string_consumers_progress_over_complete_input_characters() {
 
 #[test]
 fn bare_word_atoms_keep_polarity_source_and_independent_named_ranges() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var mode of ['u','v'])for(var state of ['','g','gy'])for(var row of [['\\ba\\B','aaa'],['\\Ba\\B','aaaa'],['\\b[a-z]\\b','!a!']]){
@@ -318,7 +312,7 @@ fn bare_word_atoms_keep_polarity_source_and_independent_named_ranges() {
 
 #[test]
 fn bare_word_atom_line_fold_and_class_backspace_contexts_are_preserved() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var mode of ['u','v']){
@@ -350,14 +344,14 @@ fn bare_word_atom_string_consumers_copies_and_collection_keep_one_character() {
 #[test]
 fn bare_word_atom_dot_search_excludes_interior_surrogates_and_rewinds_initial_pairs() {
     // V8's ordinary search can return the low half here; the candidate is 4.
-    check(
+    assert_true(
         "var ok=true;for(var mode of ['u','v']){var r=new RegExp('(?=(?<run>\\\\B.\\\\b))','dg'+mode),m=r.exec('a😀ab!');ok=ok&&m.index===4&&m.groups.run==='b'&&m.indices.groups.run[0]===4&&m.indices.groups.run[1]===5&&r.lastIndex===4;r=new RegExp('(?=(?<run>\\\\B.\\\\b))','dgy'+mode);r.lastIndex=2;ok=ok&&r.exec('a😀ab!')===null&&r.lastIndex===0}ok",
     );
 }
 
 #[test]
 fn scalar_v_sets_keep_original_source_and_named_independent_capture_ranges() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var state of ['','g','gy'])for(var row of [['[[a-z]--[aeiou]]','!ab',2,'b'],['[[a-z]&&[ab]]','!ab',1,'a'],['[[a][b]]','!ab',1,'a'],['[[😀a]--[a]]','!😀a',1,'😀'],['[^[a-z]]','😀abc',0,'😀']]){
@@ -371,7 +365,7 @@ fn scalar_v_sets_keep_original_source_and_named_independent_capture_ranges() {
 
 #[test]
 fn scalar_v_set_lines_folds_properties_empty_sets_and_surrogates_keep_original_context() {
-    check(
+    assert_true(
         r#"
         var m=/(?=(?<run>^[[a-z]--[aeiou]]$))/dimv.exec('\nB\n'),ok=m.index===1&&m.groups.run==='B'&&m.indices.groups.run[1]===2;
         var m=/(?=(?<run>[[\p{ASCII}]--[x]]))/div.exec('ſK');ok=ok&&m.index===0&&m.groups.run==='ſ';
@@ -399,7 +393,7 @@ fn scalar_v_set_string_consumers_copies_and_collection_keep_original_operand_ext
 
 #[test]
 fn word_scalar_v_sets_keep_original_polarity_source_and_named_independent_ranges() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var state of ['','g','gy'])for(var row of [['\\b[[a-z]--[aeiou]]\\b','ab b!',3,'b'],['\\B[[a-z]--[aeiou]]\\b','ab!',1,'b'],['\\b[[a-z]--[aeiou]]\\B','bb!',0,'b']]){
@@ -413,7 +407,7 @@ fn word_scalar_v_sets_keep_original_polarity_source_and_named_independent_ranges
 
 #[test]
 fn word_scalar_v_set_lines_folds_properties_and_backspace_keep_original_context() {
-    check(
+    assert_true(
         r#"
         var m=/(?=(?<run>^\b[[a-z]--[aeiou]]\b$))/dimv.exec('\nB\n'),ok=m.index===1&&m.groups.run==='B'&&m.indices.groups.run[1]===2;
         for(var text of ['S','ſ','K','K']){var m=/(?=(?<run>\b[[\p{ASCII}]--[x]]\b))/div.exec('!'+text+'!');ok=ok&&m.index===1&&m.groups.run===text&&m.indices.groups.run[1]===2}
@@ -437,14 +431,14 @@ fn word_scalar_v_set_string_consumers_copies_and_collection_keep_original_extent
 
 #[test]
 fn word_scalar_v_set_search_preserves_complete_candidates_and_initial_pair_rewind() {
-    check(
+    assert_true(
         "var r=new RegExp('(?=(?<run>\\\\B[[😀a]--[a]]\\\\b))','dgyv');r.lastIndex=2;var m=r.exec('!😀a');m.index===1&&m.groups.run==='😀'&&m.indices.groups.run[0]===1&&m.indices.groups.run[1]===3&&r.lastIndex===1",
     );
 }
 
 #[test]
 fn character_result_classes_keep_original_source_and_named_independent_capture_ranges() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var state of ['','g','gy'])for(var row of [['[\\q{a|ab|}&&\\p{Any}]','!a',1,'a'],['[[\\q{ab}&&a]b]','!b',1,'b'],['[^\\q{ab}&&a]','😀',0,'😀'],['[[\\q{😀x|😀}&&\\p{Any}]a]','!😀a',1,'😀']]){
@@ -458,7 +452,7 @@ fn character_result_classes_keep_original_source_and_named_independent_capture_r
 
 #[test]
 fn character_result_classes_keep_original_line_fold_empty_set_and_surrogate_context() {
-    check(
+    assert_true(
         r#"
         var m=/(?=(?<run>^[\q{a|ab|}&&\p{Any}]$))/dimv.exec('\nA\n'),ok=m.index===1&&m.groups.run==='A'&&m.indices.groups.run[1]===2;
         var m=/(?=(?<run>[^\q{k|sK|}&&\p{ASCII}]))/div.exec('KKſ');ok=ok&&m.index===2&&m.groups.run==='ſ'&&m.indices.groups.run[1]===3;
@@ -485,7 +479,7 @@ fn character_result_class_consumers_copies_and_collection_keep_original_extents(
 
 #[test]
 fn word_character_result_classes_keep_original_polarity_source_and_named_independent_ranges() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var state of ['','g','gy'])for(var row of [['\\b[\\q{b|c|bc|}&&\\p{Any}]\\b','ab b!',3,'b'],['\\B[\\q{b|c|bc|}&&\\p{Any}]\\b','ab!',1,'b'],['\\b[\\q{b|c|bc|}&&\\p{Any}]\\B','bb!',0,'b']]){
@@ -499,7 +493,7 @@ fn word_character_result_classes_keep_original_polarity_source_and_named_indepen
 
 #[test]
 fn word_character_result_class_lines_folds_properties_and_backspace_keep_original_context() {
-    check(
+    assert_true(
         r#"
         var m=/(?=(?<run>^\b[\q{b|c|bc|}&&\p{Any}]\b$))/dimv.exec('\nB\n'),ok=m.index===1&&m.groups.run==='B'&&m.indices.groups.run[1]===2;
         for(var text of ['S','ſ']){var m=/(?=(?<run>\b[\q{S|sK|}&&\p{ASCII}]\b))/div.exec('!'+text+'!');ok=ok&&m.index===1&&m.groups.run===text&&m.indices.groups.run[1]===2}
@@ -523,14 +517,14 @@ fn word_character_result_class_string_consumers_copies_and_collection_keep_origi
 
 #[test]
 fn word_character_result_class_search_preserves_complete_candidates_and_initial_pair_rewind() {
-    check(
+    assert_true(
         "var r=new RegExp('(?=(?<run>\\\\B[\\\\q{😀|😀x|}&&\\\\p{Any}]\\\\b))','dgyv');r.lastIndex=2;var m=r.exec('!😀a');m.index===1&&m.groups.run==='😀'&&m.indices.groups.run[0]===1&&m.indices.groups.run[1]===3&&r.lastIndex===1",
     );
 }
 
 #[test]
 fn variable_q_classes_keep_longest_members_earliest_empty_choices_and_named_capture_ranges() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var state of ['','g','gy'])for(var row of [['[\\q{ab|a|}]','ab!',0,'ab'],['[\\q{|abc}]','!abc',0,''],['[\\q{a|aaa|aa}]','!aaa',1,'aaa'],['[\\q{😀a|😀|a|}]','😀a!',0,'😀a'],['[\\q{}]','',0,'']]){
@@ -544,7 +538,7 @@ fn variable_q_classes_keep_longest_members_earliest_empty_choices_and_named_capt
 
 #[test]
 fn variable_q_class_line_retries_folding_empty_members_and_surrogates_keep_original_context() {
-    check(
+    assert_true(
         r#"
         var m=/(?=(?<run>^[\q{ab|a|}]$))/dimv.exec('\nA\n'),ok=m.index===0&&m.groups.run===''&&m.indices.groups.run[1]===0;
         var m=/(?=(?<run>[\q{a\r\nb|a|}]$))/dmv.exec('a\r\nbc');ok=ok&&m.index===0&&m.groups.run==='a'&&m.indices.groups.run[1]===1;
@@ -574,7 +568,7 @@ fn variable_q_class_string_consumers_copies_and_collection_keep_selected_operand
 
 #[test]
 fn word_variable_q_classes_keep_shorter_endpoint_retries_empty_members_and_named_ranges() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var state of ['','g','gy'])for(var row of [['\\b[\\q{ab|a|}]\\b','ac!',0,''],['\\b[\\q{ab|a|}]\\B','ab!',0,'a'],['\\B[\\q{ab|a|}]\\b','xab!',1,'ab'],['\\B[\\q{ab|a|}]\\B','ab!',1,'']]){
@@ -588,7 +582,7 @@ fn word_variable_q_classes_keep_shorter_endpoint_retries_empty_members_and_named
 
 #[test]
 fn word_variable_q_classes_keep_line_fold_backspace_and_original_surrogate_context() {
-    check(
+    assert_true(
         r#"
         var m=/(?=(?<run>^\b[\q{ab|a|}]\b$))/dimv.exec('\nA\n'),ok=m.index===1&&m.groups.run==='A'&&m.indices.groups.run[1]===2;
         var m=/(?=(?<run>\b[\q{ſa|S|Kk|}]\B))/div.exec('SA!');ok=ok&&m.index===0&&m.groups.run==='S'&&m.indices.groups.run[1]===1;
@@ -615,7 +609,7 @@ fn word_variable_q_class_string_consumers_copies_and_collection_keep_selected_ex
 
 #[test]
 fn q_union_lookahead_keeps_priority_across_operands_and_named_independent_ranges() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var state of ['','g','gy'])for(var row of [['[\\q{ab|a}\\q{abc|}]','abc!',0,'abc'],['[\\q{ab|a}\\q{abc|}]','!abc',0,''],['[\\q{a|aa}\\q{aaa|a}]','!aaa',1,'aaa'],['[\\q{😀a}\\q{😀|a}]','!😀a',1,'😀a'],['[\\q{}\\q{}]','',0,'']]){
@@ -629,7 +623,7 @@ fn q_union_lookahead_keeps_priority_across_operands_and_named_independent_ranges
 
 #[test]
 fn q_union_lookahead_keeps_original_line_fold_escape_and_surrogate_context() {
-    check(
+    assert_true(
         r#"
         var m=/(?=(?<run>^[\q{a|aa}\q{aaa|a}]$))/dimv.exec('\nA\n'),ok=m.index===1&&m.groups.run==='A'&&m.indices.groups.run[1]===2;
         var m=/(?=(?<run>[\q{a\r\nb}\q{a|}]$))/dmv.exec('a\r\nbc');ok=ok&&m.index===0&&m.groups.run==='a';
@@ -657,7 +651,7 @@ fn q_union_lookahead_consumers_copies_and_collection_keep_selected_extents() {
 
 #[test]
 fn word_q_union_classes_keep_shorter_endpoint_retries_empty_members_and_named_ranges() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var state of ['','g','gy'])for(var row of [['\\b[\\q{ab|a}\\q{abc|}]\\b','ac!',0,''],['\\b[\\q{ab|a}\\q{abc|}]\\B','abc!',0,'ab'],['\\B[\\q{ab|a}\\q{abc|}]\\b','xabc!',1,'abc'],['\\B[\\q{ab|a}\\q{abc|}]\\B','ab!',1,'']]){
@@ -671,7 +665,7 @@ fn word_q_union_classes_keep_shorter_endpoint_retries_empty_members_and_named_ra
 
 #[test]
 fn word_q_union_classes_keep_line_fold_backspace_and_original_surrogate_context() {
-    check(
+    assert_true(
         r#"
         var m=/(?=(?<run>^\b[\q{ab|a}\q{abc|}]\b$))/dimv.exec('\nA\n'),ok=m.index===1&&m.groups.run==='A'&&m.indices.groups.run[1]===2;
         var m=/(?=(?<run>\b[\q{ſa|S}\q{Kk|}]\B))/div.exec('SA!');ok=ok&&m.index===0&&m.groups.run==='S'&&m.indices.groups.run[1]===1;
@@ -698,7 +692,7 @@ fn word_q_union_class_string_consumers_copies_and_collection_keep_selected_exten
 
 #[test]
 fn character_union_lookahead_keeps_literal_string_priority_and_named_independent_ranges() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var state of ['','g','gy'])for(var row of [['[x\\q{ab|}]','ab!',0,'ab'],['[x\\q{ab|}]','x!',0,'x'],['[x\\q{ab|}]','!ab',0,''],['[a\\q{ab|abc}]','!abc',1,'abc'],['[😀\\q{😀a|a|}]','😀a!',0,'😀a'],['[x\\q{}]','',0,'']]){
@@ -712,7 +706,7 @@ fn character_union_lookahead_keeps_literal_string_priority_and_named_independent
 
 #[test]
 fn character_union_lookahead_keeps_original_line_fold_escape_and_surrogate_context() {
-    check(
+    assert_true(
         r#"
         var m=/(?=(?<run>^[a\q{ab|abc}]$))/dimv.exec('\nA\n'),ok=m.index===1&&m.groups.run==='A'&&m.indices.groups.run[1]===2;
         var m=/(?=(?<run>[a\q{a\nb}]$))/dmv.exec('a\nbc');ok=ok&&m.index===0&&m.groups.run==='a';
@@ -740,7 +734,7 @@ fn character_union_lookahead_consumers_copies_and_collection_keep_selected_exten
 
 #[test]
 fn word_character_union_classes_keep_shorter_endpoint_retries_empty_members_and_named_ranges() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var state of ['','g','gy'])for(var row of [['\\b[a\\q{ab|abc|}]\\b','ac!',0,''],['\\b[a\\q{ab|abc|}]\\B','abc!',0,'ab'],['\\B[a\\q{ab|abc|}]\\b','xabc!',1,'abc'],['\\B[a\\q{ab|abc|}]\\B','ab!',1,'']]){
@@ -754,7 +748,7 @@ fn word_character_union_classes_keep_shorter_endpoint_retries_empty_members_and_
 
 #[test]
 fn word_character_union_classes_keep_line_fold_backspace_and_original_surrogate_context() {
-    check(
+    assert_true(
         r#"
         var m=/(?=(?<run>^\b[a\q{ab|abc|}]\b$))/dimv.exec('\nA\n'),ok=m.index===1&&m.groups.run==='A'&&m.indices.groups.run[1]===2;
         var m=/(?=(?<run>\b[ſ\q{Sa|Kk|}]\B))/div.exec('SA!');ok=ok&&m.index===0&&m.groups.run==='S'&&m.indices.groups.run[1]===1;
@@ -781,7 +775,7 @@ fn word_character_union_class_string_consumers_copies_and_collection_keep_select
 
 #[test]
 fn scalar_union_lookahead_keeps_scalar_string_priority_and_named_independent_ranges() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var state of ['','g','gy'])for(var row of [['[\\d\\q{ab|}]','ab!',0,'ab'],['[\\d\\q{ab|}]','1!',0,'1'],['[\\d\\q{ab|}]','!ab',0,''],['[a-z\\q{ab|abc}]','!abc',1,'abc'],['[\\p{Any}\\q{😀a|a|}]','😀a!',0,'😀a'],['[\\d\\q{}]','',0,'']]){
@@ -795,7 +789,7 @@ fn scalar_union_lookahead_keeps_scalar_string_priority_and_named_independent_ran
 
 #[test]
 fn scalar_union_lookahead_keeps_original_line_fold_escape_and_surrogate_context() {
-    check(
+    assert_true(
         r#"
         var m=/(?=(?<run>^[a-z\q{ab|abc}]$))/dimv.exec('\nA\n'),ok=m.index===1&&m.groups.run==='A'&&m.indices.groups.run[1]===2;
         var m=/(?=(?<run>[\w\q{a\nb}]$))/dmv.exec('a\nbc');ok=ok&&m.index===0&&m.groups.run==='a';
@@ -804,10 +798,10 @@ fn scalar_union_lookahead_keeps_original_line_fold_escape_and_surrogate_context(
         var m=/(?=(?<run>[a-z\q{a\|b|a|}]))/dv.exec('a|b');ok&&m.groups.run==='a|b'
     "#,
     );
-    check(
+    assert_true(
         "var m=new RegExp('(?=(?<run>[\\\\p{ASCII}\\\\q{😀a|}]))','div').exec('ſK');m.index===0&&m.groups.run==='ſ'&&m.indices.groups.run[1]===1",
     );
-    check(
+    assert_true(
         "var m=new RegExp('(?=(?<run>[\\\\P{ASCII}\\\\q{ab}]))','div').exec('ſK😀');m.index===2&&m.groups.run==='😀'&&m.indices.groups.run[1]===4",
     );
 }
@@ -829,7 +823,7 @@ fn scalar_union_lookahead_consumers_copies_and_collection_keep_selected_extents(
 
 #[test]
 fn word_scalar_union_classes_keep_shorter_endpoint_retries_empty_members_and_named_ranges() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var state of ['','g','gy'])for(var row of [['\\b[a-z\\q{ab|abc|}]\\b','ac!',0,''],['\\b[a-z\\q{ab|abc|}]\\B','abc!',0,'ab'],['\\B[a-z\\q{ab|abc|}]\\b','xabc!',1,'abc'],['\\B[a-z\\q{ab|abc|}]\\B','ab!',1,'']]){
@@ -843,7 +837,7 @@ fn word_scalar_union_classes_keep_shorter_endpoint_retries_empty_members_and_nam
 
 #[test]
 fn word_scalar_union_classes_keep_line_fold_backspace_and_original_surrogate_context() {
-    check(
+    assert_true(
         r#"
         var m=/(?=(?<run>^\b[a-z\q{ab|abc|}]\b$))/dimv.exec('\nA\n'),ok=m.index===1&&m.groups.run==='A'&&m.indices.groups.run[1]===2;
         var m=/(?=(?<run>\b[\w\q{Sa|Kk|}]\B))/div.exec('SA!');ok=ok&&m.index===0&&m.groups.run==='S'&&m.indices.groups.run[1]===1;

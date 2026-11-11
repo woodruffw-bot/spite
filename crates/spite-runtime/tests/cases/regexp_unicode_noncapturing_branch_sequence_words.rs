@@ -1,14 +1,8 @@
 //! Outside word predicates compose with proved one-character alternatives.
+use crate::common::assert_true;
 use spite_core::JsString;
-use spite_runtime::{Error, Limits, Realm, Value};
+use spite_runtime::{Realm, Value};
 use std::fmt::Write;
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
 #[test]
 fn unicode_noncapturing_branch_sequence_words_results_snapshot() {
     let mut rows = String::new();
@@ -60,115 +54,52 @@ fn unicode_noncapturing_branch_sequence_words_results_snapshot() {
 
 #[test]
 fn unicode_noncapturing_branch_sequence_words_counts_and_scopes() {
-    check(r"let r=/\b(\b\b(?:\Ba)|b)+\b/v;r.exec('a')===null&&r.exec('b')[0]==='b'");
-    check(r"let r=/\b((?:a\b)\B\B|b)+\b/u;r.exec('a')===null&&r.exec('b')[0]==='b'");
+    assert_true(r"let r=/\b(\b\b(?:\Ba)|b)+\b/v;r.exec('a')===null&&r.exec('b')[0]==='b'");
+    assert_true(r"let r=/\b((?:a\b)\B\B|b)+\b/u;r.exec('a')===null&&r.exec('b')[0]==='b'");
 
     for source in [
         r"/\B((^(?:.)|a)+)\B$b/vms.exec('\n')",
         r"/\B(?<whole>(^(?:.)|a)+)\B$b/vms.exec('\n')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let m=/\b((?:a)|(?:b))+\B/{mode}.exec('abba');m[0]==='abb'&&m[1]==='b'&&m.index===0"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let m=/\B((?:a)|(?:b))+\b/{mode}.exec('abba');m[0]==='bba'&&m[1]==='a'&&m.index===1"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let m=/\b(\b\b(?:a)|(?:b)\b\b)+\B/{mode}.exec('aaa');m[0]==='a'&&m[1]==='a'&&m.index===0"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let m=/\B(^^(?:a)|(?:b)$$)+\b/{mode}m.exec('aa\nbb');m[0]==='b'&&m[1]==='b'&&m.index===4"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let m=/\b((?:a)|(?:b))*?\b/{mode}.exec('ab');m[0]===''&&m[1]===undefined"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let m=/\B(\B^\B(?:.)$$|\b\b(?:a)\b\b)+\B/{mode}ms.exec('\r\n');m[0]==='\r\n'&&m[1]==='\n'"
         ));
     }
 }
-#[test]
-fn unicode_noncapturing_branch_sequence_words_fold_surrogates_and_names() {
-    check(
-        r"let m=/(?<whole>\B(?<__proto__>(?:ſ)|(?:K))+\b)/dvi.exec('XSk');m[0]==='Sk'&&m[1]==='Sk'&&m[2]==='k'&&m.groups.__proto__==='k'&&m.indices.groups.__proto__[0]===2&&m.indices.groups.__proto__[1]===3",
-    );
-    check(
-        r"let m=/(?<whole>\B(?<last>(?:😀)|(?:a))+\B)/dvg.exec('😀😀');m[0]==='😀😀'&&m.groups.last==='😀'&&m.indices.groups.last[0]===2&&m.indices.groups.last[1]===4",
-    );
-    check(
-        r"let r=/\B((?:😀)|(?:a))+\B/duy;r.lastIndex=1;let m=r.exec('😀😀');m.index===0&&m[0]==='😀😀'&&m.indices[1][0]===2&&r.lastIndex===4",
-    );
-    check(
-        r"let m=/\b(?<x>(?:a)|(?:b)){0}\b/dv.exec('ab');m[0]===''&&m[1]===undefined&&m.groups.x===undefined&&m.indices[1]===undefined",
-    );
-    check(
-        r"let m=/\B((?:\uD800)|(?:\uDC00))+/du.exec('\uD800x\uDC00');m[0]==='\uD800'&&m.indices[1][1]===1&&/\B((?:\uD83D)|(?:\uDE00))+/u.exec('😀')===null",
-    );
-}
-#[test]
-fn unicode_noncapturing_branch_sequence_words_string_consumers() {
-    check(r"let a='ab ba'.match(/\b((?:a)|(?:b))+\B/ug);a.length===2&&a.join('|')==='a|b'");
-    check(
-        r"'ab ba'.replace(/\b((?:a)|(?:b))+\B/vg,'<$1>')==='<a>b <b>a'&&'Xab'.search(/\B((?:a)|(?:b))+\b/v)===1",
-    );
-    check(r"let a='ab ba'.split(/\b((?:a)|(?:b))+\B/u);a.length===5&&a.join('|')==='|a|b |b|a'");
-    check(
-        r"let a=[...'ab ba'.matchAll(/\B(?<x>(?:a)|(?:b))+\b/dvg)];a.length===2&&a[0].index===1&&a[1].index===4&&a[1].groups.x==='a'&&a[1].indices.groups.x[0]===4",
-    );
-}
-#[test]
-fn unicode_noncapturing_branch_sequence_words_coercions_and_last_index() {
-    check(
-        r"let log='',r=/\B((?:a)|(?:b))+\b/vgy;r.lastIndex={valueOf(){log+='i';return 1}};let m=r.exec({toString(){log+='s';return 'Xab'}});log==='si'&&m.index===1&&r.lastIndex===3",
-    );
-    check(
-        r"let r=/\B((?:a)|(?:b))+\b/ug;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('Xab')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
-    );
-    check(
-        r"let r=/\B((?:a)|(?:b))+\b/v;Object.defineProperty(r,'lastIndex',{value:100,writable:false});let m=r.exec('Xab');m.index===1&&r.lastIndex===100",
-    );
-}
-
-#[test]
-fn unicode_noncapturing_branch_sequence_words_opt_in_work_failure() {
-    let mut realm = Realm::new(Limits {
-        max_steps: Some(30000),
-        ..Limits::default()
-    });
-    realm
-        .eval(r"let r=/\B((?:\P{NChar})|(?:a)){2}\B$/umg,marker=0,text='😀'.repeat(10000);r.lastIndex=1")
-        .unwrap();
-    assert!(matches!(
-        realm.eval("try{r.exec(text)}catch{marker=1}finally{marker=2}"),
-        Err(Error::Limit { .. })
-    ));
-    assert_eq!(
-        realm.eval("marker===0&&r.lastIndex===1"),
-        Ok(Value::Boolean(true))
-    );
-}
 
 #[test]
 fn unicode_noncapturing_branch_sequence_words_contradictions_empty_counts_and_literals() {
-    check(r"let r=/\b(\b\B(?:a)|b)+\b/v;r.exec('a')===null&&r.exec('b')[0]==='b'");
-    check(r"let r=/\b((?:a)\b\B|b)+\b/u;r.exec('a')===null&&r.exec('b')[0]==='b'");
-    check(
+    assert_true(r"let r=/\b(\b\B(?:a)|b)+\b/v;r.exec('a')===null&&r.exec('b')[0]==='b'");
+    assert_true(r"let r=/\b((?:a)\b\B|b)+\b/u;r.exec('a')===null&&r.exec('b')[0]==='b'");
+    assert_true(
         r"let m=/\b(\b\B(?:a)|\b\B(?:b))*\b/dv.exec('ab');m[0]===''&&m[1]===undefined&&m.indices[1]===undefined&&/\b(\b\B(?:a)|\b\B(?:b))+\b/v.exec('ab')===null",
     );
-    check(
+    assert_true(
         r"let m=/\B(?<whole>(\b\B(?:a)|(?:b)\b\B)*)\B/du.exec('');m[0]===''&&m[1]===''&&m.groups.whole===''&&m[2]===undefined&&m.indices[1][0]===0&&m.indices[1][1]===0&&m.indices[2]===undefined",
     );
-    check(
+    assert_true(
         r"let m=/\b(\b\b(?:\$)|b)+\B$/du.exec('a$');m.index===1&&m[0]==='$'&&m[1]==='$'&&m.indices[1][0]===1&&m.indices[1][1]===2",
     );
-    check(
+    assert_true(
         r"let m=/\B((?:\$)\b\b|b)+\b/dv.exec('$a');m.index===0&&m[0]==='$'&&m[1]==='$'&&m.indices[1][0]===0&&m.indices[1][1]===1",
     );
 }

@@ -2,17 +2,11 @@
 
 use spite_runtime::{Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn negative_predecessor_preserves_named_outside_and_undefined_operand_properties() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var mode of ['u','v'])for(var state of ['','g','gy'])for(var atom of ['a','[a-z]','\\d','.','😀','\\uD800']){
@@ -27,10 +21,10 @@ fn negative_predecessor_preserves_named_outside_and_undefined_operand_properties
 #[test]
 fn negative_predecessor_search_sticky_end_and_pair_candidates_remain_exact() {
     // Independent expectation: search visits complete Unicode candidates.
-    check(
+    assert_true(
         "var ok=true,input='😀😀a';for(var mode of ['u','v'])for(var state of ['','g','gy'])for(var start=0;start<=input.length+1;start++){var r=new RegExp('(?<!(?<run>😀))','d'+state+mode);r.lastIndex=start;var m=r.exec(input),active=r.global||r.sticky,point=active?start:0;if(point===1||point===3)point--;if(point>input.length||r.sticky&&(point===2||point===4)){ok=ok&&m===null&&r.lastIndex===0;continue}if(point===2||point===4)point=5;ok=ok&&m.index===point&&m.groups.run===undefined&&m.indices.groups.run===undefined&&r.lastIndex===(active?point:start)}ok",
     );
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var mode of ['u','v']){
@@ -43,7 +37,7 @@ fn negative_predecessor_search_sticky_end_and_pair_candidates_remain_exact() {
 
 #[test]
 fn negative_predecessor_line_dot_property_and_lone_surrogate_context_stay_original() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var mode of ['u','v']){
@@ -77,7 +71,7 @@ fn negative_predecessor_string_consumers_copies_and_collection_keep_undefined_sl
 
 #[test]
 fn negative_word_predecessor_preserves_named_undefined_slots_and_boundary_polarity() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var mode of ['u','v'])for(var state of ['','g','gy'])for(var row of [['\\ba\\b','aa'],['\\ba\\B','a!'],['\\Ba\\B','a!'],['\\Ba\\b','aa']]){
@@ -91,7 +85,7 @@ fn negative_word_predecessor_preserves_named_undefined_slots_and_boundary_polari
 
 #[test]
 fn negative_word_predecessor_line_fold_property_and_backspace_context_stay_original() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var mode of ['u','v']){
@@ -123,14 +117,14 @@ fn negative_word_predecessor_string_consumers_copies_and_collection_keep_undefin
 #[test]
 fn negative_word_predecessor_search_retains_complete_characters_and_initial_pair_rewind() {
     // Independent expectations exclude native interior-pair search candidates.
-    check(
+    assert_true(
         "var ok=true;for(var mode of ['u','v']){var r=new RegExp('(?<!(?<run>\\\\B😀\\\\B))','dg'+mode);r.lastIndex=2;ok=ok&&r.exec('😀😀')===null&&r.lastIndex===0;r.lastIndex=1;var m=r.exec('😀😀');ok=ok&&m.index===0&&m.groups.run===undefined&&m.indices.groups.run===undefined&&r.lastIndex===0;r=new RegExp('(?<!(?<run>\\\\B.\\\\b))','dgy'+mode);r.lastIndex=5;ok=ok&&r.exec('a😀ab!')===null&&r.lastIndex===0;r.lastIndex=2;var m=r.exec('a😀ab!');ok=ok&&m.index===1&&m.groups.run===undefined&&r.lastIndex===1}ok",
     );
 }
 
 #[test]
 fn negative_q_class_predecessors_keep_original_source_and_named_undefined_slots() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var state of ['','g','gy'])for(var atom of ['[\\q{a|b}]','[[\\q{a|b}]--[x]]','[[\\q{a|b}]&&[ab]]','[x\\q{a|b}]']){
@@ -144,7 +138,7 @@ fn negative_q_class_predecessors_keep_original_source_and_named_undefined_slots(
 
 #[test]
 fn negative_q_class_predecessors_keep_original_line_fold_property_and_surrogate_context() {
-    check(
+    assert_true(
         r#"
         var r=/(?<!(?<run>^[\q{a|😀}]$))/dimyv;r.lastIndex=2;var ok=r.exec('\nA\n')===null&&r.lastIndex===0;r.lastIndex=2;var m=r.exec('!A!');ok=ok&&m.index===2&&m.groups.run===undefined;
         for(var text of ['S','ſ','K','K']){var r=/(?<!(?<run>[\q{ſ|k}]))/diyv;r.lastIndex=1;ok=ok&&r.exec(text)===null&&r.lastIndex===0}
@@ -170,7 +164,7 @@ fn negative_q_class_predecessor_string_consumers_copies_and_collection_keep_unde
 
 #[test]
 fn negative_word_q_class_predecessors_keep_original_polarity_source_and_undefined_slots() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var state of ['','g','gy'])for(var row of [['\\b[\\q{a|b}]\\b','aa'],['\\b[\\q{a|b}]\\B','a!'],['\\B[\\q{a|b}]\\B','a!'],['\\B[\\q{a|b}]\\b','aa']]){
@@ -184,7 +178,7 @@ fn negative_word_q_class_predecessors_keep_original_polarity_source_and_undefine
 
 #[test]
 fn negative_word_q_class_predecessor_line_fold_property_and_backspace_context_stay_original() {
-    check(
+    assert_true(
         r#"
         var r=/(?<!(?<run>^\b[\q{a|😀}]\b$))/dimyv;r.lastIndex=2;var ok=r.exec('\nA\n')===null&&r.lastIndex===0;r.lastIndex=2;var m=r.exec('!A!');ok=ok&&m.index===2&&m.groups.run===undefined;
         for(var text of ['S','ſ','K','K']){var r=/(?<!(?<run>\b[\q{ſ|k}]\b))/diyv;r.lastIndex=2;ok=ok&&r.exec('!'+text+'!')===null&&r.lastIndex===0}
@@ -209,14 +203,14 @@ fn negative_word_q_class_predecessor_string_consumers_copies_and_collection_keep
 
 #[test]
 fn negative_word_q_class_predecessor_search_keeps_complete_candidates_and_initial_pair_rewind() {
-    check(
+    assert_true(
         "var r=new RegExp('(?<!(?<run>\\\\B[\\\\q{😀|a}]\\\\B))','dgv');r.lastIndex=2;var ok=r.exec('😀😀')===null&&r.lastIndex===0;r=new RegExp('(?<!(?<run>\\\\B[\\\\q{😀|a}]\\\\B))','dgyv');r.lastIndex=1;var m=r.exec('😀😀');ok&&m.index===0&&m.groups.run===undefined&&m.indices.groups.run===undefined&&r.lastIndex===0",
     );
 }
 
 #[test]
 fn negative_scalar_v_set_predecessors_keep_original_source_and_named_undefined_slots() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var state of ['','g','gy'])for(var atom of ['[[a-z]&&[ab]]','[[[a-z]&&[ab]]--[x]]','[[[a-z]&&[ab]]&&[ab]]','[[a][b]]']){
@@ -230,7 +224,7 @@ fn negative_scalar_v_set_predecessors_keep_original_source_and_named_undefined_s
 
 #[test]
 fn negative_scalar_v_set_predecessors_keep_original_line_fold_property_and_surrogate_context() {
-    check(
+    assert_true(
         r#"
         var r=/(?<!(?<run>^[[a😀]--[x]]$))/dimyv;r.lastIndex=2;var ok=r.exec('\nA\n')===null&&r.lastIndex===0;r.lastIndex=2;var m=r.exec('!A!');ok=ok&&m.index===2&&m.groups.run===undefined;
         for(var text of ['S','ſ','K','K']){var r=/(?<!(?<run>[[ſk]--[x]]))/diyv;r.lastIndex=1;ok=ok&&r.exec(text)===null&&r.lastIndex===0}
@@ -256,7 +250,7 @@ fn negative_scalar_v_set_predecessor_string_consumers_copies_and_collection_keep
 
 #[test]
 fn negative_word_scalar_v_set_predecessors_keep_original_polarity_source_and_undefined_slots() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var state of ['','g','gy'])for(var row of [['\\b[[a-z]&&[ab]]\\b','aa'],['\\b[[a-z]&&[ab]]\\B','a!'],['\\B[[a-z]&&[ab]]\\B','a!'],['\\B[[a-z]&&[ab]]\\b','aa']]){
@@ -270,7 +264,7 @@ fn negative_word_scalar_v_set_predecessors_keep_original_polarity_source_and_und
 
 #[test]
 fn negative_word_scalar_v_set_predecessor_line_fold_property_and_backspace_context_stay_original() {
-    check(
+    assert_true(
         r#"
         var r=/(?<!(?<run>^\b[[a😀]--[x]]\b$))/dimyv;r.lastIndex=2;var ok=r.exec('\nA\n')===null&&r.lastIndex===0;r.lastIndex=2;var m=r.exec('!A!');ok=ok&&m.index===2&&m.groups.run===undefined;
         for(var text of ['S','ſ','K','K']){var r=/(?<!(?<run>\b[[ſk]--[x]]\b))/diyv;r.lastIndex=2;ok=ok&&r.exec('!'+text+'!')===null&&r.lastIndex===0}
@@ -297,14 +291,14 @@ fn negative_word_scalar_v_set_predecessor_string_consumers_copies_and_collection
 #[test]
 fn negative_word_scalar_v_set_predecessor_search_keeps_complete_candidates_and_initial_pair_rewind()
 {
-    check(
+    assert_true(
         "var r=new RegExp('(?<!(?<run>\\\\B[[😀a]--[x]]\\\\B))','dgv');r.lastIndex=2;var ok=r.exec('😀😀')===null&&r.lastIndex===0;r=new RegExp('(?<!(?<run>\\\\B[[😀a]--[x]]\\\\B))','dgyv');r.lastIndex=1;var m=r.exec('😀😀');ok&&m.index===0&&m.groups.run===undefined&&m.indices.groups.run===undefined&&r.lastIndex===0",
     );
 }
 
 #[test]
 fn negative_character_result_predecessors_keep_original_source_and_named_undefined_slots() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var state of ['','g','gy'])for(var atom of ['[\\q{a|b|ab|}&&\\p{Any}]','[[\\q{a|b|ab|}&&\\p{Any}]--[x]]','[[\\q{a|b|ab|}&&\\p{Any}]&&[ab]]','[[\\q{ab}&&a]ab]']){
@@ -318,7 +312,7 @@ fn negative_character_result_predecessors_keep_original_source_and_named_undefin
 
 #[test]
 fn negative_character_result_predecessors_keep_original_line_fold_property_and_surrogate_context() {
-    check(
+    assert_true(
         r#"
         var r=/(?<!(?<run>^[[\q{😀x|😀}&&\p{Any}]a]$))/dimyv;r.lastIndex=2;var ok=r.exec('\nA\n')===null&&r.lastIndex===0;r.lastIndex=2;var m=r.exec('!A!');ok=ok&&m.index===2&&m.groups.run===undefined;
         for(var text of ['S','ſ','K','K']){var r=/(?<!(?<run>[\q{ſ|k|sk|}&&\p{Any}]))/diyv;r.lastIndex=1;ok=ok&&r.exec(text)===null&&r.lastIndex===0}
@@ -345,7 +339,7 @@ fn negative_character_result_predecessor_string_consumers_copies_and_collection_
 
 #[test]
 fn negative_word_character_result_predecessors_keep_original_polarity_source_and_undefined_slots() {
-    check(
+    assert_true(
         r#"
         var ok=true;
         for(var state of ['','g','gy'])for(var row of [['\\b[\\q{a|b|ab|}&&\\p{Any}]\\b','aa'],['\\b[\\q{a|b|ab|}&&\\p{Any}]\\B','a!'],['\\B[\\q{a|b|ab|}&&\\p{Any}]\\B','a!'],['\\B[\\q{a|b|ab|}&&\\p{Any}]\\b','aa']]){
@@ -360,7 +354,7 @@ fn negative_word_character_result_predecessors_keep_original_polarity_source_and
 #[test]
 fn negative_word_character_result_predecessor_line_fold_property_and_backspace_context_stay_original()
  {
-    check(
+    assert_true(
         r#"
         var r=/(?<!(?<run>^\b[[\q{😀x|😀}&&\p{Any}]a]\b$))/dimyv;r.lastIndex=2;var ok=r.exec('\nA\n')===null&&r.lastIndex===0;r.lastIndex=2;var m=r.exec('!A!');ok=ok&&m.index===2&&m.groups.run===undefined;
         for(var text of ['S','ſ','K','K']){var r=/(?<!(?<run>\b[\q{ſ|k|sk|}&&\p{Any}]\b))/diyv;r.lastIndex=2;ok=ok&&r.exec('!'+text+'!')===null&&r.lastIndex===0}
@@ -387,7 +381,7 @@ fn negative_word_character_result_predecessor_string_consumers_copies_and_collec
 #[test]
 fn negative_word_character_result_predecessor_search_keeps_complete_candidates_and_initial_pair_rewind()
  {
-    check(
+    assert_true(
         "var r=new RegExp('(?<!(?<run>\\\\B[\\\\q{😀|a|😀x|}&&\\\\p{Any}]\\\\B))','dgv');r.lastIndex=2;var ok=r.exec('😀😀')===null&&r.lastIndex===0;r=new RegExp('(?<!(?<run>\\\\B[\\\\q{😀|a|😀x|}&&\\\\p{Any}]\\\\B))','dgyv');r.lastIndex=1;var m=r.exec('😀😀');ok&&m.index===0&&m.groups.run===undefined&&m.indices.groups.run===undefined&&r.lastIndex===0",
     );
 }

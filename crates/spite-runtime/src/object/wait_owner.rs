@@ -5,10 +5,8 @@
 
 use super::{Budget, Error, WaitTimeout};
 use std::collections::VecDeque;
-use std::sync::{
-    Condvar, Mutex,
-    atomic::{AtomicBool, Ordering},
-};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Condvar, Mutex};
 use std::time::{Duration, Instant};
 
 #[derive(Debug, Default)]

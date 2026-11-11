@@ -1,7 +1,8 @@
 //! Native algorithms are kept out of the recursive script dispatch frame.
 
 use super::{Builtin, FunctionText, number};
-use crate::{Error, ExceptionKind, Realm, Value, object::CallbackKind};
+use crate::object::CallbackKind;
+use crate::{Error, ExceptionKind, Realm, Value};
 use spite_core::{JsString, Span, WellKnownSymbol};
 
 impl Realm {

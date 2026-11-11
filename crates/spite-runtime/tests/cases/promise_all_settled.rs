@@ -3,13 +3,7 @@
 use crate::common::UnavailableHostRealm;
 use spite_runtime::{Error, PromiseJobOutcome, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 fn drain(realm: &mut Realm) {
     loop {
@@ -37,7 +31,7 @@ fn mixed_snapshots_keep_input_order_descriptors_and_original_values() {
 
 #[test]
 fn fulfill_and_reject_callbacks_share_one_guard_and_preserve_custom_resolve_returns() {
-    check(
+    assert_true(
         r#"
         let pairs=[],resolved=0,output,result={},sentinel={};
         function C(executor){
@@ -109,10 +103,10 @@ fn snapshot_objects_retain_values_and_symbol_reasons_until_results_are_released(
 
 #[test]
 fn iteration_failures_reject_without_snapshots_and_host_failures_bypass_cleanup() {
-    check(
+    assert_true(
         "let original={},other={},closed=0,caught;function C(executor){executor(()=>{throw 1},e=>{caught=e})}C.resolve=()=>{throw original};Promise.allSettled.call(C,{[Symbol.iterator](){return{next(){return{value:1,done:false}},return(){closed++;throw other}}}});caught===original&&closed===1",
     );
-    check(
+    assert_true(
         "let original={},closed=0,caught;function C(executor){executor(()=>{throw 1},e=>{caught=e})}C.resolve=v=>v;Promise.allSettled.call(C,{[Symbol.iterator](){return{next(){throw original},return(){closed++;return{}}}}});caught===original&&closed===0",
     );
     let mut realm = Realm::with_unavailable_host();

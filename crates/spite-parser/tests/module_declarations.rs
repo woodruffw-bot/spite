@@ -1,7 +1,8 @@
 //! Exported declarations share ordinary Module declarations and scope rules (16.2.3).
 
 use spite_core::{DiagnosticKind, JsString};
-use spite_parser::{ast::ExportKind, parse_module, parse_script};
+use spite_parser::ast::ExportKind;
+use spite_parser::{parse_module, parse_script};
 
 #[test]
 fn declaration_exports_retain_all_destructured_names_and_declaration_ranges() {

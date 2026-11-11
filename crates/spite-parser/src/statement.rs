@@ -1,6 +1,6 @@
 //! Structured statement bodies use distinct native parser frames.
 
-use super::*;
+use super::{CatchClause, Diagnostic, Kind, Parser, Span, Statement, StatementKind, SwitchClause};
 
 impl Parser {
     #[inline(never)]

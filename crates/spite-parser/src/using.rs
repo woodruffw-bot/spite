@@ -1,6 +1,9 @@
 //! Contextual synchronous resource declarations (14.3.1, 14.7.4–5, 16.1.1).
 
-use super::*;
+use super::{
+    BindingElement, BindingPatternKind, Diagnostic, Kind, Parser, Span, Statement, StatementKind,
+    early,
+};
 
 impl Parser {
     pub(super) fn at_using_declaration(&mut self, for_header: bool) -> bool {

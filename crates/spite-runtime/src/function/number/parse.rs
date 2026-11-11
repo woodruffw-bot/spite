@@ -1,6 +1,7 @@
 //! Numeric prefix parsing (19.2.4–5) and shared Number aliases (21.1.2.12–13).
 
-use crate::{Error, Realm, Value, value::to_uint32};
+use crate::value::to_uint32;
+use crate::{Error, Realm, Value};
 use spite_bigint::BigInt;
 use spite_core::{JsString, Span, is_line_terminator, is_whitespace, parse_radix_integer};
 

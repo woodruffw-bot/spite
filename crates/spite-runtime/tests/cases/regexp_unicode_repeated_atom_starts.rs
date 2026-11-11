@@ -3,13 +3,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn unicode_repeated_atom_start_former_whole_program_snapshot() {
@@ -69,25 +63,25 @@ fn unicode_repeated_atom_start_results_snapshot() {
 #[test]
 fn unicode_repeated_atom_starts_counts_folding_and_line_context() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"/^a+/{mode}.exec('Ba')===null&&/^a+/m{mode}.exec('B\naaaa')[0]==='aaaa'&&/^a+?/m{mode}.exec('B\naaaa')[0]==='a'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"/^a{{2,3}}/m{mode}.exec('aaB\naaaa')[0]==='aa'&&/^a{{2,3}}?/m{mode}.exec('B\naaaa')[0]==='aa'&&/^a*?/m{mode}.exec('B')[0]===''"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"['\n','\r','\u2028','\u2029'].every(t=>{{let m=/^a+/m{mode}.exec('B'+t+'aaa');return m.index===2&&m[0]==='aaa'}})"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^a*/m{mode}y;r.lastIndex=2;let m=r.exec('B\r\nA');m.index===2&&m[0]===''&&r.lastIndex===2"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"/^\w+/im{mode}.exec('B\nſK')[0]==='B'&&/^\w+/i{mode}.exec('ſK')[0]==='ſK'&&/^\W+/{mode}.exec('ſK')[0]==='ſK'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"/^\p{{Join_C}}+/m{mode}.exec('A\n\u200c\u200d')[0]==='\u200c\u200d'&&/^\p{{NChar}}{{2}}/m{mode}.exec('A\n\uFFFF\u{{10FFFF}}')[0]==='\uFFFF\u{{10FFFF}}'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"/^.+/m{mode}.exec('😀\nA')[0]==='😀'&&/^.+/ms{mode}.exec('😀\nA')[0]==='😀\nA'&&/^.+?/ms{mode}.exec('😀\nA')[0]==='😀'"
         ));
     }
@@ -96,19 +90,19 @@ fn unicode_repeated_atom_starts_counts_folding_and_line_context() {
 #[test]
 fn unicode_repeated_atom_starts_complete_captures_and_initial_pairs() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^(?<__proto__>(😀+))/dm{mode}y;r.lastIndex=3;let m=r.exec('A\n😀😀');m.index===2&&m[0]==='😀😀'&&m[2]==='😀😀'&&m.indices[2][0]===2&&m.indices[2][1]===6&&m.indices.groups.__proto__===m.indices[1]&&r.lastIndex===6"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^(?<x>a*?)/d{mode}y;r.lastIndex=1;let m=r.exec('😀');m.index===0&&m.groups.x===''&&m.indices.groups.x[0]===0&&m.indices.groups.x[1]===0&&r.lastIndex===0"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^a+/m{mode}y;r.lastIndex=3;r.exec('B\naa')===null&&r.lastIndex===0"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^\uD800+/m{mode}g,m=r.exec('B\n\uD800\uD800');m.index===2&&m[0]==='\uD800\uD800'&&r.lastIndex===4&&!/^\uD800+/m{mode}.test('😀')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^a{{3}}/m{mode}g,m=r.exec('aaB\naaa');m.index===4&&m[0]==='aaa'&&r.lastIndex===7"
         ));
     }
@@ -117,16 +111,16 @@ fn unicode_repeated_atom_starts_complete_captures_and_initial_pairs() {
 #[test]
 fn unicode_repeated_atom_start_consumers_and_empty_advance() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let a=[...'B\n😀\n'.matchAll(/^(?<x>a*?)/dm{mode}g)];a.map(m=>m.index).join(',')==='0,2,5'&&a.every(m=>m[0]===''&&m.groups.x===''&&m.indices.groups.x===m.indices[1])"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'AA\naa'.replace(/^(?<x>a+)/im{mode}g,'<$1:$<x>>')==='<AA:AA>\n<aa:aa>'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'B\naaa\nBB\naa'.split(/^(a+)/m{mode}).join('|')==='B\n|aaa|\nBB\n|aa|'&&'B\naaa'.search(/^a+/m{mode})===2&&'aa\naaaa'.match(/^a+/gm{mode}).join(',')==='aa,aaaa'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let t='',a='A\n😀\nB'.replace(/^(?<x>.+?)/ms{mode}g,(m,c,p,text,g)=>{{t+=p;return '['+g.x+']'}});a==='[A]\n[😀]\n[B]'&&t==='025'"
         ));
     }
@@ -134,16 +128,16 @@ fn unicode_repeated_atom_start_consumers_and_empty_advance() {
 
 #[test]
 fn unicode_repeated_atom_start_clones_coercions_and_strict_writes() {
-    check(
+    assert_true(
         r"let r=/^(?<x>a+)/dimug,c=new RegExp(r,'dvy'),b=new RegExp(c,'dimuy');c.unicodeSets&&!c.ignoreCase&&c.exec('B\nAA')===null&&b.exec('AA').groups.x==='AA'&&b.lastIndex===2",
     );
-    check(
+    assert_true(
         r"let t='',r=/^😀+/muy;r.lastIndex={valueOf(){t+='i';return 3}};let m=r.exec({toString(){t+='s';return 'A\n😀😀'}});t==='si'&&m.index===2&&m[0]==='😀😀'&&r.lastIndex===6",
     );
-    check(
+    assert_true(
         r"let r=/^a*/mvy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/^a+/mvy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('BBB')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
 }
@@ -165,7 +159,7 @@ fn unicode_repeated_atom_starts_opted_work_and_remaining_compositions() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
-    check(
+    assert_true(
         r"let m=/^[a--b]+/v.exec('a');m!==null&&m.length===1&&m[0]==='a'&&m.index===0&&m.input==='a'",
     );
     for source in [
@@ -175,9 +169,6 @@ fn unicode_repeated_atom_starts_opted_work_and_remaining_compositions() {
         r"/^\ba+b/u.exec('a')",
         r"/^(a)+b/u.exec('a')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }

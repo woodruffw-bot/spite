@@ -43,7 +43,18 @@ pub use regexp::{
     validate_regexp_pattern,
 };
 
-use ast::*;
+use ast::{
+    Argument, ArrayElement, ArrowBody, AssignmentElement, AssignmentPattern, AssignmentPatternKind,
+    AssignmentProperty, AssignmentTarget, BinaryOp, BinaryStep, BindingElement, BindingPattern,
+    BindingPatternKind, BindingProperty, CatchClause, ChainStep, ChainStepKind, Class,
+    ClassElement, ExportDeclaration, ExportKind, ExportSpecifier, Expr, ExprKind, ForBinding,
+    ForInitializer, Function, FunctionBody, FunctionKind, FunctionName, FunctionSource,
+    ImportAttribute, ImportBinding, ImportDeclaration, ImportEntry, ImportName,
+    IndirectExportEntry, Label, Literal, LocalExportEntry, Module, ModuleEntries, ModuleExportName,
+    ModuleRequest, ObjectElement, ObjectProperty, Parameter, PrivateIdentifier, PropertyKind,
+    PropertyName, Script, Statement, StatementKind, SwitchClause, TemplateElement, UnaryOp,
+    UpdateOp,
+};
 use lexer::{Goal, Kind, Lexer, Token};
 use spite_core::{Diagnostic, DiagnosticKind, JsString, Span};
 use std::collections::BTreeSet;
@@ -1286,7 +1297,7 @@ fn validate_statement<'a>(
             }
         }
         StatementKind::Block(body) => {
-            validate_scope(body, strict, control, labels, ScopeKind::Block)?
+            validate_scope(body, strict, control, labels, ScopeKind::Block)?;
         }
         StatementKind::With { object, body } => {
             // ECMA-262 14.11.1: this grammar is available only in non-strict code.
@@ -1427,7 +1438,7 @@ fn validate_statement<'a>(
                     validate_expr(target, strict)?;
                 }
                 ForBinding::Pattern(pattern) => {
-                    assignment_pattern::validate_pattern(pattern, strict)?
+                    assignment_pattern::validate_pattern(pattern, strict)?;
                 }
                 ForBinding::Var(binding) => {
                     binding::validate_pattern(&binding.pattern, strict)?;
@@ -1630,7 +1641,7 @@ fn validate_expr(expr: &Expr, strict: bool) -> Result<(), Diagnostic> {
             for step in steps {
                 match &step.kind {
                     ChainStepKind::Property(PropertyName::Computed(expression)) => {
-                        validate_expr(expression, strict)?
+                        validate_expr(expression, strict)?;
                     }
                     ChainStepKind::Property(
                         PropertyName::Literal(_) | PropertyName::Private(_),
@@ -1723,7 +1734,7 @@ fn validate_expr(expr: &Expr, strict: bool) -> Result<(), Diagnostic> {
             return Err(early(e.span, "cannot delete a private element"));
         }
         ExprKind::Unary(_, e) | ExprKind::Await(e) | ExprKind::Parenthesized(e) => {
-            validate_expr(e, strict)?
+            validate_expr(e, strict)?;
         }
         ExprKind::Yield {
             argument: Some(argument),

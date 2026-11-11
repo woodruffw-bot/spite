@@ -1,9 +1,7 @@
 //! Full default case mappings from the versioned Unicode Character Database.
 
-use crate::{
-    case_data::{CASE_IGNORABLE, CASED, LOWERCASE, UPPERCASE},
-    unicode::contains,
-};
+use crate::case_data::{CASE_IGNORABLE, CASED, LOWERCASE, UPPERCASE};
+use crate::unicode::contains;
 
 /// Returns the full, context-independent Unicode default case mapping as UTF-16.
 ///

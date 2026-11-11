@@ -1,4 +1,4 @@
-use super::*;
+use super::{Error, ExceptionKind, Value, check, realm_with_symbols};
 
 #[test]
 fn intrinsic_has_instance_is_fixed_callable_and_ordinary() {

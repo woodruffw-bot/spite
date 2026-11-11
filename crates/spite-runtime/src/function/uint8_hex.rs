@@ -1,10 +1,8 @@
 //! Uint8Array hexadecimal conversion (23.3.1.2, 23.3.2.2/.4, 23.3.3).
 
-use crate::{
-    Error, ExceptionKind, ObjectHandle, Realm, Value,
-    binary_data::ElementType,
-    object::{self, ArrayBufferError, Budget, DataDescriptor, Objects},
-};
+use crate::binary_data::ElementType;
+use crate::object::{self, ArrayBufferError, Budget, DataDescriptor, Objects};
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span};
 
 const MAX_DECODED_LENGTH: u64 = (1u64 << 53) - 1;

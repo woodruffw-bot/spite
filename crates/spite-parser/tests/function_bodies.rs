@@ -1,11 +1,8 @@
 //! Function-body grammar, strict directives, and control/declaration boundaries.
 
 use spite_core::DiagnosticKind;
-use spite_parser::{
-    MAX_DEPTH,
-    ast::{ArrowBody, ExprKind, StatementKind},
-    parse_script,
-};
+use spite_parser::ast::{ArrowBody, ExprKind, StatementKind};
+use spite_parser::{MAX_DEPTH, parse_script};
 
 #[test]
 fn block_arrows_and_returns_snapshot() {

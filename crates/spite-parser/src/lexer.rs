@@ -671,7 +671,9 @@ impl Lexer {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::{collections::BTreeSet, fs, path::PathBuf};
+    use std::collections::BTreeSet;
+    use std::fs;
+    use std::path::PathBuf;
 
     fn scan(source: &str, goal: Goal) -> Result<Token, Diagnostic> {
         Lexer::new(std::rc::Rc::new(SourceText::from_str(source))).next(goal)

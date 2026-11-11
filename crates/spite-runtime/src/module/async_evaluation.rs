@@ -1,6 +1,6 @@
 //! ExecuteAsyncModule, available ancestors and completion reactions (16.2.1.6.2).
 
-use super::*;
+use super::{Error, ObjectHandle, Realm, Span, Value, module_default_index};
 use crate::object::ModuleExecutionStatus;
 use std::collections::HashSet;
 
@@ -25,7 +25,8 @@ impl Realm {
         handler: &Value,
         error: &Error,
     ) -> Result<(), Error> {
-        use crate::function::{Callable, async_native::AsyncResumeKind};
+        use crate::function::Callable;
+        use crate::function::async_native::AsyncResumeKind;
         let Value::Object(handler) = handler else {
             return Ok(());
         };

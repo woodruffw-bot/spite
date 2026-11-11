@@ -1,14 +1,8 @@
 //! Standalone zero-width Unicode word assertions with i/m and original captures.
+use crate::common::assert_true;
 use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
 
 #[test]
 fn unicode_word_assertion_results_snapshot() {
@@ -54,19 +48,19 @@ fn unicode_word_assertion_results_snapshot() {
 #[test]
 fn unicode_word_assertions_empty_endpoints_case_neighbors_and_multiline() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"/\B/{mode}.test('')&&!/\b/{mode}.test('')&&/^\B$/{mode}.test('')&&!/^\b$/{mode}.test('')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"/\B/{mode}.exec('ſ').index===0&&/\b/i{mode}.exec('ſ').index===0&&!/\B/i{mode}.test('ſ')&&/\b/i{mode}.test('K')&&!/\b/{mode}.test('K')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\b$/{mode}g,m=r.exec('A');m.index===1&&m[0]===''&&r.lastIndex===1&&r.exec('A').index===1"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"/^\B$/m{mode}.test('\n')&&/^\B$/m{mode}.test('\r\n')&&/^\B$/m{mode}.test('\u2028')&&/^\B$/m{mode}.test('\u2029')&&!/^\B$/{mode}.test('\n')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\b/{mode}g;r.exec('A').index===0&&r.lastIndex===0&&r.exec('A').index===0"
         ));
     }
@@ -75,22 +69,22 @@ fn unicode_word_assertions_empty_endpoints_case_neighbors_and_multiline() {
 #[test]
 fn unicode_word_assertions_original_empty_captures_and_pair_starts() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/(?<__proto__>(\b))/d{mode}y;r.lastIndex=2;let m=r.exec('A😀B');m.index===1&&m[0]===''&&m[1]===''&&m[2]===''&&m.indices[1][0]===1&&m.indices[1][1]===1&&m.indices.groups.__proto__===m.indices[1]&&r.lastIndex===1"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/(?<x>\B)/d{mode}y;r.lastIndex=1;let m=r.exec('😀');m.index===0&&m.indices.groups.x[0]===0&&m.indices.groups.x[1]===0&&r.lastIndex===0"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\b/{mode}y;r.lastIndex=1;r.exec('😀')===null&&r.lastIndex===0"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\B/{mode}g;r.lastIndex=3;r.exec('😀')===null&&r.lastIndex===0"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^(?<x>(\B))$/d{mode};let m=r.exec('');m.groups.x===''&&m.indices[2][0]===0&&m.indices[2][1]===0"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"[...'A\uD800B'.matchAll(/\b/{mode}g)].map(m=>m.index).join(',')==='0,1,2,3'"
         ));
     }
@@ -99,19 +93,19 @@ fn unicode_word_assertions_original_empty_captures_and_pair_starts() {
 #[test]
 fn unicode_word_assertion_consumers_advance_after_original_empty_matches() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let a=[...'A😀B'.matchAll(/(?<x>\b)/d{mode}g)];a.map(m=>m.index).join(',')==='0,1,3,4'&&a.every(m=>m[0]===''&&m[1]===''&&m.indices.groups.x===m.indices[1])"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'A😀B'.replace(/(?<x>\b)/{mode}g,'<$1$<x>>')==='<>A<>😀<>B<>'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'A😀B'.split(/\b/{mode}).join('|')==='A|😀|B'&&'A😀B'.split(/(\b)/{mode}).join('|')==='A||😀||B'&&'😀'.split(/\B/{mode}).join('|')==='😀'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'😀B'.search(/\b/{mode})===2&&'A😀B'.match(/\b/{mode}g).length===4&&'😀'.match(/\B/{mode}g).length===2"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let t='',a='A😀B'.replace(/(\b)/{mode}g,(m,c,p)=>{{t+=p;return '|'}});a==='|A|😀|B|'&&t==='0134'"
         ));
     }
@@ -119,16 +113,16 @@ fn unicode_word_assertion_consumers_advance_after_original_empty_matches() {
 
 #[test]
 fn unicode_word_assertion_clones_coercions_and_strict_writes() {
-    check(
+    assert_true(
         r"let r=/(?<x>\b)/diug,c=new RegExp(r,'dvy'),b=new RegExp(c,'diuy');c.source==='(?<x>\\b)'&&!c.ignoreCase&&c.unicodeSets&&c.exec('ſ')===null&&b.exec('ſ').groups.x===''&&b.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let t='',r=/\b/uy;r.lastIndex={valueOf(){t+='i';return 2}};let m=r.exec({toString(){t+='s';return 'A😀B'}});t==='si'&&m[0]===''&&m.index===1&&r.lastIndex===1",
     );
-    check(
+    assert_true(
         r"let r=/\B/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/\b/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
 }
@@ -157,10 +151,7 @@ fn unicode_word_assertions_opted_work_and_remaining_compositions() {
         r"/\b|\B/v.test('A')",
         r"/\b(?=A)/u.test('A')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }
 

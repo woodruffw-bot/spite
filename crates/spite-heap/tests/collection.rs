@@ -1,7 +1,8 @@
 //! Explicit roots, cycles, deep graphs, and failure-before-sweep behavior.
 
 use spite_heap::{Error, Handle, Heap, Trace};
-use std::{cell::Cell, rc::Rc};
+use std::cell::Cell;
+use std::rc::Rc;
 
 #[derive(Debug, Default)]
 struct Node {

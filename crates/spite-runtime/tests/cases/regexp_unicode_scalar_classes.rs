@@ -1,14 +1,8 @@
 //! Complete-character Unicode class unions, ranges and inversion (22.2.2.9).
+use crate::common::assert_true;
 use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
 
 #[test]
 fn unicode_class_results_snapshot() {
@@ -64,28 +58,28 @@ fn unicode_class_results_snapshot() {
 #[test]
 fn unicode_class_consumers_and_complete_character_boundaries() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"'😀9\uD800'.match(/[\D]/{mode}g).join('|')==='😀|\uD800'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=[...'😀a\uDC00'.matchAll(/[^a]/d{mode}g)];a.length===2&&a[0].indices[0][1]===2&&a[1].index===3&&a[1][0]==='\uDC00'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'😀9\uD800'.split(/[\D]/{mode}).join('|')==='|9|'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let seen=[];let s='😀9\uD800'.replace(/[\D]/{mode}g,(m,i)=>{{seen.push(i);return '_'}});s==='_9_'&&seen.join(',')==='0,3'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/[😀]/{mode}g;r.lastIndex=1;'a😀'.search(r)===1&&r.lastIndex===1"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/[😀]/d{mode}y;r.lastIndex=1;let m=r.exec('😀');m.index===0&&m[0]==='😀'&&m.indices[0][1]===2&&r.lastIndex===2"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/[\uD800-\uDFFF]/{mode}y;r.lastIndex=1;r.exec('😀')===null&&r.lastIndex===0"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/[\uD800-\uDFFF]/{mode}g;r.lastIndex=1;let m=r.exec('😀\uD800');m.index===2&&m[0]==='\uD800'&&r.lastIndex===3"
         ));
     }
@@ -93,45 +87,47 @@ fn unicode_class_consumers_and_complete_character_boundaries() {
 
 #[test]
 fn unicode_class_source_atoms_and_reserved_punctuation_remain_data() {
-    check(r"/[\uD800\uDC00]/u.test('\uD800\uDC00')&&!/[\u{D800}\u{DC00}]/u.test('\uD800\uDC00')");
-    check(r"/[\u{D800}\u{DC00}]/v.test('\uD800')&&/[\uD800\u{DC00}]/v.test('\uDC00')");
-    check(r"/[\x2d\u005d\u{5b}]/u.test('-')&&/[\x2d\u005d\u{5b}]/v.test(']')");
-    check(r"/[\&\&\-\-]/v.test('&')&&/[\&&]/v.test('&')&&/[a&&b]/u.test('&')");
-    check(r"/[[]/u.test('[')&&/[-a]/u.test('-')");
-    check(r"/[\s]/v.test('\uFEFF')&&!/[\s]/v.test('\u180E')&&/[\W]/u.test('K')");
-    check(r"/[\d\D]/v.test('😀')&&/[^\d\D]/v.exec('😀')===null");
+    assert_true(
+        r"/[\uD800\uDC00]/u.test('\uD800\uDC00')&&!/[\u{D800}\u{DC00}]/u.test('\uD800\uDC00')",
+    );
+    assert_true(r"/[\u{D800}\u{DC00}]/v.test('\uD800')&&/[\uD800\u{DC00}]/v.test('\uDC00')");
+    assert_true(r"/[\x2d\u005d\u{5b}]/u.test('-')&&/[\x2d\u005d\u{5b}]/v.test(']')");
+    assert_true(r"/[\&\&\-\-]/v.test('&')&&/[\&&]/v.test('&')&&/[a&&b]/u.test('&')");
+    assert_true(r"/[[]/u.test('[')&&/[-a]/u.test('-')");
+    assert_true(r"/[\s]/v.test('\uFEFF')&&!/[\s]/v.test('\u180E')&&/[\W]/u.test('K')");
+    assert_true(r"/[\d\D]/v.test('😀')&&/[^\d\D]/v.exec('😀')===null");
 }
 
 #[test]
 fn unicode_class_metadata_clones_coercions_and_strict_writes() {
-    check(
+    assert_true(
         r"let r=/[^a]/dsv,c=new RegExp(r,'duy');c.source==='[^a]'&&c.unicode&&!c.unicodeSets&&!c.dotAll&&c.exec('😀')[0]==='😀'&&c.lastIndex===2",
     );
-    check(
+    assert_true(
         r"let r=/[\D]/dvg,m=r.exec('😀');m.length===1&&m.groups===undefined&&m.indices.groups===undefined",
     );
-    check(
+    assert_true(
         r"let t='',r=/[^a]/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m.index===0&&r.lastIndex===2",
     );
-    check(
+    assert_true(
         r"let t='',r=/[^a]/v;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m.index===0&&typeof r.lastIndex==='object'",
     );
-    check(
+    assert_true(
         r"let r=/[^a]/uy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
-    check(
+    assert_true(
         r"let r=/[\uD800]/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
 }
 
 #[test]
 fn unicode_class_opted_work_preserves_state_and_unproved_syntax() {
-    check(
+    assert_true(
         r"let m=/[\q{ab}]/v.exec('ab');m.length===1 && m[0]==='ab' && m.index===0 && m.input==='ab' && m.groups===undefined && /[\q{ab}]/v.exec('xab').index===1",
     );
     let original = Realm::default().eval(r"/[a]b/v.exec('ab')").unwrap();
     assert!(matches!(original, Value::Object(_)));
-    check(
+    assert_true(
         r#"let r=/[a]b/v,m=r.exec('ab');Array.isArray(m)&&m.length===1&&m[0]==='ab'&&m.index===0&&m.input==='ab'&&m.groups===undefined&&m.indices===undefined&&r.source==='[a]b'&&r.lastIndex===0&&r.exec('xb')===null&&r.exec('ax')===null&&r.exec('a')===null&&r.exec('xab').index===1"#,
     );
     let mut realm = Realm::new(Limits {
@@ -149,14 +145,14 @@ fn unicode_class_opted_work_preserves_state_and_unproved_syntax() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
-    check(
+    assert_true(
         r#"let m=/[\p{Script_Extensions=Latin}]/u.exec('a');JSON.stringify(m)==='["a"]'&&m.index===0&&m.input==='a'"#,
     );
-    check(r"/[a&&b]/v.exec('a')===null");
-    check(
+    assert_true(r"/[a&&b]/v.exec('a')===null");
+    assert_true(
         r"let m=/[a--b]/v.exec('a');m!==null&&m.length===1&&m[0]==='a'&&m.index===0&&m.input==='a'",
     );
-    check(
+    assert_true(
         r"let m=/[[a]]/v.exec('a');m!==null&&m.length===1&&m[0]==='a'&&m.index===0&&m.input==='a'",
     );
     for source in [
@@ -167,10 +163,7 @@ fn unicode_class_opted_work_preserves_state_and_unproved_syntax() {
         r"/[a]+b/u.exec('a')",
         r"/[a]|b/u.exec('b')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }
 

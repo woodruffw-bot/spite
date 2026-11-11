@@ -1,14 +1,8 @@
 //! Exact scalar reference terms composed in ordinary repeated units.
+use crate::common::assert_true;
 use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
 #[test]
 fn nested_exact_reference_units_result_snapshot() {
     let mut rows = String::new();
@@ -55,42 +49,42 @@ fn nested_exact_reference_units_result_snapshot() {
 }
 #[test]
 fn named_ranges_retry_required_empty_original_gap_and_both_directions_are_exact() {
-    check(
+    assert_true(
         r"let a=/(?<x>(?<y>b)\k<y>{2})+bb/d.exec('bbbbbbb');a.index===0&&a[0]==='bbbbb'&&a.groups.x==='bbb'&&a.groups.y==='b'&&a.indices.groups.x===a.indices[1]&&a.indices[1][0]===0&&a.indices[2][0]===0",
     );
-    check(
+    assert_true(
         r"let a=/(?<=(?<x>(\k<y>{2})(?<y>b)){2})c/d.exec('bbbbbbc');a.groups.x==='bbb'&&a[2]==='bb'&&a.groups.y==='b'&&a.indices.groups.x[0]===0&&a.indices.groups.y[0]===2",
     );
-    check(
+    assert_true(
         r"let a=/(?<=a(?=((b)\2{2}){2}))b/d.exec('abbbbbb');a.index===1&&a.indices[1][0]===4&&a.indices[1][1]===7&&a.indices[2][0]===4",
     );
-    check(r"/(?:()(?:\1)+){2}/.test('')");
-    check(
+    assert_true(r"/(?:()(?:\1)+){2}/.test('')");
+    assert_true(
         r"let a=/(?:()(?:\1)+){2}/d.exec('');a[1]===''&&a.indices[1][0]===0&&a.indices[1][1]===0",
     );
-    check(r"let a=/(\1*b)+/d.exec('bbb');a[1]==='b'&&a.indices[1][0]===2");
-    check(
+    assert_true(r"let a=/(\1*b)+/d.exec('bbb');a[1]==='b'&&a.indices[1][0]===2");
+    assert_true(
         r"let a=/(?<x>(?<y>b)\k<y>{2})+/di.exec('bBbBBb');a.groups.x==='BBb'&&a.groups.y==='B'&&a.indices[1][0]===3",
     );
-    check(
+    assert_true(
         r"let a=/(([\uD800])\2{2})+/d.exec('\uD800\uD800\uD800\uD800\uD800\uD800\uDC00');a[0].length===6&&a.indices[1][0]===3&&a.indices[2][0]===3",
     );
 }
 #[test]
 fn consumers_keep_sticky_global_lazy_zero_advancement_and_callback_slots() {
-    check(
+    assert_true(
         r"let r=/((b)\2{2})+/dy;r.lastIndex=1;let a=r.exec('cbbbbbb');a.index===1&&a[1]==='bbb'&&r.lastIndex===7&&r.exec('cbbbbbb')===null&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/((b)\2{2})+/dg,a=[...'bbbbbb bbb'.matchAll(r)];a.length===2&&a[0].indices[1][0]===3&&a[1].index===7&&a[1][2]==='b'&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let a=[...'bbb'.matchAll(/((b)\2{2})*?/dg)];a.length===4&&a[3].index===3&&a[0][1]===undefined&&a[3].indices[2]===undefined",
     );
-    check(
+    assert_true(
         r"let seen=[];let s='bbbbbb bbb'.replace(/((b)\2{2})+/g,(m,x,y,i)=>{seen.push(x,y,i);return '_'});s==='_ _'&&seen.join('|')==='bbb|b|0|bbb|b|7'",
     );
-    check(
+    assert_true(
         r"'cbbbbbb'.search(/((b)\2{2})+/)===1&&'cbbbbbb'.split(/((b)\2{2})+/).join('|')==='c|bbb|b|'",
     );
 }
@@ -122,9 +116,6 @@ fn unproved_variable_assertion_widths_nullable_required_choices_and_unicode_stay
         r"/((b)\2{2})+/u.exec('bbb')",
         r"/((b)\2{2})+/v.exec('bbb')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }

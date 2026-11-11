@@ -3,13 +3,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn unicode_property_dot_results_snapshot() {
@@ -53,13 +47,13 @@ fn unicode_property_dot_results_snapshot() {
 #[test]
 fn unicode_property_dot_distinct_names_and_global_captures() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/(\p{{Script=Han}})(.)/d{mode}g,t='𠮷a𠮷b𠮷',m=r.exec(t);m[0]==='𠮷a'&&m[1]==='𠮷'&&m[2]==='a'&&m.index===0&&m.input===t&&m.indices[1][0]===0&&m.indices[1][1]===2&&m.indices[2][0]===2&&m.indices[2][1]===3&&r.lastIndex===3&&(m=r.exec(t),m[1]==='𠮷'&&m[2]==='b'&&m.index===3&&r.lastIndex===6)&&r.exec(t)===null&&r.lastIndex===0"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let m=/(?<p>\p{{sc=Hani}})(?<__proto__>.)/d{mode}.exec('𠮷😀');m.groups.p==='𠮷'&&m.groups.__proto__==='😀'&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.p===m.indices[1]&&m.indices.groups.__proto__===m.indices[2]&&m.indices[1][1]===2&&m.indices[2][0]===2&&m.indices[2][1]===4"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let m=/(?<whole>((\p{{sc=Han}})(.)))/d{mode}.exec('𠮷a');m.length===5&&m[1]==='𠮷a'&&m[2]==='𠮷a'&&m[3]==='𠮷'&&m[4]==='a'&&m.groups.whole===m[0]&&m.indices[3][1]===2&&m.indices[4][0]===2"
         ));
     }
@@ -68,16 +62,16 @@ fn unicode_property_dot_distinct_names_and_global_captures() {
 #[test]
 fn unicode_property_dot_pair_starts_and_failures() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/(\p{{sc=Han}})(.)/d{mode}y;r.lastIndex=1;let m=r.exec('𠮷a');m.index===0&&m[1]==='𠮷'&&m[2]==='a'&&m.indices[1][0]===0&&m.indices[2][0]===2&&r.lastIndex===3"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/(\p{{sc=Han}})(.)/{mode}y;r.lastIndex=1;r.exec('😀𠮷a')===null&&r.lastIndex===0"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/(\p{{sc=Han}})(.)/{mode}g;r.lastIndex=1;let m=r.exec('😀𠮷a');m.index===2&&m[1]==='𠮷'&&m[2]==='a'&&r.lastIndex===5"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/(\p{{sc=Han}})(.)/{mode};r.lastIndex=77;let m=r.exec('𠮷a');m.index===0&&r.lastIndex===77"
         ));
     }
@@ -86,15 +80,15 @@ fn unicode_property_dot_pair_starts_and_failures() {
 #[test]
 fn unicode_property_dot_line_retries_and_folding() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let a=/(\p{{sc=Han}})(.)/{mode}.exec('一\n𠮷a'),b=/(\p{{sc=Han}})(.)/s{mode}.exec('一\n𠮷a');a.index===2&&a[1]==='𠮷'&&a[2]==='a'&&b.index===0&&b[1]==='一'&&b[2]==='\n'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let m=/(\p{{ASCII}})(.)/i{mode}.exec('K😀');m[1]==='K'&&m[2]==='😀'&&m[0]==='K😀'&&m.index===0"
         ));
     }
     // Follow the existing tagged edition-17 folding rule; Node 24 differs here.
-    check(
+    assert_true(
         r"let u=/(\P{ASCII})(.)/iu.exec('Ka'),v=/(\P{ASCII})(.)/iv.exec('Ka');u[1]==='K'&&u[2]==='a'&&v===null",
     );
 }
@@ -102,16 +96,16 @@ fn unicode_property_dot_line_retries_and_folding() {
 #[test]
 fn unicode_property_dot_consumers_original_text() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"'𠮷a𠮷b'.replace(/(\p{{sc=Han}})(.)/{mode}g,'<$1:$2>')==='<𠮷:a><𠮷:b>'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=[...'𠮷a𠮷b'.matchAll(/(?<p>\p{{sc=Han}})(?<d>.)/d{mode}g)];a.length===2&&a[0].groups.p==='𠮷'&&a[0].groups.d==='a'&&a[1].index===3&&a[1].indices[1][0]===3&&a[1].indices[2][0]===5"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'𠮷a𠮷b'.split(/(\p{{sc=Han}})(.)/{mode}).join('|')==='|𠮷|a||𠮷|b|'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let t='',s='😀𠮷a𠮷b'.replace(/(\p{{sc=Han}})(.)/{mode}g,(m,a,b,p)=>{{t+=p;return a+':'+b}});s==='😀𠮷:a𠮷:b'&&t==='25'"
         ));
     }
@@ -119,16 +113,16 @@ fn unicode_property_dot_consumers_original_text() {
 
 #[test]
 fn unicode_property_dot_clones_coercions_and_strict_writes() {
-    check(
+    assert_true(
         r"let r=/(?<p>\p{sc=Han})(?<d>.)/dug,c=new RegExp(r,'dvsy');c.source===r.source&&c.unicodeSets&&!c.unicode&&c.dotAll&&c.exec('一\n').groups.d==='\n'&&c.lastIndex===2",
     );
-    check(
+    assert_true(
         r"let t='',r=/(\p{sc=Han})(.)/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '𠮷a'}});t==='si'&&m[1]==='𠮷'&&m[2]==='a'&&m.index===0&&r.lastIndex===3",
     );
-    check(
+    assert_true(
         r"let r=/(\p{sc=Han})(.)/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('𠮷a')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/(\p{sc=Han})(.)/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀𠮷a')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
 }
@@ -150,7 +144,7 @@ fn unicode_property_dot_opted_work_and_remaining_compositions() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
-    check(
+    assert_true(
         r#"let m=/(\p{Script_Extensions=Latin})(.)/v.exec('Aa');JSON.stringify(m)==='["Aa","A","a"]'&&m.index===0&&m.input==='Aa'"#,
     );
     for source in [
@@ -159,9 +153,6 @@ fn unicode_property_dot_opted_work_and_remaining_compositions() {
         r"/(\p{sc=Han}|a)(.)/u.exec('𠮷a')",
         r"/(\p{sc=Han})(.)x/v.exec('𠮷ax')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }

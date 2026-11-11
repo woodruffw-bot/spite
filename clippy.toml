@@ -1,0 +1,2 @@
+# Keep dependencies explicit in tests as well as production modules.
+warn-on-all-wildcard-imports = true

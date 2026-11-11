@@ -1,5 +1,9 @@
-use super::*;
-use crate::{Realm, function::Builtin};
+use super::{
+    Budget, DataDescriptor, DescriptorKind, Error, GetAction, JsString, Objects, OrdinaryObject,
+    PropertyDescriptor, PropertyKey, SetAction, Value,
+};
+use crate::Realm;
+use crate::function::Builtin;
 use spite_core::JsSymbol;
 
 fn symbol(description: &str) -> JsSymbol {
@@ -242,12 +246,7 @@ fn string_wrapper_symbol_keys_are_distinct_from_fixed_index_and_length_propertie
         .define(&string, zero.clone(), data(Value::Number(7.0)), &mut budget)
         .unwrap();
     objects
-        .define(
-            &string,
-            length.clone(),
-            data(Value::Number(8.0)),
-            &mut budget,
-        )
+        .define(&string, length, data(Value::Number(8.0)), &mut budget)
         .unwrap();
     assert_eq!(
         objects.get(&string, &zero, &mut budget).unwrap(),

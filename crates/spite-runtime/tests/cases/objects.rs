@@ -2,10 +2,8 @@
 
 use spite_core::JsString;
 use spite_heap::{Error as HeapError, Heap};
-use spite_runtime::{
-    Value,
-    object::{DataDescriptor, OrdinaryObject, PropertyLimit},
-};
+use spite_runtime::Value;
+use spite_runtime::object::{DataDescriptor, OrdinaryObject, PropertyLimit};
 
 fn data(value: Value) -> DataDescriptor {
     DataDescriptor {

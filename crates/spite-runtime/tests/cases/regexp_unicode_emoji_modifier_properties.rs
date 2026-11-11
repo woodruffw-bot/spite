@@ -3,13 +3,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn unicode_emoji_modifier_property_results_snapshot() {
@@ -54,16 +48,16 @@ fn unicode_emoji_modifier_property_results_snapshot() {
 #[test]
 fn unicode_emoji_modifier_properties_aliases_complements_and_unions() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let a=/\p{{Emoji_Modifier}}/{mode},b=/\p{{EMod}}/i{mode},n=/\P{{EMod}}/i{mode};a.test('\u{{1F3FB}}')&&a.test('\u{{1F3FF}}')&&b.test('\u{{1F3FB}}')&&!a.test('\u200D')&&!b.test('\u005f')&&!b.test('ſ')&&!b.test('K')&&!n.test('\u{{1F3FB}}')&&n.test('😀')&&n.test('\uD800')&&n.test('\uFEFF')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let p=/\p{{Emoji_Modifier}}/{mode},s=/\s/{mode};p.test('\u{{1F3FB}}')&&p.test('\u{{1F3FF}}')&&!s.test('\u{{1F3FB}}')&&!s.test('\u{{1F3FF}}')&&!p.test('\uFEFF')&&s.test('\uFEFF')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=/[\p{{EMod}}K]/i{mode},b=/[^\P{{Emoji_Modifier}}K]/i{mode},c=/[\p{{EMod}}\P{{Emoji_Modifier}}]/{mode};a.test('K')&&a.test('k')&&a.test('\u{{1F3FB}}')&&!a.test('ſ')&&b.test('\u{{1F3FF}}')&&!b.test('K')&&c.test('😀')&&c.test('A')&&c.test('\uD800')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=/^\p{{EMod}}$/{mode},b=/^\P{{EMod}}$/{mode};a.test('\u{{1F3FB}}')&&!a.test('\u{{1F3FF}}\n')&&!a.test('')&&!a.test('\n')&&b.test('😀')&&!b.test('AA')"
         ));
     }
@@ -72,16 +66,16 @@ fn unicode_emoji_modifier_properties_aliases_complements_and_unions() {
 #[test]
 fn unicode_emoji_modifier_properties_captures_context_and_pair_starts() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^(?<x>([\p{{EMod}}K]))$/dim{mode}g,m=r.exec('x\r\nK\u2028');m.index===3&&m[1]==='K'&&m[2]==='K'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===4&&r.lastIndex===4"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/(?<__proto__>\P{{EMod}})/d{mode}y;r.lastIndex=1;let m=r.exec('😀\u{{1F3FB}}');m.index===0&&m[1]==='😀'&&m.indices[1][1]===2&&r.lastIndex===2&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\p{{EMod}}/d{mode}g;r.lastIndex=1;let m=r.exec('😀\u{{1F3FB}}');m.index===2&&m[0]==='\u{{1F3FB}}'&&r.lastIndex===4"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\p{{EMod}}/{mode}y;r.lastIndex=1;r.exec('😀\u{{1F3FB}}')===null&&r.lastIndex===0"
         ));
     }
@@ -90,16 +84,16 @@ fn unicode_emoji_modifier_properties_captures_context_and_pair_starts() {
 #[test]
 fn unicode_emoji_modifier_properties_consumers_original_text() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let a=[...'\u{{1F3FF}}😀\u{{1F3FB}}G'.matchAll(/(?<x>\P{{EMod}})/d{mode}g)];a.length===2&&a[0][1]==='😀'&&a[0].index===2&&a[0].indices[1][1]===4&&a[1][1]==='G'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'\u{{1F3FF}}\u{{1F3FB}}😀X'.replace(/(?<x>\p{{Emoji_Modifier}})/{mode}g,'<$1:$<x>>')==='<\u{{1F3FF}}:\u{{1F3FF}}><\u{{1F3FB}}:\u{{1F3FB}}>😀X'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'😀\u{{1F3FF}}\u{{1F3FB}}G'.split(/(\p{{EMod}})/{mode}).join('|')==='😀|\u{{1F3FF}}||\u{{1F3FB}}|G'&&'😀\u{{1F3FB}}'.search(/\p{{EMod}}/{mode})===2&&'\u{{1F3FF}}\u{{1F3FB}}😀'.match(/\p{{EMod}}/{mode}g).join('')==='\u{{1F3FF}}\u{{1F3FB}}'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let t='';let x='\u{{1F3FB}}\u{{1F3FF}}😀\u{{1F3FB}}'.replace(/(\p{{EMod}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__😀_'&&t==='026'"
         ));
     }
@@ -107,16 +101,16 @@ fn unicode_emoji_modifier_properties_consumers_original_text() {
 
 #[test]
 fn unicode_emoji_modifier_properties_clones_coercions_and_strict_writes() {
-    check(
+    assert_true(
         r"let r=/^(?<x>\p{Emoji_Modifier})$/dmu,c=new RegExp(r,'divy');c.source==='^(?<x>\\p{Emoji_Modifier})$'&&c.unicodeSets&&!c.unicode&&!c.multiline&&c.exec('\u{1F3FB}').groups.x==='\u{1F3FB}'&&c.lastIndex===2",
     );
-    check(
+    assert_true(
         r"let t='',r=/\P{EMod}/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m[0]==='😀'&&m.index===0&&r.lastIndex===2",
     );
-    check(
+    assert_true(
         r"let r=/\p{EMod}/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('\u{1F3FB}')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/\p{EMod}/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀\u{1F3FB}')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
 }
@@ -138,26 +132,23 @@ fn unicode_emoji_modifier_properties_opted_work_and_remaining_sets() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
-    check(
+    assert_true(
         r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
     );
-    check(r"/[\p{EMod}&&A]/v.exec('A')===null");
-    check(r"/[\p{EMod}--A]/v.exec('A')===null");
-    check(
+    assert_true(r"/[\p{EMod}&&A]/v.exec('A')===null");
+    assert_true(r"/[\p{EMod}--A]/v.exec('A')===null");
+    assert_true(
         r"let s=String.fromCodePoint(0x1f3fb),m=/[\p{EMod}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
     );
     for source in [r"/\p{EMod}+b/u.exec('AA')", r"/\p{EMod}A/v.exec('AA')"] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }
 
 #[test]
 fn unicode_emoji_modifier_repetitions_retain_last_capture_and_outside_words() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\B(?<x>\p{{EMod}})+\B/d{mode}g,m=r.exec('😀\u{{1F3FB}}\u{{1F3FF}}\u{{1F3FF}}\uFEFF');m.index===2&&m[0]==='\u{{1F3FB}}\u{{1F3FF}}\u{{1F3FF}}'&&m.groups.x==='\u{{1F3FF}}'&&m.indices.groups.x[0]===6&&m.indices.groups.x[1]===8&&r.lastIndex===8"
         ));
     }
@@ -166,7 +157,7 @@ fn unicode_emoji_modifier_repetitions_retain_last_capture_and_outside_words() {
 #[test]
 fn unicode_emoji_modifier_property_pair_starts() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/(?<x>\p{{EMod}})/d{mode}y;r.lastIndex=1;let m=r.exec('\u{{1F3FB}}');m.index===0&&m.groups.x==='\u{{1F3FB}}'&&m.indices.groups.x[0]===0&&m.indices.groups.x[1]===2&&r.lastIndex===2"
         ));
     }

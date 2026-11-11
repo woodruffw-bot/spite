@@ -1,7 +1,8 @@
 //! Native iterator-helper suspension state and traced captures (27.1.2).
 
 use super::{Budget, Error, IteratorState, IteratorWrapper, Objects};
-use crate::{environment::EnvironmentHandle, iterator_count::Counter};
+use crate::environment::EnvironmentHandle;
+use crate::iterator_count::Counter;
 use spite_heap::{Handle, Trace};
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]

@@ -4,13 +4,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn captured_reference_sequence_result_snapshot() {
@@ -64,35 +58,35 @@ fn captured_reference_sequence_result_snapshot() {
 
 #[test]
 fn captured_sequence_retries_keep_final_named_ranges_and_empty_positions() {
-    check(
+    assert_true(
         r"let a=/(?<x>a)(?<y>b)(?<last>(?<before>)\k<x>\k<y>(?<after>))*ab$/d.exec('ababab');a[0]==='ababab'&&a.groups.last==='ab'&&a.indices.groups.last===a.indices[3]&&a.indices[3][0]===2&&a.indices[3][1]===4&&a.indices.groups.before===a.indices[4]&&a.indices[4][0]===2&&a.indices.groups.after===a.indices[5]&&a.indices[5][0]===4",
     );
-    check(
+    assert_true(
         r"let a=/((?<x>a)(?<y>b)(?<last>\k<x>\k<y>)+?)\1/d.exec('abababab');a[0]==='abababab'&&a[1]==='abab'&&a.groups.last==='ab'&&a.indices[1][1]===4&&a.indices.groups.last===a.indices[4]&&a.indices[4][0]===2&&a.indices[4][1]===4",
     );
-    check(
+    assert_true(
         r"let a=/(?:(?<x>a)|(?<x>b))(?<y>c)(?<last>(?<before>)\k<x>\k<y>(?<after>))+d/d.exec('bcbcd');a[0]==='bcbcd'&&a[1]===undefined&&a.groups.x==='b'&&a.groups.last==='bc'&&a.indices.groups.last===a.indices[4]&&a.indices.groups.before===a.indices[5]&&a.indices[5][0]===2&&a.indices.groups.after===a.indices[6]&&a.indices[6][0]===4",
     );
-    check(
+    assert_true(
         r"let a=/(?<x>a)(?<last>\1\k<x>)+/d.exec('aaaaa');a[0]==='aaaaa'&&a.groups.last==='aa'&&a.indices.groups.last===a.indices[2]&&a.indices[2][0]===3&&a.indices[2][1]===5&&/^(?<x>a)(?<last>\1\k<x>)+$/.exec('aaaa')===null",
     );
-    check(
+    assert_true(
         r"let a=/(?<x>.)(?<y>a)(?<last>\k<x>\k<y>)+/d.exec('\uD800a\uD800a');a[0].length===4&&a.groups.last.charCodeAt(0)===0xD800&&a.indices.groups.last===a.indices[3]&&a.indices[3][0]===2&&a.indices[3][1]===4",
     );
 }
 
 #[test]
 fn captured_sequence_consumers_and_zero_iterations_keep_original_sources() {
-    check(
+    assert_true(
         r"let r=/(?<x>a)(?<y>b)(?<last>\k<x>\k<y>)+/dg,a=[...'abab ababab'.matchAll(r)];a.length===2&&a[0][0]==='abab'&&a[1][0]==='ababab'&&a[0].groups.last==='ab'&&a[0].indices.groups.last===a[0].indices[3]&&a[0].indices[3][0]===2&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"'qababab'.replace(/(?<x>a)(?<y>b)(?<last>\k<x>\k<y>)+/,'<$<last>>')==='q<ab>'&&'qababab'.search(/(a)(b)(\1\2)+/)===1&&'qabababZ'.split(/(a)(b)(\1\2)+/).join(',')==='q,a,b,ab,Z'",
     );
-    check(
+    assert_true(
         r"let r=/(?<x>a)(?<y>b)(?<last>\k<x>\k<y>)+/dy;r.lastIndex=1;let copy=new RegExp(r),a=r.exec('qababab');a[0]==='ababab'&&a.indices[3][0]===5&&r.lastIndex===7&&r.exec('qababab')===null&&r.lastIndex===0&&copy.source===r.source&&copy.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let a=[...'q'.matchAll(/(?<x>)(?<y>)(?<last>\k<x>\k<y>)*/dg)],b=/(?<x>(\k<x>\k<y>)+a)(?<y>b)/d.exec('ab');a.length===2&&a[0].groups.last===undefined&&a[0].indices.groups.last===undefined&&a[1].index===1&&b.groups.x==='a'&&b.groups.y==='b'&&b[2]===''&&b.indices[2][0]===0",
     );
 }
@@ -115,7 +109,7 @@ fn explicit_captured_sequence_work_aborts_before_last_index_and_handlers() {
 }
 
 #[test]
-fn partial_capture_effects_and_other_sequence_bodies_remain_unsupported() {
+fn partial_capture_effects_and_other_sequence_bodies_match_reference_results() {
     for source in [
         r"/(?:(?:(?:(a)(b)((\1)\2)+){2})|){2,3}/.test('abab')",
         r"/(?:(?:(?:(a)(b)(\1()\2)+){2})|){2,3}/.test('abab')",
@@ -124,10 +118,7 @@ fn partial_capture_effects_and_other_sequence_bodies_remain_unsupported() {
         r"/(a)(b)(\1+\2){2,3}/.test('abab')",
         r"/(a)(b)(\1\2)+/u.test('abab')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
-    check(r"/(a)(b)(\1\2)+/.exec('abc')===null");
+    assert_true(r"/(a)(b)(\1\2)+/.exec('abc')===null");
 }

@@ -1,7 +1,9 @@
 //! Body drivers observe initialized calls and restore callers on every exit.
 
-use super::{Callable, ordinary::OrdinaryInvocation};
-use crate::{Error, Realm, Value, environment::EnvironmentHandle};
+use super::Callable;
+use super::ordinary::OrdinaryInvocation;
+use crate::environment::EnvironmentHandle;
+use crate::{Error, Realm, Value};
 use spite_core::Span;
 use spite_parser::ast::{ArrowBody, FunctionBody};
 

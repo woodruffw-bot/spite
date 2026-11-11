@@ -1,10 +1,8 @@
 //! Private ordered Promise aggregation results and shared completion count.
 
 use super::{Budget, Error, Objects};
-use crate::{
-    Value,
-    function::{Callable, PromiseAggregateKind, PromiseCapability},
-};
+use crate::Value;
+use crate::function::{Callable, PromiseAggregateKind, PromiseCapability};
 use spite_heap::{Handle, Trace};
 
 #[derive(Debug)]

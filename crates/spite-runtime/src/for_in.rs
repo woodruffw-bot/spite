@@ -57,7 +57,7 @@ impl Realm {
                 })?;
                 for key in own_keys {
                     if let PropertyKey::String(key) = key {
-                        keys.push(key)
+                        keys.push(key);
                     }
                 }
                 cursor.keys = Some(keys.into_iter());

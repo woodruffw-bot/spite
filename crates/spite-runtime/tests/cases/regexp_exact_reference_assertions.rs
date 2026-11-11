@@ -1,14 +1,8 @@
 //! Effect-free flat exact-count reference atoms in assertions.
+use crate::common::assert_true;
 use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
 #[test]
 fn exact_reference_assertions_result_snapshot() {
     let mut rows = String::new();
@@ -55,37 +49,37 @@ fn exact_reference_assertions_result_snapshot() {
 }
 #[test]
 fn named_ranges_input_copies_dependent_targets_and_negative_rollback_are_exact() {
-    check(
+    assert_true(
         r"let a=/(?<=a(?=(?<x>b)\k<x>{2}))b/d.exec('abbb');a.groups.x==='b'&&a.indices.groups.x===a.indices[1]&&a.indices[1][0]===1",
     );
-    check(
+    assert_true(
         r"let a=/(?<=(\k<x>{2})(?<x>b))c/d.exec('bbbc');a[1]==='bb'&&a.groups.x==='b'&&a.indices[1][0]===0&&a.indices.groups.x[0]===2",
     );
-    check(
+    assert_true(
         r"let a=/(a)(?<=\1{2}\1{2})b/d.exec('aaaab');a.index===3&&a[0]==='ab'&&a.indices[1][0]===3",
     );
-    check(
+    assert_true(
         r"let a=/(?<=a(?!(b)\1{2}))b|(?<=a)b/d.exec('abbb');a.index===1&&a[1]===undefined&&a.indices[1]===undefined",
     );
-    check(
+    assert_true(
         r"let a=/(?<=a(?=([\uD800])\1{2}))[\uD800]/d.exec('a\uD800\uD800\uD800\uDC00');a.index===1&&a.indices[1][0]===1",
     );
 }
 #[test]
 fn consumers_keep_sticky_global_empty_advancement_and_callback_positions() {
-    check(
+    assert_true(
         r"let r=/(?<=a(?=(b)\1{2}))b/dy;r.lastIndex=1;let a=r.exec('abbb');a[1]==='b'&&r.lastIndex===2&&r.exec('abbb')===null&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/(?<=a(?=(b)\1{2}))b/dg,a=[...'abbb abbb'.matchAll(r)];a.length===2&&a[1].index===6&&a[1].indices[1][0]===6&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let a=[...'abbb'.matchAll(/(?<=a(?=(b)\1{2}))/dg)];a.length===1&&a[0].index===1&&a[0][0]===''",
     );
-    check(
+    assert_true(
         r"let seen=[];let s='abbb abbb'.replace(/(?<=a(?=(b)\1{2}))b/g,(m,x,i)=>{seen.push(x,i);return '_'});s==='a_bb a_bb'&&seen.join('|')==='b|1|b|6'",
     );
-    check(
+    assert_true(
         r"'abbb'.search(/(?<=a(?=(b)\1{2}))b/)===1&&'abbb'.split(/(?<=a(?=(b)\1{2}))b/).join('|')==='a|b|bb'",
     );
 }
@@ -120,9 +114,6 @@ fn variable_counts_capture_effects_choices_and_unicode_remain_pending() {
         r"/(?<=a(?=(b)\1{2}))b/u.exec('abbb')",
         r"/(?<=a(?=(b)\1{2}))b/v.exec('abbb')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }

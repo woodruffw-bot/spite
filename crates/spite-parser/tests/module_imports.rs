@@ -1,7 +1,8 @@
 //! ImportDeclaration records, imported bindings and attribute early errors (16.2.2).
 
 use spite_core::{DiagnosticKind, JsString};
-use spite_parser::{ast::ImportName, parse_module, parse_script};
+use spite_parser::ast::ImportName;
+use spite_parser::{parse_module, parse_script};
 
 #[test]
 fn imports_retain_default_namespace_named_bindings_requests_and_source_ranges() {

@@ -1,9 +1,9 @@
 //! BindingInitialization for declarations and catch clauses (8.6.3, 14.3.3).
 
-use crate::{
-    BindingState, Error, ExceptionKind, Realm, Reference, Value, environment::EnvironmentHandle,
-    function::IteratorRecord, object::DataDescriptor,
-};
+use crate::environment::EnvironmentHandle;
+use crate::function::IteratorRecord;
+use crate::object::DataDescriptor;
+use crate::{BindingState, Error, ExceptionKind, Realm, Reference, Value};
 use spite_core::{JsString, PropertyKey, Span, WellKnownSymbol};
 use spite_parser::ast::{
     BindingElement, BindingPattern, BindingPatternKind, BindingProperty, PropertyName,

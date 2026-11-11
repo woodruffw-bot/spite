@@ -160,7 +160,7 @@ fn host_abort_in_a_head_default_skips_inner_and_outer_close_and_root_cleanup() {
                             "{kind}: {error}"
                         );
                         if !limited {
-                            assert!(matches!(error, Error::Unsupported { .. }), "{error}")
+                            assert!(matches!(error, Error::Unsupported { .. }), "{error}");
                         }
                         reported = true;
                     }

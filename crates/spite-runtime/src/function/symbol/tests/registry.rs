@@ -1,4 +1,4 @@
-use super::*;
+use super::{Error, ExceptionKind, JsString, JsSymbol, Span, Value, check, realm_with_symbols};
 
 #[test]
 fn registered_symbols_are_shared_by_key_and_separate_from_fresh_and_well_known_symbols() {

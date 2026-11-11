@@ -1,10 +1,8 @@
 //! Suspended PropertyDefinitionEvaluation with shared literal operations (13.2.5.5).
 
 use super::{AsyncExecutionData, child_path, expression_at, has_supported_await, push};
-use crate::{
-    Error, ObjectHandle, Realm, Value,
-    object::async_expression::{AsyncExpressionData, ExprChild, ExprPath, ExprTask},
-};
+use crate::object::async_expression::{AsyncExpressionData, ExprChild, ExprPath, ExprTask};
+use crate::{Error, ObjectHandle, Realm, Value};
 use spite_core::PropertyKey;
 use spite_parser::ast::{ExprKind, ObjectElement, ObjectProperty, PropertyKind, PropertyName};
 

@@ -1,10 +1,8 @@
 //! Iterator constructor/prototype graph and IteratorResult creation (27.1, 7.4.16).
 
 use super::Builtin;
-use crate::{
-    Error, ObjectHandle, Realm, Value,
-    object::{DataDescriptor, DescriptorKind, PropertyDescriptor},
-};
+use crate::object::{DataDescriptor, DescriptorKind, PropertyDescriptor};
+use crate::{Error, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span, WellKnownSymbol};
 
 mod callback;

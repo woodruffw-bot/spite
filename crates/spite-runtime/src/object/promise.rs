@@ -1,7 +1,8 @@
 //! Branded Promise state and retained settlement values (27.2.1).
 
 use super::{Budget, Error, Objects, OrdinaryObject};
-use crate::{Value, function::PromiseCapability};
+use crate::Value;
+use crate::function::PromiseCapability;
 use spite_heap::{Handle, Trace};
 
 /// The current state of a branded Promise, inspected without invoking JavaScript.

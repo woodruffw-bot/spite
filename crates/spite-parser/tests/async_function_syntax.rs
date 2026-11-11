@@ -1,7 +1,8 @@
 //! Async function declarations/expressions before await suspension support.
 
 use spite_core::DiagnosticKind;
-use spite_parser::{ast::FunctionKind, parse_dynamic_function, parse_script};
+use spite_parser::ast::FunctionKind;
+use spite_parser::{parse_dynamic_function, parse_script};
 
 #[test]
 fn declarations_retain_async_kind_parameters_and_exact_source() {

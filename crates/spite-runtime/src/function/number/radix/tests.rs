@@ -1,4 +1,4 @@
-use super::*;
+use super::{Budget, Error, format};
 use crate::{Error as RuntimeError, Realm, Value};
 use spite_core::JsString;
 

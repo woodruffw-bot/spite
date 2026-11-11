@@ -3,13 +3,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn fixed_lookbehind_choice_result_snapshot() {
@@ -68,48 +62,48 @@ fn fixed_lookbehind_choice_result_snapshot() {
 
 #[test]
 fn fixed_lookbehind_choices_partial_capture_undo_named_aliases_and_atomicity_are_exact() {
-    check(
+    assert_true(
         r"let a=/(?<=(?<x>a)b|a(?<x>c))d\k<x>/d.exec('acdc');a[0]==='dc'&&a.index===2&&a[1]===undefined&&a[2]==='c'&&a.groups.x==='c'&&a.indices[1]===undefined&&a.indices.groups.x===a.indices[2]&&a.indices[2][0]===1&&a.indices[2][1]===2",
     );
-    check(
+    assert_true(
         r"let a=/(?<=((a)b|a(c)))d/d.exec('acd');a[1]==='ac'&&a[2]===undefined&&a[3]==='c'&&a.indices[1][0]===0&&a.indices[1][1]===2&&a.indices[2]===undefined&&a.indices[3][0]===1",
     );
-    check(
+    assert_true(
         r"let a=/(?<!((a)b|a(c)))d/d.exec('aqd');a.index===2&&a[1]===undefined&&a[2]===undefined&&a[3]===undefined&&a.indices[1]===undefined&&a.indices[2]===undefined&&a.indices[3]===undefined",
     );
-    check(r"let r=/(?<=((a)|a))c\2/dy;r.lastIndex=1;r.exec('ac')===null&&r.lastIndex===0");
-    check(
+    assert_true(r"let r=/(?<=((a)|a))c\2/dy;r.lastIndex=1;r.exec('ac')===null&&r.lastIndex===0");
+    assert_true(
         r"let a=/(?<=(a|(a)))c\2/d.exec('ac');a[0]==='c'&&a[1]==='a'&&a[2]===undefined&&a.indices[2]===undefined",
     );
-    check(
+    assert_true(
         r"let a=/(?<=()|())a/d.exec('a');a[1]===''&&a[2]===undefined&&a.indices[1][0]===0&&a.indices[1][1]===0&&a.indices[2]===undefined",
     );
-    check(
+    assert_true(
         r"let a=/(?<=(?<x>a)|(?<x>b))c/d.exec('bc');a[1]===undefined&&a[2]==='b'&&a.groups.x==='b'&&a.indices.groups.x===a.indices[2]",
     );
-    check(
+    assert_true(
         r"let a=/(?<=([ab]){2}|(a){2})c/d.exec('abc');a[1]==='a'&&a[2]===undefined&&a.indices[1][0]===0&&a.indices[2]===undefined",
     );
-    check(
+    assert_true(
         r"let a=/((?<=(a|b))){2}c\1\2/d.exec('bcb'),b=/((?<=(a|b)))*c\1\2/d.exec('bc');a[1]===''&&a[2]==='b'&&a.indices[2][0]===0&&b[1]===undefined&&b[2]===undefined",
     );
 }
 
 #[test]
 fn fixed_lookbehind_choice_consumers_global_sticky_empty_and_callbacks_preserve_ranges() {
-    check(
+    assert_true(
         r"let r=/(?<=(?<x>a)|(?<x>b))c/dg,a=[...'acqbc'.matchAll(r)];a.length===2&&a[0].index===1&&a[0].groups.x==='a'&&a[1].index===4&&a[1].groups.x==='b'&&a[1].indices.groups.x[0]===3&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/(?<=(a|b))c/dy;r.lastIndex=1;let a=r.exec('bc');a[1]==='b'&&a.index===1&&r.lastIndex===2&&r.exec('bc')===null&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/(?<=(a|b))/dg,a=[...'ab'.matchAll(r)];a.length===2&&a[0].index===1&&a[0][1]==='a'&&a[1].index===2&&a[1][1]==='b'&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let seen=[];let s='acqbc'.replace(/(?<=(?<x>a)|(?<x>b))c/g,(m,a,b,i,s,g)=>{seen.push(m,a,b,i,s,g.x);return '_'});s==='a_qb_'&&seen.length===12&&seen[1]==='a'&&seen[2]===undefined&&seen[3]===1&&seen[5]==='a'&&seen[7]===undefined&&seen[8]==='b'&&seen[9]===4&&seen[11]==='b'",
     );
-    check(
+    assert_true(
         r"'acqbc'.replace(/(?<=(?<x>a)|(?<x>b))c/g,'<$<x>>')==='a<a>qb<b>'&&'acqbc'.search(/(?<=(a|b))c/)===1&&'acqbc'.split(/(?<=(a|b))c/).join('|')==='a|a|qb|b|'",
     );
 }
@@ -134,7 +128,7 @@ fn explicit_fixed_lookbehind_branch_work_aborts_before_last_index_and_handlers()
 }
 
 #[test]
-fn differing_widths_repeated_choices_internal_references_and_lookahead_remain_unsupported() {
+fn differing_widths_repeated_choices_internal_references_and_lookahead_match_reference_results() {
     for source in [
         r"/(?<=a|bb)c/.exec('bbc')",
         r"/(?<=(a|bb))c/.exec('bbc')",
@@ -144,9 +138,6 @@ fn differing_widths_repeated_choices_internal_references_and_lookahead_remain_un
         r"/(?<=(a|b))c/u.exec('bc')",
         r"/(?<=(a|b))c/v.exec('bc')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }

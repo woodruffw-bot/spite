@@ -1,13 +1,7 @@
 //! Grouped string alternatives retain their owner and unconditional siblings.
+use crate::common::assert_true;
 use spite_core::JsString;
 use spite_runtime::{Realm, Value};
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
 
 fn exact_nullable_source(source: JsString) -> JsString {
     let mut units = JsString::from("(?:").code_units().to_vec();
@@ -17,7 +11,7 @@ fn exact_nullable_source(source: JsString) -> JsString {
 }
 #[test]
 fn exact_single_unasserted_string_class_layouts_keep_whole_branch_and_sibling_capture_ranges() {
-    let huge = 2u128;
+    let repeat_count = 2;
     for (class, input, word) in [
         (r"[\q{|a|ab}]", "ab!", Some("ab")),
         (r"[\q{|a|ab}]", "!", Some("")),
@@ -81,7 +75,7 @@ fn exact_single_unasserted_string_class_layouts_keep_whole_branch_and_sibling_ca
                     ),
                     4 => (
                         class.to_owned(),
-                        format!("(?<empty>(?<deep>)?)(?<required>){{{huge}}}"),
+                        format!("(?<empty>(?<deep>)?)(?<required>){{{repeat_count}}}"),
                         "",
                         "",
                         "",
@@ -90,7 +84,7 @@ fn exact_single_unasserted_string_class_layouts_keep_whole_branch_and_sibling_ca
                     ),
                     _ => (
                         format!("(?:|)(?<part>(?<deep>{class}))(?<after>)"),
-                        format!("(?:(?:)|(?:)){{{huge}}}"),
+                        format!("(?:(?:)|(?:)){{{repeat_count}}}"),
                         "part,deep",
                         "",
                         "after",
@@ -112,7 +106,7 @@ fn exact_single_unasserted_string_class_layouts_keep_whole_branch_and_sibling_ca
                 let end = 1 + whole.len();
                 let text = JsString::from(format!("!{input}").as_str());
                 let named = true;
-                check(&format!(
+                assert_true(&format!(
                     r#"
                 var r=new RegExp({pattern:?},'dvgy');r.lastIndex=1;var m=r.exec({text:?}),ok=true;
                 if({named}){{var keys=Object.keys(m.groups),characters='{characters}'.split(','),before='{before}'.split(','),after='{after}'.split(','),empty='{empties}'.split(','),never='{never}'.split(',');
@@ -139,47 +133,47 @@ fn exact_single_unasserted_string_class_layouts_keep_whole_branch_and_sibling_ca
 }
 #[test]
 fn exact_single_unasserted_string_class_consumers_keep_source_order_names_and_empty_identity() {
-    check(
+    assert_true(
         r"var m=/(?:(?<outer>(?<part>[\q{a|ab}])|(?<empty>))){0001,1}?/dv.exec('!');m[0]===''&&m.groups.outer===''&&m.groups.part===undefined&&m.groups.empty===''&&m.indices.groups.outer[0]===0&&m.indices.groups.outer[1]===0",
     );
-    check(
+    assert_true(
         r"var m=/(?:(?<outer>(?<part>[\q{|a|ab}])|(?<empty>))){0001,1}?/dv.exec('!');m[0]===''&&m.groups.outer===''&&m.groups.part===''&&m.groups.empty===undefined&&m.indices.groups.part[0]===0&&m.indices.groups.part[1]===0",
     );
-    check(
+    assert_true(
         r"var m=/(?:(?<outer>(?<empty>)|(?<part>[\q{|a|ab}]))){0001,1}?/dv.exec('ab!');m[0]===''&&m.groups.outer===''&&m.groups.empty===''&&m.groups.part===undefined",
     );
-    check(
+    assert_true(
         r"var r=/(?:(?<before>)(?<outer>(?<part>[\q{|😀|😀a}])|(?<empty>))(?<after>)){0001,1}?/dvgy;r.lastIndex=1;var m=r.exec('😀a!');m[0]==='😀a'&&m.index===0&&m.groups.outer==='😀a'&&m.groups.part==='😀a'&&m.groups.before===''&&m.groups.after===''&&m.indices.groups.outer[1]===3&&m.indices.groups.after[0]===3&&r.lastIndex===3",
     );
-    check(
+    assert_true(
         r"var m=/(?:(?<outer>(?<\u{1D49C}>[\q{|s|sa|k|ka}])|(?<empty>))){0001,1}?/dvi.exec('ſaKa');m.groups.outer==='ſa'&&m.groups.𝒜==='ſa'&&m.groups.empty===undefined&&m.indices.groups.𝒜[1]===2",
     );
-    check(
+    assert_true(
         r"var r=/(?:(?<outer>[\q{|ab}]|)){0001,1}?/vg;Object.defineProperty(r,'lastIndex',{writable:false});var caught=false;try{r.exec('!')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
     );
 
-    check(
+    assert_true(
         r"var r=/(?:(?<before>)(?<whole>(?<part>[\q{|a|ab}])|(?<empty>))(?<after>)){0001,1}?/dvg;var a=Array.from('abXa'.matchAll(r));a.length===4&&a.map(m=>m[0]).join('|')==='ab||a|'&&a.every(m=>m.groups.whole===m[0]&&m.groups.part===m[0]&&m.groups.before===''&&m.groups.after===''&&m.groups.empty===undefined)&&a[1].indices.groups.whole[0]===2&&a[1].indices.groups.whole[1]===2&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"var a=Array.from('😀a'.matchAll(/(?:(?<whole>(?<part>[\q{ab}])|(?<empty>))){0001,1}?/dvg));a.length===3&&a.map(m=>m.index).join(',')==='0,2,3'&&a.every(m=>m.groups.whole===''&&m.groups.part===undefined&&m.groups.empty==='')",
     );
-    check(
+    assert_true(
         r"var calls=0;var out='abXa'.replace(/(?:(?<before>)(?<whole>(?<part>[\q{|a|ab}])|(?<empty>))(?<after>)){0001,1}?/vg,function(all,b,w,p,e,a,offset,input,groups){calls++;return arguments.length===9&&all===w&&w===p&&b===''&&a===''&&e===undefined&&groups.whole===all&&input==='abXa'?'#':'bad'});out==='##X##'&&calls===4",
     );
-    check(
+    assert_true(
         r"var r=/(?:(?<before>)(?<whole>(?<part>[\q{|a|ab}])|(?<empty>))(?<after>)){0001,1}?/vg;r.lastIndex=9;var parts='abX'.split(r);'Xab'.search(r)===0&&r.lastIndex===9&&parts.length===7&&parts[0]===''&&parts[1]===''&&parts[2]==='ab'&&parts[3]==='ab'&&parts[4]===undefined&&parts[5]===''&&parts[6]==='X'&&'abXa'.replace(r,'<$<whole>:$<part>:$<empty>>')==='<ab:ab:><::>X<a:a:><::>'",
     );
-    check(
+    assert_true(
         r"var m=/()(?<part>[\q{a|ab}]){1}()|(?<empty>)/dv.exec('!');m[0]===''&&m[1]===undefined&&m.groups.part===undefined&&m.groups.empty===''&&m.indices.groups.empty===m.indices[4]&&m.indices[4][0]===0",
     );
-    check(
+    assert_true(
         r"var m=/(?<empty>)|()(?<part>[\q{|a|ab}]){1}()/dv.exec('ab!');m[0]===''&&m.groups.empty===''&&m.groups.part===undefined&&m[2]===undefined&&m.indices.groups.empty===m.indices[1]",
     );
-    check(
+    assert_true(
         r"var r=/()(?<part>[\q{}]{1})()|(?<empty>)/dvg;r.lastIndex=1;var m=r.exec('x');m.index===1&&m[0]===''&&m[1]===''&&m.groups.part===''&&m[3]===''&&m.groups.empty===undefined&&m.indices.groups.part===m.indices[2]&&m.indices[2][0]===1&&r.lastIndex===1",
     );
-    check(
+    assert_true(
         r"var r=/()(([\q{}])|()){1}/vg;Object.defineProperty(r,'lastIndex',{writable:false});var caught=false;try{r.exec('!')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
     );
     let mut realm = Realm::default();
@@ -187,25 +181,25 @@ fn exact_single_unasserted_string_class_consumers_keep_source_order_names_and_em
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("m.groups.whole===''&&m.groups.part===''&&m.groups.empty===undefined&&clone.exec('ab!').groups.whole==='ab'"),Ok(Value::Boolean(true)));
 
-    check(
+    assert_true(
         r"var marker=0,m;try{m=/(?:(?:([\q{a|ab}])|())){0001,1}?/dv.exec('ab!')}finally{marker=3}marker===3&&m[0]==='ab'&&m[1]==='ab'&&m[2]===undefined&&m.indices[1][1]===2",
     );
-    check(
+    assert_true(
         r"var marker=0,m;try{m=/(?:(?:([\q{|a|ab}])|())){0001,1}?/dv.exec('!')}finally{marker=3}marker===3&&m[0]===''&&m[1]===''&&m[2]===undefined&&m.indices[1][0]===0",
     );
-    check(
+    assert_true(
         r"var marker=0,m;try{m=/(?:^([\q{a|ab}]|())){0001,1}?/dv.exec('ab!')}finally{marker=3}var e=/(?:^([\q{a|ab}]|())){0001,1}?/dv.exec('!ab');marker===3&&m.length===3&&m[0]==='ab'&&m[1]==='ab'&&m[2]===undefined&&e[0]===''&&e[1]===''&&e[2]===''&&e.index===0",
     );
-    check(
+    assert_true(
         r"var marker=0,m;try{m=/(?:([\q{|ab}]|())$){0001,1}?/dv.exec('ab!')}finally{marker=3}var a=/(?:([\q{|ab}]|())$){0001,1}?/dv.exec('ab');marker===3&&m.length===3&&m.index===3&&m[0]===''&&m[1]===''&&m[2]===undefined&&m.indices[1][0]===3&&a[0]==='ab'&&a[1]==='ab'&&a[2]===undefined",
     );
-    check(
+    assert_true(
         r#"var marker=0,ok=false;try{ok=(function(){var pattern="([\\q{a|ab}]|())+",rows=[],metadata=true;
 for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
 for(var input of ['ab!','','\n','x\nab']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
 return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"ab\",\"ab\",\"<undefined>\"],\"indices\":[[0,2],[0,2],\"<undefined>\"],\"index\":0},2],[false,\"\",{\"values\":[\"\",\"\",\"\"],\"indices\":[[0,0],[0,0],[0,0]],\"index\":0},0],[false,\"\\n\",{\"values\":[\"\",\"\",\"\"],\"indices\":[[0,0],[0,0],[0,0]],\"index\":0},0],[false,\"x\\nab\",{\"values\":[\"\",\"\",\"\"],\"indices\":[[0,0],[0,0],[0,0]],\"index\":0},0],[true,\"ab!\",{\"values\":[\"ab\",\"ab\",\"<undefined>\"],\"indices\":[[0,2],[0,2],\"<undefined>\"],\"index\":0},2],[true,\"\",{\"values\":[\"\",\"\",\"\"],\"indices\":[[0,0],[0,0],[0,0]],\"index\":0},0],[true,\"\\n\",{\"values\":[\"\",\"\",\"\"],\"indices\":[[0,0],[0,0],[0,0]],\"index\":0},0],[true,\"x\\nab\",{\"values\":[\"\",\"\",\"\"],\"indices\":[[0,0],[0,0],[0,0]],\"index\":0},0]]"})();}finally{marker=3}ok&&marker===3"#,
     );
-    check(
+    assert_true(
         r#"var marker=0,ok=false;try{ok=(function(){var pattern="([\\q{|ab}]|()){0}",rows=[],metadata=true;
 for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
 for(var input of ['ab!','','\n','x\nab']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
@@ -223,15 +217,12 @@ return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"\",\"<un
         r"([\q{ab}&&\p{Any}&&\p{RGI_Emoji}]|())",
     ] {
         let mut realm = Realm::default();
-        assert!(
-            crate::common::regexp_oracle::check(
-                &mut realm,
-                &format!(
-                    "var marker=0;try{{new RegExp({:?},'v').test('ab')}}catch{{marker=1}}finally{{marker=2}};marker",
-                    JsString::from(pattern)
-                )
+        crate::common::regexp_oracle::assert_matches_reference(
+            &mut realm,
+            &format!(
+                "var marker=0;try{{new RegExp({:?},'v').test('ab')}}catch{{marker=1}}finally{{marker=2}};marker",
+                JsString::from(pattern)
             ),
-            "{pattern}"
         );
     }
 }

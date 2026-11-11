@@ -2,13 +2,7 @@
 
 use spite_runtime::{Error, ExceptionKind, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn search_positions_distinguish_forward_and_backward_nan_defaults() {
@@ -29,14 +23,14 @@ fn search_positions_distinguish_forward_and_backward_nan_defaults() {
         ("4", -1, 3),
         ("100", -1, 3),
     ] {
-        check(&format!(
+        assert_true(&format!(
             "'abcabc'.indexOf('ab',{position})==={forward} && 'abcabc'.lastIndexOf('ab',{position})==={backward}"
         ));
     }
-    check(
+    assert_true(
         "'abcabc'.indexOf('ab')===0 && 'abcabc'.lastIndexOf('ab')===3 && 'aba'.lastIndexOf('ba',1)===1 && 'aba'.lastIndexOf('aba',0)===0",
     );
-    check(
+    assert_true(
         "'undefinedundefined'.indexOf()===0 && 'undefinedundefined'.lastIndexOf()===9 && 'null'.indexOf(null)===0",
     );
 }
@@ -52,27 +46,27 @@ fn empty_needles_and_impossible_matches_have_exact_boundary_results() {
             ("3", 3),
             ("Infinity", 3),
         ] {
-            check(&format!("'abc'.{name}('',{position})==={expected}"));
+            assert_true(&format!("'abc'.{name}('',{position})==={expected}"));
         }
-        check(&format!(
+        assert_true(&format!(
             "''.{name}('')===0 && ''.{name}('a')===-1 && 'ab'.{name}('abc')===-1 && 'abab'.{name}('c')===-1"
         ));
-        check(&format!("Object.is(''.{name}('',-0),0)"));
+        assert_true(&format!("Object.is(''.{name}('',-0),0)"));
     }
-    check(
+    assert_true(
         "'abc'.indexOf('',NaN)===0 && 'abc'.lastIndexOf('',NaN)===3 && 'abc'.indexOf('',undefined)===0 && 'abc'.lastIndexOf('',undefined)===3",
     );
 }
 
 #[test]
 fn searches_compare_code_units_including_surrogate_halves() {
-    check(
+    assert_true(
         "'💩x💩'.indexOf('💩')===0 && '💩x💩'.lastIndexOf('💩')===3 && '💩x💩'.indexOf('\\uDCA9')===1 && '💩x💩'.lastIndexOf('\\uDCA9')===4",
     );
-    check(
+    assert_true(
         "'\\uD800x\\uD800'.indexOf('\\uD800')===0 && '\\uD800x\\uD800'.lastIndexOf('\\uD800')===2 && 'é'.indexOf('é')===-1",
     );
-    check(
+    assert_true(
         "'aaaa'.indexOf('aa',1)===1 && 'aaaa'.lastIndexOf('aa')===2 && 'aaaa'.lastIndexOf('aa',1)===1",
     );
 }
@@ -80,10 +74,10 @@ fn searches_compare_code_units_including_surrogate_halves() {
 #[test]
 fn receiver_and_search_use_string_hint_before_position_conversion() {
     for name in ["indexOf", "lastIndexOf"] {
-        check(&format!(
+        assert_true(&format!(
             "let log='';let r={{toString:()=>{{log+='r';return 'abc';}}}},s={{toString:()=>{{log+='s';return 'b';}},valueOf:()=>{{throw 1;}}}},p={{valueOf:()=>{{log+='p';return 1;}},toString:()=>{{throw 2;}}}};String.prototype.{name}.call(r,s,p)===1 && log==='rsp'"
         ));
-        check(&format!(
+        assert_true(&format!(
             "String.prototype.{name}.call(123n,2)===1 && new String('abc').{name}('b')===1 && String.prototype.{name}.call(true,'r')===1"
         ));
         // Even an impossible length comparison observes the position conversion.
@@ -122,7 +116,7 @@ fn search_methods_reject_nullish_receivers_and_preserve_standard_metadata() {
                 })
             ));
         }
-        check(&format!(
+        assert_true(&format!(
             "let d=Object.getOwnPropertyDescriptor(String.prototype,'{name}');d.writable && !d.enumerable && d.configurable && d.value.name==='{name}' && d.value.length===1 && !Object.hasOwn(d.value,'prototype')"
         ));
         assert!(matches!(

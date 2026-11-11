@@ -1,66 +1,60 @@
 //! Top-level choices compose quantified consuming branches and fixed captures.
 
+use crate::common::assert_true;
 use spite_runtime::{Realm, Value};
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
 
 #[test]
 fn earliest_positions_and_source_order_keep_per_branch_repetition_order() {
-    check(
+    assert_true(
         "/a|a+/.exec('aaa')[0]==='a'&&/a+|a/.exec('aaa')[0]==='aaa'&&/a+?|a+/.exec('aaa')[0]==='a'&&/[ab]*ab|[ab]*?ab/.exec('abab')[0]==='abab'&&/[ab]*?ab|[ab]*ab/.exec('abab')[0]==='ab'",
     );
-    check(
+    assert_true(
         "/([x])|[ab]+/.exec('aaax').index===0&&/a*|([b])/.exec('b')[0]===''&&/[]+|a/.exec('a')[0]==='a'",
     );
 }
 
 #[test]
 fn variable_branches_retain_global_undefined_slots_and_empty_fixed_captures() {
-    check(
+    assert_true(
         "let r=/([x])()|[ab]+|([y])/d,m=r.exec('bbb'),n=r.exec('x'),p=r.exec('y');m.length===4&&m[1]===undefined&&m[2]===undefined&&m[3]===undefined&&Object.hasOwn(m,'1')&&Object.hasOwn(m.indices,'2')&&m.indices[1]===undefined&&m.indices[0][1]===3&&n[1]==='x'&&n[2]===''&&n.indices[2][0]===1&&n.indices[2][1]===1&&p[3]==='y'&&p[1]===undefined",
     );
-    check(
+    assert_true(
         "let calls=0;Object.defineProperty(Array.prototype,'1',{set(){calls++},configurable:true});let m=/([x])|a+/d.exec('aaa'),p=Object.getOwnPropertyDescriptor(m,'1'),q=Object.getOwnPropertyDescriptor(m.indices,'1');calls===0&&p.value===undefined&&p.writable&&p.enumerable&&p.configurable&&q.value===undefined&&q.writable",
     );
 }
 
 #[test]
 fn global_sticky_and_strict_lastindex_follow_the_selected_complete_branch() {
-    check(
+    assert_true(
         "let r=/[ab]+|([x])/g,a=r.exec('aaa xbb'),b=r.exec('aaa xbb'),c=r.exec('aaa xbb');a[0]==='aaa'&&a[1]===undefined&&b[1]==='x'&&c[0]==='bb'&&r.lastIndex===7&&r.exec('aaa xbb')===null&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         "let r=/[ab]*ab|([x])/y;r.lastIndex=1;let m=r.exec('xabab');m[0]==='abab'&&m[1]===undefined&&r.lastIndex===5&&r.exec('xabab')===null&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         "let r=/a+|b/g;Object.defineProperty(r,'lastIndex',{writable:false});let ok=false;try{r.exec('aaa')}catch(e){ok=e instanceof TypeError}ok",
     );
 }
 
 #[test]
 fn multiline_fixed_branches_dotall_case_and_surrogate_units_stay_independent() {
-    check(
+    assert_true(
         r"let r=/^([a])$|b+/m,a=r.exec('x\na\ny'),b=r.exec('xbb');a.index===2&&a[1]==='a'&&b.index===1&&b[1]===undefined",
     );
-    check(
+    assert_true(
         r"/.+|([a])/s.exec('a\nb')[0]==='a\nb'&&/[µ]+x|a/i.exec('ΜµX')[0]==='ΜµX'&&/[ſ]+|a/i.exec('s')===null&&/\uD800+|a/.exec('\uD800\uD800\uDC00')[0].length===2",
     );
 }
 
 #[test]
 fn generic_consumers_callbacks_and_empty_advancement_keep_global_slots() {
-    check(
+    assert_true(
         "'xaa'.replace(/([x])|a+/g,'$1-')==='x--'&&'xaa'.split(/([x])|a+/).length===5&&'xxa'.search('[ab]+|([x])')===0",
     );
-    check(
+    assert_true(
         "let seen=[];let s='xaa'.replace(/([x])|a+/g,(whole,cap,index)=>{seen.push(cap===undefined,index);return whole});s==='xaa'&&seen.join(',')==='false,0,true,1'",
     );
-    check(
+    assert_true(
         "let all=[...'xaa'.matchAll(/([x])|a+/dg)];all.length===2&&all[0][1]==='x'&&all[1][1]===undefined&&all[1].indices[1]===undefined&&'aa'.match(/a*?|([b])/g).length===3",
     );
 }
@@ -85,9 +79,6 @@ fn nested_choices_quantified_captures_and_unsupported_branches_reject_the_whole_
         "/a+|b/u.test('a')",
         r"/(?:(?:(?:(a)\1|b+){2})|){2,3}/.test('b')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }

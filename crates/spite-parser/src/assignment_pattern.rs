@@ -1,6 +1,11 @@
 //! Supplemental destructuring assignment grammar and early errors (13.15.5).
 
-use super::*;
+use super::{
+    AssignmentElement, AssignmentPattern, AssignmentPatternKind, AssignmentProperty,
+    AssignmentTarget, Diagnostic, DiagnosticKind, Expr, ExprKind, Kind, Literal, Parser,
+    PropertyKind, PropertyName, Span, Token, assignment_name, assignment_target, cover, early,
+    reserved, strict_reserved, validate_expr,
+};
 
 pub(super) type Cover = std::rc::Rc<cover::Probe<AssignmentPattern>>;
 

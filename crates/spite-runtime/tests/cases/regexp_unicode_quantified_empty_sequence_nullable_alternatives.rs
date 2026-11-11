@@ -3,13 +3,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn unicode_quantified_empty_sequence_nullable_alternative_results_snapshot() {
@@ -48,7 +42,7 @@ fn unicode_quantified_empty_sequence_nullable_alternative_results_snapshot() {
 
 #[test]
 fn unicode_quantified_empty_sequence_nullable_alternative_names_scopes_and_surrogates() {
-    check(
+    assert_true(
         r"let p='(a|(?:)*(?:)+?){0003,000999999999999999999999999}?',r=new RegExp(p,'dvg'),c=new RegExp(r),m=c.exec('aaaa');c.source===p&&c.flags==='dgv'&&m[0]==='aaa'&&m[1]==='a'",
     );
 }

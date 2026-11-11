@@ -2,13 +2,7 @@
 
 use spite_runtime::{Error, ExceptionKind, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 fn type_error(source: &str) {
     assert!(
@@ -25,13 +19,13 @@ fn type_error(source: &str) {
 
 #[test]
 fn fill_preserves_value_identity_and_creates_properties_for_holes() {
-    check(
+    assert_true(
         "let a=[1,,,4],o={valueOf:()=>{throw 7;}};a.fill(o)===a && a.length===4 && a[0]===o && a[1]===o && a[2]===o && a[3]===o && Object.hasOwn(a,'1')",
     );
-    check(
+    assert_true(
         "let a=[,,];a.fill();Object.hasOwn(a,'0') && Object.hasOwn(a,'1') && a[0]===undefined && a[1]===undefined",
     );
-    check("[1,2].fill(7n)[1]===7n && ['x','y'].fill('\\uD800')[0]==='\\uD800'");
+    assert_true("[1,2].fill(7n)[1]===7n && ['x','y'].fill('\\uD800')[0]==='\\uD800'");
 }
 
 #[test]
@@ -50,7 +44,7 @@ fn fill_clamps_relative_ranges_and_distinguishes_undefined_end_from_nan() {
         ("7,3,1", "0,1,2,3"),
         ("7,-100,-Infinity", "0,1,2,3"),
     ] {
-        check(&format!("[0,1,2,3].fill({args}).join()==='{expected}'"));
+        assert_true(&format!("[0,1,2,3].fill({args}).join()==='{expected}'"));
     }
 }
 
@@ -70,23 +64,25 @@ fn copy_within_handles_overlap_in_both_directions_and_preserves_holes() {
         ("0,1,NaN", "0,1,2,3,4"),
         ("0,1,undefined", "1,2,3,4,4"),
     ] {
-        check(&format!(
+        assert_true(&format!(
             "[0,1,2,3,4].copyWithin({args}).join()==='{expected}'"
         ));
     }
-    check(
+    assert_true(
         "let a=[0,,2,3];a.copyWithin(1,0,3)===a && a.length===4 && a[0]===0 && a[1]===0 && !(2 in a) && a[3]===2",
     );
-    check("let a=[0,1,,3];a.copyWithin(0,1,3);a[0]===1 && !(1 in a) && !(2 in a) && a[3]===3");
-    check("let a=[undefined,,];a.copyWithin(1,0,1);Object.hasOwn(a,'1') && a[1]===undefined");
+    assert_true(
+        "let a=[0,1,,3];a.copyWithin(0,1,3);a[0]===1 && !(1 in a) && !(2 in a) && a[3]===3",
+    );
+    assert_true("let a=[undefined,,];a.copyWithin(1,0,1);Object.hasOwn(a,'1') && a[1]===undefined");
 }
 
 #[test]
 fn all_range_arguments_are_coerced_in_order_even_for_empty_ranges() {
-    check(
+    assert_true(
         "let log='',o={};Object.defineProperty(o,'length',{get:()=>{log+='l';return {valueOf:()=>{log+='n';return 0;}};}});Array.prototype.fill.call(o,{}, {valueOf:()=>{log+='s';return Infinity;}},{valueOf:()=>{log+='e';return 0;}});log==='lnse'",
     );
-    check(
+    assert_true(
         "let log='',o={};Object.defineProperty(o,'length',{get:()=>{log+='l';return {valueOf:()=>{log+='n';return 0;}};}});Array.prototype.copyWithin.call(o,{valueOf:()=>{log+='t';return Infinity;}},{valueOf:()=>{log+='s';return 0;}},{valueOf:()=>{log+='e';return 0;}});log==='lntse'",
     );
     for source in [
@@ -114,20 +110,22 @@ fn all_range_arguments_are_coerced_in_order_even_for_empty_ranges() {
 
 #[test]
 fn captured_length_controls_range_despite_conversion_and_setter_mutations() {
-    check(
+    assert_true(
         "let a=[1,2,3];a.fill(7,{valueOf:()=>{a.length=0;return 0;}});a.join()==='7,7,7' && a.length===3",
     );
-    check(
+    assert_true(
         "let a=[1,2,3];a.fill(7,0,{valueOf:()=>{a[3]=9;return undefined;}});a.join()==='1,2,3,9'",
     );
-    check(
+    assert_true(
         "let a=[1,2,3];Object.defineProperty(a,'0',{set:v=>{a.length=1;}});a.fill(7);a[1]===7 && a[2]===7 && a.length===3",
     );
-    check("let a=[1,2,3];a.copyWithin({valueOf:()=>{a[3]=9;return 0;}},1);a.join()==='2,3,3,9'");
-    check(
+    assert_true(
+        "let a=[1,2,3];a.copyWithin({valueOf:()=>{a[3]=9;return 0;}},1);a.join()==='2,3,3,9'",
+    );
+    assert_true(
         "let a=[1,2,3];a.copyWithin(0,{valueOf:()=>{a.length=1;return 1;}});!(0 in a) && a.length===1",
     );
-    check(
+    assert_true(
         "let a=[1,2,3,4];Object.defineProperty(a,'1',{get:()=>{a[2]=9;return 2;},set:function(v){}});a.copyWithin(0,1,4);a[0]===2 && a[2]===4",
     );
 }
@@ -139,30 +137,30 @@ fn copy_reads_and_writes_live_in_the_required_direction_without_self_copy_shortc
         ("0,1,4", "g1s0:1;g2s1:2;g3s2:3;"),
         ("0,0,1", "g0s0:0;"),
     ] {
-        check(&format!(
+        assert_true(&format!(
             "let log='',o={{length:4}};function define(k){{Object.defineProperty(o,k,{{get:()=>{{log+='g'+k;return k;}},set:v=>{{log+='s'+k+':'+v+';'}}}});}}define(0);define(1);define(2);define(3);Array.prototype.copyWithin.call(o,{args});log==='{expected}'"
         ));
     }
-    check(
+    assert_true(
         "let a=[1,2,3];Object.defineProperty(a,'0',{get:()=>{delete a[1];return 1;}});a.copyWithin(1,0,2);a[1]===1 && a[2]===2",
     );
-    check(
+    assert_true(
         "let a=[1,2,3,4];Object.defineProperty(a,'2',{get:()=>{delete a[3];return 3;}});a.copyWithin(0,2,4);a[0]===3 && !(1 in a)",
     );
 }
 
 #[test]
 fn inherited_sources_and_setters_work_and_hole_deletion_preserves_prototypes() {
-    check(
+    assert_true(
         "let p={1:7},o=Object.create(p);o.length=2;Array.prototype.copyWithin.call(o,0,1);o[0]===7 && Object.hasOwn(o,'0') && !Object.hasOwn(o,'1')",
     );
-    check(
+    assert_true(
         "let p={0:9},o=Object.create(p);o[0]=1;o.length=2;Array.prototype.copyWithin.call(o,0,1);!Object.hasOwn(o,'0') && o[0]===9 && p[0]===9",
     );
-    check(
+    assert_true(
         "let value,valid=false,p={};Object.defineProperty(p,'0',{set:function(v){value=v;valid=this===o;}});let o=Object.create(p);o.length=1;Array.prototype.fill.call(o,7);valid && value===7 && !Object.hasOwn(o,'0')",
     );
-    check(
+    assert_true(
         "let value,valid=false,p={};Object.defineProperty(p,'0',{set:function(v){value=v;valid=this===o;}});let o=Object.create(p);o.length=2;o[1]=7;Array.prototype.copyWithin.call(o,0,1);valid && value===7 && !Object.hasOwn(o,'0')",
     );
 }
@@ -206,8 +204,8 @@ fn strict_mutation_failures_retain_only_the_completed_earlier_effects() {
         assert_eq!(realm.eval(expected), Ok(Value::Boolean(true)), "{call}");
     }
     type_error("Object.freeze([1]).copyWithin(0,0)");
-    check("let a=Object.freeze([]);a.fill(7)===a && a.copyWithin(0,0)===a");
-    check(
+    assert_true("let a=Object.freeze([]);a.fill(7)===a && a.copyWithin(0,0)===a");
+    assert_true(
         "let a=[1,2],n=0;Object.defineProperty(a,'1',{set:()=>{n++;throw 7;}});try{a.fill(9);}catch(e){if(e!==7)throw e;}a[0]===9 && n===1",
     );
 }
@@ -215,21 +213,21 @@ fn strict_mutation_failures_retain_only_the_completed_earlier_effects() {
 #[test]
 fn generic_receivers_keep_length_untouched_and_support_safe_integer_indices() {
     for method in ["fill", "copyWithin"] {
-        check(&format!(
+        assert_true(&format!(
             "let o={{0:1,1:2}},n=0;Object.defineProperty(o,'length',{{get:()=>2,set:()=>{{n++;throw 7;}}}});Array.prototype.{method}.call(o,0,1)===o && n===0"
         ));
-        check(&format!(
+        assert_true(&format!(
             "Array.prototype.{method}.call(false).valueOf()===false && Array.prototype.{method}.call(7).valueOf()===7 && Array.prototype.{method}.call('').valueOf()===''"
         ));
         type_error(&format!("Array.prototype.{method}.call('aa',0,0)"));
     }
-    check(
+    assert_true(
         "let o={length:Infinity};Array.prototype.fill.call(o,7,-2);o[9007199254740989]===7 && o[9007199254740990]===7 && !(9007199254740991 in o) && o.length===Infinity",
     );
-    check(
+    assert_true(
         "let o={9007199254740989:7,0:1,1:2,length:Infinity};Array.prototype.copyWithin.call(o,0,-2);o[0]===7 && !(1 in o) && o.length===Infinity",
     );
-    check(
+    assert_true(
         "let a=[1,2];Object.defineProperty(a,'length',{writable:false});a.fill(7);a.copyWithin(0,1);a.join()==='7,7'",
     );
 }
@@ -252,7 +250,7 @@ fn receiver_and_length_errors_precede_index_conversion() {
 #[test]
 fn metadata_nonconstructibility_and_collection_are_standard() {
     for (method, length) in [("fill", 1), ("copyWithin", 2)] {
-        check(&format!(
+        assert_true(&format!(
             "let f=Array.prototype.{method},d=Object.getOwnPropertyDescriptor(Array.prototype,'{method}');f.name==='{method}' && f.length==={length} && f.prototype===undefined && d.value===f && d.writable && !d.enumerable && d.configurable"
         ));
         type_error(&format!("new Array.prototype.{method}"));

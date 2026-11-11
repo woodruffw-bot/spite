@@ -1,9 +1,8 @@
 //! Independent dynamic AsyncFunction grammar goals and retained UTF-16 source.
 
 use spite_core::{DiagnosticKind, JsString};
-use spite_parser::{
-    MAX_DEPTH, ast::FunctionKind, parse_dynamic_async_function, parse_dynamic_async_function_utf16,
-};
+use spite_parser::ast::FunctionKind;
+use spite_parser::{MAX_DEPTH, parse_dynamic_async_function, parse_dynamic_async_function_utf16};
 
 #[test]
 fn async_dynamic_source_retains_kind_standard_name_and_independent_strictness() {

@@ -3,17 +3,11 @@
 use spite_core::JsString;
 use spite_runtime::{Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn erased_classes_match_native_empty_patterns_across_modes_flags_and_boundaries() {
-    check(
+    assert_true(
         r#"
         var cases=[
             ['[\\p{RGI_Emoji}]','v'],
@@ -59,7 +53,7 @@ fn erased_class_string_consumers_and_clones_retain_empty_match_metadata() {
 
 #[test]
 fn syntax_errors_still_precede_class_erasure_and_other_shapes_stay_unsupported() {
-    check(
+    assert_true(
         r#"
         var invalid=[
             ['[^\\p{RGI_Emoji}]{0}','v'],
@@ -76,19 +70,16 @@ fn syntax_errors_still_precede_class_erasure_and_other_shapes_stay_unsupported()
     );
     for pattern in [r"[\p{RGI_Emoji}]{0,1}", r"[\p{RGI_Emoji}]{0}a"] {
         let pattern = JsString::from(pattern);
-        assert!(
-            crate::common::regexp_oracle::check(
-                &mut Realm::default(),
-                &format!("new RegExp({pattern:?},'v').test('')")
-            ),
-            "{pattern:?}"
+        crate::common::regexp_oracle::assert_matches_reference(
+            &mut Realm::default(),
+            &format!("new RegExp({pattern:?},'v').test('')"),
         );
     }
 }
 
 #[test]
 fn enclosing_class_captures_keep_named_aliases_and_normalized_empty_ranges() {
-    check(
+    assert_true(
         r#"
         var cases=[['[\\p{RGI_Emoji}]','v'],['[[\\q{ab}]&&\\p{RGI_Emoji}]','v'],['[()\\]]','u'],['[[]','']],ok=true;
         for(var pair of cases)for(var count of ['{0}','{000,000}?'])for(var frame of [['(?<outside>',')',1],['(?<outside>(?:(?<second>',')))',2],['(?:',')',0]]){
@@ -122,7 +113,7 @@ fn enclosing_class_string_consumers_clones_and_collection_preserve_defined_slots
 
 #[test]
 fn zero_count_unicode_property_escapes_keep_the_same_empty_results_as_classes() {
-    check(
+    assert_true(
         r#"
         var properties=['Basic_Emoji','Emoji_Keycap_Sequence','RGI_Emoji_Modifier_Sequence','RGI_Emoji_Flag_Sequence','RGI_Emoji_Tag_Sequence','RGI_Emoji_ZWJ_Sequence','RGI_Emoji'],cases=properties.map(p=>['\\p{'+p+'}','v']);
         cases.push(['\\P{ASCII}','u'],['\\p{Script=Greek}','u'],['\\p{General_Category=Lu}','v']);
@@ -160,7 +151,7 @@ fn property_zero_string_consumers_and_clones_keep_capture_free_metadata() {
 
 #[test]
 fn property_early_errors_precede_erasure_and_nonzero_or_surrounding_terms_stay_pending() {
-    check(
+    assert_true(
         r#"
         var invalid=[['\\P{RGI_Emoji}{0}','v'],['\\p{RGI_Emoji}{0}','u'],['\\p{NotAProperty}{0}','v'],['\\p{Script=NotAScript}{0}','u']],ok=true;
         for(var pair of invalid){var caught=false;try{new RegExp(pair[0],pair[1])}catch(e){caught=e instanceof SyntaxError}ok=ok&&caught}
@@ -169,19 +160,16 @@ fn property_early_errors_precede_erasure_and_nonzero_or_surrounding_terms_stay_p
     );
     for pattern in [r"\p{RGI_Emoji}{0,1}", r"\p{RGI_Emoji}{0}a"] {
         let pattern = JsString::from(pattern);
-        assert!(
-            crate::common::regexp_oracle::check(
-                &mut Realm::default(),
-                &format!("new RegExp({pattern:?},'v').test('')")
-            ),
-            "{pattern:?}"
+        crate::common::regexp_oracle::assert_matches_reference(
+            &mut Realm::default(),
+            &format!("new RegExp({pattern:?},'v').test('')"),
         );
     }
 }
 
 #[test]
 fn enclosing_property_captures_keep_named_aliases_and_normalized_ranges() {
-    check(
+    assert_true(
         r#"
         var cases=[['\\p{RGI_Emoji}','v'],['\\p{RGI_Emoji_Tag_Sequence}','v'],['\\P{ASCII}','u'],['\\p{Script=Greek}','u']],ok=true;
         for(var pair of cases)for(var count of ['{0}','{000,000}?'])for(var frame of [['(?<outside>',')',1],['(?<outside>(?:(?<second>',')))',2],['(?:',')',0]]){

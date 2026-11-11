@@ -24,11 +24,9 @@ mod string;
 mod symbols;
 
 use super::Builtin;
-use crate::{
-    Error, ExceptionKind, ObjectHandle, Realm, Value,
-    object::{DataDescriptor, DescriptorKind, PropertyDescriptor},
-    value::to_uint32,
-};
+use crate::object::{DataDescriptor, DescriptorKind, PropertyDescriptor};
+use crate::value::to_uint32;
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span};
 
 #[derive(Debug)]

@@ -1,6 +1,7 @@
 //! Iterator.from and %WrapForValidIteratorPrototype% (27.1.3.2.2).
 
-use crate::{Error, ExceptionKind, Realm, Value, object::IteratorWrapper};
+use crate::object::IteratorWrapper;
+use crate::{Error, ExceptionKind, Realm, Value};
 use spite_core::{JsString, Span};
 
 impl Realm {

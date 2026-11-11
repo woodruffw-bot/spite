@@ -1,7 +1,8 @@
 //! Traced native continuation state for asynchronous resource disposal.
 
 use super::{Budget, DisposableResource, Error, Objects};
-use crate::{Value, function::PromiseCapability};
+use crate::Value;
+use crate::function::PromiseCapability;
 use spite_heap::{Handle, Trace};
 
 #[derive(Debug)]

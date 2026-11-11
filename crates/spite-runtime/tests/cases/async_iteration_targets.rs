@@ -156,7 +156,7 @@ fn host_abort_in_an_awaited_target_skips_all_iterator_close_and_javascript_clean
                             "{kind}: {error}"
                         );
                         if !limited {
-                            assert!(matches!(error, Error::Unsupported { .. }), "{error}")
+                            assert!(matches!(error, Error::Unsupported { .. }), "{error}");
                         }
                         reported = true;
                     }

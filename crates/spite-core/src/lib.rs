@@ -31,7 +31,8 @@ pub use unicode::{is_identifier_part, is_identifier_start};
 pub use unicode_data::UNICODE_VERSION;
 pub use well_known::WellKnownSymbol;
 
-use std::{fmt, sync::Arc};
+use std::fmt;
+use std::sync::Arc;
 
 /// A half-open range of encoded byte offsets in source text.
 ///

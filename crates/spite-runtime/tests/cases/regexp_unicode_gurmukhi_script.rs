@@ -3,19 +3,13 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn unicode_gurmukhi_script_aliases_complements_and_fold_modes() {
     for name in ["Script=Gurmukhi", "Script=Guru", "sc=Gurmukhi", "sc=Guru"] {
         for flags in ["u", "ui", "v", "vi"] {
-            check(&format!(
+            assert_true(&format!(
                 r#"let patterns=["^\\p{{{name}}}$","^\\P{{{name}}}$","^[\\p{{{name}}}]$","^[\\P{{{name}}}]$","^[^\\p{{{name}}}]$","^[^\\P{{{name}}}]$"],points=[0,10,32,65,97,181,768,2581,2582,2561,2641,2404,2672,2560,2688,1488,8205,55296,56320,57344,64976,72448,72457,128512,1114111],flags={flags:?};patterns.map(pattern=>{{let r=new RegExp(pattern,flags);return points.map(cp=>r.test(String.fromCodePoint(cp))?'1':'0').join('')}}).join('|')==="0000000111101000000000000|1111111000010111111111111|0000000111101000000000000|1111111000010111111111111|1111111000010111111111111|0000000111101000000000000""#,
             ));
         }
@@ -57,16 +51,16 @@ fn unicode_gurmukhi_script_results_snapshot() {
 #[test]
 fn unicode_gurmukhi_script_captures_context_and_pair_starts() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^(?<x>([\p{{sc=Guru}}K]))$/dim{mode}g,m=r.exec('A\r\nਕ\u2028');m.index===3&&m[1]==='ਕ'&&m[2]==='ਕ'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===4&&r.lastIndex===4"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/(?<__proto__>\P{{Script=Gurmukhi}})/d{mode}y;r.lastIndex=1;let m=r.exec('😀ਕ');m.index===0&&m[1]==='😀'&&m.indices[1][1]===2&&r.lastIndex===2&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\p{{sc=Gurmukhi}}/d{mode}g;r.lastIndex=1;let m=r.exec('😀ਕ');m.index===2&&m[0]==='ਕ'&&r.lastIndex===3"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\p{{Script=Guru}}/{mode}y;r.lastIndex=1;r.exec('😀ਕ')===null&&r.lastIndex===0"
         ));
     }
@@ -75,16 +69,16 @@ fn unicode_gurmukhi_script_captures_context_and_pair_starts() {
 #[test]
 fn unicode_gurmukhi_script_consumers_preserve_original_text() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let a=[...'ਕ😀Aਖ'.matchAll(/(?<x>\P{{sc=Gurmukhi}})/d{mode}g)];a.length===2&&a[0][1]==='😀'&&a[0].index===1&&a[0].indices[1][1]===3&&a[1][1]==='A'&&a[1].index===3"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'ਕਖA'.replace(/(?<x>\p{{sc=Guru}})/{mode}g,'<$1:$<x>>')==='<ਕ:ਕ><ਖ:ਖ>A'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'AਕਖA'.split(/(\p{{Script=Gurmukhi}})/{mode}).join('|')==='A|ਕ||ਖ|A'&&'A😀ਕ'.search(/\p{{sc=Guru}}/{mode})===3&&'ਕਖA'.match(/\p{{Script=Guru}}/{mode}g).join('')==='ਕਖ'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let t='',x='ਕਖAਕ'.replace(/(\p{{sc=Gurmukhi}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__A_'&&t==='013'"
         ));
     }
@@ -92,16 +86,16 @@ fn unicode_gurmukhi_script_consumers_preserve_original_text() {
 
 #[test]
 fn unicode_gurmukhi_script_clones_coercions_and_strict_writes() {
-    check(
+    assert_true(
         r"let r=/^(?<x>\p{sc=Guru})$/dmu,c=new RegExp(r,'divy');c.source==='^(?<x>\\p{sc=Guru})$'&&c.unicodeSets&&!c.unicode&&!c.multiline&&c.exec('ਕ').groups.x==='ਕ'&&c.lastIndex===1",
     );
-    check(
+    assert_true(
         r"let t='',r=/\P{Script=Gurmukhi}/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m[0]==='😀'&&m.index===0&&r.lastIndex===2",
     );
-    check(
+    assert_true(
         r"let r=/\p{sc=Gurmukhi}/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('ਕ')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/\P{Script=Guru}/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀\uD800')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
 }
@@ -123,27 +117,24 @@ fn unicode_gurmukhi_script_opted_work_and_remaining_sets() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
-    check(r"/\p{Script_Extensions=Gurmukhi}/u.exec('A')===null");
-    check(r"/[\p{sc=Guru}&&A]/v.exec('A')===null");
-    check(r"/[\p{sc=Guru}--A]/v.exec('A')===null");
-    check(
+    assert_true(r"/\p{Script_Extensions=Gurmukhi}/u.exec('A')===null");
+    assert_true(r"/[\p{sc=Guru}&&A]/v.exec('A')===null");
+    assert_true(r"/[\p{sc=Guru}--A]/v.exec('A')===null");
+    assert_true(
         r"let s=String.fromCodePoint(0xa15),m=/[\p{sc=Guru}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
     );
     for source in [
         r"/\p{sc=Guru}+b/u.exec('AA')",
         r"/\p{sc=Guru}A/v.exec('AA')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }
 
 #[test]
 fn unicode_gurmukhi_script_repetitions_retain_last_capture_and_outside_words() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\B(?<x>\p{{sc=Guru}})+\B/d{mode}g,m=r.exec('µਕਕਕµ');m.index===1&&m[0]==='ਕਕਕ'&&m.groups.x==='ਕ'&&m.indices.groups.x[0]===3&&m.indices.groups.x[1]===4&&r.lastIndex===4"
         ));
     }
@@ -151,7 +142,7 @@ fn unicode_gurmukhi_script_repetitions_retain_last_capture_and_outside_words() {
 
 #[test]
 fn unicode_gurmukhi_script_former_direct_eval_context_executes_normally() {
-    check(
+    assert_true(
         r#"let marker=0,result;try{result=eval("marker=1; /\\p{Script=Gurmukhi}/u.test('ਕ');")}catch{marker=2}finally{marker=3}marker===3&&result===true"#,
     );
 }

@@ -1,6 +1,7 @@
 //! SuperProperty and MakeSuperPropertyReference (13.3.7.1, 13.3.7.3).
 
-use crate::{Error, Realm, Reference, Value, environment::EnvironmentHandle};
+use crate::environment::EnvironmentHandle;
+use crate::{Error, Realm, Reference, Value};
 use spite_core::Span;
 use spite_parser::ast::{Argument, PropertyName};
 

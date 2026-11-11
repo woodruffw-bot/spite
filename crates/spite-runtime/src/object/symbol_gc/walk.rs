@@ -1,17 +1,13 @@
 //! Closed Runtime Symbol-field inventory; census and marking are distinct modes.
 
-use super::super::{
-    CollectionKey, OrdinaryObject, PrimitiveData, Property,
-    entry::Entry,
-    finalization_registry::WeakTarget,
-    iterator::{HelperClosure, IteratorState},
-    private::PrivateElement,
-};
-use crate::{
-    Value,
-    environment::{Environment, ThisBinding},
-    function::Callable,
-};
+use super::super::entry::Entry;
+use super::super::finalization_registry::WeakTarget;
+use super::super::iterator::{HelperClosure, IteratorState};
+use super::super::private::PrivateElement;
+use super::super::{CollectionKey, OrdinaryObject, PrimitiveData, Property};
+use crate::Value;
+use crate::environment::{Environment, ThisBinding};
+use crate::function::Callable;
 use spite_core::{JsSymbol, WeakJsSymbol};
 use spite_heap::Error;
 use std::rc::Rc;
@@ -332,7 +328,7 @@ fn object_symbols(
     }
     match iterator {
         Some(IteratorState::Wrapper(wrapper)) | Some(IteratorState::AsyncFromSync(wrapper)) => {
-            visit(symbol(&wrapper.next))?
+            visit(symbol(&wrapper.next))?;
         }
         Some(IteratorState::Helper(helper)) => match &helper.closure {
             Some(HelperClosure::Concat(state)) => {

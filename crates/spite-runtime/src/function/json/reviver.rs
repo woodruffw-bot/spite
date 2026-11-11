@@ -1,6 +1,7 @@
 //! InternalizeJSONProperty uses explicit frames, preserving observable step order.
 
-use crate::{Error, ObjectHandle, Realm, Value, object::DataDescriptor};
+use crate::object::DataDescriptor;
+use crate::{Error, ObjectHandle, Realm, Value};
 use spite_core::{JsString, PropertyKey, Span};
 use spite_parser::json::{JsonDocument, JsonKind};
 

@@ -3,13 +3,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn fixed_lookbehind_sequence_result_snapshot() {
@@ -68,41 +62,41 @@ fn fixed_lookbehind_sequence_result_snapshot() {
 
 #[test]
 fn sequence_lookbehind_captures_negative_restore_and_outer_retry_preserve_ranges() {
-    check(
+    assert_true(
         r"let a=/(?<=(?<x>(?:ab){2}))\k<x>/d.exec('abababab');a[0]==='abab'&&a.index===4&&a.groups.x==='abab'&&a.indices.groups.x===a.indices[1]&&a.indices[1][0]===0&&a.indices[1][1]===4",
     );
-    check(
+    assert_true(
         r"let a=/(?<!((?:ab){2})q)c/d.exec('ababrc');a.index===5&&a[1]===undefined&&a.indices[1]===undefined",
     );
-    check(
+    assert_true(
         r"let a=/(?<=((?:ab){2})(?<!(?<y>ba)))c/d.exec('ababc');a[1]==='abab'&&a.groups.y===undefined&&a.indices[1][0]===0&&a.indices[1][1]===4&&a.indices.groups.y===undefined",
     );
-    check(
+    assert_true(
         r"let a=/(?:(?<=(?<x>(?:ab){2}))q|(?<=(?<x>(?:ab){2}))c)\k<x>/d.exec('ababcabab');a[0]==='cabab'&&a.index===4&&a[1]===undefined&&a[2]==='abab'&&a.indices[1]===undefined&&a.indices.groups.x===a.indices[2]",
     );
-    check(
+    assert_true(
         r"let a=/((?<=(?:ab){2})){2}c\1/d.exec('ababc'),b=/((?<=(?:ab){2}))*c\1/d.exec('ababc');a[1]===''&&a.indices[1][0]===4&&a.indices[1][1]===4&&b[1]===undefined&&b.indices[1]===undefined",
     );
-    check(
+    assert_true(
         r"let a=/(?<=((?:ab){0}))c/d.exec('c');a.index===0&&a[1]===''&&a.indices[1][0]===0&&a.indices[1][1]===0",
     );
 }
 
 #[test]
 fn sequence_lookbehind_consumers_global_sticky_and_callbacks_keep_input_positions() {
-    check(
+    assert_true(
         r"let r=/(?<=(?<x>(?:ab){2}))c/dg,a=[...'ababcqababc'.matchAll(r)];a.length===2&&a[0].index===4&&a[1].index===10&&a[1].groups.x==='abab'&&a[1].indices.groups.x[0]===6&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/(?<=(?:ab){2})c/dy;r.lastIndex=4;let a=r.exec('ababc');a.index===4&&r.lastIndex===5&&r.exec('ababc')===null&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/(?<=(?:ab){2})/dg,a=[...'ababab'.matchAll(r)];a.length===2&&a[0].index===4&&a[1].index===6&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let seen=[];let s='ababcqababc'.replace(/(?<=(?<x>(?:ab){2}))c/g,(m,c,i,s,g)=>{seen.push(m,c,i,s,g.x);return '_'});s==='abab_qabab_'&&seen.length===10&&seen[0]==='c'&&seen[1]==='abab'&&seen[2]===4&&seen[4]==='abab'&&seen[7]===10",
     );
-    check(
+    assert_true(
         r"'ababcqababc'.replace(/(?<=(?<x>(?:ab){2}))c/g,'<$<x>>')==='abab<abab>qabab<abab>'&&'ababcqababc'.search(/(?<=(?:ab){2})c/)===4&&'ababcqababc'.split(/(?<=(?:ab){2})c/).join('|')==='abab|qabab|'",
     );
 }
@@ -127,7 +121,7 @@ fn explicit_sequence_lookbehind_work_aborts_before_last_index_and_handlers() {
 }
 
 #[test]
-fn variable_repeated_capture_assertion_reference_and_nested_counts_remain_unsupported() {
+fn variable_repeated_capture_assertion_reference_and_nested_counts_match_reference_results() {
     for source in [
         r"/(?<=(?:ab){1,2})c/.exec('ababc')",
         r"/(?<=(ab){1,2})c/.exec('ababc')",
@@ -138,18 +132,12 @@ fn variable_repeated_capture_assertion_reference_and_nested_counts_remain_unsupp
         r"/(?<=(?:ab){2})c/u.exec('ababc')",
         r"/(?<=(?:ab){2})c/v.exec('ababc')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
     let source = format!(
         "new RegExp('(?<=(?:ab){{{},{}}})c').exec('ababc')",
         usize::MAX / 2 + 1,
         usize::MAX / 2 + 2
     );
-    assert!(crate::common::regexp_oracle::check(
-        &mut Realm::default(),
-        &source
-    ));
+    crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), &source);
 }

@@ -6,18 +6,12 @@ use common::REALM_ENTRIES;
 use spite_core::JsString;
 use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn calls_use_truthiness_without_coercing_objects() {
     for source in ["undefined", "null", "false", "0", "-0", "NaN", "0n", "''"] {
-        check(&format!("Boolean({source}) === false"));
+        assert_true(&format!("Boolean({source}) === false"));
     }
     for source in [
         "true",
@@ -29,37 +23,37 @@ fn calls_use_truthiness_without_coercing_objects() {
         "{}",
         "new Boolean(false)",
     ] {
-        check(&format!("Boolean({source}) === true"));
+        assert_true(&format!("Boolean({source}) === true"));
     }
-    check("Boolean() === false && Boolean.call(null, true) === true");
-    check(
+    assert_true("Boolean() === false && Boolean.call(null, true) === true");
+    assert_true(
         "let touched=false; let o={valueOf:()=>{touched=true;throw 1;},toString:()=>{touched=true;throw 2;}}; Boolean(o) && new Boolean(o).valueOf() && !touched",
     );
-    check("let n=0; Boolean(false,n=1) === false && n===1");
+    assert_true("let n=0; Boolean(false,n=1) === false && n===1");
 }
 
 #[test]
 fn construction_creates_fresh_boolean_objects_and_bound_calls_preserve_rules() {
-    check(
+    assert_true(
         "let a=new Boolean, b=new Boolean(false); typeof a==='object' && a!==b && a.valueOf()===false && b.valueOf()===false && a instanceof Boolean && b.constructor===Boolean",
     );
-    check(
+    assert_true(
         "let a=new Boolean(true); a.valueOf()===true && a.toString()==='true' && Boolean.prototype.valueOf()===false && Boolean.prototype.toString()==='false'",
     );
-    check(
+    assert_true(
         "let B=Boolean.bind({valueOf:()=>true},false); B(true)===false && new B(true).valueOf()===false && new B instanceof Boolean && new B instanceof B",
     );
-    check(
+    assert_true(
         "let B=Boolean.bind(null); B.prototype={}; new B(true).constructor===Boolean && new B(true).valueOf()===true",
     );
-    check(
+    assert_true(
         "let o={__proto__:Boolean.prototype}; ({}).toString.call(o)==='[object Object]' && ({}).toString.call(new Boolean)==='[object Boolean]'",
     );
 }
 
 #[test]
 fn methods_require_a_boolean_primitive_or_own_internal_slot() {
-    check(
+    assert_true(
         "true.valueOf()===true && false.valueOf()===false && true.toString()==='true' && false.toString()==='false'",
     );
     for method in ["valueOf", "toString"] {
@@ -105,44 +99,44 @@ fn methods_require_a_boolean_primitive_or_own_internal_slot() {
 
 #[test]
 fn wrapper_coercion_obeys_ordinary_conversion_and_object_truthiness() {
-    check(
+    assert_true(
         "let f=new Boolean(false),t=new Boolean(true); !!f && f==false && f!==false && +f===0 && +t===1 && f+2===2 && t+2===3 && `${f}`==='false'",
     );
-    check("let o=new Boolean(false); o.valueOf=()=>7; +o===7 && `${o}`==='false'");
-    check("let o=new Boolean(true); o.valueOf=()=>({}); o.toString=()=> '8'; +o===8");
+    assert_true("let o=new Boolean(false); o.valueOf=()=>7; +o===7 && `${o}`==='false'");
+    assert_true("let o=new Boolean(true); o.valueOf=()=>({}); o.toString=()=> '8'; +o===8");
 }
 
 #[test]
 fn non_strict_receivers_box_fresh_values_while_strict_receivers_stay_primitive() {
-    check(
+    assert_true(
         "function box(){return this;} let a=box.call(true),b=box.apply(true); typeof a==='object' && a instanceof Boolean && a.valueOf()===true && a!==b",
     );
-    check(
+    assert_true(
         "function strict(){'use strict';return this;} strict.call(true)===true && strict.apply(false)===false",
     );
-    check(
+    assert_true(
         "function capture(){return ()=>this;} let f=capture.call(false), a=f(); a===f() && a instanceof Boolean && a.valueOf()===false",
     );
-    check(
+    assert_true(
         "Boolean.prototype.receiver=function(){return this;}; let a=true.receiver(); a instanceof Boolean && a.valueOf()===true",
     );
-    check(
+    assert_true(
         "Boolean.prototype.receiver=function(){'use strict';return this;}; true.receiver()===true",
     );
-    check(
+    assert_true(
         "let valueOf=({}).valueOf, a=valueOf.call(false),b=valueOf.call(false); a!==b && a.valueOf()===false && a instanceof Boolean && valueOf.call(a)===a",
     );
 }
 
 #[test]
 fn primitive_properties_follow_the_prototype_and_reject_data_writes() {
-    check(
+    assert_true(
         "Boolean.prototype.extra=7; true.extra===7 && false.extra===7 && delete true.extra && false.extra===7",
     );
-    check(
+    assert_true(
         "Boolean.prototype.extra=7; true.extra=9; false.own=1; true.extra===7 && false.own===undefined",
     );
-    check(
+    assert_true(
         "let b=new Boolean; b.extra=9; b.extra===9 && true.extra===undefined && delete b.extra && b.extra===undefined",
     );
     for source in [
@@ -160,11 +154,11 @@ fn primitive_properties_follow_the_prototype_and_reject_data_writes() {
             "{source}"
         );
     }
-    check("'use strict'; delete true.valueOf && true.valueOf()===true");
-    check(
+    assert_true("'use strict'; delete true.valueOf && true.valueOf()===true");
+    assert_true(
         "delete Boolean.prototype.valueOf; typeof true.valueOf()==='object' && ({}).toString.call(true.valueOf())==='[object Boolean]'",
     );
-    check("delete Boolean.prototype.toString; true.toString()==='[object Boolean]'");
+    assert_true("delete Boolean.prototype.toString; true.toString()==='[object Boolean]'");
 }
 
 #[test]
@@ -224,20 +218,22 @@ fn constructor_metadata_and_descriptors_are_standard() {
             assert!(property.writable && !property.enumerable && property.configurable);
         }
     }
-    check(
+    assert_true(
         "Boolean.toString()==='function Boolean() { [native code] }' && Boolean.prototype.valueOf.toString()==='function valueOf() { [native code] }'",
     );
-    check(
+    assert_true(
         "let p=Boolean.prototype; Boolean.prototype={}; Boolean.prototype===p && !delete Boolean.prototype",
     );
 }
 
 #[test]
 fn deleting_or_replacing_the_global_does_not_change_intrinsic_boxing() {
-    check(
+    assert_true(
         "let B=Boolean; delete globalThis.Boolean; typeof Boolean==='undefined' && true.constructor===B && ({}).valueOf.call(false) instanceof B",
     );
-    check("let B=Boolean; Boolean=7; true.constructor===B && ({}).valueOf.call(true) instanceof B");
+    assert_true(
+        "let B=Boolean; Boolean=7; true.constructor===B && ({}).valueOf.call(true) instanceof B",
+    );
     let mut realm = Realm::default();
     realm
         .eval("let B=Boolean; delete globalThis.Boolean; B=null;")

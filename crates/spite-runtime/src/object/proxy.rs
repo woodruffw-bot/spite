@@ -79,13 +79,11 @@ impl Objects {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        Value,
-        function::{BoundFunction, Builtin},
-        object::{
-            DataDescriptor, DescriptorKind, GetAction, Property, PropertyDescriptor, SetAction,
-            complete_property_descriptor, is_compatible_property_descriptor,
-        },
+    use crate::Value;
+    use crate::function::{BoundFunction, Builtin};
+    use crate::object::{
+        DataDescriptor, DescriptorKind, GetAction, Property, PropertyDescriptor, SetAction,
+        complete_property_descriptor, is_compatible_property_descriptor,
     };
     use spite_core::{JsString, JsSymbol};
 

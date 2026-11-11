@@ -1,5 +1,6 @@
-use super::*;
-use crate::{Limits, ObjectHandle, Value, realm_record::child_realm_fixture};
+use super::{EnvironmentHandle, Error, Realm, Span};
+use crate::realm_record::child_realm_fixture;
+use crate::{Limits, ObjectHandle, Value};
 
 fn expose(realm: &mut Realm, name: &str, value: Value) {
     let global = realm.global_object();

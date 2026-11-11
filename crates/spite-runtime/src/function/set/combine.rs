@@ -1,6 +1,6 @@
 //! Set-like records and ordered combination/predicate algorithms (24.2.1, 24.2.4).
 
-use super::*;
+use super::{Builtin, Error, ExceptionKind, JsString, ObjectHandle, Realm, SetData, Span, Value};
 
 struct SetRecord {
     object: ObjectHandle,

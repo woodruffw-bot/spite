@@ -1,6 +1,7 @@
 //! JSON.stringify and its serialization record (25.5.4).
 
-use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, object::DataDescriptor};
+use crate::object::DataDescriptor;
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span};
 use std::collections::HashSet;
 
@@ -208,7 +209,7 @@ impl Realm {
             Serialized::Omit => unreachable!("omitted values are handled by the parent"),
             Serialized::String(string) => self.json_quote(&mut state.output, &string, span)?,
             Serialized::Raw(string) => {
-                self.json_append(&mut state.output, string.code_units(), span)?
+                self.json_append(&mut state.output, string.code_units(), span)?;
             }
             Serialized::Container(object, array) => {
                 if state.ancestors.contains(&object) {

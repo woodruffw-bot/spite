@@ -3,13 +3,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn unicode_grapheme_extend_property_results_snapshot() {
@@ -54,25 +48,25 @@ fn unicode_grapheme_extend_property_results_snapshot() {
 #[test]
 fn unicode_grapheme_extend_properties_aliases_complements_and_unions() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let p=/^\p{{Gr_Ext}}$/i{mode},n=/^\P{{Gr_Ext}}$/i{mode};'\u0345\u0399\u03B9\u1FBE'.split('').every(c=>p.test(c)&&n.test(c)===('{mode}'==='u'))"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let p=/[\p{{Gr_Ext}}K]/i{mode},n=/[\P{{Gr_Ext}}K]/i{mode},x=/[^\P{{Gr_Ext}}K]/i{mode};p.test('K')&&n.test('K')&&!x.test('K')&&'\u0345\u0399\u03B9\u1FBE'.split('').every(c=>p.test(c)&&n.test(c)===('{mode}'==='u')&&x.test(c)===('{mode}'==='v'))"
         ));
     }
 
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let a=/\p{{Grapheme_Extend}}/{mode},b=/\p{{Gr_Ext}}/i{mode},n=/\P{{Gr_Ext}}/i{mode};a.test('\u0300')&&a.test('\u0301')&&b.test('\u0300')&&!a.test('\u200D')&&!b.test('\u005f')&&!b.test('ſ')&&!b.test('K')&&!n.test('\u0300')&&n.test('😀')&&n.test('\uD800')&&n.test('\uFEFF')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let p=/\p{{Grapheme_Extend}}/{mode},s=/\s/{mode};p.test('\u0300')&&p.test('\u0301')&&!s.test('\u0300')&&!s.test('\u0301')&&!p.test('\uFEFF')&&s.test('\uFEFF')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=/[\p{{Gr_Ext}}K]/i{mode},b=/[^\P{{Grapheme_Extend}}K]/i{mode},c=/[\p{{Gr_Ext}}\P{{Grapheme_Extend}}]/{mode};a.test('K')&&a.test('k')&&a.test('\u0300')&&!a.test('ſ')&&b.test('\u0301')&&!b.test('K')&&c.test('😀')&&c.test('A')&&c.test('\uD800')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=/^\p{{Gr_Ext}}$/{mode},b=/^\P{{Gr_Ext}}$/{mode};a.test('\u0300')&&!a.test('\u0301\n')&&!a.test('')&&!a.test('\n')&&b.test('😀')&&!b.test('AA')"
         ));
     }
@@ -81,22 +75,22 @@ fn unicode_grapheme_extend_properties_aliases_complements_and_unions() {
 #[test]
 fn unicode_grapheme_extend_properties_captures_context_and_pair_starts() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/(?<x>\p{{Gr_Ext}})/d{mode}y;r.lastIndex=1;let m=r.exec('\uD834\uDD65');m.index===0&&m[0]==='\uD834\uDD65'&&m.groups.x===m[0]&&m.indices[1][0]===0&&m.indices[1][1]===2&&r.lastIndex===2"
         ));
     }
 
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^(?<x>([\p{{Gr_Ext}}K]))$/dim{mode}g,m=r.exec('x\r\nK\u2028');m.index===3&&m[1]==='K'&&m[2]==='K'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===4&&r.lastIndex===4"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/(?<__proto__>\P{{Gr_Ext}})/d{mode}y;r.lastIndex=1;let m=r.exec('😀\u0300');m.index===0&&m[1]==='😀'&&m.indices[1][1]===2&&r.lastIndex===2&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\p{{Gr_Ext}}/d{mode}g;r.lastIndex=1;let m=r.exec('😀\u0300');m.index===2&&m[0]==='\u0300'&&r.lastIndex===3"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\p{{Gr_Ext}}/{mode}y;r.lastIndex=1;r.exec('😀\u0300')===null&&r.lastIndex===0"
         ));
     }
@@ -105,16 +99,16 @@ fn unicode_grapheme_extend_properties_captures_context_and_pair_starts() {
 #[test]
 fn unicode_grapheme_extend_properties_consumers_original_text() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let a=[...'\u0301😀\u0300G'.matchAll(/(?<x>\P{{Gr_Ext}})/d{mode}g)];a.length===2&&a[0][1]==='😀'&&a[0].index===1&&a[0].indices[1][1]===3&&a[1][1]==='G'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'\u0301\u0300😀X'.replace(/(?<x>\p{{Grapheme_Extend}})/{mode}g,'<$1:$<x>>')==='<\u0301:\u0301><\u0300:\u0300>😀X'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'😀\u0301\u0300G'.split(/(\p{{Gr_Ext}})/{mode}).join('|')==='😀|\u0301||\u0300|G'&&'😀\u0300'.search(/\p{{Gr_Ext}}/{mode})===2&&'\u0301\u0300😀'.match(/\p{{Gr_Ext}}/{mode}g).join('')==='\u0301\u0300'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let t='';let x='\u0300\u0301😀\u0300'.replace(/(\p{{Gr_Ext}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__😀_'&&t==='014'"
         ));
     }
@@ -122,16 +116,16 @@ fn unicode_grapheme_extend_properties_consumers_original_text() {
 
 #[test]
 fn unicode_grapheme_extend_properties_clones_coercions_and_strict_writes() {
-    check(
+    assert_true(
         r"let r=/^(?<x>\p{Grapheme_Extend})$/dmu,c=new RegExp(r,'divy');c.source==='^(?<x>\\p{Grapheme_Extend})$'&&c.unicodeSets&&!c.unicode&&!c.multiline&&c.exec('\u0300').groups.x==='\u0300'&&c.lastIndex===1",
     );
-    check(
+    assert_true(
         r"let t='',r=/\P{Gr_Ext}/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m[0]==='😀'&&m.index===0&&r.lastIndex===2",
     );
-    check(
+    assert_true(
         r"let r=/\p{Gr_Ext}/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('\u0300')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/\p{Gr_Ext}/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀\u0300')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
 }
@@ -153,26 +147,23 @@ fn unicode_grapheme_extend_properties_opted_work_and_remaining_sets() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
-    check(
+    assert_true(
         r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
     );
-    check(r"/[\p{Gr_Ext}&&A]/v.exec('A')===null");
-    check(r"/[\p{Gr_Ext}--A]/v.exec('A')===null");
-    check(
+    assert_true(r"/[\p{Gr_Ext}&&A]/v.exec('A')===null");
+    assert_true(r"/[\p{Gr_Ext}--A]/v.exec('A')===null");
+    assert_true(
         r"let s=String.fromCodePoint(0x300),m=/[\p{Gr_Ext}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
     );
     for source in [r"/\p{Gr_Ext}+b/u.exec('AA')", r"/\p{Gr_Ext}A/v.exec('AA')"] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }
 
 #[test]
 fn unicode_grapheme_extend_repetitions_retain_last_capture_and_outside_words() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\B(?<x>\p{{Gr_Ext}})+\B/d{mode}g,m=r.exec('😀\u0300\u0301\u0301\uFEFF');m.index===2&&m[0]==='\u0300\u0301\u0301'&&m.groups.x==='\u0301'&&m.indices.groups.x[0]===4&&m.indices.groups.x[1]===5&&r.lastIndex===5"
         ));
     }
@@ -192,7 +183,7 @@ fn unicode_grapheme_extend_property_unicode18_addition() {
         let text = JsString::from(char::from_u32(point).unwrap().to_string().as_str());
         for name in ["Grapheme_Extend", "Gr_Ext"] {
             for flags in ["u", "ui", "v", "vi"] {
-                check(&format!(
+                assert_true(&format!(
                     r"let p=new RegExp('^\\p{{{name}}}$','{flags}'),n=new RegExp('^\\P{{{name}}}$','{flags}');p.test({text:?})&&!n.test({text:?})"
                 ));
                 comparisons += 1;

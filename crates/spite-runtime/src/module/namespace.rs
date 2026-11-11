@@ -1,6 +1,6 @@
 //! GetModuleNamespace and Module namespace exotic methods (10.4.6, 16.2.1).
 
-use super::*;
+use super::{Error, ModuleHandle, ObjectHandle, Realm, Span, Value};
 use crate::object::{DataDescriptor, DataProperty, DescriptorKind, Property, PropertyDescriptor};
 use spite_core::{JsString, PropertyKeyRef, WellKnownSymbol};
 

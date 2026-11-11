@@ -1,6 +1,10 @@
 //! Export records and Module exported-name/binding early errors (16.2.3).
 
-use super::*;
+use super::{
+    BTreeSet, Diagnostic, ExportDeclaration, ExportKind, ExportSpecifier, ImportDeclaration,
+    JsString, ModuleExportName, ModuleRequest, Parser, Span, Statement, StatementKind,
+    block_lexical_names, early, reserved, strict_reserved,
+};
 
 impl Parser {
     pub(super) fn export_declaration(

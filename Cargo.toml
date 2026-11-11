@@ -31,7 +31,17 @@ missing_docs = "deny"
 unused_must_use = "deny"
 
 [workspace.lints.clippy]
-all = "warn"
+all = { level = "warn", priority = -1 }
+cloned_instead_of_copied = "warn"
+dbg_macro = "deny"
+flat_map_option = "warn"
+manual_let_else = "warn"
+redundant_clone = "warn"
+semicolon_if_nothing_returned = "warn"
+todo = "deny"
+unimplemented = "deny"
+uninlined_format_args = "warn"
+wildcard_imports = "warn"
 
 # Keep checks enabled while reducing test linking and exhaustive Unicode costs.
 [profile.test]

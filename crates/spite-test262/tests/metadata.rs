@@ -1,7 +1,9 @@
 //! Execution metadata must not silently change the modes or setup of a test.
 
 use spite_test262::{Metadata, MetadataErrorKind, Mode, Negative, Phase};
-use std::{borrow::Cow, fs, path::Path};
+use std::borrow::Cow;
+use std::fs;
+use std::path::Path;
 
 fn source(frontmatter: &str) -> String {
     format!("/*---\n{frontmatter}\n---*/\n1;")

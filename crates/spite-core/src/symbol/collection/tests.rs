@@ -1,11 +1,9 @@
 //! Logical Symbol retirement, host promotion and upgrade-gate regressions.
 
-use super::*;
+use super::{JsSymbol, SymbolCollectionGuard, SymbolCollectionPin};
 use crate::JsString;
-use std::sync::{
-    Arc,
-    atomic::{AtomicBool, Ordering},
-};
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 #[test]
 fn logical_retirement_prevents_weak_resurrection_before_internal_storage_drops() {
@@ -97,5 +95,5 @@ fn an_unwound_guard_does_not_poison_or_leave_the_gate_locked() {
         std::panic::resume_unwind(payload);
     });
     assert!(result.is_err());
-    assert_eq!(weak.upgrade(), Some(internal.clone()));
+    assert_eq!(weak.upgrade(), Some(internal));
 }

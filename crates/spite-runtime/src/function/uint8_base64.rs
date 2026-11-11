@@ -1,7 +1,8 @@
 //! Uint8Array Base64 conversion (23.3.1.1, 23.3.2.1/.3, 23.3.3.4-.7).
 
 use super::uint8_hex::Uint8Layout;
-use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, binary_data::ElementType, object};
+use crate::binary_data::ElementType;
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, object};
 use spite_core::{JsString, Span};
 
 const MAX_DECODED_LENGTH: u64 = (1u64 << 53) - 1;
@@ -234,15 +235,12 @@ impl Realm {
         } else {
             None
         };
-        let string = match arguments.next().unwrap_or(Value::Undefined) {
-            Value::String(string) => string,
-            _ => {
-                return Err(Self::exception(
-                    ExceptionKind::TypeError,
-                    span,
-                    "base64 input must be a String",
-                ));
-            }
+        let Value::String(string) = arguments.next().unwrap_or(Value::Undefined) else {
+            return Err(Self::exception(
+                ExceptionKind::TypeError,
+                span,
+                "base64 input must be a String",
+            ));
         };
         let options =
             self.uint8_base64_options(arguments.next().unwrap_or(Value::Undefined), span)?;

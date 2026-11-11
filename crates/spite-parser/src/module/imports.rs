@@ -1,6 +1,10 @@
 //! ImportDeclaration, ImportEntries and WithClauseToAttributes (16.2.2).
 
-use super::*;
+use super::{
+    BTreeSet, BindingPatternKind, Diagnostic, ImportAttribute, ImportBinding, ImportDeclaration,
+    ImportName, JsString, Kind, Literal, ModuleExportName, ModuleRequest, Parser, Span, early,
+    validate_binding_name,
+};
 
 impl Parser {
     pub(super) fn import_declaration(&mut self) -> Result<ImportDeclaration, Diagnostic> {

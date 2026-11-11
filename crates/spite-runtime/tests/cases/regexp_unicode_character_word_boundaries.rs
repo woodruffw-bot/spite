@@ -1,14 +1,8 @@
 //! Word assertions around one complete Unicode literal/dot/escape atom.
+use crate::common::assert_true;
 use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
 
 #[test]
 fn unicode_character_word_boundary_results_snapshot() {
@@ -62,22 +56,22 @@ fn unicode_character_word_boundary_results_snapshot() {
 #[test]
 fn unicode_character_word_boundaries_single_sides_and_independent_neighbor_folding() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"/\bA\b/{mode}.test('A')&&!/\bA\b/{mode}.test('AA')&&/\bA\B/{mode}.exec('AA').index===0&&/\BA\b/{mode}.exec('AA').index===1&&/\bA/{mode}.test('AA')&&/A\b/{mode}.exec('AA').index===1"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"/\B.\B/{mode}.test('ſ')&&!/\B.\B/i{mode}.test('ſ')&&/\b.\b/i{mode}.test('ſ')&&/\b.\b/i{mode}.test('K')&&!/\b.\b/{mode}.test('K')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"/\b\d\b/{mode}.test('8ſ')&&!/\b\d\b/i{mode}.test('8ſ')&&/\b\d\B/i{mode}.test('8K')===true"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"/\B\s\b/{mode}.test(' ſ')===false&&/\B\s\b/i{mode}.test(' ſ')&&/\b\s\B/i{mode}.test('K ')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"/\b\w\b/i{mode}.test('ſ')&&/\b\w\b/i{mode}.test('K')&&!/\b\W\b/i{mode}.test('ſ')&&/\b\W\b/{mode}.test('A😀B')"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"/\b\$\B/{mode}.exec('A$!').index===1&&/\b\\\B/{mode}.exec('A\\!').index===1&&/\b\s\B/{mode}.test('A\uFEFF!')&&!/\b\s\B/{mode}.test('A\u0085!')"
         ));
     }
@@ -86,19 +80,19 @@ fn unicode_character_word_boundaries_single_sides_and_independent_neighbor_foldi
 #[test]
 fn unicode_character_word_boundaries_captures_lines_dotall_and_pair_starts() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let r=/(?<x>(^\B\u{{10400}}\B$))/dim{mode}g,m=r.exec('x\r\n𐐨\u2028');m.index===3&&m[1]==='𐐨'&&m[2]==='𐐨'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===5&&r.lastIndex===5"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/(?<__proto__>\b.\b)/d{mode}y;r.lastIndex=2;let m=r.exec('A😀B');m.index===1&&m[1]==='😀'&&m.indices[1][1]===3&&r.lastIndex===3&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/\b\u{{1f600}}\b/{mode}y;r.lastIndex=1;r.exec('😀B')===null&&r.lastIndex===0"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=/\b\uD800\b/{mode}y,b=/\b\uDC00\b/{mode}y;a.lastIndex=1;b.lastIndex=1;a.exec('A\uD800B')[0]==='\uD800'&&b.exec('A\uDC00B')[0]==='\uDC00'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"/\b.\B/s{mode}.exec('A\n!').index===1&&!/\b.\B/{mode}.test('A\n!')"
         ));
     }
@@ -107,16 +101,16 @@ fn unicode_character_word_boundaries_captures_lines_dotall_and_pair_starts() {
 #[test]
 fn unicode_character_word_boundary_consumers_keep_original_captures() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"let a=[...'A A a'.matchAll(/(?<x>\bA\b)/di{mode}g)];a.length===3&&a[2][1]==='a'&&a[2].index===4&&a[2].indices.groups.x===a[2].indices[1]"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'A A_ a'.replace(/(?<x>\bA\b)/i{mode}g,'<$1:$<x>>')==='<A:A> A_ <a:a>'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"'A B A'.split(/(\bA\b)/{mode}).join('|')==='|A| B |A|'&&'xx A!'.search(/\bA\b/{mode})===3&&'A A_ a'.match(/\bA\b/i{mode}g).join('')==='Aa'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let t='';let x='A a'.replace(/(\bA\b)/i{mode}g,(m,c,p)=>{{t+=p;return c.toLowerCase()}});x==='a a'&&t==='02'"
         ));
     }
@@ -124,16 +118,16 @@ fn unicode_character_word_boundary_consumers_keep_original_captures() {
 
 #[test]
 fn unicode_character_word_boundary_clones_coercions_and_strict_writes() {
-    check(
+    assert_true(
         r"let r=/(?<x>\bA\b)/diug,c=new RegExp(r,'dvy'),b=new RegExp(c,'diuy');c.source==='(?<x>\\bA\\b)'&&!c.ignoreCase&&c.unicodeSets&&c.exec('a')===null&&b.exec('a').groups.x==='a'&&b.lastIndex===1",
     );
-    check(
+    assert_true(
         r"let t='',r=/\b.\b/uy;r.lastIndex={valueOf(){t+='i';return 2}};let m=r.exec({toString(){t+='s';return 'A😀B'}});t==='si'&&m[0]==='😀'&&m.index===1&&r.lastIndex===3",
     );
-    check(
+    assert_true(
         r"let r=/\bA\b/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('A')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/\bA\b/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('AA')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
 }
@@ -162,10 +156,7 @@ fn unicode_character_word_boundaries_opted_work_and_remaining_compositions() {
         r"/\b\bA\b/u.exec('A')",
         r"/\b(?=A)A\b/u.exec('A')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }
 

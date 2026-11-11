@@ -1,11 +1,10 @@
 //! PerformEval and EvalDeclarationInstantiation (19.2.1.1–3).
 
-use crate::{
-    BindingState, CompletionKind, Error, ExceptionKind, Realm, Reference, Value,
-    environment::EnvironmentHandle,
-};
+use crate::environment::EnvironmentHandle;
+use crate::{BindingState, CompletionKind, Error, ExceptionKind, Realm, Reference, Value};
 use spite_core::{DiagnosticKind, Span};
-use spite_parser::{EvalContext, ast::Script, parse_eval_utf16_with_private_names};
+use spite_parser::ast::Script;
+use spite_parser::{EvalContext, parse_eval_utf16_with_private_names};
 use std::collections::BTreeSet;
 
 impl Realm {

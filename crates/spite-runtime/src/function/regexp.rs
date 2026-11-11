@@ -7,11 +7,9 @@ mod slots;
 mod split;
 
 use super::{Builtin, Callable};
-use crate::{
-    Error, ExceptionKind, ObjectHandle, Realm, Value,
-    iterator_count::Counter,
-    object::{DataDescriptor, DescriptorKind, PropertyDescriptor},
-};
+use crate::iterator_count::Counter;
+use crate::object::{DataDescriptor, DescriptorKind, PropertyDescriptor};
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span, WellKnownSymbol, regexp_escape_units};
 
 #[derive(Clone, Copy, Debug)]

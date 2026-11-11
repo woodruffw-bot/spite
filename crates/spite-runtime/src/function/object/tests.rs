@@ -1,4 +1,4 @@
-use super::*;
+use super::{Error, JsString, Realm, Span, Value};
 use crate::object::{Budget, DescriptorKind, PropertyDescriptor};
 
 #[test]

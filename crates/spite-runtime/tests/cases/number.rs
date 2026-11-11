@@ -6,13 +6,7 @@ use common::REALM_ENTRIES;
 use spite_core::JsString;
 use spite_runtime::{Error, ExceptionKind, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn constructor_distinguishes_absence_from_undefined_and_preserves_number_bits() {
@@ -33,19 +27,21 @@ fn constructor_distinguishes_absence_from_undefined_and_preserves_number_bits() 
         };
         assert_eq!(value.to_bits(), expected.to_bits(), "{source}");
     }
-    check(
+    assert_true(
         "Number.isNaN(Number(undefined)) && Number.isNaN(Number('bad')) && Number.isNaN(Number(NaN))",
     );
-    check("let count=0; Number('4',count=1)===4 && count===1 && Number.call(null,'3')===3");
+    assert_true("let count=0; Number('4',count=1)===4 && count===1 && Number.call(null,'3')===3");
 }
 
 #[test]
 fn explicit_bigint_conversion_rounds_once_and_does_not_change_implicit_conversion() {
-    check(
+    assert_true(
         "Number(9007199254740993n)===9007199254740992 && Number(9007199254740995n)===9007199254740996 && Number(-9007199254740995n)===-9007199254740996",
     );
-    check("Number(2n**1024n)===Infinity && Number(-(2n**1024n))===-Infinity && Number(0n)===0");
-    check("Number({valueOf:()=>9007199254740993n})===9007199254740992");
+    assert_true(
+        "Number(2n**1024n)===Infinity && Number(-(2n**1024n))===-Infinity && Number(0n)===0",
+    );
+    assert_true("Number({valueOf:()=>9007199254740993n})===9007199254740992");
     for source in ["+1n", "+{valueOf:()=>1n}", "1n-1"] {
         assert!(
             matches!(
@@ -62,10 +58,10 @@ fn explicit_bigint_conversion_rounds_once_and_does_not_change_implicit_conversio
 
 #[test]
 fn object_conversion_calls_valueof_then_tostring_and_propagates_abrupt_results() {
-    check(
+    assert_true(
         "let order=''; let value=Number({valueOf:()=>{order+='v';return {};},toString:()=>{order+='s';return '7';}}); value===7 && order==='vs'",
     );
-    check(
+    assert_true(
         "let called=false; new Number({valueOf:()=>3,toString:()=>{called=true;return '4';}}).valueOf()===3 && !called",
     );
     let mut realm = Realm::default();
@@ -86,19 +82,19 @@ fn object_conversion_calls_valueof_then_tostring_and_propagates_abrupt_results()
 
 #[test]
 fn wrappers_have_own_slots_and_bound_construction_ignores_bound_this() {
-    check(
+    assert_true(
         "let a=new Number(-0), b=new Number; a!==b && a instanceof Number && a.constructor===Number && 1/a.valueOf()===-Infinity && 1/b.valueOf()===Infinity && 1/Number.prototype.valueOf()===Infinity",
     );
-    check(
+    assert_true(
         "Number.isNaN(new Number(undefined).valueOf()) && Number.isNaN(new Number(NaN).valueOf())",
     );
-    check(
+    assert_true(
         "let N=Number.bind({},'7'); N()===7 && new N(8).valueOf()===7 && new N instanceof N && new N instanceof Number",
     );
-    check(
+    assert_true(
         "let n=new Number(2); +n===2 && n+3===5 && `${n}`==='2' && n==2 && n!==2 && !!new Number(0)",
     );
-    check(
+    assert_true(
         "({}).toString.call(new Number)==='[object Number]' && ({}).toString.call({__proto__:Number.prototype})==='[object Object]'",
     );
     for receiver in [
@@ -129,15 +125,17 @@ fn wrappers_have_own_slots_and_bound_construction_ignores_bound_this() {
 
 #[test]
 fn non_strict_receivers_box_and_primitive_data_writes_do_not_persist() {
-    check(
+    assert_true(
         "function f(){return this;} let a=f.call(-0),b=f.call(-0); a!==b && a instanceof Number && 1/a.valueOf()===-Infinity",
     );
-    check("function f(){'use strict';return this;} f.call(7)===7 && 1/f.call(-0)===-Infinity");
-    check("let a=({}).valueOf.call(NaN); a instanceof Number && Number.isNaN(a.valueOf())");
-    check(
+    assert_true(
+        "function f(){'use strict';return this;} f.call(7)===7 && 1/f.call(-0)===-Infinity",
+    );
+    assert_true("let a=({}).valueOf.call(NaN); a instanceof Number && Number.isNaN(a.valueOf())");
+    assert_true(
         "Number.prototype.extra=8; (1).extra===8 && (2).extra===8 && delete (1).extra && (2).extra===8",
     );
-    check(
+    assert_true(
         "Number.prototype.extra=8; (1).extra=9; (1).other=9; (1).extra===8 && (1).other===undefined",
     );
     assert!(matches!(
@@ -147,7 +145,7 @@ fn non_strict_receivers_box_and_primitive_data_writes_do_not_persist() {
             ..
         })
     ));
-    check(
+    assert_true(
         "let N=Number; delete Number; typeof Number==='undefined' && (1).constructor===N && ({}).valueOf.call(2) instanceof N",
     );
 }
@@ -164,18 +162,18 @@ fn numeric_predicates_never_coerce_and_distinguish_integer_boundaries() {
             "new Number(1)",
             "({valueOf:()=>{throw 1;}})",
         ] {
-            check(&format!("Number.{method}({value})===false"));
+            assert_true(&format!("Number.{method}({value})===false"));
         }
-        check(&format!("Number.{method}()===false"));
+        assert_true(&format!("Number.{method}()===false"));
     }
-    check("Number.isNaN(NaN) && !Number.isNaN(Infinity) && !Number.isNaN(0)");
-    check(
+    assert_true("Number.isNaN(NaN) && !Number.isNaN(Infinity) && !Number.isNaN(0)");
+    assert_true(
         "Number.isFinite(0) && Number.isFinite(Number.MAX_VALUE) && !Number.isFinite(NaN) && !Number.isFinite(Infinity) && !Number.isFinite(-Infinity)",
     );
-    check(
+    assert_true(
         "Number.isInteger(-0) && Number.isInteger(-7) && Number.isInteger(Number.MAX_VALUE) && !Number.isInteger(0.5) && !Number.isInteger(Number.MIN_VALUE) && !Number.isInteger(NaN) && !Number.isInteger(Infinity)",
     );
-    check(
+    assert_true(
         "Number.isSafeInteger(-0) && Number.isSafeInteger(Number.MAX_SAFE_INTEGER) && Number.isSafeInteger(Number.MIN_SAFE_INTEGER) && !Number.isSafeInteger(9007199254740992) && !Number.isSafeInteger(-9007199254740992) && !Number.isSafeInteger(0.5)",
     );
 }
@@ -192,14 +190,14 @@ fn decimal_formatting_and_radix_validation_follow_specification_order() {
         ("1e21", "1e+21"),
         ("123.5", "123.5"),
     ] {
-        check(&format!(
+        assert_true(&format!(
             "({value}).toString()==='{expected}' && new Number({value}).toString(10)==='{expected}'"
         ));
     }
-    check(
+    assert_true(
         "(12).toString('10')==='12' && (12).toString(10.9)==='12' && (12).toString(undefined)==='12'",
     );
-    check(
+    assert_true(
         "NaN.toString(2)==='NaN' && Infinity.toString(36)==='Infinity' && (-0).toString(2)==='0'",
     );
     // 6.1.6.1.20 and 21.1.3.2 permit either minimal round-trip spelling here.
@@ -222,7 +220,7 @@ fn decimal_formatting_and_radix_validation_follow_specification_order() {
         ),
     ] {
         for sign in ["", "-"] {
-            check(&format!(
+            assert_true(&format!(
                 "let x={sign}{input},s=String(x),e=x.toExponential(),a=new Uint8Array(1);let other=s==='{sign}{lower}'?'{sign}{upper}':'{sign}{lower}';(s==='{sign}{lower}'||s==='{sign}{upper}')&&(e==='{sign}{lower_exp}'||e==='{sign}{upper_exp}')&&Number(s)===x&&Number(e)===x&&x.toPrecision()===s&&x.toFixed(1)==='{sign}{upper}'&&x.toPrecision(17)==='{sign}{upper}'&&x.toExponential(16)==='{sign}{upper_exp}'&&Reflect.defineProperty(a,s,{{value:7}})===false&&Reflect.defineProperty(a,other,{{value:9}})===true&&a[s]===undefined&&a[other]===9"
             ));
         }
@@ -333,7 +331,7 @@ fn constants_and_builtin_metadata_have_standard_values_and_attributes() {
             assert!(!property.writable && !property.enumerable && property.configurable);
         }
     }
-    check("Number.MAX_VALUE=0; Number.MAX_VALUE>0 && !delete Number.MAX_VALUE");
+    assert_true("Number.MAX_VALUE=0; Number.MAX_VALUE>0 && !delete Number.MAX_VALUE");
 }
 
 #[test]

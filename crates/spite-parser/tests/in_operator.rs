@@ -1,10 +1,8 @@
 //! Relational in and the grammar's context-sensitive In parameter.
 
 use spite_core::DiagnosticKind;
-use spite_parser::{
-    ast::{BinaryOp, ExprKind, StatementKind},
-    parse_script,
-};
+use spite_parser::ast::{BinaryOp, ExprKind, StatementKind};
+use spite_parser::parse_script;
 
 #[test]
 fn in_is_left_associative_at_relational_precedence() {

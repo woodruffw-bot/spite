@@ -1,13 +1,9 @@
 //! KeyedBindingInitialization and object rest through the shared pattern cursor.
 
 use super::{AsyncAwaitAction, AsyncExecutionData, Step, binding, binding_pattern, expression};
-use crate::{
-    Error, Realm, Value,
-    object::{
-        async_binding::{BindingChild, BindingCursorKind, ObjectBindingPhase},
-        async_expression::ExprRoot,
-    },
-};
+use crate::object::async_binding::{BindingChild, BindingCursorKind, ObjectBindingPhase};
+use crate::object::async_expression::ExprRoot;
+use crate::{Error, Realm, Value};
 use spite_parser::ast::{BindingPatternKind, PropertyName};
 
 impl Realm {

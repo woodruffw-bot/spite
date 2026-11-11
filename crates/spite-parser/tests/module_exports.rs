@@ -1,7 +1,8 @@
 //! Named/star export records, aliases and Module binding early errors (16.2.3).
 
 use spite_core::{DiagnosticKind, JsString};
-use spite_parser::{ast::ExportKind, parse_module, parse_script};
+use spite_parser::ast::ExportKind;
+use spite_parser::{parse_module, parse_script};
 
 #[test]
 fn named_and_namespace_exports_retain_requests_aliases_attributes_and_ranges() {

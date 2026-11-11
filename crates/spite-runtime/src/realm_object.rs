@@ -1,9 +1,9 @@
 //! Realm ownership and collection outside active evaluation.
 
-use crate::{
-    Collection, Error, ExceptionKind, ObjectHandle, Realm, Value,
-    object::{self, DataDescriptor, DescriptorKind, OrdinaryObject, Property, PropertyDescriptor},
+use crate::object::{
+    self, DataDescriptor, DescriptorKind, OrdinaryObject, Property, PropertyDescriptor,
 };
+use crate::{Collection, Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_bigint::BigInt;
 use spite_core::{JsString, PropertyKey, PropertyKeyRef, Span, WellKnownSymbol};
 use spite_parser::ast::{
@@ -429,7 +429,7 @@ impl Realm {
                     Property::Data(data) => Ok(data.value),
                     Property::Accessor(accessor) => match accessor.get {
                         Some(getter) => {
-                            self.call(Value::Object(getter), receiver.clone(), Vec::new(), span)
+                            self.call(Value::Object(getter), receiver, Vec::new(), span)
                         }
                         None => Ok(Value::Undefined),
                     },
@@ -1008,10 +1008,8 @@ fn string_index<'key>(string: &JsString, key: impl Into<PropertyKeyRef<'key>>) -
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        ExceptionKind,
-        object::{Budget, DescriptorKind, PropertyDescriptor},
-    };
+    use crate::ExceptionKind;
+    use crate::object::{Budget, DescriptorKind, PropertyDescriptor};
 
     #[test]
     fn host_global_key_work_is_prepaid_and_unlimited_reads_preserve_barriers() {

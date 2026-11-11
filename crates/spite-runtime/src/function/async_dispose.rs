@@ -1,10 +1,8 @@
 //! Native asynchronous DisposeResources continuations (sec-disposeresources).
 
 use super::async_native::AsyncResumeKind;
-use crate::{
-    Error, ObjectHandle, Realm, Value,
-    object::{DisposableStackKind, DisposalHint},
-};
+use crate::object::{DisposableStackKind, DisposalHint};
+use crate::{Error, ObjectHandle, Realm, Value};
 use spite_core::Span;
 
 impl Realm {

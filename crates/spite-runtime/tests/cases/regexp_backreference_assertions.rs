@@ -4,13 +4,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn asserted_reference_result_snapshot() {
@@ -58,34 +52,34 @@ fn asserted_reference_result_snapshot() {
 
 #[test]
 fn input_line_and_word_context_preserve_captures_and_sticky_search_positions() {
-    check(
+    assert_true(
         r"let r=/^(?<x>\w)\k<x>$/dmiy;r.lastIndex=2;let a=r.exec('q\nAa\nz');a.index===2&&a.groups.x==='A'&&a.indices.groups.x===a.indices[1]&&a.indices[1][0]===2&&a.indices[1][1]===3&&r.lastIndex===4&&r.exec('q\nAa\nz')===null&&r.lastIndex===0",
     );
-    check(r"let r=/\b(\w)\1\b/dy;r.lastIndex=1;r.exec('qaa')===null&&r.lastIndex===0");
-    check(
+    assert_true(r"let r=/\b(\w)\1\b/dy;r.lastIndex=1;r.exec('qaa')===null&&r.lastIndex===0");
+    assert_true(
         r"let r=/\b(\w)\1\b/dy;r.lastIndex=1;let a=r.exec(' aa ');a.index===1&&a[1]==='a'&&r.lastIndex===3",
     );
-    check(
+    assert_true(
         r"/^(a)\1$/.exec('aa\n')===null&&/^(a)\1$/m.exec('aa\n')[0]==='aa'&&/\b(\w)\1\b/i.exec('ſſ')===null&&/\B(.)\1\B/i.exec('µΜ')[1]==='µ'",
     );
-    check(
+    assert_true(
         r"let a=/\B(.)\1\B/d.exec('\uD800\uD800');a[0].length===2&&a[1].charCodeAt(0)===0xD800&&a.indices[1][0]===0&&a.indices[1][1]===1",
     );
-    check(
+    assert_true(
         r"let a=/(\b)\1\w/d.exec(' a');a[1]===''&&a.index===1&&a.indices[1][0]===1&&a.indices[1][1]===1&&/(\1^a)\1/.exec('aa')[1]==='a'",
     );
-    check(r"/([\b])\1/.exec('\b\b')[0]==='\b\b'&&/(\^)(\$)\1\2/.exec('^$^$')[0]==='^$^$'");
+    assert_true(r"/([\b])\1/.exec('\b\b')[0]==='\b\b'&&/(\^)(\$)\1\2/.exec('^$^$')[0]==='^$^$'");
 }
 
 #[test]
 fn generic_consumers_use_asserted_references_and_advance_empty_matches() {
-    check(
+    assert_true(
         r"let r=/^(?<x>\w)\k<x>$/dgmi,a=[...'aa\nbB\ncc'.matchAll(r)];a.length===3&&a[1].index===3&&a[1].groups.x==='b'&&a[1].indices.groups.x===a[1].indices[1]&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"'q\naa\nz'.replace(/^(?<x>\w)\k<x>$/m,'<$<x>>')==='q\n<a>\nz'&&'q\naa\nz'.search(/^(\w)\1$/m)===2&&'q aa z'.split(/\b(\w)\1\b/).join(',')==='q ,a, z'",
     );
-    check(
+    assert_true(
         r"let r=/\b(?<x>)\k<x>\b/dg,a=[...' a '.matchAll(r)];a.length===2&&a[0].index===1&&a[1].index===2&&a[0].groups.x===''&&a[0].indices.groups.x===a[0].indices[1]&&r.lastIndex===0",
     );
 }
@@ -117,10 +111,7 @@ fn pending_reference_compositions_keep_unsupported_outcomes() {
         r"/(?<=(a+))\1/.test('a')",
         r"/\b(?<x>a)\k<x>\b/u.test('aa')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
-    check(r"/^([ab])\1$/.exec('ab')===null&&/\b\B(\w)\1/.exec('aa')===null");
+    assert_true(r"/^([ab])\1$/.exec('ab')===null&&/\b\B(\w)\1/.exec('aa')===null");
 }

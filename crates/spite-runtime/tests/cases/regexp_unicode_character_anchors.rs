@@ -1,14 +1,8 @@
 //! Case-sensitive Unicode single-atom boundary assertions (22.2.2.4).
+use crate::common::assert_true;
 use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
 
 #[test]
 fn unicode_character_assertion_results_snapshot() {
@@ -48,28 +42,28 @@ fn unicode_character_assertion_results_snapshot() {
 #[test]
 fn unicode_character_assertions_consumers_and_initial_pair_offsets() {
     for mode in ["u", "v"] {
-        check(&format!(
+        assert_true(&format!(
             r"'a\n😀\r\n9'.match(/^.$/m{mode}g).join('|')==='a|😀|9'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a=[...'a\n😀\r\n9'.matchAll(/^.$/dm{mode}g)];a.length===3&&a[1].index===2&&a[1].indices[0][1]===4&&a[2].index===6"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let a='a\n😀\r\n9'.split(/^.$/m{mode});a.length===4&&a[0]===''&&a[1]==='\n'&&a[2]==='\r\n'&&a[3]===''"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let seen=[];let s='a\n😀\r\n9'.replace(/^.$/m{mode}g,(m,i)=>{{seen.push(i);return '_'}});s==='_\n_\r\n_'&&seen.join(',')==='0,2,6'"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^.$/m{mode}g;r.lastIndex=1;'9a\n😀'.search(r)===3&&r.lastIndex===1"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^.$/d{mode}y;r.lastIndex=1;let m=r.exec('😀');m.index===0&&m[0]==='😀'&&m.indices[0][1]===2&&r.lastIndex===2"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^./m{mode}y;r.lastIndex=2;let m=r.exec('\n😀');m.index===1&&m[0]==='😀'&&r.lastIndex===3"
         ));
-        check(&format!(
+        assert_true(&format!(
             r"let r=/^./{mode}y;r.lastIndex=2;r.exec('\n😀')===null&&r.lastIndex===0"
         ));
     }
@@ -77,30 +71,34 @@ fn unicode_character_assertions_consumers_and_initial_pair_offsets() {
 
 #[test]
 fn unicode_character_assertions_exact_line_contexts_and_end_semantics() {
-    check(r"/.$/u.exec('a\n')===null&&/.$/su.exec('a\n')[0]==='\n'");
-    check(r"/^.$/u.exec('a\n')===null&&/^.$/su.exec('a\n')===null&&/^.$/su.exec('\n')[0]==='\n'");
-    check(r"/.$/mu.exec('a\r\n').index===0&&/.$/msv.exec('\r\n')[0]==='\r'");
-    check(
+    assert_true(r"/.$/u.exec('a\n')===null&&/.$/su.exec('a\n')[0]==='\n'");
+    assert_true(
+        r"/^.$/u.exec('a\n')===null&&/^.$/su.exec('a\n')===null&&/^.$/su.exec('\n')[0]==='\n'",
+    );
+    assert_true(r"/.$/mu.exec('a\r\n').index===0&&/.$/msv.exec('\r\n')[0]==='\r'");
+    assert_true(
         r"let r=/^./msuy;r.lastIndex=1;let m=r.exec('\r\n');m[0]==='\n'&&m.index===1&&r.lastIndex===2",
     );
-    check(r"/^\s$/u.test('\uFEFF')&&/^\D$/v.test('😀')&&/^\w$/u.test('k')&&!/^\w$/u.test('K')");
-    check(
+    assert_true(
+        r"/^\s$/u.test('\uFEFF')&&/^\D$/v.test('😀')&&/^\w$/u.test('k')&&!/^\w$/u.test('K')",
+    );
+    assert_true(
         r"let r=/^.$/dmsv,c=new RegExp(r,'dug');c.source==='^.$'&&!c.multiline&&!c.dotAll&&c.unicode&&!c.unicodeSets&&c.exec('😀')[0]==='😀'&&c.lastIndex===2",
     );
 }
 
 #[test]
 fn unicode_character_assertions_coercions_and_strict_writes() {
-    check(
+    assert_true(
         r"let t='',r=/^.$/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m.index===0&&r.lastIndex===2",
     );
-    check(
+    assert_true(
         r"let t='',r=/^.$/v;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m.index===0&&typeof r.lastIndex==='object'",
     );
-    check(
+    assert_true(
         r"let r=/^.$/uy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
-    check(
+    assert_true(
         r"let r=/^\d$/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
     );
 }
@@ -122,7 +120,7 @@ fn unicode_character_assertions_opted_work_and_unproved_compositions() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
-    check(
+    assert_true(
         r#"let m=/^\p{Script_Extensions=Latin}$/v.exec('a');JSON.stringify(m)==='["a"]'&&m.index===0&&m.input==='a'"#,
     );
     for source in [
@@ -135,10 +133,7 @@ fn unicode_character_assertions_opted_work_and_unproved_compositions() {
         r"/^.$|b/u.exec('b')",
         r"/^$/.exec('')+/(?:^$)+/u.exec('')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }
 

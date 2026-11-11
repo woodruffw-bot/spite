@@ -2,7 +2,8 @@
 
 use spite_runtime::{Limits, Realm, Value};
 use spite_test262::{Outcome, Runner, Stage};
-use std::{fs, path::Path};
+use std::fs;
+use std::path::Path;
 
 fn run_with(runner: Runner, metadata: &str, body: &str) -> Vec<Outcome> {
     let source = format!("/*---\nflags: [async]\n{metadata}\n---*/\n{body}");

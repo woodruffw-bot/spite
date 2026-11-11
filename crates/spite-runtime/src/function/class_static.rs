@@ -1,6 +1,7 @@
 //! Ordered static fields/blocks and EvaluateClassStaticBlockBody (15.7).
 
-use super::{ScriptFunction, class_field::ClassField};
+use super::ScriptFunction;
+use super::class_field::ClassField;
 use crate::{Error, ObjectHandle, Realm, Value};
 use spite_core::Span;
 

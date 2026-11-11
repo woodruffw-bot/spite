@@ -1,7 +1,8 @@
 //! Disposable resources and their strong captures (sec-disposablestack-objects).
 
 use super::{Budget, Error, Objects};
-use crate::{Value, environment::EnvironmentHandle};
+use crate::Value;
+use crate::environment::EnvironmentHandle;
 use spite_heap::{Handle, Trace};
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]

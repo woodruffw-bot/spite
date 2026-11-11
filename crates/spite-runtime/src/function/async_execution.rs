@@ -23,16 +23,12 @@ mod with;
 
 use source::{active_statement, child_location};
 
-use super::{
-    PromiseCapability, ScriptFunction, async_native::AsyncResumeKind, ordinary::OrdinaryInvocation,
-};
-use crate::{
-    Completion, CompletionKind, Error, ObjectHandle, Realm, Value,
-    object::{
-        async_execution::{AsyncAwaitAction, AsyncExecutionData, SourceFunctionMode},
-        async_expression::ExprRoot,
-    },
-};
+use super::async_native::AsyncResumeKind;
+use super::ordinary::OrdinaryInvocation;
+use super::{PromiseCapability, ScriptFunction};
+use crate::object::async_execution::{AsyncAwaitAction, AsyncExecutionData, SourceFunctionMode};
+use crate::object::async_expression::ExprRoot;
+use crate::{Completion, CompletionKind, Error, ObjectHandle, Realm, Value};
 use spite_core::Span;
 use spite_parser::ast::{ArrowBody, StatementKind};
 

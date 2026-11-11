@@ -3,44 +3,38 @@
 use crate::common;
 use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn holes_and_trailing_commas_preserve_presence_and_length() {
-    check(
+    assert_true(
         "[].length===0 && [,].length===1 && [,,].length===2 && [1,].length===1 && [1,,].length===2",
     );
-    check(
+    assert_true(
         "let a=[,undefined,,3,];a.length===4 && !Object.hasOwn(a,'0') && Object.hasOwn(a,'1') && !Object.hasOwn(a,'2') && Object.hasOwn(a,'3') && a[0]===undefined && a[3]===3",
     );
-    check(
+    assert_true(
         "let a=[1,,];Object.defineProperty(Array.prototype,'1',{value:9,writable:true,configurable:true});a.length===2 && a[1]===9 && !Object.hasOwn(a,'1')",
     );
-    check(
+    assert_true(
         "let a=[1,[2],{}];Array.isArray(a) && Array.isArray(a[1]) && a[1][0]===2 && !Array.isArray(a[2])",
     );
 }
 
 #[test]
 fn literals_use_intrinsics_independently_of_global_array_binding() {
-    check(
+    assert_true(
         "let A=Array;Array=()=>{throw 1;};let a=[1];a[0]===1 && a instanceof A && Object.getPrototypeOf(a)===A.prototype",
     );
-    check(
+    assert_true(
         "let A=Array;delete globalThis.Array;let a=[,2,];a.length===2 && a[1]===2 && A.isArray(a) && Object.getPrototypeOf(a)===A.prototype",
     );
-    check("function f(){let Array=7;return [3];}f()[0]===3");
+    assert_true("function f(){let Array=7;return [3];}f()[0]===3");
 }
 
 #[test]
 fn element_evaluation_is_left_to_right_and_stops_on_throw() {
-    check(
+    assert_true(
         "let n=0,a=[++n,,n+=2,(n++,n),];n===4 && a.length===4 && a[0]===1 && a[2]===3 && a[3]===4",
     );
     let mut realm = Realm::default();
@@ -50,34 +44,34 @@ fn element_evaluation_is_left_to_right_and_stops_on_throw() {
         Err(Error::Thrown(Value::Number(7.0)))
     );
     assert_eq!(realm.eval("n"), Ok(Value::Number(1.0)));
-    check("let a=[0];a=[a[0]+1,a];a[0]===1 && a[1][0]===0 && a!==a[1]");
+    assert_true("let a=[0];a=[a[0]+1,a];a[0]===1 && a[1][0]===0 && a!==a[1]");
 }
 
 #[test]
 fn elements_define_own_properties_bypassing_inherited_setters() {
-    check(
+    assert_true(
         "let n=0;Object.defineProperty(Array.prototype,'0',{set:()=>{n++;},configurable:true});let a=[4];a[0]===4 && Object.hasOwn(a,'0') && n===0",
     );
-    check(
+    assert_true(
         "Object.defineProperty(Array.prototype,'0',{value:9,writable:false,configurable:true});Object.defineProperty(Array.prototype,'length',{writable:false});let a=[1,,];a[0]===1 && a.length===2 && !Object.hasOwn(a,'1')",
     );
-    check(
+    assert_true(
         "let a=[Object.defineProperty(Array.prototype,'1',{value:9,writable:false,configurable:true}),2];a[1]===2",
     );
 }
 
 #[test]
 fn literal_elements_do_not_infer_anonymous_function_names() {
-    check(
+    assert_true(
         "let a=[function(){},()=>0,function named(){}];a[0].name==='' && a[1].name==='' && a[2].name==='named'",
     );
-    check("let f;let a=[f=()=>1];a[0].name==='f'");
+    assert_true("let f;let a=[f=()=>1];a[0].name==='f'");
 }
 
 #[test]
 fn arrays_work_in_member_call_new_and_function_contexts() {
-    check("[function(x){return this[1]+x;},3][0](4)===7");
-    check("function F(){this.x=7;}new [F][0]().x===7");
+    assert_true("[function(x){return this[1]+x;},3][0](4)===7");
+    assert_true("function F(){this.x=7;}new [F][0]().x===7");
     assert!(matches!(
         Realm::default().eval("new []"),
         Err(Error::Exception {
@@ -85,11 +79,11 @@ fn arrays_work_in_member_call_new_and_function_contexts() {
             ..
         })
     ));
-    check("function f(a=[2]){return a;}f()!==f() && f()[0]===2");
-    check(
+    assert_true("function f(a=[2]){return a;}f()!==f() && f()[0]===2");
+    assert_true(
         "let a=[0],out=[];for(let i=0;i<3;i++){out[i]=()=>i;}out[0]()===0 && out[2]()===2 && out.length===3",
     );
-    check("let ok=false;for(let a=['x' in {x:1}];a[0];){ok=true;break;}ok");
+    assert_true("let ok=false;for(let a=['x' in {x:1}];a[0];){ok=true;break;}ok");
 }
 
 #[test]

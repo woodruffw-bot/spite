@@ -1,6 +1,7 @@
 //! The generic Array.of factory (23.1.2.4).
 
-use crate::{Error, Realm, Value, object::DataDescriptor};
+use crate::object::DataDescriptor;
+use crate::{Error, Realm, Value};
 use spite_core::{JsString, Span};
 
 impl Realm {

@@ -1,6 +1,6 @@
 //! YieldExpression grammar and context boundaries (15.5).
 
-use super::*;
+use super::{Diagnostic, Expr, ExprKind, Kind, Parser, Span, YieldContext};
 
 impl Parser {
     pub(super) fn yield_expression(&mut self) -> Result<Expr, Diagnostic> {

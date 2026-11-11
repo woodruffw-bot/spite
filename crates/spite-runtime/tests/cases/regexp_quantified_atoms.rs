@@ -2,70 +2,66 @@
 
 use spite_runtime::{Realm, Value};
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn greedy_lazy_and_bounded_runs_select_the_earliest_position() {
-    check(
+    assert_true(
         "/a*/.exec('aaab')[0]==='aaa'&&/a*?/.exec('aaab')[0]===''&&/a+/.exec('baaab')[0]==='aaa'&&/a+?/.exec('baaab')[0]==='a'&&/a?/.exec('aa')[0]==='a'&&/a??/.exec('aa')[0]===''",
     );
-    check(
+    assert_true(
         "let m=/[ab]{2,3}/.exec('aXbbaba'),n=/[ab]{2,3}?/.exec('aXbbaba');m.index===2&&m[0]==='bba'&&n.index===2&&n[0]==='bb'&&/[a]{2}/.exec('aba')===null&&/[a]{2,}/.exec('xaaa')[0]==='aaa'",
     );
-    check(
+    assert_true(
         "/a{00,02}/.exec('aaa')[0]==='aa'&&/[]{0}/.exec('a')[0]===''&&/[]+/.exec('a')===null&&/[^]{2}/.exec('ab')[0]==='ab'",
     );
 }
 
 #[test]
 fn lastindex_global_sticky_and_strict_writes_follow_complete_runs() {
-    check(
+    assert_true(
         "let r=/[ab]+/g,a=r.exec('aabb xa'),b=r.exec('aabb xa');a.index===0&&a[0]==='aabb'&&b.index===6&&b[0]==='a'&&r.lastIndex===7&&r.exec('aabb xa')===null&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         "let r=/a+/y;r.lastIndex=1;let m=r.exec('baaa');m.index===1&&m[0]==='aaa'&&r.lastIndex===4&&r.exec('baaa')===null&&r.lastIndex===0",
     );
-    check("let r=/a*/gy;r.lastIndex=2;let m=r.exec('ba');m[0]===''&&m.index===2&&r.lastIndex===2");
-    check(
+    assert_true(
+        "let r=/a*/gy;r.lastIndex=2;let m=r.exec('ba');m[0]===''&&m.index===2&&r.lastIndex===2",
+    );
+    assert_true(
         "let r=/a+/g;Object.defineProperty(r,'lastIndex',{writable:false});let ok=false;try{r.exec('aa')}catch(e){ok=e instanceof TypeError}ok&&r.lastIndex===0",
     );
 }
 
 #[test]
 fn dotall_ignorecase_escapes_and_utf16_units_use_existing_membership() {
-    check(
+    assert_true(
         r"/.+/.exec('a\nb')[0]==='a'&&/.+/s.exec('a\nb')[0]==='a\nb'&&/[^a]+/i.exec('aaBBa')[0]==='BB'&&/[µ]+/i.exec('µΜμ')[0]==='µΜμ'&&/[ſ]+/i.exec('s')===null",
     );
-    check(
+    assert_true(
         r"/\d+/.exec('x123')[0]==='123'&&/\w+?/.exec('abc')[0]==='a'&&/\s+/.exec(' \n')[0]===' \n'&&/\++/.exec('x+++')[0]==='+++'",
     );
-    check(
+    assert_true(
         r"let m=/[^]{2}/d.exec('\uD800\uDC00'),n=/\uD800+/.exec('\uD800\uD800\uDC00');m[0].length===2&&m.indices[0][1]===2&&n[0].length===2",
     );
 }
 
 #[test]
 fn intrinsic_results_have_no_capture_slots_and_bypass_prototype_setters() {
-    check(
+    assert_true(
         "let calls=0;Object.defineProperty(Array.prototype,'0',{set(){calls++},configurable:true});let m=/a+/d.exec('xaa'),p=Object.getOwnPropertyDescriptor(m,'0');calls===0&&m.length===1&&m[0]==='aa'&&m.index===1&&m.input==='xaa'&&m.groups===undefined&&m.indices.length===1&&m.indices[0][0]===1&&m.indices[0][1]===3&&m.indices.groups===undefined&&p.writable&&p.enumerable&&p.configurable",
     );
 }
 
 #[test]
 fn generic_consumers_keep_lazy_and_empty_match_advancement() {
-    check(
+    assert_true(
         "'aa xbbb'.match(/[ab]+/g).join(',')==='aa,bbb'&&'aa'.match(/a*?/g).length===3&&'aa'.replace(/a+?/g,'x')==='xx'&&'aabb'.replace(/[ab]+/,'x')==='x'",
     );
-    check(
+    assert_true(
         "'aabbx'.split(/[ab]+/).join(',')===',x'&&'xaab'.search('a+')===1&&[...'aa'.matchAll(/a*?/g)].length===3",
     );
-    check(
+    assert_true(
         "let seen;let s='xaa'.replace(/a+/,(...args)=>{seen=args;return 'z'});s==='xz'&&seen.length===3&&seen[0]==='aa'&&seen[1]===1&&seen[2]==='xaa'",
     );
 }
@@ -81,7 +77,7 @@ fn enormous_counts_are_compact_and_shared_copies_survive_collection() {
 }
 
 #[test]
-fn groups_concatenation_assertions_alternatives_and_unicode_remain_explicit_gaps() {
+fn groups_concatenation_assertions_alternatives_and_unicode_match_reference_results() {
     for source in [
         r"/(?:(?:(ab|c)+)|){2,3}/.test('a')",
         r"/(?:(?:((?:(?:ab|c)+){2}){2})|){2,3}/.test('a')",
@@ -92,9 +88,6 @@ fn groups_concatenation_assertions_alternatives_and_unicode_remain_explicit_gaps
         r"/[a]+b/v.test('a')",
         r"/(?:(?:(?:(a)(?:\1)+){2})|){2,3}/.test('a')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }

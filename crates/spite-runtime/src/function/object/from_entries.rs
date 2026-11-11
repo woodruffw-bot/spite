@@ -1,6 +1,7 @@
 //! Object.fromEntries (20.1.2.7) and AddEntriesFromIterable (24.1.1.2).
 
-use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value, object::DataDescriptor};
+use crate::object::DataDescriptor;
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span, WellKnownSymbol};
 
 impl Realm {

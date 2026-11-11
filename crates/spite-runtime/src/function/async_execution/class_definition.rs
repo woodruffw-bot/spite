@@ -1,7 +1,8 @@
 //! ClassDeclaration heritage and computed-name suspension (15.7.14).
 
 use super::{AsyncAwaitAction, AsyncExecutionData, Step, active_statement, expression};
-use crate::{Completion, Error, Realm, Value, object::async_expression::ExprRoot};
+use crate::object::async_expression::ExprRoot;
+use crate::{Completion, Error, Realm, Value};
 use spite_parser::ast::{Class, PropertyName, StatementKind};
 use std::rc::Rc;
 

@@ -17,13 +17,7 @@ const KINDS: [(&str, usize, bool); 12] = [
     ("Float64Array", 8, false),
 ];
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 fn exception(source: &str, expected: ExceptionKind) {
     let result = Realm::default().eval(source);
@@ -37,7 +31,7 @@ fn exception(source: &str, expected: ExceptionKind) {
 fn all_concrete_kinds_construct_fixed_zero_initialized_primitive_lengths() {
     for (name, width, bigint) in KINDS {
         let zero = if bigint { "0n" } else { "0" };
-        check(&format!(
+        assert_true(&format!(
             "let C={name},a=new C,b=new C(undefined),c=new C(3.9),d=new C('2');a.length===0 && b.length===0 && c.length===3 && c.byteLength==={} && c.byteOffset===0 && c[0]==={zero} && c[2]==={zero} && d.length===2 && !c.buffer.resizable && c.buffer.byteLength===c.byteLength && a.buffer!==b.buffer && Object.getPrototypeOf(c)===C.prototype && ArrayBuffer.isView(c)",
             3 * width
         ));
@@ -49,7 +43,7 @@ fn all_kinds_accept_iterable_array_like_typed_array_and_buffer_overloads() {
     for (name, width, bigint) in KINDS {
         let one = if bigint { "1n" } else { "1" };
         let two = if bigint { "2n" } else { "2" };
-        check(&format!(
+        assert_true(&format!(
             "let C={name},ignored={{valueOf(){{throw 7;}}}},a=new C([{one},{two}],ignored,ignored),b=new C({{length:2,0:{one},1:{two}}}),c=new C(a,ignored,ignored),buffer=new ArrayBuffer({}),d=new C(buffer,{width},2,ignored);d[0]={two};a.length===2 && a[0]==={one} && a[1]==={two} && b[0]==={one} && b[1]==={two} && c[0]==={one} && c[1]==={two} && c.buffer!==a.buffer && c.byteOffset===0 && !c.buffer.resizable && d.buffer===buffer && d.byteOffset==={width} && d.byteLength==={} && d.length===2 && d[0]==={two} && new C(2,ignored,ignored).length===2",
             5 * width,
             2 * width
@@ -62,7 +56,7 @@ fn primitive_strings_are_lengths_while_boxed_strings_are_iterable_sources() {
     for (name, _, bigint) in KINDS {
         let one = if bigint { "1n" } else { "1" };
         let two = if bigint { "2n" } else { "2" };
-        check(&format!(
+        assert_true(&format!(
             "let C={name},a=new C('12'),b=new C(Object('12'));a.length===12 && b.length===2 && b[0]==={one} && b[1]==={two} && new C(new Number(3)).length===0 && new C(Object(3n)).length===0 && new C(null).length===0 && new C(false).length===0 && new C(true).length===1 && new C(NaN).length===0 && new C(-0.9).length===0"
         ));
     }
@@ -71,7 +65,7 @@ fn primitive_strings_are_lengths_while_boxed_strings_are_iterable_sources() {
 #[test]
 fn constructors_require_new_and_check_index_and_byte_domains_without_wrapping() {
     for (name, width, _) in KINDS {
-        check(&format!(
+        assert_true(&format!(
             "let hits=0,caught=false;try{{{name}({{get [Symbol.iterator](){{hits++;throw 7;}},valueOf(){{hits++;throw 8;}}}});}}catch(e){{caught=e instanceof TypeError;}}caught && hits===0"
         ));
         for value in ["-1", "Infinity", "-Infinity", "9007199254740992"] {
@@ -87,30 +81,30 @@ fn constructors_require_new_and_check_index_and_byte_domains_without_wrapping() 
             );
         }
     }
-    check(
+    assert_true(
         "let a=new Uint8Array(9007199254740991);a.length===9007199254740991 && a.byteLength===9007199254740991 && a[9007199254740990]===0",
     );
-    check(
+    assert_true(
         "let hits=0,caught=false;try{new Float64Array({length:9007199254740991,get 0(){hits++;throw 7;}});}catch(e){caught=e instanceof RangeError;}caught && hits===0",
     );
 }
 
 #[test]
 fn prototype_lookup_order_distinguishes_primitive_and_object_sources() {
-    check(
+    assert_true(
         "let log='',caught=false;function C(){}let N=C.bind(null);Object.defineProperty(N,'prototype',{get(){log+='p';throw 7;}});try{Reflect.construct(Uint16Array,[-1],N);}catch(e){caught=e instanceof RangeError;}caught && log===''",
     );
-    check(
+    assert_true(
         "let log='',p={};function C(){}let N=C.bind(null);Object.defineProperty(N,'prototype',{get(){log+='p';return p;}});let source={get [Symbol.iterator](){log+='i';return undefined;},get length(){log+='l';return {valueOf(){log+='n';return 1;}};},get 0(){log+='g';return {valueOf(){log+='v';return 7;}};}};let a=Reflect.construct(Uint16Array,[source],N);log==='pilngv' && Object.getPrototypeOf(a)===p && a[0]===7",
     );
-    check(
+    assert_true(
         "let log='',caught=false;function C(){}let N=C.bind(null);Object.defineProperty(N,'prototype',{get(){log+='p';throw 7;}});try{Reflect.construct(Float64Array,[9007199254740991],N);}catch(e){caught=e===7;}caught && log==='p'",
     );
-    check(
+    assert_true(
         "let p={},hits=0;function C(){}let N=C.bind(null);Object.defineProperty(N,'prototype',{get(){hits++;return p;}});let a=Reflect.construct(Uint8Array,[],N);hits===1 && Object.getPrototypeOf(a)===p && Object.getOwnPropertyDescriptor(Object.getPrototypeOf(Uint8Array.prototype),'length').get.call(a)===0",
     );
     for (name, _, _) in KINDS {
-        check(&format!(
+        assert_true(&format!(
             "function C(){{}}C.prototype=7;Object.getPrototypeOf(Reflect.construct({name},[2],C))==={name}.prototype"
         ));
     }
@@ -118,19 +112,19 @@ fn prototype_lookup_order_distinguishes_primitive_and_object_sources() {
 
 #[test]
 fn buffer_input_aligns_before_length_conversion_or_detachment_and_uses_current_bounds() {
-    check(
+    assert_true(
         "let b=new ArrayBuffer(8),log='',caught=false;b.transfer();function C(){}let N=C.bind(null);Object.defineProperty(N,'prototype',{get(){log+='p';return Uint16Array.prototype;}});try{Reflect.construct(Uint16Array,[b,{valueOf(){log+='o';return 1;}},{valueOf(){log+='l';throw 7;}}],N);}catch(e){caught=e instanceof RangeError;}caught && log==='po'",
     );
-    check(
+    assert_true(
         "let b=new ArrayBuffer(8),log='',caught=false;b.transfer();try{new Uint16Array(b,{valueOf(){log+='o';return 0;}},{valueOf(){log+='l';return -1;}});}catch(e){caught=e instanceof RangeError;}caught && log==='ol'",
     );
-    check(
+    assert_true(
         "let b=new ArrayBuffer(2,{maxByteLength:8}),log='';let a=new Uint16Array(b,{valueOf(){log+='o';return 0;}},{valueOf(){log+='l';b.resize(8);return 4;}});log==='ol' && a.buffer===b && a.length===4 && a.byteLength===8",
     );
-    check(
+    assert_true(
         "let b=new ArrayBuffer(8,{maxByteLength:12}),caught=false;try{new Uint16Array(b,0,{valueOf(){b.resize(2);return 4;}});}catch(e){caught=e instanceof RangeError;}caught && b.byteLength===2",
     );
-    check(
+    assert_true(
         "let b=new ArrayBuffer(8),log='',caught=false;function C(){}let N=C.bind(null);Object.defineProperty(N,'prototype',{get(){log+='p';b.transfer();return Uint16Array.prototype;}});try{Reflect.construct(Uint16Array,[b,{valueOf(){log+='o';return 0;}},{valueOf(){log+='l';return 1;}}],N);}catch(e){caught=e instanceof TypeError;}caught && log==='pol'",
     );
 }
@@ -141,10 +135,10 @@ fn buffer_overloads_distinguish_fixed_alignment_auto_lengths_and_explicit_counts
         "new Uint16Array(new ArrayBuffer(3),0)",
         ExceptionKind::RangeError,
     );
-    check(
+    assert_true(
         "let b=new ArrayBuffer(3),a=new Uint16Array(b,0,1),r=new ArrayBuffer(5,{maxByteLength:9}),auto=new Uint16Array(r,2),fixed=new Uint16Array(r,2,1);a.length===1 && a.byteLength===2 && auto.length===1 && auto.byteLength===2 && fixed.length===1 && (r.resize(9),auto.length===3) && fixed.length===1",
     );
-    check(
+    assert_true(
         "let b=new ArrayBuffer(8);Object.defineProperty(b,'byteLength',{get(){throw 7;}});class C extends Uint16Array{}Object.defineProperty(C,'BYTES_PER_ELEMENT',{value:1});Object.defineProperty(C.prototype,'BYTES_PER_ELEMENT',{value:1});let a=new C(b,2,2);a.byteOffset===2 && a.byteLength===4 && a.length===2 && a.BYTES_PER_ELEMENT===1",
     );
     for source in [
@@ -158,16 +152,16 @@ fn buffer_overloads_distinguish_fixed_alignment_auto_lengths_and_explicit_counts
 
 #[test]
 fn typed_array_sources_ignore_public_hooks_and_are_validated_after_prototype_lookup() {
-    check(
+    assert_true(
         "let b=new ArrayBuffer(5,{maxByteLength:8}),source=new Uint8Array(b,1);source[0]=7;source[1]=9;for(let key of ['length','byteLength','byteOffset','buffer','constructor'])Object.defineProperty(source,key,{get(){throw 7;}});Object.defineProperty(source,Symbol.iterator,{get(){throw 8;}});let copy=new Uint8Array(source);copy.length===4 && copy[0]===7 && copy[1]===9 && copy.byteOffset===0 && copy.buffer!==b && !copy.buffer.resizable",
     );
-    check(
+    assert_true(
         "let b=new ArrayBuffer(4,{maxByteLength:8}),source=new Uint8Array(b);source[0]=7;function C(){}let N=C.bind(null);Object.defineProperty(N,'prototype',{get(){b.resize(1);return Uint8Array.prototype;}});let copy=Reflect.construct(Uint8Array,[source],N);copy.length===1 && copy[0]===7",
     );
-    check(
+    assert_true(
         "let b=new ArrayBuffer(4),source=new Uint8Array(b),caught=false;function C(){}let N=C.bind(null);Object.defineProperty(N,'prototype',{get(){b.transfer();return Uint8Array.prototype;}});try{Reflect.construct(Uint8Array,[source],N);}catch(e){caught=e instanceof TypeError;}caught && b.detached",
     );
-    check(
+    assert_true(
         "let b=new ArrayBuffer(4,{maxByteLength:8}),source=new Uint8Array(b,1,3),caught=false;b.resize(2);try{new Uint8Array(source);}catch(e){caught=e instanceof TypeError;}caught",
     );
 }
@@ -184,7 +178,7 @@ fn typed_array_copies_allocate_intrinsic_buffers_without_source_constructor_hook
             "Float64Array" => "Int16Array",
             _ => "Float64Array",
         };
-        check(&format!(
+        assert_true(&format!(
             "let enabled=false;class B extends ArrayBuffer{{constructor(n){{super(n);if(enabled)throw 1;}}static get [Symbol.species](){{throw 2;}}}}let b=new B({}),source=new {name}(b,{width},1);source[0]={one};Object.defineProperty(b,'constructor',{{get(){{throw 3;}}}});enabled=true;let same=new {name}(source),other=new {other}(source);same[0]==={one} && other[0]==={one} && same.byteOffset===0 && other.byteOffset===0 && same.buffer!==b && other.buffer!==b && same.buffer!==other.buffer && Object.getPrototypeOf(same.buffer)===ArrayBuffer.prototype && Object.getPrototypeOf(other.buffer)===ArrayBuffer.prototype && same.buffer.constructor===ArrayBuffer && other.buffer.constructor===ArrayBuffer",
             3 * width,
         ));
@@ -204,7 +198,7 @@ fn same_kind_copies_preserve_raw_nan_sign_and_payload_from_nonzero_offsets() {
             "18446744073709551615n",
         ),
     ] {
-        check(&format!(
+        assert_true(&format!(
             "let b=new ArrayBuffer({}),bytes=new DataView(b);bytes.{set}({width},{bits});let source=new {name}(b,{width},1),copy=new {name}(source);Number.isNaN(source[0]) && Number.isNaN(copy[0]) && copy.byteOffset===0 && copy.buffer!==b && copy.buffer.byteLength==={width} && new DataView(copy.buffer).{get}(0)==={bits}",
             3 * width
         ));
@@ -213,10 +207,10 @@ fn same_kind_copies_preserve_raw_nan_sign_and_payload_from_nonzero_offsets() {
 
 #[test]
 fn different_kind_copies_convert_values_and_reject_content_type_mismatches_even_when_empty() {
-    check(
+    assert_true(
         "let a=new Int8Array(new Uint8Array([255,128])),b=new Uint16Array(new Int8Array([-1,7])),c=new Float16Array(new Float64Array([1+2**-11+Number.EPSILON]));a[0]===-1 && a[1]===-128 && b[0]===65535 && b[1]===7 && c[0]===1+2**-10",
     );
-    check("let a=new BigInt64Array(new BigUint64Array([18446744073709551615n]));a[0]===-1n");
+    assert_true("let a=new BigInt64Array(new BigUint64Array([18446744073709551615n]));a[0]===-1n");
     for length in [0, 1] {
         exception(
             &format!("new BigInt64Array(new Uint8Array({length}))"),
@@ -235,17 +229,17 @@ fn different_kind_copies_convert_values_and_reject_content_type_mismatches_even_
 
 #[test]
 fn iterable_construction_exhausts_before_numeric_conversion_and_never_reads_length() {
-    check(
+    assert_true(
         "let log='',done=false,index=0,values=[{valueOf(){if(!done)throw 7;log+='a';return 3;}},{valueOf(){if(!done)throw 8;log+='b';return 4;}}],source={get length(){throw 9;},get [Symbol.iterator](){log+='g';return function(){log+='i';return {next(){log+='n';if(index===2){done=true;return {done:true,get value(){throw 10;}};}return {done:false,value:values[index++]};}};}}};function C(){}let N=C.bind(null);Object.defineProperty(N,'prototype',{get(){log+='p';return Uint8Array.prototype;}});let a=Reflect.construct(Uint8Array,[source],N);log==='pginnnab' && a.length===2 && a[0]===3 && a[1]===4",
     );
 }
 
 #[test]
 fn iterator_and_post_exhaustion_conversion_failures_do_not_invent_iterator_close_calls() {
-    check(
+    assert_true(
         "let index=0,closed=0,done=false,caught=false,source={[Symbol.iterator](){return {next(){if(index++===0)return {done:false,value:{valueOf(){if(!done)throw 8;throw 7;}}};done=true;return {done:true};},return(){closed++;throw 9;}};}};try{new Uint8Array(source);}catch(e){caught=e===7;}caught && done && closed===0",
     );
-    check(
+    assert_true(
         "let closed=0,caught=false,source={[Symbol.iterator](){return {next(){throw 7;},return(){closed++;throw 8;}};}};try{new Uint8Array(source);}catch(e){caught=e===7;}caught && closed===0",
     );
     for source in [
@@ -263,25 +257,25 @@ fn iterator_and_post_exhaustion_conversion_failures_do_not_invent_iterator_close
 
 #[test]
 fn array_like_construction_reads_length_once_then_gets_and_converts_each_live_index() {
-    check(
+    assert_true(
         "let log='',source={get length(){log+='l';return {valueOf(){log+='n';return 3.9;}};},get 0(){log+='a';return {valueOf(){log+='v';source[1]=9;return 7;}};},1:2};Object.setPrototypeOf(source,{2:5});let a=new Uint8Array(source);log==='lnav' && a.length===3 && a[0]===7 && a[1]===9 && a[2]===5",
     );
-    check(
+    assert_true(
         "let a=new Uint8Array({length:3,1:7}),b=new Float64Array({length:2,1:7});a[0]===0 && a[1]===7 && a[2]===0 && Number.isNaN(b[0]) && b[1]===7",
     );
     exception("new BigInt64Array({length:1})", ExceptionKind::TypeError);
     exception("new Uint8Array({length:1n})", ExceptionKind::TypeError);
-    check(
+    assert_true(
         "let reads=0,caught=false,source={get length(){return 2;},get 0(){throw 7;},get 1(){reads++;return 8;}};try{new Uint8Array(source);}catch(e){caught=e===7;}caught && reads===0",
     );
 }
 
 #[test]
 fn factories_validate_constructor_and_mapper_before_source_hooks() {
-    check(
+    assert_true(
         "let hits=0,caught=false,source={get [Symbol.iterator](){hits++;throw 7;},get length(){hits++;throw 8;}};try{Uint8Array.from.call(()=>{},source,null);}catch(e){caught=e instanceof TypeError;}caught && hits===0",
     );
-    check(
+    assert_true(
         "let hits=0,caught=false,source={get [Symbol.iterator](){hits++;throw 7;}};try{Uint8Array.from(source,7);}catch(e){caught=e instanceof TypeError;}caught && hits===0",
     );
     exception("Uint8Array.of.call(()=>{},1)", ExceptionKind::TypeError);
@@ -291,36 +285,36 @@ fn factories_validate_constructor_and_mapper_before_source_hooks() {
             ExceptionKind::TypeError,
         );
     }
-    check(
+    assert_true(
         "let a=Uint8Array.from('12'),b=BigInt64Array.from('12'),c=Uint8Array.from(7);a.length===2 && a[0]===1 && a[1]===2 && b[0]===1n && b[1]===2n && c.length===0",
     );
 }
 
 #[test]
 fn from_exhausts_iterables_before_construction_then_maps_and_sets_in_order() {
-    check(
+    assert_true(
         "let log='',index=0,context={},source={get [Symbol.iterator](){log+='g';return function(){log+='i';return {next(){log+='n';if(index===2)return {done:true};return {done:false,value:++index};}};}}};function C(n){log+='C'+n;return new Uint8Array(n);}let a=Uint8Array.from.call(C,source,function(v,i){'use strict';if(this!==context || arguments.length!==2)throw 7;log+='m'+i;return {valueOf(){log+='v'+i;return v+1;}};},context);log==='ginnnC2m0v0m1v1' && a[0]===2 && a[1]===3",
     );
-    check(
+    assert_true(
         "let log='',source={get [Symbol.iterator](){log+='i';return null;},get length(){log+='l';return 2;},get 0(){log+='a';return 1;},get 1(){log+='b';return 2;}};function C(n){log+='C'+n;return new Uint8Array(n);}let a=Uint8Array.from.call(C,source,(v,i)=>{log+='m'+i;return v+i;});log==='ilC2am0bm1' && a[0]===1 && a[1]===3",
     );
-    check(
+    assert_true(
         "let done=false,closed=0,caught=false,index=0,source={[Symbol.iterator](){return {next(){if(index++===0)return {value:1,done:false};done=true;return {done:true};},return(){closed++;}};}};try{Uint8Array.from(source,()=>{if(!done)throw 8;throw 7;});}catch(e){caught=e===7;}caught && done && closed===0",
     );
 }
 
 #[test]
 fn from_and_of_are_generic_construct_once_and_accept_larger_or_different_kind_results() {
-    check(
+    assert_true(
         "let target=new Uint8Array([9,9,9]),n,argc,newTarget,calls=0;function C(length){calls++;n=length;argc=arguments.length;newTarget=new.target;return target;}Object.defineProperty(C,Symbol.species,{get(){throw 7;}});let a=Uint16Array.of.call(C,257,2);a===target && a[0]===1 && a[1]===2 && a[2]===9 && n===2 && argc===1 && newTarget===C && calls===1",
     );
-    check(
+    assert_true(
         "let target=new BigInt64Array(2);function C(){return target;}let a=Uint8Array.from.call(C,['1','2']);a===target && a[0]===1n && a[1]===2n && Uint8Array.of.call(C,3n,4n)===target && target[0]===3n && target[1]===4n",
     );
     for (name, _, bigint) in KINDS {
         let one = if bigint { "1n" } else { "1" };
         let two = if bigint { "2n" } else { "2" };
-        check(&format!(
+        assert_true(&format!(
             "let a={name}.of({one},{two}),b={name}.from([{one},{two}]);a instanceof {name} && b instanceof {name} && a.length===2 && b.length===2 && a[0]==={one} && a[1]==={two} && b[0]==={one} && b[1]==={two}"
         ));
     }
@@ -338,24 +332,24 @@ fn factory_results_must_be_live_branded_and_at_least_the_requested_length() {
         "(()=>{let a=new Uint8Array(2);a.buffer.transfer();return a;})()",
         "(()=>{let b=new ArrayBuffer(2,{maxByteLength:4}),a=new Uint8Array(b,0,2);b.resize(1);return a;})()",
     ] {
-        check(&format!(
+        assert_true(&format!(
             "let hits=0,caught=false;function C(){{return {result};}}try{{Uint8Array.from.call(C,[1,2],v=>{{hits++;return v;}});}}catch(e){{caught=e instanceof TypeError;}}caught && hits===0"
         ));
     }
-    check(
+    assert_true(
         "let target=new Uint8Array(0);target.buffer.transfer();function C(){return target;}let caught=false;try{Uint8Array.of.call(C);}catch(e){caught=e instanceof TypeError;}caught",
     );
 }
 
 #[test]
 fn factory_mapping_and_value_conversion_can_detach_or_resize_custom_results() {
-    check(
+    assert_true(
         "let result,moved,log='';function C(n){result=new Uint8Array(n);return result;}let a=Uint8Array.from.call(C,[1,2],(v,i)=>{log+='m'+i;if(i===0)moved=result.buffer.transfer();return {valueOf(){log+='v'+i;return v;}};});a===result && a.length===0 && a.buffer.detached && log==='m0v0m1v1' && new DataView(moved).getUint16(0)===0",
     );
-    check(
+    assert_true(
         "let result,log='';function C(n){result=new Uint8Array(n);return result;}let a=Uint8Array.of.call(C,{valueOf(){log+='a';result.buffer.transfer();return 1;}},{valueOf(){log+='b';return 2;}});a===result && a.length===0 && log==='ab'",
     );
-    check(
+    assert_true(
         "let result;function C(n){result=new Uint8Array(new ArrayBuffer(n,{maxByteLength:4}));return result;}let a=Uint8Array.from.call(C,{length:2,get 0(){result.buffer.resize(0);return {valueOf(){return 7;}};},get 1(){result.buffer.resize(2);return 9;}});a===result && a.length===2 && a[0]===0 && a[1]===9",
     );
 }
@@ -399,11 +393,11 @@ fn intrinsic_and_live_state_matrix() {
 #[test]
 fn intrinsic_graph_and_bytes_per_element_descriptors_are_complete() {
     for (name, width, _) in KINDS {
-        check(&format!(
+        assert_true(&format!(
             "let C={name},T=Object.getPrototypeOf(C),shared=T.prototype,p=C.prototype,g=Object.getOwnPropertyDescriptor(globalThis,'{name}'),d=Object.getOwnPropertyDescriptor(C,'prototype'),b=Object.getOwnPropertyDescriptor(C,'BYTES_PER_ELEMENT'),pb=Object.getOwnPropertyDescriptor(p,'BYTES_PER_ELEMENT'),c=Object.getOwnPropertyDescriptor(p,'constructor');T.name==='TypedArray' && T.length===0 && typeof TypedArray==='undefined' && Object.getPrototypeOf(T)===Function.prototype && Object.getPrototypeOf(shared)===Object.prototype && Object.getPrototypeOf(p)===shared && shared.constructor===T && C.name==='{name}' && C.length===3 && g.value===C && g.writable && !g.enumerable && g.configurable && d.value===p && !d.writable && !d.enumerable && !d.configurable && b.value==={width} && !b.writable && !b.enumerable && !b.configurable && pb.value==={width} && !pb.writable && !pb.enumerable && !pb.configurable && c.value===C && c.writable && !c.enumerable && c.configurable && C.from===T.from && C.of===T.of && C[Symbol.species]===C && !Object.hasOwn(C,Symbol.species)"
         ));
     }
-    check(
+    assert_true(
         "let T=Object.getPrototypeOf(Uint8Array),p=T.prototype,d=Object.getOwnPropertyDescriptor(T,Symbol.species),receiver={};Reflect.ownKeys(p).length===38 && !Object.hasOwn(p,'BYTES_PER_ELEMENT') && !Object.hasOwn(p,Symbol.unscopables) && d.get.name==='get [Symbol.species]' && d.get.length===0 && d.set===undefined && !d.enumerable && d.configurable && d.get.call(receiver)===receiver && d.get.call(null)===null",
     );
     exception(
@@ -418,13 +412,13 @@ fn intrinsic_graph_and_bytes_per_element_descriptors_are_complete() {
 
 #[test]
 fn iterator_alias_and_original_array_to_string_identity_are_preserved() {
-    check(
+    assert_true(
         "let p=Object.getPrototypeOf(Uint8Array.prototype),original=Array.prototype.toString;Array.prototype.toString=function(){throw 7;};let a=new Uint8Array([1,2]);a.join=()=>7;p.toString===original && p[Symbol.iterator]===p.values && p.values.name==='values' && p.values.length===0 && a.toString()===7",
     );
-    check(
+    assert_true(
         "let T=Object.getPrototypeOf(Uint8Array),p=T.prototype;for(let [name,length] of [['from',1],['of',0]]){let d=Object.getOwnPropertyDescriptor(T,name);if(d.value.name!==name || d.value.length!==length || !d.writable || d.enumerable || !d.configurable || Object.hasOwn(d.value,'prototype'))throw 7;}for(let name of ['keys','values','entries']){let d=Object.getOwnPropertyDescriptor(p,name);if(d.value.name!==name || d.value.length!==0 || !d.writable || d.enumerable || !d.configurable || Object.hasOwn(d.value,'prototype'))throw 8;}true",
     );
-    check(
+    assert_true(
         "let p=Object.getPrototypeOf(Uint8Array.prototype),lengths={at:1,copyWithin:2,every:1,fill:1,filter:1,find:1,findIndex:1,findLast:1,findLastIndex:1,forEach:1,includes:1,indexOf:1,join:1,lastIndexOf:1,map:1,reduce:1,reduceRight:1,reverse:0,set:1,slice:2,some:1,sort:1,subarray:2,toLocaleString:0,toReversed:0,toSorted:1,with:2};for(let name of Object.keys(lengths)){let d=Object.getOwnPropertyDescriptor(p,name);if(d.value.name!==name || d.value.length!==lengths[name] || !d.writable || d.enumerable || !d.configurable || Object.hasOwn(d.value,'prototype'))throw 7;}for(let [object,name,length] of [[Uint8Array,'fromBase64',1],[Uint8Array,'fromHex',1],[Uint8Array.prototype,'setFromBase64',1],[Uint8Array.prototype,'setFromHex',1],[Uint8Array.prototype,'toBase64',0],[Uint8Array.prototype,'toHex',0]]){let d=Object.getOwnPropertyDescriptor(object,name);if(d.value.name!==name || d.value.length!==length || !d.writable || d.enumerable || !d.configurable || Object.hasOwn(d.value,'prototype'))throw 8;}true",
     );
 }
@@ -450,11 +444,11 @@ fn state_getters_are_branded_but_the_tag_getter_is_generic() {
                 ExceptionKind::TypeError,
             );
         }
-        check(&format!(
+        assert_true(&format!(
             "let tag=Object.getOwnPropertyDescriptor(Object.getPrototypeOf(Uint8Array.prototype),Symbol.toStringTag).get;tag.call({receiver})===undefined"
         ));
     }
-    check(
+    assert_true(
         "let p=Object.getPrototypeOf(Uint8Array.prototype);for(let name of ['buffer','byteLength','byteOffset','length']){let d=Object.getOwnPropertyDescriptor(p,name);if(d.get.name!=='get '+name || d.get.length!==0 || d.set!==undefined || d.enumerable || !d.configurable || Object.hasOwn(d.get,'prototype'))throw 7;}let d=Object.getOwnPropertyDescriptor(p,Symbol.toStringTag);d.get.name==='get [Symbol.toStringTag]' && d.get.length===0 && d.set===undefined && !d.enumerable && d.configurable && !Object.hasOwn(d.get,'prototype')",
     );
 }
@@ -462,21 +456,21 @@ fn state_getters_are_branded_but_the_tag_getter_is_generic() {
 #[test]
 fn intrinsic_iterators_validate_at_creation_then_follow_live_view_bounds() {
     for method in ["keys", "values", "entries"] {
-        check(&format!(
+        assert_true(&format!(
             "let b=new ArrayBuffer(4,{{maxByteLength:8}}),a=new Uint8Array(b,1,3),caught=false;b.resize(2);Object.defineProperty(a,'length',{{get(){{throw 7;}}}});try{{a.{method}();}}catch(e){{caught=e instanceof TypeError;}}caught"
         ));
-        check(&format!(
+        assert_true(&format!(
             "let a=new Uint8Array(2),caught=false;a.buffer.transfer();try{{a.{method}();}}catch(e){{caught=e instanceof TypeError;}}caught"
         ));
     }
-    check(
+    assert_true(
         "let b=new ArrayBuffer(2,{maxByteLength:6}),a=new Uint8Array(b),iterator=a.values();a[0]=7;a[1]=8;let first=iterator.next();b.resize(3);a[2]=9;let second=iterator.next(),third=iterator.next(),end=iterator.next();b.resize(6);first.value===7 && second.value===8 && third.value===9 && end.done && iterator.next().done",
     );
 }
 
 #[test]
 fn subclasses_initialize_private_fields_after_copy_and_factories_retain_their_constructor() {
-    check(
+    assert_true(
         "let args,target;class C extends Uint16Array{#first=this[0];#length=this.length;constructor(...xs){super(...xs);args=xs;target=new.target;}read(){return this.#first+this.#length;}static get [Symbol.species](){throw 7;}}let a=new C([7,9]),b=C.from([3,4]),c=C.of(1,2);a instanceof C && a.read()===9 && b instanceof C && b.read()===2 && b[0]===3 && c instanceof C && c.read()===2 && c[0]===1 && args.length===1 && args[0]===2 && target===C",
     );
 }
@@ -553,7 +547,7 @@ fn iterable_lists_do_not_use_argument_quotas_and_opted_in_host_limits_remain_unc
 
 #[test]
 fn uint8_encoding_wrappers_execute_and_report_language_syntax_errors() {
-    check(
+    assert_true(
         "let a=Uint8Array.fromBase64('AQI='),b=Uint8Array.fromHex('0304'),c=new Uint8Array(2),x=c.setFromBase64('BQY='),y=c.setFromHex('0708');a.toBase64()==='AQI=' && a.toHex()==='0102' && b.toBase64()==='AwQ=' && b.toHex()==='0304' && x.read===4 && x.written===2 && y.read===4 && y.written===2 && c.toHex()==='0708'",
     );
     for expression in [
@@ -562,7 +556,7 @@ fn uint8_encoding_wrappers_execute_and_report_language_syntax_errors() {
         "new Uint8Array(1).setFromBase64('!')",
         "new Uint8Array(1).setFromHex('!')",
     ] {
-        check(&format!(
+        assert_true(&format!(
             "let caught=false,finished=false;try{{{expression};}}catch(e){{caught=e instanceof SyntaxError;}}finally{{finished=true;}}caught && finished"
         ));
     }

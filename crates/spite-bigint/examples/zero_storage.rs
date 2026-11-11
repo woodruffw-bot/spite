@@ -1,7 +1,8 @@
 //! Retained BigInt result storage; measure the built executable's peak RSS.
 
 use spite_bigint::{BigInt, BitwiseOp, Budget};
-use std::{error::Error, hint::black_box};
+use std::error::Error;
+use std::hint::black_box;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut args = std::env::args().skip(1);

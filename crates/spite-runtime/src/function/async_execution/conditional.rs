@@ -1,10 +1,8 @@
 //! IfStatement selection after ordinary or suspended condition evaluation (14.6.2).
 
 use super::{AsyncExecutionData, Step, active_statement};
-use crate::{
-    Completion, Error, Realm, Value,
-    object::async_execution::{AsyncStatementFrame, StatementChild},
-};
+use crate::object::async_execution::{AsyncStatementFrame, StatementChild};
+use crate::{Completion, Error, Realm, Value};
 use spite_parser::ast::StatementKind;
 
 impl Realm {

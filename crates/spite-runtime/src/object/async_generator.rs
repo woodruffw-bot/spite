@@ -1,7 +1,9 @@
 //! Async-generator requests and retained start contexts (27.6.3).
 
-use super::{Budget, Error, Objects, generator::GeneratorStart};
-use crate::{Value, function::PromiseCapability};
+use super::generator::GeneratorStart;
+use super::{Budget, Error, Objects};
+use crate::Value;
+use crate::function::PromiseCapability;
 use spite_core::Span;
 use spite_heap::{Handle, Trace};
 use std::collections::VecDeque;

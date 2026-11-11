@@ -1,6 +1,6 @@
 //! Cached tokens retain the scanner and parser template context before scanning.
 
-use super::*;
+use super::{Diagnostic, Kind, Lexer, Parser, Token, lexer};
 
 #[derive(Clone)]
 pub(super) struct ScanCheckpoint {
@@ -66,6 +66,8 @@ impl Parser {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ast::Literal;
+    use spite_core::{DiagnosticKind, JsString};
 
     #[test]
     fn regexp_rescan_replaces_a_failed_div_suffix_and_preserves_trivia() {

@@ -1,10 +1,9 @@
 //! Separate dynamic GeneratorFunction grammar goals (20.2.1.1.1, 15.5).
 
 use spite_core::{DiagnosticKind, JsString};
+use spite_parser::ast::{ExprKind, FunctionKind, Literal, StatementKind};
 use spite_parser::{
-    MAX_DEPTH,
-    ast::{ExprKind, FunctionKind, Literal, StatementKind},
-    parse_dynamic_generator_function, parse_dynamic_generator_function_utf16,
+    MAX_DEPTH, parse_dynamic_generator_function, parse_dynamic_generator_function_utf16,
 };
 
 #[test]

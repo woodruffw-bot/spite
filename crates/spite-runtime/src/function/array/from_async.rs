@@ -1,10 +1,8 @@
 //! Array.fromAsync's sequential awaits and AsyncIteratorClose (23.1.2.2).
 
-use crate::{
-    Error, ExceptionKind, ObjectHandle, Realm, Value,
-    function::async_native::AsyncResumeKind,
-    object::array_from_async::{AsyncArrayData, AsyncArrayInput, AsyncArrayPhase},
-};
+use crate::function::async_native::AsyncResumeKind;
+use crate::object::array_from_async::{AsyncArrayData, AsyncArrayInput, AsyncArrayPhase};
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, Span, WellKnownSymbol};
 
 enum Step {

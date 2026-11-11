@@ -1,6 +1,6 @@
 //! Embedding requests, deferred import jobs and defining ScriptOrModule identity.
 
-use super::*;
+use super::{Error, Realm, Span, Value};
 use crate::{PromiseJobOutcome, PromiseState};
 use spite_core::JsString;
 

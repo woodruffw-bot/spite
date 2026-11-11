@@ -1,5 +1,9 @@
-use super::*;
-use crate::{Value, function::Builtin};
+use super::{
+    Budget, DataDescriptor, DescriptorKind, Error, GetAction, Handle, JsString, Objects,
+    OrdinaryObject, Property, PropertyDescriptor, SetAction,
+};
+use crate::Value;
+use crate::function::Builtin;
 
 fn accessor(
     get: Option<Option<Handle>>,
@@ -338,7 +342,7 @@ fn accessor_edges_are_validated_traced_and_removed_on_kind_change() {
             &mut Budget::new(work),
         ) {
             Err(Error::WorkLimit) => {
-                assert_eq!(objects.get_own(&object, &key, &mut budget).unwrap(), before)
+                assert_eq!(objects.get_own(&object, &key, &mut budget).unwrap(), before);
             }
             Ok(true) => {
                 succeeded = true;

@@ -1,9 +1,7 @@
 //! Object descriptor reflection and conversion (6.2.6.4–5, 20.1.2.4/8/14).
 
-use crate::{
-    Error, ExceptionKind, ObjectHandle, Realm, Value,
-    object::{DataDescriptor, DescriptorKind, Property, PropertyDescriptor},
-};
+use crate::object::{DataDescriptor, DescriptorKind, Property, PropertyDescriptor};
+use crate::{Error, ExceptionKind, ObjectHandle, Realm, Value};
 use spite_core::{JsString, PropertyKey, Span};
 
 impl Realm {

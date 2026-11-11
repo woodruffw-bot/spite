@@ -52,11 +52,13 @@ use realm_object::Hint;
 use reference::Reference;
 use spite_bigint::{BitwiseOp, Budget, Error as IntegerError};
 use spite_core::{Diagnostic, JsString, Span};
-use spite_parser::{ast::*, parse_script, parse_script_with_source_limit};
-use std::{
-    collections::{BTreeMap, BTreeSet, VecDeque},
-    fmt,
+use spite_parser::ast::{
+    Argument, BinaryOp, BindingElement, BindingPatternKind, CatchClause, Expr, ExprKind,
+    ForInitializer, Literal, PropertyName, Script, Statement, StatementKind, SwitchClause, UnaryOp,
 };
+use spite_parser::{parse_script, parse_script_with_source_limit};
+use std::collections::{BTreeMap, BTreeSet, VecDeque};
+use std::fmt;
 use value::{exponentiate, to_uint32};
 
 /// Built-in error categories produced by implemented runtime operations.
@@ -1519,7 +1521,7 @@ impl Realm {
                 }
             }
             Reference::ObjectBinding { object, name } => {
-                self.with_set_binding(&object, &name, value, span)?
+                self.with_set_binding(&object, &name, value, span)?;
             }
             Reference::SuperProperty {
                 base,

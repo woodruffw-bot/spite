@@ -250,10 +250,10 @@ impl Realm {
         {
             match part {
                 ReplacementPart::Literal(units) => {
-                    self.append_replacement_units(result, units, span)?
+                    self.append_replacement_units(result, units, span)?;
                 }
                 ReplacementPart::Matched => {
-                    self.append_replacement_units(result, context.matched.code_units(), span)?
+                    self.append_replacement_units(result, context.matched.code_units(), span)?;
                 }
                 ReplacementPart::Prefix => self.append_replacement_units(
                     result,
@@ -274,7 +274,7 @@ impl Realm {
                 }
                 ReplacementPart::Capture(index) => match &context.captures[index] {
                     Value::String(string) => {
-                        self.append_replacement_units(result, string.code_units(), span)?
+                        self.append_replacement_units(result, string.code_units(), span)?;
                     }
                     Value::Undefined => {}
                     _ => unreachable!("captures were converted before substitution"),

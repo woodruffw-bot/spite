@@ -1,6 +1,7 @@
 //! Suspended class expressions and NamedEvaluation before static initialization.
 
-use spite_runtime::{Error, PromiseJobOutcome, Realm, Value, object::PromiseState};
+use spite_runtime::object::PromiseState;
+use spite_runtime::{Error, PromiseJobOutcome, Realm, Value};
 
 fn check(realm: &mut Realm, source: &str) {
     assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");

@@ -1,6 +1,6 @@
 //! Namespace exotic behavior through ordinary JavaScript reflection and Proxies.
 
-use super::*;
+use super::{Error, JsString, ModuleHandle, Realm, Span, Value};
 use crate::{ExceptionKind, PromiseJobOutcome, PromiseState};
 
 fn setup(source: &str) -> (Realm, ModuleHandle, Value) {

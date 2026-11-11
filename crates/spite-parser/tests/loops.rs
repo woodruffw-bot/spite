@@ -1,7 +1,8 @@
 //! Iteration grammar and early-error regressions.
 
 use spite_core::DiagnosticKind;
-use spite_parser::{MAX_DEPTH, ast::StatementKind, parse_script};
+use spite_parser::ast::StatementKind;
+use spite_parser::{MAX_DEPTH, parse_script};
 
 #[test]
 fn loop_syntax_snapshot() {

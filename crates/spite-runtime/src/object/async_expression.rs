@@ -1,7 +1,9 @@
 //! Owned value-expression continuations with safe paths into retained source AST.
 
 use super::async_execution::AsyncAwaitAction;
-use crate::{Reference, Value, environment::EnvironmentHandle, function::CallTarget};
+use crate::environment::EnvironmentHandle;
+use crate::function::CallTarget;
+use crate::{Reference, Value};
 use spite_core::{JsSymbol, Span};
 use spite_heap::Handle;
 use spite_parser::ast::{BinaryOp, UnaryOp, UpdateOp};

@@ -4,13 +4,7 @@ use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
-fn check(source: &str) {
-    assert_eq!(
-        Realm::default().eval(source),
-        Ok(Value::Boolean(true)),
-        "{source}"
-    );
-}
+use crate::common::assert_true;
 
 #[test]
 fn zero_count_lookbehind_choice_result_snapshot() {
@@ -80,38 +74,38 @@ fn zero_count_lookbehind_choice_result_snapshot() {
 
 #[test]
 fn skipped_choices_keep_named_aliases_enclosing_ranges_outside_targets_and_negative_undo() {
-    check(
+    assert_true(
         r"let a=/(?<=(?:(?<x>a)|(?<x>bb)){0})b\k<x>/d.exec('qb');a.groups.x===undefined&&a[1]===undefined&&a[2]===undefined&&a.indices.groups.x===undefined&&Object.hasOwn(a.groups,'x')&&Object.hasOwn(a.indices.groups,'x')",
     );
-    check(
+    assert_true(
         r"let a=/(?<=((?:(?<x>a)|(?<x>bb)){0}){2})b\k<x>/d.exec('qb'),b=/(?<=((?:(?<x>a)|(?<x>bb)){0})*)b\k<x>/d.exec('qb');a[1]===''&&a[2]===undefined&&a[3]===undefined&&a.indices[1][0]===1&&a.groups.x===undefined&&b[1]===undefined&&b.indices[1]===undefined",
     );
-    check(
+    assert_true(
         r"let a=/(?<x>a)(?<=(a\k<x>|bb){0})b\k<x>/d.exec('aba');a[0]==='aba'&&a.groups.x==='a'&&a[2]===undefined&&a.indices.groups.x===a.indices[1]&&a.indices[1][0]===0&&a.indices[1][1]===1",
     );
-    check(
+    assert_true(
         r"let a=/(?<=((a|aa){0}){2}q)b/d.exec('qb'),b=/(?<!((a|aa){0}){2}q)b/d.exec('xb');a[1]===''&&a[2]===undefined&&a.indices[1][0]===0&&b[1]===undefined&&b[2]===undefined",
     );
-    check(
+    assert_true(
         r"let a=/((a|aa){0}){2}b/d.exec('qb'),b=/((a|aa){0})*b/d.exec('qb');a.index===1&&a[1]===''&&a[2]===undefined&&b[1]===undefined&&b.indices[2]===undefined",
     );
 }
 
 #[test]
 fn zero_count_choice_consumers_keep_last_index_empty_advancement_and_callback_slots() {
-    check(
+    assert_true(
         r"let r=/(?<=((a|aa){0}){2})b/dg,a=[...'qb b'.matchAll(r)];a.length===2&&a[1].index===3&&a[1][1]===''&&a[1][2]===undefined&&a[1].indices[1][0]===3&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/(?<=(a|aa){0})b/dy;r.lastIndex=1;let a=r.exec('qb');a[1]===undefined&&a.index===1&&r.lastIndex===2&&r.exec('qb')===null&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let r=/(?<=((a|aa){0}){2})/dg,a=[...'ab'.matchAll(r)];a.length===3&&a[2].index===2&&a[2][1]===''&&a[2][2]===undefined&&a[2].indices[1][0]===2&&r.lastIndex===0",
     );
-    check(
+    assert_true(
         r"let seen=[];let s='qb b'.replace(/(?<=((a|aa){0}){2})b/g,(m,c,d,i,s)=>{seen.push(c,d,i);return '_'});s==='q_ _'&&seen.length===6&&seen[0]===''&&seen[1]===undefined&&seen[2]===1&&seen[5]===3",
     );
-    check(
+    assert_true(
         r"'qb b'.replace(/(?<=(?:(?<x>a)|(?<x>bb)){0})b/g,'<$<x>>')==='q<> <>'&&'qb'.search(/(?<=(a|aa){0})b/)===1&&'qb b'.split(/(?<=(a|aa){0})b/).join('|')==='q|| ||'",
     );
 }
@@ -145,9 +139,6 @@ fn nonzero_unequal_choices_mixed_empty_paths_unproved_bodies_and_unicode_are_pen
         r"/(?<=(a|aa){0})b/u.exec('b')",
         r"/(?<=(a|aa){0})b/v.exec('b')",
     ] {
-        assert!(
-            crate::common::regexp_oracle::check(&mut Realm::default(), source),
-            "{source}"
-        );
+        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }
