@@ -1,9 +1,28 @@
 //! Fixtures for Unicode-set matches with sequentially named capture groups.
 
-use super::assert_value;
+use super::{assert_true, assert_value};
 use spite_core::JsString;
 use spite_runtime::{Realm, Value};
 use std::ops::Range;
+
+/// Checks a failed global, indexed Unicode-set match and its lastIndex reset.
+#[track_caller]
+pub fn assert_no_match(pattern: &str, flags: &str, input: JsString, initial_last_index: usize) {
+    let pattern = JsString::from(pattern);
+    let flags = JsString::from(flags);
+    assert_true(&format!(
+        r#"
+            var pattern = {pattern:?},
+                input = {input:?},
+                regexp = new RegExp(pattern, {flags:?}),
+                metadataValid = regexp.source === pattern && regexp.global &&
+                    regexp.hasIndices && regexp.unicodeSets === true && regexp.unicode === false;
+            regexp.lastIndex = {initial_last_index};
+            var result = regexp.exec(input);
+            metadataValid && result === null && regexp.lastIndex === 0
+        "#
+    ));
+}
 
 /// Expected match text, capture slots, UTF-16 ranges, and final lastIndex.
 pub struct MatchExpectation<'a> {

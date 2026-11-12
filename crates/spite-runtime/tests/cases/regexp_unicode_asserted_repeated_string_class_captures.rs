@@ -1,9 +1,11 @@
 //! Unconditional predicates retain member/count backtracking and lexical captures.
 use crate::common::assert_true;
 use crate::common::eval_string;
+use crate::common::regexp_captures::assert_no_match;
 use crate::common::regexp_matches::DESCRIBE_MATCH;
 use spite_core::JsString;
 use spite_runtime::{Realm, Value};
+use test_case::test_case;
 #[test]
 fn asserted_repeated_string_class_native_tables_consumers_and_zero_iteration_scopes() {
     assert_true(
@@ -181,18 +183,7 @@ fn asserted_repeated_string_class_native_tables_consumers_and_zero_iteration_sco
                 "[[\"\",\"\",\"\",\"<undefined>\",\"<undefined>\",\"\"],[[0,0],[0,0],[0,0],\"<undefined>\",\"<undefined>\",[0,0]],0,0]"
         "#,
     );
-    assert_true(
-        r#"
-            var pattern = "(?<before>^)(?<whole>(?<iteration>(?<c>[\\q{aa|aaa}])){0})(?<after>$)",
-                input = "a",
-                r = new RegExp(pattern, "dgv"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 0;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
+
     assert_true(
         r#"
             var pattern = "(?<before>^)(?<whole>(?<iteration>(?<c>[\\q{aa|aaa}])){0,2}?)(?<after>$)",
@@ -542,18 +533,7 @@ fn asserted_repeated_string_class_native_tables_consumers_and_zero_iteration_sco
                 "[[\"aaaa\",\"\",\"aaaa\",\"aa\",\"aa\",\"\"],[[1,5],[1,1],[1,5],[3,5],[3,5],[5,5]],1,5]"
         "#,
     );
-    assert_true(
-        r#"
-            var pattern = "(?<before>\\b)(?<whole>(?<iteration>(?<c>[\\q{a|aa}]))*)(?<after>\\b)",
-                input = "!aaaa!",
-                r = new RegExp(pattern, "dgvy"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 0;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
+
     assert_true(
         r#"
             var pattern = "(?<before>^)(?<whole>(?<iteration>(?<c>[\\q{a|aa}]))*?)(?<after>\\b)",
@@ -604,18 +584,7 @@ fn asserted_repeated_string_class_native_tables_consumers_and_zero_iteration_sco
                 "[[\"\",\"\",\"\",\"<undefined>\",\"<undefined>\",\"\"],[[0,0],[0,0],[0,0],\"<undefined>\",\"<undefined>\",[0,0]],0,0]"
         "#,
     );
-    assert_true(
-        r#"
-            var pattern = "(?<before>\\b\\B)(?<whole>(?<iteration>(?<c>[\\q{a|aa}]))*)(?<after>)",
-                input = "a",
-                r = new RegExp(pattern, "dgv"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 0;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
+
     assert_true(
         r#"
             var pattern = "(?<before>^)(?<whole>(?<c>[\\q{ab|abc|c}]*?))(?<after>$)",
@@ -666,18 +635,7 @@ fn asserted_repeated_string_class_native_tables_consumers_and_zero_iteration_sco
                 "[[\"\",\"\",\"\",\"<undefined>\",\"<undefined>\",\"\"],[[0,0],[0,0],[0,0],\"<undefined>\",\"<undefined>\",[0,0]],0,0]"
         "#,
     );
-    assert_true(
-        r#"
-            var pattern = "(?<before>^)(?<whole>(?<iteration>(?<c>[\\q{ab}&&\\q{cd}]))+)(?<after>$)",
-                input = "",
-                r = new RegExp(pattern, "dgv"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 0;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
+
     assert_true(
         r#"
             var pattern = "(?<before>^)(?<whole>(?<iteration>(?<c>[\\q{ab}&&\\q{cd}])){0})(?<after>$)",
@@ -1260,4 +1218,41 @@ return metadata&&JSON.stringify(rows)==="[[false,\"aaaaaa\",{\"values\":[\"aaaaa
             ),
         );
     }
+}
+
+#[test_case(
+    r#"(?<before>^)(?<whole>(?<iteration>(?<c>[\q{aa|aaa}])){0})(?<after>$)"#,
+    "dgv",
+    JsString::from("a"),
+    0;
+    "input_a_from_0_variant_1"
+)]
+#[test_case(
+    r#"(?<before>\b)(?<whole>(?<iteration>(?<c>[\q{a|aa}]))*)(?<after>\b)"#,
+    "dgvy",
+    JsString::from("!aaaa!"),
+    0;
+    "input_aaaa_from_0_variant_2"
+)]
+#[test_case(
+    r#"(?<before>\b\B)(?<whole>(?<iteration>(?<c>[\q{a|aa}]))*)(?<after>)"#,
+    "dgv",
+    JsString::from("a"),
+    0;
+    "input_a_from_0_variant_3"
+)]
+#[test_case(
+    r#"(?<before>^)(?<whole>(?<iteration>(?<c>[\q{ab}&&\q{cd}]))+)(?<after>$)"#,
+    "dgv",
+    JsString::from(""),
+    0;
+    "empty_input_from_0_variant_4"
+)]
+fn no_match_resets_last_index(
+    pattern: &str,
+    flags: &str,
+    input: JsString,
+    initial_last_index: usize,
+) {
+    assert_no_match(pattern, flags, input, initial_last_index);
 }

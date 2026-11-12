@@ -1,7 +1,9 @@
 //! Braced repetition retains whole and final-iteration capture scopes.
 use crate::common::assert_true;
+use crate::common::regexp_captures::assert_no_match;
 use spite_core::JsString;
 use spite_runtime::{Realm, Value};
+use test_case::test_case;
 #[test]
 fn bounded_string_class_native_tables_and_consumers_keep_iteration_and_empty_identity() {
     assert_true(
@@ -254,18 +256,7 @@ fn bounded_string_class_native_tables_and_consumers_keep_iteration_and_empty_ide
                 "[[\"abab\",\"\",\"abab\",\"ab\",\"ab\",\"\"],[[1,5],[1,1],[1,5],[3,5],[3,5],[5,5]],1,5]"
         "#,
     );
-    assert_true(
-        r#"
-            var pattern = "(?<before>)(?<whole>(?<iteration>(?<c>[\\q{a|ab}])){1,2})(?<after>)",
-                input = "!ababX",
-                r = new RegExp(pattern, "dgvy"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 0;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
+
     assert_true(
         r#"
             var pattern =
@@ -318,18 +309,7 @@ fn bounded_string_class_native_tables_and_consumers_keep_iteration_and_empty_ide
                 "[[\"\u017fa\u212a\",\"\",\"\u017fa\u212a\",\"\u212a\",\"\u212a\",\"<undefined>\",\"\"],[[0,3],[0,0],[0,3],[2,3],[2,3],\"<undefined>\",[3,3]],0,3]"
         "#,
     );
-    assert_true(
-        r#"
-            var pattern = "(?<before>)(?<whole>(?<iteration>(?<c>[\\q{ab}])){1,2})(?<after>)",
-                input = "!",
-                r = new RegExp(pattern, "dgv"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 0;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
+
     assert_true(
         r#"
             var pattern = "(?<before>)(?<whole>(?<c>[\\q{}]{0,1}))(?<after>)",
@@ -672,4 +652,27 @@ return metadata&&JSON.stringify(rows)==="[[false,\"aaaaaa\",{\"values\":[\"aaaaa
             ),
         );
     }
+}
+
+#[test_case(
+    r#"(?<before>)(?<whole>(?<iteration>(?<c>[\q{a|ab}])){1,2})(?<after>)"#,
+    "dgvy",
+    JsString::from("!ababX"),
+    0;
+    "input_ababX_from_0_variant_1"
+)]
+#[test_case(
+    r#"(?<before>)(?<whole>(?<iteration>(?<c>[\q{ab}])){1,2})(?<after>)"#,
+    "dgv",
+    JsString::from("!"),
+    0;
+    "input__from_0_variant_2"
+)]
+fn no_match_resets_last_index(
+    pattern: &str,
+    flags: &str,
+    input: JsString,
+    initial_last_index: usize,
+) {
+    assert_no_match(pattern, flags, input, initial_last_index);
 }

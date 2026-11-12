@@ -1,9 +1,11 @@
 //! Required empty iterations preserve class-versus-empty capture identity.
 use crate::common::assert_true;
 use crate::common::eval_string;
+use crate::common::regexp_captures::assert_no_match;
 use crate::common::regexp_matches::DESCRIBE_MATCH;
 use spite_core::JsString;
 use spite_runtime::{Realm, Value};
+use test_case::test_case;
 #[test]
 fn zero_minimum_asserted_string_class_native_tables_consumers_and_required_empty_identity() {
     assert_true(
@@ -84,19 +86,7 @@ fn zero_minimum_asserted_string_class_native_tables_consumers_and_required_empty
                 "[[\"aaaa\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"aaaa\",\"a\",\"<undefined>\",\"a\",\"\"],[[0,4],[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\",[0,4],[3,4],\"<undefined>\",[3,4],[4,4]],0,4]"
         "#,
     );
-    assert_true(
-        r#"
-            var pattern =
-                "(?<before>^)(?<whole>(?<iteration>(?<c>[a-z\\q{|S|sa|aX}]))??)(?<z>(?<z1>\\B)*|(?<z2>\\b)+)*?(?<after>$)",
-                input = "\ud83d\ude00aX",
-                r = new RegExp(pattern, "dgvyi"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 1;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
+
     assert_true(
         r#"
             var pattern =
@@ -153,32 +143,6 @@ fn zero_minimum_asserted_string_class_native_tables_consumers_and_required_empty
     assert_true(
         r#"
             var pattern =
-                "(?<before>^)(?<z>(?<z1>^)|(?<z2>\\b\\B))?(?<whole>(?<iteration>(?<c>[\\q{|a|ab}]))+)(?<after>\\b)",
-                input = "\u017faX",
-                r = new RegExp(pattern, "dgvy"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 0;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
-    assert_true(
-        r#"
-            var pattern =
-                "(?<before>^)(?<z>(?<z1>^)|(?<z2>\\b\\B))?(?<whole>(?<iteration>(?<c>[\\q{a|ab}])|(?<e>))??)(?<after>\\b)",
-                input = "\n\nab\n",
-                r = new RegExp(pattern, "dgv"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 0;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
-    assert_true(
-        r#"
-            var pattern =
                 "(?<before>^)(?<z>(?<z1>^)|(?<z2>\\b\\B))?(?<whole>(?<iteration>(?<e>)|(?<c>[\\p{Any}\\q{|ab}])){0})(?<after>\\b)",
                 input = "a",
                 r = new RegExp(pattern, "dgv"),
@@ -202,19 +166,7 @@ fn zero_minimum_asserted_string_class_native_tables_consumers_and_required_empty
                 "[[\"\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\"],[[0,0],[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\",[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\",[0,0]],0,0]"
         "#,
     );
-    assert_true(
-        r#"
-            var pattern =
-                "(?<before>^)(?<whole>(?<iteration>(?<c>[a-z\\q{|S|sa|aX}])){2,3})(?<z>(?<z1>\\B)*|(?<z2>\\b)+)*?(?<after>\\b)",
-                input = "!ab!",
-                r = new RegExp(pattern, "dgvyim"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 0;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
+
     assert_true(
         r#"
             var pattern =
@@ -372,33 +324,7 @@ fn zero_minimum_asserted_string_class_native_tables_consumers_and_required_empty
                 "[[\"\",\"\",\"\",\"\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\"],[[0,0],[0,0],[0,0],[0,0],[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\",[0,0]],0,0]"
         "#,
     );
-    assert_true(
-        r#"
-            var pattern =
-                "(?<before>^)(?<whole>(?<iteration>(?<c>[\\q{|a|ab}])|(?<e>)){3,4}?)(?<z>(?<z1>\\B)*|(?<z2>\\b)+)*?(?<after>\\b)",
-                input = "\u017faX",
-                r = new RegExp(pattern, "dgv"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 0;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
 
-    assert_true(
-        r#"
-            var pattern =
-                "(?<before>\\b)(?<z>(?<z1>^)|(?<z2>\\b\\B))?(?<whole>(?<iteration>(?<c>[\\q{|a|ab}])){2,3}?)(?<after>\\b)",
-                input = "\u017faX",
-                r = new RegExp(pattern, "dgvy"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 0;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
     assert_true(
         r#"
             var pattern =
@@ -880,4 +806,55 @@ fn composition_results_match_reference() {
             ),
         );
     }
+}
+
+#[test_case(
+    r#"(?<before>^)(?<whole>(?<iteration>(?<c>[a-z\q{|S|sa|aX}]))??)(?<z>(?<z1>\B)*|(?<z2>\b)+)*?(?<after>$)"#,
+    "dgvyi",
+    JsString::from("😀aX"),
+    1;
+    "unicode_input_from_1_variant_1"
+)]
+#[test_case(
+    r#"(?<before>^)(?<z>(?<z1>^)|(?<z2>\b\B))?(?<whole>(?<iteration>(?<c>[\q{|a|ab}]))+)(?<after>\b)"#,
+    "dgvy",
+    JsString::from("ſaX"),
+    0;
+    "unicode_input_from_0_variant_2"
+)]
+#[test_case(
+    r#"(?<before>^)(?<z>(?<z1>^)|(?<z2>\b\B))?(?<whole>(?<iteration>(?<c>[\q{a|ab}])|(?<e>))??)(?<after>\b)"#,
+    "dgv",
+    JsString::from("\n\nab\n"),
+    0;
+    "input_ab_from_0_variant_3"
+)]
+#[test_case(
+    r#"(?<before>^)(?<whole>(?<iteration>(?<c>[a-z\q{|S|sa|aX}])){2,3})(?<z>(?<z1>\B)*|(?<z2>\b)+)*?(?<after>\b)"#,
+    "dgvyim",
+    JsString::from("!ab!"),
+    0;
+    "input_ab_from_0_variant_4"
+)]
+#[test_case(
+    r#"(?<before>^)(?<whole>(?<iteration>(?<c>[\q{|a|ab}])|(?<e>)){3,4}?)(?<z>(?<z1>\B)*|(?<z2>\b)+)*?(?<after>\b)"#,
+    "dgv",
+    JsString::from("ſaX"),
+    0;
+    "unicode_input_from_0_variant_5"
+)]
+#[test_case(
+    r#"(?<before>\b)(?<z>(?<z1>^)|(?<z2>\b\B))?(?<whole>(?<iteration>(?<c>[\q{|a|ab}])){2,3}?)(?<after>\b)"#,
+    "dgvy",
+    JsString::from("ſaX"),
+    0;
+    "unicode_input_from_0_variant_6"
+)]
+fn no_match_resets_last_index(
+    pattern: &str,
+    flags: &str,
+    input: JsString,
+    initial_last_index: usize,
+) {
+    assert_no_match(pattern, flags, input, initial_last_index);
 }

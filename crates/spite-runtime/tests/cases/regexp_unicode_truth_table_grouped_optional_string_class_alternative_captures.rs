@@ -1,6 +1,7 @@
 //! Required predicate choices preserve conditional lexical captures.
 use crate::common::assert_true;
 use crate::common::eval_string;
+use crate::common::regexp_captures::assert_no_match;
 use crate::common::regexp_captures::{MatchExpectation, assert_named_captures};
 use crate::common::regexp_matches::DESCRIBE_MATCH;
 use spite_core::JsString;
@@ -8,34 +9,6 @@ use spite_runtime::{Realm, Value};
 use test_case::test_case;
 #[test]
 fn matching_controls_and_string_consumers() {
-    assert_true(
-        r#"
-            var pattern =
-                "(?<n1>(?:(?:(?<n2>(?<n3>$)|(?<n4>\\B))(?<n5>(?<n6>){2,3})(?<n7>(?<n8>\\b\\B)|(?<n9>\\b\\B))|(?<n10>(?<n11>^)|(?<n12>$)){3}(?<n13>(?<n14>[a-z\\q{ab}]){1}){1,1}?(?<n15>(?<n16>^)|(?<n17>\\B))){0000,0001}?))",
-                input = "",
-                r = new RegExp(pattern, "dgvi"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 1;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
-
-    assert_true(
-        r#"
-            var pattern =
-                "(?<n1>(?:(?:(?<n2>(?<n3>$)|(?<n4>\\b)){2,3}?(?<n5>(?<n6>){2,3})(?<n7>(?<n8>\\b^)|(?<n9>$))|(?<n10>(?<n11>(?<n12>^)|(?<n13>\\b))\\B)(?<n14>(?<n15>[\\q{|a|ab}])){1}(?<n16>(?<n17>\\b\\B)|(?<n18>\\b\\B)))??))",
-                input = "",
-                r = new RegExp(pattern, "dgvi"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 1;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
-
     let mut realm = Realm::default();
     realm.eval(r"var r=/(?<enclosing>(?:(?<outer>(?<b>(?<s>^)|(?<w>\b))(?<c>[\q{a|ab}])(?<a>(?<end>$)|(?<nw>\B))|(?<fallback>(?<wb>\b)|(?<nwb>\B))(?<empty>))?))/dvg,clone=new RegExp(r),m=r.exec('ab!aa')").unwrap();
     realm.collect(usize::MAX).unwrap();
@@ -2249,4 +2222,27 @@ fn truth_table_grouped_optional_alternative_string_classes_validate_unknowns_ins
             ),
         );
     }
+}
+
+#[test_case(
+    r#"(?<n1>(?:(?:(?<n2>(?<n3>$)|(?<n4>\B))(?<n5>(?<n6>){2,3})(?<n7>(?<n8>\b\B)|(?<n9>\b\B))|(?<n10>(?<n11>^)|(?<n12>$)){3}(?<n13>(?<n14>[a-z\q{ab}]){1}){1,1}?(?<n15>(?<n16>^)|(?<n17>\B))){0000,0001}?))"#,
+    "dgvi",
+    JsString::from(""),
+    1;
+    "empty_input_from_1_variant_1"
+)]
+#[test_case(
+    r#"(?<n1>(?:(?:(?<n2>(?<n3>$)|(?<n4>\b)){2,3}?(?<n5>(?<n6>){2,3})(?<n7>(?<n8>\b^)|(?<n9>$))|(?<n10>(?<n11>(?<n12>^)|(?<n13>\b))\B)(?<n14>(?<n15>[\q{|a|ab}])){1}(?<n16>(?<n17>\b\B)|(?<n18>\b\B)))??))"#,
+    "dgvi",
+    JsString::from(""),
+    1;
+    "empty_input_from_1_variant_2"
+)]
+fn no_match_resets_last_index(
+    pattern: &str,
+    flags: &str,
+    input: JsString,
+    initial_last_index: usize,
+) {
+    assert_no_match(pattern, flags, input, initial_last_index);
 }

@@ -1,6 +1,7 @@
 //! Required predicate choices preserve conditional lexical captures.
 use crate::common::assert_true;
 use crate::common::eval_string;
+use crate::common::regexp_captures::assert_no_match;
 use crate::common::regexp_captures::{MatchExpectation, assert_named_captures};
 use crate::common::regexp_matches::DESCRIBE_MATCH;
 use spite_core::JsString;
@@ -8,237 +9,6 @@ use spite_runtime::{Realm, Value};
 use test_case::test_case;
 #[test]
 fn matching_controls_and_string_consumers() {
-    assert_true(
-        r#"
-            var pattern =
-                "(?<n1>(?<n2>(?<n3>$)|(?<n4>\\b)){2,3}?(?<n5>[\\q{a|ab}])(?<n6>(?<n7>\\B^)|(?<n8>\\b$))|(?<n9>(?<n10>(?<n11>^)|(?<n12>\\b))\\B)(?<n13>(?<n14>){2,3})(?<n15>(?<n16>\\b^)|(?<n17>\\B$)))",
-                input = "a",
-                r = new RegExp(pattern, "dgvi"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 1;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
-    assert_true(
-        r#"
-            var pattern =
-                "(?:(?<n1>(?<n2>(?<n3>(?<n4>(?<n5>^)|(?<n6>\\b))\\B)(?<n7>(?<n8>){2,3})(?<n9>(?<n10>\\b^)|(?<n11>\\B$))|(?<n12>(?<n13>$)|(?<n14>\\b)){2,3}?(?<n15>(?<n16>[\\q{|a|ab}])){1}(?<n17>(?<n18>\\B^)|(?<n19>\\b$)))))",
-                input = "!ab!",
-                r = new RegExp(pattern, "dgv"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 0;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
-
-    assert_true(
-        r#"
-            var pattern =
-                "(?<n1>(?<n2>(?<n3>(?<n4>(?<n5>(?<n6>^)|(?<n7>\\b))\\B)(?<n8>(?<n9>){2,3})(?<n10>(?<n11>\\b^)|(?<n12>\\B$))|(?<n13>(?<n14>$)|(?<n15>\\b)){2,3}?(?<n16>(?<n17>[a-z\\q{ab}]){1}){1,1}?(?<n18>(?<n19>\\B^)|(?<n20>\\b$)))))",
-                input = "ab\r\n",
-                r = new RegExp(pattern, "dgvy"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 0;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
-
-    assert_true(
-        r#"
-            var pattern =
-                "(?<n1>(?<n2>(?<n3>(?<n4>(?<n5>$)|(?<n6>\\B))(?<n7>(?<n8>){2,3})(?<n9>(?<n10>\\b\\B)|(?<n11>\\b\\B))|(?<n12>(?<n13>^)|(?<n14>$)){3}(?<n15>(?<n16>[a-z\\q{ab}]){1}){1,1}?(?<n17>(?<n18>^)|(?<n19>\\B)))))",
-                input = "",
-                r = new RegExp(pattern, "dgvi"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 1;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
-    assert_true(
-        r#"
-            var pattern =
-                "(?<n1>(?<n2>(?<n3>\\b^)|(?<n4>$))(?<n5>[\\q{a|ab}])(?<n6>(?<n7>(?<n8>^)|(?<n9>\\b))\\B)|(?<n10>(?<n11>\\b^)|(?<n12>\\B$))(?<n13>(?<n14>){2,3})(?<n15>(?<n16>^)|(?<n17>\\b)))",
-                input = "!ab!",
-                r = new RegExp(pattern, "dgvim"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 1;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
-    assert_true(
-        r#"
-            var pattern =
-                "(?:(?<n1>(?<n2>(?<n3>(?<n4>\\b^)|(?<n5>\\B$))(?<n6>(?<n7>){2,3})(?<n8>(?<n9>^)|(?<n10>\\b))|(?<n11>(?<n12>\\b^)|(?<n13>$))(?<n14>(?<n15>[\\q{|a|ab}])){1}(?<n16>(?<n17>(?<n18>^)|(?<n19>\\b))\\B))))",
-                input = "\u017fa",
-                r = new RegExp(pattern, "dgvy"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 0;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
-    assert_true(
-        r#"
-            var pattern =
-                "(?<n1>(?:(?<n2>(?<n3>\\b^)|(?<n4>$))(?<n5>[\\p{Any}\\q{|ab}]){0001,0001}?(?<n6>(?<n7>(?<n8>^)|(?<n9>\\b))\\B)|(?<n10>(?<n11>\\b^)|(?<n12>\\B$))(?<n13>(?<n14>){2,3})(?<n15>(?<n16>^)|(?<n17>\\b))))",
-                input = "ab\r\n",
-                r = new RegExp(pattern, "dgvi"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 1;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
-
-    assert_true(
-        r#"
-            var pattern =
-                "(?<n1>(?<n2>(?<n3>\\B^)|(?<n4>\\b$))(?<n5>[\\q{a|ab}])(?<n6>(?<n7>$)|(?<n8>\\B))|(?<n9>(?<n10>\\b\\B)|(?<n11>\\b\\B))(?<n12>(?<n13>){2,3})(?<n14>(?<n15>$)|(?<n16>\\b)){2,3}?)",
-                input = "a\n!",
-                r = new RegExp(pattern, "dgvy"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 0;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
-
-    assert_true(
-        r#"
-            var pattern =
-                "(?<n1>(?<n2>(?<n3>(?<n4>(?<n5>\\b\\B)|(?<n6>\\b\\B))(?<n7>(?<n8>){2,3})(?<n9>(?<n10>$)|(?<n11>\\b)){2,3}?|(?<n12>(?<n13>\\B^)|(?<n14>\\b$))(?<n15>(?<n16>[a-z\\q{ab}]){1}){1,1}?(?<n17>(?<n18>$)|(?<n19>\\B)))))",
-                input = "ab",
-                r = new RegExp(pattern, "dgvi"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 1;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
-
-    assert_true(
-        r#"
-            var pattern =
-                "(?:(?<n1>(?<n2>(?<n3>(?<n4>$)|(?<n5>\\b)){2,3}?(?<n6>(?<n7>){2,3})(?<n8>(?<n9>\\b^)|(?<n10>$))|(?<n11>(?<n12>(?<n13>^)|(?<n14>\\b))\\B)(?<n15>(?<n16>[\\q{|a|ab}])){1}(?<n17>(?<n18>\\b\\B)|(?<n19>\\b\\B)))))",
-                input = "",
-                r = new RegExp(pattern, "dgvi"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 1;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
-
-    assert_true(
-        r#"
-            var pattern =
-                "(?<n1>(?<n2>(?<n3>$)|(?<n4>\\B))(?<n5>[\\q{a|ab}])(?<n6>(?<n7>^)|(?<n8>\\b))|(?<n9>(?<n10>^)|(?<n11>$)){3}(?<n12>(?<n13>){2,3})(?<n14>(?<n15>\\B^)|(?<n16>\\b$)))",
-                input = "ab\r\n",
-                r = new RegExp(pattern, "dgvi"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 1;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
-    assert_true(
-        r#"
-            var pattern =
-                "(?:(?<n1>(?<n2>(?<n3>(?<n4>^)|(?<n5>$)){3}(?<n6>(?<n7>){2,3})(?<n8>(?<n9>\\B^)|(?<n10>\\b$))|(?<n11>(?<n12>$)|(?<n13>\\B))(?<n14>(?<n15>[\\q{|a|ab}])){1}(?<n16>(?<n17>^)|(?<n18>\\b)))))",
-                input = "a",
-                r = new RegExp(pattern, "dgvy"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 0;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
-
-    assert_true(
-        r#"
-            var pattern =
-                "(?:(?<n1>(?<n2>(?<n3>(?<n4>\\b^)|(?<n5>$))(?<n6>(?<n7>){2,3})(?<n8>(?<n9>^)|(?<n10>\\B))|(?<n11>(?<n12>\\b^)|(?<n13>\\B$))(?<n14>(?<n15>[\\q{|a|ab}])){1}(?<n16>(?<n17>$)|(?<n18>\\b)){2,3}?)))",
-                input = "ab",
-                r = new RegExp(pattern, "dgvim"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 1;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
-
-    assert_true(
-        r#"
-            var pattern =
-                "(?<n1>(?<n2>(?<n3>(?<n4>(?<n5>\\b^)|(?<n6>$))(?<n7>(?<n8>){2,3})(?<n9>(?<n10>^)|(?<n11>\\B))|(?<n12>(?<n13>\\b^)|(?<n14>\\B$))(?<n15>(?<n16>[a-z\\q{ab}]){1}){1,1}?(?<n17>(?<n18>$)|(?<n19>\\b)){2,3}?)))",
-                input = "\ud83d\ude00a",
-                r = new RegExp(pattern, "dgvi"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 1;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
-    assert_true(
-        r#"
-            var pattern =
-                "(?<n1>(?<n2>(?<n3>\\b\\B)|(?<n4>\\b\\B))(?<n5>[\\q{a|ab}])(?<n6>(?<n7>^)|(?<n8>$)){3}|(?<n9>(?<n10>\\B^)|(?<n11>\\b$))(?<n12>(?<n13>){2,3})(?<n14>(?<n15>(?<n16>^)|(?<n17>\\b))\\B))",
-                input = "a",
-                r = new RegExp(pattern, "dgvim"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 1;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
-
-    assert_true(
-        r#"
-            var pattern =
-                "(?<n1>(?:(?<n2>(?<n3>\\b\\B)|(?<n4>\\b\\B))(?<n5>[\\p{Any}\\q{|ab}]){0001,0001}?(?<n6>(?<n7>^)|(?<n8>$)){3}|(?<n9>(?<n10>\\B^)|(?<n11>\\b$))(?<n12>(?<n13>){2,3})(?<n14>(?<n15>(?<n16>^)|(?<n17>\\b))\\B)))",
-                input = "\u017fa",
-                r = new RegExp(pattern, "dgvi"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 1;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
-    assert_true(
-        r#"
-            var pattern =
-                "(?<n1>(?<n2>(?<n3>(?<n4>(?<n5>\\B^)|(?<n6>\\b$))(?<n7>(?<n8>){2,3})(?<n9>(?<n10>(?<n11>^)|(?<n12>\\b))\\B)|(?<n13>(?<n14>\\b\\B)|(?<n15>\\b\\B))(?<n16>(?<n17>[a-z\\q{ab}]){1}){1,1}?(?<n18>(?<n19>^)|(?<n20>$)){3})))",
-                input = "ab\r\n",
-                r = new RegExp(pattern, "dgvym"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 0;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
-
     let mut realm = Realm::default();
     realm.eval(r"var r=/(?<outer>(?<b>(?<s>^)|(?<w>\b))(?<c>[\q{a|ab}])(?<a>(?<end>$)|(?<nw>\B))|(?<fallback>(?<wb>\b)|(?<nwb>\B))(?<empty>))/dvg,clone=new RegExp(r),m=r.exec('ab!aa')").unwrap();
     realm.collect(usize::MAX).unwrap();
@@ -1683,4 +1453,132 @@ fn truth_table_grouped_alternative_string_classes_prove_unknown_branches_and_kee
             ),
         );
     }
+}
+
+#[test_case(
+    r#"(?<n1>(?<n2>(?<n3>$)|(?<n4>\b)){2,3}?(?<n5>[\q{a|ab}])(?<n6>(?<n7>\B^)|(?<n8>\b$))|(?<n9>(?<n10>(?<n11>^)|(?<n12>\b))\B)(?<n13>(?<n14>){2,3})(?<n15>(?<n16>\b^)|(?<n17>\B$)))"#,
+    "dgvi",
+    JsString::from("a"),
+    1;
+    "input_a_from_1_variant_1"
+)]
+#[test_case(
+    r#"(?:(?<n1>(?<n2>(?<n3>(?<n4>(?<n5>^)|(?<n6>\b))\B)(?<n7>(?<n8>){2,3})(?<n9>(?<n10>\b^)|(?<n11>\B$))|(?<n12>(?<n13>$)|(?<n14>\b)){2,3}?(?<n15>(?<n16>[\q{|a|ab}])){1}(?<n17>(?<n18>\B^)|(?<n19>\b$)))))"#,
+    "dgv",
+    JsString::from("!ab!"),
+    0;
+    "input_ab_from_0_variant_2"
+)]
+#[test_case(
+    r#"(?<n1>(?<n2>(?<n3>(?<n4>(?<n5>(?<n6>^)|(?<n7>\b))\B)(?<n8>(?<n9>){2,3})(?<n10>(?<n11>\b^)|(?<n12>\B$))|(?<n13>(?<n14>$)|(?<n15>\b)){2,3}?(?<n16>(?<n17>[a-z\q{ab}]){1}){1,1}?(?<n18>(?<n19>\B^)|(?<n20>\b$)))))"#,
+    "dgvy",
+    JsString::from("ab\r\n"),
+    0;
+    "input_ab_from_0_variant_3"
+)]
+#[test_case(
+    r#"(?<n1>(?<n2>(?<n3>(?<n4>(?<n5>$)|(?<n6>\B))(?<n7>(?<n8>){2,3})(?<n9>(?<n10>\b\B)|(?<n11>\b\B))|(?<n12>(?<n13>^)|(?<n14>$)){3}(?<n15>(?<n16>[a-z\q{ab}]){1}){1,1}?(?<n17>(?<n18>^)|(?<n19>\B)))))"#,
+    "dgvi",
+    JsString::from(""),
+    1;
+    "empty_input_from_1_variant_4"
+)]
+#[test_case(
+    r#"(?<n1>(?<n2>(?<n3>\b^)|(?<n4>$))(?<n5>[\q{a|ab}])(?<n6>(?<n7>(?<n8>^)|(?<n9>\b))\B)|(?<n10>(?<n11>\b^)|(?<n12>\B$))(?<n13>(?<n14>){2,3})(?<n15>(?<n16>^)|(?<n17>\b)))"#,
+    "dgvim",
+    JsString::from("!ab!"),
+    1;
+    "input_ab_from_1_variant_5"
+)]
+#[test_case(
+    r#"(?:(?<n1>(?<n2>(?<n3>(?<n4>\b^)|(?<n5>\B$))(?<n6>(?<n7>){2,3})(?<n8>(?<n9>^)|(?<n10>\b))|(?<n11>(?<n12>\b^)|(?<n13>$))(?<n14>(?<n15>[\q{|a|ab}])){1}(?<n16>(?<n17>(?<n18>^)|(?<n19>\b))\B))))"#,
+    "dgvy",
+    JsString::from("ſa"),
+    0;
+    "unicode_input_from_0_variant_6"
+)]
+#[test_case(
+    r#"(?<n1>(?:(?<n2>(?<n3>\b^)|(?<n4>$))(?<n5>[\p{Any}\q{|ab}]){0001,0001}?(?<n6>(?<n7>(?<n8>^)|(?<n9>\b))\B)|(?<n10>(?<n11>\b^)|(?<n12>\B$))(?<n13>(?<n14>){2,3})(?<n15>(?<n16>^)|(?<n17>\b))))"#,
+    "dgvi",
+    JsString::from("ab\r\n"),
+    1;
+    "input_ab_from_1_variant_7"
+)]
+#[test_case(
+    r#"(?<n1>(?<n2>(?<n3>\B^)|(?<n4>\b$))(?<n5>[\q{a|ab}])(?<n6>(?<n7>$)|(?<n8>\B))|(?<n9>(?<n10>\b\B)|(?<n11>\b\B))(?<n12>(?<n13>){2,3})(?<n14>(?<n15>$)|(?<n16>\b)){2,3}?)"#,
+    "dgvy",
+    JsString::from("a\n!"),
+    0;
+    "input_a_from_0_variant_8"
+)]
+#[test_case(
+    r#"(?<n1>(?<n2>(?<n3>(?<n4>(?<n5>\b\B)|(?<n6>\b\B))(?<n7>(?<n8>){2,3})(?<n9>(?<n10>$)|(?<n11>\b)){2,3}?|(?<n12>(?<n13>\B^)|(?<n14>\b$))(?<n15>(?<n16>[a-z\q{ab}]){1}){1,1}?(?<n17>(?<n18>$)|(?<n19>\B)))))"#,
+    "dgvi",
+    JsString::from("ab"),
+    1;
+    "input_ab_from_1_variant_9"
+)]
+#[test_case(
+    r#"(?:(?<n1>(?<n2>(?<n3>(?<n4>$)|(?<n5>\b)){2,3}?(?<n6>(?<n7>){2,3})(?<n8>(?<n9>\b^)|(?<n10>$))|(?<n11>(?<n12>(?<n13>^)|(?<n14>\b))\B)(?<n15>(?<n16>[\q{|a|ab}])){1}(?<n17>(?<n18>\b\B)|(?<n19>\b\B)))))"#,
+    "dgvi",
+    JsString::from(""),
+    1;
+    "empty_input_from_1_variant_10"
+)]
+#[test_case(
+    r#"(?<n1>(?<n2>(?<n3>$)|(?<n4>\B))(?<n5>[\q{a|ab}])(?<n6>(?<n7>^)|(?<n8>\b))|(?<n9>(?<n10>^)|(?<n11>$)){3}(?<n12>(?<n13>){2,3})(?<n14>(?<n15>\B^)|(?<n16>\b$)))"#,
+    "dgvi",
+    JsString::from("ab\r\n"),
+    1;
+    "input_ab_from_1_variant_11"
+)]
+#[test_case(
+    r#"(?:(?<n1>(?<n2>(?<n3>(?<n4>^)|(?<n5>$)){3}(?<n6>(?<n7>){2,3})(?<n8>(?<n9>\B^)|(?<n10>\b$))|(?<n11>(?<n12>$)|(?<n13>\B))(?<n14>(?<n15>[\q{|a|ab}])){1}(?<n16>(?<n17>^)|(?<n18>\b)))))"#,
+    "dgvy",
+    JsString::from("a"),
+    0;
+    "input_a_from_0_variant_12"
+)]
+#[test_case(
+    r#"(?:(?<n1>(?<n2>(?<n3>(?<n4>\b^)|(?<n5>$))(?<n6>(?<n7>){2,3})(?<n8>(?<n9>^)|(?<n10>\B))|(?<n11>(?<n12>\b^)|(?<n13>\B$))(?<n14>(?<n15>[\q{|a|ab}])){1}(?<n16>(?<n17>$)|(?<n18>\b)){2,3}?)))"#,
+    "dgvim",
+    JsString::from("ab"),
+    1;
+    "input_ab_from_1_variant_13"
+)]
+#[test_case(
+    r#"(?<n1>(?<n2>(?<n3>(?<n4>(?<n5>\b^)|(?<n6>$))(?<n7>(?<n8>){2,3})(?<n9>(?<n10>^)|(?<n11>\B))|(?<n12>(?<n13>\b^)|(?<n14>\B$))(?<n15>(?<n16>[a-z\q{ab}]){1}){1,1}?(?<n17>(?<n18>$)|(?<n19>\b)){2,3}?)))"#,
+    "dgvi",
+    JsString::from("😀a"),
+    1;
+    "unicode_input_from_1_variant_14"
+)]
+#[test_case(
+    r#"(?<n1>(?<n2>(?<n3>\b\B)|(?<n4>\b\B))(?<n5>[\q{a|ab}])(?<n6>(?<n7>^)|(?<n8>$)){3}|(?<n9>(?<n10>\B^)|(?<n11>\b$))(?<n12>(?<n13>){2,3})(?<n14>(?<n15>(?<n16>^)|(?<n17>\b))\B))"#,
+    "dgvim",
+    JsString::from("a"),
+    1;
+    "input_a_from_1_variant_15"
+)]
+#[test_case(
+    r#"(?<n1>(?:(?<n2>(?<n3>\b\B)|(?<n4>\b\B))(?<n5>[\p{Any}\q{|ab}]){0001,0001}?(?<n6>(?<n7>^)|(?<n8>$)){3}|(?<n9>(?<n10>\B^)|(?<n11>\b$))(?<n12>(?<n13>){2,3})(?<n14>(?<n15>(?<n16>^)|(?<n17>\b))\B)))"#,
+    "dgvi",
+    JsString::from("ſa"),
+    1;
+    "unicode_input_from_1_variant_16"
+)]
+#[test_case(
+    r#"(?<n1>(?<n2>(?<n3>(?<n4>(?<n5>\B^)|(?<n6>\b$))(?<n7>(?<n8>){2,3})(?<n9>(?<n10>(?<n11>^)|(?<n12>\b))\B)|(?<n13>(?<n14>\b\B)|(?<n15>\b\B))(?<n16>(?<n17>[a-z\q{ab}]){1}){1,1}?(?<n18>(?<n19>^)|(?<n20>$)){3})))"#,
+    "dgvym",
+    JsString::from("ab\r\n"),
+    0;
+    "input_ab_from_0_variant_17"
+)]
+fn no_match_resets_last_index(
+    pattern: &str,
+    flags: &str,
+    input: JsString,
+    initial_last_index: usize,
+) {
+    assert_no_match(pattern, flags, input, initial_last_index);
 }

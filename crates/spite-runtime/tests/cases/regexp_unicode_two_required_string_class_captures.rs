@@ -1,9 +1,11 @@
 //! Two-required counts retain successful starts and final-word captures.
 use crate::common::assert_true;
 use crate::common::eval_string;
+use crate::common::regexp_captures::assert_no_match;
 use crate::common::regexp_matches::DESCRIBE_MATCH;
 use spite_core::JsString;
 use spite_runtime::{Realm, Value};
+use test_case::test_case;
 #[test]
 fn two_required_string_class_native_tables_consumers_and_successful_start_identity() {
     assert_true(
@@ -81,18 +83,7 @@ fn two_required_string_class_native_tables_consumers_and_successful_start_identi
                 "[[\"aba\",\"\",\"aba\",\"a\",\"a\",\"\"],[[0,3],[0,0],[0,3],[2,3],[2,3],[3,3]],0,3]"
         "#,
     );
-    assert_true(
-        r#"
-            var pattern = "(?<before>)(?<whole>(?<iteration>(?<c>[\\q{a|ab}])){2})(?<after>)",
-                input = "ab",
-                r = new RegExp(pattern, "dgv"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 0;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
+
     assert_true(
         r#"
             var pattern = "(?<before>)(?<whole>(?<iteration>(?<c>[\\q{ab|abc|c}])){2})(?<after>)",
@@ -218,18 +209,7 @@ fn two_required_string_class_native_tables_consumers_and_successful_start_identi
                 "[[\"aaaa\",\"\",\"aaaa\",\"aa\",\"aa\",\"\"],[[1,5],[1,1],[1,5],[3,5],[3,5],[5,5]],1,5]"
         "#,
     );
-    assert_true(
-        r#"
-            var pattern = "(?<before>)(?<whole>(?<iteration>(?<c>[\\q{aa|aaa}])){2})(?<after>)",
-                input = "!aaaa",
-                r = new RegExp(pattern, "dgvy"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 0;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
+
     assert_true(
         r#"
             var pattern =
@@ -1120,4 +1100,27 @@ return metadata&&JSON.stringify(rows)==="[[false,\"aaaaaa\",{\"values\":[\"aaaaa
             ),
         );
     }
+}
+
+#[test_case(
+    r#"(?<before>)(?<whole>(?<iteration>(?<c>[\q{a|ab}])){2})(?<after>)"#,
+    "dgv",
+    JsString::from("ab"),
+    0;
+    "input_ab_from_0_variant_1"
+)]
+#[test_case(
+    r#"(?<before>)(?<whole>(?<iteration>(?<c>[\q{aa|aaa}])){2})(?<after>)"#,
+    "dgvy",
+    JsString::from("!aaaa"),
+    0;
+    "input_aaaa_from_0_variant_2"
+)]
+fn no_match_resets_last_index(
+    pattern: &str,
+    flags: &str,
+    input: JsString,
+    initial_last_index: usize,
+) {
+    assert_no_match(pattern, flags, input, initial_last_index);
 }

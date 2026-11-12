@@ -1,6 +1,6 @@
 //! Required predicate choices preserve conditional lexical captures.
-use crate::common::assert_true;
 use crate::common::eval_string;
+use crate::common::regexp_captures::assert_no_match;
 use crate::common::regexp_captures::{MatchExpectation, assert_named_captures};
 use crate::common::regexp_matches::DESCRIBE_MATCH;
 use spite_core::JsString;
@@ -8,127 +8,6 @@ use spite_runtime::{Realm, Value};
 use test_case::test_case;
 #[test]
 fn matching_controls_and_string_consumers() {
-    assert_true(
-        r#"
-            var pattern = "(?<n1>(?<n2>\\b)|(?<n3>\\B))(?<n4>[\\q{a|ab}])(?<n5>^|(?<n6>))",
-                input = "",
-                r = new RegExp(pattern, "dgvym"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 0;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
-
-    assert_true(
-        r#"
-            var pattern = "(?<n1>(?<n2>\\B)|(?<n3>\\b)){1}(?<n4>[\\q{a|ab}])(?<n5>$|(?<n6>))",
-                input = "a",
-                r = new RegExp(pattern, "dgvi"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 1;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
-
-    assert_true(
-        r#"
-            var pattern =
-                "(?<n1>\\b|(?<n2>)){2,3}?(?<n3>(?<n4>[a-z\\q{ab}]){1}){1,1}?(?<n5>(?<n6>^)|(?<n7>$)|(?<n8>\\b)|(?<n9>\\B))",
-                input = "",
-                r = new RegExp(pattern, "dgvi"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 1;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
-
-    assert_true(
-        r#"
-            var pattern =
-                "(?<n1>(?<n2>^)|(?<n3>$)|(?<n4>\\b)|(?<n5>\\B))(?<n6>(?<n7>[a-z\\q{ab}]){1}){1,1}?(?<n8>(?<n9>\\b\\B)|(?<n10>))",
-                input = "!ab!",
-                r = new RegExp(pattern, "dgvy"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 0;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
-
-    assert_true(
-        r#"
-            var pattern =
-                "(?<n1>(?<n2>(?<n3>\\b)|(?<n4>\\B)){2,3})(?<n5>(?<n6>[\\q{|a|ab}])){1}(?<n7>(?<n8>)|(?<n9>\\b))",
-                input = "",
-                r = new RegExp(pattern, "dgvi"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 1;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
-
-    assert_true(
-        r#"
-            var pattern =
-                "(?<n1>(?<n2>(?<n3>\\b)|(?<n4>\\B)){2,3})(?<n5>(?<n6>[a-z\\q{ab}]){1}){1,1}?(?<n7>(?<n8>)|(?<n9>\\b))",
-                input = "a\n!",
-                r = new RegExp(pattern, "dgvim"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 1;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
-    assert_true(
-        r#"
-            var pattern =
-                "(?<n1>(?<n2>(?<n3>^)|(?<n4>)){0,3})(?<n5>[\\q{a|ab}])(?<n6>(?<n7>\\b)|(?<n8>\\B))",
-                input = "ab\r\n",
-                r = new RegExp(pattern, "dgvi"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 1;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
-
-    assert_true(
-        r#"
-            var pattern = "(?<n1>(?<n2>\\b\\B)|(?<n3>))(?<n4>[\\q{a|ab}])(?<n5>(?<n6>\\B)|(?<n7>\\b)){1}",
-                input = "",
-                r = new RegExp(pattern, "dgvy"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 0;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
-
-    assert_true(
-        r#"
-            var pattern = "(?<n1>(?<n2>)|(?<n3>\\b))(?<n4>[\\q{a|ab}])(?<n5>\\b|(?<n6>)){2,3}?",
-                input = "a",
-                r = new RegExp(pattern, "dgvim"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 1;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
-
     let mut realm = Realm::default();
     realm.eval(r"var r=/(?<b>(?<w>\b)|(?<nw>\B))(?<c>[\q{a|ab}])(?<a>(?<end>$)|())/dvg,clone=new RegExp(r),m=r.exec('ab')").unwrap();
     realm.collect(usize::MAX).unwrap();
@@ -1328,4 +1207,76 @@ fn predicate_choice_single_string_classes_reject_unknown_leaves_before_execution
             ),
         );
     }
+}
+
+#[test_case(
+    r#"(?<n1>(?<n2>\b)|(?<n3>\B))(?<n4>[\q{a|ab}])(?<n5>^|(?<n6>))"#,
+    "dgvym",
+    JsString::from(""),
+    0;
+    "empty_input_from_0_variant_1"
+)]
+#[test_case(
+    r#"(?<n1>(?<n2>\B)|(?<n3>\b)){1}(?<n4>[\q{a|ab}])(?<n5>$|(?<n6>))"#,
+    "dgvi",
+    JsString::from("a"),
+    1;
+    "input_a_from_1_variant_2"
+)]
+#[test_case(
+    r#"(?<n1>\b|(?<n2>)){2,3}?(?<n3>(?<n4>[a-z\q{ab}]){1}){1,1}?(?<n5>(?<n6>^)|(?<n7>$)|(?<n8>\b)|(?<n9>\B))"#,
+    "dgvi",
+    JsString::from(""),
+    1;
+    "empty_input_from_1_variant_3"
+)]
+#[test_case(
+    r#"(?<n1>(?<n2>^)|(?<n3>$)|(?<n4>\b)|(?<n5>\B))(?<n6>(?<n7>[a-z\q{ab}]){1}){1,1}?(?<n8>(?<n9>\b\B)|(?<n10>))"#,
+    "dgvy",
+    JsString::from("!ab!"),
+    0;
+    "input_ab_from_0_variant_4"
+)]
+#[test_case(
+    r#"(?<n1>(?<n2>(?<n3>\b)|(?<n4>\B)){2,3})(?<n5>(?<n6>[\q{|a|ab}])){1}(?<n7>(?<n8>)|(?<n9>\b))"#,
+    "dgvi",
+    JsString::from(""),
+    1;
+    "empty_input_from_1_variant_5"
+)]
+#[test_case(
+    r#"(?<n1>(?<n2>(?<n3>\b)|(?<n4>\B)){2,3})(?<n5>(?<n6>[a-z\q{ab}]){1}){1,1}?(?<n7>(?<n8>)|(?<n9>\b))"#,
+    "dgvim",
+    JsString::from("a\n!"),
+    1;
+    "input_a_from_1_variant_6"
+)]
+#[test_case(
+    r#"(?<n1>(?<n2>(?<n3>^)|(?<n4>)){0,3})(?<n5>[\q{a|ab}])(?<n6>(?<n7>\b)|(?<n8>\B))"#,
+    "dgvi",
+    JsString::from("ab\r\n"),
+    1;
+    "input_ab_from_1_variant_7"
+)]
+#[test_case(
+    r#"(?<n1>(?<n2>\b\B)|(?<n3>))(?<n4>[\q{a|ab}])(?<n5>(?<n6>\B)|(?<n7>\b)){1}"#,
+    "dgvy",
+    JsString::from(""),
+    0;
+    "empty_input_from_0_variant_8"
+)]
+#[test_case(
+    r#"(?<n1>(?<n2>)|(?<n3>\b))(?<n4>[\q{a|ab}])(?<n5>\b|(?<n6>)){2,3}?"#,
+    "dgvim",
+    JsString::from("a"),
+    1;
+    "input_a_from_1_variant_9"
+)]
+fn no_match_resets_last_index(
+    pattern: &str,
+    flags: &str,
+    input: JsString,
+    initial_last_index: usize,
+) {
+    assert_no_match(pattern, flags, input, initial_last_index);
 }

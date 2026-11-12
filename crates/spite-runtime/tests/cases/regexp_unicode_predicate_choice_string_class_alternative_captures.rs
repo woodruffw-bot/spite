@@ -1,6 +1,7 @@
 //! Required predicate choices preserve conditional lexical captures.
 use crate::common::assert_true;
 use crate::common::eval_string;
+use crate::common::regexp_captures::assert_no_match;
 use crate::common::regexp_captures::{MatchExpectation, assert_named_captures};
 use crate::common::regexp_matches::DESCRIBE_MATCH;
 use spite_core::JsString;
@@ -8,34 +9,6 @@ use spite_runtime::{Realm, Value};
 use test_case::test_case;
 #[test]
 fn matching_controls_and_string_consumers() {
-    assert_true(
-        r#"
-            var pattern =
-                "(?<n1>\\b|(?<n2>)){2,3}?(?<n3>(?<n4>)|(?<n5>[a-z\\q{ab}]){1}){1,1}?(?<n6>(?<n7>^)|(?<n8>$)|(?<n9>\\b)|(?<n10>\\B))",
-                input = "",
-                r = new RegExp(pattern, "dgvi"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 1;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
-
-    assert_true(
-        r#"
-            var pattern =
-                "(?<n1>(?<n2>(?<n3>\\b)|(?<n4>\\B)){2,3})(?<n5>(?<n6>)|(?<n7>[\\q{|a|ab}])){1}(?<n8>(?<n9>)|(?<n10>\\b))",
-                input = "",
-                r = new RegExp(pattern, "dgvi"),
-                ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
-                .unicode === false;
-            r.lastIndex = 1;
-            var m = r.exec(input);
-            ok && m === null && r.lastIndex === 0
-        "#,
-    );
-
     let mut realm = Realm::default();
     realm.eval(r"var r=/(?<b>(?<w>\b)|(?<nw>\B))(?<whole>(?<c>[\q{|a|ab}])|(?<e>))(?<a>(?<end>$)|())/dvg,clone=new RegExp(r),m=r.exec('ab')").unwrap();
     realm.collect(usize::MAX).unwrap();
@@ -1611,4 +1584,27 @@ fn predicate_choice_string_class_alternatives_retain_full_unknown_leaf_and_scope
             ),
         );
     }
+}
+
+#[test_case(
+    r#"(?<n1>\b|(?<n2>)){2,3}?(?<n3>(?<n4>)|(?<n5>[a-z\q{ab}]){1}){1,1}?(?<n6>(?<n7>^)|(?<n8>$)|(?<n9>\b)|(?<n10>\B))"#,
+    "dgvi",
+    JsString::from(""),
+    1;
+    "empty_input_from_1_variant_1"
+)]
+#[test_case(
+    r#"(?<n1>(?<n2>(?<n3>\b)|(?<n4>\B)){2,3})(?<n5>(?<n6>)|(?<n7>[\q{|a|ab}])){1}(?<n8>(?<n9>)|(?<n10>\b))"#,
+    "dgvi",
+    JsString::from(""),
+    1;
+    "empty_input_from_1_variant_2"
+)]
+fn no_match_resets_last_index(
+    pattern: &str,
+    flags: &str,
+    input: JsString,
+    initial_last_index: usize,
+) {
+    assert_no_match(pattern, flags, input, initial_last_index);
 }
