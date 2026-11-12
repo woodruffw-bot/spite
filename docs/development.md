@@ -69,18 +69,20 @@ Use insta for structured output, syntax trees, and diagnostics that benefit from
 a reviewed diff. Prefer inline snapshots of at most 100 lines. Use sidecar files
 only when the output exceeds 100 lines. Assert simple scalar results directly.
 
-### Parser snapshots
+### Updating snapshots
 
-Parser syntax and diagnostic snapshots use insta. To update a focused set in a
-POSIX shell:
+Install `cargo-insta` when you need to review snapshot changes. Run a focused set
+of tests, then review both inline and sidecar changes:
 
 ```sh
-INSTA_UPDATE=always cargo test -p spite-parser --test parser_integration --locked regexp_metadata
-git diff -- crates/spite-parser/tests
+cargo install cargo-insta --locked
+INSTA_UPDATE=new cargo test -p spite-parser --test parser_integration --locked regexp_metadata
+cargo insta review
 ```
 
 Inspect each change against the intended syntax or diagnostic behavior, then
-rerun the tests with `INSTA_UPDATE=no`. CI never updates snapshots.
+check the source diff and rerun the tests with `INSTA_UPDATE=no`. CI never updates
+snapshots. Keep outputs of at most 100 lines inline when accepting changes.
 
 ## Generated data
 
