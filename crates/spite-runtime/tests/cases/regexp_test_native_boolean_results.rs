@@ -40,7 +40,20 @@ fn native_test_boolean_results_snapshot() {
                         continue;
                     }
                     let script = format!(
-                        "let r=new RegExp({pattern:?},'{flags}'),e=new RegExp(r);r.lastIndex={start};e.lastIndex={start};let b=r.test({input:?}),m=e.exec({input:?});JSON.stringify({{test:b,lastIndex:r.lastIndex,exec:m!==null,execLastIndex:e.lastIndex}})"
+                        r#"
+                            let r = new RegExp({pattern:?}, '{flags}'),
+                                e = new RegExp(r);
+                            r.lastIndex = {start};
+                            e.lastIndex = {start};
+                            let b = r.test({input:?}),
+                                m = e.exec({input:?});
+                            JSON.stringify({{
+                                test: b,
+                                lastIndex: r.lastIndex,
+                                exec: m !== null,
+                                execLastIndex: e.lastIndex
+                            }})
+                        "#
                     );
                     let Value::String(result) = Realm::default()
                         .eval(&script)
@@ -50,7 +63,8 @@ fn native_test_boolean_results_snapshot() {
                     };
                     writeln!(
                         rows,
-                        "{pattern:?} flags={flags:?} input={input:?} lastIndex={start} {result:?}"
+                        "{pattern:?} flags={flags:?} input={input:?} lastIndex={start} => {result}",
+                        result = result.to_utf8().expect("JSON output must be valid UTF-8"),
                     )
                     .unwrap();
                 }

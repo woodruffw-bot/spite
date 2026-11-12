@@ -12,12 +12,35 @@ fn array_linear_truncation_first_failure_snapshot() {
             for length in [0, 3, 7] {
                 for readonly in [false, true] {
                     let source = format!(
-                        "let a=[],s=Symbol('marker'),indices=[0,1,2,5,9];a.note=7;a[s]=8;if({reversed})indices.reverse();for(let index of indices)Object.defineProperty(a,String(index),{{value:index,writable:true,enumerable:true,configurable:({mask}&(1<<[0,1,2,5,9].indexOf(index)))===0}});let ok=Reflect.defineProperty(a,'length',{{value:{length},writable:!{readonly}}});JSON.stringify([ok,a.length,Object.getOwnPropertyDescriptor(a,'length').writable,Reflect.ownKeys(a).map(k=>typeof k==='symbol'?'symbol':k),[0,1,2,5,9].map(i=>Object.hasOwn(a,String(i))),a.note,a[s]])"
+                        r#"
+                            let a = [],
+                                s = Symbol('marker'),
+                                indices = [0, 1, 2, 5, 9];
+                            a.note = 7;
+                            a[s] = 8;
+                            if ({reversed}) indices.reverse();
+                            for (let index of indices) Object.defineProperty(a, String(index), {{
+                                value: index,
+                                writable: true,
+                                enumerable: true,
+                                configurable: ({mask} & (1 << [0, 1, 2, 5, 9].indexOf(index))) === 0
+                            }});
+                            let ok = Reflect.defineProperty(a, 'length', {{
+                                value: {length},
+                                writable: !{readonly}
+                            }});
+                            JSON.stringify([ok, a.length, Object.getOwnPropertyDescriptor(a, 'length').writable, Reflect
+                                .ownKeys(a).map(k => typeof k === 'symbol' ? 'symbol' : k), [0, 1, 2, 5, 9].map(
+                                    i => Object.hasOwn(a, String(i))), a.note, a[s]
+                            ])
+                        "#
                     );
                     let Value::String(result) = Realm::default().eval(&source).unwrap() else {
                         panic!("{source}");
                     };
-                    writeln!(rows, "reverse={reversed} mask={mask} length={length} readonly={readonly}: {result:?}").unwrap();
+                    writeln!(rows, "reverse={reversed} mask={mask} length={length} readonly={readonly}: => {result}",
+result = result.to_utf8().expect("JSON output must be valid UTF-8"),
+).unwrap();
                 }
             }
         }

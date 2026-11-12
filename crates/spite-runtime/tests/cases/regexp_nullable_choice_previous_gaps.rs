@@ -413,11 +413,22 @@ fn nullable_choice_previous_gaps_snapshot() {
         "/(?:(?=(a))\\1|b)+/.exec('a')",
     ] {
         let source = JsString::from(source);
-        let program = format!("JSON.stringify({{result:eval({source:?})}})");
+        let program = format!(
+            r#"
+            JSON.stringify({{
+                result: eval({source:?})
+            }})
+        "#
+        );
         let Value::String(result) = Realm::default().eval(&program).unwrap() else {
             panic!("expected JSON")
         };
-        writeln!(rows, "{source:?} {result:?}").unwrap();
+        writeln!(
+            rows,
+            "{source:?} => {result}",
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
+        )
+        .unwrap();
     }
     insta::assert_snapshot!(rows);
 }

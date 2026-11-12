@@ -23,24 +23,32 @@ fn unrepresentable_outside_lookbehind_result_snapshot() {
         let source = JsString::from(pattern.replace("COUNT", &format!("{{{huge}}}")).as_str());
         let input = JsString::from(text);
         let program = format!(
-            "let r=new RegExp({source:?},'d'),a=r.exec({input:?});JSON.stringify(a===null?{{match:null}}:{{matches:[...a],index:a.index,groups:a.groups,indices:a.indices,indicesGroups:a.indices.groups,lastIndex:r.lastIndex}})"
+            r#"
+                let r = new RegExp({source:?}, 'd'),
+                    a = r.exec({input:?});
+                JSON.stringify(a === null ? {{
+                    match: null
+                }} : {{
+                    matches: [...a],
+                    index: a.index,
+                    groups: a.groups,
+                    indices: a.indices,
+                    indicesGroups: a.indices.groups,
+                    lastIndex: r.lastIndex
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&program).unwrap() else {
             panic!("expected JSON")
         };
-        writeln!(rows, "{pattern:?} input={text:?} {result:?}").unwrap();
+        writeln!(
+            rows,
+            "{pattern:?} input={text:?}\n{result}\n",
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
+        )
+        .unwrap();
     }
-    insta::assert_snapshot!(rows, @r#"
-        "()(?<=(\\1)COUNT)b" input="qb" "{\u0022matches\u0022:[\u0022b\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022indices\u0022:[[1,2],[1,1],[1,1]],\u0022lastIndex\u0022:0}"
-        "()(?<=(\\1)COUNTa)b" input="ab" "{\u0022matches\u0022:[\u0022b\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022indices\u0022:[[1,2],[1,1],[0,0]],\u0022lastIndex\u0022:0}"
-        "()()(?<=(\\1\\2\\b)COUNT)b" input=" b" "{\u0022matches\u0022:[\u0022b\u0022,\u0022\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022indices\u0022:[[1,2],[1,1],[1,1],[1,1]],\u0022lastIndex\u0022:0}"
-        "(a)(?<=(\\1a)COUNT)b" input="ab" "{\u0022match\u0022:null}"
-        "(a)(?<!(\\1a)COUNT)b" input="ab" "{\u0022matches\u0022:[\u0022ab\u0022,\u0022a\u0022,null],\u0022index\u0022:0,\u0022indices\u0022:[[0,2],[0,1],null],\u0022lastIndex\u0022:0}"
-        "()(?<!(\\1)COUNTq)b" input="xb" "{\u0022matches\u0022:[\u0022b\u0022,\u0022\u0022,null],\u0022index\u0022:1,\u0022indices\u0022:[[1,2],[1,1],null],\u0022lastIndex\u0022:0}"
-        "(?<x>)(?<=(?<y>\\k<x>)COUNT)b" input="qb" "{\u0022matches\u0022:[\u0022b\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022groups\u0022:{\u0022x\u0022:\u0022\u0022,\u0022y\u0022:\u0022\u0022},\u0022indices\u0022:[[1,2],[1,1],[1,1]],\u0022indicesGroups\u0022:{\u0022x\u0022:[1,1],\u0022y\u0022:[1,1]},\u0022lastIndex\u0022:0}"
-        "(a(?<=\\1COUNT))b" input="ab" "{\u0022matches\u0022:[\u0022ab\u0022,\u0022a\u0022],\u0022index\u0022:0,\u0022indices\u0022:[[0,2],[0,1]],\u0022lastIndex\u0022:0}"
-        "(?<=\\1COUNT)(a)" input="qa" "{\u0022matches\u0022:[\u0022a\u0022,\u0022a\u0022],\u0022index\u0022:1,\u0022indices\u0022:[[1,2],[1,2]],\u0022lastIndex\u0022:0}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]

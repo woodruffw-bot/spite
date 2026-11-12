@@ -1,0 +1,502 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_mixed_empty_reference_lookbehind.rs
+expression: rows
+---
+"(a)(?<=((b)\u005c3\u005c1){2})c" flags="d" input="babac"
+{
+  "matches": [
+    "ac",
+    "a",
+    "ba",
+    "b"
+  ],
+  "index": 3,
+  "input": "babac",
+  "indices": [
+    [
+      3,
+      5
+    ],
+    [
+      3,
+      4
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      1
+    ]
+  ],
+  "lastIndex": 0,
+  "source": "(a)(?<=((b)\\3\\1){2})c"
+}
+
+"(a)(?<=(b\u005c1\u005c2){2})c" flags="d" input="babac"
+{
+  "matches": [
+    "ac",
+    "a",
+    "ba"
+  ],
+  "index": 3,
+  "input": "babac",
+  "indices": [
+    [
+      3,
+      5
+    ],
+    [
+      3,
+      4
+    ],
+    [
+      0,
+      2
+    ]
+  ],
+  "lastIndex": 0,
+  "source": "(a)(?<=(b\\1\\2){2})c"
+}
+
+"(a)(?<=(\u005c1(b)\u005c3){2})c" flags="d" input="ababc"
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"(a)(?<=(\u005c1(a)\u005c3){2})c" flags="d" input="aaaac"
+{
+  "matches": [
+    "ac",
+    "a",
+    "aa",
+    "a"
+  ],
+  "index": 3,
+  "input": "aaaac",
+  "indices": [
+    [
+      3,
+      5
+    ],
+    [
+      3,
+      4
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      1,
+      2
+    ]
+  ],
+  "lastIndex": 0,
+  "source": "(a)(?<=(\\1(a)\\3){2})c"
+}
+
+"(a)(?<=(\u005c1(\u005c2)){2})b" flags="d" input="aab"
+{
+  "matches": [
+    "ab",
+    "a",
+    "a",
+    ""
+  ],
+  "index": 1,
+  "input": "aab",
+  "indices": [
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      1
+    ]
+  ],
+  "lastIndex": 0,
+  "source": "(a)(?<=(\\1(\\2)){2})b"
+}
+
+"(ab)(?<=((b)\u005c3\u005c1){2})c" flags="d" input="babbabc"
+{
+  "matches": [
+    "abc",
+    "ab",
+    "bab",
+    "b"
+  ],
+  "index": 4,
+  "input": "babbabc",
+  "indices": [
+    [
+      4,
+      7
+    ],
+    [
+      4,
+      6
+    ],
+    [
+      0,
+      3
+    ],
+    [
+      0,
+      1
+    ]
+  ],
+  "lastIndex": 0,
+  "source": "(ab)(?<=((b)\\3\\1){2})c"
+}
+
+"(a)(?<=(\u005c3b()\u005c1){2})c" flags="d" input="babac"
+{
+  "matches": [
+    "ac",
+    "a",
+    "ba",
+    ""
+  ],
+  "index": 3,
+  "input": "babac",
+  "indices": [
+    [
+      3,
+      5
+    ],
+    [
+      3,
+      4
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      1,
+      1
+    ]
+  ],
+  "lastIndex": 0,
+  "source": "(a)(?<=(\\3b()\\1){2})c"
+}
+
+"(a)(?<=((b)\u005c3\u005c1){2}?)c" flags="d" input="babac"
+{
+  "matches": [
+    "ac",
+    "a",
+    "ba",
+    "b"
+  ],
+  "index": 3,
+  "input": "babac",
+  "indices": [
+    [
+      3,
+      5
+    ],
+    [
+      3,
+      4
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      1
+    ]
+  ],
+  "lastIndex": 0,
+  "source": "(a)(?<=((b)\\3\\1){2}?)c"
+}
+
+"(a)(?<=((b)\u005c3\u005c1){0})c" flags="d" input="ac"
+{
+  "matches": [
+    "ac",
+    "a",
+    null,
+    null
+  ],
+  "index": 0,
+  "input": "ac",
+  "indices": [
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      1
+    ],
+    null,
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(a)(?<=((b)\\3\\1){0})c"
+}
+
+"(a)(?<!((b)\u005c3\u005c1){2}q)c" flags="d" input="baxac"
+{
+  "matches": [
+    "ac",
+    "a",
+    null,
+    null
+  ],
+  "index": 3,
+  "input": "baxac",
+  "indices": [
+    [
+      3,
+      5
+    ],
+    [
+      3,
+      4
+    ],
+    null,
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(a)(?<!((b)\\3\\1){2}q)c"
+}
+
+"(a)(?<=((b)\u005c3\u005c1\u005cB){2})c" flags="d" input="babac"
+{
+  "matches": [
+    "ac",
+    "a",
+    "ba",
+    "b"
+  ],
+  "index": 3,
+  "input": "babac",
+  "indices": [
+    [
+      3,
+      5
+    ],
+    [
+      3,
+      4
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      1
+    ]
+  ],
+  "lastIndex": 0,
+  "source": "(a)(?<=((b)\\3\\1\\B){2})c"
+}
+
+"()(?<=((())\u005c3\u005c1){2})b" flags="d" input="b"
+{
+  "matches": [
+    "b",
+    "",
+    "",
+    "",
+    ""
+  ],
+  "index": 0,
+  "input": "b",
+  "indices": [
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      0
+    ],
+    [
+      0,
+      0
+    ],
+    [
+      0,
+      0
+    ],
+    [
+      0,
+      0
+    ]
+  ],
+  "lastIndex": 0,
+  "source": "()(?<=((())\\3\\1){2})b"
+}
+
+"(?<=((a)\u005c2\u005c3){2})(b)" flags="d" input="aab"
+{
+  "matches": [
+    "b",
+    "a",
+    "a",
+    "b"
+  ],
+  "index": 2,
+  "input": "aab",
+  "indices": [
+    [
+      2,
+      3
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      2,
+      3
+    ]
+  ],
+  "lastIndex": 0,
+  "source": "(?<=((a)\\2\\3){2})(b)"
+}
+
+"(a(?<=((a)\u005c3\u005c1){2}))b" flags="d" input="aab"
+{
+  "matches": [
+    "ab",
+    "a",
+    "a",
+    "a"
+  ],
+  "index": 1,
+  "input": "aab",
+  "indices": [
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      1
+    ]
+  ],
+  "lastIndex": 0,
+  "source": "(a(?<=((a)\\3\\1){2}))b"
+}
+
+"(a)(?<=((b)\u005c3\u005c1){2})c" flags="di" input="bAbAc"
+{
+  "matches": [
+    "Ac",
+    "A",
+    "bA",
+    "b"
+  ],
+  "index": 3,
+  "input": "bAbAc",
+  "indices": [
+    [
+      3,
+      5
+    ],
+    [
+      3,
+      4
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      1
+    ]
+  ],
+  "lastIndex": 0,
+  "source": "(a)(?<=((b)\\3\\1){2})c"
+}
+
+"(?<x>a)(?<=(?<y>(?<z>b)\u005ck<z>\u005ck<x>){2})c" flags="d" input="babac"
+{
+  "matches": [
+    "ac",
+    "a",
+    "ba",
+    "b"
+  ],
+  "index": 3,
+  "input": "babac",
+  "groups": {
+    "x": "a",
+    "y": "ba",
+    "z": "b"
+  },
+  "indices": [
+    [
+      3,
+      5
+    ],
+    [
+      3,
+      4
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      1
+    ]
+  ],
+  "indicesGroups": {
+    "x": [
+      3,
+      4
+    ],
+    "y": [
+      0,
+      2
+    ],
+    "z": [
+      0,
+      1
+    ]
+  },
+  "lastIndex": 0,
+  "source": "(?<x>a)(?<=(?<y>(?<z>b)\\k<z>\\k<x>){2})c"
+}
+
+"(?:(?<x>a)|(?<x>b))(?<=(c\u005ck<x>\u005c2){2})d" flags="d" input="cbcbcd"
+{
+  "match": null,
+  "lastIndex": 0
+}

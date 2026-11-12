@@ -34,41 +34,35 @@ fn linear_reference_assertions_result_snapshot() {
         let flags = JsString::from(flags);
         let input = JsString::from(text);
         let program = format!(
-            "let r=new RegExp({source:?},{flags:?}),a=r.exec({input:?});JSON.stringify(a===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...a],index:a.index,input:a.input,groups:a.groups,indices:a.indices,indicesGroups:a.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({source:?}, {flags:?}),
+                    a = r.exec({input:?});
+                JSON.stringify(a === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...a],
+                    index: a.index,
+                    input: a.input,
+                    groups: a.groups,
+                    indices: a.indices,
+                    indicesGroups: a.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&program).unwrap() else {
             panic!("expected JSON")
         };
         writeln!(
             rows,
-            "{source:?} flags={flags:?} input={input:?} {result:?}"
+            "{source:?} flags={flags:?} input={input:?}\n{result}\n",
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
     }
-    insta::assert_snapshot!(rows, @r#"
-        "(?<=a(?=(b)\u005c1))b" flags="d" input="abb" "{\u0022matches\u0022:[\u0022b\u0022,\u0022b\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022abb\u0022,\u0022indices\u0022:[[1,2],[1,2]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=a(?=(b)\u005c\u005c1))b\u0022}"
-        "(?<=a(?=(b)\u005c1))b" flags="d" input="abbbb" "{\u0022matches\u0022:[\u0022b\u0022,\u0022b\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022abbbb\u0022,\u0022indices\u0022:[[1,2],[1,2]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=a(?=(b)\u005c\u005c1))b\u0022}"
-        "(?<=a(?=(b)(\u005c1)\u005c2))b" flags="d" input="abbb" "{\u0022matches\u0022:[\u0022b\u0022,\u0022b\u0022,\u0022b\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022abbb\u0022,\u0022indices\u0022:[[1,2],[1,2],[2,3]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=a(?=(b)(\u005c\u005c1)\u005c\u005c2))b\u0022}"
-        "(?<=a(?=(b)\u005c1\u005c1))b" flags="d" input="abbb" "{\u0022matches\u0022:[\u0022b\u0022,\u0022b\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022abbb\u0022,\u0022indices\u0022:[[1,2],[1,2]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=a(?=(b)\u005c\u005c1\u005c\u005c1))b\u0022}"
-        "(?<=a(?=(\u005c1b)))b" flags="d" input="ab" "{\u0022matches\u0022:[\u0022b\u0022,\u0022b\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022ab\u0022,\u0022indices\u0022:[[1,2],[1,2]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=a(?=(\u005c\u005c1b)))b\u0022}"
-        "(?<=a(?=(\u005c2(b))))b" flags="d" input="ab" "{\u0022matches\u0022:[\u0022b\u0022,\u0022b\u0022,\u0022b\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022ab\u0022,\u0022indices\u0022:[[1,2],[1,2],[1,2]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=a(?=(\u005c\u005c2(b))))b\u0022}"
-        "(?<=a(?!((b)\u005c2)q))b" flags="d" input="abbx" "{\u0022matches\u0022:[\u0022b\u0022,null,null],\u0022index\u0022:1,\u0022input\u0022:\u0022abbx\u0022,\u0022indices\u0022:[[1,2],null,null],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=a(?!((b)\u005c\u005c2)q))b\u0022}"
-        "(?<=(\u005c2)(b))c" flags="d" input="bbc" "{\u0022matches\u0022:[\u0022c\u0022,\u0022b\u0022,\u0022b\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022bbc\u0022,\u0022indices\u0022:[[2,3],[0,1],[1,2]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=(\u005c\u005c2)(b))c\u0022}"
-        "(?<=(\u005c2)(\u005c3)(b))c" flags="d" input="bbbc" "{\u0022matches\u0022:[\u0022c\u0022,\u0022b\u0022,\u0022b\u0022,\u0022b\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022bbbc\u0022,\u0022indices\u0022:[[3,4],[0,1],[1,2],[2,3]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=(\u005c\u005c2)(\u005c\u005c3)(b))c\u0022}"
-        "(?<=(a)\u005c1)b" flags="d" input="aab" "{\u0022matches\u0022:[\u0022b\u0022,\u0022a\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022aab\u0022,\u0022indices\u0022:[[2,3],[1,2]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=(a)\u005c\u005c1)b\u0022}"
-        "(?<=(\u005c1))a" flags="d" input="a" "{\u0022matches\u0022:[\u0022a\u0022,\u0022\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022a\u0022,\u0022indices\u0022:[[0,1],[0,0]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=(\u005c\u005c1))a\u0022}"
-        "(a)(?<=a(?=(b)\u005c2\u005c1))b" flags="d" input="abbab" "{\u0022matches\u0022:[\u0022ab\u0022,\u0022a\u0022,\u0022b\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022abbab\u0022,\u0022indices\u0022:[[0,2],[0,1],[1,2]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(a)(?<=a(?=(b)\u005c\u005c2\u005c\u005c1))b\u0022}"
-        "(a)(?<=(\u005c3(b)\u005c1))c" flags="d" input="bbac" "{\u0022matches\u0022:[\u0022ac\u0022,\u0022a\u0022,\u0022bba\u0022,\u0022b\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022bbac\u0022,\u0022indices\u0022:[[2,4],[2,3],[0,3],[1,2]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(a)(?<=(\u005c\u005c3(b)\u005c\u005c1))c\u0022}"
-        "(ab)(?<=b(?=(\u005c1)\u005c2))a" flags="d" input="ababab" "{\u0022matches\u0022:[\u0022aba\u0022,\u0022ab\u0022,\u0022ab\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022ababab\u0022,\u0022indices\u0022:[[0,3],[0,2],[2,4]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(ab)(?<=b(?=(\u005c\u005c1)\u005c\u005c2))a\u0022}"
-        "(a)(?<=(\u005c3)(\u005c1))c" flags="d" input="aaac" "{\u0022matches\u0022:[\u0022ac\u0022,\u0022a\u0022,\u0022a\u0022,\u0022a\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022aaac\u0022,\u0022indices\u0022:[[2,4],[2,3],[1,2],[2,3]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(a)(?<=(\u005c\u005c3)(\u005c\u005c1))c\u0022}"
-        "(?<=a(?=(?<x>b)\u005ck<x>))b" flags="d" input="abb" "{\u0022matches\u0022:[\u0022b\u0022,\u0022b\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022abb\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022b\u0022},\u0022indices\u0022:[[1,2],[1,2]],\u0022indicesGroups\u0022:{\u0022x\u0022:[1,2]},\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=a(?=(?<x>b)\u005c\u005ck<x>))b\u0022}"
-        "(?<=(?<x>\u005ck<y>)(?<y>b))c" flags="d" input="bbc" "{\u0022matches\u0022:[\u0022c\u0022,\u0022b\u0022,\u0022b\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022bbc\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022b\u0022,\u0022y\u0022:\u0022b\u0022},\u0022indices\u0022:[[2,3],[0,1],[1,2]],\u0022indicesGroups\u0022:{\u0022x\u0022:[0,1],\u0022y\u0022:[1,2]},\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=(?<x>\u005c\u005ck<y>)(?<y>b))c\u0022}"
-        "(?<=(?<x>a)\u005ck<x>)b" flags="d" input="aab" "{\u0022matches\u0022:[\u0022b\u0022,\u0022a\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022aab\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022a\u0022},\u0022indices\u0022:[[2,3],[1,2]],\u0022indicesGroups\u0022:{\u0022x\u0022:[1,2]},\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=(?<x>a)\u005c\u005ck<x>)b\u0022}"
-        "(?<=(?<x>\u005ck<x>))a" flags="d" input="a" "{\u0022matches\u0022:[\u0022a\u0022,\u0022\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022a\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022\u0022},\u0022indices\u0022:[[0,1],[0,0]],\u0022indicesGroups\u0022:{\u0022x\u0022:[0,0]},\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=(?<x>\u005c\u005ck<x>))a\u0022}"
-        "(?<=a(?=(b)\u005c1))b" flags="di" input="aBb" "{\u0022matches\u0022:[\u0022B\u0022,\u0022B\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aBb\u0022,\u0022indices\u0022:[[1,2],[1,2]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=a(?=(b)\u005c\u005c1))b\u0022}"
-        "(?<=a(?!(b)\u005c1))b|(?<=a)b" flags="d" input="abb" "{\u0022matches\u0022:[\u0022b\u0022,null],\u0022index\u0022:1,\u0022input\u0022:\u0022abb\u0022,\u0022indices\u0022:[[1,2],null],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=a(?!(b)\u005c\u005c1))b|(?<=a)b\u0022}"
-        "(?<!(\u005c2)(b))c|c" flags="d" input="bbc" "{\u0022matches\u0022:[\u0022c\u0022,null,null],\u0022index\u0022:2,\u0022input\u0022:\u0022bbc\u0022,\u0022indices\u0022:[[2,3],null,null],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<!(\u005c\u005c2)(b))c|c\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 #[test]
 fn previous_gap_programs_snapshot() {
@@ -84,21 +78,87 @@ fn previous_gap_programs_snapshot() {
         r"/(?<=(\1))a/.exec('a')",
     ] {
         let source = JsString::from(source);
-        let program = format!("JSON.stringify({{result:eval({source:?})}})");
+        let program = format!(
+            r#"
+            JSON.stringify({{
+                result: eval({source:?})
+            }}, null, 2)
+        "#
+        );
         let Value::String(result) = Realm::default().eval(&program).unwrap() else {
             panic!("expected JSON")
         };
-        writeln!(rows, "{source:?} {result:?}").unwrap();
+        writeln!(
+            rows,
+            "{source:?}\n{result}\n",
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
+        )
+        .unwrap();
     }
     insta::assert_snapshot!(rows, @r#"
-        "/(?<=(\u005c1))a/.exec('a')" "{\u0022result\u0022:[\u0022a\u0022,\u0022\u0022]}"
-        "/(?<=a(?=(b)\u005c1))b/.exec('abb')" "{\u0022result\u0022:[\u0022b\u0022,\u0022b\u0022]}"
-        "/(?<=(a)\u005c1)b/.exec('aab')" "{\u0022result\u0022:[\u0022b\u0022,\u0022a\u0022]}"
-        "/(?<=(\u005c1))a/.exec('a')" "{\u0022result\u0022:[\u0022a\u0022,\u0022\u0022]}"
-        "/(?<=a(?=(b)\u005c1))b/.exec('abbbb')" "{\u0022result\u0022:[\u0022b\u0022,\u0022b\u0022]}"
-        "/(?<=(\u005c1))a/.exec('a')" "{\u0022result\u0022:[\u0022a\u0022,\u0022\u0022]}"
-        "/(?<=a(?=(b)\u005c1))b/.exec('abb')" "{\u0022result\u0022:[\u0022b\u0022,\u0022b\u0022]}"
-        "/(?<=(\u005c1))a/.exec('a')" "{\u0022result\u0022:[\u0022a\u0022,\u0022\u0022]}"
+        "/(?<=(\u005c1))a/.exec('a')"
+        {
+          "result": [
+            "a",
+            ""
+          ]
+        }
+
+        "/(?<=a(?=(b)\u005c1))b/.exec('abb')"
+        {
+          "result": [
+            "b",
+            "b"
+          ]
+        }
+
+        "/(?<=(a)\u005c1)b/.exec('aab')"
+        {
+          "result": [
+            "b",
+            "a"
+          ]
+        }
+
+        "/(?<=(\u005c1))a/.exec('a')"
+        {
+          "result": [
+            "a",
+            ""
+          ]
+        }
+
+        "/(?<=a(?=(b)\u005c1))b/.exec('abbbb')"
+        {
+          "result": [
+            "b",
+            "b"
+          ]
+        }
+
+        "/(?<=(\u005c1))a/.exec('a')"
+        {
+          "result": [
+            "a",
+            ""
+          ]
+        }
+
+        "/(?<=a(?=(b)\u005c1))b/.exec('abb')"
+        {
+          "result": [
+            "b",
+            "b"
+          ]
+        }
+
+        "/(?<=(\u005c1))a/.exec('a')"
+        {
+          "result": [
+            "a",
+            ""
+          ]
+        }
         "#);
 }
 #[test]

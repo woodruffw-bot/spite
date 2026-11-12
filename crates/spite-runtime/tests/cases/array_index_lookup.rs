@@ -17,21 +17,32 @@ fn array_index_lookup_shapes_snapshot() {
         "let a=[1,2,3];a.length=1;a[2]=9;return [a[0],a[1],a[2],a.length,Reflect.ownKeys(a)]",
     ] {
         let Value::String(result) = Realm::default()
-            .eval(&format!("JSON.stringify((()=>{{{source}}})())"))
+            .eval(&format!(
+                r#"
+                JSON.stringify((() => {{
+                    {source}
+                }})())
+            "#
+            ))
             .unwrap()
         else {
             panic!("{source}")
         };
-        writeln!(rows, "{source} {result:?}").unwrap();
+        writeln!(
+            rows,
+            "{source} => {result}",
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
+        )
+        .unwrap();
     }
     insta::assert_snapshot!(rows, @r#"
-        let a=[10,20,30];return [a[0],a[1],a[2],a[3],Reflect.ownKeys(a),Object.getOwnPropertyDescriptor(a,'1')] "[10,20,30,null,[\u00220\u0022,\u00221\u0022,\u00222\u0022,\u0022length\u0022],{\u0022value\u0022:20,\u0022writable\u0022:true,\u0022enumerable\u0022:true,\u0022configurable\u0022:true}]"
-        let a=[];a.note=1;a[2]=20;a[0]=10;a[1]=15;return [a[0],a[1],a[2],a[3],Reflect.ownKeys(a)] "[10,15,20,null,[\u00220\u0022,\u00221\u0022,\u00222\u0022,\u0022length\u0022,\u0022note\u0022]]"
-        let a=[10,20,30];delete a[0];a[0]=40;return [a[0],a[1],a[2],Reflect.ownKeys(a)] "[40,20,30,[\u00220\u0022,\u00221\u0022,\u00222\u0022,\u0022length\u0022]]"
-        let a=[10,20,30];delete a[1];return [a[0],a[1],a[2],Object.hasOwn(a,'1'),a.length] "[10,null,30,false,3]"
-        let a=[10,20,30];Object.defineProperty(a,'1',{get(){return 99},configurable:true});return [a[1],Object.getOwnPropertyDescriptor(a,'1').enumerable,Reflect.ownKeys(a)] "[99,true,[\u00220\u0022,\u00221\u0022,\u00222\u0022,\u0022length\u0022]]"
-        let a=[];a[4294967294]=1;a[4294967295]=2;a['01']=3;a['-0']=4;return [a.length,a[4294967294],a[4294967295],a['01'],a['-0'],a[0],Reflect.ownKeys(a)] "[4294967295,1,2,3,4,null,[\u00224294967294\u0022,\u0022length\u0022,\u00224294967295\u0022,\u002201\u0022,\u0022-0\u0022]]"
-        let a=[1,2,3];a.length=1;a[2]=9;return [a[0],a[1],a[2],a.length,Reflect.ownKeys(a)] "[1,null,9,3,[\u00220\u0022,\u00222\u0022,\u0022length\u0022]]"
+        let a=[10,20,30];return [a[0],a[1],a[2],a[3],Reflect.ownKeys(a),Object.getOwnPropertyDescriptor(a,'1')] => [10,20,30,null,["0","1","2","length"],{"value":20,"writable":true,"enumerable":true,"configurable":true}]
+        let a=[];a.note=1;a[2]=20;a[0]=10;a[1]=15;return [a[0],a[1],a[2],a[3],Reflect.ownKeys(a)] => [10,15,20,null,["0","1","2","length","note"]]
+        let a=[10,20,30];delete a[0];a[0]=40;return [a[0],a[1],a[2],Reflect.ownKeys(a)] => [40,20,30,["0","1","2","length"]]
+        let a=[10,20,30];delete a[1];return [a[0],a[1],a[2],Object.hasOwn(a,'1'),a.length] => [10,null,30,false,3]
+        let a=[10,20,30];Object.defineProperty(a,'1',{get(){return 99},configurable:true});return [a[1],Object.getOwnPropertyDescriptor(a,'1').enumerable,Reflect.ownKeys(a)] => [99,true,["0","1","2","length"]]
+        let a=[];a[4294967294]=1;a[4294967295]=2;a['01']=3;a['-0']=4;return [a.length,a[4294967294],a[4294967295],a['01'],a['-0'],a[0],Reflect.ownKeys(a)] => [4294967295,1,2,3,4,null,["4294967294","length","4294967295","01","-0"]]
+        let a=[1,2,3];a.length=1;a[2]=9;return [a[0],a[1],a[2],a.length,Reflect.ownKeys(a)] => [1,null,9,3,["0","2","length"]]
         "#);
 }
 

@@ -63,58 +63,75 @@ fn zero_reference_lookbehind_count_result_snapshot() {
             JsString::from(text)
         };
         let program = format!(
-            "let r=new RegExp({source:?},{flags:?}),a=r.exec({input:?});JSON.stringify(a===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...a],index:a.index,input:a.input,groups:a.groups,indices:a.indices,indicesGroups:a.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({source:?}, {flags:?}),
+                    a = r.exec({input:?});
+                JSON.stringify(a === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...a],
+                    index: a.index,
+                    input: a.input,
+                    groups: a.groups,
+                    indices: a.indices,
+                    indicesGroups: a.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }})
+            "#
         );
         let Value::String(result) = Realm::default().eval(&program).unwrap() else {
             panic!("expected JSON")
         };
         writeln!(
             rows,
-            "{source:?} flags={flags:?} input={input:?} {result:?}"
+            "{source:?} flags={flags:?} input={input:?} => {result}",
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
     }
     insta::assert_snapshot!(rows, @r#"
-        "(?<=(\u005c1)+)a()" flags="d" input="qa" "{\u0022matches\u0022:[\u0022a\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022qa\u0022,\u0022indices\u0022:[[1,2],[1,1],[2,2]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=(\u005c\u005c1)+)a()\u0022}"
-        "(?<=(\u005c1){2})a()" flags="d" input="qa" "{\u0022matches\u0022:[\u0022a\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022qa\u0022,\u0022indices\u0022:[[1,2],[1,1],[2,2]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=(\u005c\u005c1){2})a()\u0022}"
-        "(?<=(()\u005c2){2})a" flags="d" input="qa" "{\u0022matches\u0022:[\u0022a\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022qa\u0022,\u0022indices\u0022:[[1,2],[1,1],[1,1]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=(()\u005c\u005c2){2})a\u0022}"
-        "(?<=(()\u005c2){0,2})a" flags="d" input="qa" "{\u0022matches\u0022:[\u0022a\u0022,null,null],\u0022index\u0022:1,\u0022input\u0022:\u0022qa\u0022,\u0022indices\u0022:[[1,2],null,null],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=(()\u005c\u005c2){0,2})a\u0022}"
-        "(?<=((\u005c2)){2})a" flags="d" input="qa" "{\u0022matches\u0022:[\u0022a\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022qa\u0022,\u0022indices\u0022:[[1,2],[1,1],[1,1]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=((\u005c\u005c2)){2})a\u0022}"
-        "(?<=((\u005c3)()){2})a" flags="d" input="qa" "{\u0022matches\u0022:[\u0022a\u0022,\u0022\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022qa\u0022,\u0022indices\u0022:[[1,2],[1,1],[1,1],[1,1]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=((\u005c\u005c3)()){2})a\u0022}"
-        "(?<=(()(\u005c2)\u005c3){2})a" flags="d" input="qa" "{\u0022matches\u0022:[\u0022a\u0022,\u0022\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022qa\u0022,\u0022indices\u0022:[[1,2],[1,1],[1,1],[1,1]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=(()(\u005c\u005c2)\u005c\u005c3){2})a\u0022}"
-        "(?<=(()(\u005c2)(\u005c3)\u005c4){2})a" flags="d" input="qa" "{\u0022matches\u0022:[\u0022a\u0022,\u0022\u0022,\u0022\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022qa\u0022,\u0022indices\u0022:[[1,2],[1,1],[1,1],[1,1],[1,1]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=(()(\u005c\u005c2)(\u005c\u005c3)\u005c\u005c4){2})a\u0022}"
-        "(?<=((()\u005c3){2}){2})a" flags="d" input="qa" "{\u0022matches\u0022:[\u0022a\u0022,\u0022\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022qa\u0022,\u0022indices\u0022:[[1,2],[1,1],[1,1],[1,1]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=((()\u005c\u005c3){2}){2})a\u0022}"
-        "(?<=((()\u005c3){0,2}){2})a" flags="d" input="qa" "{\u0022matches\u0022:[\u0022a\u0022,\u0022\u0022,null,null],\u0022index\u0022:1,\u0022input\u0022:\u0022qa\u0022,\u0022indices\u0022:[[1,2],[1,1],null,null],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=((()\u005c\u005c3){0,2}){2})a\u0022}"
-        "(?<=((()\u005c3){2})*)a" flags="d" input="qa" "{\u0022matches\u0022:[\u0022a\u0022,null,null,null],\u0022index\u0022:1,\u0022input\u0022:\u0022qa\u0022,\u0022indices\u0022:[[1,2],null,null,null],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=((()\u005c\u005c3){2})*)a\u0022}"
-        "(?<=((\u005c2){2}){2})a" flags="d" input="qa" "{\u0022matches\u0022:[\u0022a\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022qa\u0022,\u0022indices\u0022:[[1,2],[1,1],[1,1]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=((\u005c\u005c2){2}){2})a\u0022}"
-        "(?<=((\u005c3()){2}){2})a" flags="d" input="qa" "{\u0022matches\u0022:[\u0022a\u0022,\u0022\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022qa\u0022,\u0022indices\u0022:[[1,2],[1,1],[1,1],[1,1]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=((\u005c\u005c3()){2}){2})a\u0022}"
-        "(?<=((()\u005c3\u005c3){2}){2})a" flags="d" input="qa" "{\u0022matches\u0022:[\u0022a\u0022,\u0022\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022qa\u0022,\u0022indices\u0022:[[1,2],[1,1],[1,1],[1,1]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=((()\u005c\u005c3\u005c\u005c3){2}){2})a\u0022}"
-        "(?<=((()(\u005c3)){2}){2})a" flags="d" input="qa" "{\u0022matches\u0022:[\u0022a\u0022,\u0022\u0022,\u0022\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022qa\u0022,\u0022indices\u0022:[[1,2],[1,1],[1,1],[1,1],[1,1]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=((()(\u005c\u005c3)){2}){2})a\u0022}"
-        "(?<=((\u005c2){0,2}){2})a" flags="d" input="qa" "{\u0022matches\u0022:[\u0022a\u0022,\u0022\u0022,null],\u0022index\u0022:1,\u0022input\u0022:\u0022qa\u0022,\u0022indices\u0022:[[1,2],[1,1],null],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=((\u005c\u005c2){0,2}){2})a\u0022}"
-        "(?<=((()\u005c3)+)+)a" flags="d" input="qa" "{\u0022matches\u0022:[\u0022a\u0022,\u0022\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022qa\u0022,\u0022indices\u0022:[[1,2],[1,1],[1,1],[1,1]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=((()\u005c\u005c3)+)+)a\u0022}"
-        "(?<=((()\u005c3)*)+)a" flags="d" input="qa" "{\u0022matches\u0022:[\u0022a\u0022,\u0022\u0022,null,null],\u0022index\u0022:1,\u0022input\u0022:\u0022qa\u0022,\u0022indices\u0022:[[1,2],[1,1],null,null],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=((()\u005c\u005c3)*)+)a\u0022}"
-        "(?<=((()\u005c3)+)*)a" flags="d" input="qa" "{\u0022matches\u0022:[\u0022a\u0022,null,null,null],\u0022index\u0022:1,\u0022input\u0022:\u0022qa\u0022,\u0022indices\u0022:[[1,2],null,null,null],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=((()\u005c\u005c3)+)*)a\u0022}"
-        "(?<=((()\u005c3){1,3}?){2})a" flags="d" input="qa" "{\u0022matches\u0022:[\u0022a\u0022,\u0022\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022qa\u0022,\u0022indices\u0022:[[1,2],[1,1],[1,1],[1,1]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=((()\u005c\u005c3){1,3}?){2})a\u0022}"
-        "(?<=((^()\u005c3){2}){2})a" flags="d" input="qa" "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<=((\u005cb()\u005c3){2}){2})a" flags="d" input="qa" "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<=((\u005cB()\u005c3){2}){2})a" flags="d" input="qa" "{\u0022matches\u0022:[\u0022a\u0022,\u0022\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022qa\u0022,\u0022indices\u0022:[[1,2],[1,1],[1,1],[1,1]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=((\u005c\u005cB()\u005c\u005c3){2}){2})a\u0022}"
-        "(?<=((()^\u005c3){0,2}){2})a" flags="d" input="qa" "{\u0022matches\u0022:[\u0022a\u0022,\u0022\u0022,null,null],\u0022index\u0022:1,\u0022input\u0022:\u0022qa\u0022,\u0022indices\u0022:[[1,2],[1,1],null,null],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=((()^\u005c\u005c3){0,2}){2})a\u0022}"
-        "(?<=(?:(?:(()\u005c2){2}){2}|()){2})a" flags="d" input="qa" "{\u0022matches\u0022:[\u0022a\u0022,\u0022\u0022,\u0022\u0022,null],\u0022index\u0022:1,\u0022input\u0022:\u0022qa\u0022,\u0022indices\u0022:[[1,2],[1,1],[1,1],null],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=(?:(?:(()\u005c\u005c2){2}){2}|()){2})a\u0022}"
-        "(?<=(?:(?:(()\u005c2){0,2}){2}|()){2})a" flags="d" input="qa" "{\u0022matches\u0022:[\u0022a\u0022,null,null,null],\u0022index\u0022:1,\u0022input\u0022:\u0022qa\u0022,\u0022indices\u0022:[[1,2],null,null,null],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=(?:(?:(()\u005c\u005c2){0,2}){2}|()){2})a\u0022}"
-        "(?<!(?:(()\u005c2){2}){2}q)a" flags="d" input="xa" "{\u0022matches\u0022:[\u0022a\u0022,null,null],\u0022index\u0022:1,\u0022input\u0022:\u0022xa\u0022,\u0022indices\u0022:[[1,2],null,null],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<!(?:(()\u005c\u005c2){2}){2}q)a\u0022}"
-        "(?<=((()\u005c3){2}){2}a)b" flags="d" input="ab" "{\u0022matches\u0022:[\u0022b\u0022,\u0022\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022ab\u0022,\u0022indices\u0022:[[1,2],[0,0],[0,0],[0,0]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=((()\u005c\u005c3){2}){2}a)b\u0022}"
-        "(?<=a((()\u005c3){2}){2})b" flags="d" input="ab" "{\u0022matches\u0022:[\u0022b\u0022,\u0022\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022ab\u0022,\u0022indices\u0022:[[1,2],[1,1],[1,1],[1,1]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=a((()\u005c\u005c3){2}){2})b\u0022}"
-        "(?:(?<=((()\u005c3){2}){2})a|b)+c" flags="d" input="qa" "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<=((()\u005c3){2}){2})a\u005c1\u005c2\u005c3" flags="d" input="qa" "{\u0022matches\u0022:[\u0022a\u0022,\u0022\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022qa\u0022,\u0022indices\u0022:[[1,2],[1,1],[1,1],[1,1]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=((()\u005c\u005c3){2}){2})a\u005c\u005c1\u005c\u005c2\u005c\u005c3\u0022}"
-        "(?<=((()\u005c3){0,2}){2})a\u005c1\u005c2\u005c3" flags="d" input="qa" "{\u0022matches\u0022:[\u0022a\u0022,\u0022\u0022,null,null],\u0022index\u0022:1,\u0022input\u0022:\u0022qa\u0022,\u0022indices\u0022:[[1,2],[1,1],null,null],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=((()\u005c\u005c3){0,2}){2})a\u005c\u005c1\u005c\u005c2\u005c\u005c3\u0022}"
-        "(?<=((()\u005c3){2}){2}\u00b5)\u039c" flags="di" input="\u039c\u039c" "{\u0022matches\u0022:[\u0022\u039c\u0022,\u0022\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022\u039c\u039c\u0022,\u0022indices\u0022:[[1,2],[0,0],[0,0],[0,0]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=((()\u005c\u005c3){2}){2}\u00b5)\u039c\u0022}"
-        "(?<=((()\u005c3){2}){2}[\u005cuD800])b" flags="d" input="\ud800b" "{\u0022matches\u0022:[\u0022b\u0022,\u0022\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022\u005cud800b\u0022,\u0022indices\u0022:[[1,2],[0,0],[0,0],[0,0]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=((()\u005c\u005c3){2}){2}[\u005c\u005cuD800])b\u0022}"
-        "(?<=(?:((?<x>)\u005ck<x>){2}){2})a\u005ck<x>" flags="d" input="qa" "{\u0022matches\u0022:[\u0022a\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022qa\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022\u0022},\u0022indices\u0022:[[1,2],[1,1],[1,1]],\u0022indicesGroups\u0022:{\u0022x\u0022:[1,1]},\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=(?:((?<x>)\u005c\u005ck<x>){2}){2})a\u005c\u005ck<x>\u0022}"
-        "(?<=(?:((?<x>)\u005ck<x>){0,2}){2})a\u005ck<x>" flags="d" input="qa" "{\u0022matches\u0022:[\u0022a\u0022,null,null],\u0022index\u0022:1,\u0022input\u0022:\u0022qa\u0022,\u0022groups\u0022:{},\u0022indices\u0022:[[1,2],null,null],\u0022indicesGroups\u0022:{},\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=(?:((?<x>)\u005c\u005ck<x>){0,2}){2})a\u005c\u005ck<x>\u0022}"
-        "(?<=(?:(\u005ck<x>(?<x>)){2}){2})a" flags="d" input="qa" "{\u0022matches\u0022:[\u0022a\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022qa\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022\u0022},\u0022indices\u0022:[[1,2],[1,1],[1,1]],\u0022indicesGroups\u0022:{\u0022x\u0022:[1,1]},\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=(?:(\u005c\u005ck<x>(?<x>)){2}){2})a\u0022}"
-        "(?<=(?:((?<x>\u005ck<x>)){2}){2})a" flags="d" input="qa" "{\u0022matches\u0022:[\u0022a\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022qa\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022\u0022},\u0022indices\u0022:[[1,2],[1,1],[1,1]],\u0022indicesGroups\u0022:{\u0022x\u0022:[1,1]},\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=(?:((?<x>\u005c\u005ck<x>)){2}){2})a\u0022}"
-        "(?<=(?:(?:(?<x>)\u005ck<x>){2}|(?<x>)){2})a\u005ck<x>" flags="d" input="qa" "{\u0022matches\u0022:[\u0022a\u0022,\u0022\u0022,null],\u0022index\u0022:1,\u0022input\u0022:\u0022qa\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022\u0022},\u0022indices\u0022:[[1,2],[1,1],null],\u0022indicesGroups\u0022:{\u0022x\u0022:[1,1]},\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=(?:(?:(?<x>)\u005c\u005ck<x>){2}|(?<x>)){2})a\u005c\u005ck<x>\u0022}"
-        "(?<=(?:((?<x>)(?<y>\u005ck<x>)\u005ck<y>){2}){2})a\u005ck<x>\u005ck<y>" flags="d" input="qa" "{\u0022matches\u0022:[\u0022a\u0022,\u0022\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022qa\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022\u0022,\u0022y\u0022:\u0022\u0022},\u0022indices\u0022:[[1,2],[1,1],[1,1],[1,1]],\u0022indicesGroups\u0022:{\u0022x\u0022:[1,1],\u0022y\u0022:[1,1]},\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=(?:((?<x>)(?<y>\u005c\u005ck<x>)\u005c\u005ck<y>){2}){2})a\u005c\u005ck<x>\u005c\u005ck<y>\u0022}"
+        "(?<=(\u005c1)+)a()" flags="d" input="qa" => {"matches":["a","",""],"index":1,"input":"qa","indices":[[1,2],[1,1],[2,2]],"lastIndex":0,"source":"(?<=(\\1)+)a()"}
+        "(?<=(\u005c1){2})a()" flags="d" input="qa" => {"matches":["a","",""],"index":1,"input":"qa","indices":[[1,2],[1,1],[2,2]],"lastIndex":0,"source":"(?<=(\\1){2})a()"}
+        "(?<=(()\u005c2){2})a" flags="d" input="qa" => {"matches":["a","",""],"index":1,"input":"qa","indices":[[1,2],[1,1],[1,1]],"lastIndex":0,"source":"(?<=(()\\2){2})a"}
+        "(?<=(()\u005c2){0,2})a" flags="d" input="qa" => {"matches":["a",null,null],"index":1,"input":"qa","indices":[[1,2],null,null],"lastIndex":0,"source":"(?<=(()\\2){0,2})a"}
+        "(?<=((\u005c2)){2})a" flags="d" input="qa" => {"matches":["a","",""],"index":1,"input":"qa","indices":[[1,2],[1,1],[1,1]],"lastIndex":0,"source":"(?<=((\\2)){2})a"}
+        "(?<=((\u005c3)()){2})a" flags="d" input="qa" => {"matches":["a","","",""],"index":1,"input":"qa","indices":[[1,2],[1,1],[1,1],[1,1]],"lastIndex":0,"source":"(?<=((\\3)()){2})a"}
+        "(?<=(()(\u005c2)\u005c3){2})a" flags="d" input="qa" => {"matches":["a","","",""],"index":1,"input":"qa","indices":[[1,2],[1,1],[1,1],[1,1]],"lastIndex":0,"source":"(?<=(()(\\2)\\3){2})a"}
+        "(?<=(()(\u005c2)(\u005c3)\u005c4){2})a" flags="d" input="qa" => {"matches":["a","","","",""],"index":1,"input":"qa","indices":[[1,2],[1,1],[1,1],[1,1],[1,1]],"lastIndex":0,"source":"(?<=(()(\\2)(\\3)\\4){2})a"}
+        "(?<=((()\u005c3){2}){2})a" flags="d" input="qa" => {"matches":["a","","",""],"index":1,"input":"qa","indices":[[1,2],[1,1],[1,1],[1,1]],"lastIndex":0,"source":"(?<=((()\\3){2}){2})a"}
+        "(?<=((()\u005c3){0,2}){2})a" flags="d" input="qa" => {"matches":["a","",null,null],"index":1,"input":"qa","indices":[[1,2],[1,1],null,null],"lastIndex":0,"source":"(?<=((()\\3){0,2}){2})a"}
+        "(?<=((()\u005c3){2})*)a" flags="d" input="qa" => {"matches":["a",null,null,null],"index":1,"input":"qa","indices":[[1,2],null,null,null],"lastIndex":0,"source":"(?<=((()\\3){2})*)a"}
+        "(?<=((\u005c2){2}){2})a" flags="d" input="qa" => {"matches":["a","",""],"index":1,"input":"qa","indices":[[1,2],[1,1],[1,1]],"lastIndex":0,"source":"(?<=((\\2){2}){2})a"}
+        "(?<=((\u005c3()){2}){2})a" flags="d" input="qa" => {"matches":["a","","",""],"index":1,"input":"qa","indices":[[1,2],[1,1],[1,1],[1,1]],"lastIndex":0,"source":"(?<=((\\3()){2}){2})a"}
+        "(?<=((()\u005c3\u005c3){2}){2})a" flags="d" input="qa" => {"matches":["a","","",""],"index":1,"input":"qa","indices":[[1,2],[1,1],[1,1],[1,1]],"lastIndex":0,"source":"(?<=((()\\3\\3){2}){2})a"}
+        "(?<=((()(\u005c3)){2}){2})a" flags="d" input="qa" => {"matches":["a","","","",""],"index":1,"input":"qa","indices":[[1,2],[1,1],[1,1],[1,1],[1,1]],"lastIndex":0,"source":"(?<=((()(\\3)){2}){2})a"}
+        "(?<=((\u005c2){0,2}){2})a" flags="d" input="qa" => {"matches":["a","",null],"index":1,"input":"qa","indices":[[1,2],[1,1],null],"lastIndex":0,"source":"(?<=((\\2){0,2}){2})a"}
+        "(?<=((()\u005c3)+)+)a" flags="d" input="qa" => {"matches":["a","","",""],"index":1,"input":"qa","indices":[[1,2],[1,1],[1,1],[1,1]],"lastIndex":0,"source":"(?<=((()\\3)+)+)a"}
+        "(?<=((()\u005c3)*)+)a" flags="d" input="qa" => {"matches":["a","",null,null],"index":1,"input":"qa","indices":[[1,2],[1,1],null,null],"lastIndex":0,"source":"(?<=((()\\3)*)+)a"}
+        "(?<=((()\u005c3)+)*)a" flags="d" input="qa" => {"matches":["a",null,null,null],"index":1,"input":"qa","indices":[[1,2],null,null,null],"lastIndex":0,"source":"(?<=((()\\3)+)*)a"}
+        "(?<=((()\u005c3){1,3}?){2})a" flags="d" input="qa" => {"matches":["a","","",""],"index":1,"input":"qa","indices":[[1,2],[1,1],[1,1],[1,1]],"lastIndex":0,"source":"(?<=((()\\3){1,3}?){2})a"}
+        "(?<=((^()\u005c3){2}){2})a" flags="d" input="qa" => {"match":null,"lastIndex":0}
+        "(?<=((\u005cb()\u005c3){2}){2})a" flags="d" input="qa" => {"match":null,"lastIndex":0}
+        "(?<=((\u005cB()\u005c3){2}){2})a" flags="d" input="qa" => {"matches":["a","","",""],"index":1,"input":"qa","indices":[[1,2],[1,1],[1,1],[1,1]],"lastIndex":0,"source":"(?<=((\\B()\\3){2}){2})a"}
+        "(?<=((()^\u005c3){0,2}){2})a" flags="d" input="qa" => {"matches":["a","",null,null],"index":1,"input":"qa","indices":[[1,2],[1,1],null,null],"lastIndex":0,"source":"(?<=((()^\\3){0,2}){2})a"}
+        "(?<=(?:(?:(()\u005c2){2}){2}|()){2})a" flags="d" input="qa" => {"matches":["a","","",null],"index":1,"input":"qa","indices":[[1,2],[1,1],[1,1],null],"lastIndex":0,"source":"(?<=(?:(?:(()\\2){2}){2}|()){2})a"}
+        "(?<=(?:(?:(()\u005c2){0,2}){2}|()){2})a" flags="d" input="qa" => {"matches":["a",null,null,null],"index":1,"input":"qa","indices":[[1,2],null,null,null],"lastIndex":0,"source":"(?<=(?:(?:(()\\2){0,2}){2}|()){2})a"}
+        "(?<!(?:(()\u005c2){2}){2}q)a" flags="d" input="xa" => {"matches":["a",null,null],"index":1,"input":"xa","indices":[[1,2],null,null],"lastIndex":0,"source":"(?<!(?:(()\\2){2}){2}q)a"}
+        "(?<=((()\u005c3){2}){2}a)b" flags="d" input="ab" => {"matches":["b","","",""],"index":1,"input":"ab","indices":[[1,2],[0,0],[0,0],[0,0]],"lastIndex":0,"source":"(?<=((()\\3){2}){2}a)b"}
+        "(?<=a((()\u005c3){2}){2})b" flags="d" input="ab" => {"matches":["b","","",""],"index":1,"input":"ab","indices":[[1,2],[1,1],[1,1],[1,1]],"lastIndex":0,"source":"(?<=a((()\\3){2}){2})b"}
+        "(?:(?<=((()\u005c3){2}){2})a|b)+c" flags="d" input="qa" => {"match":null,"lastIndex":0}
+        "(?<=((()\u005c3){2}){2})a\u005c1\u005c2\u005c3" flags="d" input="qa" => {"matches":["a","","",""],"index":1,"input":"qa","indices":[[1,2],[1,1],[1,1],[1,1]],"lastIndex":0,"source":"(?<=((()\\3){2}){2})a\\1\\2\\3"}
+        "(?<=((()\u005c3){0,2}){2})a\u005c1\u005c2\u005c3" flags="d" input="qa" => {"matches":["a","",null,null],"index":1,"input":"qa","indices":[[1,2],[1,1],null,null],"lastIndex":0,"source":"(?<=((()\\3){0,2}){2})a\\1\\2\\3"}
+        "(?<=((()\u005c3){2}){2}\u00b5)\u039c" flags="di" input="\u039c\u039c" => {"matches":["Μ","","",""],"index":1,"input":"ΜΜ","indices":[[1,2],[0,0],[0,0],[0,0]],"lastIndex":0,"source":"(?<=((()\\3){2}){2}µ)Μ"}
+        "(?<=((()\u005c3){2}){2}[\u005cuD800])b" flags="d" input="\ud800b" => {"matches":["b","","",""],"index":1,"input":"\ud800b","indices":[[1,2],[0,0],[0,0],[0,0]],"lastIndex":0,"source":"(?<=((()\\3){2}){2}[\\uD800])b"}
+        "(?<=(?:((?<x>)\u005ck<x>){2}){2})a\u005ck<x>" flags="d" input="qa" => {"matches":["a","",""],"index":1,"input":"qa","groups":{"x":""},"indices":[[1,2],[1,1],[1,1]],"indicesGroups":{"x":[1,1]},"lastIndex":0,"source":"(?<=(?:((?<x>)\\k<x>){2}){2})a\\k<x>"}
+        "(?<=(?:((?<x>)\u005ck<x>){0,2}){2})a\u005ck<x>" flags="d" input="qa" => {"matches":["a",null,null],"index":1,"input":"qa","groups":{},"indices":[[1,2],null,null],"indicesGroups":{},"lastIndex":0,"source":"(?<=(?:((?<x>)\\k<x>){0,2}){2})a\\k<x>"}
+        "(?<=(?:(\u005ck<x>(?<x>)){2}){2})a" flags="d" input="qa" => {"matches":["a","",""],"index":1,"input":"qa","groups":{"x":""},"indices":[[1,2],[1,1],[1,1]],"indicesGroups":{"x":[1,1]},"lastIndex":0,"source":"(?<=(?:(\\k<x>(?<x>)){2}){2})a"}
+        "(?<=(?:((?<x>\u005ck<x>)){2}){2})a" flags="d" input="qa" => {"matches":["a","",""],"index":1,"input":"qa","groups":{"x":""},"indices":[[1,2],[1,1],[1,1]],"indicesGroups":{"x":[1,1]},"lastIndex":0,"source":"(?<=(?:((?<x>\\k<x>)){2}){2})a"}
+        "(?<=(?:(?:(?<x>)\u005ck<x>){2}|(?<x>)){2})a\u005ck<x>" flags="d" input="qa" => {"matches":["a","",null],"index":1,"input":"qa","groups":{"x":""},"indices":[[1,2],[1,1],null],"indicesGroups":{"x":[1,1]},"lastIndex":0,"source":"(?<=(?:(?:(?<x>)\\k<x>){2}|(?<x>)){2})a\\k<x>"}
+        "(?<=(?:((?<x>)(?<y>\u005ck<x>)\u005ck<y>){2}){2})a\u005ck<x>\u005ck<y>" flags="d" input="qa" => {"matches":["a","","",""],"index":1,"input":"qa","groups":{"x":"","y":""},"indices":[[1,2],[1,1],[1,1],[1,1]],"indicesGroups":{"x":[1,1],"y":[1,1]},"lastIndex":0,"source":"(?<=(?:((?<x>)(?<y>\\k<x>)\\k<y>){2}){2})a\\k<x>\\k<y>"}
         "#);
 }
 

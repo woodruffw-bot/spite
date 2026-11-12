@@ -1,0 +1,211 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_unrepresentable_outside_lookbehind.rs
+expression: rows
+---
+"()(?<=(\\1)COUNT)b" input="qb"
+{
+  "matches": [
+    "b",
+    "",
+    ""
+  ],
+  "index": 1,
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      1
+    ],
+    [
+      1,
+      1
+    ]
+  ],
+  "lastIndex": 0
+}
+
+"()(?<=(\\1)COUNTa)b" input="ab"
+{
+  "matches": [
+    "b",
+    "",
+    ""
+  ],
+  "index": 1,
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      1
+    ],
+    [
+      0,
+      0
+    ]
+  ],
+  "lastIndex": 0
+}
+
+"()()(?<=(\\1\\2\\b)COUNT)b" input=" b"
+{
+  "matches": [
+    "b",
+    "",
+    "",
+    ""
+  ],
+  "index": 1,
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      1
+    ],
+    [
+      1,
+      1
+    ],
+    [
+      1,
+      1
+    ]
+  ],
+  "lastIndex": 0
+}
+
+"(a)(?<=(\\1a)COUNT)b" input="ab"
+{
+  "match": null
+}
+
+"(a)(?<!(\\1a)COUNT)b" input="ab"
+{
+  "matches": [
+    "ab",
+    "a",
+    null
+  ],
+  "index": 0,
+  "indices": [
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      1
+    ],
+    null
+  ],
+  "lastIndex": 0
+}
+
+"()(?<!(\\1)COUNTq)b" input="xb"
+{
+  "matches": [
+    "b",
+    "",
+    null
+  ],
+  "index": 1,
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      1
+    ],
+    null
+  ],
+  "lastIndex": 0
+}
+
+"(?<x>)(?<=(?<y>\\k<x>)COUNT)b" input="qb"
+{
+  "matches": [
+    "b",
+    "",
+    ""
+  ],
+  "index": 1,
+  "groups": {
+    "x": "",
+    "y": ""
+  },
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      1
+    ],
+    [
+      1,
+      1
+    ]
+  ],
+  "indicesGroups": {
+    "x": [
+      1,
+      1
+    ],
+    "y": [
+      1,
+      1
+    ]
+  },
+  "lastIndex": 0
+}
+
+"(a(?<=\\1COUNT))b" input="ab"
+{
+  "matches": [
+    "ab",
+    "a"
+  ],
+  "index": 0,
+  "indices": [
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      1
+    ]
+  ],
+  "lastIndex": 0
+}
+
+"(?<=\\1COUNT)(a)" input="qa"
+{
+  "matches": [
+    "a",
+    "a"
+  ],
+  "index": 1,
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      2
+    ]
+  ],
+  "lastIndex": 0
+}

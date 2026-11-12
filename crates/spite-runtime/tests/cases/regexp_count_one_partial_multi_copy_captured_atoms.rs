@@ -34,41 +34,35 @@ fn count_one_partial_multi_copy_captured_atoms_result_snapshot() {
         let flags = JsString::from(flags);
         let input = JsString::from(text);
         let program = format!(
-            "let r=new RegExp({source:?},{flags:?}),a=r.exec({input:?});JSON.stringify(a===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...a],index:a.index,input:a.input,groups:a.groups,indices:a.indices,indicesGroups:a.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({source:?}, {flags:?}),
+                    a = r.exec({input:?});
+                JSON.stringify(a === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...a],
+                    index: a.index,
+                    input: a.input,
+                    groups: a.groups,
+                    indices: a.indices,
+                    indicesGroups: a.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&program).unwrap() else {
             panic!("expected JSON")
         };
         writeln!(
             rows,
-            "{source:?} flags={flags:?} input={input:?} {result:?}"
+            "{source:?} flags={flags:?} input={input:?}\n{result}\n",
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
     }
-    insta::assert_snapshot!(rows, @r#"
-        "(?<=a(?=(b)(\u005c1(\u005c1)){1}))b" flags="d" input="abbb" "{\u0022matches\u0022:[\u0022b\u0022,\u0022b\u0022,\u0022bb\u0022,\u0022b\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022abbb\u0022,\u0022indices\u0022:[[1,2],[1,2],[2,4],[3,4]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=a(?=(b)(\u005c\u005c1(\u005c\u005c1)){1}))b\u0022}"
-        "(?<=a(?=(b)((\u005c1)\u005c1){1}))b" flags="d" input="abbb" "{\u0022matches\u0022:[\u0022b\u0022,\u0022b\u0022,\u0022bb\u0022,\u0022b\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022abbb\u0022,\u0022indices\u0022:[[1,2],[1,2],[2,4],[2,3]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=a(?=(b)((\u005c\u005c1)\u005c\u005c1){1}))b\u0022}"
-        "(?<=a(?=(b)(\u005c1()\u005c1){1}))b" flags="d" input="abbb" "{\u0022matches\u0022:[\u0022b\u0022,\u0022b\u0022,\u0022bb\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022abbb\u0022,\u0022indices\u0022:[[1,2],[1,2],[2,4],[3,3]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=a(?=(b)(\u005c\u005c1()\u005c\u005c1){1}))b\u0022}"
-        "(?<=a(?=(b)(\u005c1(\u005c1)\u005c1){1}))b" flags="d" input="abbbb" "{\u0022matches\u0022:[\u0022b\u0022,\u0022b\u0022,\u0022bbb\u0022,\u0022b\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022abbbb\u0022,\u0022indices\u0022:[[1,2],[1,2],[2,5],[3,4]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=a(?=(b)(\u005c\u005c1(\u005c\u005c1)\u005c\u005c1){1}))b\u0022}"
-        "(?<=a(?=(b)(\u005c1(\u005c1\u005c1)\u005c1){1}))b" flags="d" input="abbbbb" "{\u0022matches\u0022:[\u0022b\u0022,\u0022b\u0022,\u0022bbbb\u0022,\u0022bb\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022abbbbb\u0022,\u0022indices\u0022:[[1,2],[1,2],[2,6],[3,5]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=a(?=(b)(\u005c\u005c1(\u005c\u005c1\u005c\u005c1)\u005c\u005c1){1}))b\u0022}"
-        "(?<=(\u005c3(\u005c3)){1}(a))b" flags="d" input="aaab" "{\u0022matches\u0022:[\u0022b\u0022,\u0022aa\u0022,\u0022a\u0022,\u0022a\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022aaab\u0022,\u0022indices\u0022:[[3,4],[0,2],[1,2],[2,3]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=(\u005c\u005c3(\u005c\u005c3)){1}(a))b\u0022}"
-        "(?<=((\u005c3)\u005c3){1}(a))b" flags="d" input="aaab" "{\u0022matches\u0022:[\u0022b\u0022,\u0022aa\u0022,\u0022a\u0022,\u0022a\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022aaab\u0022,\u0022indices\u0022:[[3,4],[0,2],[0,1],[2,3]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=((\u005c\u005c3)\u005c\u005c3){1}(a))b\u0022}"
-        "(?<=(\u005c3()\u005c3){1}(a))b" flags="d" input="aaab" "{\u0022matches\u0022:[\u0022b\u0022,\u0022aa\u0022,\u0022\u0022,\u0022a\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022aaab\u0022,\u0022indices\u0022:[[3,4],[0,2],[1,1],[2,3]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=(\u005c\u005c3()\u005c\u005c3){1}(a))b\u0022}"
-        "(a)(?=(\u005c1(\u005c1)){1})a" flags="d" input="aaa" "{\u0022matches\u0022:[\u0022aa\u0022,\u0022a\u0022,\u0022aa\u0022,\u0022a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022aaa\u0022,\u0022indices\u0022:[[0,2],[0,1],[1,3],[2,3]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(a)(?=(\u005c\u005c1(\u005c\u005c1)){1})a\u0022}"
-        "(a)((\u005c1(\u005c1)){1}b)+" flags="d" input="aaabaab" "{\u0022matches\u0022:[\u0022aaabaab\u0022,\u0022a\u0022,\u0022aab\u0022,\u0022aa\u0022,\u0022a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022aaabaab\u0022,\u0022indices\u0022:[[0,7],[0,1],[4,7],[4,6],[5,6]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(a)((\u005c\u005c1(\u005c\u005c1)){1}b)+\u0022}"
-        "(a)(((\u005c1)\u005c1){1}b)+" flags="d" input="aaabaab" "{\u0022matches\u0022:[\u0022aaabaab\u0022,\u0022a\u0022,\u0022aab\u0022,\u0022aa\u0022,\u0022a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022aaabaab\u0022,\u0022indices\u0022:[[0,7],[0,1],[4,7],[4,6],[4,5]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(a)(((\u005c\u005c1)\u005c\u005c1){1}b)+\u0022}"
-        "(a)((\u005c1()\u005c1){1}b)+" flags="d" input="aaabaab" "{\u0022matches\u0022:[\u0022aaabaab\u0022,\u0022a\u0022,\u0022aab\u0022,\u0022aa\u0022,\u0022\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022aaabaab\u0022,\u0022indices\u0022:[[0,7],[0,1],[4,7],[4,6],[5,5]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(a)((\u005c\u005c1()\u005c\u005c1){1}b)+\u0022}"
-        "(?=(\u005c3(\u005c3)){1}(a))a" flags="d" input="a" "{\u0022matches\u0022:[\u0022a\u0022,\u0022\u0022,\u0022\u0022,\u0022a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022a\u0022,\u0022indices\u0022:[[0,1],[0,0],[0,0],[0,1]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?=(\u005c\u005c3(\u005c\u005c3)){1}(a))a\u0022}"
-        "(?<=(a)(\u005c1(\u005c1)){1})b" flags="d" input="ab" "{\u0022matches\u0022:[\u0022b\u0022,\u0022a\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022ab\u0022,\u0022indices\u0022:[[1,2],[0,1],[1,1],[1,1]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=(a)(\u005c\u005c1(\u005c\u005c1)){1})b\u0022}"
-        "(?<=a(?!(b)(\u005c1(\u005c1)){1}))b" flags="d" input="ab" "{\u0022matches\u0022:[\u0022b\u0022,null,null,null],\u0022index\u0022:1,\u0022input\u0022:\u0022ab\u0022,\u0022indices\u0022:[[1,2],null,null,null],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=a(?!(b)(\u005c\u005c1(\u005c\u005c1)){1}))b\u0022}"
-        "(a)(?!(\u005c1(\u005c1)){1})b" flags="d" input="ab" "{\u0022matches\u0022:[\u0022ab\u0022,\u0022a\u0022,null,null],\u0022index\u0022:0,\u0022input\u0022:\u0022ab\u0022,\u0022indices\u0022:[[0,2],[0,1],null,null],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(a)(?!(\u005c\u005c1(\u005c\u005c1)){1})b\u0022}"
-        "(?<=a(?=(b)(?:(\u005c1)\u005c1){1}))b" flags="d" input="abbb" "{\u0022matches\u0022:[\u0022b\u0022,\u0022b\u0022,\u0022b\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022abbb\u0022,\u0022indices\u0022:[[1,2],[1,2],[2,3]],\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=a(?=(b)(?:(\u005c\u005c1)\u005c\u005c1){1}))b\u0022}"
-        "(?<=a(?=(?<x>b)(?<y>\u005ck<x>(?<z>\u005ck<x>)){1}))b" flags="d" input="abbb" "{\u0022matches\u0022:[\u0022b\u0022,\u0022b\u0022,\u0022bb\u0022,\u0022b\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022abbb\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022b\u0022,\u0022y\u0022:\u0022bb\u0022,\u0022z\u0022:\u0022b\u0022},\u0022indices\u0022:[[1,2],[1,2],[2,4],[3,4]],\u0022indicesGroups\u0022:{\u0022x\u0022:[1,2],\u0022y\u0022:[2,4],\u0022z\u0022:[3,4]},\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=a(?=(?<x>b)(?<y>\u005c\u005ck<x>(?<z>\u005c\u005ck<x>)){1}))b\u0022}"
-        "(?<=a(?=(?<x>b)(?<y>\u005ck<x>()\u005ck<x>){1}))b" flags="d" input="abbb" "{\u0022matches\u0022:[\u0022b\u0022,\u0022b\u0022,\u0022bb\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022abbb\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022b\u0022,\u0022y\u0022:\u0022bb\u0022},\u0022indices\u0022:[[1,2],[1,2],[2,4],[3,3]],\u0022indicesGroups\u0022:{\u0022x\u0022:[1,2],\u0022y\u0022:[2,4]},\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=a(?=(?<x>b)(?<y>\u005c\u005ck<x>()\u005c\u005ck<x>){1}))b\u0022}"
-        "(?<=(?<x>\u005ck<z>(?<y>\u005ck<z>)){1}(?<z>a))b" flags="d" input="aaab" "{\u0022matches\u0022:[\u0022b\u0022,\u0022aa\u0022,\u0022a\u0022,\u0022a\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022aaab\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022aa\u0022,\u0022y\u0022:\u0022a\u0022,\u0022z\u0022:\u0022a\u0022},\u0022indices\u0022:[[3,4],[0,2],[1,2],[2,3]],\u0022indicesGroups\u0022:{\u0022x\u0022:[0,2],\u0022y\u0022:[1,2],\u0022z\u0022:[2,3]},\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=(?<x>\u005c\u005ck<z>(?<y>\u005c\u005ck<z>)){1}(?<z>a))b\u0022}"
-        "(?<=(?<x>a)(?<y>\u005ck<x>(?<z>\u005ck<x>)){1})b" flags="d" input="ab" "{\u0022matches\u0022:[\u0022b\u0022,\u0022a\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022ab\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022a\u0022,\u0022y\u0022:\u0022\u0022,\u0022z\u0022:\u0022\u0022},\u0022indices\u0022:[[1,2],[0,1],[1,1],[1,1]],\u0022indicesGroups\u0022:{\u0022x\u0022:[0,1],\u0022y\u0022:[1,1],\u0022z\u0022:[1,1]},\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=(?<x>a)(?<y>\u005c\u005ck<x>(?<z>\u005c\u005ck<x>)){1})b\u0022}"
-        "(?<=a(?!(?<x>b)(?<y>\u005ck<x>(?<z>\u005ck<x>)){1}))b" flags="d" input="ab" "{\u0022matches\u0022:[\u0022b\u0022,null,null,null],\u0022index\u0022:1,\u0022input\u0022:\u0022ab\u0022,\u0022groups\u0022:{},\u0022indices\u0022:[[1,2],null,null,null],\u0022indicesGroups\u0022:{},\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<=a(?!(?<x>b)(?<y>\u005c\u005ck<x>(?<z>\u005c\u005ck<x>)){1}))b\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]

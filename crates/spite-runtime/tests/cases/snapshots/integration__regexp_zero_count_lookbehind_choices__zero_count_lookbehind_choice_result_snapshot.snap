@@ -1,0 +1,836 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_zero_count_lookbehind_choices.rs
+expression: rows
+---
+"(?<=(a|aa){0})b" flags="d" input="qb"
+{
+  "matches": [
+    "b",
+    null
+  ],
+  "index": 1,
+  "input": "qb",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?<=(a|aa){0})b"
+}
+
+"(?<=(a|aa){0}?)b" flags="d" input="qb"
+{
+  "matches": [
+    "b",
+    null
+  ],
+  "index": 1,
+  "input": "qb",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?<=(a|aa){0}?)b"
+}
+
+"(?<=((a)|(bb)){0})c" flags="d" input="qc"
+{
+  "matches": [
+    "c",
+    null,
+    null,
+    null
+  ],
+  "index": 1,
+  "input": "qc",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    null,
+    null,
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?<=((a)|(bb)){0})c"
+}
+
+"(?<=(a|bb|ccc){0})b" flags="d" input="qb"
+{
+  "matches": [
+    "b",
+    null
+  ],
+  "index": 1,
+  "input": "qb",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?<=(a|bb|ccc){0})b"
+}
+
+"(?<=(a|aa){0}q)b" flags="d" input="qb"
+{
+  "matches": [
+    "b",
+    null
+  ],
+  "index": 1,
+  "input": "qb",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?<=(a|aa){0}q)b"
+}
+
+"(?<=q(a|aa){0})b" flags="d" input="qb"
+{
+  "matches": [
+    "b",
+    null
+  ],
+  "index": 1,
+  "input": "qb",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?<=q(a|aa){0})b"
+}
+
+"(?<!((a|aa){0}){2}q)b" flags="d" input="xb"
+{
+  "matches": [
+    "b",
+    null,
+    null
+  ],
+  "index": 1,
+  "input": "xb",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    null,
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?<!((a|aa){0}){2}q)b"
+}
+
+"(?<!(a|aa){0})b" flags="d" input="xb"
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"(?<=((a|aa){0}))b" flags="d" input="qb"
+{
+  "matches": [
+    "b",
+    "",
+    null
+  ],
+  "index": 1,
+  "input": "qb",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      1
+    ],
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?<=((a|aa){0}))b"
+}
+
+"(?<=((a|aa){0}){2})b" flags="d" input="qb"
+{
+  "matches": [
+    "b",
+    "",
+    null
+  ],
+  "index": 1,
+  "input": "qb",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      1
+    ],
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?<=((a|aa){0}){2})b"
+}
+
+"(?<=((a|aa){0}){0,2})b" flags="d" input="qb"
+{
+  "matches": [
+    "b",
+    null,
+    null
+  ],
+  "index": 1,
+  "input": "qb",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    null,
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?<=((a|aa){0}){0,2})b"
+}
+
+"(?<=((a|aa){0})+)b" flags="d" input="qb"
+{
+  "matches": [
+    "b",
+    "",
+    null
+  ],
+  "index": 1,
+  "input": "qb",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      1
+    ],
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?<=((a|aa){0})+)b"
+}
+
+"(?<=((a|aa){0})*)b" flags="d" input="qb"
+{
+  "matches": [
+    "b",
+    null,
+    null
+  ],
+  "index": 1,
+  "input": "qb",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    null,
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?<=((a|aa){0})*)b"
+}
+
+"(?<=((a|aa){0}){2}q)b" flags="d" input="qb"
+{
+  "matches": [
+    "b",
+    "",
+    null
+  ],
+  "index": 1,
+  "input": "qb",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      0,
+      0
+    ],
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?<=((a|aa){0}){2}q)b"
+}
+
+"(?<=(a|aa){0}q|r)b" flags="d" input="qb"
+{
+  "matches": [
+    "b",
+    null
+  ],
+  "index": 1,
+  "input": "qb",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?<=(a|aa){0}q|r)b"
+}
+
+"(?<=(a|aa){0}q(?<=q))b" flags="d" input="qb"
+{
+  "matches": [
+    "b",
+    null
+  ],
+  "index": 1,
+  "input": "qb",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?<=(a|aa){0}q(?<=q))b"
+}
+
+"(?<=((a)\u005c2|b){0})c" flags="d" input="qc"
+{
+  "matches": [
+    "c",
+    null,
+    null
+  ],
+  "index": 1,
+  "input": "qc",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    null,
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?<=((a)\\2|b){0})c"
+}
+
+"(?<=(a*?b|cc){0})b" flags="d" input="qb"
+{
+  "matches": [
+    "b",
+    null
+  ],
+  "index": 1,
+  "input": "qb",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?<=(a*?b|cc){0})b"
+}
+
+"(?<=((?=a)a|b){0})c" flags="d" input="qc"
+{
+  "matches": [
+    "c",
+    null
+  ],
+  "index": 1,
+  "input": "qc",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?<=((?=a)a|b){0})c"
+}
+
+"(?<=((?<=(a))a|b){0})c" flags="d" input="qc"
+{
+  "matches": [
+    "c",
+    null,
+    null
+  ],
+  "index": 1,
+  "input": "qc",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    null,
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?<=((?<=(a))a|b){0})c"
+}
+
+"(?<=(a|aa){0})b\u005c1" flags="d" input="qb"
+{
+  "matches": [
+    "b",
+    null
+  ],
+  "index": 1,
+  "input": "qb",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?<=(a|aa){0})b\\1"
+}
+
+"(?<=((a|aa){0}){2})b\u005c1\u005c2" flags="d" input="qb"
+{
+  "matches": [
+    "b",
+    "",
+    null
+  ],
+  "index": 1,
+  "input": "qb",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      1
+    ],
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?<=((a|aa){0}){2})b\\1\\2"
+}
+
+"(?<=((a|aa){0}){2}\u00b5)\u039c" flags="di" input="\u039c\u039c"
+{
+  "matches": [
+    "Μ",
+    "",
+    null
+  ],
+  "index": 1,
+  "input": "ΜΜ",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      0,
+      0
+    ],
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?<=((a|aa){0}){2}µ)Μ"
+}
+
+"(?<=(a|aa){0}[\u005cuD800])b" flags="d" input="\ud800b"
+{
+  "matches": [
+    "b",
+    null
+  ],
+  "index": 1,
+  "input": "\ud800b",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?<=(a|aa){0}[\\uD800])b"
+}
+
+"(?<=(a|aa){0})" flags="d" input="qb"
+{
+  "matches": [
+    "",
+    null
+  ],
+  "index": 0,
+  "input": "qb",
+  "indices": [
+    [
+      0,
+      0
+    ],
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?<=(a|aa){0})"
+}
+
+"(?:(?<=((a|aa){0}){2})b|a)+c" flags="d" input="qc"
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"(?=(?<=(a|aa){0})b)b" flags="d" input="qb"
+{
+  "matches": [
+    "b",
+    null
+  ],
+  "index": 1,
+  "input": "qb",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?=(?<=(a|aa){0})b)b"
+}
+
+"((?<=((a|aa){0}){2})){2}b" flags="d" input="qb"
+{
+  "matches": [
+    "b",
+    "",
+    "",
+    null
+  ],
+  "index": 1,
+  "input": "qb",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      1
+    ],
+    [
+      1,
+      1
+    ],
+    null
+  ],
+  "lastIndex": 0,
+  "source": "((?<=((a|aa){0}){2})){2}b"
+}
+
+"((a|aa){0}){2}b" flags="d" input="qb"
+{
+  "matches": [
+    "b",
+    "",
+    null
+  ],
+  "index": 1,
+  "input": "qb",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      1
+    ],
+    null
+  ],
+  "lastIndex": 0,
+  "source": "((a|aa){0}){2}b"
+}
+
+"((a|aa){0})*b" flags="d" input="qb"
+{
+  "matches": [
+    "b",
+    null,
+    null
+  ],
+  "index": 1,
+  "input": "qb",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    null,
+    null
+  ],
+  "lastIndex": 0,
+  "source": "((a|aa){0})*b"
+}
+
+"(?:(a|aa){0}){2}b" flags="d" input="qb"
+{
+  "matches": [
+    "b",
+    null
+  ],
+  "index": 1,
+  "input": "qb",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?:(a|aa){0}){2}b"
+}
+
+"(a)(?<=(a\u005c1|bb){0})b\u005c1" flags="d" input="aba"
+{
+  "matches": [
+    "aba",
+    "a",
+    null
+  ],
+  "index": 0,
+  "input": "aba",
+  "indices": [
+    [
+      0,
+      3
+    ],
+    [
+      0,
+      1
+    ],
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(a)(?<=(a\\1|bb){0})b\\1"
+}
+
+"(?<=(?:(?<x>a)|(?<x>bb)){0})b\u005ck<x>" flags="d" input="qb"
+{
+  "matches": [
+    "b",
+    null,
+    null
+  ],
+  "index": 1,
+  "input": "qb",
+  "groups": {},
+  "indices": [
+    [
+      1,
+      2
+    ],
+    null,
+    null
+  ],
+  "indicesGroups": {},
+  "lastIndex": 0,
+  "source": "(?<=(?:(?<x>a)|(?<x>bb)){0})b\\k<x>"
+}
+
+"(?<=((?:(?<x>a)|(?<x>bb)){0}){2})b\u005ck<x>" flags="d" input="qb"
+{
+  "matches": [
+    "b",
+    "",
+    null,
+    null
+  ],
+  "index": 1,
+  "input": "qb",
+  "groups": {},
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      1
+    ],
+    null,
+    null
+  ],
+  "indicesGroups": {},
+  "lastIndex": 0,
+  "source": "(?<=((?:(?<x>a)|(?<x>bb)){0}){2})b\\k<x>"
+}
+
+"(?<=((?:(?<x>a)|(?<x>bb)){0})*)b\u005ck<x>" flags="d" input="qb"
+{
+  "matches": [
+    "b",
+    null,
+    null,
+    null
+  ],
+  "index": 1,
+  "input": "qb",
+  "groups": {},
+  "indices": [
+    [
+      1,
+      2
+    ],
+    null,
+    null,
+    null
+  ],
+  "indicesGroups": {},
+  "lastIndex": 0,
+  "source": "(?<=((?:(?<x>a)|(?<x>bb)){0})*)b\\k<x>"
+}
+
+"(?<=(?:(?<x>a)\u005ck<x>|(?<x>bb)\u005ck<x>){0})b\u005ck<x>" flags="d" input="qb"
+{
+  "matches": [
+    "b",
+    null,
+    null
+  ],
+  "index": 1,
+  "input": "qb",
+  "groups": {},
+  "indices": [
+    [
+      1,
+      2
+    ],
+    null,
+    null
+  ],
+  "indicesGroups": {},
+  "lastIndex": 0,
+  "source": "(?<=(?:(?<x>a)\\k<x>|(?<x>bb)\\k<x>){0})b\\k<x>"
+}
+
+"(?<x>a)(?<=(a\u005ck<x>|bb){0})b\u005ck<x>" flags="d" input="aba"
+{
+  "matches": [
+    "aba",
+    "a",
+    null
+  ],
+  "index": 0,
+  "input": "aba",
+  "groups": {
+    "x": "a"
+  },
+  "indices": [
+    [
+      0,
+      3
+    ],
+    [
+      0,
+      1
+    ],
+    null
+  ],
+  "indicesGroups": {
+    "x": [
+      0,
+      1
+    ]
+  },
+  "lastIndex": 0,
+  "source": "(?<x>a)(?<=(a\\k<x>|bb){0})b\\k<x>"
+}
+
+"(?<!((?:(?<x>a)|(?<x>bb)){0}){2}q)b" flags="d" input="xb"
+{
+  "matches": [
+    "b",
+    null,
+    null,
+    null
+  ],
+  "index": 1,
+  "input": "xb",
+  "groups": {},
+  "indices": [
+    [
+      1,
+      2
+    ],
+    null,
+    null,
+    null
+  ],
+  "indicesGroups": {},
+  "lastIndex": 0,
+  "source": "(?<!((?:(?<x>a)|(?<x>bb)){0}){2}q)b"
+}
+
+"((?:(?<x>a)|(?<x>bb)){0}){2}b\u005ck<x>" flags="d" input="qb"
+{
+  "matches": [
+    "b",
+    "",
+    null,
+    null
+  ],
+  "index": 1,
+  "input": "qb",
+  "groups": {},
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      1
+    ],
+    null,
+    null
+  ],
+  "indicesGroups": {},
+  "lastIndex": 0,
+  "source": "((?:(?<x>a)|(?<x>bb)){0}){2}b\\k<x>"
+}

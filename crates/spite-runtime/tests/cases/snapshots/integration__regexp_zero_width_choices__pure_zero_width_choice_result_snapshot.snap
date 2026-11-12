@@ -1,0 +1,769 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_zero_width_choices.rs
+expression: rows
+---
+"(|){2}a" flags="d" input="qa"
+{
+  "matches": [
+    "a",
+    ""
+  ],
+  "index": 1,
+  "input": "qa",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      1
+    ]
+  ],
+  "lastIndex": 0,
+  "source": "(|){2}a"
+}
+
+"(|){0}a" flags="d" input="qa"
+{
+  "matches": [
+    "a",
+    null
+  ],
+  "index": 1,
+  "input": "qa",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(|){0}a"
+}
+
+"(?:|){2}a" flags="d" input="qa"
+{
+  "matches": [
+    "a"
+  ],
+  "index": 1,
+  "input": "qa",
+  "indices": [
+    [
+      1,
+      2
+    ]
+  ],
+  "lastIndex": 0,
+  "source": "(?:|){2}a"
+}
+
+"(?:|)+" flags="d" input="a"
+{
+  "matches": [
+    ""
+  ],
+  "index": 0,
+  "input": "a",
+  "indices": [
+    [
+      0,
+      0
+    ]
+  ],
+  "lastIndex": 0,
+  "source": "(?:|)+"
+}
+
+"(()|()){2}a" flags="d" input="qa"
+{
+  "matches": [
+    "a",
+    "",
+    "",
+    null
+  ],
+  "index": 1,
+  "input": "qa",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      1
+    ],
+    [
+      1,
+      1
+    ],
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(()|()){2}a"
+}
+
+"(()|())*a" flags="d" input="qa"
+{
+  "matches": [
+    "a",
+    null,
+    null,
+    null
+  ],
+  "index": 1,
+  "input": "qa",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    null,
+    null,
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(()|())*a"
+}
+
+"(()|())+?a" flags="d" input="qa"
+{
+  "matches": [
+    "a",
+    "",
+    "",
+    null
+  ],
+  "index": 1,
+  "input": "qa",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      1
+    ],
+    [
+      1,
+      1
+    ],
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(()|())+?a"
+}
+
+"(^|$){2}a" flags="d" input="qa"
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"(^|$)?a" flags="d" input="qa"
+{
+  "matches": [
+    "a",
+    null
+  ],
+  "index": 1,
+  "input": "qa",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(^|$)?a"
+}
+
+"(^|$){1,3}?a" flags="dm" input="q\u000aa"
+{
+  "matches": [
+    "a",
+    ""
+  ],
+  "index": 2,
+  "input": "q\na",
+  "indices": [
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      2
+    ]
+  ],
+  "lastIndex": 0,
+  "source": "(^|$){1,3}?a"
+}
+
+"(\u005cb|\u005cB)+a" flags="d" input="qa"
+{
+  "matches": [
+    "a",
+    ""
+  ],
+  "index": 1,
+  "input": "qa",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      1
+    ]
+  ],
+  "lastIndex": 0,
+  "source": "(\\b|\\B)+a"
+}
+
+"(($)|(^)){2}a" flags="d" input="a"
+{
+  "matches": [
+    "a",
+    "",
+    null,
+    ""
+  ],
+  "index": 0,
+  "input": "a",
+  "indices": [
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      0
+    ],
+    null,
+    [
+      0,
+      0
+    ]
+  ],
+  "lastIndex": 0,
+  "source": "(($)|(^)){2}a"
+}
+
+"((^)|()){2}a" flags="d" input="qa"
+{
+  "matches": [
+    "a",
+    "",
+    null,
+    ""
+  ],
+  "index": 1,
+  "input": "qa",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      1
+    ],
+    null,
+    [
+      1,
+      1
+    ]
+  ],
+  "lastIndex": 0,
+  "source": "((^)|()){2}a"
+}
+
+"(?:(^)|(\u005cb)){2}a" flags="d" input=" a"
+{
+  "matches": [
+    "a",
+    null,
+    ""
+  ],
+  "index": 1,
+  "input": " a",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    null,
+    [
+      1,
+      1
+    ]
+  ],
+  "lastIndex": 0,
+  "source": "(?:(^)|(\\b)){2}a"
+}
+
+"(?:(^)(\u005cB)|(\u005cb)){2}a" flags="d" input="a"
+{
+  "matches": [
+    "a",
+    null,
+    null,
+    ""
+  ],
+  "index": 0,
+  "input": "a",
+  "indices": [
+    [
+      0,
+      1
+    ],
+    null,
+    null,
+    [
+      0,
+      0
+    ]
+  ],
+  "lastIndex": 0,
+  "source": "(?:(^)(\\B)|(\\b)){2}a"
+}
+
+"((())|(())){2}a" flags="d" input="qa"
+{
+  "matches": [
+    "a",
+    "",
+    "",
+    "",
+    null,
+    null
+  ],
+  "index": 1,
+  "input": "qa",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      1
+    ],
+    [
+      1,
+      1
+    ],
+    [
+      1,
+      1
+    ],
+    null,
+    null
+  ],
+  "lastIndex": 0,
+  "source": "((())|(())){2}a"
+}
+
+"(?:(^)|($)){2}a\u005c1\u005c2" flags="d" input="a"
+{
+  "matches": [
+    "a",
+    "",
+    null
+  ],
+  "index": 0,
+  "input": "a",
+  "indices": [
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      0
+    ],
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?:(^)|($)){2}a\\1\\2"
+}
+
+"(?:(^)|()){1,4}?a" flags="d" input="qa"
+{
+  "matches": [
+    "a",
+    null,
+    ""
+  ],
+  "index": 1,
+  "input": "qa",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    null,
+    [
+      1,
+      1
+    ]
+  ],
+  "lastIndex": 0,
+  "source": "(?:(^)|()){1,4}?a"
+}
+
+"(?:()|()){2}a\u005c1\u005c2" flags="d" input="qa"
+{
+  "matches": [
+    "a",
+    "",
+    null
+  ],
+  "index": 1,
+  "input": "qa",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      1
+    ],
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?:()|()){2}a\\1\\2"
+}
+
+"(?:()|())*a\u005c1\u005c2" flags="d" input="qa"
+{
+  "matches": [
+    "a",
+    null,
+    null
+  ],
+  "index": 1,
+  "input": "qa",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    null,
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?:()|())*a\\1\\2"
+}
+
+"(?:(?:()|()){2}){3}a" flags="d" input="qa"
+{
+  "matches": [
+    "a",
+    "",
+    null
+  ],
+  "index": 1,
+  "input": "qa",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      1
+    ],
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?:(?:()|()){2}){3}a"
+}
+
+"(?:(?:()|())?){2}a" flags="d" input="qa"
+{
+  "matches": [
+    "a",
+    null,
+    null
+  ],
+  "index": 1,
+  "input": "qa",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    null,
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?:(?:()|())?){2}a"
+}
+
+"(?:(?:()|()){2}a|b)+c" flags="d" input="aabbc"
+{
+  "matches": [
+    "aabbc",
+    null,
+    null
+  ],
+  "index": 0,
+  "input": "aabbc",
+  "indices": [
+    [
+      0,
+      5
+    ],
+    null,
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?:(?:()|()){2}a|b)+c"
+}
+
+"(?:(?:()|())?a|b)+c" flags="d" input="aabbc"
+{
+  "matches": [
+    "aabbc",
+    null,
+    null
+  ],
+  "index": 0,
+  "input": "aabbc",
+  "indices": [
+    [
+      0,
+      5
+    ],
+    null,
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?:(?:()|())?a|b)+c"
+}
+
+"(?<=(a))(?:()|()){2}b" flags="d" input="ab"
+{
+  "matches": [
+    "b",
+    "a",
+    "",
+    null
+  ],
+  "index": 1,
+  "input": "ab",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      1
+    ],
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?<=(a))(?:()|()){2}b"
+}
+
+"(?:(?<=a)|^){2}b" flags="d" input="ab"
+{
+  "matches": [
+    "b"
+  ],
+  "index": 1,
+  "input": "ab",
+  "indices": [
+    [
+      1,
+      2
+    ]
+  ],
+  "lastIndex": 0,
+  "source": "(?:(?<=a)|^){2}b"
+}
+
+"(?!(?:()|()){2}q)a" flags="d" input="a"
+{
+  "matches": [
+    "a",
+    null,
+    null
+  ],
+  "index": 0,
+  "input": "a",
+  "indices": [
+    [
+      0,
+      1
+    ],
+    null,
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?!(?:()|()){2}q)a"
+}
+
+"(?=(?:()|()){2}a)a" flags="d" input="a"
+{
+  "matches": [
+    "a",
+    "",
+    null
+  ],
+  "index": 0,
+  "input": "a",
+  "indices": [
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      0
+    ],
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?=(?:()|()){2}a)a"
+}
+
+"(?:()|()){2}\u00b5\u039c" flags="di" input="\u039c\u039c"
+{
+  "matches": [
+    "ΜΜ",
+    "",
+    null
+  ],
+  "index": 0,
+  "input": "ΜΜ",
+  "indices": [
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      0
+    ],
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?:()|()){2}µΜ"
+}
+
+"((?:|){2})a" flags="d" input="qa"
+{
+  "matches": [
+    "a",
+    ""
+  ],
+  "index": 1,
+  "input": "qa",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      1
+    ]
+  ],
+  "lastIndex": 0,
+  "source": "((?:|){2})a"
+}
+
+"(?:(?<x>)|(?<x>)){2}a\u005ck<x>" flags="d" input="qa"
+{
+  "matches": [
+    "a",
+    "",
+    null
+  ],
+  "index": 1,
+  "input": "qa",
+  "groups": {
+    "x": ""
+  },
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      1
+    ],
+    null
+  ],
+  "indicesGroups": {
+    "x": [
+      1,
+      1
+    ]
+  },
+  "lastIndex": 0,
+  "source": "(?:(?<x>)|(?<x>)){2}a\\k<x>"
+}
+
+"(?:(?<x>)|(?<x>))*a\u005ck<x>" flags="d" input="qa"
+{
+  "matches": [
+    "a",
+    null,
+    null
+  ],
+  "index": 1,
+  "input": "qa",
+  "groups": {},
+  "indices": [
+    [
+      1,
+      2
+    ],
+    null,
+    null
+  ],
+  "indicesGroups": {},
+  "lastIndex": 0,
+  "source": "(?:(?<x>)|(?<x>))*a\\k<x>"
+}
+
+"(?:()|()){2}[\u005cuD800]b" flags="d" input="\ud800b"
+{
+  "matches": [
+    "\ud800b",
+    "",
+    null
+  ],
+  "index": 0,
+  "input": "\ud800b",
+  "indices": [
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      0
+    ],
+    null
+  ],
+  "lastIndex": 0,
+  "source": "(?:()|()){2}[\\uD800]b"
+}
