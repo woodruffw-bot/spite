@@ -76,8 +76,9 @@ fn unicode_repeated_atom_shared_alternative_assertions_counts_and_scopes() {
         assert_true(&format!(
             r#"
                 let m = /(\b(a|b))+/{mode}.exec('aaa');
-                m[0] === 'a' && m[1] === 'a' && m[2] === 'a' && m.index === 0 && /(a|b)+/{mode}.exec(
-                    'aaa')[0] === 'aaa'
+                m[0] === 'a' && m[1] === 'a' && m[2] === 'a' && m.index === 0 && /(a|b)+/{mode}
+                    .exec(
+                        'aaa')[0] === 'aaa'
             "#
         ));
         assert_true(&format!(

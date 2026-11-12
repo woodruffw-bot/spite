@@ -244,11 +244,28 @@ fn lastindex_is_copied_with_tolength_and_strict_write_before_iteration() {
         ));
     }
     assert_true(
-        r"
-            let fake={},r={flags:'',constructor:{[Symbol.species]:function(){return fake;}}},ok=false;
-            Object.defineProperty(fake,'lastIndex',{value:0,writable:false});
-            try{RegExp.prototype[Symbol.matchAll].call(r,'');}catch(e){ok=e instanceof TypeError;}ok
-        ",
+        r#"
+            let fake = {},
+                r = {
+                    flags: '',
+                    constructor: {
+                        [Symbol.species]: function() {
+                            return fake;
+                        }
+                    }
+                },
+                ok = false;
+            Object.defineProperty(fake, 'lastIndex', {
+                value: 0,
+                writable: false
+            });
+            try {
+                RegExp.prototype[Symbol.matchAll].call(r, '');
+            } catch (e) {
+                ok = e instanceof TypeError;
+            }
+            ok
+        "#,
     );
 }
 
@@ -859,10 +876,28 @@ fn iterator_prototypes_results_and_brands_have_the_standard_descriptors() {
         ));
     }
     assert_true(
-        r"
-        let r={flags:'',constructor:{[Symbol.species]:function(){return {exec(){return null;}};}}},i=RegExp.prototype[Symbol.matchAll].call(r,''),ok=false;
-        try{Reflect.construct(function(){},[],i.next);}catch(e){ok=e instanceof TypeError;}ok
-    ",
+        r#"
+            let r = {
+                    flags: '',
+                    constructor: {
+                        [Symbol.species]: function() {
+                            return {
+                                exec() {
+                                    return null;
+                                }
+                            };
+                        }
+                    }
+                },
+                i = RegExp.prototype[Symbol.matchAll].call(r, ''),
+                ok = false;
+            try {
+                Reflect.construct(function() {}, [], i.next);
+            } catch (e) {
+                ok = e instanceof TypeError;
+            }
+            ok
+        "#,
     );
 }
 

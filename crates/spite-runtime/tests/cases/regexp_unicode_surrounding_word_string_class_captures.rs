@@ -174,36 +174,102 @@ fn surrounding_word_string_class_layouts_keep_success_empty_and_conflicting_rang
 }
 #[test]
 fn surrounding_word_string_class_values_conflicts_and_consumers_preserve_original_state() {
+    let expected_serialized_output = JsString::from(concat!(
+        r#"[[false,"aaaaaa","#,
+        r#"{"values":["aaaaaa","a","a","","a",""],"#,
+        r#""indices":[[0,6],[5,6],[5,6],[5,5],[5,6],[6,6]],"index":0},6],"#,
+        r#"[false,"ababa","#,
+        r#"{"values":["ababa","a","a","","a",""],"#,
+        r#""indices":[[0,5],[4,5],[4,5],[4,4],[4,5],[5,5]],"index":0},5],"#,
+        r#"[false,"\nab\n","#,
+        r#"{"values":["ab","ab","ab","","ab",""],"#,
+        r#""indices":[[1,3],[1,3],[1,3],[1,1],[1,3],[3,3]],"index":1},3],[false,"",null,0],"#,
+        r#"[true,"aaaaaa","#,
+        r#"{"values":["aaaaaa","a","a","","a",""],"#,
+        r#""indices":[[0,6],[5,6],[5,6],[5,5],[5,6],[6,6]],"index":0},6],"#,
+        r#"[true,"ababa","#,
+        r#"{"values":["ababa","a","a","","a",""],"#,
+        r#""indices":[[0,5],[4,5],[4,5],[4,4],[4,5],[5,5]],"index":0},5],"#,
+        r#"[true,"\nab\n","#,
+        r#"{"values":["ab","ab","ab","","ab",""],"#,
+        r#""indices":[[1,3],[1,3],[1,3],[1,1],[1,3],[3,3]],"index":1},3],[true,"",null,0]]"#,
+    ));
+
     assert_true(
-        r"var m=/\b((^()([\q{a|ab}])()$))\b/dv.exec('ab');m[0]==='ab'&&m[1]==='ab'&&m[2]==='ab'&&m[3]===''&&m[4]==='ab'&&m[5]===''&&m.indices[5][0]===2",
+        r#"
+            var m = /\b((^()([\q{a|ab}])()$))\b/dv.exec('ab');
+            m[0] === 'ab' && m[1] === 'ab' && m[2] === 'ab' && m[3] === '' && m[4] === 'ab' && m[5] ===
+                '' && m.indices[5][0] === 2
+        "#,
     );
     assert_true(
-        r"var r=/\b((\B()([\q{|a|ab}])()))/dvg;r.lastIndex=1;var m=r.exec('ab!');m===null&&r.lastIndex===0&&r.source==='\\b((\\B()([\\q{|a|ab}])()))'",
+        r#"
+            var r = /\b((\B()([\q{|a|ab}])()))/dvg;
+            r.lastIndex = 1;
+            var m = r.exec('ab!');
+            m === null && r.lastIndex === 0 && r.source === '\\b((\\B()([\\q{|a|ab}])()))'
+        "#,
     );
     assert_true(
         r"var r=/\b((\B()([\q{|a|ab}])()))/v;r.lastIndex=9;r.exec('ab')===null&&r.lastIndex===9",
     );
     assert_true(r"/((()([\q{|a|ab}])()\b))\B/dv.exec('ab')===null");
     assert_true(
-        r"var m=/\B((^()([\q{}])()$))\B/dv.exec('');m.length===6&&m[0]===''&&m[1]===''&&m[2]===''&&m[3]===''&&m[4]===''&&m[5]===''&&m.indices[2][0]===0",
+        r#"
+            var m = /\B((^()([\q{}])()$))\B/dv.exec('');
+            m.length === 6 && m[0] === '' && m[1] === '' && m[2] === '' && m[3] === '' && m[4] === '' && m[
+                5] === '' && m.indices[2][0] === 0
+        "#,
     );
     assert_true(
-        r"var m=/\b((\b()([\q{a|ab}])()\B))\B/dv.exec('ab!');m[0]==='a'&&m[1]==='a'&&m[4]==='a'&&m.indices[5][0]===1",
+        r#"
+            var m = /\b((\b()([\q{a|ab}])()\B))\B/dv.exec('ab!');
+            m[0] === 'a' && m[1] === 'a' && m[4] === 'a' && m.indices[5][0] === 1
+        "#,
     );
     assert_true(
-        r"var r=/\B((^()([\q{😀|😀a}])()$))\b/dvgy;r.lastIndex=1;var m=r.exec('😀a');m.index===0&&m[1]==='😀a'&&m[4]==='😀a'&&m.indices[5][0]===3&&r.lastIndex===3",
+        r#"
+            var r = /\B((^()([\q{😀|😀a}])()$))\b/dvgy;
+            r.lastIndex = 1;
+            var m = r.exec('😀a');
+            m.index === 0 && m[1] === '😀a' && m[4] === '😀a' && m.indices[5][0] === 3 && r.lastIndex === 3
+        "#,
     );
     assert_true(
-        r"var m=/\b(?<\u{1D49C}>(?:^()(?<part>[\q{s|sa|k|ka}])()$))\b/dvi.exec('ſa');m.groups.𝒜==='ſa'&&m.groups.part==='ſa'&&Object.keys(m.groups).join(',')==='𝒜,part'&&m.indices.groups.𝒜[1]===2",
+        r#"
+            var m = /\b(?<\u{1D49C}>(?:^()(?<part>[\q{s|sa|k|ka}])()$))\b/dvi.exec('ſa');
+            m.groups.𝒜 === 'ſa' && m.groups.part === 'ſa' && Object.keys(m.groups).join(',') ===
+                '𝒜,part' && m.indices.groups.𝒜[1] === 2
+        "#,
     );
     assert_true(
-        r"var r=/\b((^(?<before>)(?<part>[\q{a|ab}])(?<after>)$))\b/dvgm;var a=Array.from('ab\na\n!'.matchAll(r));a.length===2&&a.every(m=>m[1]===m[0]&&m[2]===m[0]&&m.groups.part===m[0]&&m.groups.before===''&&m.groups.after==='')&&a[1].indices[2][1]===4&&r.lastIndex===0",
+        r#"
+            var r = /\b((^(?<before>)(?<part>[\q{a|ab}])(?<after>)$))\b/dvgm;
+            var a = Array.from('ab\na\n!'.matchAll(r));
+            a.length === 2 && a.every(m => m[1] === m[0] && m[2] === m[0] && m.groups.part === m[0] && m
+                    .groups.before === '' && m.groups.after === '') && a[1].indices[2][1] === 4 && r
+                .lastIndex === 0
+        "#,
     );
     assert_true(
-        r"var calls=0;var out='ab\na\n!'.replace(/\b((^(?<before>)(?<part>[\q{a|ab}])(?<after>)$))\b/vgm,function(all,one,two,b,p,a,offset,input,groups){calls++;return arguments.length===9&&all===one&&one===two&&all===p&&b===''&&a===''&&groups.part===p&&input==='ab\na\n!'?'#':'bad'});out==='#\n#\n!'&&calls===2",
+        r#"
+            var calls = 0;
+            var out = 'ab\na\n!'.replace(/\b((^(?<before>)(?<part>[\q{a|ab}])(?<after>)$))\b/vgm, function(
+                all, one, two, b, p, a, offset, input, groups) {
+                calls++;
+                return arguments.length === 9 && all === one && one === two && all === p && b ===
+                    '' && a === '' && groups.part === p && input === 'ab\na\n!' ? '#' : 'bad'
+            });
+            out === '#\n#\n!' && calls === 2
+        "#,
     );
     assert_true(
-        r"var r=/\b((\B()([\q{|a|ab}])()))/vg;r.lastIndex=9;'ab'.search(r)===-1&&r.lastIndex===9&&Array.from('ab'.matchAll(r)).length===0&&'ab'.replace(r,'bad')==='ab'&&'ab'.split(r).length===1",
+        r#"
+            var r = /\b((\B()([\q{|a|ab}])()))/vg;
+            r.lastIndex = 9;
+            'ab'.search(r) === -1 && r.lastIndex === 9 && Array.from('ab'.matchAll(r)).length === 0 && 'ab'
+                .replace(r, 'bad') === 'ab' && 'ab'.split(r).length === 1
+        "#,
     );
     let mut realm = Realm::default();
     realm.eval(r"var r=/\b(?<enclosing>(?:^()(?<part>[\q{|a|ab}])()$))\b/dvg,clone=new RegExp(r),m=r.exec('ab')").unwrap();
@@ -213,22 +279,102 @@ fn surrounding_word_string_class_values_conflicts_and_consumers_preserve_origina
         r"var marker=0,m;try{m=/\b((\B()([\q{|a|ab}])()))/dv.exec('ab')}finally{marker=3}marker===3&&m===null",
     );
     assert_true(
-        r"var marker=0,m;try{m=/\b()[\q{a|ab}]|()/dv.exec('ab!')}finally{marker=3}var e=/\b()[\q{a|ab}]|()/dv.exec('!ab');marker===3&&m[0]==='ab'&&m[1]===''&&m[2]===undefined&&e[0]===''&&e[1]===undefined&&e[2]===''&&e.index===0",
+        r#"
+            var marker = 0,
+                m;
+            try {
+                m = /\b()[\q{a|ab}]|()/dv.exec('ab!')
+            } finally {
+                marker = 3
+            }
+            var e = /\b()[\q{a|ab}]|()/dv.exec('!ab');
+            marker === 3 && m[0] === 'ab' && m[1] === '' && m[2] === undefined && e[0] === '' && e[1] ===
+                undefined && e[2] === '' && e.index === 0
+        "#,
     );
     assert_true(
-        r"var marker=0,m;try{m=/\b((()[\q{a|ab}]|()))/dv.exec('ab!')}finally{marker=3}var e=/\b((()[\q{a|ab}]|()))/dv.exec('z');marker===3&&m.length===5&&m[0]==='ab'&&m[1]==='ab'&&m[2]==='ab'&&m[3]===''&&m[4]===undefined&&e[0]===''&&e[1]===''&&e[2]===''&&e[3]===undefined&&e[4]===''&&e.indices[4][0]===0",
+        r#"
+            var marker = 0,
+                m;
+            try {
+                m = /\b((()[\q{a|ab}]|()))/dv.exec('ab!')
+            } finally {
+                marker = 3
+            }
+            var e = /\b((()[\q{a|ab}]|()))/dv.exec('z');
+            marker === 3 && m.length === 5 && m[0] === 'ab' && m[1] === 'ab' && m[2] === 'ab' && m[3] ===
+                '' && m[4] === undefined && e[0] === '' && e[1] === '' && e[2] === '' && e[3] ===
+                undefined && e[4] === '' && e.indices[4][0] === 0
+        "#,
     );
+    assert_true(&format!(
+        r#"
+            var marker = 0,
+                ok = false;
+            try {{
+                ok = (function() {{
+                    var pattern = "\\b((()([\\q{{a|ab}}])()))+",
+                        rows = [],
+                        metadata = true;
+                    for (var multi of [false, true]) {{
+                        var r = new RegExp(pattern, 'dvg' + (multi ? 'm' : ''));
+                        metadata = metadata && r.source === pattern;
+                        for (var input of ['aaaaaa', 'ababa', '\nab\n', '']) {{
+                            r.lastIndex = 0;
+                            var m = r.exec(input),
+                                result = null;
+                            if (m !== null) result = {{
+                                values: Array.from(m, v => v === undefined ? '<undefined>' :
+                                    v),
+                                indices: Array.from(m.indices, v => v === undefined ?
+                                    '<undefined>' : v),
+                                index: m.index
+                            }};
+                            rows.push([multi, input, result, r.lastIndex]);
+                        }}
+                    }}
+                    return metadata && JSON.stringify(rows) === {expected_serialized_output:?}
+                }})();
+            }} finally {{
+                marker = 3
+            }}
+            ok && marker === 3
+        "#
+    ));
     assert_true(
-        r#"var marker=0,ok=false;try{ok=(function(){var pattern="\\b((()([\\q{a|ab}])()))+",rows=[],metadata=true;
-for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
-for(var input of ['aaaaaa','ababa','\nab\n','']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
-return metadata&&JSON.stringify(rows)==="[[false,\"aaaaaa\",{\"values\":[\"aaaaaa\",\"a\",\"a\",\"\",\"a\",\"\"],\"indices\":[[0,6],[5,6],[5,6],[5,5],[5,6],[6,6]],\"index\":0},6],[false,\"ababa\",{\"values\":[\"ababa\",\"a\",\"a\",\"\",\"a\",\"\"],\"indices\":[[0,5],[4,5],[4,5],[4,4],[4,5],[5,5]],\"index\":0},5],[false,\"\\nab\\n\",{\"values\":[\"ab\",\"ab\",\"ab\",\"\",\"ab\",\"\"],\"indices\":[[1,3],[1,3],[1,3],[1,1],[1,3],[3,3]],\"index\":1},3],[false,\"\",null,0],[true,\"aaaaaa\",{\"values\":[\"aaaaaa\",\"a\",\"a\",\"\",\"a\",\"\"],\"indices\":[[0,6],[5,6],[5,6],[5,5],[5,6],[6,6]],\"index\":0},6],[true,\"ababa\",{\"values\":[\"ababa\",\"a\",\"a\",\"\",\"a\",\"\"],\"indices\":[[0,5],[4,5],[4,5],[4,4],[4,5],[5,5]],\"index\":0},5],[true,\"\\nab\\n\",{\"values\":[\"ab\",\"ab\",\"ab\",\"\",\"ab\",\"\"],\"indices\":[[1,3],[1,3],[1,3],[1,1],[1,3],[3,3]],\"index\":1},3],[true,\"\",null,0]]"})();}finally{marker=3}ok&&marker===3"#,
-    );
-    assert_true(
-        r#"var marker=0,ok=false;try{ok=(function(){var pattern="\\b((\\B()([\\q{a|ab}])+()))",rows=[],metadata=true;
-for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
-for(var input of ['aaaaaa','ababa','\nab\n','']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
-return metadata&&JSON.stringify(rows)==="[[false,\"aaaaaa\",null,0],[false,\"ababa\",null,0],[false,\"\\nab\\n\",null,0],[false,\"\",null,0],[true,\"aaaaaa\",null,0],[true,\"ababa\",null,0],[true,\"\\nab\\n\",null,0],[true,\"\",null,0]]"})();}finally{marker=3}ok&&marker===3"#,
+        r#"
+            var marker = 0,
+                ok = false;
+            try {
+                ok = (function() {
+                    var pattern = "\\b((\\B()([\\q{a|ab}])+()))",
+                        rows = [],
+                        metadata = true;
+                    for (var multi of [false, true]) {
+                        var r = new RegExp(pattern, 'dvg' + (multi ? 'm' : ''));
+                        metadata = metadata && r.source === pattern;
+                        for (var input of ['aaaaaa', 'ababa', '\nab\n', '']) {
+                            r.lastIndex = 0;
+                            var m = r.exec(input),
+                                result = null;
+                            if (m !== null) result = {
+                                values: Array.from(m, v => v === undefined ? '<undefined>' :
+                                    v),
+                                indices: Array.from(m.indices, v => v === undefined ?
+                                    '<undefined>' : v),
+                                index: m.index
+                            };
+                            rows.push([multi, input, result, r.lastIndex]);
+                        }
+                    }
+                    return metadata && JSON.stringify(rows) ===
+                        "[[false,\"aaaaaa\",null,0],[false,\"ababa\",null,0],[false,\"\\nab\\n\",null,0],[false,\"\",null,0],[true,\"aaaaaa\",null,0],[true,\"ababa\",null,0],[true,\"\\nab\\n\",null,0],[true,\"\",null,0]]"
+                })();
+            } finally {
+                marker = 3
+            }
+            ok && marker === 3
+        "#,
     );
     for pattern in [
         r"\b()[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]|()",

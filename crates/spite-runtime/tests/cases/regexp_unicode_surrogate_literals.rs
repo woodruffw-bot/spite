@@ -90,7 +90,12 @@ fn unicode_surrogate_literal_consumers_preserve_complete_input_boundaries() {
         "#,
     );
     assert_true(
-        r"let r=/\uD83D/vg;r.lastIndex=1;let m=r.exec('😀\uD83D');m.index===2&&m[0]==='\uD83D'&&r.lastIndex===3",
+        r#"
+            let r = /\uD83D/vg;
+            r.lastIndex = 1;
+            let m = r.exec('😀\uD83D');
+            m.index === 2 && m[0] === '\uD83D' && r.lastIndex === 3
+        "#,
     );
     assert_true(r"let r=/\uDE00/uy;r.lastIndex=1;r.exec('😀')===null&&r.lastIndex===0");
     assert_true(r"let r=/\uDE00/vg;r.lastIndex=1;'😀\uDE00'.search(r)===2&&r.lastIndex===1");
@@ -194,7 +199,11 @@ fn unicode_surrogate_opted_work_aborts_and_unproved_atom_joins() {
         Ok(Value::Boolean(true))
     );
     assert_true(
-        r#"let m=/(?=\uD800)/v.exec('\uD800');m!==null&&m.length===1&&m[0]===''&&m.index===0&&m.input.length===1&&m.input.charCodeAt(0)===0xd800&&m.groups===undefined"#,
+        r#"
+            let m = /(?=\uD800)/v.exec('\uD800');
+            m !== null && m.length === 1 && m[0] === '' && m.index === 0 && m.input.length === 1 && m.input
+                .charCodeAt(0) === 0xd800 && m.groups === undefined
+        "#,
     );
     for source in [
         r"/(\uD83D)(\uDE00)/u.exec('😀')",

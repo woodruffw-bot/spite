@@ -86,7 +86,10 @@ fn capture_slots_empty_participation_and_branch_order_remain_observable() {
 #[test]
 fn input_line_assertions_compose_without_reinterpreting_sticky_start() {
     assert_true(
-        r"/^^a$$/.test('a')&&/a^/.exec('a')===null&&/$a^/m.exec('a')===null&&/^\b(a+)\b$/m.exec('x\naaa\ny').index===2",
+        r#"
+            /^^a$$/.test('a') && /a^/.exec('a') === null && /$a^/m.exec('a') === null && /^\b(a+)\b$/m
+                .exec('x\naaa\ny').index === 2
+        "#,
     );
     assert_true(
         r#"

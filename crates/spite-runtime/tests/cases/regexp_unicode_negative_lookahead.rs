@@ -846,7 +846,8 @@ fn variable_q_classes_keep_empty_outside_captures_and_named_undefined_operand_sl
                     var m = r.exec(row[1]);
                     ok = ok && m.index === row[2] && m[0] === '' && m.groups.outside === '' && m.groups
                         .run === undefined && Object.hasOwn(m.groups, 'run') && m.indices.groups.outside[
-                        0] === row[2] && m.indices.groups.outside[1] === row[2] && m.indices.groups.run ===
+                            0] === row[2] && m.indices.groups.outside[1] === row[2] && m.indices.groups
+                        .run ===
                         undefined && Object.hasOwn(m.indices.groups, 'run') && r.lastIndex === row[2] && r
                         .source === source;
                     var copy = new RegExp(r);
@@ -938,7 +939,8 @@ fn word_variable_q_class_negation_keeps_endpoint_retries_and_named_undefined_slo
                     var m = r.exec(row[1]);
                     ok = ok && m.index === row[2] && m[0] === '' && m.groups.outside === '' && m.groups
                         .run === undefined && Object.hasOwn(m.groups, 'run') && m.indices.groups.outside[
-                        0] === row[2] && m.indices.groups.outside[1] === row[2] && m.indices.groups.run ===
+                            0] === row[2] && m.indices.groups.outside[1] === row[2] && m.indices.groups
+                        .run ===
                         undefined && Object.hasOwn(m.indices.groups, 'run') && r.lastIndex === row[2] && r
                         .source === source;
                     var copy = new RegExp(r);
@@ -1027,7 +1029,8 @@ fn negative_q_union_classes_keep_empty_outside_captures_and_named_undefined_oper
                     var m = r.exec(row[1]);
                     ok = ok && m.index === row[2] && m[0] === '' && m.groups.outside === '' && m.groups
                         .run === undefined && Object.hasOwn(m.groups, 'run') && m.indices.groups.outside[
-                        0] === row[2] && m.indices.groups.outside[1] === row[2] && m.indices.groups.run ===
+                            0] === row[2] && m.indices.groups.outside[1] === row[2] && m.indices.groups
+                        .run ===
                         undefined && Object.hasOwn(m.indices.groups, 'run') && r.lastIndex === row[2] && r
                         .source === source;
                     var copy = new RegExp(r);
@@ -1119,7 +1122,8 @@ fn negative_word_q_union_class_negation_keeps_endpoint_retries_and_named_undefin
                     var m = r.exec(row[1]);
                     ok = ok && m.index === row[2] && m[0] === '' && m.groups.outside === '' && m.groups
                         .run === undefined && Object.hasOwn(m.groups, 'run') && m.indices.groups.outside[
-                        0] === row[2] && m.indices.groups.outside[1] === row[2] && m.indices.groups.run ===
+                            0] === row[2] && m.indices.groups.outside[1] === row[2] && m.indices.groups
+                        .run ===
                         undefined && Object.hasOwn(m.indices.groups, 'run') && r.lastIndex === row[2] && r
                         .source === source;
                     var copy = new RegExp(r);
@@ -1210,7 +1214,8 @@ fn negative_character_union_classes_keep_empty_outside_captures_and_named_undefi
                     var m = r.exec(row[1]);
                     ok = ok && m.index === row[2] && m[0] === '' && m.groups.outside === '' && m.groups
                         .run === undefined && Object.hasOwn(m.groups, 'run') && m.indices.groups.outside[
-                        0] === row[2] && m.indices.groups.outside[1] === row[2] && m.indices.groups.run ===
+                            0] === row[2] && m.indices.groups.outside[1] === row[2] && m.indices.groups
+                        .run ===
                         undefined && Object.hasOwn(m.indices.groups, 'run') && r.lastIndex === row[2] && r
                         .source === source;
                     var copy = new RegExp(r);
@@ -1302,7 +1307,8 @@ fn negative_word_character_union_class_negation_keeps_endpoint_retries_and_named
                     var m = r.exec(row[1]);
                     ok = ok && m.index === row[2] && m[0] === '' && m.groups.outside === '' && m.groups
                         .run === undefined && Object.hasOwn(m.groups, 'run') && m.indices.groups.outside[
-                        0] === row[2] && m.indices.groups.outside[1] === row[2] && m.indices.groups.run ===
+                            0] === row[2] && m.indices.groups.outside[1] === row[2] && m.indices.groups
+                        .run ===
                         undefined && Object.hasOwn(m.indices.groups, 'run') && r.lastIndex === row[2] && r
                         .source === source;
                     var copy = new RegExp(r);

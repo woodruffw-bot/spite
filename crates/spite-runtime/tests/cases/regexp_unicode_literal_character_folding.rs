@@ -136,7 +136,10 @@ fn unicode_literal_character_folding_captures_consumers_and_original_text() {
             "#
         ));
         assert_true(&format!(
-            r"let a=[...'😀ſS'.matchAll(/(s)/di{mode}g)];a.length===2&&a[0][1]==='ſ'&&a[0].indices[1][0]===2&&a[1][1]==='S'"
+            r#"
+                let a = [...'😀ſS'.matchAll(/(s)/di{mode}g)];
+                a.length === 2 && a[0][1] === 'ſ' && a[0].indices[1][0] === 2 && a[1][1] === 'S'
+            "#
         ));
         assert_true(&format!(
             r"'ſS'.replace(/(?<x>s)/i{mode}g,'<$1:$<x>>')==='<ſ:ſ><S:S>'"
@@ -230,7 +233,11 @@ fn unicode_literal_character_folding_opted_work_and_additional_compositions() {
         Ok(Value::Boolean(true))
     );
     assert_true(
-        r#"let m=/(?=a)/iv.exec('A');m!==null&&m.length===1&&m[0]===''&&m.index===0&&m.input==='A'&&m.groups===undefined"#,
+        r#"
+            let m = /(?=a)/iv.exec('A');
+            m !== null && m.length === 1 && m[0] === '' && m.index === 0 && m.input === 'A' && m.groups ===
+                undefined
+        "#,
     );
     for source in [
         r"/(?:ab)+/iu.exec('AB')",

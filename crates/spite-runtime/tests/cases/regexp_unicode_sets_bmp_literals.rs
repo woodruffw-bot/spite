@@ -79,7 +79,13 @@ fn unicode_sets_bmp_literal_results_snapshot() {
 #[test]
 fn unicode_sets_bmp_names_lone_surrogates_and_matching_boundaries_are_exact() {
     assert_true(
-        "let r=/a/v,c=new RegExp(r),u=new RegExp(r,'u');r.unicodeSets&&!r.unicode&&r.flags==='v'&&c.unicodeSets&&!c.unicode&&u.unicode&&!u.unicodeSets&&u.exec('a')[0]==='a'",
+        r#"
+            let r = /a/v,
+                c = new RegExp(r),
+                u = new RegExp(r, 'u');
+            r.unicodeSets && !r.unicode && r.flags === 'v' && c.unicodeSets && !c.unicode && u.unicode && !
+                u.unicodeSets && u.exec('a')[0] === 'a'
+        "#,
     );
     let mut rows = String::new();
     for source in [
@@ -132,7 +138,13 @@ fn unicode_sets_bmp_names_lone_surrogates_and_matching_boundaries_are_exact() {
         r"let r=/a/vy;r.lastIndex=1;let a=r.exec('\uD800a\uDC00');a.index===1&&r.lastIndex===2",
     );
     assert_true(
-        r"let r=/(?<x>a(?<y>()))b/dvg;r.lastIndex=1;let a=r.exec('\uD83D\uDE00ab');a.index===2&&a.groups.x==='a'&&a.groups.y===''&&a.indices.groups.x===a.indices[1]&&a.indices.groups.y===a.indices[2]&&a.indices[2][0]===3",
+        r#"
+            let r = /(?<x>a(?<y>()))b/dvg;
+            r.lastIndex = 1;
+            let a = r.exec('\uD83D\uDE00ab');
+            a.index === 2 && a.groups.x === 'a' && a.groups.y === '' && a.indices.groups.x === a.indices[
+                1] && a.indices.groups.y === a.indices[2] && a.indices[2][0] === 3
+        "#,
     );
     assert_true(r"let r=/a/vy;r.lastIndex=1;r.exec('\uD83D\uDE00a')===null&&r.lastIndex===0");
     assert_true(

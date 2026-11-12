@@ -119,7 +119,8 @@ fn zero_count_lookbehind_bodies_keep_outside_names_and_undefined_owned_aliases()
                 b = /(?<=(?:(?<x>a)\k<x>){0}q|(?<x>r))b\k<x>/d.exec('rbr');
             a.groups.x === undefined && a.indices.groups.x === undefined && b[0] === 'br' && b[1] ===
                 undefined && b.groups.x === 'r' && b.indices.groups.x === b.indices[2] && b.indices[2][
-                0] === 0 && b.indices[2][1] === 1
+                    0
+                ] === 0 && b.indices[2][1] === 1
         "#,
     );
     assert_true(

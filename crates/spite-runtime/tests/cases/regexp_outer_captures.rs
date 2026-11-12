@@ -63,7 +63,11 @@ fn zero_repetitions_empty_groups_and_final_iterations_remain_distinct() {
         "#,
     );
     assert_true(
-        "let a=/((?:))/.exec('x'),b=/((a)*?())/.exec('aaa');a[1]===''&&b[1]===''&&b[2]===undefined&&b[3]===''",
+        r#"
+            let a = /((?:))/.exec('x'),
+                b = /((a)*?())/.exec('aaa');
+            a[1] === '' && b[1] === '' && b[2] === undefined && b[3] === ''
+        "#,
     );
 }
 

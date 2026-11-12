@@ -131,7 +131,8 @@ fn unicode_repeated_atom_starts_complete_captures_and_initial_pairs() {
                 r.lastIndex = 3;
                 let m = r.exec('A\n😀😀');
                 m.index === 2 && m[0] === '😀😀' && m[2] === '😀😀' && m.indices[2][0] === 2 && m.indices[2][
-                    1] === 6 && m.indices.groups.__proto__ === m.indices[1] && r.lastIndex === 6
+                    1
+                ] === 6 && m.indices.groups.__proto__ === m.indices[1] && r.lastIndex === 6
             "#
         ));
         assert_true(&format!(

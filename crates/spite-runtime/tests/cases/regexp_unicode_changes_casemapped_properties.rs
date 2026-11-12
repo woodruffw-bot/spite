@@ -99,7 +99,7 @@ fn unicode_changes_casemapped_properties_aliases_complements_and_unions() {
                     b = /\p{{CWCM}}/i{mode},
                     n = /\P{{CWCM}}/i{mode};
                 a.test('\u0061') && a.test('\u0062') && b.test('\u0061') && !a.test('\u200D') && !b.test(
-                        '\u005f') && b.test('ſ') && b.test('K') && !n.test('\u0061') && n.test(
+                    '\u005f') && b.test('ſ') && b.test('K') && !n.test('\u0061') && n.test(
                     '\uDB40\uDC01') && n.test('\uD800') && n.test('\uFEFF')
             "#
         ));
@@ -286,14 +286,21 @@ fn unicode_changes_casemapped_properties_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     assert_true(
-        r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
+        r#"
+            let m = /\p{Script_Extensions=Latin}/u.exec('A');
+            JSON.stringify(m) === '["A"]' && m.index === 0 && m.input === 'A'
+        "#,
     );
     assert_true(
         r"let m=/[\p{CWCM}&&A]/v.exec('A');m!==null&&m.length===1&&m[0]==='A'&&m.index===0&&m.input==='A'",
     );
     assert_true(r"/[\p{CWCM}--A]/v.exec('A')===null");
     assert_true(
-        r"let s=String.fromCodePoint(0x61),m=/[\p{CWCM}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+        r#"
+            let s = String.fromCodePoint(0x61),
+                m = /[\p{CWCM}--A]/v.exec(s);
+            m !== null && m.length === 1 && m[0] === s && m.index === 0 && m.input === s
+        "#,
     );
     for source in [r"/\p{CWCM}+b/u.exec('AA')", r"/\p{CWCM}A/v.exec('AA')"] {
         crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);

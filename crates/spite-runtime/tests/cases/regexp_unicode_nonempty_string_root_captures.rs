@@ -225,7 +225,8 @@ fn nonempty_word_root_consumers_callbacks_clones_and_collection_keep_variable_wi
             r.lastIndex = 9;
             var parts = 'abX'.split(r);
             'Xab'.search(r) === 0 && r.lastIndex === 9 && parts.length === 4 && parts[0] === '' && parts[
-                1] === 'ab' && parts[2] === undefined && parts[3] === 'X' && 'abXa'.match(r).join('|') ===
+                    1] === 'ab' && parts[2] === undefined && parts[3] === 'X' && 'abXa'.match(r).join(
+                '|') ===
                 'ab||a|' && 'abXa'.replace(r, '<$<part>:$<empty>>') === '<ab:><:>X<a:><:>'
         "#,
     );
@@ -246,25 +247,94 @@ fn nonempty_word_root_consumers_callbacks_clones_and_collection_keep_variable_wi
 #[test]
 fn nonempty_word_root_proofs_finish_finalizers_and_keep_other_features_separate() {
     assert_true(
-        r"var marker=0,m;try{m=/([\q{ab}&&\q{cd}])|()/dv.exec('ab')}finally{marker=3}marker===3&&m[0]===''&&m[1]===undefined&&m[2]===''&&m.indices[2][0]===0",
+        r#"
+            var marker = 0,
+                m;
+            try {
+                m = /([\q{ab}&&\q{cd}])|()/dv.exec('ab')
+            } finally {
+                marker = 3
+            }
+            marker === 3 && m[0] === '' && m[1] === undefined && m[2] === '' && m.indices[2][0] === 0
+        "#,
     );
     assert_true(
-        r"var marker=0,m;try{m=/([\q{a|ab}])|()/dv.exec('ab!')}finally{marker=3}marker===3&&m[0]==='ab'&&m[1]==='ab'&&m[2]===undefined&&m.indices[1][1]===2",
+        r#"
+            var marker = 0,
+                m;
+            try {
+                m = /([\q{a|ab}])|()/dv.exec('ab!')
+            } finally {
+                marker = 3
+            }
+            marker === 3 && m[0] === 'ab' && m[1] === 'ab' && m[2] === undefined && m.indices[1][1] === 2
+        "#,
     );
     assert_true(
-        r"var marker=0,m;try{m=/([\q{a|ab}])|()/dv.exec('!')}finally{marker=3}marker===3&&m[0]===''&&m[1]===undefined&&m[2]===''&&m.indices[2][0]===0",
+        r#"
+            var marker = 0,
+                m;
+            try {
+                m = /([\q{a|ab}])|()/dv.exec('!')
+            } finally {
+                marker = 3
+            }
+            marker === 3 && m[0] === '' && m[1] === undefined && m[2] === '' && m.indices[2][0] === 0
+        "#,
     );
     assert_true(
-        r"var marker=0,m;try{m=/([\q{|a|ab}])\b|()/dv.exec('ab!')}finally{marker=3}var e=/([\q{|a|ab}])\b|()/dv.exec('!');marker===3&&m[0]==='ab'&&m[1]==='ab'&&m[2]===undefined&&e[0]===''&&e[1]===undefined&&e[2]===''&&e.index===0",
+        r#"
+            var marker = 0,
+                m;
+            try {
+                m = /([\q{|a|ab}])\b|()/dv.exec('ab!')
+            } finally {
+                marker = 3
+            }
+            var e = /([\q{|a|ab}])\b|()/dv.exec('!');
+            marker === 3 && m[0] === 'ab' && m[1] === 'ab' && m[2] === undefined && e[0] === '' && e[1] ===
+                undefined && e[2] === '' && e.index === 0
+        "#,
     );
     assert_true(
-        r"var marker=0,m;try{m=/()|\b([\q{|ab}])/dv.exec('ab!')}finally{marker=3}marker===3&&m[0]===''&&m[1]===''&&m[2]===undefined&&m.indices[1][0]===0",
+        r#"
+            var marker = 0,
+                m;
+            try {
+                m = /()|\b([\q{|ab}])/dv.exec('ab!')
+            } finally {
+                marker = 3
+            }
+            marker === 3 && m[0] === '' && m[1] === '' && m[2] === undefined && m.indices[1][0] === 0
+        "#,
     );
     assert_true(
-        r"var marker=0,m;try{m=/^([\q{ab}])|()/dv.exec('ab!')}finally{marker=3}var e=/^([\q{ab}])|()/dv.exec('!ab');marker===3&&m[0]==='ab'&&m[1]==='ab'&&m[2]===undefined&&e[0]===''&&e[1]===undefined&&e[2]===''&&e.index===0",
+        r#"
+            var marker = 0,
+                m;
+            try {
+                m = /^([\q{ab}])|()/dv.exec('ab!')
+            } finally {
+                marker = 3
+            }
+            var e = /^([\q{ab}])|()/dv.exec('!ab');
+            marker === 3 && m[0] === 'ab' && m[1] === 'ab' && m[2] === undefined && e[0] === '' && e[1] ===
+                undefined && e[2] === '' && e.index === 0
+        "#,
     );
     assert_true(
-        r"var marker=0,m;try{m=/([\q{ab}])|()$/dv.exec('ab!')}finally{marker=3}var e=/([\q{ab}])|()$/dv.exec('!');marker===3&&m[0]==='ab'&&m[1]==='ab'&&m[2]===undefined&&e[0]===''&&e[1]===undefined&&e[2]===''&&e.index===1&&e.indices[2][0]===1",
+        r#"
+            var marker = 0,
+                m;
+            try {
+                m = /([\q{ab}])|()$/dv.exec('ab!')
+            } finally {
+                marker = 3
+            }
+            var e = /([\q{ab}])|()$/dv.exec('!');
+            marker === 3 && m[0] === 'ab' && m[1] === 'ab' && m[2] === undefined && e[0] === '' && e[1] ===
+                undefined && e[2] === '' && e.index === 1 && e.indices[2][0] === 1
+        "#,
     );
     for pattern in [
         r"([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])\b|()",
@@ -288,6 +358,16 @@ fn nonempty_word_root_proofs_finish_finalizers_and_keep_other_features_separate(
         );
     }
     assert_true(
-        "var yes=0;for(var p of ['(?<x>[a])|(?<x>)(?<x>)','[\\q{ab}&&a--a]|']){try{new RegExp(p,'v')}catch(e){if(e instanceof SyntaxError)yes++}}yes===2",
+        r#"
+            var yes = 0;
+            for (var p of ['(?<x>[a])|(?<x>)(?<x>)', '[\q{ab}&&a--a]|']) {
+                try {
+                    new RegExp(p, 'v')
+                } catch (e) {
+                    if (e instanceof SyntaxError) yes++
+                }
+            }
+            yes === 2
+        "#,
     );
 }

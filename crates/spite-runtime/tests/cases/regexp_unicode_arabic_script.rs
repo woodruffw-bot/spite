@@ -429,7 +429,8 @@ fn unicode_arabic_script_consumers_preserve_original_text() {
             r#"
                 let a = [...'ا😀Aب'.matchAll(/(?<x>\P{{sc=Arabic}})/d{mode}g)];
                 a.length === 2 && a[0][1] === '😀' && a[0].index === 1 && a[0].indices[1][1] === 3 && a[1][
-                    1] === 'A' && a[1].index === 3
+                    1
+                ] === 'A' && a[1].index === 3
             "#
         ));
         assert_true(&format!(
@@ -439,7 +440,14 @@ fn unicode_arabic_script_consumers_preserve_original_text() {
             r"'AابA'.split(/(\p{{Script=Arabic}})/{mode}).join('|')==='A|ا||ب|A'&&'A😀ا'.search(/\p{{sc=Arab}}/{mode})===3&&'ابA'.match(/\p{{Script=Arab}}/{mode}g).join('')==='اب'"
         ));
         assert_true(&format!(
-            r"let t='',x='ابAا'.replace(/(\p{{sc=Arabic}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__A_'&&t==='013'"
+            r#"
+                let t = '',
+                    x = 'ابAا'.replace(/(\p{{sc=Arabic}})/{mode}g, (m, c, p) => {{
+                        t += p;
+                        return '_'
+                    }});
+                x === '__A_' && t === '013'
+            "#
         ));
     }
 }
@@ -527,7 +535,11 @@ fn unicode_arabic_script_opted_work_and_remaining_sets() {
     assert_true(r"/[\p{sc=Arab}&&A]/v.exec('A')===null");
     assert_true(r"/[\p{sc=Arab}--A]/v.exec('A')===null");
     assert_true(
-        r"let s=String.fromCodePoint(0x600),m=/[\p{sc=Arab}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+        r#"
+            let s = String.fromCodePoint(0x600),
+                m = /[\p{sc=Arab}--A]/v.exec(s);
+            m !== null && m.length === 1 && m[0] === s && m.index === 0 && m.input === s
+        "#,
     );
     for source in [
         r"/\p{sc=Arab}+b/u.exec('AA')",

@@ -98,7 +98,8 @@ fn names_aliases_different_widths_future_imports_and_scoped_negative_slots() {
         r#"
             let a = /(?<x>a)(?<=(?<y>a\k<x>){2})b/d.exec('aaaaab');
             a.index === 4 && a.groups.y === 'aa' && a.indices.groups.y === a.indices[2] && a.indices[2][
-                0] === 1 && a.indices[2][1] === 3
+                0
+            ] === 1 && a.indices[2][1] === 3
         "#,
     );
     assert_true(

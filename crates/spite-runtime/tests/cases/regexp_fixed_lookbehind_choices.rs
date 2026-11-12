@@ -91,7 +91,8 @@ fn fixed_lookbehind_choices_partial_capture_undo_named_aliases_and_atomicity_are
         r#"
             let a = /(?<=((a)b|a(c)))d/d.exec('acd');
             a[1] === 'ac' && a[2] === undefined && a[3] === 'c' && a.indices[1][0] === 0 && a.indices[1][
-                1] === 2 && a.indices[2] === undefined && a.indices[3][0] === 1
+                1
+            ] === 2 && a.indices[2] === undefined && a.indices[3][0] === 1
         "#,
     );
     assert_true(
@@ -103,7 +104,10 @@ fn fixed_lookbehind_choices_partial_capture_undo_named_aliases_and_atomicity_are
     );
     assert_true(r"let r=/(?<=((a)|a))c\2/dy;r.lastIndex=1;r.exec('ac')===null&&r.lastIndex===0");
     assert_true(
-        r"let a=/(?<=(a|(a)))c\2/d.exec('ac');a[0]==='c'&&a[1]==='a'&&a[2]===undefined&&a.indices[2]===undefined",
+        r#"
+            let a = /(?<=(a|(a)))c\2/d.exec('ac');
+            a[0] === 'c' && a[1] === 'a' && a[2] === undefined && a.indices[2] === undefined
+        "#,
     );
     assert_true(
         r#"

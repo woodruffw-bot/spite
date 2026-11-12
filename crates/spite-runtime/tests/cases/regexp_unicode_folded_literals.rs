@@ -126,7 +126,10 @@ fn unicode_folded_literal_prefix_retries_empty_captures_and_fold_distinctions() 
         "#,
     );
     assert_true(
-        r"let m=/(())a(A)/diu.exec('aA');m[1]===''&&m[2]===''&&m[3]==='A'&&m.indices[1][0]===0&&m.indices[2][1]===0",
+        r#"
+            let m = /(())a(A)/diu.exec('aA');
+            m[1] === '' && m[2] === '' && m[3] === 'A' && m.indices[1][0] === 0 && m.indices[2][1] === 0
+        "#,
     );
     assert_true(r"let r=/(a)A(b)/iuy;r.lastIndex=0;r.exec('aaab')===null&&r.lastIndex===0");
     assert_true(
@@ -159,14 +162,15 @@ fn unicode_folded_literal_consumers_named_groups_and_original_text() {
                 let m = r.exec('\u{{10428}}ſ');
                 m[1] === '\u{{10428}}' && m[2] === 'ſ' && m[3] === '' && m.index === 0 && m.indices[1][1] ===
                     2 && m.indices[2][0] === 2 && m.indices[3][0] === 3 && m.indices.groups.x === m.indices[
-                    1] && r.lastIndex === 3
+                        1] && r.lastIndex === 3
             "#
         ));
         assert_true(&format!(
             r#"
                 let a = [...'ſKSK'.matchAll(/(?<x>s)(k)/di{mode}g)];
                 a.length === 2 && a[0][1] === 'ſ' && a[0][2] === 'K' && a[1][1] === 'S' && a[1].indices[2][
-                    1] === 4
+                    1
+                ] === 4
             "#
         ));
         assert_true(&format!(

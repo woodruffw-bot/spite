@@ -74,7 +74,7 @@ fn unicode_cased_properties_aliases_complements_and_unions() {
                     b = /\p{{Cased}}/i{mode},
                     n = /\P{{Cased}}/i{mode};
                 a.test('\u0041') && a.test('\u0042') && b.test('\u0041') && !a.test('\u200D') && !b.test(
-                        '\u005f') && b.test('ſ') && b.test('K') && !n.test('\u0041') && n.test(
+                    '\u005f') && b.test('ſ') && b.test('K') && !n.test('\u0041') && n.test(
                     '\uDB40\uDC01') && n.test('\uD800') && n.test('\uFEFF')
             "#
         ));
@@ -159,7 +159,8 @@ fn unicode_cased_properties_consumers_original_text() {
         assert_true(&format!(
             r#"
                 let t = '';
-                let x = '\u0041\u0042\uDB40\uDC01\u0041'.replace(/(\p{{Cased}})/{mode}g, (m, c, p) => {{
+                let x = '\u0041\u0042\uDB40\uDC01\u0041'.replace(/(\p{{Cased}})/{mode}g, (m, c,
+                p) => {{
                     t += p;
                     return '_'
                 }});
@@ -249,14 +250,21 @@ fn unicode_cased_properties_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     assert_true(
-        r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
+        r#"
+            let m = /\p{Script_Extensions=Latin}/u.exec('A');
+            JSON.stringify(m) === '["A"]' && m.index === 0 && m.input === 'A'
+        "#,
     );
     assert_true(
         r"let m=/[\p{Cased}&&A]/v.exec('A');m!==null&&m.length===1&&m[0]==='A'&&m.index===0&&m.input==='A'",
     );
     assert_true(r"/[\p{Cased}--A]/v.exec('A')===null");
     assert_true(
-        r"let s=String.fromCodePoint(0x42),m=/[\p{Cased}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+        r#"
+            let s = String.fromCodePoint(0x42),
+                m = /[\p{Cased}--A]/v.exec(s);
+            m !== null && m.length === 1 && m[0] === s && m.index === 0 && m.input === s
+        "#,
     );
     for source in [r"/\p{Cased}+b/u.exec('AA')", r"/\p{Cased}A/v.exec('AA')"] {
         crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);

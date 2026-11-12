@@ -203,7 +203,16 @@ fn complete_overflowing_exact_proofs_finish_finalizers_and_never_hide_unknown_le
     ] {
         let source = JsString::from(format!("marker=1;/{pattern}/v.test('a');").as_str());
         assert_true(&format!(
-            "let marker=0,caught=false;try{{eval({source:?});}}catch(e){{caught=e instanceof SyntaxError;}}caught && marker===0"
+            r#"
+                let marker = 0,
+                    caught = false;
+                try {{
+                    eval({source:?});
+                }} catch (e) {{
+                    caught = e instanceof SyntaxError;
+                }}
+                caught && marker === 0
+            "#
         ));
     }
 }

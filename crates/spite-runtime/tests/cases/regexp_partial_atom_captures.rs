@@ -24,7 +24,8 @@ fn partial_literal_class_and_sequel_captures_keep_actual_endpoints() {
         r#"
             let a = /(x([ab]+))(y)/d.exec('xababy');
             a[1] === 'xabab' && a[2] === 'abab' && a[3] === 'y' && a.indices[2][0] === 1 && a.indices[2][
-                1] === 5
+                1
+            ] === 5
         "#,
     );
     assert_true(

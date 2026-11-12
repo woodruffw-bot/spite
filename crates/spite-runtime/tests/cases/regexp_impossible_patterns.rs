@@ -170,7 +170,8 @@ fn impossible_root_choices_preserve_every_arm_and_validate_original_early_errors
                                 .unicodeSets && r.lastIndex === (r.global || r.sticky ? 0 : start);
                         }
             for (var source of ['(?!)|[\\p{Not_A_Property}]', '(?!)|(?<x>a)(?<x>b)',
-                '(?!)|\\k<missing>']) {
+                    '(?!)|\\k<missing>'
+                ]) {
                 var caught = false;
                 try {
                     new RegExp(source, 'v')
@@ -214,8 +215,10 @@ fn impossible_root_choice_consumers_clones_and_collection_keep_no_match_state() 
 fn many_impossible_alternatives_keep_duplicate_name_inventories_without_default_quotas() {
     assert_true(
         r#"
-            var pattern=Array(5).fill('(?!(?<same>[\\p{RGI_Emoji}]{0}))').join('|'),r=new RegExp(pattern,'dgv');
-            r.lastIndex=1;r.exec('a😀')===null&&r.lastIndex===0&&r.source===pattern
+            var pattern = Array(5).fill('(?!(?<same>[\\p{RGI_Emoji}]{0}))').join('|'),
+                r = new RegExp(pattern, 'dgv');
+            r.lastIndex = 1;
+            r.exec('a😀') === null && r.lastIndex === 0 && r.source === pattern
         "#,
     );
     let pattern = JsString::from(
@@ -708,7 +711,8 @@ fn negative_nullable_atoms_keep_modes_wrappers_and_original_full_inventories() {
                                 .unicodeSets && r.lastIndex === (r.global || r.sticky ? 0 : start);
                         }
             for (var source of ['(?!\\p{Not_A_Property}*)', '(?!a*)(?<x>a)(?<x>b)',
-                '(?!a*)\\k<missing>']) {
+                    '(?!a*)\\k<missing>'
+                ]) {
                 var caught = false;
                 try {
                     new RegExp(source, 'v')
@@ -832,7 +836,8 @@ fn negative_nullable_choices_keep_all_original_slots_while_only_one_arm_must_suc
                                 .unicodeSets && r.lastIndex === (r.global || r.sticky ? 0 : start);
                         }
             for (var source of ['(?!\\p{Not_A_Property}|)', '(?!(?<x>a)(?<x>b)|)',
-                '(?!(\\k<missing>)|)']) {
+                    '(?!(\\k<missing>)|)'
+                ]) {
                 var caught = false;
                 try {
                     new RegExp(source, 'v')
@@ -1066,7 +1071,7 @@ fn many_known_impossible_alternatives_keep_full_inventories_without_default_quot
     assert_true(
         r#"
             var pattern = Array(5).fill('(?![\\p{RGI_Emoji}]*)|(?!(?<same>[\\p{RGI_Emoji}]{0}))').join(
-                '|'),
+                    '|'),
                 r = new RegExp(pattern, 'dgv');
             r.lastIndex = 1;
             r.exec('a😀') === null && r.lastIndex === 0 && r.source === pattern

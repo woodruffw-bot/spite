@@ -458,7 +458,8 @@ fn optional_established_impossible_bodies_keep_required_prefix_and_all_skipped_d
                     ['(?<skip>(?![\\p{RGI_Emoji}]*))?', [false]],
                     ['(?<outside>(?<skip>(?![\\p{RGI_Emoji}]*))?)+', [true, false]],
                     ['(?i:(?<outside>(?<skip>(?!(?<slot>[\\p{RGI_Emoji}]+)?))*)){2,3}', [true, false,
-                        false]],
+                        false
+                    ]],
                     ['(?<outside>(?<skip>(?!(?<ref>\\k<outside>)*))?)+', [true, false, false]],
                     ['(?<skip>(?![\\p{RGI_Emoji}]*)|(?!(?<slot>[\\p{RGI_Emoji}]{0})))?', [false, false]]
                 ],

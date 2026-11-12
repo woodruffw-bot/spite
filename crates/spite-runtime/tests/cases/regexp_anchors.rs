@@ -50,7 +50,10 @@ fn captures_case_and_indices_exclude_the_zero_width_assertions() {
         "#,
     );
     assert_true(
-        r"let m=/^(\uD800)/d.exec('\uD800\uDC00');m[0]==='\uD800' && m[1]==='\uD800' && m.indices[1].join(',')==='0,1'",
+        r#"
+            let m = /^(\uD800)/d.exec('\uD800\uDC00');
+            m[0] === '\uD800' && m[1] === '\uD800' && m.indices[1].join(',') === '0,1'
+        "#,
     );
 }
 

@@ -152,7 +152,12 @@ fn unicode_han_script_captures_context_and_pair_starts() {
             "#
         ));
         assert_true(&format!(
-            r"let r=/\p{{sc=Hani}}/d{mode}g;r.lastIndex=1;let m=r.exec('😀𠮷');m.index===2&&m[0]==='𠮷'&&r.lastIndex===4"
+            r#"
+                let r = /\p{{sc=Hani}}/d{mode}g;
+                r.lastIndex = 1;
+                let m = r.exec('😀𠮷');
+                m.index === 2 && m[0] === '𠮷' && r.lastIndex === 4
+            "#
         ));
         assert_true(&format!(
             r"let r=/\p{{sc=Han}}/{mode}y;r.lastIndex=1;r.exec('😀𠮷')===null&&r.lastIndex===0"
@@ -167,7 +172,8 @@ fn unicode_han_script_consumers_original_text() {
             r#"
                 let a = [...'一😀𠮷G'.matchAll(/(?<x>\P{{sc=Han}})/d{mode}g)];
                 a.length === 2 && a[0][1] === '😀' && a[0].index === 1 && a[0].indices[1][1] === 3 && a[1][
-                    1] === 'G'
+                    1
+                ] === 'G'
             "#
         ));
         assert_true(&format!(
@@ -177,7 +183,14 @@ fn unicode_han_script_consumers_original_text() {
             r"'😀一𠮷G'.split(/(\p{{sc=Han}})/{mode}).join('|')==='😀|一||𠮷|G'&&'😀𠮷'.search(/\p{{Script=Hani}}/{mode})===2&&'一𠮷😀'.match(/\p{{sc=Han}}/{mode}g).join('')==='一𠮷'"
         ));
         assert_true(&format!(
-            r"let t='',x='一𠮷😀一'.replace(/(\p{{sc=Han}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__😀_'&&t==='015'"
+            r#"
+                let t = '',
+                    x = '一𠮷😀一'.replace(/(\p{{sc=Han}})/{mode}g, (m, c, p) => {{
+                        t += p;
+                        return '_'
+                    }});
+                x === '__😀_' && t === '015'
+            "#
         ));
     }
 }
@@ -262,7 +275,10 @@ fn unicode_han_script_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     assert_true(
-        r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
+        r#"
+            let m = /\p{Script_Extensions=Latin}/u.exec('A');
+            JSON.stringify(m) === '["A"]' && m.index === 0 && m.input === 'A'
+        "#,
     );
     assert_true(
         r#"let m=/\p{scx=Han}/u.exec('一');JSON.stringify(m)==='["一"]'&&m.index===0&&m.input==='一'"#,
@@ -270,7 +286,11 @@ fn unicode_han_script_opted_work_and_remaining_sets() {
     assert_true(r"/[\p{sc=Han}&&A]/v.exec('A')===null");
     assert_true(r"/[\p{sc=Han}--A]/v.exec('A')===null");
     assert_true(
-        r"let s=String.fromCodePoint(0x20bb7),m=/[\p{sc=Han}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+        r#"
+            let s = String.fromCodePoint(0x20bb7),
+                m = /[\p{sc=Han}--A]/v.exec(s);
+            m !== null && m.length === 1 && m[0] === s && m.index === 0 && m.input === s
+        "#,
     );
     for source in [
         r"/\p{sc=Han}+b/u.exec('一一')",

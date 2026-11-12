@@ -45,7 +45,7 @@ fn global_sticky_state_and_strict_writes_use_complete_branch_matches() {
                 b = r.exec('aaaby');
             a.length === 6 && a[1] === undefined && a[2] === 'aaab' && a[3] === 'a' && a[4] === 'b' && a[
                 5] === undefined && b[5] === 'y' && b[2] === undefined && r.lastIndex === 5 && r.exec(
-                    'aaaby') === null && r.lastIndex === 0
+                'aaaby') === null && r.lastIndex === 0
         "#,
     );
     assert_true(
@@ -106,7 +106,10 @@ fn escapes_pinned_flags_and_original_utf16_captures_survive_wrappers() {
         "#,
     );
     assert_true(
-        "let m=/(?:a+b)|([x])/.exec('aaab');m.length===2&&m[1]===undefined&&/(?:(a+b))|x/.exec('aaab')[1]==='aaab'",
+        r#"
+            let m = /(?:a+b)|([x])/.exec('aaab');
+            m.length === 2 && m[1] === undefined && /(?:(a+b))|x/.exec('aaab')[1] === 'aaab'
+        "#,
     );
 }
 

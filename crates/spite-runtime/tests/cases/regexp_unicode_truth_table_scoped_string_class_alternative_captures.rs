@@ -1438,7 +1438,17 @@ fn named_capture_results(
 fn truth_table_scoped_alternative_string_classes_prove_every_outer_and_inner_term_before_never_gates()
  {
     assert_true(
-        r####"var pattern="()(([\\q{a|ab}])|()){2}()",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"aba\",\"\",\"a\",\"a\",\"<undefined>\",\"\"],[[0,3],[0,0],[2,3],[2,3],\"<undefined>\",[3,3]],0,0]""####,
+        r#"
+            var pattern = "()(([\\q{a|ab}])|()){2}()",
+                input = "aba",
+                r = new RegExp(pattern, "dv"),
+                m = r.exec(input);
+            r.source === pattern && r.flags === "dv" && m.input === input && m.groups === undefined && m
+                .indices.groups === undefined && JSON.stringify(m === null ? null : [Array.from(m, v =>
+                    v === undefined ? "<undefined>" : v), Array.from(m.indices, v => v ===
+                    undefined ? "<undefined>" : v), m.index, r.lastIndex]) ===
+                "[[\"aba\",\"\",\"a\",\"a\",\"<undefined>\",\"\"],[[0,3],[0,0],[2,3],[2,3],\"<undefined>\",[3,3]],0,0]"
+        "#,
     );
     for pattern in [
         r"((\b\B)|(\b\B))()(([\q{ab}&&\p{RGI_Emoji}])|())",

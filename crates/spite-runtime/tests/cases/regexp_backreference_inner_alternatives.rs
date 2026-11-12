@@ -104,7 +104,8 @@ fn common_enclosing_and_inactive_capture_slots_survive_failed_continuations() {
         r#"
             let a = /(?:(?<x>a)|\B(?<x>.)\B)\k<x>/d.exec('\uD800\uD800');
             a.groups.x.charCodeAt(0) === 0xD800 && a.indices.groups.x === a.indices[2] && a.indices[2][
-                1] === 1
+                1
+            ] === 1
         "#,
     );
 }

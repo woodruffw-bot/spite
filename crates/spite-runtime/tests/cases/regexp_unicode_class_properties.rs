@@ -85,7 +85,10 @@ fn unicode_class_property_unions_inversion_and_complement_order() {
     );
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/[\p{{ASCII}}\P{{ASCII}}]/i{mode};r.test('A')&&r.test('ſ')&&r.test('K')&&r.test('😀')&&r.test('\uD800')"
+            r#"
+                let r = /[\p{{ASCII}}\P{{ASCII}}]/i{mode};
+                r.test('A') && r.test('ſ') && r.test('K') && r.test('😀') && r.test('\uD800')
+            "#
         ));
         assert_true(&format!(
             r#"
@@ -146,7 +149,8 @@ fn unicode_class_property_consumers_original_substrings_and_indices() {
             r#"
                 let a = [...'A😀\uD800'.matchAll(/(?<x>[\p{{Any}}])/d{mode}g)];
                 a.length === 3 && a[0][1] === 'A' && a[1][1] === '😀' && a[1].index === 1 && a[1].indices[1][
-                    1] === 3 && a[2][1] === '\uD800'
+                    1
+                ] === 3 && a[2][1] === '\uD800'
             "#
         ));
         assert_true(&format!(
@@ -242,7 +246,10 @@ fn unicode_class_property_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     assert_true(
-        r#"let m=/[\p{Script_Extensions=Latin}]/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
+        r#"
+            let m = /[\p{Script_Extensions=Latin}]/u.exec('A');
+            JSON.stringify(m) === '["A"]' && m.index === 0 && m.input === 'A'
+        "#,
     );
     assert_true(r"/[\p{Script_Extensions=Greek}]/v.exec('𠮷')===null");
     assert_true(
@@ -252,7 +259,11 @@ fn unicode_class_property_opted_work_and_remaining_sets() {
         r"let m=/[\p{ASCII}--K]/v.exec('A');m!==null&&m.length===1&&m[0]==='A'&&m.index===0&&m.input==='A'",
     );
     assert_true(
-        r"let s=String.fromCodePoint(0x61),m=/[\p{ASCII}--K]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+        r#"
+            let s = String.fromCodePoint(0x61),
+                m = /[\p{ASCII}--K]/v.exec(s);
+            m !== null && m.length === 1 && m[0] === s && m.index === 0 && m.input === s
+        "#,
     );
     for source in [
         r"/[\p{RGI_Emoji}]/v.exec('😀')",

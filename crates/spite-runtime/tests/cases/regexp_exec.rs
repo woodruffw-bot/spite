@@ -348,7 +348,8 @@ fn ordinary_matching_preserves_surrogate_units_and_exact_utf16_indices() {
                 r = new RegExp('\\uDC00', 'dg'),
                 m = r.exec(s);
             m[0] === '\uDC00' && m.index === 1 && m.input === s && m.indices[0][0] === 1 && m.indices[0][
-                1] === 2 && r.lastIndex === 2
+                1
+            ] === 2 && r.lastIndex === 2
         "#,
     );
     assert_true(
@@ -380,7 +381,11 @@ fn generic_match_search_replace_split_and_matchall_use_native_literal_execution(
         "#,
     );
     assert_true(
-        "let r=new RegExp('');r.lastIndex=-0;'ba'.search(r)===0 && Object.is(r.lastIndex,-0) && 'ba'.match(r)[0]===''",
+        r#"
+            let r = new RegExp('');
+            r.lastIndex = -0;
+            'ba'.search(r) === 0 && Object.is(r.lastIndex, -0) && 'ba'.match(r)[0] === ''
+        "#,
     );
     assert_true(
         "'aba'.replace(new RegExp('a','g'),'[$&]')==='[a]b[a]' && 'aba'.replace(new RegExp('a'),(m,i,s)=>m+i+s)==='a0ababa'",

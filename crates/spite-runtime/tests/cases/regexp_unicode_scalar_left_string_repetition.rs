@@ -10,14 +10,14 @@ fn projected_repetition_keeps_greedy_lazy_and_counted_character_priority() {
     assert_true(
         r#"
             /[\p{Any}&&\q{a|ab|}]+/v.exec('aaab')[0] === 'aaa' && /[\p{Any}&&\q{a|ab|}]+?/v.exec('aaab')[
-                0] === 'a' && /[\p{Any}&&\q{a|ab|}]{1,2}/v.exec('aaab')[0] === 'aa' &&
+                    0] === 'a' && /[\p{Any}&&\q{a|ab|}]{1,2}/v.exec('aaab')[0] === 'aa' &&
                 /[\p{Any}&&\q{a|ab|}]{1,2}?/v.exec('aaab')[0] === 'a'
         "#,
     );
     assert_true(
         r#"
             /[\p{Any}--\q{a|ab|}]+/v.exec('ab😀c')[0] === 'b😀c' && /[\p{Any}--\q{a|ab|}]+?/v.exec(
-                'ab😀c')[0] === 'b' && /^[\p{Any}--\q{}]{3}$/v.test('ab😀') && !/^[\p{Any}--\q{}]{4}$/v
+                    'ab😀c')[0] === 'b' && /^[\p{Any}--\q{}]{3}$/v.test('ab😀') && !/^[\p{Any}--\q{}]{4}$/v
                 .test('ab😀')
         "#,
     );
@@ -164,7 +164,24 @@ fn former_controls_finish_finalizers_and_zero_counts_still_require_complete_clas
         assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)));
     }
     assert_true(
-        r####"var pattern="[[]&&\\q{ab}&&\\p{RGI_Emoji}]{0}",input="a😀b",r=new RegExp(pattern,"dgvy");r.lastIndex=2;var m=r.exec(input);r.source===pattern&&r.flags==="dgvy"&&m.input===input&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&(m.groups===undefined||Object.getPrototypeOf(m.groups)===null&&Object.getPrototypeOf(m.indices.groups)===null)&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex,m.groups===undefined?null:Object.keys(m.groups).map(k=>[k,m.groups[k]===undefined?"<undefined>":m.groups[k]]),m.indices.groups===undefined?null:Object.keys(m.indices.groups).map(k=>[k,m.indices.groups[k]===undefined?"<undefined>":m.indices.groups[k]])])==="[[\"\"],[[1,1]],1,1,null,null]""####,
+        r#"
+            var pattern = "[[]&&\\q{ab}&&\\p{RGI_Emoji}]{0}",
+                input = "a😀b",
+                r = new RegExp(pattern, "dgvy");
+            r.lastIndex = 2;
+            var m = r.exec(input);
+            r.source === pattern && r.flags === "dgvy" && m.input === input && Object.hasOwn(m,
+                "groups") && Object.hasOwn(m.indices, "groups") && (m.groups === undefined || Object
+                    .getPrototypeOf(m.groups) === null && Object.getPrototypeOf(m.indices.groups) === null
+                    ) && JSON.stringify([Array.from(m, v => v === undefined ? "<undefined>" : v), Array
+                    .from(m.indices, v => v === undefined ? "<undefined>" : v), m.index, r.lastIndex, m
+                    .groups === undefined ? null : Object.keys(m.groups).map(k => [k, m.groups[k] ===
+                        undefined ? "<undefined>" : m.groups[k]
+                    ]), m.indices.groups === undefined ? null : Object.keys(m.indices.groups).map(
+                        k => [k, m.indices.groups[k] === undefined ? "<undefined>" : m.indices.groups[
+                            k]])
+                ]) === "[[\"\"],[[1,1]],1,1,null,null]"
+        "#,
     );
     for source in [
         r"/[\p{Any}--\q{ab}]+[a]/v.test('aba')",
@@ -179,7 +196,16 @@ fn former_controls_finish_finalizers_and_zero_counts_still_require_complete_clas
     ] {
         let source = JsString::from(format!("marker=1;/{pattern}/v.test('ab');").as_str());
         assert_true(&format!(
-            "let marker=0,caught=false;try{{eval({source:?});}}catch(e){{caught=e instanceof SyntaxError;}}caught && marker===0"
+            r#"
+                let marker = 0,
+                    caught = false;
+                try {{
+                    eval({source:?});
+                }} catch (e) {{
+                    caught = e instanceof SyntaxError;
+                }}
+                caught && marker === 0
+            "#
         ));
     }
 }

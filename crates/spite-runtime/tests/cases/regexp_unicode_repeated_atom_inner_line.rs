@@ -73,10 +73,18 @@ fn unicode_repeated_atom_inner_line_results_snapshot() {
 fn unicode_repeated_atom_inner_line_counts_and_scopes() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=/(^a)+/{mode}.exec('aaa');a[0]==='a'&&a[1]==='a'&&a.index===0&&/^a+/{mode}.exec('aaa')[0]==='aaa'"
+            r#"
+                let a = /(^a)+/{mode}.exec('aaa');
+                a[0] === 'a' && a[1] === 'a' && a.index === 0 && /^a+/{mode}.exec('aaa')[0] ===
+                    'aaa'
+            "#
         ));
         assert_true(&format!(
-            r"let a=/(a$)+/{mode}.exec('aaa');a[0]==='a'&&a[1]==='a'&&a.index===2&&/a+$/{mode}.exec('aaa')[0]==='aaa'"
+            r#"
+                let a = /(a$)+/{mode}.exec('aaa');
+                a[0] === 'a' && a[1] === 'a' && a.index === 2 && /a+$/{mode}.exec('aaa')[0] ===
+                    'aaa'
+            "#
         ));
         assert_true(&format!(r"/(?:(^a$)){{2}}/{mode}m.exec('a\na')===null"));
         assert_true(&format!(

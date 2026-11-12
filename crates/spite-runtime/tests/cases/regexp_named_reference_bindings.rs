@@ -101,7 +101,8 @@ fn duplicate_names_select_active_slots_and_preserve_indices_and_forward_state() 
         r#"
             let a = /(?<x>a)\k<x>|\B(?<x>.)\k<x>\B/d.exec('\uD800\uD800');
             a.groups.x.charCodeAt(0) === 0xD800 && a.indices.groups.x === a.indices[2] && a.indices[2][
-                1] === 1
+                1
+            ] === 1
         "#,
     );
 }

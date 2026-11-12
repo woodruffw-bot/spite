@@ -220,7 +220,14 @@ fn unicode_braced_bmp_character_opted_work_and_unproved_sets() {
         .unwrap();
     assert!(matches!(original, Value::Object(_)));
     assert_true(
-        r#"let r=/[\u{61}]\u{62}/v,m=r.exec('ab');Array.isArray(m)&&m.length===1&&m[0]==='ab'&&m.index===0&&m.input==='ab'&&m.groups===undefined&&m.indices===undefined&&r.source==='[\\u{61}]\\u{62}'&&r.lastIndex===0&&r.exec('xb')===null&&r.exec('ax')===null&&r.exec('a')===null&&r.exec('xab').index===1"#,
+        r#"
+            let r = /[\u{61}]\u{62}/v,
+                m = r.exec('ab');
+            Array.isArray(m) && m.length === 1 && m[0] === 'ab' && m.index === 0 && m.input === 'ab' && m
+                .groups === undefined && m.indices === undefined && r.source === '[\\u{61}]\\u{62}' && r
+                .lastIndex === 0 && r.exec('xb') === null && r.exec('ax') === null && r.exec('a') ===
+                null && r.exec('xab').index === 1
+        "#,
     );
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),

@@ -154,7 +154,8 @@ fn unicode_binary_property_consumers_original_substrings_and_indices() {
             r#"
                 let a = [...'A😀\uD800'.matchAll(/(?<x>\p{{Any}})/d{mode}g)];
                 a.length === 3 && a[0][1] === 'A' && a[1][1] === '😀' && a[1].index === 1 && a[1].indices[1][
-                    1] === 3 && a[2][1] === '\uD800'
+                    1
+                ] === 3 && a[2][1] === '\uD800'
             "#
         ));
         assert_true(&format!(
@@ -250,14 +251,23 @@ fn unicode_binary_property_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     assert_true(
-        r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
+        r#"
+            let m = /\p{Script_Extensions=Latin}/u.exec('A');
+            JSON.stringify(m) === '["A"]' && m.index === 0 && m.input === 'A'
+        "#,
     );
     assert_true(r"/\p{Script_Extensions=Greek}/v.exec('𠮷')===null");
     assert_true(
-        r#"let m=/[\p{Script_Extensions=Latin}]/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
+        r#"
+            let m = /[\p{Script_Extensions=Latin}]/u.exec('A');
+            JSON.stringify(m) === '["A"]' && m.index === 0 && m.input === 'A'
+        "#,
     );
     assert_true(
-        r#"let m=/^(\p{Script_Extensions=Latin})$/u.exec('A');JSON.stringify(m)==='["A","A"]'&&m.index===0&&m.input==='A'"#,
+        r#"
+            let m = /^(\p{Script_Extensions=Latin})$/u.exec('A');
+            JSON.stringify(m) === '["A","A"]' && m.index === 0 && m.input === 'A'
+        "#,
     );
     for source in [
         r"/\p{RGI_Emoji}/v.exec('😀')",

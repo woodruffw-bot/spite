@@ -118,7 +118,10 @@ fn unicode_class_assertion_line_contexts_and_escaped_data() {
     assert_true(r"/^[\$\^]$/u.test('$')&&/^[\$\^]$/v.test('^')");
     assert_true(r"/^[\&\&\-\-]$/v.test('&')&&/^[\x2d\u005d\u{5b}]$/v.test(']')");
     assert_true(
-        r"/^[^❤️]$/u.exec('❤️')===null&&/^[^🧡]/u.exec('🧡')===null&&/[^💛]$/u.exec('💛')===null&&/[^💚]/u.exec('💚')===null",
+        r#"
+            /^[^❤️]$/u.exec('❤️') === null && /^[^🧡]/u.exec('🧡') === null && /[^💛]$/u.exec('💛') ===
+                null && /[^💚]/u.exec('💚') === null
+        "#,
     );
 }
 

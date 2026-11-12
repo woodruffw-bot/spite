@@ -169,6 +169,17 @@ fn choice_sequence_finite_consumers_clones_and_collection_keep_selected_iteratio
 
 #[test]
 fn choice_sequence_complete_proofs_finish_finalizers_and_keep_captures_and_effects_deferred() {
+    let expected_serialized_output = JsString::from(concat!(
+        r#"[[false,"ab!",{"values":["",""],"indices":[[0,0],[0,0]],"index":0},0],"#,
+        r#"[false,"",{"values":["",""],"indices":[[0,0],[0,0]],"index":0},0],"#,
+        r#"[false,"\n",{"values":["",""],"indices":[[0,0],[0,0]],"index":0},0],"#,
+        r#"[false,"x\nab",{"values":["",""],"indices":[[0,0],[0,0]],"index":0},0],"#,
+        r#"[true,"ab!",{"values":["",""],"indices":[[0,0],[0,0]],"index":0},0],"#,
+        r#"[true,"",{"values":["",""],"indices":[[0,0],[0,0]],"index":0},0],"#,
+        r#"[true,"\n",{"values":["",""],"indices":[[0,0],[0,0]],"index":0},0],"#,
+        r#"[true,"x\nab",{"values":["",""],"indices":[[0,0],[0,0]],"index":0},0]]"#,
+    ));
+
     for source in [
         r"/(?:[\q{a}]|(?:|))+/v.test('a')",
         r"/([\q{a|b}]|(?:|))+/v.test('a')",
@@ -209,12 +220,40 @@ fn choice_sequence_complete_proofs_finish_finalizers_and_keep_captures_and_effec
             r"let marker=0,value;try{{value=/((?:|)|[\q{{a|b}}]){{{lower},{upper}}}/dv.exec('ab')}}finally{{marker=3}}marker===3 && value[0]==='{whole}' && value[1]==='{each}' && value.indices[1][0]==={at}"
         ));
     }
-    assert_true(
-        r#"var marker=0,ok=false;try{ok=(function(){var pattern="((?:|)*|[\\q{ab}&&\\q{cd}])+?",rows=[],metadata=true;
-for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
-for(var input of ['ab!','','\n','x\nab']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
-return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"\",\"\"],\"indices\":[[0,0],[0,0]],\"index\":0},0],[false,\"\",{\"values\":[\"\",\"\"],\"indices\":[[0,0],[0,0]],\"index\":0},0],[false,\"\\n\",{\"values\":[\"\",\"\"],\"indices\":[[0,0],[0,0]],\"index\":0},0],[false,\"x\\nab\",{\"values\":[\"\",\"\"],\"indices\":[[0,0],[0,0]],\"index\":0},0],[true,\"ab!\",{\"values\":[\"\",\"\"],\"indices\":[[0,0],[0,0]],\"index\":0},0],[true,\"\",{\"values\":[\"\",\"\"],\"indices\":[[0,0],[0,0]],\"index\":0},0],[true,\"\\n\",{\"values\":[\"\",\"\"],\"indices\":[[0,0],[0,0]],\"index\":0},0],[true,\"x\\nab\",{\"values\":[\"\",\"\"],\"indices\":[[0,0],[0,0]],\"index\":0},0]]"})();}finally{marker=3}ok&&marker===3"#,
-    );
+    assert_true(&format!(
+        r#"
+            var marker = 0,
+                ok = false;
+            try {{
+                ok = (function() {{
+                    var pattern = "((?:|)*|[\\q{{ab}}&&\\q{{cd}}])+?",
+                        rows = [],
+                        metadata = true;
+                    for (var multi of [false, true]) {{
+                        var r = new RegExp(pattern, 'dvg' + (multi ? 'm' : ''));
+                        metadata = metadata && r.source === pattern;
+                        for (var input of ['ab!', '', '\n', 'x\nab']) {{
+                            r.lastIndex = 0;
+                            var m = r.exec(input),
+                                result = null;
+                            if (m !== null) result = {{
+                                values: Array.from(m, v => v === undefined ? '<undefined>' :
+                                    v),
+                                indices: Array.from(m.indices, v => v === undefined ?
+                                    '<undefined>' : v),
+                                index: m.index
+                            }};
+                            rows.push([multi, input, result, r.lastIndex]);
+                        }}
+                    }}
+                    return metadata && JSON.stringify(rows) === {expected_serialized_output:?}
+                }})();
+            }} finally {{
+                marker = 3
+            }}
+            ok && marker === 3
+        "#
+    ));
     for (inner, expected_zero) in [
         (
             r"(?:|)*|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]",
@@ -255,7 +294,18 @@ return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"\",\"\"]
                 let pattern = JsString::from(source.as_str());
                 let expected = JsString::from(expected_zero);
                 assert_true(&format!(
-                    "var pattern={pattern:?},input='a😀b',r=new RegExp(pattern,'dvgy');r.lastIndex=2;var m=r.exec(input);r.source===pattern&&r.flags==='dgvy'&&m.input===input&&Object.hasOwn(m,'groups')&&Object.hasOwn(m.indices,'groups')&&m.groups===undefined&&m.indices.groups===undefined&&JSON.stringify([Array.from(m,v=>v===undefined?'<undefined>':v),Array.from(m.indices,v=>v===undefined?'<undefined>':v),m.index,r.lastIndex])==={expected:?}"
+                    r#"
+                        var pattern = {pattern:?},
+                            input = 'a😀b',
+                            r = new RegExp(pattern, 'dvgy');
+                        r.lastIndex = 2;
+                        var m = r.exec(input);
+                        r.source === pattern && r.flags === 'dgvy' && m.input === input && Object.hasOwn(m,
+                            'groups') && Object.hasOwn(m.indices, 'groups') && m.groups === undefined && m.indices
+                            .groups === undefined && JSON.stringify([Array.from(m, v => v === undefined ?
+                                '<undefined>' : v), Array.from(m.indices, v => v === undefined ?
+                                '<undefined>' : v), m.index, r.lastIndex]) === {expected:?}
+                    "#
                 ));
                 continue;
             }
@@ -273,7 +323,16 @@ return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"\",\"\"]
     ] {
         let source = JsString::from(format!("marker=1;/{pattern}/v.test('a');").as_str());
         assert_true(&format!(
-            "let marker=0,caught=false;try{{eval({source:?});}}catch(e){{caught=e instanceof SyntaxError;}}caught && marker===0"
+            r#"
+                let marker = 0,
+                    caught = false;
+                try {{
+                    eval({source:?});
+                }} catch (e) {{
+                    caught = e instanceof SyntaxError;
+                }}
+                caught && marker === 0
+            "#
         ));
     }
 }

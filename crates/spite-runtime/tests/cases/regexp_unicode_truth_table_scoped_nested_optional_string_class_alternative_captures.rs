@@ -2187,9 +2187,32 @@ fn named_capture_results(
 #[test]
 fn truth_table_scoped_nested_optional_alternative_string_classes_validate_every_inner_and_outside_term()
  {
-    assert_true(
-        r####"var pattern="()((((^)|(\\b))([\\q{a|ab}])|())){0}()",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&m.groups===undefined&&m.indices.groups===undefined))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex,m.groups===undefined?"<undefined>":Object.keys(m.groups).map(k=>[k,m.groups[k]===undefined?"<undefined>":m.groups[k]]),m.indices.groups===undefined?"<undefined>":Object.keys(m.indices.groups).map(k=>[k,m.indices.groups[k]===undefined?"<undefined>":m.indices.groups[k]])])==="[[\"\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\"],[[0,0],[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",[0,0]],0,0,\"<undefined>\",\"<undefined>\"]""####,
-    );
+    let expected_serialized_output = JsString::from(concat!(
+        r#"[["","","<undefined>","<undefined>","<undefined>","<undefined>","<undefined>","#,
+        r#""<undefined>","<undefined>",""],"#,
+        r#"[[0,0],[0,0],"<undefined>","<undefined>","<undefined>","<undefined>","<undefined>","#,
+        r#""<undefined>","<undefined>",[0,0]],0,0,"<undefined>","<undefined>"]"#,
+    ));
+
+    assert_true(&format!(
+        r#"
+            var pattern = "()((((^)|(\\b))([\\q{{a|ab}}])|())){{0}}()",
+                input = "aba",
+                r = new RegExp(pattern, "dv"),
+                m = r.exec(input);
+            r.source === pattern && r.flags === "dv" && r.hasIndices && r.unicodeSets && (m === null || (m
+                    .input === input && Object.hasOwn(m, "groups") && Object.hasOwn(m.indices,
+                        "groups") && m.groups === undefined && m.indices.groups === undefined)) && JSON
+                .stringify(m === null ? null : [Array.from(m, v => v === undefined ? "<undefined>" : v),
+                    Array.from(m.indices, v => v === undefined ? "<undefined>" : v), m.index, r
+                    .lastIndex, m.groups === undefined ? "<undefined>" : Object.keys(m.groups).map(
+                        k => [k, m.groups[k] === undefined ? "<undefined>" : m.groups[k]]), m.indices
+                    .groups === undefined ? "<undefined>" : Object.keys(m.indices.groups).map(k => [k,
+                        m.indices.groups[k] === undefined ? "<undefined>" : m.indices.groups[k]
+                    ])
+                ]) === {expected_serialized_output:?}
+        "#
+    ));
     for pattern in [
         r"((\b\B)|(\b\B))()((([\q{ab}&&\p{RGI_Emoji}])|()))??()",
         r"((^)|(\b))?()((((^)|(\b))([\q{a|ab}])|z))??()",

@@ -101,7 +101,8 @@ fn repeated_branch_capture_clearing_and_undo_preserve_names_refs_and_last_ranges
             let a = /(?<x>a|ab)+b/d.exec('abb'),
                 b = /(?<x>ab|a)+b/d.exec('abb');
             a[0] === 'ab' && a.groups.x === 'a' && a.indices.groups.x === a.indices[1] && a.indices[1][
-                1] === 1 && b[0] === 'abb' && b.groups.x === 'ab' && b.indices[1][1] === 2
+                1
+            ] === 1 && b[0] === 'abb' && b.groups.x === 'ab' && b.indices[1][1] === 2
         "#,
     );
     assert_true(
@@ -131,7 +132,8 @@ fn repeated_branch_capture_clearing_and_undo_preserve_names_refs_and_last_ranges
         r#"
             let a = /(?<x>a|\k<x>b)+c/d.exec('abac');
             a[0] === 'abac' && a.groups.x === 'a' && a.indices.groups.x === a.indices[1] && a.indices[1][
-                0] === 2
+                0
+            ] === 2
         "#,
     );
     assert_true(
@@ -150,7 +152,10 @@ fn repeated_branch_capture_clearing_and_undo_preserve_names_refs_and_last_ranges
         "#,
     );
     assert_true(
-        r"let a=/(?<x>.|a)+c/ds.exec('\uD800ac');a.groups.x==='a'&&a.indices.groups.x[0]===1&&a.indices.groups.x[1]===2",
+        r#"
+            let a = /(?<x>.|a)+c/ds.exec('\uD800ac');
+            a.groups.x === 'a' && a.indices.groups.x[0] === 1 && a.indices.groups.x[1] === 2
+        "#,
     );
 }
 

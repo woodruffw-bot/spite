@@ -87,8 +87,9 @@ fn captured_sequence_retries_keep_final_named_ranges_and_empty_positions() {
             let a = /(?<x>a)(?<y>b)(?<last>(?<before>)\k<x>\k<y>(?<after>))*ab$/d.exec('ababab');
             a[0] === 'ababab' && a.groups.last === 'ab' && a.indices.groups.last === a.indices[3] && a
                 .indices[3][0] === 2 && a.indices[3][1] === 4 && a.indices.groups.before === a.indices[
-                4] && a.indices[4][0] === 2 && a.indices.groups.after === a.indices[5] && a.indices[5][
-                0] === 4
+                    4] && a.indices[4][0] === 2 && a.indices.groups.after === a.indices[5] && a.indices[5][
+                    0
+                ] === 4
         "#,
     );
     assert_true(
@@ -111,7 +112,7 @@ fn captured_sequence_retries_keep_final_named_ranges_and_empty_positions() {
             let a = /(?<x>a)(?<last>\1\k<x>)+/d.exec('aaaaa');
             a[0] === 'aaaaa' && a.groups.last === 'aa' && a.indices.groups.last === a.indices[2] && a
                 .indices[2][0] === 3 && a.indices[2][1] === 5 && /^(?<x>a)(?<last>\1\k<x>)+$/.exec(
-                'aaaa') === null
+                    'aaaa') === null
         "#,
     );
     assert_true(

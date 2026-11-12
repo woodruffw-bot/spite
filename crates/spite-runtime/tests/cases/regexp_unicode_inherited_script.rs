@@ -548,7 +548,8 @@ fn unicode_inherited_script_consumers_preserve_original_text() {
             r#"
                 let a = [...'̀😀Á'.matchAll(/(?<x>\P{{sc=Inherited}})/d{mode}g)];
                 a.length === 2 && a[0][1] === '😀' && a[0].index === 1 && a[0].indices[1][1] === 3 && a[1][
-                    1] === 'A' && a[1].index === 3
+                    1
+                ] === 'A' && a[1].index === 3
             "#
         ));
         assert_true(&format!(
@@ -558,7 +559,14 @@ fn unicode_inherited_script_consumers_preserve_original_text() {
             r"'À́A'.split(/(\p{{Script=Inherited}})/{mode}).join('|')==='A|̀||́|A'&&'A😀̀'.search(/\p{{sc=Zinh}}/{mode})===3&&'̀́A'.match(/\p{{Script=Zinh}}/{mode}g).join('')==='̀́'"
         ));
         assert_true(&format!(
-            r"let t='',x='̀́À'.replace(/(\p{{sc=Inherited}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__A_'&&t==='013'"
+            r#"
+                let t = '',
+                    x = '̀́À'.replace(/(\p{{sc=Inherited}})/{mode}g, (m, c, p) => {{
+                        t += p;
+                        return '_'
+                    }});
+                x === '__A_' && t === '013'
+            "#
         ));
     }
 }
@@ -646,7 +654,11 @@ fn unicode_inherited_script_opted_work_and_remaining_sets() {
     assert_true(r"/[\p{sc=Zinh}&&A]/v.exec('A')===null");
     assert_true(r"/[\p{sc=Zinh}--A]/v.exec('A')===null");
     assert_true(
-        r"let s=String.fromCodePoint(0x300),m=/[\p{sc=Zinh}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+        r#"
+            let s = String.fromCodePoint(0x300),
+                m = /[\p{sc=Zinh}--A]/v.exec(s);
+            m !== null && m.length === 1 && m[0] === s && m.index === 0 && m.input === s
+        "#,
     );
     for source in [
         r"/\p{sc=Zinh}+b/u.exec('AA')",

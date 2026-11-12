@@ -8,6 +8,19 @@ use spite_runtime::{Realm, Value};
 use test_case::test_case;
 #[test]
 fn zero_minimum_asserted_string_class_native_tables_consumers_and_required_empty_identity() {
+    let expected_serialized_output = JsString::from(concat!(
+        r#"[["","","","<undefined>","<undefined>","<undefined>","<undefined>","<undefined>","#,
+        r#""<undefined>",""],"#,
+        r#"[[1,1],[1,1],[1,1],"<undefined>","<undefined>","<undefined>","<undefined>","#,
+        r#""<undefined>","<undefined>",[1,1]],1,1]"#,
+    ));
+    let expected_serialized_output_2 = JsString::from(concat!(
+        r#"[["","","<undefined>","<undefined>","<undefined>","","<undefined>","<undefined>","#,
+        r#""<undefined>",""],"#,
+        r#"[[0,0],[0,0],"<undefined>","<undefined>","<undefined>",[0,0],"<undefined>","#,
+        r#""<undefined>","<undefined>",[0,0]],0,0]"#,
+    ));
+
     assert_true(
         r#"
             var pattern =
@@ -87,32 +100,32 @@ fn zero_minimum_asserted_string_class_native_tables_consumers_and_required_empty
         "#,
     );
 
-    assert_true(
+    assert_true(&format!(
         r#"
             var pattern =
-                "(?<before>\\b)(?<whole>(?<iteration>(?<c>[\\q{|a|ab}])|(?<e>)){0})(?<z>(?<z1>\\B)*|(?<z2>\\b)+)*?(?<after>\\b)",
+                "(?<before>\\b)(?<whole>(?<iteration>(?<c>[\\q{{|a|ab}}])|(?<e>)){{0}})(?<z>(?<z1>\\B)*|(?<z2>\\b)+)*?(?<after>\\b)",
                 input = "\u017faX",
                 r = new RegExp(pattern, "dgv"),
                 ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
                 .unicode === false;
             r.lastIndex = 0;
             var m = r.exec(input);
-            if (m !== null) {
+            if (m !== null) {{
                 var names = ["before", "whole", "iteration", "c", "e", "z", "z1", "z2", "after"];
-                for (var n of names) {
+                for (var n of names) {{
                     var slot = names.indexOf(n) + 1;
                     ok = ok && Object.hasOwn(m.groups, n) && Object.hasOwn(m.indices.groups, n) && m
                         .groups[n] === m[slot] && m.indices.groups[n] === m.indices[slot]
-                }
+                }}
                 ok = ok && Object.getPrototypeOf(m.groups) === null && m.input === input
-            } else ok = false;
+            }} else ok = false;
             ok && m !== null && JSON.stringify([Array.from(m, v => v === undefined ? "<undefined>" : v),
                     Array.from(m.indices, v => v === undefined ? "<undefined>" : v), m.index, r
                     .lastIndex
                 ]) ===
-                "[[\"\",\"\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\"],[[1,1],[1,1],[1,1],\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\",[1,1]],1,1]"
-        "#,
-    );
+                {expected_serialized_output:?}
+        "#
+    ));
     assert_true(
         r#"
             var pattern =
@@ -140,32 +153,32 @@ fn zero_minimum_asserted_string_class_native_tables_consumers_and_required_empty
         "#,
     );
 
-    assert_true(
+    assert_true(&format!(
         r#"
             var pattern =
-                "(?<before>^)(?<z>(?<z1>^)|(?<z2>\\b\\B))?(?<whole>(?<iteration>(?<e>)|(?<c>[\\p{Any}\\q{|ab}])){0})(?<after>\\b)",
+                "(?<before>^)(?<z>(?<z1>^)|(?<z2>\\b\\B))?(?<whole>(?<iteration>(?<e>)|(?<c>[\\p{{Any}}\\q{{|ab}}])){{0}})(?<after>\\b)",
                 input = "a",
                 r = new RegExp(pattern, "dgv"),
                 ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
                 .unicode === false;
             r.lastIndex = 0;
             var m = r.exec(input);
-            if (m !== null) {
+            if (m !== null) {{
                 var names = ["before", "z", "z1", "z2", "whole", "iteration", "e", "c", "after"];
-                for (var n of names) {
+                for (var n of names) {{
                     var slot = names.indexOf(n) + 1;
                     ok = ok && Object.hasOwn(m.groups, n) && Object.hasOwn(m.indices.groups, n) && m
                         .groups[n] === m[slot] && m.indices.groups[n] === m.indices[slot]
-                }
+                }}
                 ok = ok && Object.getPrototypeOf(m.groups) === null && m.input === input
-            } else ok = false;
+            }} else ok = false;
             ok && m !== null && JSON.stringify([Array.from(m, v => v === undefined ? "<undefined>" : v),
                     Array.from(m.indices, v => v === undefined ? "<undefined>" : v), m.index, r
                     .lastIndex
                 ]) ===
-                "[[\"\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\"],[[0,0],[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\",[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\",[0,0]],0,0]"
-        "#,
-    );
+                {expected_serialized_output_2:?}
+        "#
+    ));
 
     assert_true(
         r#"
@@ -784,10 +797,33 @@ fn empty_input_preserves_capture_metadata() {
 #[test]
 fn composition_results_match_reference() {
     assert_true(
-        r####"var pattern="(?:(?:\\b)|(?:\\B))?^((\\b)|(\\B)){1}([\\q{|a|ab}]){3}$",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"aba\",\"\",\"\",\"<undefined>\",\"\"],[[0,3],[0,0],[0,0],\"<undefined>\",[3,3]],0,0]""####,
+        r#"
+            var pattern = "(?:(?:\\b)|(?:\\B))?^((\\b)|(\\B)){1}([\\q{|a|ab}]){3}$",
+                input = "aba",
+                r = new RegExp(pattern, "dv"),
+                m = r.exec(input);
+            r.source === pattern && r.flags === "dv" && r.hasIndices && r.unicodeSets && (m === null || (m
+                    .input === input && m.groups === undefined && m.indices.groups === undefined &&
+                    Object.hasOwn(m, "groups") && Object.hasOwn(m.indices, "groups"))) && JSON.stringify(
+                    m === null ? null : [Array.from(m, v => v === undefined ? "<undefined>" : v), Array
+                        .from(m.indices, v => v === undefined ? "<undefined>" : v), m.index, r.lastIndex
+                    ]) ===
+                "[[\"aba\",\"\",\"\",\"<undefined>\",\"\"],[[0,3],[0,0],[0,0],\"<undefined>\",[3,3]],0,0]"
+        "#,
     );
     assert_true(
-        r####"var pattern="(?:(?:\\b)|(?:\\B))?^([\\q{|a|ab}]){3}(\\b|)",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"aba\",\"\",\"\"],[[0,3],[3,3],[3,3]],0,0]""####,
+        r#"
+            var pattern = "(?:(?:\\b)|(?:\\B))?^([\\q{|a|ab}]){3}(\\b|)",
+                input = "aba",
+                r = new RegExp(pattern, "dv"),
+                m = r.exec(input);
+            r.source === pattern && r.flags === "dv" && r.hasIndices && r.unicodeSets && (m === null || (m
+                .input === input && m.groups === undefined && m.indices.groups === undefined &&
+                Object.hasOwn(m, "groups") && Object.hasOwn(m.indices, "groups"))) && JSON.stringify(
+                m === null ? null : [Array.from(m, v => v === undefined ? "<undefined>" : v), Array
+                    .from(m.indices, v => v === undefined ? "<undefined>" : v), m.index, r.lastIndex
+                ]) === "[[\"aba\",\"\",\"\"],[[0,3],[3,3],[3,3]],0,0]"
+        "#,
     );
     for pattern in [
         r"^((\b)z)?([\q{|a|ab}]){3}$",

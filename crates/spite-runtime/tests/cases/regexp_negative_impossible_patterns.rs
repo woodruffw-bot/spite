@@ -93,9 +93,11 @@ fn enclosing_negative_impossible_assertions_keep_required_optional_and_named_cap
         r#"
             var rows = [
                     ['(?<outside>(?!(?<inside>[\\p{RGI_Emoji}]+)(?!(?<zero>a{0}))))+', [true, false,
-                        false]],
+                        false
+                    ]],
                     ['(?<outside>(?!(?<inside>[\\p{RGI_Emoji}]+)(?!(?<zero>a{0}))))?', [false, false,
-                        false]],
+                        false
+                    ]],
                     ['(?<outer>(?<inner>(?<!(?<inside>[\\p{RGI_Emoji}]+)(?<!a{0})))?){2,3}', [true, false,
                         false
                     ]],

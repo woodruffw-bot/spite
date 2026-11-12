@@ -12,7 +12,8 @@ fn nested_and_empty_captures_follow_opening_parenthesis_order() {
                 m = r.exec('xabcd');
             m.length === 4 && m[0] === 'abcd' && m[1] === 'bc' && m[2] === 'c' && m[3] === '' && m
                 .index === 1 && m.groups === undefined && m.indices.length === 4 && m.indices[0].join(
-                ',') === '1,5' && m.indices[1].join(',') === '2,4' && m.indices[2].join(',') === '3,4' && m
+                    ',') === '1,5' && m.indices[1].join(',') === '2,4' && m.indices[2].join(',') ===
+                '3,4' && m
                 .indices[3].join(',') === '4,4' && m.indices.groups === undefined && r.source ===
                 'a(b(c))()d'
         "#,
@@ -63,7 +64,12 @@ fn capture_results_share_global_sticky_and_strict_lastindex_writes() {
         "#,
     );
     assert_true(
-        "let r=/()/g;r.lastIndex=2;let m=r.exec('ab');m[0]==='' && m[1]==='' && m.index===2 && r.lastIndex===2",
+        r#"
+            let r = /()/g;
+            r.lastIndex = 2;
+            let m = r.exec('ab');
+            m[0] === '' && m[1] === '' && m.index === 2 && r.lastIndex === 2
+        "#,
     );
 }
 

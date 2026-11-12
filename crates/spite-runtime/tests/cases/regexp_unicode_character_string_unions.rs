@@ -1,5 +1,6 @@
 //! Ordinary characters beside variable ClassStringDisjunction operands.
 
+use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 
 use crate::common::assert_true;
@@ -121,6 +122,13 @@ fn string_consumers_and_merged_q_members_keep_names_indices_and_empty_advancemen
 
 #[test]
 fn former_controls_complete_finalizers_and_unproved_algebra_matches_reference_results() {
+    let expected_serialized_output = JsString::from(concat!(
+        r#"[[false,"ab!",{"values":["ab"],"indices":[[0,2]],"index":0},2],[false,"",null,0],"#,
+        r#"[false,"\n",null,0],[false,"x\nab",{"values":["ab"],"indices":[[2,4]],"index":2},4],"#,
+        r#"[true,"ab!",{"values":["ab"],"indices":[[0,2]],"index":0},2],[true,"",null,0],"#,
+        r#"[true,"\n",null,0],[true,"x\nab",{"values":["ab"],"indices":[[2,4]],"index":2},4]]"#,
+    ));
+
     for (source, expected) in [
         (r"/[\q{ab}a]/v.test('ab')", true),
         (r"/[\q{ab}a\q{cd}]/v.test('ab')", true),
@@ -138,12 +146,40 @@ fn former_controls_complete_finalizers_and_unproved_algebra_matches_reference_re
         );
         assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)));
     }
-    assert_true(
-        r#"var marker=0,ok=false;try{ok=(function(){var pattern="[a\\q{ab}]+",rows=[],metadata=true;
-for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
-for(var input of ['ab!','','\n','x\nab']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
-return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"ab\"],\"indices\":[[0,2]],\"index\":0},2],[false,\"\",null,0],[false,\"\\n\",null,0],[false,\"x\\nab\",{\"values\":[\"ab\"],\"indices\":[[2,4]],\"index\":2},4],[true,\"ab!\",{\"values\":[\"ab\"],\"indices\":[[0,2]],\"index\":0},2],[true,\"\",null,0],[true,\"\\n\",null,0],[true,\"x\\nab\",{\"values\":[\"ab\"],\"indices\":[[2,4]],\"index\":2},4]]"})();}finally{marker=3}ok&&marker===3"#,
-    );
+    assert_true(&format!(
+        r#"
+            var marker = 0,
+                ok = false;
+            try {{
+                ok = (function() {{
+                    var pattern = "[a\\q{{ab}}]+",
+                        rows = [],
+                        metadata = true;
+                    for (var multi of [false, true]) {{
+                        var r = new RegExp(pattern, 'dvg' + (multi ? 'm' : ''));
+                        metadata = metadata && r.source === pattern;
+                        for (var input of ['ab!', '', '\n', 'x\nab']) {{
+                            r.lastIndex = 0;
+                            var m = r.exec(input),
+                                result = null;
+                            if (m !== null) result = {{
+                                values: Array.from(m, v => v === undefined ? '<undefined>' :
+                                    v),
+                                indices: Array.from(m.indices, v => v === undefined ?
+                                    '<undefined>' : v),
+                                index: m.index
+                            }};
+                            rows.push([multi, input, result, r.lastIndex]);
+                        }}
+                    }}
+                    return metadata && JSON.stringify(rows) === {expected_serialized_output:?}
+                }})();
+            }} finally {{
+                marker = 3
+            }}
+            ok && marker === 3
+        "#
+    ));
     for source in [
         r"/[[a\q{ab}]&&\p{RGI_Emoji}]+/v.test('ab')",
         r"/[a\q{ab}]x/v.test('abx')",

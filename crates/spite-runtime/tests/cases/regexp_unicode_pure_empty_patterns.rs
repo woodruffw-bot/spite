@@ -227,6 +227,10 @@ fn unicode_pure_empty_modifier_and_skipped_capture_results_keep_native_metadata(
         "#,
     );
     assert_true(
-        "let m=/(?:|a){0}/dv.exec('a');m.length===1&&m[0]===''&&m.index===0&&m.indices[0][0]===0&&m.indices[0][1]===0",
+        r#"
+            let m = /(?:|a){0}/dv.exec('a');
+            m.length === 1 && m[0] === '' && m.index === 0 && m.indices[0][0] === 0 && m.indices[0][1] ===
+                0
+        "#,
     );
 }

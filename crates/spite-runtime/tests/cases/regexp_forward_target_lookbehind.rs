@@ -81,7 +81,10 @@ fn nested_future_names_empty_slots_outside_imports_and_matching_directions_keep_
         "#,
     );
     assert_true(
-        r"let a=/(?<=(\2a()){2})b/d.exec('aab');a[1]==='a'&&a[2]===''&&a.indices[2][0]===1&&a.indices[2][1]===1",
+        r#"
+            let a = /(?<=(\2a()){2})b/d.exec('aab');
+            a[1] === 'a' && a[2] === '' && a.indices[2][0] === 1 && a.indices[2][1] === 1
+        "#,
     );
     assert_true(
         r#"
@@ -99,7 +102,10 @@ fn nested_future_names_empty_slots_outside_imports_and_matching_directions_keep_
         "#,
     );
     assert_true(
-        r"let a=/(b)(?<=(\3(a)){2}\1)c/d.exec('aaaabc');a.index===4&&a[1]==='b'&&a[2]==='aa'&&a.indices[3][0]===1",
+        r#"
+            let a = /(b)(?<=(\3(a)){2}\1)c/d.exec('aaaabc');
+            a.index === 4 && a[1] === 'b' && a[2] === 'aa' && a.indices[3][0] === 1
+        "#,
     );
 }
 #[test]

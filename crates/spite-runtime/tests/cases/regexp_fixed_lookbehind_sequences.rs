@@ -112,7 +112,10 @@ fn sequence_lookbehind_captures_negative_restore_and_outer_retry_preserve_ranges
         "#,
     );
     assert_true(
-        r"let a=/(?<=((?:ab){0}))c/d.exec('c');a.index===0&&a[1]===''&&a.indices[1][0]===0&&a.indices[1][1]===0",
+        r#"
+            let a = /(?<=((?:ab){0}))c/d.exec('c');
+            a.index === 0 && a[1] === '' && a.indices[1][0] === 0 && a.indices[1][1] === 0
+        "#,
     );
 }
 

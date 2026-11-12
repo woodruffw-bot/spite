@@ -71,7 +71,8 @@ fn empty_attempts_restore_names_indices_nested_body_and_atomic_assertion_effects
         r#"
             let a = /(?<x>a|)*/d.exec('aa');
             a[0] === 'aa' && a.groups.x === 'a' && a.indices.groups.x === a.indices[1] && a.indices[1][
-                0] === 1
+                0
+            ] === 1
         "#,
     );
     assert_true(
@@ -81,16 +82,25 @@ fn empty_attempts_restore_names_indices_nested_body_and_atomic_assertion_effects
         r"let a=/(?<x>a|)+/d.exec('');a.groups.x===''&&a.indices[1][0]===0&&a.indices[1][1]===0",
     );
     assert_true(
-        r"let a=/((a?)|b)*c/d.exec('bbc');a[1]==='b'&&a[2]===undefined&&a.indices[1][0]===1&&a.indices[2]===undefined",
+        r#"
+            let a = /((a?)|b)*c/d.exec('bbc');
+            a[1] === 'b' && a[2] === undefined && a.indices[1][0] === 1 && a.indices[2] === undefined
+        "#,
     );
     assert_true(
         r"let a=/(?=((a|)*))\1b/d.exec('aab');a[1]==='aa'&&a[2]==='a'&&a.indices[2][0]===1",
     );
     assert_true(
-        r"let a=/(?!((a|)*c))(a|)*b/d.exec('aab');a[1]===undefined&&a[2]===undefined&&a[3]==='a'&&a.indices[3][0]===1",
+        r#"
+            let a = /(?!((a|)*c))(a|)*b/d.exec('aab');
+            a[1] === undefined && a[2] === undefined && a[3] === 'a' && a.indices[3][0] === 1
+        "#,
     );
     assert_true(
-        r"let a=/([\uD800]|)*/d.exec('\uD800\uD800\uDC00');a[0].length===2&&a.indices[1][0]===1&&a.indices[1][1]===2",
+        r#"
+            let a = /([\uD800]|)*/d.exec('\uD800\uD800\uDC00');
+            a[0].length === 2 && a.indices[1][0] === 1 && a.indices[1][1] === 2
+        "#,
     );
 }
 

@@ -21,7 +21,10 @@ fn assertions_inside_fixed_capturing_groups_preserve_consuming_and_empty_slots()
         "#,
     );
     assert_true(
-        r"let a=/([a]\B)([0-9_])/d.exec('a_');a[1]==='a'&&a[2]==='_'&&a.indices[2][0]===1&&/a(\b\B)b/.exec('ab')===null",
+        r#"
+            let a = /([a]\B)([0-9_])/d.exec('a_');
+            a[1] === 'a' && a[2] === '_' && a.indices[2][0] === 1 && /a(\b\B)b/.exec('ab') === null
+        "#,
     );
 }
 
@@ -69,17 +72,26 @@ fn continuation_assertions_constrain_repetition_before_greedy_lazy_selection() {
         "#,
     );
     assert_true(
-        r"let a=/(a*)(\b)/d.exec('aaa');a[1]==='aaa'&&a[2]===''&&a.indices[2][0]===3&&/(a)+(\b)b/.exec('aaab')===null",
+        r#"
+            let a = /(a*)(\b)/d.exec('aaa');
+            a[1] === 'aaa' && a[2] === '' && a.indices[2][0] === 3 && /(a)+(\b)b/.exec('aaab') === null
+        "#,
     );
 }
 
 #[test]
 fn outer_anchors_groups_branches_and_sticky_state_reuse_fixed_assertion_plans() {
     assert_true(
-        r"let a=/^((\ba+\b))$/d.exec('aaa');a[1]==='aaa'&&a[2]==='aaa'&&a.indices[2][0]===0&&a.indices[2][1]===3",
+        r#"
+            let a = /^((\ba+\b))$/d.exec('aaa');
+            a[1] === 'aaa' && a[2] === 'aaa' && a.indices[2][0] === 0 && a.indices[2][1] === 3
+        "#,
     );
     assert_true(
-        r"let a=/^((a\Bb))$/d.exec('ab');a[1]==='ab'&&a[2]==='ab'&&a.indices[2][1]===2&&/^((\ba\b))$/.test('a')",
+        r#"
+            let a = /^((a\Bb))$/d.exec('ab');
+            a[1] === 'ab' && a[2] === 'ab' && a.indices[2][1] === 2 && /^((\ba\b))$/.test('a')
+        "#,
     );
     assert_true(
         r#"
@@ -112,7 +124,8 @@ fn word_assertion_offsets_keep_pinned_flags_and_individual_surrogate_units() {
         r#"
             let a = /(\uD83D\B)(\uDCA9\b)(a)/d.exec('💩a');
             a[0].length === 3 && a[1] === '\uD83D' && a[2] === '\uDCA9' && a[3] === 'a' && a.indices[2][
-                0] === 1 && a.indices[3][0] === 2
+                0
+            ] === 1 && a.indices[3][0] === 2
         "#,
     );
     assert_true(

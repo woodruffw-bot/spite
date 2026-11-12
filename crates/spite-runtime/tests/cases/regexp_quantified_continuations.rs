@@ -106,7 +106,8 @@ fn intrinsic_results_have_only_the_whole_match_and_bypass_setters() {
                 p = Object.getOwnPropertyDescriptor(m, '0');
             calls === 0 && m.length === 1 && m[0] === 'aab' && m.index === 1 && m.input === 'xaab' && m
                 .groups === undefined && m.indices.length === 1 && m.indices[0][0] === 1 && m.indices[0][
-                1] === 4 && p.writable && p.enumerable && p.configurable
+                    1
+                ] === 4 && p.writable && p.enumerable && p.configurable
         "#,
     );
 }

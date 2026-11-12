@@ -178,7 +178,7 @@ fn single_branch_captures_survive_consumers_callbacks_clones_and_collection() {
             all.length === 4 && all.map(m => m[0]).join('|') === 'a|a||' && all[0].groups.part === 'a' &&
                 all[0].groups.empty === undefined && all[2].groups.part === undefined && all[2].groups
                 .empty === '' && all[2].groups.first === '' && all.every(m => m.groups.later ===
-                undefined) && r.lastIndex === 0
+                    undefined) && r.lastIndex === 0
         "#,
     );
     assert_true(
@@ -208,7 +208,8 @@ fn single_branch_captures_survive_consumers_callbacks_clones_and_collection() {
             r.lastIndex = 9;
             var parts = 'ab'.split(r);
             'baa'.search(r) === 0 && r.lastIndex === 9 && parts.length === 4 && parts[0] === '' && parts[
-                1] === 'a' && parts[2] === undefined && parts[3] === 'b' && 'aa!'.match(r).join('|') ===
+                    1] === 'a' && parts[2] === undefined && parts[3] === 'b' && 'aa!'.match(r).join(
+                '|') ===
                 'a|a||' && 'aa!'.replace(r, '<$<part>:$<empty>>') === '<a:><a:><:>!<:>'
         "#,
     );
@@ -229,13 +230,43 @@ fn single_branch_captures_survive_consumers_callbacks_clones_and_collection() {
 #[test]
 fn single_branch_proofs_finish_finalizers_and_keep_other_shapes_host_failures() {
     assert_true(
-        r"var marker=0,m;try{m=/(([\q{a}])|())/dv.exec('a')}finally{marker=3}marker===3&&m[0]==='a'&&m[1]==='a'&&m[2]==='a'&&m[3]===undefined&&m.indices[2][1]===1",
+        r#"
+            var marker = 0,
+                m;
+            try {
+                m = /(([\q{a}])|())/dv.exec('a')
+            } finally {
+                marker = 3
+            }
+            marker === 3 && m[0] === 'a' && m[1] === 'a' && m[2] === 'a' && m[3] === undefined && m
+                .indices[2][1] === 1
+        "#,
     );
     assert_true(
-        r"var marker=0,m;try{m=/(([\q{a}])|())/dv.exec('!')}finally{marker=3}marker===3&&m[0]===''&&m[1]===''&&m[2]===undefined&&m[3]===''&&m.indices[3][0]===0",
+        r#"
+            var marker = 0,
+                m;
+            try {
+                m = /(([\q{a}])|())/dv.exec('!')
+            } finally {
+                marker = 3
+            }
+            marker === 3 && m[0] === '' && m[1] === '' && m[2] === undefined && m[3] === '' && m.indices[3]
+                [0] === 0
+        "#,
     );
     assert_true(
-        r"var marker=0,m;try{m=/(?:([\q{ab}&&\q{cd}])|())/dv.exec('ab')}finally{marker=3}marker===3&&m[0]===''&&m[1]===undefined&&m[2]===''&&m.indices[1]===undefined&&m.indices[2][0]===0",
+        r#"
+            var marker = 0,
+                m;
+            try {
+                m = /(?:([\q{ab}&&\q{cd}])|())/dv.exec('ab')
+            } finally {
+                marker = 3
+            }
+            marker === 3 && m[0] === '' && m[1] === undefined && m[2] === '' && m.indices[1] ===
+                undefined && m.indices[2][0] === 0
+        "#,
     );
     for pattern in [
         r"^([\q{a}])|()",
@@ -257,6 +288,16 @@ fn single_branch_proofs_finish_finalizers_and_keep_other_shapes_host_failures() 
         );
     }
     assert_true(
-        "var yes=0;for(var p of ['(?:(?<x>[a])|(?<x>))(?<x>)','(?:([\\q{ab}&&a--a])|())']){try{new RegExp(p,'v')}catch(e){if(e instanceof SyntaxError)yes++}}yes===2",
+        r#"
+            var yes = 0;
+            for (var p of ['(?:(?<x>[a])|(?<x>))(?<x>)', '(?:([\q{ab}&&a--a])|())']) {
+                try {
+                    new RegExp(p, 'v')
+                } catch (e) {
+                    if (e instanceof SyntaxError) yes++
+                }
+            }
+            yes === 2
+        "#,
     );
 }

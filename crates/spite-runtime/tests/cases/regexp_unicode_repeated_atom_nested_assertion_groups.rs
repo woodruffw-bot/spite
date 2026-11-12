@@ -75,7 +75,8 @@ fn unicode_repeated_atom_nested_assertion_groups_scopes_and_counts() {
         assert_true(&format!(
             r#"
                 let m = /(\b^(a)$\b)+/{mode}.exec('a');
-                m.length === 3 && m[0] === 'a' && m[1] === 'a' && m[2] === 'a' && /(\b^(a)$\b){{2}}/{mode}
+                m.length === 3 && m[0] === 'a' && m[1] === 'a' && m[2] === 'a' &&
+                    /(\b^(a)$\b){{2}}/{mode}
                     .exec('a') === null
             "#
         ));

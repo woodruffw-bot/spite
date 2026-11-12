@@ -71,7 +71,8 @@ fn assertions_flags_and_complete_input_neighbors_keep_choice_ranges() {
         r#"
             let a = /^((a|b)+)($)(\n)/dm.exec('x\nabab\n');
             a.index === 2 && a[1] === 'abab' && a[2] === 'b' && a.indices[2][0] === 5 && a.indices[3][
-                0] === 6 && /^((a|b)+)($)(\n)/.exec('abab\n') === null
+                0
+            ] === 6 && /^((a|b)+)($)(\n)/.exec('abab\n') === null
         "#,
     );
     assert_true(
@@ -145,7 +146,7 @@ fn generic_consumers_intrinsic_arrays_and_callback_arguments_keep_choices() {
         r#"
             let seen;
             let s = 'qxababy'.replace(/(x)((a|b)+)(y)/, (whole, prefix, run, last, sequel, index,
-            input) => {
+                input) => {
                 seen = [whole, prefix, run, last, sequel, index, input];
                 return 'z'
             });

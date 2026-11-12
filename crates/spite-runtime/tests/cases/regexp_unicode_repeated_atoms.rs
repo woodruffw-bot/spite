@@ -87,8 +87,10 @@ fn unicode_repeated_atoms_greedy_lazy_bounds_escapes_and_properties() {
         ));
         assert_true(&format!(
             r#"
-                /\u{{61}}?/{mode}.exec('aa')[0] === 'a' && /\u{{61}}??/{mode}.exec('aa')[0] === '' &&
-                    /\??/{mode}.exec('??')[0] === '?' && /\???/{mode}.exec('??')[0] === '' &&
+                /\u{{61}}?/{mode}.exec('aa')[0] === 'a' && /\u{{61}}??/{mode}.exec('aa')[
+                    0] === '' &&
+                    /\??/{mode}.exec('??')[0] === '?' && /\???/{mode}.exec('??')[0] ===
+                    '' &&
                     /\$+/{mode}.exec('$$')[0] === '$$'
             "#
         ));

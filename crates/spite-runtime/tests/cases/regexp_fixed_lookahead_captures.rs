@@ -93,7 +93,8 @@ fn named_forward_ranges_after_the_match_backward_children_and_negative_restorati
         r#"
             let a = /(?<=a(?=(?<x>b){2}))b/d.exec('qabb');
             a.index === 2 && a.groups.x === 'b' && a.indices.groups.x === a.indices[1] && a.indices[1][
-                0] === 3 && a.indices[1][1] === 4
+                0
+            ] === 3 && a.indices[1][1] === 4
         "#,
     );
     assert_true(
@@ -150,7 +151,8 @@ fn consumers_callbacks_imported_ranges_sticky_and_empty_advancement() {
             let r = /(?<=((?=(b))){2})/dg,
                 a = [...'bb'.matchAll(r)];
             a.length === 2 && a[1].index === 1 && a[1][1] === '' && a[1][2] === 'b' && a[1].indices[2][
-                0] === 1 && r.lastIndex === 0
+                0
+            ] === 1 && r.lastIndex === 0
         "#,
     );
     assert_true(

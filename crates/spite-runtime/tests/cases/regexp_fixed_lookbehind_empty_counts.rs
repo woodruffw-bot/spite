@@ -83,7 +83,8 @@ fn empty_count_lookbehind_local_boundaries_named_aliases_zero_slots_and_rollback
         r#"
             let a = /(?<=(?<x>){2}a)b/d.exec('qab');
             a.index === 2 && a.groups.x === '' && a.indices.groups.x === a.indices[1] && a.indices[1][
-                0] === 1 && a.indices[1][1] === 1
+                0
+            ] === 1 && a.indices[1][1] === 1
         "#,
     );
     assert_true(
@@ -97,7 +98,8 @@ fn empty_count_lookbehind_local_boundaries_named_aliases_zero_slots_and_rollback
         r#"
             let a = /(?<=(((){0})a))b/d.exec('ab');
             a[1] === 'a' && a[2] === '' && a[3] === undefined && a.indices[2][0] === 0 && a.indices[2][
-                1] === 0 && a.indices[3] === undefined
+                1
+            ] === 0 && a.indices[3] === undefined
         "#,
     );
     assert_true(
@@ -131,7 +133,10 @@ fn empty_count_lookbehind_local_boundaries_named_aliases_zero_slots_and_rollback
         "#,
     );
     assert_true(
-        r"let a=/(?<=(?:(){2})(?<=a))b/d.exec('ab');a.index===1&&a[1]===''&&a.indices[1][0]===1&&a.indices[1][1]===1",
+        r#"
+            let a = /(?<=(?:(){2})(?<=a))b/d.exec('ab');
+            a.index === 1 && a[1] === '' && a.indices[1][0] === 1 && a.indices[1][1] === 1
+        "#,
     );
 }
 

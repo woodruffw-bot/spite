@@ -91,7 +91,10 @@ fn gap_captures_preserve_named_ranges_in_both_directions() {
     );
     assert_true(r"let a=/(?<=(\1){1}a)b/d.exec('ab');a[1]===''&&a.indices[1][0]===0");
     assert_true(
-        r"let a=/(?<=(a)(()\1){1})b/d.exec('ab');a[2]===''&&a[3]===''&&a.indices[2][0]===1&&a.indices[3][0]===1",
+        r#"
+            let a = /(?<=(a)(()\1){1})b/d.exec('ab');
+            a[2] === '' && a[3] === '' && a.indices[2][0] === 1 && a.indices[3][0] === 1
+        "#,
     );
     assert_true(
         r"let a=/(?<!(a)(\1){1})b/d.exec('b');a[1]===undefined&&a[2]===undefined&&a.indices[2]===undefined",

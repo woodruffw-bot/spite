@@ -75,7 +75,10 @@ fn unicode_assertion_sequences_conjunctions_neighbors_and_multiline() {
             r"/^^/{mode}.test('A')&&/$$/{mode}.exec('A').index===1&&/$^/{mode}.test('')&&!/$^/{mode}.test('A')"
         ));
         assert_true(&format!(
-            r"/\b\b/{mode}.exec('A').index===0&&!/\b\B/{mode}.test('A')&&!/\B\b/{mode}.test('')&&/\B\B/{mode}.test('')"
+            r#"
+                /\b\b/{mode}.exec('A').index === 0 && !/\b\B/{mode}.test('A') && !
+                    /\B\b/{mode}.test('') && /\B\B/{mode}.test('')
+            "#
         ));
         assert_true(&format!(
             r#"

@@ -172,10 +172,39 @@ fn string_set_operations_run_finalizers_and_preserve_early_errors() {
         assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)));
     }
     assert_true(
-        r#"var marker=0,ok=false;try{ok=(function(){var pattern="[\\q{ab}--\\q{ab}]+",rows=[],metadata=true;
-for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
-for(var input of ['ab!','','\n','x\nab']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
-return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",null,0],[false,\"\",null,0],[false,\"\\n\",null,0],[false,\"x\\nab\",null,0],[true,\"ab!\",null,0],[true,\"\",null,0],[true,\"\\n\",null,0],[true,\"x\\nab\",null,0]]"})();}finally{marker=3}ok&&marker===3"#,
+        r#"
+            var marker = 0,
+                ok = false;
+            try {
+                ok = (function() {
+                    var pattern = "[\\q{ab}--\\q{ab}]+",
+                        rows = [],
+                        metadata = true;
+                    for (var multi of [false, true]) {
+                        var r = new RegExp(pattern, 'dvg' + (multi ? 'm' : ''));
+                        metadata = metadata && r.source === pattern;
+                        for (var input of ['ab!', '', '\n', 'x\nab']) {
+                            r.lastIndex = 0;
+                            var m = r.exec(input),
+                                result = null;
+                            if (m !== null) result = {
+                                values: Array.from(m, v => v === undefined ? '<undefined>' :
+                                    v),
+                                indices: Array.from(m.indices, v => v === undefined ?
+                                    '<undefined>' : v),
+                                index: m.index
+                            };
+                            rows.push([multi, input, result, r.lastIndex]);
+                        }
+                    }
+                    return metadata && JSON.stringify(rows) ===
+                        "[[false,\"ab!\",null,0],[false,\"\",null,0],[false,\"\\n\",null,0],[false,\"x\\nab\",null,0],[true,\"ab!\",null,0],[true,\"\",null,0],[true,\"\\n\",null,0],[true,\"x\\nab\",null,0]]"
+                })();
+            } finally {
+                marker = 3
+            }
+            ok && marker === 3
+        "#,
     );
     for source in [
         r"/[\q{ab}&&\q{cd}&&\p{RGI_Emoji}]/v.test('')",
@@ -192,7 +221,16 @@ return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",null,0],[false,\"\",nul
     ] {
         let source = JsString::from(format!("marker=1;/{pattern}/v.test('ab');").as_str());
         assert_true(&format!(
-            "let marker=0,caught=false;try{{eval({source:?});}}catch(e){{caught=e instanceof SyntaxError;}}caught && marker===0"
+            r#"
+                let marker = 0,
+                    caught = false;
+                try {{
+                    eval({source:?});
+                }} catch (e) {{
+                    caught = e instanceof SyntaxError;
+                }}
+                caught && marker === 0
+            "#
         ));
     }
 }

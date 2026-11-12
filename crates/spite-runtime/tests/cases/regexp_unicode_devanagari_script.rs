@@ -418,7 +418,8 @@ fn unicode_devanagari_script_consumers_preserve_original_text() {
             r#"
                 let a = [...'क😀Aख'.matchAll(/(?<x>\P{{sc=Devanagari}})/d{mode}g)];
                 a.length === 2 && a[0][1] === '😀' && a[0].index === 1 && a[0].indices[1][1] === 3 && a[1][
-                    1] === 'A' && a[1].index === 3
+                    1
+                ] === 'A' && a[1].index === 3
             "#
         ));
         assert_true(&format!(
@@ -428,7 +429,14 @@ fn unicode_devanagari_script_consumers_preserve_original_text() {
             r"'AकखA'.split(/(\p{{Script=Devanagari}})/{mode}).join('|')==='A|क||ख|A'&&'A😀क'.search(/\p{{sc=Deva}}/{mode})===3&&'कखA'.match(/\p{{Script=Deva}}/{mode}g).join('')==='कख'"
         ));
         assert_true(&format!(
-            r"let t='',x='कखAक'.replace(/(\p{{sc=Devanagari}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__A_'&&t==='013'"
+            r#"
+                let t = '',
+                    x = 'कखAक'.replace(/(\p{{sc=Devanagari}})/{mode}g, (m, c, p) => {{
+                        t += p;
+                        return '_'
+                    }});
+                x === '__A_' && t === '013'
+            "#
         ));
     }
 }
@@ -516,7 +524,11 @@ fn unicode_devanagari_script_opted_work_and_remaining_sets() {
     assert_true(r"/[\p{sc=Deva}&&A]/v.exec('A')===null");
     assert_true(r"/[\p{sc=Deva}--A]/v.exec('A')===null");
     assert_true(
-        r"let s=String.fromCodePoint(0x915),m=/[\p{sc=Deva}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+        r#"
+            let s = String.fromCodePoint(0x915),
+                m = /[\p{sc=Deva}--A]/v.exec(s);
+            m !== null && m.length === 1 && m[0] === s && m.index === 0 && m.input === s
+        "#,
     );
     for source in [
         r"/\p{sc=Deva}+b/u.exec('AA')",

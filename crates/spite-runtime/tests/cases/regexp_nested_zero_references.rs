@@ -197,7 +197,8 @@ fn nested_empty_references_keep_named_aliases_forward_open_slots_and_negative_un
         r#"
             let a = /(?<=(a))((()\4){2}){2}b/d.exec('ab');
             a.index === 1 && a[1] === 'a' && a[2] === '' && a[3] === '' && a[4] === '' && a.indices[1][
-                0] === 0 && a.indices[4][0] === 1
+                0
+            ] === 0 && a.indices[4][0] === 1
         "#,
     );
 }

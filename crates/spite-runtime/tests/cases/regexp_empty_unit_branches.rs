@@ -124,7 +124,10 @@ fn alternatives_and_state_keep_branch_capture_offsets_and_original_source() {
 #[test]
 fn escapes_flags_surrogates_and_adjacent_empty_groups_keep_exact_units() {
     assert_true(
-        r"let a=/\0()(\x61|\u0062)1/d.exec('\0b1');a[1]===''&&a[2]==='b'&&a.indices[1][0]===1&&a.indices[2][0]===1",
+        r#"
+            let a = /\0()(\x61|\u0062)1/d.exec('\0b1');
+            a[1] === '' && a[2] === 'b' && a.indices[1][0] === 1 && a.indices[2][0] === 1
+        "#,
     );
     assert_true(
         r#"

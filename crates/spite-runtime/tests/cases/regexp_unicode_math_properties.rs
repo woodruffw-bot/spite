@@ -83,7 +83,8 @@ fn unicode_math_properties_aliases_complements_and_unions() {
                     x = /[^\P{{Math}}K]/i{mode};
                 p.test('K') && n.test('K') && !x.test('K') &&
                     '\u0392\u0395\u0398\u039A\u03A1\u03A6\u03B2\u03B5\u03B8\u03BA\u03C1\u03C6\u03D0\u03D1\u03D5\u03F0\u03F1\u03F4\u03F5'
-                    .split('').every(c => p.test(c) && n.test(c) === ('{mode}' === 'u') && x.test(c) ===
+                    .split('').every(c => p.test(c) && n.test(c) === ('{mode}' === 'u') && x.test(
+                        c) ===
                         ('{mode}' === 'v'))
             "#
         ));
@@ -283,12 +284,19 @@ fn unicode_math_properties_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     assert_true(
-        r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
+        r#"
+            let m = /\p{Script_Extensions=Latin}/u.exec('A');
+            JSON.stringify(m) === '["A"]' && m.index === 0 && m.input === 'A'
+        "#,
     );
     assert_true(r"/[\p{Math}&&A]/v.exec('A')===null");
     assert_true(r"/[\p{Math}--A]/v.exec('A')===null");
     assert_true(
-        r"let s=String.fromCodePoint(0x2b),m=/[\p{Math}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+        r#"
+            let s = String.fromCodePoint(0x2b),
+                m = /[\p{Math}--A]/v.exec(s);
+            m !== null && m.length === 1 && m[0] === s && m.index === 0 && m.input === s
+        "#,
     );
     for source in [r"/\p{Math}+b/u.exec('AA')", r"/\p{Math}A/v.exec('AA')"] {
         crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);

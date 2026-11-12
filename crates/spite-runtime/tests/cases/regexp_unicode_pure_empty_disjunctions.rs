@@ -203,6 +203,9 @@ fn unicode_pure_empty_disjunction_preserves_earlier_empty_and_capture_results() 
         "#,
     );
     assert_true(
-        "let m=/(?<x>)+()/du.exec('');m.length===3&&m.groups.x===''&&m[2]===''&&m.indices.groups.x===m.indices[1]",
+        r#"
+            let m = /(?<x>)+()/du.exec('');
+            m.length === 3 && m.groups.x === '' && m[2] === '' && m.indices.groups.x === m.indices[1]
+        "#,
     );
 }

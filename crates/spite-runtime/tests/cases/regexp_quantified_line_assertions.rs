@@ -38,7 +38,8 @@ fn assertion_only_prefixes_filter_starts_without_losing_empty_captures() {
         r#"
             let a = /(^)(a)+($)/dm.exec('x\naaa\nx');
             a.index === 2 && a[0] === 'aaa' && a[1] === '' && a[2] === 'a' && a[3] === '' && a.indices[1][
-                0] === 2 && a.indices[2][0] === 4 && a.indices[3][0] === 5
+                0
+            ] === 2 && a.indices[2][0] === 4 && a.indices[3][0] === 5
         "#,
     );
     assert_true(
@@ -84,7 +85,10 @@ fn outer_assertions_complete_groups_and_alternatives_share_constrained_endpoints
         "#,
     );
     assert_true(
-        r"let a=/(a+($))|(a+)/d.exec('aaa\n');a[1]===undefined&&a[2]===undefined&&a[3]==='aaa'&&a.indices[3][0]===0",
+        r#"
+            let a = /(a+($))|(a+)/d.exec('aaa\n');
+            a[1] === undefined && a[2] === undefined && a[3] === 'aaa' && a.indices[3][0] === 0
+        "#,
     );
 }
 
@@ -100,7 +104,12 @@ fn global_sticky_flags_and_surrogate_offsets_preserve_complete_input_boundaries(
         "#,
     );
     assert_true(
-        r"let r=/(a)+($)/dg,a=r.exec('xaa aa'),b=r.exec('xaa aa');a.index===4&&a[0]==='aa'&&r.lastIndex===0&&b===null",
+        r#"
+            let r = /(a)+($)/dg,
+                a = r.exec('xaa aa'),
+                b = r.exec('xaa aa');
+            a.index === 4 && a[0] === 'aa' && r.lastIndex === 0 && b === null
+        "#,
     );
     assert_true(
         r"let a=/([µ]$)(\n^)(a)+/dmi.exec('Μ\nAAA');a[1]==='Μ'&&a[2]==='\n'&&a[3]==='A'&&a.indices[3][0]===4",

@@ -8,6 +8,25 @@ use spite_runtime::{Realm, Value};
 use test_case::test_case;
 #[test]
 fn zero_count_asserted_single_string_class_native_tables_consumers_and_required_empty_identity() {
+    let expected_serialized_output = JsString::from(concat!(
+        r#"[["a","","<undefined>","<undefined>","<undefined>","a","a","a","<undefined>","#,
+        r#""<undefined>","<undefined>",""],"#,
+        r#"[[0,1],[0,0],"<undefined>","<undefined>","<undefined>",[0,1],[0,1],[0,1],"#,
+        r#""<undefined>","<undefined>","<undefined>",[1,1]],0,1]"#,
+    ));
+    let expected_serialized_output_2 = JsString::from(concat!(
+        r#"[["","","<undefined>","<undefined>","<undefined>","","","","<undefined>","#,
+        r#""<undefined>","<undefined>",""],"#,
+        r#"[[1,1],[1,1],"<undefined>","<undefined>","<undefined>",[1,1],[1,1],[1,1],"#,
+        r#""<undefined>","<undefined>","<undefined>",[1,1]],1,1]"#,
+    ));
+    let expected_serialized_output_3 = JsString::from(concat!(
+        r#"[["","","<undefined>","<undefined>","<undefined>","","","","<undefined>","#,
+        r#""<undefined>","<undefined>",""],"#,
+        r#"[[0,0],[0,0],"<undefined>","<undefined>","<undefined>",[0,0],[0,0],[0,0],"#,
+        r#""<undefined>","<undefined>","<undefined>",[0,0]],0,0]"#,
+    ));
+
     assert_true(
         r#"
             var pattern =
@@ -87,87 +106,90 @@ fn zero_count_asserted_single_string_class_native_tables_consumers_and_required_
                 "[[\"ab\",\"\",\"ab\",\"ab\",\"ab\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\"],[[2,4],[2,2],[2,4],[2,4],[2,4],\"<undefined>\",\"<undefined>\",\"<undefined>\",[4,4]],2,4]"
         "#,
     );
-    assert_true(
+    assert_true(&format!(
         r#"
             var pattern =
-                "(?<before>\\b)(?<z>(?<z1>\\b){1,}|(?<z2>\\B)?){0}(?<whole>(?<iteration>(?<c>[\\p{Any}\\q{|ab}])){1})(?<s>(?<s1>$)|(?<s2>^)){000,000}?(?<after>\\b)",
+                "(?<before>\\b)(?<z>(?<z1>\\b){{1,}}|(?<z2>\\B)?){{0}}(?<whole>(?<iteration>(?<c>[\\p{{Any}}\\q{{|ab}}])){{1}})(?<s>(?<s1>$)|(?<s2>^)){{000,000}}?(?<after>\\b)",
                 input = "a",
                 r = new RegExp(pattern, "dgvy"),
                 ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
                 .unicode === false;
             r.lastIndex = 0;
             var m = r.exec(input);
-            if (m !== null) {
+            if (m !== null) {{
                 var names = ["before", "z", "z1", "z2", "whole", "iteration", "c", "s", "s1", "s2",
-                    "after"];
-                for (var n of names) {
+                    "after"
+                ];
+                for (var n of names) {{
                     var slot = names.indexOf(n) + 1;
                     ok = ok && Object.hasOwn(m.groups, n) && Object.hasOwn(m.indices.groups, n) && m
                         .groups[n] === m[slot] && m.indices.groups[n] === m.indices[slot]
-                }
+                }}
                 ok = ok && Object.getPrototypeOf(m.groups) === null && m.input === input
-            } else ok = false;
+            }} else ok = false;
             ok && m !== null && JSON.stringify([Array.from(m, v => v === undefined ? "<undefined>" : v),
                     Array.from(m.indices, v => v === undefined ? "<undefined>" : v), m.index, r
                     .lastIndex
                 ]) ===
-                "[[\"a\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"a\",\"a\",\"a\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\"],[[0,1],[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\",[0,1],[0,1],[0,1],\"<undefined>\",\"<undefined>\",\"<undefined>\",[1,1]],0,1]"
-        "#,
-    );
-    assert_true(
+                {expected_serialized_output:?}
+        "#
+    ));
+    assert_true(&format!(
         r#"
             var pattern =
-                "(?<before>\\b)(?<z>(?<z1>\\b){1,}|(?<z2>\\B)?){0}(?<whole>(?<iteration>(?<c>[a-z\\q{|S|sa|aX}])){1}?)(?<s>(?<s1>$)|(?<s2>^)){000,000}?(?<after>\\b)",
+                "(?<before>\\b)(?<z>(?<z1>\\b){{1,}}|(?<z2>\\B)?){{0}}(?<whole>(?<iteration>(?<c>[a-z\\q{{|S|sa|aX}}])){{1}}?)(?<s>(?<s1>$)|(?<s2>^)){{000,000}}?(?<after>\\b)",
                 input = "!ab!",
                 r = new RegExp(pattern, "dgvi"),
                 ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
                 .unicode === false;
             r.lastIndex = 0;
             var m = r.exec(input);
-            if (m !== null) {
+            if (m !== null) {{
                 var names = ["before", "z", "z1", "z2", "whole", "iteration", "c", "s", "s1", "s2",
-                    "after"];
-                for (var n of names) {
+                    "after"
+                ];
+                for (var n of names) {{
                     var slot = names.indexOf(n) + 1;
                     ok = ok && Object.hasOwn(m.groups, n) && Object.hasOwn(m.indices.groups, n) && m
                         .groups[n] === m[slot] && m.indices.groups[n] === m.indices[slot]
-                }
+                }}
                 ok = ok && Object.getPrototypeOf(m.groups) === null && m.input === input
-            } else ok = false;
+            }} else ok = false;
             ok && m !== null && JSON.stringify([Array.from(m, v => v === undefined ? "<undefined>" : v),
                     Array.from(m.indices, v => v === undefined ? "<undefined>" : v), m.index, r
                     .lastIndex
                 ]) ===
-                "[[\"\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\"],[[1,1],[1,1],\"<undefined>\",\"<undefined>\",\"<undefined>\",[1,1],[1,1],[1,1],\"<undefined>\",\"<undefined>\",\"<undefined>\",[1,1]],1,1]"
-        "#,
-    );
-    assert_true(
+                {expected_serialized_output_2:?}
+        "#
+    ));
+    assert_true(&format!(
         r#"
             var pattern =
-                "(?<before>\\B)(?<z>(?<z1>\\b){1,}|(?<z2>\\B)?){0}(?<whole>(?<iteration>(?<c>[\\q{|a|ab}])){1,1})(?<s>(?<s1>$)|(?<s2>^)){000,000}?(?<after>\\B)",
+                "(?<before>\\B)(?<z>(?<z1>\\b){{1,}}|(?<z2>\\B)?){{0}}(?<whole>(?<iteration>(?<c>[\\q{{|a|ab}}])){{1,1}})(?<s>(?<s1>$)|(?<s2>^)){{000,000}}?(?<after>\\B)",
                 input = "",
                 r = new RegExp(pattern, "dgv"),
                 ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
                 .unicode === false;
             r.lastIndex = 0;
             var m = r.exec(input);
-            if (m !== null) {
+            if (m !== null) {{
                 var names = ["before", "z", "z1", "z2", "whole", "iteration", "c", "s", "s1", "s2",
-                    "after"];
-                for (var n of names) {
+                    "after"
+                ];
+                for (var n of names) {{
                     var slot = names.indexOf(n) + 1;
                     ok = ok && Object.hasOwn(m.groups, n) && Object.hasOwn(m.indices.groups, n) && m
                         .groups[n] === m[slot] && m.indices.groups[n] === m.indices[slot]
-                }
+                }}
                 ok = ok && Object.getPrototypeOf(m.groups) === null && m.input === input
-            } else ok = false;
+            }} else ok = false;
             ok && m !== null && JSON.stringify([Array.from(m, v => v === undefined ? "<undefined>" : v),
                     Array.from(m.indices, v => v === undefined ? "<undefined>" : v), m.index, r
                     .lastIndex
                 ]) ===
-                "[[\"\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\"],[[0,0],[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\",[0,0],[0,0],[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\",[0,0]],0,0]"
-        "#,
-    );
+                {expected_serialized_output_3:?}
+        "#
+    ));
 
     assert_true(
         r#"
@@ -223,33 +245,34 @@ fn zero_count_asserted_single_string_class_native_tables_consumers_and_required_
         "#,
     );
 
-    assert_true(
+    assert_true(&format!(
         r#"
             var pattern =
-                "(?<before>\\b)(?<z>(?<z1>\\b){1,}|(?<z2>\\B)?){0}(?<whole>(?<iteration>(?<c>[\\q{|a|ab}])))(?<s>(?<s1>$)|(?<s2>^)){000,000}?(?<after>\\b)",
+                "(?<before>\\b)(?<z>(?<z1>\\b){{1,}}|(?<z2>\\B)?){{0}}(?<whole>(?<iteration>(?<c>[\\q{{|a|ab}}])))(?<s>(?<s1>$)|(?<s2>^)){{000,000}}?(?<after>\\b)",
                 input = "\u017faX",
                 r = new RegExp(pattern, "dgvm"),
                 ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
                 .unicode === false;
             r.lastIndex = 0;
             var m = r.exec(input);
-            if (m !== null) {
+            if (m !== null) {{
                 var names = ["before", "z", "z1", "z2", "whole", "iteration", "c", "s", "s1", "s2",
-                    "after"];
-                for (var n of names) {
+                    "after"
+                ];
+                for (var n of names) {{
                     var slot = names.indexOf(n) + 1;
                     ok = ok && Object.hasOwn(m.groups, n) && Object.hasOwn(m.indices.groups, n) && m
                         .groups[n] === m[slot] && m.indices.groups[n] === m.indices[slot]
-                }
+                }}
                 ok = ok && Object.getPrototypeOf(m.groups) === null && m.input === input
-            } else ok = false;
+            }} else ok = false;
             ok && m !== null && JSON.stringify([Array.from(m, v => v === undefined ? "<undefined>" : v),
                     Array.from(m.indices, v => v === undefined ? "<undefined>" : v), m.index, r
                     .lastIndex
                 ]) ===
-                "[[\"\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\"],[[1,1],[1,1],\"<undefined>\",\"<undefined>\",\"<undefined>\",[1,1],[1,1],[1,1],\"<undefined>\",\"<undefined>\",\"<undefined>\",[1,1]],1,1]"
-        "#,
-    );
+                {expected_serialized_output_2:?}
+        "#
+    ));
 
     assert_true(
         r#"
@@ -331,61 +354,63 @@ fn zero_count_asserted_single_string_class_native_tables_consumers_and_required_
         "#,
     );
 
-    assert_true(
+    assert_true(&format!(
         r#"
             var pattern =
-                "(?<before>^)(?<z>(?<z1>\\b){1,}|(?<z2>\\B)?){0}(?<whole>(?<iteration>(?<c>[\\p{Any}\\q{|ab}])))(?<s>(?<s1>$)|(?<s2>^)){000,000}?(?<after>\\b)",
+                "(?<before>^)(?<z>(?<z1>\\b){{1,}}|(?<z2>\\B)?){{0}}(?<whole>(?<iteration>(?<c>[\\p{{Any}}\\q{{|ab}}])))(?<s>(?<s1>$)|(?<s2>^)){{000,000}}?(?<after>\\b)",
                 input = "a",
                 r = new RegExp(pattern, "dgvym"),
                 ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
                 .unicode === false;
             r.lastIndex = 0;
             var m = r.exec(input);
-            if (m !== null) {
+            if (m !== null) {{
                 var names = ["before", "z", "z1", "z2", "whole", "iteration", "c", "s", "s1", "s2",
-                    "after"];
-                for (var n of names) {
+                    "after"
+                ];
+                for (var n of names) {{
                     var slot = names.indexOf(n) + 1;
                     ok = ok && Object.hasOwn(m.groups, n) && Object.hasOwn(m.indices.groups, n) && m
                         .groups[n] === m[slot] && m.indices.groups[n] === m.indices[slot]
-                }
+                }}
                 ok = ok && Object.getPrototypeOf(m.groups) === null && m.input === input
-            } else ok = false;
+            }} else ok = false;
             ok && m !== null && JSON.stringify([Array.from(m, v => v === undefined ? "<undefined>" : v),
                     Array.from(m.indices, v => v === undefined ? "<undefined>" : v), m.index, r
                     .lastIndex
                 ]) ===
-                "[[\"a\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"a\",\"a\",\"a\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\"],[[0,1],[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\",[0,1],[0,1],[0,1],\"<undefined>\",\"<undefined>\",\"<undefined>\",[1,1]],0,1]"
-        "#,
-    );
+                {expected_serialized_output:?}
+        "#
+    ));
 
-    assert_true(
+    assert_true(&format!(
         r#"
             var pattern =
-                "(?<before>^)(?<z>(?<z1>\\b){1,}|(?<z2>\\B)?){0}(?<whole>(?<iteration>(?<c>[\\q{|a|ab}])){1}?)(?<s>(?<s1>$)|(?<s2>^)){000,000}?(?<after>$)",
+                "(?<before>^)(?<z>(?<z1>\\b){{1,}}|(?<z2>\\B)?){{0}}(?<whole>(?<iteration>(?<c>[\\q{{|a|ab}}])){{1}}?)(?<s>(?<s1>$)|(?<s2>^)){{000,000}}?(?<after>$)",
                 input = "",
                 r = new RegExp(pattern, "dgv"),
                 ok = r.source === pattern && r.global && r.hasIndices && r.unicodeSets === true && r
                 .unicode === false;
             r.lastIndex = 0;
             var m = r.exec(input);
-            if (m !== null) {
+            if (m !== null) {{
                 var names = ["before", "z", "z1", "z2", "whole", "iteration", "c", "s", "s1", "s2",
-                    "after"];
-                for (var n of names) {
+                    "after"
+                ];
+                for (var n of names) {{
                     var slot = names.indexOf(n) + 1;
                     ok = ok && Object.hasOwn(m.groups, n) && Object.hasOwn(m.indices.groups, n) && m
                         .groups[n] === m[slot] && m.indices.groups[n] === m.indices[slot]
-                }
+                }}
                 ok = ok && Object.getPrototypeOf(m.groups) === null && m.input === input
-            } else ok = false;
+            }} else ok = false;
             ok && m !== null && JSON.stringify([Array.from(m, v => v === undefined ? "<undefined>" : v),
                     Array.from(m.indices, v => v === undefined ? "<undefined>" : v), m.index, r
                     .lastIndex
                 ]) ===
-                "[[\"\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\"],[[0,0],[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\",[0,0],[0,0],[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\",[0,0]],0,0]"
-        "#,
-    );
+                {expected_serialized_output_3:?}
+        "#
+    ));
 
     assert_true(
         r#"
@@ -858,13 +883,47 @@ fn exec_recovers_after_a_failed_match() {
 #[test]
 fn composition_results_match_reference() {
     assert_true(
-        r####"var pattern="^(?:(?:\\b)|(?:\\B)){0}((\\b)|(\\B))?([\\q{|a|ab}]){3}$",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&m!==null&&m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"aba\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\"],[[0,3],\"<undefined>\",\"<undefined>\",\"<undefined>\",[3,3]],0,0]""####,
+        r#"
+            var pattern = "^(?:(?:\\b)|(?:\\B)){0}((\\b)|(\\B))?([\\q{|a|ab}]){3}$",
+                input = "aba",
+                r = new RegExp(pattern, "dv"),
+                m = r.exec(input);
+            r.source === pattern && r.flags === "dv" && r.hasIndices && r.unicodeSets && m !== null && m
+                .input === input && m.groups === undefined && m.indices.groups === undefined && Object
+                .hasOwn(m, "groups") && Object.hasOwn(m.indices, "groups") && JSON.stringify(m === null ?
+                    null : [Array.from(m, v => v === undefined ? "<undefined>" : v), Array.from(m.indices,
+                        v => v === undefined ? "<undefined>" : v), m.index, r.lastIndex]) ===
+                "[[\"aba\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\"],[[0,3],\"<undefined>\",\"<undefined>\",\"<undefined>\",[3,3]],0,0]"
+        "#,
     );
     assert_true(
-        r####"var pattern="^(?:(?:\\b)|(?:\\B)){0}((\\b)|(\\B)){1}([\\q{|a|ab}]){3}$",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"aba\",\"\",\"\",\"<undefined>\",\"\"],[[0,3],[0,0],[0,0],\"<undefined>\",[3,3]],0,0]""####,
+        r#"
+            var pattern = "^(?:(?:\\b)|(?:\\B)){0}((\\b)|(\\B)){1}([\\q{|a|ab}]){3}$",
+                input = "aba",
+                r = new RegExp(pattern, "dv"),
+                m = r.exec(input);
+            r.source === pattern && r.flags === "dv" && r.hasIndices && r.unicodeSets && (m === null || (m
+                    .input === input && m.groups === undefined && m.indices.groups === undefined &&
+                    Object.hasOwn(m, "groups") && Object.hasOwn(m.indices, "groups"))) && JSON.stringify(
+                    m === null ? null : [Array.from(m, v => v === undefined ? "<undefined>" : v), Array
+                        .from(m.indices, v => v === undefined ? "<undefined>" : v), m.index, r.lastIndex
+                    ]) ===
+                "[[\"aba\",\"\",\"\",\"<undefined>\",\"\"],[[0,3],[0,0],[0,0],\"<undefined>\",[3,3]],0,0]"
+        "#,
     );
     assert_true(
-        r####"var pattern="^(?:(?:\\b)|(?:\\B)){0}([\\q{|a|ab}]){3}(\\b|)$",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"aba\",\"\",\"\"],[[0,3],[3,3],[3,3]],0,0]""####,
+        r#"
+            var pattern = "^(?:(?:\\b)|(?:\\B)){0}([\\q{|a|ab}]){3}(\\b|)$",
+                input = "aba",
+                r = new RegExp(pattern, "dv"),
+                m = r.exec(input);
+            r.source === pattern && r.flags === "dv" && r.hasIndices && r.unicodeSets && (m === null || (m
+                .input === input && m.groups === undefined && m.indices.groups === undefined &&
+                Object.hasOwn(m, "groups") && Object.hasOwn(m.indices, "groups"))) && JSON.stringify(
+                m === null ? null : [Array.from(m, v => v === undefined ? "<undefined>" : v), Array
+                    .from(m.indices, v => v === undefined ? "<undefined>" : v), m.index, r.lastIndex
+                ]) === "[[\"aba\",\"\",\"\"],[[0,3],[3,3],[3,3]],0,0]"
+        "#,
     );
     for pattern in [
         r"(^([\q{|a|ab}])){3}",

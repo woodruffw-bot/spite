@@ -149,7 +149,8 @@ fn generic_consumers_advance_empty_matches_and_preserve_callback_capture_argumen
                     return 'x'
                 });
             s === 'xax' && seen.length === 2 && seen[0][0] === '' && seen[0][1] === undefined && seen[0][
-                2] === 0 && seen[1][2] === 1 && seen[1][3] === 'a'
+                2
+            ] === 0 && seen[1][2] === 1 && seen[1][3] === 'a'
         "#,
     );
     assert_true(

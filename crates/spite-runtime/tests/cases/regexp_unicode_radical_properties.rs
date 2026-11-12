@@ -145,7 +145,8 @@ fn unicode_radical_properties_consumers_original_text() {
             r#"
                 let a = [...'\u2FD5😀\u2E80G'.matchAll(/(?<x>\P{{Radical}})/d{mode}g)];
                 a.length === 2 && a[0][1] === '😀' && a[0].index === 1 && a[0].indices[1][1] === 3 && a[1][
-                    1] === 'G'
+                    1
+                ] === 'G'
             "#
         ));
         assert_true(&format!(
@@ -247,12 +248,19 @@ fn unicode_radical_properties_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     assert_true(
-        r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
+        r#"
+            let m = /\p{Script_Extensions=Latin}/u.exec('A');
+            JSON.stringify(m) === '["A"]' && m.index === 0 && m.input === 'A'
+        "#,
     );
     assert_true(r"/[\p{Radical}&&A]/v.exec('A')===null");
     assert_true(r"/[\p{Radical}--A]/v.exec('A')===null");
     assert_true(
-        r"let s=String.fromCodePoint(0x2e80),m=/[\p{Radical}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+        r#"
+            let s = String.fromCodePoint(0x2e80),
+                m = /[\p{Radical}--A]/v.exec(s);
+            m !== null && m.length === 1 && m[0] === s && m.index === 0 && m.input === s
+        "#,
     );
     for source in [
         r"/\p{Radical}+b/u.exec('AA')",

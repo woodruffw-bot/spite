@@ -64,10 +64,20 @@ fn nonglobal_match_orders_conversion_and_returns_the_exact_exec_result() {
         "#,
     );
     assert_true(
-        r"
-            let t='';try{RegExp.prototype[Symbol.match].call({flags:Symbol(),get exec(){t+='e';}},'');}
-            catch(e){t=e instanceof TypeError?'type':t;}t==='type'
-        ",
+        r#"
+            let t = '';
+            try {
+                RegExp.prototype[Symbol.match].call({
+                    flags: Symbol(),
+                    get exec() {
+                        t += 'e';
+                    }
+                }, '');
+            } catch (e) {
+                t = e instanceof TypeError ? 'type' : t;
+            }
+            t === 'type'
+        "#,
     );
 }
 
@@ -143,11 +153,39 @@ fn global_match_reads_live_exec_and_creates_intrinsic_own_data_elements() {
     );
     assert_true("RegExp.prototype[Symbol.match].call({flags:'g',exec(){return null;}},'')===null");
     assert_true(
-        r"
-            let t='',r={flags:'g',exec(){t+='e';return {get 0(){t+='z';return {toString(){t+='c';throw 7;}};}};},
-                get lastIndex(){t+='l';return 0;},set lastIndex(v){t+='s';}};
-            try{RegExp.prototype[Symbol.match].call(r,'');}catch(e){t+=e;}t==='sezc7'
-        ",
+        r#"
+            let t = '',
+                r = {
+                    flags: 'g',
+                    exec() {
+                        t += 'e';
+                        return {
+                            get 0() {
+                                t += 'z';
+                                return {
+                                    toString() {
+                                        t += 'c';
+                                        throw 7;
+                                    }
+                                };
+                            }
+                        };
+                    },
+                    get lastIndex() {
+                        t += 'l';
+                        return 0;
+                    },
+                    set lastIndex(v) {
+                        t += 's';
+                    }
+                };
+            try {
+                RegExp.prototype[Symbol.match].call(r, '');
+            } catch (e) {
+                t += e;
+            }
+            t === 'sezc7'
+        "#,
     );
     assert_true(
         r"
@@ -304,10 +342,21 @@ fn search_restores_exact_lastindex_before_reading_the_uncoerced_result_index() {
         "#,
     );
     assert_true(
-        r"
-            let writes=0,r={get lastIndex(){return 0;},set lastIndex(v){writes++;},exec(){return null;}};
-            RegExp.prototype[Symbol.search].call(r,'')===-1 && writes===0
-        ",
+        r#"
+            let writes = 0,
+                r = {
+                    get lastIndex() {
+                        return 0;
+                    },
+                    set lastIndex(v) {
+                        writes++;
+                    },
+                    exec() {
+                        return null;
+                    }
+                };
+            RegExp.prototype[Symbol.search].call(r, '') === -1 && writes === 0
+        "#,
     );
     for original in [
         "NaN",
@@ -324,10 +373,17 @@ fn search_restores_exact_lastindex_before_reading_the_uncoerced_result_index() {
         ));
     }
     assert_true(
-        r"
-            let r={lastIndex:4,exec(){this.lastIndex=8;return {};}},v=RegExp.prototype[Symbol.search].call(r,'');
-            v===undefined && r.lastIndex===4
-        ",
+        r#"
+            let r = {
+                    lastIndex: 4,
+                    exec() {
+                        this.lastIndex = 8;
+                        return {};
+                    }
+                },
+                v = RegExp.prototype[Symbol.search].call(r, '');
+            v === undefined && r.lastIndex === 4
+        "#,
     );
 }
 
@@ -340,17 +396,56 @@ fn search_abrupt_completions_keep_the_specified_partial_effects() {
         ",
     );
     assert_true(
-        r"
-            let t='',last=3,r={get lastIndex(){return last;},set lastIndex(v){t+='s';last=v;if(v===3)throw 7;},
-                exec(){return {get index(){t+='i';throw 8;}};}};
-            try{RegExp.prototype[Symbol.search].call(r,'');}catch(e){t+=e;}t==='ss7'
-        ",
+        r#"
+            let t = '',
+                last = 3,
+                r = {
+                    get lastIndex() {
+                        return last;
+                    },
+                    set lastIndex(v) {
+                        t += 's';
+                        last = v;
+                        if (v === 3) throw 7;
+                    },
+                    exec() {
+                        return {
+                            get index() {
+                                t += 'i';
+                                throw 8;
+                            }
+                        };
+                    }
+                };
+            try {
+                RegExp.prototype[Symbol.search].call(r, '');
+            } catch (e) {
+                t += e;
+            }
+            t === 'ss7'
+        "#,
     );
     assert_true(
-        r"
-            let t='',r={get lastIndex(){t+='l';throw 8;}};
-            try{RegExp.prototype[Symbol.search].call(r,{toString(){t+='s';throw 7;}});}catch(e){t+=e;}t==='s7'
-        ",
+        r#"
+            let t = '',
+                r = {
+                    get lastIndex() {
+                        t += 'l';
+                        throw 8;
+                    }
+                };
+            try {
+                RegExp.prototype[Symbol.search].call(r, {
+                    toString() {
+                        t += 's';
+                        throw 7;
+                    }
+                });
+            } catch (e) {
+                t += e;
+            }
+            t === 's7'
+        "#,
     );
     assert_true(
         r#"

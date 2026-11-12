@@ -100,7 +100,8 @@ fn unicode_changes_casefolded_properties_aliases_complements_and_unions() {
                     b = /\p{{CWCF}}/i{mode},
                     n = /\P{{CWCF}}/i{mode};
                 a.test('\u0041') && a.test('\u0042') && b.test('\u0041') && !a.test('\u200D') && !b.test(
-                    '\u005f') && b.test('ſ') && b.test('K') && n.test('\u0041') === ('{mode}' ===
+                    '\u005f') && b.test('ſ') && b.test('K') && n.test('\u0041') === (
+                    '{mode}' ===
                     'u') && n.test('\uDB40\uDC01') && n.test('\uD800') && n.test('\uFEFF')
             "#
         ));
@@ -118,7 +119,8 @@ fn unicode_changes_casefolded_properties_aliases_complements_and_unions() {
                     b = /[^\P{{Changes_When_Casefolded}}K]/i{mode},
                     c = /[\p{{CWCF}}\P{{Changes_When_Casefolded}}]/{mode};
                 a.test('K') && a.test('k') && a.test('\u0041') && a.test('ſ') && b.test('\u0042') === (
-                        '{mode}' === 'v') && !b.test('K') && c.test('\uDB40\uDC01') && c.test('A') && c
+                        '{mode}' === 'v') && !b.test('K') && c.test('\uDB40\uDC01') && c.test(
+                    'A') && c
                     .test('\uD800')
             "#
         ));
@@ -288,14 +290,21 @@ fn unicode_changes_casefolded_properties_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     assert_true(
-        r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
+        r#"
+            let m = /\p{Script_Extensions=Latin}/u.exec('A');
+            JSON.stringify(m) === '["A"]' && m.index === 0 && m.input === 'A'
+        "#,
     );
     assert_true(
         r"let m=/[\p{CWCF}&&A]/v.exec('A');m!==null&&m.length===1&&m[0]==='A'&&m.index===0&&m.input==='A'",
     );
     assert_true(r"/[\p{CWCF}--A]/v.exec('A')===null");
     assert_true(
-        r"let s=String.fromCodePoint(0x42),m=/[\p{CWCF}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+        r#"
+            let s = String.fromCodePoint(0x42),
+                m = /[\p{CWCF}--A]/v.exec(s);
+            m !== null && m.length === 1 && m[0] === s && m.index === 0 && m.input === s
+        "#,
     );
     for source in [r"/\p{CWCF}+b/u.exec('AA')", r"/\p{CWCF}A/v.exec('AA')"] {
         crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);

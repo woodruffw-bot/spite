@@ -474,7 +474,8 @@ fn unicode_latin_script_consumers_preserve_original_text() {
             r#"
                 let a = [...'A😀μB'.matchAll(/(?<x>\P{{sc=Latin}})/d{mode}g)];
                 a.length === 2 && a[0][1] === '😀' && a[0].index === 1 && a[0].indices[1][1] === 3 && a[1][
-                    1] === 'μ' && a[1].index === 3
+                    1
+                ] === 'μ' && a[1].index === 3
             "#
         ));
         assert_true(&format!(
@@ -484,7 +485,14 @@ fn unicode_latin_script_consumers_preserve_original_text() {
             r"'μABμ'.split(/(\p{{Script=Latin}})/{mode}).join('|')==='μ|A||B|μ'&&'μ😀A'.search(/\p{{sc=Latn}}/{mode})===3&&'ABμ'.match(/\p{{Script=Latn}}/{mode}g).join('')==='AB'"
         ));
         assert_true(&format!(
-            r"let t='',x='ABμA'.replace(/(\p{{sc=Latin}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__μ_'&&t==='013'"
+            r#"
+                let t = '',
+                    x = 'ABμA'.replace(/(\p{{sc=Latin}})/{mode}g, (m, c, p) => {{
+                        t += p;
+                        return '_'
+                    }});
+                x === '__μ_' && t === '013'
+            "#
         ));
     }
 }
@@ -569,14 +577,21 @@ fn unicode_latin_script_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     assert_true(
-        r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
+        r#"
+            let m = /\p{Script_Extensions=Latin}/u.exec('A');
+            JSON.stringify(m) === '["A"]' && m.index === 0 && m.input === 'A'
+        "#,
     );
     assert_true(
         r"let m=/[\p{sc=Latn}&&A]/v.exec('A');m!==null&&m.length===1&&m[0]==='A'&&m.index===0&&m.input==='A'",
     );
     assert_true(r"/[\p{sc=Latn}--A]/v.exec('A')===null");
     assert_true(
-        r"let s=String.fromCodePoint(0x61),m=/[\p{sc=Latn}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+        r#"
+            let s = String.fromCodePoint(0x61),
+                m = /[\p{sc=Latn}--A]/v.exec(s);
+            m !== null && m.length === 1 && m[0] === s && m.index === 0 && m.input === s
+        "#,
     );
     for source in [
         r"/\p{sc=Latn}+b/u.exec('AA')",

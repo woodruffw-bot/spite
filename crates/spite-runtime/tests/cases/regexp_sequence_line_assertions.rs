@@ -17,7 +17,11 @@ fn internal_line_assertions_use_complete_input_positions_and_empty_capture_range
         r"let a=/(a)($)(\n)(^)(b)/d.exec('a\nb');a===null&&/a^b/.exec('ab')===null&&/a$b/.exec('ab')===null",
     );
     assert_true(
-        r"let a=/(^a)/d.exec('a'),b=/(a$)/d.exec('a');a[1]==='a'&&b[1]==='a'&&a.indices[1][0]===0&&b.indices[1][1]===1",
+        r#"
+            let a = /(^a)/d.exec('a'),
+                b = /(a$)/d.exec('a');
+            a[1] === 'a' && b[1] === 'a' && a.indices[1][0] === 0 && b.indices[1][1] === 1
+        "#,
     );
 }
 
@@ -86,7 +90,10 @@ fn sticky_assertions_keep_input_identity_and_ordered_last_index_writes() {
 #[test]
 fn zero_width_assertion_groups_nested_outer_anchors_and_alternatives_keep_slots() {
     assert_true(
-        r"let a=/(^$\B)()/d.exec('');a[0]===''&&a[1]===''&&a[2]===''&&a.indices[1][0]===0&&a.indices[2][1]===0",
+        r#"
+            let a = /(^$\B)()/d.exec('');
+            a[0] === '' && a[1] === '' && a[2] === '' && a.indices[1][0] === 0 && a.indices[2][1] === 0
+        "#,
     );
     assert_true(
         r#"
@@ -102,7 +109,10 @@ fn zero_width_assertion_groups_nested_outer_anchors_and_alternatives_keep_slots(
         "#,
     );
     assert_true(
-        r"let a=/([\s\S])(^)(a)/dm.exec('💩\na');a.index===2&&a[1]==='\n'&&a[2]===''&&a[3]==='a'&&a.indices[3][0]===3",
+        r#"
+            let a = /([\s\S])(^)(a)/dm.exec('💩\na');
+            a.index === 2 && a[1] === '\n' && a[2] === '' && a[3] === 'a' && a.indices[3][0] === 3
+        "#,
     );
 }
 

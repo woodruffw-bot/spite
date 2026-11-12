@@ -80,7 +80,10 @@ fn names_open_local_reads_outside_aliases_and_assertion_directions_keep_exact_ra
         "#,
     );
     assert_true(
-        r"let a=/(?<=((\2)a){2})b/d.exec('aab');a[1]==='a'&&a[2]===''&&a.indices[2][0]===0&&a.indices[2][1]===0",
+        r#"
+            let a = /(?<=((\2)a){2})b/d.exec('aab');
+            a[1] === 'a' && a[2] === '' && a.indices[2][0] === 0 && a.indices[2][1] === 0
+        "#,
     );
     assert_true(
         r#"
@@ -100,7 +103,8 @@ fn names_open_local_reads_outside_aliases_and_assertion_directions_keep_exact_ra
         r#"
             let a = /(?:(?<x>a)|(?<x>b))(?<=(c\3){2}\k<x>)d/d.exec('ccad');
             a.index === 2 && a.groups.x === 'a' && a[2] === undefined && a[3] === 'c' && a.indices[3][
-                0] === 0 && a.indices.groups.x === a.indices[1]
+                0
+            ] === 0 && a.indices.groups.x === a.indices[1]
         "#,
     );
 }

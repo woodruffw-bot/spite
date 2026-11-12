@@ -69,7 +69,10 @@ fn unicode_character_assertions_consumers_and_initial_pair_offsets() {
             "#
         ));
         assert_true(&format!(
-            r"let a='a\n😀\r\n9'.split(/^.$/m{mode});a.length===4&&a[0]===''&&a[1]==='\n'&&a[2]==='\r\n'&&a[3]===''"
+            r#"
+                let a = 'a\n😀\r\n9'.split(/^.$/m{mode});
+                a.length === 4 && a[0] === '' && a[1] === '\n' && a[2] === '\r\n' && a[3] === ''
+            "#
         ));
         assert_true(&format!(
             r#"
@@ -216,7 +219,10 @@ fn unicode_character_assertions_opted_work_and_unproved_compositions() {
         Ok(Value::Boolean(true))
     );
     assert_true(
-        r#"let m=/^\p{Script_Extensions=Latin}$/v.exec('a');JSON.stringify(m)==='["a"]'&&m.index===0&&m.input==='a'"#,
+        r#"
+            let m = /^\p{Script_Extensions=Latin}$/v.exec('a');
+            JSON.stringify(m) === '["a"]' && m.index === 0 && m.input === 'a'
+        "#,
     );
     for source in [
         r"/(^.$)+b/iu.exec('a')",

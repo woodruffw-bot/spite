@@ -148,7 +148,8 @@ fn middle_capture_consumers_and_empty_iterations_keep_original_numbering() {
             let copy = new RegExp(r),
                 a = r.exec('qababab');
             a[0] === 'ababab' && a.indices.groups.mid[0] === 6 && r.lastIndex === 7 && r.exec(
-                'qababab') === null && r.lastIndex === 0 && copy.source === r.source && copy.lastIndex ===
+                    'qababab') === null && r.lastIndex === 0 && copy.source === r.source && copy
+                .lastIndex ===
                 0
         "#,
     );

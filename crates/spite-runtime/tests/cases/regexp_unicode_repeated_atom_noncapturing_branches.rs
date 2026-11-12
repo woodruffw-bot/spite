@@ -79,7 +79,8 @@ fn unicode_repeated_atom_noncapturing_branches_counts_and_branch_scopes() {
         assert_true(&format!(
             r#"
                 let m = /((?:\ba)|(?:b\b))+/{mode}.exec('aaa bbb');
-                m[0] === 'a' && m[1] === 'a' && /((?:\ba)|(?:b\b)){{2}}/{mode}.exec('aaa bbb') === null
+                m[0] === 'a' && m[1] === 'a' && /((?:\ba)|(?:b\b)){{2}}/{mode}.exec('aaa bbb') ===
+                    null
             "#
         ));
         assert_true(&format!(
@@ -91,7 +92,8 @@ fn unicode_repeated_atom_noncapturing_branches_counts_and_branch_scopes() {
         assert_true(&format!(
             r#"
                 let m = /((?:a)|(?:b)){{2,3}}/{mode}.exec('abba');
-                m[0] === 'abb' && m[1] === 'b' && /((?:a)|(?:b)){{2,3}}?/{mode}.exec('abba')[0] === 'ab'
+                m[0] === 'abb' && m[1] === 'b' && /((?:a)|(?:b)){{2,3}}?/{mode}.exec('abba')[0] ===
+                    'ab'
             "#
         ));
         assert_true(&format!(

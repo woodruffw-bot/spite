@@ -32,7 +32,8 @@ fn greedy_lazy_bounded_and_overlapping_endpoints_preserve_partial_ranges() {
             let a = /((a)(aa){1,2})(ab)/d.exec('aaaaaaaab'),
                 b = /((a)(aa){1,2}?)(ab)/d.exec('aaaaaaaab');
             a.index === 2 && b.index === 2 && a[1] === 'aaaaa' && a.indices[1][0] === 2 && a.indices[1][
-                1] === 7 && a.indices[3][0] === 5 && a.indices[4][0] === 7
+                1
+            ] === 7 && a.indices[3][0] === 5 && a.indices[4][0] === 7
         "#,
     );
     assert_true(
@@ -57,7 +58,8 @@ fn empty_required_repetitions_distinguish_enclosing_and_iteration_captures() {
         r#"
             let a = /x((ab){0})(c)/d.exec('xc');
             a[1] === '' && a[2] === undefined && a[3] === 'c' && a.indices[1][0] === 1 && a.indices[3][
-                0] === 1
+                0
+            ] === 1
         "#,
     );
 }
@@ -69,7 +71,8 @@ fn internal_outer_line_and_word_assertions_use_complete_input_neighbors() {
             let a = /^((a)(a())+)($)(\n)/dm.exec('x\naaaa\n');
             a.index === 2 && a[1] === 'aaaa' && a[2] === 'a' && a[3] === 'a' && a[4] === '' && a[5] ===
                 '' && a[6] === '\n' && a.indices[1][1] === 6 && a.indices[3][0] === 5 && a.indices[5][
-                0] === 6 && /^((a)(a())+)($)(\n)/.exec('aaaa\n') === null
+                    0
+                ] === 6 && /^((a)(a())+)($)(\n)/.exec('aaaa\n') === null
         "#,
     );
     assert_true(
@@ -129,11 +132,14 @@ fn normalization_preserves_escape_boundaries_flags_and_utf16_offsets() {
             let a = /\0()1((ab)+)c/d.exec('\x001ababc');
             a[0] === '\x001ababc' && a[1] === '' && a[2] === 'abab' && a[3] === 'ab' && a.indices[1][0] ===
                 1 && a.indices[2][0] === 2 && a.indices[3][0] === 4 && /\0()1((ab)+)c/.exec(
-                '\x01ababc') === null
+                    '\x01ababc') === null
         "#,
     );
     assert_true(
-        r"let a=/\((ab)+c\)/d.exec('(ababc)');a[0]==='(ababc)'&&a[1]==='ab'&&a.indices[1][0]===3&&a.indices[1][1]===5",
+        r#"
+            let a = /\((ab)+c\)/d.exec('(ababc)');
+            a[0] === '(ababc)' && a[1] === 'ab' && a.indices[1][0] === 3 && a.indices[1][1] === 5
+        "#,
     );
     assert_true(
         r#"

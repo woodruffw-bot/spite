@@ -82,10 +82,16 @@ fn named_ranges_input_copies_dependent_targets_and_negative_rollback_are_exact()
         r"let a=/(a)(?<=\1{2}\1{2})b/d.exec('aaaab');a.index===3&&a[0]==='ab'&&a.indices[1][0]===3",
     );
     assert_true(
-        r"let a=/(?<=a(?!(b)\1{2}))b|(?<=a)b/d.exec('abbb');a.index===1&&a[1]===undefined&&a.indices[1]===undefined",
+        r#"
+            let a = /(?<=a(?!(b)\1{2}))b|(?<=a)b/d.exec('abbb');
+            a.index === 1 && a[1] === undefined && a.indices[1] === undefined
+        "#,
     );
     assert_true(
-        r"let a=/(?<=a(?=([\uD800])\1{2}))[\uD800]/d.exec('a\uD800\uD800\uD800\uDC00');a.index===1&&a.indices[1][0]===1",
+        r#"
+            let a = /(?<=a(?=([\uD800])\1{2}))[\uD800]/d.exec('a\uD800\uD800\uD800\uDC00');
+            a.index === 1 && a.indices[1][0] === 1
+        "#,
     );
 }
 #[test]

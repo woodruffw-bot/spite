@@ -94,7 +94,10 @@ fn unicode_character_word_boundaries_single_sides_and_independent_neighbor_foldi
             r"/\B\s\b/{mode}.test(' ſ')===false&&/\B\s\b/i{mode}.test(' ſ')&&/\b\s\B/i{mode}.test('K ')"
         ));
         assert_true(&format!(
-            r"/\b\w\b/i{mode}.test('ſ')&&/\b\w\b/i{mode}.test('K')&&!/\b\W\b/i{mode}.test('ſ')&&/\b\W\b/{mode}.test('A😀B')"
+            r#"
+                /\b\w\b/i{mode}.test('ſ') && /\b\w\b/i{mode}.test('K') && !
+                    /\b\W\b/i{mode}.test('ſ') && /\b\W\b/{mode}.test('A😀B')
+            "#
         ));
         assert_true(&format!(
             r#"
@@ -160,7 +163,14 @@ fn unicode_character_word_boundary_consumers_keep_original_captures() {
             r"'A B A'.split(/(\bA\b)/{mode}).join('|')==='|A| B |A|'&&'xx A!'.search(/\bA\b/{mode})===3&&'A A_ a'.match(/\bA\b/i{mode}g).join('')==='Aa'"
         ));
         assert_true(&format!(
-            r"let t='';let x='A a'.replace(/(\bA\b)/i{mode}g,(m,c,p)=>{{t+=p;return c.toLowerCase()}});x==='a a'&&t==='02'"
+            r#"
+                let t = '';
+                let x = 'A a'.replace(/(\bA\b)/i{mode}g, (m, c, p) => {{
+                    t += p;
+                    return c.toLowerCase()
+                }});
+                x === 'a a' && t === '02'
+            "#
         ));
     }
 }

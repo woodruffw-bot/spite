@@ -221,7 +221,10 @@ fn unicode_bmp_character_opted_work_and_unproved_atoms() {
         Ok(Value::Boolean(true))
     );
     assert_true(
-        r#"let m=/[\p{Script_Extensions=Latin}]/u.exec('a');JSON.stringify(m)==='["a"]'&&m.index===0&&m.input==='a'"#,
+        r#"
+            let m = /[\p{Script_Extensions=Latin}]/u.exec('a');
+            JSON.stringify(m) === '["a"]' && m.index === 0 && m.input === 'a'
+        "#,
     );
     for source in [
         r"/([\u{1f600}])+b/v.exec('a')",

@@ -37,7 +37,8 @@ fn quantified_and_suffix_captures_exclude_the_literal_prefix() {
         r#"
             let m = /x(a)+(b)/d.exec('xaaab');
             m[0] === 'xaaab' && m[1] === 'a' && m[2] === 'b' && m.indices[1][0] === 3 && m.indices[2][
-                0] === 4
+                0
+            ] === 4
         "#,
     );
     assert_true(

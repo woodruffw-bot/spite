@@ -21,7 +21,7 @@ fn selected_class_branches_keep_global_capture_and_indices_slots() {
             let m = /([ab])([a])|([a])/d.exec('ba'),
                 n = /([ab])([a])|([a])/d.exec('a');
             m.length === 4 && m[1] === 'b' && m[2] === 'a' && m[3] === undefined && Object.hasOwn(m,
-                '3') && m.indices[1][0] === 0 && m.indices[2][0] === 1 && m.indices[3] === undefined &&
+                    '3') && m.indices[1][0] === 0 && m.indices[2][0] === 1 && m.indices[3] === undefined &&
                 Object.hasOwn(m.indices, '3') && n[1] === undefined && n[2] === undefined && n[3] ===
                 'a' && n.indices[3][0] === 0 && n.indices[3][1] === 1
         "#,

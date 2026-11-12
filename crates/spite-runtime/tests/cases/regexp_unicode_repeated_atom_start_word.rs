@@ -82,7 +82,10 @@ fn unicode_repeated_atom_start_word_bounds_and_final_captures() {
             r"let a=/\b(a)+/{mode}.exec('baaa aaa');a.index===5&&a[0]==='aaa'&&a[1]==='a'"
         ));
         assert_true(&format!(
-            r"let a=/\B(a){{0,2}}?/{mode}.exec('aa');a.index===1&&a[0]===''&&a[1]===undefined&&Object.hasOwn(a,'1')"
+            r#"
+                let a = /\B(a){{0,2}}?/{mode}.exec('aa');
+                a.index === 1 && a[0] === '' && a[1] === undefined && Object.hasOwn(a, '1')
+            "#
         ));
         assert_true(&format!(
             r"let a=/\B(a){{0}}$/{mode}.exec('a ');a.index===2&&a[0]===''&&a[1]===undefined"
@@ -122,7 +125,8 @@ fn unicode_repeated_atom_start_word_names_pairs_and_folding() {
         assert_true(&format!(
             r#"
                 let a = /\b(\uD800)+/{mode}.exec('A\uD800\uD800');
-                a.index === 1 && a[0] === '\uD800\uD800' && a[1] === '\uD800' && !/\b(\uD800)+/{mode}
+                a.index === 1 && a[0] === '\uD800\uD800' && a[1] === '\uD800' && !
+                    /\b(\uD800)+/{mode}
                     .test('A😀')
             "#
         ));

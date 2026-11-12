@@ -71,11 +71,30 @@ fn input_species_flags_construction_and_limit_follow_the_specification_order() {
         "#,
     );
     assert_true(
-        r"
-            let t='',r={get constructor(){t+='c';throw 7;},get flags(){throw 8;}},ok=false;
-            try{RegExp.prototype[Symbol.split].call(r,{toString(){t+='s';return 'x';}});}catch(e){ok=e===7;}
-            ok&&t==='sc'
-        ",
+        r#"
+            let t = '',
+                r = {
+                    get constructor() {
+                        t += 'c';
+                        throw 7;
+                    },
+                    get flags() {
+                        throw 8;
+                    }
+                },
+                ok = false;
+            try {
+                RegExp.prototype[Symbol.split].call(r, {
+                    toString() {
+                        t += 's';
+                        return 'x';
+                    }
+                });
+            } catch (e) {
+                ok = e === 7;
+            }
+            ok && t === 'sc'
+        "#,
     );
     for receiver in ["undefined", "null", "1", "'x'", "true", "1n", "Symbol()"] {
         assert!(
@@ -160,10 +179,27 @@ fn species_checks_precede_flags_and_defaults_use_the_intrinsic_constructor() {
         assert_eq!(realm.eval("called"), Ok(Value::Boolean(false)));
     }
     assert_true(
-        r"
-            let r={flags:'',constructor:{[Symbol.species]:function(){throw 7;}}},ok=false;
-            try{RegExp.prototype[Symbol.split].call(r,'',{valueOf(){throw 8;}});}catch(e){ok=e===7;}ok
-        ",
+        r#"
+            let r = {
+                    flags: '',
+                    constructor: {
+                        [Symbol.species]: function() {
+                            throw 7;
+                        }
+                    }
+                },
+                ok = false;
+            try {
+                RegExp.prototype[Symbol.split].call(r, '', {
+                    valueOf() {
+                        throw 8;
+                    }
+                });
+            } catch (e) {
+                ok = e === 7;
+            }
+            ok
+        "#,
     );
 }
 

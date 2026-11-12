@@ -231,10 +231,21 @@ fn unicode_class_word_boundaries_opted_work_and_remaining_compositions() {
         Ok(Value::Boolean(true))
     );
     assert_true(
-        r"let m=/\b[[A]]\b/v.exec('A');m!==null&&m.length===1&&m[0]==='A'&&m.index===0&&m.input==='A'&&!/\b[[A]]\b/v.test('a')&&!/\b[[A]]\b/v.test('B')&&/\b[[A]]\b/iv.test('a')&&!/\b[[A]]\b/v.test('AA')",
+        r#"
+            let m = /\b[[A]]\b/v.exec('A');
+            m !== null && m.length === 1 && m[0] === 'A' && m.index === 0 && m.input === 'A' && !
+                /\b[[A]]\b/v.test('a') && !/\b[[A]]\b/v.test('B') && /\b[[A]]\b/iv.test('a') && !
+                /\b[[A]]\b/v.test('AA')
+        "#,
     );
     assert_true(
-        r"let r=/\b[A][B]\b/v,m=r.exec('AB');m!==null&&m.length===1&&m[0]==='AB'&&m.index===0&&m.input==='AB'&&r.lastIndex===0&&!r.test('AC')&&!r.test('XAB')&&!r.test('ABX')&&/\b[A][B]\b/iv.test('ab')",
+        r#"
+            let r = /\b[A][B]\b/v,
+                m = r.exec('AB');
+            m !== null && m.length === 1 && m[0] === 'AB' && m.index === 0 && m.input === 'AB' && r
+                .lastIndex === 0 && !r.test('AC') && !r.test('XAB') && !r.test('ABX') && /\b[A][B]\b/iv
+                .test('ab')
+        "#,
     );
     for source in [
         r"/\bA+\bb/u.exec('A')",

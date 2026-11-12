@@ -98,7 +98,8 @@ fn fixed_zero_wrappers_keep_alias_identity_optional_slots_and_failed_arm_rollbac
             let a = /(?<=(?:(?<x>)|(?<x>)){2})a\k<x>/d.exec('qa'),
                 b = /(?<=(?:(?<x>)|(?<x>)){0,2})a\k<x>/d.exec('qa');
             a.groups.x === '' && a[1] === '' && a[2] === undefined && a.indices.groups.x === a.indices[
-                1] && a.indices[1][0] === 1 && b.groups.x === undefined && b.indices[1] === undefined && b
+                    1] && a.indices[1][0] === 1 && b.groups.x === undefined && b.indices[1] ===
+                undefined && b
                 .indices[2] === undefined
         "#,
     );

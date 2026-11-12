@@ -125,10 +125,16 @@ fn consumers_global_sticky_empty_advance_callbacks_and_zero_skips_preserve_futur
         "#,
     );
     assert_true(
-        r"let a=/(?<=a(?=((b)\2){0}))b/d.exec('ab');a[1]===undefined&&a[2]===undefined&&a.indices[2]===undefined",
+        r#"
+            let a = /(?<=a(?=((b)\2){0}))b/d.exec('ab');
+            a[1] === undefined && a[2] === undefined && a.indices[2] === undefined
+        "#,
     );
     assert_true(
-        r"let a=[...'abbbb'.matchAll(/(?<=a(?=((b)\2){2}))/dg)];a.length===1&&a[0].index===1&&a[0].indices[2][0]===3",
+        r#"
+            let a = [...'abbbb'.matchAll(/(?<=a(?=((b)\2){2}))/dg)];
+            a.length === 1 && a[0].index === 1 && a[0].indices[2][0] === 3
+        "#,
     );
     assert_true(
         r#"

@@ -86,10 +86,16 @@ fn required_effects_original_gap_names_open_reads_and_negative_rollback_are_exac
         "#,
     );
     assert_true(
-        r"let a=/(?=(?<x>\k<y>)+(?<y>a))a/d.exec('a');a.groups.x===''&&a.groups.y==='a'&&a.indices.groups.x[0]===0",
+        r#"
+            let a = /(?=(?<x>\k<y>)+(?<y>a))a/d.exec('a');
+            a.groups.x === '' && a.groups.y === 'a' && a.indices.groups.x[0] === 0
+        "#,
     );
     assert_true(
-        r"let a=/(?<=a(?=(?<x>\k<y>)+(?<y>b)))b/d.exec('ab');a.index===1&&a.groups.x===''&&a.indices.groups.y[0]===1",
+        r#"
+            let a = /(?<=a(?=(?<x>\k<y>)+(?<y>b)))b/d.exec('ab');
+            a.index === 1 && a.groups.x === '' && a.indices.groups.y[0] === 1
+        "#,
     );
     assert_true(r"let a=/(?<=(\1){2}a)b/d.exec('ab');a[1]===''&&a.indices[1][0]===0");
     assert_true(

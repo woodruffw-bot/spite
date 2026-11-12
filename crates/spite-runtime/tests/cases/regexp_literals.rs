@@ -10,10 +10,18 @@ fn every_evaluation_creates_a_fresh_branded_object_with_zero_lastindex() {
         "function f(){return /a/g;}let a=f(),b=f();a.lastIndex=7;a!==b && b.lastIndex===0 && a.source==='a' && a.flags==='g' && Object.prototype.toString.call(a)==='[object RegExp]' && Object.getPrototypeOf(a)===RegExp.prototype",
     );
     assert_true(
-        "let out=[];for(let i=0;i<3;i++)out.push(/a/g);out[0]!==out[1] && out[1]!==out[2] && out.every(r=>r.lastIndex===0)",
+        r#"
+            let out = [];
+            for (let i = 0; i < 3; i++) out.push(/a/g);
+            out[0] !== out[1] && out[1] !== out[2] && out.every(r => r.lastIndex === 0)
+        "#,
     );
     assert_true(
-        "let r=/a/;let d=Object.getOwnPropertyDescriptor(r,'lastIndex');d.value===0 && 1/d.value===Infinity && d.writable && !d.enumerable && !d.configurable",
+        r#"
+            let r = /a/;
+            let d = Object.getOwnPropertyDescriptor(r, 'lastIndex');
+            d.value === 0 && 1 / d.value === Infinity && d.writable && !d.enumerable && !d.configurable
+        "#,
     );
 }
 
@@ -87,7 +95,7 @@ fn all_generic_consumers_share_literal_matching_and_lastindex_state() {
     assert_true(
         r#"
             'aba'.match(/a/g).join(',') === 'a,a' && 'aba'.search(/b/) === 1 && 'aba'.replace(/a/g,
-                'x') === 'xbx' && 'a,b,'.split(/,/).join('|') === 'a|b|' && [...'aba'.matchAll(/a/g)]
+                    'x') === 'xbx' && 'a,b,'.split(/,/).join('|') === 'a|b|' && [...'aba'.matchAll(/a/g)]
                 .length === 2
         "#,
     );
@@ -114,7 +122,17 @@ fn valid_unimplemented_matchers_fail_only_when_execution_reaches_matching() {
         crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
     assert_true(
-        "let r=/(a)/;r.exec=function(s){return {0:s,index:2,length:1};};r.test('x') && r[Symbol.search]('x')===2",
+        r#"
+            let r = /(a)/;
+            r.exec = function(s) {
+                return {
+                    0: s,
+                    index: 2,
+                    length: 1
+                };
+            };
+            r.test('x') && r[Symbol.search]('x') === 2
+        "#,
     );
 }
 

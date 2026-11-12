@@ -145,7 +145,8 @@ fn unicode_unified_ideograph_properties_consumers_original_text() {
             r#"
                 let a = [...'\u4E8C😀\u4E00G'.matchAll(/(?<x>\P{{UIdeo}})/d{mode}g)];
                 a.length === 2 && a[0][1] === '😀' && a[0].index === 1 && a[0].indices[1][1] === 3 && a[1][
-                    1] === 'G'
+                    1
+                ] === 'G'
             "#
         ));
         assert_true(&format!(
@@ -247,12 +248,19 @@ fn unicode_unified_ideograph_properties_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     assert_true(
-        r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
+        r#"
+            let m = /\p{Script_Extensions=Latin}/u.exec('A');
+            JSON.stringify(m) === '["A"]' && m.index === 0 && m.input === 'A'
+        "#,
     );
     assert_true(r"/[\p{UIdeo}&&A]/v.exec('A')===null");
     assert_true(r"/[\p{UIdeo}--A]/v.exec('A')===null");
     assert_true(
-        r"let s=String.fromCodePoint(0x4e00),m=/[\p{UIdeo}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+        r#"
+            let s = String.fromCodePoint(0x4e00),
+                m = /[\p{UIdeo}--A]/v.exec(s);
+            m !== null && m.length === 1 && m[0] === s && m.index === 0 && m.input === s
+        "#,
     );
     for source in [r"/\p{UIdeo}+b/u.exec('AA')", r"/\p{UIdeo}A/v.exec('AA')"] {
         crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);

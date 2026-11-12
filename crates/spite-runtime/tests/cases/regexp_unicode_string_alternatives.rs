@@ -109,7 +109,12 @@ fn empty_matches_rewind_surrogates_and_exec_does_not_advance_last_index() {
         "#,
     );
     assert_true(
-        r"let r=/[\q{}]/vy;r.lastIndex=3;let m=r.exec('😀');m===null && r.lastIndex===0 && /[\q{ab|}]/v.exec('')[0]===''",
+        r#"
+            let r = /[\q{}]/vy;
+            r.lastIndex = 3;
+            let m = r.exec('😀');
+            m === null && r.lastIndex === 0 && /[\q{ab|}]/v.exec('')[0] === ''
+        "#,
     );
 }
 
@@ -122,7 +127,7 @@ fn enclosing_captures_project_complete_empty_and_consuming_matches() {
             m.length === 3 && m[0] === 'ab' && m[1] === 'ab' && m[2] === 'ab' && m.index === 0 && m
                 .input === 'ab!' && m.groups.whole === 'ab' && Object.getPrototypeOf(m.groups) === null &&
                 m.indices.groups.whole === m.indices[1] && m.indices[0] !== m.indices[1] && m.indices[
-                1] !== m.indices[2] && m.indices[2][1] === 2 && r.lastIndex === 2
+                    1] !== m.indices[2] && m.indices[2][1] === 2 && r.lastIndex === 2
         "#,
     );
     assert_true(
@@ -242,6 +247,23 @@ fn string_consumers_advance_empty_matches_by_original_unicode_character() {
 
 #[test]
 fn pattern_variants_match_reference_results() {
+    let expected_serialized_output = JsString::from(concat!(
+        r#"[[false,"ab!",{"values":["ab"],"indices":[[0,2]],"index":0},2],[false,"",null,0],"#,
+        r#"[false,"\n",null,0],[false,"x\nab",{"values":["ab"],"indices":[[2,4]],"index":2},4],"#,
+        r#"[true,"ab!",{"values":["ab"],"indices":[[0,2]],"index":0},2],[true,"",null,0],"#,
+        r#"[true,"\n",null,0],[true,"x\nab",{"values":["ab"],"indices":[[2,4]],"index":2},4]]"#,
+    ));
+    let expected_serialized_output_2 = JsString::from(concat!(
+        r#"[[false,"ab!",{"values":[""],"indices":[[0,0]],"index":0},0],"#,
+        r#"[false,"",{"values":[""],"indices":[[0,0]],"index":0},0],"#,
+        r#"[false,"\n",{"values":[""],"indices":[[0,0]],"index":0},0],"#,
+        r#"[false,"x\nab",{"values":[""],"indices":[[0,0]],"index":0},0],"#,
+        r#"[true,"ab!",{"values":[""],"indices":[[0,0]],"index":0},0],"#,
+        r#"[true,"",{"values":[""],"indices":[[0,0]],"index":0},0],"#,
+        r#"[true,"\n",{"values":[""],"indices":[[0,0]],"index":0},0],"#,
+        r#"[true,"x\nab",{"values":[""],"indices":[[0,0]],"index":0},0]]"#,
+    ));
+
     for (source, expected) in [
         (r"/[\q{ab}]$\b/v.test('ab')", true),
         (r"/\b^[\q{ab}]/v.test('ab')", true),
@@ -259,20 +281,93 @@ fn pattern_variants_match_reference_results() {
         );
         assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)));
     }
+    assert_true(&format!(
+        r#"
+            var marker = 0,
+                ok = false;
+            try {{
+                ok = (function() {{
+                    var pattern = "[\\q{{ab}}]+",
+                        rows = [],
+                        metadata = true;
+                    for (var multi of [false, true]) {{
+                        var r = new RegExp(pattern, 'dvg' + (multi ? 'm' : ''));
+                        metadata = metadata && r.source === pattern;
+                        for (var input of ['ab!', '', '\n', 'x\nab']) {{
+                            r.lastIndex = 0;
+                            var m = r.exec(input),
+                                result = null;
+                            if (m !== null) result = {{
+                                values: Array.from(m, v => v === undefined ? '<undefined>' :
+                                    v),
+                                indices: Array.from(m.indices, v => v === undefined ?
+                                    '<undefined>' : v),
+                                index: m.index
+                            }};
+                            rows.push([multi, input, result, r.lastIndex]);
+                        }}
+                    }}
+                    return metadata && JSON.stringify(rows) === {expected_serialized_output:?}
+                }})();
+            }} finally {{
+                marker = 3
+            }}
+            ok && marker === 3
+        "#
+    ));
+    assert_true(&format!(
+        r#"
+            var marker = 0,
+                ok = false;
+            try {{
+                ok = (function() {{
+                    var pattern = "[\\q{{ab}}]{{0}}",
+                        rows = [],
+                        metadata = true;
+                    for (var multi of [false, true]) {{
+                        var r = new RegExp(pattern, 'dvg' + (multi ? 'm' : ''));
+                        metadata = metadata && r.source === pattern;
+                        for (var input of ['ab!', '', '\n', 'x\nab']) {{
+                            r.lastIndex = 0;
+                            var m = r.exec(input),
+                                result = null;
+                            if (m !== null) result = {{
+                                values: Array.from(m, v => v === undefined ? '<undefined>' :
+                                    v),
+                                indices: Array.from(m.indices, v => v === undefined ?
+                                    '<undefined>' : v),
+                                index: m.index
+                            }};
+                            rows.push([multi, input, result, r.lastIndex]);
+                        }}
+                    }}
+                    return metadata && JSON.stringify(rows) === {expected_serialized_output_2:?}
+                }})();
+            }} finally {{
+                marker = 3
+            }}
+            ok && marker === 3
+        "#
+    ));
     assert_true(
-        r#"var marker=0,ok=false;try{ok=(function(){var pattern="[\\q{ab}]+",rows=[],metadata=true;
-for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
-for(var input of ['ab!','','\n','x\nab']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
-return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"ab\"],\"indices\":[[0,2]],\"index\":0},2],[false,\"\",null,0],[false,\"\\n\",null,0],[false,\"x\\nab\",{\"values\":[\"ab\"],\"indices\":[[2,4]],\"index\":2},4],[true,\"ab!\",{\"values\":[\"ab\"],\"indices\":[[0,2]],\"index\":0},2],[true,\"\",null,0],[true,\"\\n\",null,0],[true,\"x\\nab\",{\"values\":[\"ab\"],\"indices\":[[2,4]],\"index\":2},4]]"})();}finally{marker=3}ok&&marker===3"#,
-    );
-    assert_true(
-        r#"var marker=0,ok=false;try{ok=(function(){var pattern="[\\q{ab}]{0}",rows=[],metadata=true;
-for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
-for(var input of ['ab!','','\n','x\nab']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
-return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"\"],\"indices\":[[0,0]],\"index\":0},0],[false,\"\",{\"values\":[\"\"],\"indices\":[[0,0]],\"index\":0},0],[false,\"\\n\",{\"values\":[\"\"],\"indices\":[[0,0]],\"index\":0},0],[false,\"x\\nab\",{\"values\":[\"\"],\"indices\":[[0,0]],\"index\":0},0],[true,\"ab!\",{\"values\":[\"\"],\"indices\":[[0,0]],\"index\":0},0],[true,\"\",{\"values\":[\"\"],\"indices\":[[0,0]],\"index\":0},0],[true,\"\\n\",{\"values\":[\"\"],\"indices\":[[0,0]],\"index\":0},0],[true,\"x\\nab\",{\"values\":[\"\"],\"indices\":[[0,0]],\"index\":0},0]]"})();}finally{marker=3}ok&&marker===3"#,
-    );
-    assert_true(
-        r####"var pattern="[[\\q{ab}]&&\\p{RGI_Emoji}]{0}",input="a😀b",r=new RegExp(pattern,"dgvy");r.lastIndex=2;var m=r.exec(input);r.source===pattern&&r.flags==="dgvy"&&m.input===input&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&(m.groups===undefined||Object.getPrototypeOf(m.groups)===null&&Object.getPrototypeOf(m.indices.groups)===null)&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex,m.groups===undefined?null:Object.keys(m.groups).map(k=>[k,m.groups[k]===undefined?"<undefined>":m.groups[k]]),m.indices.groups===undefined?null:Object.keys(m.indices.groups).map(k=>[k,m.indices.groups[k]===undefined?"<undefined>":m.indices.groups[k]])])==="[[\"\"],[[1,1]],1,1,null,null]""####,
+        r#"
+            var pattern = "[[\\q{ab}]&&\\p{RGI_Emoji}]{0}",
+                input = "a😀b",
+                r = new RegExp(pattern, "dgvy");
+            r.lastIndex = 2;
+            var m = r.exec(input);
+            r.source === pattern && r.flags === "dgvy" && m.input === input && Object.hasOwn(m,
+                "groups") && Object.hasOwn(m.indices, "groups") && (m.groups === undefined || Object
+                    .getPrototypeOf(m.groups) === null && Object.getPrototypeOf(m.indices.groups) === null
+                    ) && JSON.stringify([Array.from(m, v => v === undefined ? "<undefined>" : v), Array
+                    .from(m.indices, v => v === undefined ? "<undefined>" : v), m.index, r.lastIndex, m
+                    .groups === undefined ? null : Object.keys(m.groups).map(k => [k, m.groups[k] ===
+                        undefined ? "<undefined>" : m.groups[k]
+                    ]), m.indices.groups === undefined ? null : Object.keys(m.indices.groups).map(
+                        k => [k, m.indices.groups[k] === undefined ? "<undefined>" : m.indices.groups[
+                            k]])
+                ]) === "[[\"\"],[[1,1]],1,1,null,null]"
+        "#,
     );
     for source in [
         r"/[[\q{ab}]&&\p{RGI_Emoji}]+/v.test('ab')",
@@ -299,7 +394,16 @@ return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"\"],\"in
     ] {
         let source = JsString::from(format!("marker=1;/{pattern}/v.test('ab');").as_str());
         assert_true(&format!(
-            "let marker=0,caught=false;try{{eval({source:?});}}catch(e){{caught=e instanceof SyntaxError;}}caught && marker===0"
+            r#"
+                let marker = 0,
+                    caught = false;
+                try {{
+                    eval({source:?});
+                }} catch (e) {{
+                    caught = e instanceof SyntaxError;
+                }}
+                caught && marker === 0
+            "#
         ));
     }
 }

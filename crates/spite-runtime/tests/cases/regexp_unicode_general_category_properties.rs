@@ -3749,7 +3749,12 @@ fn unicode_general_category_captures_context_and_pair_starts() {
             "#
         ));
         assert_true(&format!(
-            r"let r=/\p{{Cs}}/d{mode}g;r.lastIndex=1;let m=r.exec('😀\uD800');m.index===2&&m[0]==='\uD800'&&r.lastIndex===3"
+            r#"
+                let r = /\p{{Cs}}/d{mode}g;
+                r.lastIndex = 1;
+                let m = r.exec('😀\uD800');
+                m.index === 2 && m[0] === '\uD800' && r.lastIndex === 3
+            "#
         ));
         assert_true(&format!(
             r"let r=/\p{{Cs}}/{mode}y;r.lastIndex=1;r.exec('😀\uD800')===null&&r.lastIndex===0"
@@ -3764,7 +3769,8 @@ fn unicode_general_category_consumers_preserve_original_text() {
             r#"
                 let a = [...'A😀\u0378B'.matchAll(/(?<x>\P{{L}})/d{mode}g)];
                 a.length === 2 && a[0][1] === '😀' && a[0].index === 1 && a[0].indices[1][1] === 3 && a[1][
-                    1] === '\u0378' && a[1].index === 3
+                    1
+                ] === '\u0378' && a[1].index === 3
             "#
         ));
         assert_true(&format!(
@@ -3774,7 +3780,14 @@ fn unicode_general_category_consumers_preserve_original_text() {
             r"'\u0378AB\u0378'.split(/(\p{{General_Category=Letter}})/{mode}).join('|')==='\u0378|A||B|\u0378'&&'\u0378😀A'.search(/\p{{L}}/{mode})===3&&'AB\u0378'.match(/\p{{L}}/{mode}g).join('')==='AB'"
         ));
         assert_true(&format!(
-            r"let t='',x='AB\u0378A'.replace(/(\p{{L}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__\u0378_'&&t==='013'"
+            r#"
+                let t = '',
+                    x = 'AB\u0378A'.replace(/(\p{{L}})/{mode}g, (m, c, p) => {{
+                        t += p;
+                        return '_'
+                    }});
+                x === '__\u0378_' && t === '013'
+            "#
         ));
     }
 }
@@ -3859,14 +3872,21 @@ fn unicode_general_category_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     assert_true(
-        r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
+        r#"
+            let m = /\p{Script_Extensions=Latin}/u.exec('A');
+            JSON.stringify(m) === '["A"]' && m.index === 0 && m.input === 'A'
+        "#,
     );
     assert_true(
         r"let m=/[\p{Lu}&&A]/v.exec('A');m!==null&&m.length===1&&m[0]==='A'&&m.index===0&&m.input==='A'",
     );
     assert_true(r"/[\p{Lu}--A]/v.exec('A')===null");
     assert_true(
-        r"let s=String.fromCodePoint(0x4b),m=/[\p{Lu}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+        r#"
+            let s = String.fromCodePoint(0x4b),
+                m = /[\p{Lu}--A]/v.exec(s);
+            m !== null && m.length === 1 && m[0] === s && m.index === 0 && m.input === s
+        "#,
     );
     for source in [r"/\p{Lu}+b/u.exec('AA')", r"/\p{Lu}A/v.exec('AA')"] {
         crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);

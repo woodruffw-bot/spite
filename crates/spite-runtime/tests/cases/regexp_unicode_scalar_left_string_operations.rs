@@ -110,8 +110,9 @@ fn consumers_clones_and_collection_use_consuming_character_results() {
             let r = /(?<whole>([\p{Any}--\q{a|ab|}]))/dvg,
                 a = [...'ab😀'.matchAll(r)];
             a.length === 2 && a[0][0] === 'b' && a[0].index === 1 && a[1][0] === '😀' && a[1].indices[2][
-                1] === 4 && r.lastIndex === 0 && 'ab😀'.replace(r, '#') === 'a##' && 'ab😀'.split(
-                    /[\p{Any}--\q{a|ab|}]/v).join('|') === 'a||'
+                1
+            ] === 4 && r.lastIndex === 0 && 'ab😀'.replace(r, '#') === 'a##' && 'ab😀'.split(
+                /[\p{Any}--\q{a|ab|}]/v).join('|') === 'a||'
         "#,
     );
     assert_true(
@@ -178,7 +179,16 @@ fn pattern_variants_match_reference_results() {
     ] {
         let source = JsString::from(format!("marker=1;/{pattern}/v.test('ab');").as_str());
         assert_true(&format!(
-            "let marker=0,caught=false;try{{eval({source:?});}}catch(e){{caught=e instanceof SyntaxError;}}caught && marker===0"
+            r#"
+                let marker = 0,
+                    caught = false;
+                try {{
+                    eval({source:?});
+                }} catch (e) {{
+                    caught = e instanceof SyntaxError;
+                }}
+                caught && marker === 0
+            "#
         ));
     }
 }

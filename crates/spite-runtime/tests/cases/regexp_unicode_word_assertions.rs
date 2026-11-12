@@ -119,7 +119,11 @@ fn unicode_word_assertions_original_empty_captures_and_pair_starts() {
             r"let r=/\B/{mode}g;r.lastIndex=3;r.exec('😀')===null&&r.lastIndex===0"
         ));
         assert_true(&format!(
-            r"let r=/^(?<x>(\B))$/d{mode};let m=r.exec('');m.groups.x===''&&m.indices[2][0]===0&&m.indices[2][1]===0"
+            r#"
+                let r = /^(?<x>(\B))$/d{mode};
+                let m = r.exec('');
+                m.groups.x === '' && m.indices[2][0] === 0 && m.indices[2][1] === 0
+            "#
         ));
         assert_true(&format!(
             r"[...'A\uD800B'.matchAll(/\b/{mode}g)].map(m=>m.index).join(',')==='0,1,2,3'"

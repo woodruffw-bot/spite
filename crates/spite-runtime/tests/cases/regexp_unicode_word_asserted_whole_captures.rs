@@ -106,17 +106,30 @@ fn unicode_word_asserted_whole_captures_counts_and_scopes() {
 #[test]
 fn unicode_word_asserted_whole_captures_single_runes_empty_counts_and_aliases() {
     assert_true(
-        r"let m=/(\b)\b/du.exec('A');m[0]===''&&m[1]===''&&m.index===0&&m.indices[1][0]===0&&m.indices[1][1]===0",
+        r#"
+            let m = /(\b)\b/du.exec('A');
+            m[0] === '' && m[1] === '' && m.index === 0 && m.indices[1][0] === 0 && m.indices[1][1] === 0
+        "#,
     );
     assert_true(
-        r"let m=/\b([A])\b/du.exec('A');m[0]==='A'&&m[1]==='A'&&m.index===0&&m.indices[1][0]===0&&m.indices[1][1]===1",
+        r#"
+            let m = /\b([A])\b/du.exec('A');
+            m[0] === 'A' && m[1] === 'A' && m.index === 0 && m.indices[1][0] === 0 && m.indices[1][1] === 1
+        "#,
     );
 
     assert_true(
-        r"let m=/\b(a)\b/du.exec('a');m.length===2&&m[0]==='a'&&m[1]==='a'&&m.indices[1][0]===0&&m.indices[1][1]===1",
+        r#"
+            let m = /\b(a)\b/du.exec('a');
+            m.length === 2 && m[0] === 'a' && m[1] === 'a' && m.indices[1][0] === 0 && m.indices[1][1] ===
+                1
+        "#,
     );
     assert_true(
-        r"let m=/^\b((?:[aſK]))\b$/dvi.exec('S');m[0]==='S'&&m[1]==='S'&&m.indices[1][0]===0&&m.indices[1][1]===1",
+        r#"
+            let m = /^\b((?:[aſK]))\b$/dvi.exec('S');
+            m[0] === 'S' && m[1] === 'S' && m.indices[1][0] === 0 && m.indices[1][1] === 1
+        "#,
     );
     assert_true(
         r#"
@@ -139,7 +152,8 @@ fn unicode_word_asserted_whole_captures_single_runes_empty_counts_and_aliases() 
             let r = /\b(?<whole>(a|b)+)\b$/dvg,
                 m = r.exec(' ab');
             m[0] === 'ab' && m.index === 1 && m.groups.whole === 'ab' && m[2] === 'b' && m.indices[1][
-                0] === 1 && m.indices[1][1] === 3 && m.indices[2][0] === 2 && m.indices[2][1] === 3 && r
+                    0
+                ] === 1 && m.indices[1][1] === 3 && m.indices[2][0] === 2 && m.indices[2][1] === 3 && r
                 .lastIndex === 3 && r.source === '\\b(?<whole>(a|b)+)\\b$'
         "#,
     );

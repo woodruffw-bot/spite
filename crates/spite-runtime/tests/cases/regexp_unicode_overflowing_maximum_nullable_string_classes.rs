@@ -23,7 +23,16 @@ fn complete_overflowing_maximum_proofs_finish_finalizers_without_hiding_unknown_
     for pattern in [r"([^\q{ab}]|)", r"([\q{ab}&&a--a]|)", r"([\q{\d}&&a]|)"] {
         let source = JsString::from(format!("marker=1;/{pattern}{{2,1000}}/v.test('a');").as_str());
         assert_true(&format!(
-            "let marker=0,caught=false;try{{eval({source:?});}}catch(e){{caught=e instanceof SyntaxError;}}caught && marker===0"
+            r#"
+                let marker = 0,
+                    caught = false;
+                try {{
+                    eval({source:?});
+                }} catch (e) {{
+                    caught = e instanceof SyntaxError;
+                }}
+                caught && marker === 0
+            "#
         ));
     }
 }

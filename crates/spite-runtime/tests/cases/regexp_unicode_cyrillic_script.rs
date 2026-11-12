@@ -369,7 +369,8 @@ fn unicode_cyrillic_script_consumers_preserve_original_text() {
             r#"
                 let a = [...'А😀AБ'.matchAll(/(?<x>\P{{sc=Cyrillic}})/d{mode}g)];
                 a.length === 2 && a[0][1] === '😀' && a[0].index === 1 && a[0].indices[1][1] === 3 && a[1][
-                    1] === 'A' && a[1].index === 3
+                    1
+                ] === 'A' && a[1].index === 3
             "#
         ));
         assert_true(&format!(
@@ -379,7 +380,14 @@ fn unicode_cyrillic_script_consumers_preserve_original_text() {
             r"'AАБA'.split(/(\p{{Script=Cyrillic}})/{mode}).join('|')==='A|А||Б|A'&&'A😀А'.search(/\p{{sc=Cyrl}}/{mode})===3&&'АБA'.match(/\p{{Script=Cyrl}}/{mode}g).join('')==='АБ'"
         ));
         assert_true(&format!(
-            r"let t='',x='АБAА'.replace(/(\p{{sc=Cyrillic}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__A_'&&t==='013'"
+            r#"
+                let t = '',
+                    x = 'АБAА'.replace(/(\p{{sc=Cyrillic}})/{mode}g, (m, c, p) => {{
+                        t += p;
+                        return '_'
+                    }});
+                x === '__A_' && t === '013'
+            "#
         ));
     }
 }
@@ -467,7 +475,11 @@ fn unicode_cyrillic_script_opted_work_and_remaining_sets() {
     assert_true(r"/[\p{sc=Cyrl}&&A]/v.exec('A')===null");
     assert_true(r"/[\p{sc=Cyrl}--A]/v.exec('A')===null");
     assert_true(
-        r"let s=String.fromCodePoint(0x400),m=/[\p{sc=Cyrl}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+        r#"
+            let s = String.fromCodePoint(0x400),
+                m = /[\p{sc=Cyrl}--A]/v.exec(s);
+            m !== null && m.length === 1 && m[0] === s && m.index === 0 && m.input === s
+        "#,
     );
     for source in [
         r"/\p{sc=Cyrl}+b/u.exec('AA')",

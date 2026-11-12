@@ -33,7 +33,7 @@ fn quantified_zero_spines_keep_defined_prefixes_and_undefined_suffixes() {
                             }
                             var point = global ? start : 0;
                             if (point > 0 && input.charCodeAt(point) >= 0xdc00 && input.charCodeAt(
-                                point) <= 0xdfff && input.charCodeAt(point - 1) >= 0xd800 && input
+                                    point) <= 0xdfff && input.charCodeAt(point - 1) >= 0xd800 && input
                                 .charCodeAt(point - 1) <= 0xdbff) point--;
                             ok = ok && m.index === point && m[0] === '' && m.length === 3 && m.indices
                                 .length === 3 && r.lastIndex === (global ? point : start) && r.source ===
@@ -122,7 +122,8 @@ fn arbitrary_erased_bodies_reserve_duplicate_names_references_and_lookaround_slo
             var cases = [
                     ['(?<outer>(?<erased>(?<x>a)|(?<x>b)(?<y>(?<=c))){0})+', [1, 0, 0, 0, 0]],
                     ['(?i:(?<outer>(?<erased>(?=(?<x>a))\\k<outer>|[\\p{RGI_Emoji}]+){0}){2,3})', [1, 0,
-                        0]],
+                        0
+                    ]],
                     ['(?<outer>(?<erased>(a)(?<=b(c))|\\p{RGI_Emoji}+){0})?', [0, 0, 0, 0]],
                     ['(?-i:(?<outer>(?<erased>[\\q{\\(|\\)}]z?){0})+?)', [1, 0]]
                 ],
@@ -228,7 +229,7 @@ fn concatenated_zero_spines_keep_interleaved_named_values_and_index_aliases() {
                             }
                             var point = global ? start : 0;
                             if (point > 0 && input.charCodeAt(point) >= 0xdc00 && input.charCodeAt(
-                                point) <= 0xdfff && input.charCodeAt(point - 1) >= 0xd800 && input
+                                    point) <= 0xdfff && input.charCodeAt(point - 1) >= 0xd800 && input
                                 .charCodeAt(point - 1) <= 0xdbff) point--;
                             ok = ok && m.index === point && m[0] === '' && m.length === 5 && m.indices
                                 .length === 5 && r.lastIndex === (global ? point : start) && r.source ===
@@ -239,7 +240,7 @@ fn concatenated_zero_spines_keep_interleaved_named_values_and_index_aliases() {
                                 var name = pair[2][i - 1];
                                 ok = ok && Object.hasOwn(m, '' + i) && Object.hasOwn(m.indices, '' + i) &&
                                     Object.hasOwn(m.groups, name) && Object.hasOwn(m.indices.groups,
-                                    name) && m.groups[name] === m[i] && m.indices.groups[name] === m
+                                        name) && m.groups[name] === m[i] && m.indices.groups[name] === m
                                     .indices[i];
                                 ok = ok && (pair[1][i - 1] ? m[i] === '' && m.indices[i][0] === point && m
                                     .indices[i][1] === point : m[i] === undefined && m.indices[i] ===
@@ -298,10 +299,21 @@ fn concatenated_zero_spine_string_consumers_and_collection_preserve_every_slot()
 fn sequence_erasure_still_requires_complete_original_early_error_validation() {
     assert_true(
         r#"
-        var ok=true;for(var source of ['(?<x>\\p{RGI_Emoji}{0})?(?<x>\\p{RGI_Emoji}{0})+','[\\p{Not_A_Property}]{0}\\p{RGI_Emoji}{0}','(\\k<missing>){0}\\p{RGI_Emoji}{0}','[a]{0}([b]{3,2}){0}']){
-            var caught=false;try{new RegExp(source,'v')}catch(e){caught=e instanceof SyntaxError}ok=ok&&caught;
-        }ok
-    "#,
+            var ok = true;
+            for (var source of ['(?<x>\\p{RGI_Emoji}{0})?(?<x>\\p{RGI_Emoji}{0})+',
+                    '[\\p{Not_A_Property}]{0}\\p{RGI_Emoji}{0}', '(\\k<missing>){0}\\p{RGI_Emoji}{0}',
+                    '[a]{0}([b]{3,2}){0}'
+                ]) {
+                var caught = false;
+                try {
+                    new RegExp(source, 'v')
+                } catch (e) {
+                    caught = e instanceof SyntaxError
+                }
+                ok = ok && caught;
+            }
+            ok
+        "#,
     );
     for source in [
         r"new RegExp('([\\p{RGI_Emoji}])*','v').test('')",
@@ -347,7 +359,7 @@ fn unconditional_first_alternatives_preserve_selected_and_unselected_capture_slo
                             }
                             var point = global ? start : 0;
                             if (point > 0 && input.charCodeAt(point) >= 0xdc00 && input.charCodeAt(
-                                point) <= 0xdfff && input.charCodeAt(point - 1) >= 0xd800 && input
+                                    point) <= 0xdfff && input.charCodeAt(point - 1) >= 0xd800 && input
                                 .charCodeAt(point - 1) <= 0xdbff) point--;
                             ok = ok && m.index === point && m[0] === '' && m.length === pair[1].length +
                                 1 && r.source === pair[0] && r.lastIndex === (global ? point : start) &&
@@ -357,7 +369,7 @@ fn unconditional_first_alternatives_preserve_selected_and_unselected_capture_slo
                                 var name = pair[2][i - 1];
                                 ok = ok && Object.hasOwn(m, '' + i) && Object.hasOwn(m.indices, '' + i) &&
                                     Object.hasOwn(m.groups, name) && Object.hasOwn(m.indices.groups,
-                                    name) && m.groups[name] === m[i] && m.indices.groups[name] === m
+                                        name) && m.groups[name] === m[i] && m.indices.groups[name] === m
                                     .indices[i];
                                 ok = ok && (pair[1][i - 1] ? m[i] === '' && m.indices[i][0] === point && m
                                     .indices[i][1] === point : m[i] === undefined && m.indices[i] ===
@@ -368,7 +380,7 @@ fn unconditional_first_alternatives_preserve_selected_and_unselected_capture_slo
                 m = r.exec('abc');
             ok && m.length === 3 && m[1] === '' && m[2] === undefined && Object.hasOwn(m, '2') && Object
                 .hasOwn(m.indices, '2') && m.groups.same === '' && m.indices.groups.same === m.indices[
-                1] && m.indices[2] === undefined
+                    1] && m.indices[2] === undefined
         "#,
     );
 }
@@ -445,7 +457,7 @@ fn mandatory_enclosing_sequence_and_choice_captures_keep_full_named_layouts() {
                             }
                             var point = global ? start : 0;
                             if (point > 0 && input.charCodeAt(point) >= 0xdc00 && input.charCodeAt(
-                                point) <= 0xdfff && input.charCodeAt(point - 1) >= 0xd800 && input
+                                    point) <= 0xdfff && input.charCodeAt(point - 1) >= 0xd800 && input
                                 .charCodeAt(point - 1) <= 0xdbff) point--;
                             ok = ok && m.index === point && m[0] === '' && m.length === pair[1].length +
                                 1 && r.source === pair[0] && r.lastIndex === (global ? point : start) &&
@@ -455,7 +467,7 @@ fn mandatory_enclosing_sequence_and_choice_captures_keep_full_named_layouts() {
                                 var name = pair[2][i - 1];
                                 ok = ok && Object.hasOwn(m, '' + i) && Object.hasOwn(m.indices, '' + i) &&
                                     Object.hasOwn(m.groups, name) && Object.hasOwn(m.indices.groups,
-                                    name) && m.groups[name] === m[i] && m.indices.groups[name] === m
+                                        name) && m.groups[name] === m[i] && m.indices.groups[name] === m
                                     .indices[i];
                                 ok = ok && (pair[1][i - 1] ? m[i] === '' && m.indices[i][0] === point && m
                                     .indices[i][1] === point : m[i] === undefined && m.indices[i] ===
@@ -465,7 +477,7 @@ fn mandatory_enclosing_sequence_and_choice_captures_keep_full_named_layouts() {
             var m = /(?<outside>(?<same>\p{RGI_Emoji}{0})+|(?<same>[\p{RGI_Emoji}]+))/dgv.exec('ab');
             ok && m.length === 4 && m[1] === '' && m[2] === '' && m[3] === undefined && m.groups.same ===
                 '' && m.indices.groups.outside === m.indices[1] && m.indices.groups.same === m.indices[
-                2] && Object.hasOwn(m.indices, '3') && m.indices[3] === undefined
+                    2] && Object.hasOwn(m.indices, '3') && m.indices[3] === undefined
         "#,
     );
 }
@@ -557,7 +569,7 @@ fn quantified_enclosing_masks_preserve_required_captures_and_roll_back_optional_
                             }
                             var point = global ? start : 0;
                             if (point > 0 && input.charCodeAt(point) >= 0xdc00 && input.charCodeAt(
-                                point) <= 0xdfff && input.charCodeAt(point - 1) >= 0xd800 && input
+                                    point) <= 0xdfff && input.charCodeAt(point - 1) >= 0xd800 && input
                                 .charCodeAt(point - 1) <= 0xdbff) point--;
                             ok = ok && m.index === point && m[0] === '' && m.length === pair[1].length +
                                 1 && r.source === pair[0] && r.lastIndex === (global ? point : start) &&
@@ -567,7 +579,7 @@ fn quantified_enclosing_masks_preserve_required_captures_and_roll_back_optional_
                                 var name = pair[2][i - 1];
                                 ok = ok && Object.hasOwn(m, '' + i) && Object.hasOwn(m.indices, '' + i) &&
                                     Object.hasOwn(m.groups, name) && Object.hasOwn(m.indices.groups,
-                                    name) && m.groups[name] === m[i] && m.indices.groups[name] === m
+                                        name) && m.groups[name] === m[i] && m.indices.groups[name] === m
                                     .indices[i];
                                 ok = ok && (pair[1][i - 1] ? m[i] === '' && m.indices[i][0] === point && m
                                     .indices[i][1] === point : m[i] === undefined && m.indices[i] ===
@@ -578,7 +590,7 @@ fn quantified_enclosing_masks_preserve_required_captures_and_roll_back_optional_
                 .exec('ab');
             ok && m.length === 4 && m[1] === '' && m[2] === '' && m[3] === undefined && m.groups.same ===
                 '' && m.indices.groups.outside === m.indices[1] && m.indices.groups.same === m.indices[
-                2] && Object.hasOwn(m.indices, '3') && m.indices[3] === undefined
+                    2] && Object.hasOwn(m.indices, '3') && m.indices[3] === undefined
         "#,
     );
 }
@@ -625,9 +637,21 @@ fn quantified_enclosing_empty_masks_keep_string_consumers_and_collection_consist
 fn quantified_enclosing_erasure_preserves_original_early_errors_and_host_aborts() {
     assert_true(
         r#"
-        var invalid=['(?i:(?<x>[\\p{Not_A_Property}]{0})?[a]{0})+','(?:(?<x>a)(?<x>b)|){0,2}','(?:(\\k<missing>)|){2,3}'],ok=true;
-        for(var source of invalid){var caught=false;try{new RegExp(source,'v')}catch(e){caught=e instanceof SyntaxError}ok=ok&&caught}ok
-    "#,
+            var invalid = ['(?i:(?<x>[\\p{Not_A_Property}]{0})?[a]{0})+', '(?:(?<x>a)(?<x>b)|){0,2}',
+                    '(?:(\\k<missing>)|){2,3}'
+                ],
+                ok = true;
+            for (var source of invalid) {
+                var caught = false;
+                try {
+                    new RegExp(source, 'v')
+                } catch (e) {
+                    caught = e instanceof SyntaxError
+                }
+                ok = ok && caught
+            }
+            ok
+        "#,
     );
     for source in [
         "new RegExp('(|a){2,3}').exec('a')",
@@ -662,7 +686,8 @@ fn arbitrary_empty_trees_keep_named_branch_masks_and_original_erased_bindings() 
                         ['outer', 'left', 'right', 'tail']
                     ],
                     ['(?i:(?<outer>(?<left>a{0})|(?<right>b{0})))*(?<tail>\\p{RGI_Emoji}{0})', [0, 0, 0,
-                        1],
+                            1
+                        ],
                         ['outer', 'left', 'right', 'tail']
                     ],
                     ['(?<first>(?<erased>(?=(?<hidden>a))\\k<later>){0})(?<later>c{0}|d{0})', [1, 0, 0, 1],
@@ -687,7 +712,7 @@ fn arbitrary_empty_trees_keep_named_branch_masks_and_original_erased_bindings() 
                             }
                             var point = global ? start : 0;
                             if (point > 0 && input.charCodeAt(point) >= 0xdc00 && input.charCodeAt(
-                                point) <= 0xdfff && input.charCodeAt(point - 1) >= 0xd800 && input
+                                    point) <= 0xdfff && input.charCodeAt(point - 1) >= 0xd800 && input
                                 .charCodeAt(point - 1) <= 0xdbff) point--;
                             ok = ok && m.index === point && m[0] === '' && m.length === pair[1].length +
                                 1 && r.source === pair[0] && r.lastIndex === (global ? point : start) &&
@@ -697,7 +722,7 @@ fn arbitrary_empty_trees_keep_named_branch_masks_and_original_erased_bindings() 
                                 var name = pair[2][i - 1];
                                 ok = ok && Object.hasOwn(m, '' + i) && Object.hasOwn(m.indices, '' + i) &&
                                     Object.hasOwn(m.groups, name) && Object.hasOwn(m.indices.groups,
-                                    name) && m.groups[name] === m[i] && m.indices.groups[name] === m
+                                        name) && m.groups[name] === m[i] && m.indices.groups[name] === m
                                     .indices[i];
                                 ok = ok && (pair[1][i - 1] ? m[i] === '' && m.indices[i][0] === point && m
                                     .indices[i][1] === point : m[i] === undefined && m.indices[i] ===
@@ -831,7 +856,7 @@ fn empty_positive_assertion_trees_export_named_captures_in_both_directions() {
                             }
                             var point = global ? start : 0;
                             if (point > 0 && input.charCodeAt(point) >= 0xdc00 && input.charCodeAt(
-                                point) <= 0xdfff && input.charCodeAt(point - 1) >= 0xd800 && input
+                                    point) <= 0xdfff && input.charCodeAt(point - 1) >= 0xd800 && input
                                 .charCodeAt(point - 1) <= 0xdbff) point--;
                             ok = ok && m.index === point && m[0] === '' && m.length === pair[1].length +
                                 1 && r.source === pair[0] && r.lastIndex === (global ? point : start) &&
@@ -841,7 +866,7 @@ fn empty_positive_assertion_trees_export_named_captures_in_both_directions() {
                                 var name = pair[2][i - 1];
                                 ok = ok && Object.hasOwn(m, '' + i) && Object.hasOwn(m.indices, '' + i) &&
                                     Object.hasOwn(m.groups, name) && Object.hasOwn(m.indices.groups,
-                                    name) && m.groups[name] === m[i] && m.indices.groups[name] === m
+                                        name) && m.groups[name] === m[i] && m.indices.groups[name] === m
                                     .indices[i];
                                 ok = ok && (pair[1][i - 1] ? m[i] === '' && m.indices[i][0] === point && m
                                     .indices[i][1] === point : m[i] === undefined && m.indices[i] ===
@@ -972,7 +997,7 @@ fn escaped_empty_tree_atoms_keep_literal_delimiters_and_named_capture_masks() {
                             }
                             var point = global ? start : 0;
                             if (point > 0 && input.charCodeAt(point) >= 0xdc00 && input.charCodeAt(
-                                point) <= 0xdfff && input.charCodeAt(point - 1) >= 0xd800 && input
+                                    point) <= 0xdfff && input.charCodeAt(point - 1) >= 0xd800 && input
                                 .charCodeAt(point - 1) <= 0xdbff) point--;
                             ok = ok && m.index === point && m[0] === '' && m.length === pair[1].length +
                                 1 && r.source === pair[0] && r.lastIndex === (global ? point : start) &&
@@ -982,7 +1007,7 @@ fn escaped_empty_tree_atoms_keep_literal_delimiters_and_named_capture_masks() {
                                 var name = pair[2][i - 1];
                                 ok = ok && Object.hasOwn(m, '' + i) && Object.hasOwn(m.indices, '' + i) &&
                                     Object.hasOwn(m.groups, name) && Object.hasOwn(m.indices.groups,
-                                    name) && m.groups[name] === m[i] && m.indices.groups[name] === m
+                                        name) && m.groups[name] === m[i] && m.indices.groups[name] === m
                                     .indices[i];
                                 ok = ok && (pair[1][i - 1] ? m[i] === '' && m.indices[i][0] === point && m
                                     .indices[i][1] === point : m[i] === undefined && m.indices[i] ===
@@ -1100,7 +1125,7 @@ fn surrogate_empty_tree_masks_follow_mode_specific_atom_boundaries() {
                                 var name = pair[2][i - 1];
                                 ok = ok && Object.hasOwn(m, '' + i) && Object.hasOwn(m.indices, '' + i) &&
                                     Object.hasOwn(m.groups, name) && Object.hasOwn(m.indices.groups,
-                                    name) && m.groups[name] === m[i] && m.indices.groups[name] === m
+                                        name) && m.groups[name] === m[i] && m.indices.groups[name] === m
                                     .indices[i];
                                 ok = ok && (pair[1][i - 1] ? m[i] === '' && m.indices[i][0] === point && m
                                     .indices[i][1] === point : m[i] === undefined && m.indices[i] ===

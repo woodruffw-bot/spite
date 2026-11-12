@@ -326,10 +326,13 @@ fn script_extensions_overrides_replace_script_fallback_and_overlap() {
         ));
         assert_true(&format!(
             r#"
-                /\p{{scx=Proto_Cuneiform}}/{mode}.test('\u{{12550}}') && /\p{{scx=Cuneiform}}/{mode}
+                /\p{{scx=Proto_Cuneiform}}/{mode}.test('\u{{12550}}') &&
+                    /\p{{scx=Cuneiform}}/{mode}
                     .test('\u{{12550}}') && /\p{{sc=Cuneiform}}/{mode}.test('\u{{12550}}') && !
-                    /\p{{sc=Proto_Cuneiform}}/{mode}.test('\u{{12550}}') && /\p{{scx=Han}}/{mode}.test(
-                        '一') && /\p{{scx=Latin}}/{mode}.test('A') && !/\p{{scx=Greek}}/{mode}.test(
+                    /\p{{sc=Proto_Cuneiform}}/{mode}.test('\u{{12550}}') &&
+                    /\p{{scx=Han}}/{mode}.test(
+                        '一') && /\p{{scx=Latin}}/{mode}.test('A') && !/\p{{scx=Greek}}/{mode}
+                    .test(
                         'A')
             "#
         ));
@@ -341,10 +344,13 @@ fn script_extensions_extra_aliases_follow_extension_membership() {
     for flags in ["u", "ui", "v", "vi"] {
         assert_true(&format!(
             r#"
-                /\p{{scx=Qaac}}/{flags}.test('Ⲁ') && /\p{{Script_Extensions=Qaac}}/{flags}.test(
-                        '\u0300') && !/\p{{sc=Qaac}}/{flags}.test('\u0300') && /\p{{scx=Qaai}}/{flags}
+                /\p{{scx=Qaac}}/{flags}.test('Ⲁ') && /\p{{Script_Extensions=Qaac}}/{flags}
+                    .test(
+                        '\u0300') && !/\p{{sc=Qaac}}/{flags}.test('\u0300') &&
+                    /\p{{scx=Qaai}}/{flags}
                     .test('\u034F') && !/\p{{Script_Extensions=Qaai}}/{flags}.test('\u0300') && !
-                    /\p{{scx=Qaai}}/{flags}.test('\u0345') && /\P{{scx=Qaai}}/{flags}.test('\u0300')
+                    /\p{{scx=Qaai}}/{flags}.test('\u0345') && /\P{{scx=Qaai}}/{flags}.test(
+                        '\u0300')
             "#
         ));
     }
@@ -424,8 +430,10 @@ fn script_extensions_unknown_keeps_missing_surrogates_private_use_and_noncharact
         ));
         assert_true(&format!(
             r#"
-                /^\p{{scx=Unknown}}$/{flags}.test('\uE000') && !/^\p{{Cn}}$/{flags}.test('\uE000') &&
-                    /^\p{{scx=Unknown}}$/{flags}.test('\uD800') && !/^\p{{Cn}}$/{flags}.test('\uD800')
+                /^\p{{scx=Unknown}}$/{flags}.test('\uE000') && !/^\p{{Cn}}$/{flags}.test(
+                        '\uE000') &&
+                    /^\p{{scx=Unknown}}$/{flags}.test('\uD800') && !/^\p{{Cn}}$/{flags}.test(
+                        '\uD800')
             "#
         ));
     }
@@ -439,7 +447,8 @@ fn script_extensions_empty_hrkt_is_not_the_hiragana_katakana_union() {
                 let r = /\p{{scx=Hrkt}}/{flags}g;
                 r.lastIndex = 1;
                 r.exec('あアー😀\uD800') === null && r.lastIndex === 0 && 'あアー😀\uD800'.replace(
-                        /\p{{Script_Extensions=Katakana_Or_Hiragana}}/{flags}g, 'x') === 'あアー😀\uD800' &&
+                        /\p{{Script_Extensions=Katakana_Or_Hiragana}}/{flags}g, 'x') ===
+                    'あアー😀\uD800' &&
                     /\p{{scx=Hira}}/{flags}.test('ー') && /\p{{scx=Kana}}/{flags}.test('ー')
             "#
         ));
@@ -447,8 +456,10 @@ fn script_extensions_empty_hrkt_is_not_the_hiragana_katakana_union() {
             r#"
                 let a = [...'あアー😀\uD800'.matchAll(/(?<x>\P{{scx=Hrkt}})/d{flags}g)];
                 a.length === 5 && a[2][1] === 'ー' && a[3][1] === '😀' && a[3].index === 3 && a[3].indices[1][
-                    1] === 5 && a[4][1] === '\uD800' && a[4].index === 5 && a[4].indices[1][1] === 6 &&
-                    /^[^\p{{scx=Hrkt}}]$/{flags}.test('😀') && !/^[^\P{{scx=Hrkt}}]$/{flags}.test('😀')
+                        1
+                    ] === 5 && a[4][1] === '\uD800' && a[4].index === 5 && a[4].indices[1][1] === 6 &&
+                    /^[^\p{{scx=Hrkt}}]$/{flags}.test('😀') && !/^[^\P{{scx=Hrkt}}]$/{flags}
+                    .test('😀')
             "#
         ));
     }
@@ -524,7 +535,8 @@ fn script_extensions_consumers_preserve_shared_marks_and_original_text() {
             r#"
                 let a = [...'あー😀アA'.matchAll(/(?<x>\p{{scx=Hira}})/d{mode}g)];
                 a.length === 2 && a[0][1] === 'あ' && a[1][1] === 'ー' && a[1].index === 1 && a[1].indices[1][
-                    1] === 2 && 'あー😀アA'.replace(/(?<x>\p{{scx=Hira}})/{mode}g, '<$1:$<x>>') ===
+                        1
+                    ] === 2 && 'あー😀アA'.replace(/(?<x>\p{{scx=Hira}})/{mode}g, '<$1:$<x>>') ===
                     '<あ:あ><ー:ー>😀アA'
             "#
         ));
@@ -532,7 +544,14 @@ fn script_extensions_consumers_preserve_shared_marks_and_original_text() {
             r"'AあーA'.split(/(\p{{scx=Hira}})/{mode}).join('|')==='A|あ||ー|A'&&'A😀ー'.search(/\p{{scx=Hira}}/{mode})===3&&'あーア'.match(/\p{{scx=Hira}}/{mode}g).join('')==='あー'"
         ));
         assert_true(&format!(
-            r"let t='',x='あーAあ'.replace(/(\p{{scx=Hira}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__A_'&&t==='013'"
+            r#"
+                let t = '',
+                    x = 'あーAあ'.replace(/(\p{{scx=Hira}})/{mode}g, (m, c, p) => {{
+                        t += p;
+                        return '_'
+                    }});
+                x === '__A_' && t === '013'
+            "#
         ));
     }
 }
@@ -669,14 +688,26 @@ fn script_extensions_exact_names_and_unadmitted_compositions() {
         ] {
             let pattern = JsString::from(format!(r"\p{{{name}}}").as_str());
             assert_true(&format!(
-                "let caught=false;try{{new RegExp({pattern:?},{mode:?})}}catch(e){{caught=e instanceof SyntaxError}}caught"
+                r#"
+                    let caught = false;
+                    try {{
+                        new RegExp({pattern:?}, {mode:?})
+                    }} catch (e) {{
+                        caught = e instanceof SyntaxError
+                    }}
+                    caught
+                "#
             ));
         }
     }
     assert_true(r"/[\p{scx=Hira}&&A]/v.exec('A')===null");
     assert_true(r"/[\p{scx=Greek}--A]/v.exec('A')===null");
     assert_true(
-        r"let s=String.fromCodePoint(0x300),m=/[\p{scx=Greek}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+        r#"
+            let s = String.fromCodePoint(0x300),
+                m = /[\p{scx=Greek}--A]/v.exec(s);
+            m !== null && m.length === 1 && m[0] === s && m.index === 0 && m.input === s
+        "#,
     );
     for source in [
         r"/\p{scx=Latin}A/u.exec('AA')",

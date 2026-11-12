@@ -80,7 +80,8 @@ fn nested_choices_and_quantified_prefixes_keep_complete_original_capture_layouts
         r#"
             let a = /((1)|(12))((3)|(23))/d.exec('123');
             a[0] === '123' && a.length === 7 && a[1] === '1' && a[2] === '1' && a[3] === undefined && a[
-                4] === '23' && a[5] === undefined && a[6] === '23' && a.indices[4][0] === 1 && a.indices[6]
+                    4] === '23' && a[5] === undefined && a[6] === '23' && a.indices[4][0] === 1 && a
+                .indices[6]
                 [1] === 3
         "#,
     );
@@ -110,7 +111,8 @@ fn nested_choices_and_quantified_prefixes_keep_complete_original_capture_layouts
         r#"
             let a = /(a+?)(b+?)/d.exec('aaabbbb');
             a[0] === 'aaab' && a[1] === 'aaa' && a[2] === 'b' && a.indices[1][1] === 3 && a.indices[2][
-                0] === 3 && a.indices[2][1] === 4
+                0
+            ] === 3 && a.indices[2][1] === 4
         "#,
     );
     assert_true(

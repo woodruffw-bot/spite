@@ -82,7 +82,10 @@ fn greedy_lazy_and_failed_suffixes_preserve_prefix_and_enclosing_capture_ranges(
         "#,
     );
     assert_true(
-        r"let a=/((?<x>a)\k<x>+?)\1/d.exec('aaaaaa');a[0]==='aaaa'&&a[1]==='aa'&&a.indices[1][1]===2&&a.groups.x==='a'",
+        r#"
+            let a = /((?<x>a)\k<x>+?)\1/d.exec('aaaaaa');
+            a[0] === 'aaaa' && a[1] === 'aa' && a.indices[1][1] === 2 && a.groups.x === 'a'
+        "#,
     );
     assert_true(
         r#"

@@ -77,7 +77,11 @@ fn unicode_literal_boundary_exact_context_and_capture_aliases() {
             "#
         ));
         assert_true(&format!(
-            r"let r=/A(A)$/d{mode}g,m=r.exec('AAAA');m.index===2&&m[1]==='A'&&m.indices[1][0]===3&&r.lastIndex===4"
+            r#"
+                let r = /A(A)$/d{mode}g,
+                    m = r.exec('AAAA');
+                m.index === 2 && m[1] === 'A' && m.indices[1][0] === 3 && r.lastIndex === 4
+            "#
         ));
         assert_true(&format!(
             r"/^A(b)$/m{mode}.test('xAb\nAb')&&!/^A(b)$/{mode}.test('Ab\n')&&!/^A(b)$/m{mode}.test('aB')"
@@ -119,7 +123,8 @@ fn unicode_literal_boundary_escaped_anchors_and_consumers() {
             r#"
                 let a = [...'Ab\r\nAb\u2028Ab\u2029'.matchAll(/^(A)(b)$/dm{mode}g)];
                 a.length === 3 && a[0].index === 0 && a[1].index === 4 && a[2].index === 7 && a[2].indices[2][
-                    1] === 9
+                    1
+                ] === 9
             "#
         ));
         assert_true(&format!(

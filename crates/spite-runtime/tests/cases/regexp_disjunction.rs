@@ -49,7 +49,10 @@ fn noncapturing_branches_escaped_delimiters_and_surrogate_halves_keep_utf16_rang
     );
     assert_true(r"/a\|b|c/.exec('xa|b')[0]==='a|b'");
     assert_true(
-        r"let m=/\uD800|\uDC00/d.exec('x\uD800\uDC00');m[0]==='\uD800' && m.index===1 && m.indices[0].join(',')==='1,2'",
+        r#"
+            let m = /\uD800|\uDC00/d.exec('x\uD800\uDC00');
+            m[0] === '\uD800' && m.index === 1 && m.indices[0].join(',') === '1,2'
+        "#,
     );
 }
 

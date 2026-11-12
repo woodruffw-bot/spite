@@ -177,7 +177,10 @@ fn local_open_future_named_ranges_imports_negative_commit_and_surrogates_are_exa
         "#,
     );
     assert_true(
-        r"let a=/(?<=(?<x>\k<x>))a/d.exec('a');a.groups.x===''&&a.indices.groups.x[0]===0&&a.indices.groups.x[1]===0",
+        r#"
+            let a = /(?<=(?<x>\k<x>))a/d.exec('a');
+            a.groups.x === '' && a.indices.groups.x[0] === 0 && a.indices.groups.x[1] === 0
+        "#,
     );
     assert_true(
         r"let a=/(?<=a(?!(b)\1))b|(?<=a)b/d.exec('abb');a[1]===undefined&&a.indices[1]===undefined",
@@ -192,7 +195,10 @@ fn local_open_future_named_ranges_imports_negative_commit_and_surrogates_are_exa
         "#,
     );
     assert_true(
-        r"let a=/(?<=a(?=([\uD800])\1))[\uD800]/d.exec('a\uD800\uD800\uDC00');a.index===1&&a.indices[1][0]===1",
+        r#"
+            let a = /(?<=a(?=([\uD800])\1))[\uD800]/d.exec('a\uD800\uD800\uDC00');
+            a.index === 1 && a.indices[1][0] === 1
+        "#,
     );
 }
 #[test]

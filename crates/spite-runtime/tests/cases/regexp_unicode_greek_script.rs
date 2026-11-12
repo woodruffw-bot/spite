@@ -411,7 +411,8 @@ fn unicode_greek_script_consumers_preserve_original_text() {
             r#"
                 let a = [...'Α😀AΒ'.matchAll(/(?<x>\P{{sc=Greek}})/d{mode}g)];
                 a.length === 2 && a[0][1] === '😀' && a[0].index === 1 && a[0].indices[1][1] === 3 && a[1][
-                    1] === 'A' && a[1].index === 3
+                    1
+                ] === 'A' && a[1].index === 3
             "#
         ));
         assert_true(&format!(
@@ -421,7 +422,14 @@ fn unicode_greek_script_consumers_preserve_original_text() {
             r"'AΑΒA'.split(/(\p{{Script=Greek}})/{mode}).join('|')==='A|Α||Β|A'&&'A😀Α'.search(/\p{{sc=Grek}}/{mode})===3&&'ΑΒA'.match(/\p{{Script=Grek}}/{mode}g).join('')==='ΑΒ'"
         ));
         assert_true(&format!(
-            r"let t='',x='ΑΒAΑ'.replace(/(\p{{sc=Greek}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__A_'&&t==='013'"
+            r#"
+                let t = '',
+                    x = 'ΑΒAΑ'.replace(/(\p{{sc=Greek}})/{mode}g, (m, c, p) => {{
+                        t += p;
+                        return '_'
+                    }});
+                x === '__A_' && t === '013'
+            "#
         ));
     }
 }
@@ -509,7 +517,11 @@ fn unicode_greek_script_opted_work_and_remaining_sets() {
     assert_true(r"/[\p{sc=Grek}&&A]/v.exec('A')===null");
     assert_true(r"/[\p{sc=Grek}--A]/v.exec('A')===null");
     assert_true(
-        r"let s=String.fromCodePoint(0x370),m=/[\p{sc=Grek}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+        r#"
+            let s = String.fromCodePoint(0x370),
+                m = /[\p{sc=Grek}--A]/v.exec(s);
+            m !== null && m.length === 1 && m[0] === s && m.index === 0 && m.input === s
+        "#,
     );
     for source in [
         r"/\p{sc=Grek}+b/u.exec('AA')",

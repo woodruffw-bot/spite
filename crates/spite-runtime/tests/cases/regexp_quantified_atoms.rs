@@ -107,7 +107,8 @@ fn intrinsic_results_have_no_capture_slots_and_bypass_prototype_setters() {
                 p = Object.getOwnPropertyDescriptor(m, '0');
             calls === 0 && m.length === 1 && m[0] === 'aa' && m.index === 1 && m.input === 'xaa' && m
                 .groups === undefined && m.indices.length === 1 && m.indices[0][0] === 1 && m.indices[0][
-                1] === 3 && m.indices.groups === undefined && p.writable && p.enumerable && p.configurable
+                    1
+                ] === 3 && m.indices.groups === undefined && p.writable && p.enumerable && p.configurable
         "#,
     );
 }

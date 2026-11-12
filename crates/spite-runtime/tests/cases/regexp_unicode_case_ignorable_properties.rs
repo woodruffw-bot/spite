@@ -85,7 +85,8 @@ fn unicode_case_ignorable_properties_aliases_complements_and_unions() {
             r#"
                 let p = /^\p{{CI}}$/i{mode},
                     n = /^\P{{CI}}$/i{mode};
-                '\u0345\u0399\u03B9\u1FBE'.split('').every(c => p.test(c) && n.test(c) === ('{mode}' ===
+                '\u0345\u0399\u03B9\u1FBE'.split('').every(c => p.test(c) && n.test(c) === (
+                    '{mode}' ===
                     'u'))
             "#
         ));
@@ -173,7 +174,12 @@ fn unicode_case_ignorable_properties_captures_context_and_pair_starts() {
             "#
         ));
         assert_true(&format!(
-            r"let r=/\p{{CI}}/d{mode}g;r.lastIndex=1;let m=r.exec('😀\u0300');m.index===2&&m[0]==='\u0300'&&r.lastIndex===3"
+            r#"
+                let r = /\p{{CI}}/d{mode}g;
+                r.lastIndex = 1;
+                let m = r.exec('😀\u0300');
+                m.index === 2 && m[0] === '\u0300' && r.lastIndex === 3
+            "#
         ));
         assert_true(&format!(
             r"let r=/\p{{CI}}/{mode}y;r.lastIndex=1;r.exec('😀\u0300')===null&&r.lastIndex===0"
@@ -188,7 +194,8 @@ fn unicode_case_ignorable_properties_consumers_original_text() {
             r#"
                 let a = [...'\u0301😀\u0300G'.matchAll(/(?<x>\P{{CI}})/d{mode}g)];
                 a.length === 2 && a[0][1] === '😀' && a[0].index === 1 && a[0].indices[1][1] === 3 && a[1][
-                    1] === 'G'
+                    1
+                ] === 'G'
             "#
         ));
         assert_true(&format!(
@@ -290,12 +297,19 @@ fn unicode_case_ignorable_properties_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     assert_true(
-        r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
+        r#"
+            let m = /\p{Script_Extensions=Latin}/u.exec('A');
+            JSON.stringify(m) === '["A"]' && m.index === 0 && m.input === 'A'
+        "#,
     );
     assert_true(r"/[\p{CI}&&A]/v.exec('A')===null");
     assert_true(r"/[\p{CI}--A]/v.exec('A')===null");
     assert_true(
-        r"let s=String.fromCodePoint(0x300),m=/[\p{CI}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+        r#"
+            let s = String.fromCodePoint(0x300),
+                m = /[\p{CI}--A]/v.exec(s);
+            m !== null && m.length === 1 && m[0] === s && m.index === 0 && m.input === s
+        "#,
     );
     for source in [r"/\p{CI}+b/u.exec('AA')", r"/\p{CI}A/v.exec('AA')"] {
         crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);

@@ -102,7 +102,8 @@ fn inner_prefix_and_outer_assertions_use_complete_multiline_and_word_neighbors()
         r#"
             let a = /^((\b(ab)+\b))$/d.exec('abab');
             a[1] === 'abab' && a[2] === 'abab' && a[3] === 'ab' && a.indices[1][0] === 0 && a.indices[1][
-                1] === 4 && a.indices[2][1] === 4 && a.indices[3][0] === 2
+                1
+            ] === 4 && a.indices[2][1] === 4 && a.indices[3][0] === 2
         "#,
     );
 }

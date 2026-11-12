@@ -40,7 +40,8 @@ fn iteration_empty_and_fixed_sequel_captures_remain_distinct() {
             let a = /(([ab])([ab])()){2}([ab]b)()/d.exec('aaaaab');
             a.length === 7 && a[1] === 'aa' && a[2] === 'a' && a[3] === 'a' && a[4] === '' && a[5] ===
                 'ab' && a[6] === '' && a.indices[1][0] === 2 && a.indices[4][0] === 4 && a.indices[5][
-                0] === 4 && a.indices[6][0] === 6
+                    0
+                ] === 4 && a.indices[6][0] === 6
         "#,
     );
     assert_true(
@@ -146,7 +147,8 @@ fn generic_consumers_callbacks_and_intrinsic_results_keep_iteration_and_sequel_s
             let r = /(ab)+(ab)$/dgm,
                 a = [...'abab\nabababab'.matchAll(r)];
             a.length === 2 && a[0].indices[2][0] === 2 && a[1].indices[1][0] === 9 && a[1].indices[2][
-                0] === 11 && r.lastIndex === 0
+                0
+            ] === 11 && r.lastIndex === 0
         "#,
     );
     assert_true(

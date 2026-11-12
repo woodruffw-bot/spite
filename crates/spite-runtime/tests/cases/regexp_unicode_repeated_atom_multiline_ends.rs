@@ -88,7 +88,8 @@ fn unicode_repeated_atom_multiline_ends_order_bounds_and_terminators() {
             r#"
                 let a = /a{{2,3}}$/{mode}m.exec('aaaa\nbb'),
                     b = /a{{2,3}}?$/{mode}m.exec('aaaa\nbb');
-                a.index === 1 && a[0] === 'aaa' && b.index === 1 && b[0] === 'aaa' && /^a{{2,3}}$/{mode}m
+                a.index === 1 && a[0] === 'aaa' && b.index === 1 && b[0] === 'aaa' &&
+                    /^a{{2,3}}$/{mode}m
                     .exec('aaaa\nbb') === null
             "#
         ));
@@ -103,7 +104,10 @@ fn unicode_repeated_atom_multiline_ends_order_bounds_and_terminators() {
             r"['\n','\r','\u2028','\u2029'].every(t=>/a+$/{mode}m.exec('aaa'+t)[0]==='aaa')&&/^a{{2}}$/{mode}m.exec('aaa\naa\nA').index===4"
         ));
         assert_true(&format!(
-            r"let a=[...'\r\n'.matchAll(/^a{{0}}$/{mode}mg)];a.length===3&&a[0].index===0&&a[1].index===1&&a[2].index===2"
+            r#"
+                let a = [...'\r\n'.matchAll(/^a{{0}}$/{mode}mg)];
+                a.length === 3 && a[0].index === 0 && a[1].index === 1 && a[2].index === 2
+            "#
         ));
         assert_true(&format!(
             r"/^\w+$/i{mode}m.exec('ſK\n')[0]==='ſK'&&/^\w+$/{mode}m.exec('ſK\n')===null&&/^\W+$/{mode}m.exec('ſK\n')[0]==='ſK\n'"

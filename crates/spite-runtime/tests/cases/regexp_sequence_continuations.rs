@@ -109,10 +109,17 @@ fn anchors_branches_and_enclosing_groups_constrain_continuation_endpoints() {
 #[test]
 fn continuation_classes_escapes_dot_flags_and_utf16_offsets_keep_pinned_rules() {
     assert_true(
-        r"let m=/(a)+(\d)/d.exec('xaa1');m.index===1&&m[1]==='a'&&m[2]==='1'&&m.indices[1][0]===2&&m.indices[2][0]===3",
+        r#"
+            let m = /(a)+(\d)/d.exec('xaa1');
+            m.index === 1 && m[1] === 'a' && m[2] === '1' && m.indices[1][0] === 2 && m.indices[2][0] === 3
+        "#,
     );
     assert_true(
-        "let a=/a+([µ])/i.exec('AAΜ'),b=/a+([^µ])/i.exec('AΜ');a[1]==='Μ'&&b===null&&/a+([ſ])/i.exec('aas')===null",
+        r#"
+            let a = /a+([µ])/i.exec('AAΜ'),
+                b = /a+([^µ])/i.exec('AΜ');
+            a[1] === 'Μ' && b === null && /a+([ſ])/i.exec('aas') === null
+        "#,
     );
     assert_true(
         r#"

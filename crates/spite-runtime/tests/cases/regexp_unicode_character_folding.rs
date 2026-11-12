@@ -62,7 +62,8 @@ fn unicode_character_folding_consumers_and_original_text() {
             r#"
                 let a = [...'ſK😀 9'.matchAll(/\w/di{mode}g)];
                 a.length === 3 && a[0][0] === 'ſ' && a[1][0] === 'K' && a[2].index === 5 && a[1].indices[0][
-                    1] === 2
+                    1
+                ] === 2
             "#
         ));
         assert_true(&format!(

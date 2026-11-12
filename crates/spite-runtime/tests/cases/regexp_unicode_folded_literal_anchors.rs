@@ -79,7 +79,11 @@ fn unicode_folded_literal_boundary_context_overlap_and_original_captures() {
             "#
         ));
         assert_true(&format!(
-            r"let r=/a(a)$/di{mode}g,m=r.exec('AAAA');m.index===2&&m[1]==='A'&&m.indices[1][0]===3&&r.lastIndex===4"
+            r#"
+                let r = /a(a)$/di{mode}g,
+                    m = r.exec('AAAA');
+                m.index === 2 && m[1] === 'A' && m.indices[1][0] === 3 && r.lastIndex === 4
+            "#
         ));
         assert_true(&format!(
             r"/^a(a)$/im{mode}.test('xAA\nAA')&&!/^a(a)$/i{mode}.test('AA\n')"
@@ -121,7 +125,8 @@ fn unicode_folded_literal_boundary_escaped_anchors_and_consumers() {
             r#"
                 let a = [...'AA\r\nAa\u2028aA\u2029'.matchAll(/^(a)(a)$/dim{mode}g)];
                 a.length === 3 && a[0].index === 0 && a[1].index === 4 && a[2].index === 7 && a[2].indices[2][
-                    1] === 9
+                    1
+                ] === 9
             "#
         ));
         assert_true(&format!(

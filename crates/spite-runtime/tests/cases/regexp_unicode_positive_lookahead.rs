@@ -169,7 +169,7 @@ fn named_operand_and_outside_captures_keep_independent_indices_and_greediness() 
                             .groups.outside === '' && m.groups.run === row[1] && r.lastIndex === 1 && r
                             .source === source;
                         ok = ok && JSON.stringify(m.indices[0]) === '[1,1]' && JSON.stringify(m.indices[
-                            1]) === '[1,1]' && m.indices[2][0] === 1 && m.indices[2][1] === 1 + row[1]
+                                1]) === '[1,1]' && m.indices[2][0] === 1 && m.indices[2][1] === 1 + row[1]
                             .length && m.indices.groups.run === m.indices[2];
                     }
             for (var mode of ['u', 'v'])

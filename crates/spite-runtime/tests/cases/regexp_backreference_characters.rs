@@ -74,14 +74,16 @@ fn classes_dot_case_and_surrogates_retain_input_captures_and_indices_aliases() {
         r#"
             let a = /(?<x>[a-z])\k<x>/di.exec('qAa');
             a[0] === 'Aa' && a.groups.x === 'A' && a.indices.groups.x === a.indices[1] && a.indices[1][
-                0] === 1 && a.indices[1][1] === 2
+                0
+            ] === 1 && a.indices[1][1] === 2
         "#,
     );
     assert_true(
         r#"
             let a = /(?<x>.)\k<x>/ds.exec('\n\n');
             a[0] === '\n\n' && a.groups.x === '\n' && a.indices.groups.x === a.indices[1] && a.indices[0][
-                1] === 2
+                1
+            ] === 2
         "#,
     );
     assert_true(
@@ -98,7 +100,8 @@ fn classes_dot_case_and_surrogates_retain_input_captures_and_indices_aliases() {
         r#"
             let a = /([ab])(\1.)\2/d.exec('qaacac');
             a[0] === 'aacac' && a[1] === 'a' && a[2] === 'ac' && a.indices[2][0] === 2 && a.indices[2][
-                1] === 4
+                1
+            ] === 4
         "#,
     );
 }

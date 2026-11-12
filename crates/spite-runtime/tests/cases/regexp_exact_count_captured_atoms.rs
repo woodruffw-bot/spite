@@ -72,37 +72,74 @@ fn exact_count_captured_atoms_result_snapshot() {
 #[test]
 fn final_iteration_ranges_names_indices_original_programs_and_rollback_are_exact() {
     assert_true(
-        "let a=/(?<=a(?=(?<x>b)(?<y>\\k<x>){2}))b/d.exec('abbb');a.groups.x==='b'&&a.groups.y==='b'&&a.indices.groups.y===a.indices[2]&&a.indices[2][0]===3",
+        r#"
+            let a = /(?<=a(?=(?<x>b)(?<y>\k<x>){2}))b/d.exec('abbb');
+            a.groups.x === 'b' && a.groups.y === 'b' && a.indices.groups.y === a.indices[2] && a.indices[2]
+                [0] === 3
+        "#,
     );
     assert_true(
-        "let a=/(?<=a(?=(?<x>b)(?<y>\\k<x>(?<z>\\k<x>)){2}))b/d.exec('abbbbb');a.groups.y==='bb'&&a.groups.z==='b'&&a.indices.groups.z===a.indices[3]&&a.indices[2][0]===4&&a.indices[3][0]===5",
+        r#"
+            let a = /(?<=a(?=(?<x>b)(?<y>\k<x>(?<z>\k<x>)){2}))b/d.exec('abbbbb');
+            a.groups.y === 'bb' && a.groups.z === 'b' && a.indices.groups.z === a.indices[3] && a.indices[
+                2][0] === 4 && a.indices[3][0] === 5
+        "#,
     );
     assert_true(
-        "let a=/(?<=(?<x>\\k<z>(?<y>\\k<z>)){2}(?<z>a))b/d.exec('aaaaab');a.groups.x==='aa'&&a.groups.y==='a'&&a.indices[2][0]===1&&a.indices[3][0]===4",
+        r#"
+            let a = /(?<=(?<x>\k<z>(?<y>\k<z>)){2}(?<z>a))b/d.exec('aaaaab');
+            a.groups.x === 'aa' && a.groups.y === 'a' && a.indices[2][0] === 1 && a.indices[3][0] === 4
+        "#,
     );
     assert_true(
-        "let a=/(?<=a(?=(b)(\\1()\\1){2}))b/d.exec('abbbbb');a[2]==='bb'&&a[3]===''&&a.indices[3][0]===5&&a.indices[3][1]===5",
+        r#"
+            let a = /(?<=a(?=(b)(\1()\1){2}))b/d.exec('abbbbb');
+            a[2] === 'bb' && a[3] === '' && a.indices[3][0] === 5 && a.indices[3][1] === 5
+        "#,
     );
     assert_true(
-        "let a=/(?<=a(?!(b)(\\1(\\1)){2}))b/d.exec('ab');a[1]===undefined&&a[2]===undefined&&a.indices[3]===undefined",
+        r#"
+            let a = /(?<=a(?!(b)(\1(\1)){2}))b/d.exec('ab');
+            a[1] === undefined && a[2] === undefined && a.indices[3] === undefined
+        "#,
     );
     assert_true(
-        "let a=/(?<=a(?=([\\uD800])(\\1(\\1)){2}))[\\uD800]/d.exec('a\\uD800\\uD800\\uD800\\uD800\\uD800');a.index===1&&a[2].length===2&&a[3].charCodeAt(0)===55296&&a.indices[3][0]===5",
+        r#"
+            let a = /(?<=a(?=([\uD800])(\1(\1)){2}))[\uD800]/d.exec('a\uD800\uD800\uD800\uD800\uD800');
+            a.index === 1 && a[2].length === 2 && a[3].charCodeAt(0) === 55296 && a.indices[3][0] === 5
+        "#,
     );
     assert_true(
-        "let a=/(?<=a(?=(bc)(\\1(\\1)){2}))b/d.exec('a'+'bc'.repeat(5));a.index===1&&a.indices[2][0]===7&&a.indices[2][1]===11&&a.indices[3][0]===9&&a.indices[3][1]===11",
+        r#"
+            let a = /(?<=a(?=(bc)(\1(\1)){2}))b/d.exec('a' + 'bc'.repeat(5));
+            a.index === 1 && a.indices[2][0] === 7 && a.indices[2][1] === 11 && a.indices[3][0] === 9 && a
+                .indices[3][1] === 11
+        "#,
     );
     assert_true(
-        "let a=/(?<=(\\3(\\3)){2}(bc))a/d.exec('bc'.repeat(5)+'a');a.index===10&&a.indices[1][0]===0&&a.indices[1][1]===4&&a.indices[2][0]===2&&a.indices[2][1]===4&&a.indices[3][0]===8",
+        r#"
+            let a = /(?<=(\3(\3)){2}(bc))a/d.exec('bc'.repeat(5) + 'a');
+            a.index === 10 && a.indices[1][0] === 0 && a.indices[1][1] === 4 && a.indices[2][0] === 2 && a
+                .indices[2][1] === 4 && a.indices[3][0] === 8
+        "#,
     );
     assert_true(
-        "let a=/(?<=a(?=(bc)(\\1){3}))b/d.exec('a'+'bc'.repeat(4));a.index===1&&a.indices[2][0]===7&&a.indices[2][1]===9",
+        r#"
+            let a = /(?<=a(?=(bc)(\1){3}))b/d.exec('a' + 'bc'.repeat(4));
+            a.index === 1 && a.indices[2][0] === 7 && a.indices[2][1] === 9
+        "#,
     );
     assert_true(
-        "let a=/(?<=(\\2){3}(bc))a/d.exec('bc'.repeat(4)+'a');a.index===8&&a.indices[1][0]===0&&a.indices[1][1]===2&&a.indices[2][0]===6",
+        r#"
+            let a = /(?<=(\2){3}(bc))a/d.exec('bc'.repeat(4) + 'a');
+            a.index === 8 && a.indices[1][0] === 0 && a.indices[1][1] === 2 && a.indices[2][0] === 6
+        "#,
     );
     assert_true(
-        "let a=/(?<=a(?=(bc)(\\1()\\1){2}))b/d.exec('a'+'bc'.repeat(5));a.indices[3][0]===9&&a.indices[3][1]===9",
+        r#"
+            let a = /(?<=a(?=(bc)(\1()\1){2}))b/d.exec('a' + 'bc'.repeat(5));
+            a.indices[3][0] === 9 && a.indices[3][1] === 9
+        "#,
     );
     let mut rows = String::new();
     for (source, object) in [
@@ -224,7 +261,10 @@ fn consumers_sticky_global_callbacks_and_required_empty_paths_keep_last_effects(
         "'abbbbb'.search(/(?<=a(?=(b)(\\1(\\1)){2}))b/)===1&&'abbbbb'.split(/(?<=a(?=(b)(\\1(\\1)){2}))b/).join('|')==='a|b|bb|b|bbbb'",
     );
     assert_true(
-        "let a=/(a)((\\1(\\1)){2}b)+/d.exec('aaaaabaaaab');a[2]==='aaaab'&&a[3]==='aa'&&a[4]==='a'&&a.indices[4][0]===9",
+        r#"
+            let a = /(a)((\1(\1)){2}b)+/d.exec('aaaaabaaaab');
+            a[2] === 'aaaab' && a[3] === 'aa' && a[4] === 'a' && a.indices[4][0] === 9
+        "#,
     );
     assert_true("let a=/(?=(\\3(\\3)){2}(a))a/d.exec('a');a[1]===''&&a[2]===''&&a[3]==='a'");
     assert_true("/(?<=a(?=(b)(\\1){1000000}))b/.exec('abbb')===null");

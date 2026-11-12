@@ -30,7 +30,16 @@ fn complete_grouped_overflowing_maximum_proofs_finish_finalizers_and_prove_every
     ] {
         let source = JsString::from(format!("marker=1;/{pattern}{{2,1000}}/v.test('a');").as_str());
         assert_true(&format!(
-            "let marker=0,caught=false;try{{eval({source:?});}}catch(e){{caught=e instanceof SyntaxError;}}caught && marker===0"
+            r#"
+                let marker = 0,
+                    caught = false;
+                try {{
+                    eval({source:?});
+                }} catch (e) {{
+                    caught = e instanceof SyntaxError;
+                }}
+                caught && marker === 0
+            "#
         ));
     }
 }

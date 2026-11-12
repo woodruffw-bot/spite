@@ -30,8 +30,7 @@ fn identifier_continue_and_unicode_identity_rules_still_reject_invalid_patterns(
     assert_true(
         r#"
             ['a', '_', String.fromCharCode(0x200c), String.fromCharCode(0x200d), String.fromCharCode(
-                0x301), String.fromCharCode(0x660)
-            ].every(s => {
+                0x301), String.fromCharCode(0x660)].every(s => {
                 try {
                     new RegExp('\\' + s);
                     return false;
@@ -59,10 +58,16 @@ fn identifier_continue_and_unicode_identity_rules_still_reject_invalid_patterns(
 #[test]
 fn class_quantifiers_assertions_and_backreferences_remain_distinct_from_identity_escapes() {
     assert_true(
-        r"/\d/.test('1') && /\d/.exec('d')===null && /\w/.test('a') && /\w/.exec('-')===null && /\s/.test(' ') && /\s/.exec('s')===null",
+        r#"
+            /\d/.test('1') && /\d/.exec('d') === null && /\w/.test('a') && /\w/.exec('-') === null && /\s/
+                .test(' ') && /\s/.exec('s') === null
+        "#,
     );
     assert_true(
-        r"/\d\d/.test('11')&&!/\d\d/.test('1')&&/\w\w/.test('ab')&&!/\w\w/.test('a')&&/\s\s/.test('  ')&&!/\s\s/.test(' ')",
+        r#"
+            /\d\d/.test('11') && !/\d\d/.test('1') && /\w\w/.test('ab') && !/\w\w/.test('a') && /\s\s/
+                .test('  ') && !/\s\s/.test(' ')
+        "#,
     );
     for source in [
         r"/(?:(?:((?:(?:\d+[a]+){2}){2}){2})|){2,3}/.test('1')",

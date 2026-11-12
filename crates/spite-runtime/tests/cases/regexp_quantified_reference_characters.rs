@@ -79,7 +79,8 @@ fn quantified_units_restore_whole_prefixes_named_aliases_and_parent_closes() {
             let a = /(?<x>a+)\k<x>/d.exec('aaaaa'),
                 b = /(?<x>a+?)\k<x>/d.exec('aaaaa');
             a[0] === 'aaaa' && a.groups.x === 'aa' && a.indices.groups.x === a.indices[1] && a.indices[1][
-                    0] === 0 && a.indices[1][1] === 2 && b[0] === 'aa' && b.groups.x === 'a' && b.indices
+                    0
+                ] === 0 && a.indices[1][1] === 2 && b[0] === 'aa' && b.groups.x === 'a' && b.indices
                 .groups.x[1] === 1
         "#,
     );
@@ -145,7 +146,7 @@ fn quantified_prefix_consumers_empty_captures_and_sticky_retries_keep_semantics(
             let copy = new RegExp(r),
                 a = r.exec('qaaaaa');
             a[0] === 'aaaa' && a.groups.x === 'aa' && a.indices.groups.x[0] === 1 && a.indices.groups.x[
-                1] === 3 && r.lastIndex === 5 && r.exec('qaaaaa') === null && r.lastIndex === 0 && copy
+                    1] === 3 && r.lastIndex === 5 && r.exec('qaaaaa') === null && r.lastIndex === 0 && copy
                 .source === r.source && copy.lastIndex === 0
         "#,
     );

@@ -75,7 +75,8 @@ fn unicode_repeated_atom_nested_assertion_word_counts_and_scopes() {
         assert_true(&format!(
             r#"
                 let m = /\b(\b(a))+\B/{mode}.exec('aaa');
-                m[0] === 'a' && m[1] === 'a' && m.index === 0 && /\ba+\B/{mode}.exec('aaa')[0] === 'aa'
+                m[0] === 'a' && m[1] === 'a' && m.index === 0 && /\ba+\B/{mode}.exec('aaa')[0] ===
+                    'aa'
             "#
         ));
         assert_true(&format!(
@@ -93,7 +94,8 @@ fn unicode_repeated_atom_nested_assertion_word_counts_and_scopes() {
         assert_true(&format!(
             r#"
                 let m = /\B(^\B(.)\B$)+\B/{mode}ms.exec('\r\n');
-                m[0] === '\r\n' && m[1] === '\n' && /\B(^\B(.)\B$){{3}}\B/{mode}ms.exec('\r\n') === null
+                m[0] === '\r\n' && m[1] === '\n' && /\B(^\B(.)\B$){{3}}\B/{mode}ms.exec('\r\n') ===
+                    null
             "#
         ));
     }

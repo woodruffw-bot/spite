@@ -8,16 +8,102 @@ use crate::common::assert_true;
 #[test]
 fn flags_gets_follow_spec_order_without_coercing_truthy_values() {
     assert_true(
-        "let get=Object.getOwnPropertyDescriptor(RegExp.prototype,'flags').get,t='',poison={[Symbol.toPrimitive](){throw 7;}},r={get hasIndices(){t+='d';return poison;},get global(){t+='g';return Symbol();},get ignoreCase(){t+='i';return 1n;},get multiline(){t+='m';return [];},get dotAll(){t+='s';return 'x';},get unicode(){t+='u';return 1;},get unicodeSets(){t+='v';return true;},get sticky(){t+='y';return {};}};get.call(r)==='dgimsuvy' && t==='dgimsuvy'",
+        r#"
+            let get = Object.getOwnPropertyDescriptor(RegExp.prototype, 'flags').get,
+                t = '',
+                poison = {
+                    [Symbol.toPrimitive]() {
+                        throw 7;
+                    }
+                },
+                r = {
+                    get hasIndices() {
+                        t += 'd';
+                        return poison;
+                    },
+                    get global() {
+                        t += 'g';
+                        return Symbol();
+                    },
+                    get ignoreCase() {
+                        t += 'i';
+                        return 1n;
+                    },
+                    get multiline() {
+                        t += 'm';
+                        return [];
+                    },
+                    get dotAll() {
+                        t += 's';
+                        return 'x';
+                    },
+                    get unicode() {
+                        t += 'u';
+                        return 1;
+                    },
+                    get unicodeSets() {
+                        t += 'v';
+                        return true;
+                    },
+                    get sticky() {
+                        t += 'y';
+                        return {};
+                    }
+                };
+            get.call(r) === 'dgimsuvy' && t === 'dgimsuvy'
+        "#,
     );
     assert_true(
-        "let get=Object.getOwnPropertyDescriptor(RegExp.prototype,'flags').get;get.call({hasIndices:NaN,global:0,ignoreCase:0n,multiline:'',dotAll:null,unicode:undefined,unicodeSets:false,sticky:-0})==='' && get.call(Object.create(null))===''",
+        r#"
+            let get = Object.getOwnPropertyDescriptor(RegExp.prototype, 'flags').get;
+            get.call({
+                hasIndices: NaN,
+                global: 0,
+                ignoreCase: 0n,
+                multiline: '',
+                dotAll: null,
+                unicode: undefined,
+                unicodeSets: false,
+                sticky: -0
+            }) === '' && get.call(Object.create(null)) === ''
+        "#,
     );
     assert_true(
-        "let get=Object.getOwnPropertyDescriptor(RegExp.prototype,'flags').get,r={get hasIndices(){delete this.global;this.unicodeSets=true;return true;},global:true};get.call(r)==='dv'",
+        r#"
+            let get = Object.getOwnPropertyDescriptor(RegExp.prototype, 'flags').get,
+                r = {
+                    get hasIndices() {
+                        delete this.global;
+                        this.unicodeSets = true;
+                        return true;
+                    },
+                    global: true
+                };
+            get.call(r) === 'dv'
+        "#,
     );
     assert_true(
-        "let get=Object.getOwnPropertyDescriptor(RegExp.prototype,'flags').get,t='';try{get.call({get unicode(){t+='u';throw 7;},get unicodeSets(){t+='v';},get sticky(){t+='y';}});}catch(e){t+=e;}t==='u7'",
+        r#"
+            let get = Object.getOwnPropertyDescriptor(RegExp.prototype, 'flags').get,
+                t = '';
+            try {
+                get.call({
+                    get unicode() {
+                        t += 'u';
+                        throw 7;
+                    },
+                    get unicodeSets() {
+                        t += 'v';
+                    },
+                    get sticky() {
+                        t += 'y';
+                    }
+                });
+            } catch (e) {
+                t += e;
+            }
+            t === 'u7'
+        "#,
     );
     assert_true(
         "RegExp.prototype.flags==='' && RegExp.prototype.source==='(?:)' && RegExp.prototype.toString()==='/(?:)/'",

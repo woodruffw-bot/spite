@@ -174,7 +174,10 @@ fn repeated_character_consumers_preserve_partial_indices_and_final_values() {
         "#,
     );
     assert_true(
-        r"let a=/(?<x>a)(?<last>a\k<x>)* /d.exec('a ');a.groups.last===undefined&&a.indices.groups.last===undefined",
+        r#"
+            let a = /(?<x>a)(?<last>a\k<x>)* /d.exec('a ');
+            a.groups.last === undefined && a.indices.groups.last === undefined
+        "#,
     );
 }
 

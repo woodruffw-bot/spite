@@ -478,7 +478,14 @@ fn unicode_common_script_consumers_preserve_original_text() {
             r"'A01A'.split(/(\p{{Script=Common}})/{mode}).join('|')==='A|0||1|A'&&'Aא0'.search(/\p{{sc=Zyyy}}/{mode})===2&&'01A'.match(/\p{{Script=Zyyy}}/{mode}g).join('')==='01'"
         ));
         assert_true(&format!(
-            r"let t='',x='01A0'.replace(/(\p{{sc=Common}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__A_'&&t==='013'"
+            r#"
+                let t = '',
+                    x = '01A0'.replace(/(\p{{sc=Common}})/{mode}g, (m, c, p) => {{
+                        t += p;
+                        return '_'
+                    }});
+                x === '__A_' && t === '013'
+            "#
         ));
     }
 }
@@ -566,7 +573,11 @@ fn unicode_common_script_opted_work_and_remaining_sets() {
     assert_true(r"/[\p{sc=Zyyy}&&A]/v.exec('A')===null");
     assert_true(r"/[\p{sc=Zyyy}--A]/v.exec('A')===null");
     assert_true(
-        r"let s=String.fromCodePoint(0x0),m=/[\p{sc=Zyyy}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+        r#"
+            let s = String.fromCodePoint(0x0),
+                m = /[\p{sc=Zyyy}--A]/v.exec(s);
+            m !== null && m.length === 1 && m[0] === s && m.index === 0 && m.input === s
+        "#,
     );
     for source in [
         r"/\p{sc=Zyyy}+b/u.exec('AA')",

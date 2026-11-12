@@ -130,7 +130,10 @@ fn prefix_sets_dot_flags_case_and_utf16_offsets_use_pinned_semantics() {
         "#,
     );
     assert_true(
-        r"let m=/([💩])(a)+/d.exec('💩aa');m.index===1&&m[1]==='\uDCA9'&&m.indices[1][0]===1&&m.indices[2][0]===3",
+        r#"
+            let m = /([💩])(a)+/d.exec('💩aa');
+            m.index === 1 && m[1] === '\uDCA9' && m.indices[1][0] === 1 && m.indices[2][0] === 3
+        "#,
     );
     assert_true(
         r"let m=/(.)(a)+/ds.exec('\naa');m[1]==='\n'&&m[2]==='a'&&/(.)(a)+/.exec('\na')===null",

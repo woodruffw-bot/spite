@@ -409,7 +409,8 @@ fn unicode_hebrew_script_consumers_preserve_original_text() {
             r#"
                 let a = [...'א😀Aב'.matchAll(/(?<x>\P{{sc=Hebrew}})/d{mode}g)];
                 a.length === 2 && a[0][1] === '😀' && a[0].index === 1 && a[0].indices[1][1] === 3 && a[1][
-                    1] === 'A' && a[1].index === 3
+                    1
+                ] === 'A' && a[1].index === 3
             "#
         ));
         assert_true(&format!(
@@ -419,7 +420,14 @@ fn unicode_hebrew_script_consumers_preserve_original_text() {
             r"'AאבA'.split(/(\p{{Script=Hebrew}})/{mode}).join('|')==='A|א||ב|A'&&'A😀א'.search(/\p{{sc=Hebr}}/{mode})===3&&'אבA'.match(/\p{{Script=Hebr}}/{mode}g).join('')==='אב'"
         ));
         assert_true(&format!(
-            r"let t='',x='אבAא'.replace(/(\p{{sc=Hebrew}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__A_'&&t==='013'"
+            r#"
+                let t = '',
+                    x = 'אבAא'.replace(/(\p{{sc=Hebrew}})/{mode}g, (m, c, p) => {{
+                        t += p;
+                        return '_'
+                    }});
+                x === '__A_' && t === '013'
+            "#
         ));
     }
 }
@@ -507,7 +515,11 @@ fn unicode_hebrew_script_opted_work_and_remaining_sets() {
     assert_true(r"/[\p{sc=Hebr}&&A]/v.exec('A')===null");
     assert_true(r"/[\p{sc=Hebr}--A]/v.exec('A')===null");
     assert_true(
-        r"let s=String.fromCodePoint(0x591),m=/[\p{sc=Hebr}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+        r#"
+            let s = String.fromCodePoint(0x591),
+                m = /[\p{sc=Hebr}--A]/v.exec(s);
+            m !== null && m.length === 1 && m[0] === s && m.index === 0 && m.input === s
+        "#,
     );
     for source in [
         r"/\p{sc=Hebr}+b/u.exec('AA')",

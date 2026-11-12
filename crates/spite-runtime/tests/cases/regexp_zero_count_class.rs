@@ -37,7 +37,7 @@ fn erased_classes_match_native_empty_patterns_across_modes_flags_and_boundaries(
                                 if (m === null || n === null) ok = ok && m === n;
                                 else ok = ok && m.length === 1 && m.indices.length === 1 && m[0] === '' &&
                                     m.index === n.index && m.input === input && Object.hasOwn(m,
-                                    'groups') && Object.hasOwn(m.indices, 'groups') && m.groups ===
+                                        'groups') && Object.hasOwn(m.indices, 'groups') && m.groups ===
                                     undefined && m.indices.groups === undefined && JSON.stringify(m
                                         .indices) === JSON.stringify(n.indices);
                             }
@@ -85,18 +85,27 @@ fn erased_class_string_consumers_and_clones_retain_empty_match_metadata() {
 fn composition_results_match_reference() {
     assert_true(
         r#"
-        var invalid=[
-            ['[^\\p{RGI_Emoji}]{0}','v'],
-            ['[\\P{RGI_Emoji}]{0}','v'],
-            ['[\\q{ab}&&a--a]{0}','v'],
-            ['[\\q{\\d}]{0}','v'],
-            ['[z-a]{0}','u'],
-            ['[\\p{NotAProperty}]{0}','v'],
-            ['[\\q{ab}]{0}','u']
-        ],ok=true;
-        for(var pair of invalid){var caught=false;try{new RegExp(pair[0],pair[1])}catch(e){caught=e instanceof SyntaxError}ok=ok&&caught}
-        ok
-    "#,
+            var invalid = [
+                    ['[^\\p{RGI_Emoji}]{0}', 'v'],
+                    ['[\\P{RGI_Emoji}]{0}', 'v'],
+                    ['[\\q{ab}&&a--a]{0}', 'v'],
+                    ['[\\q{\\d}]{0}', 'v'],
+                    ['[z-a]{0}', 'u'],
+                    ['[\\p{NotAProperty}]{0}', 'v'],
+                    ['[\\q{ab}]{0}', 'u']
+                ],
+                ok = true;
+            for (var pair of invalid) {
+                var caught = false;
+                try {
+                    new RegExp(pair[0], pair[1])
+                } catch (e) {
+                    caught = e instanceof SyntaxError
+                }
+                ok = ok && caught
+            }
+            ok
+        "#,
     );
     for pattern in [r"[\p{RGI_Emoji}]{0,1}", r"[\p{RGI_Emoji}]{0}a"] {
         let pattern = JsString::from(pattern);
@@ -254,10 +263,24 @@ fn property_zero_string_consumers_and_clones_keep_capture_free_metadata() {
 fn pattern_variants_match_reference_results() {
     assert_true(
         r#"
-        var invalid=[['\\P{RGI_Emoji}{0}','v'],['\\p{RGI_Emoji}{0}','u'],['\\p{NotAProperty}{0}','v'],['\\p{Script=NotAScript}{0}','u']],ok=true;
-        for(var pair of invalid){var caught=false;try{new RegExp(pair[0],pair[1])}catch(e){caught=e instanceof SyntaxError}ok=ok&&caught}
-        ok
-    "#,
+            var invalid = [
+                    ['\\P{RGI_Emoji}{0}', 'v'],
+                    ['\\p{RGI_Emoji}{0}', 'u'],
+                    ['\\p{NotAProperty}{0}', 'v'],
+                    ['\\p{Script=NotAScript}{0}', 'u']
+                ],
+                ok = true;
+            for (var pair of invalid) {
+                var caught = false;
+                try {
+                    new RegExp(pair[0], pair[1])
+                } catch (e) {
+                    caught = e instanceof SyntaxError
+                }
+                ok = ok && caught
+            }
+            ok
+        "#,
     );
     for pattern in [r"\p{RGI_Emoji}{0,1}", r"\p{RGI_Emoji}{0}a"] {
         let pattern = JsString::from(pattern);

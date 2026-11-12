@@ -92,7 +92,10 @@ fn unicode_captured_atoms_last_iteration_zero_and_bounds() {
             "#
         ));
         assert_true(&format!(
-            r"let a=/^(?<x>(\D)){{1,4}}$/{mode}m.exec('ab\ncdef');a[0]==='ab'&&a.groups.x==='b'&&a[2]==='b'&&a.index===0"
+            r#"
+                let a = /^(?<x>(\D)){{1,4}}$/{mode}m.exec('ab\ncdef');
+                a[0] === 'ab' && a.groups.x === 'b' && a[2] === 'b' && a.index === 0
+            "#
         ));
         assert_true(&format!(
             r"let a=/([aſK])+/i{mode}.exec('AſK');a[0]==='AſK'&&a[1]==='K'&&/(?:a)+/{mode}.exec('aaa').length===1"
@@ -117,7 +120,8 @@ fn unicode_captured_atoms_names_outer_scopes_and_original_pairs() {
                 let m = r.exec('😀😀\n');
                 m.index === 0 && m[0] === '😀😀' && m.groups.whole === '😀😀' && m.groups.__proto__ === '😀' &&
                     m.indices[1][0] === 0 && m.indices[1][1] === 4 && m.indices[2][0] === 2 && m.indices[2][
-                    1] === 4 && m.indices.groups.__proto__ === m.indices[2] && r.lastIndex === 4
+                        1
+                    ] === 4 && m.indices.groups.__proto__ === m.indices[2] && r.lastIndex === 4
             "#
         ));
         assert_true(&format!(
@@ -162,7 +166,14 @@ fn unicode_captured_atoms_consumers_and_empty_advance() {
             "#
         ));
         assert_true(&format!(
-            r"let t='',s='B😀😀'.replace(/(?<x>😀)+/{mode}g,(m,c,p,text,g)=>{{t+=p;return '['+g.x+']'}});s==='B[😀]'&&t==='1'"
+            r#"
+                let t = '',
+                    s = 'B😀😀'.replace(/(?<x>😀)+/{mode}g, (m, c, p, text, g) => {{
+                        t += p;
+                        return '[' + g.x + ']'
+                    }});
+                s === 'B[😀]' && t === '1'
+            "#
         ));
     }
 }

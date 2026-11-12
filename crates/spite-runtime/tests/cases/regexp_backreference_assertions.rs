@@ -84,7 +84,8 @@ fn input_line_and_word_context_preserve_captures_and_sticky_search_positions() {
             r.lastIndex = 2;
             let a = r.exec('q\nAa\nz');
             a.index === 2 && a.groups.x === 'A' && a.indices.groups.x === a.indices[1] && a.indices[1][
-                0] === 2 && a.indices[1][1] === 3 && r.lastIndex === 4 && r.exec('q\nAa\nz') === null && r
+                    0
+                ] === 2 && a.indices[1][1] === 3 && r.lastIndex === 4 && r.exec('q\nAa\nz') === null && r
                 .lastIndex === 0
         "#,
     );
@@ -102,7 +103,8 @@ fn input_line_and_word_context_preserve_captures_and_sticky_search_positions() {
         r#"
             let a = /\B(.)\1\B/d.exec('\uD800\uD800');
             a[0].length === 2 && a[1].charCodeAt(0) === 0xD800 && a.indices[1][0] === 0 && a.indices[1][
-                1] === 1
+                1
+            ] === 1
         "#,
     );
     assert_true(

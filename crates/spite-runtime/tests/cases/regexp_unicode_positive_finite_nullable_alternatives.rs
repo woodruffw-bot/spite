@@ -76,7 +76,10 @@ fn unicode_positive_finite_nullable_alternative_results_snapshot() {
 fn unicode_positive_finite_nullable_alternative_mandatory_empty_and_branch_order() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let m=/(a|){{2,3}}/d{mode}.exec('a');m[0]==='a'&&m[1]===''&&m.indices[1][0]===1&&m.indices[1][1]===1"
+            r#"
+                let m = /(a|){{2,3}}/d{mode}.exec('a');
+                m[0] === 'a' && m[1] === '' && m.indices[1][0] === 1 && m.indices[1][1] === 1
+            "#
         ));
         assert_true(&format!(
             r"let m=/(|a){{2,3}}/{mode}.exec('a');m[0]==='a'&&m[1]==='a'"

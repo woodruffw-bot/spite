@@ -72,7 +72,8 @@ fn unicode_grapheme_extend_properties_aliases_complements_and_unions() {
             r#"
                 let p = /^\p{{Gr_Ext}}$/i{mode},
                     n = /^\P{{Gr_Ext}}$/i{mode};
-                '\u0345\u0399\u03B9\u1FBE'.split('').every(c => p.test(c) && n.test(c) === ('{mode}' ===
+                '\u0345\u0399\u03B9\u1FBE'.split('').every(c => p.test(c) && n.test(c) === (
+                    '{mode}' ===
                     'u'))
             "#
         ));
@@ -180,7 +181,8 @@ fn unicode_grapheme_extend_properties_consumers_original_text() {
             r#"
                 let a = [...'\u0301😀\u0300G'.matchAll(/(?<x>\P{{Gr_Ext}})/d{mode}g)];
                 a.length === 2 && a[0][1] === '😀' && a[0].index === 1 && a[0].indices[1][1] === 3 && a[1][
-                    1] === 'G'
+                    1
+                ] === 'G'
             "#
         ));
         assert_true(&format!(
@@ -282,12 +284,19 @@ fn unicode_grapheme_extend_properties_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     assert_true(
-        r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
+        r#"
+            let m = /\p{Script_Extensions=Latin}/u.exec('A');
+            JSON.stringify(m) === '["A"]' && m.index === 0 && m.input === 'A'
+        "#,
     );
     assert_true(r"/[\p{Gr_Ext}&&A]/v.exec('A')===null");
     assert_true(r"/[\p{Gr_Ext}--A]/v.exec('A')===null");
     assert_true(
-        r"let s=String.fromCodePoint(0x300),m=/[\p{Gr_Ext}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+        r#"
+            let s = String.fromCodePoint(0x300),
+                m = /[\p{Gr_Ext}--A]/v.exec(s);
+            m !== null && m.length === 1 && m[0] === s && m.index === 0 && m.input === s
+        "#,
     );
     for source in [r"/\p{Gr_Ext}+b/u.exec('AA')", r"/\p{Gr_Ext}A/v.exec('AA')"] {
         crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);

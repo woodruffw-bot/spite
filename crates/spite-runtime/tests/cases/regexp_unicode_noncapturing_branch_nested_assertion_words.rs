@@ -241,7 +241,8 @@ fn unicode_noncapturing_branch_nested_assertion_words_contradictions_empty_count
         r#"
             let m = /\B(?<whole>((?:\b(?:\Ba))|(?:(?:b\b)\B))*)\B/du.exec('');
             m[0] === '' && m[1] === '' && m.groups.whole === '' && m[2] === undefined && m.indices[1][
-                0] === 0 && m.indices[1][1] === 0 && m.indices[2] === undefined
+                0
+            ] === 0 && m.indices[1][1] === 0 && m.indices[2] === undefined
         "#,
     );
     assert_true(

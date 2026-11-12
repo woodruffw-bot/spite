@@ -128,7 +128,10 @@ fn consumers_last_index_callbacks_and_skipped_capture_effects_are_preserved() {
         "#,
     );
     assert_true(
-        r"let a=[...'ab'.matchAll(/()(?<=((())\3\1){2})/dg)];a.length===3&&a[2].index===2&&a[2].indices[4][0]===2",
+        r#"
+            let a = [...'ab'.matchAll(/()(?<=((())\3\1){2})/dg)];
+            a.length === 3 && a[2].index === 2 && a[2].indices[4][0] === 2
+        "#,
     );
     assert_true(
         r#"

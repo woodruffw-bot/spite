@@ -83,7 +83,10 @@ fn single_point_capture_layouts_keep_names_ranges_and_participation_without_oute
         }
     }
     assert_true(
-        r"var m=/()[\q{a}]()/dv.exec('a');m.length===3&&m[1]===''&&m[2]===''&&m.indices[1][0]===0&&m.indices[2][0]===1",
+        r#"
+            var m = /()[\q{a}]()/dv.exec('a');
+            m.length === 3 && m[1] === '' && m[2] === '' && m.indices[1][0] === 0 && m.indices[2][0] === 1
+        "#,
     );
     assert_true(r"var r=/()[\q{ab}&&a]()/dvg;r.lastIndex=1;r.exec('aaa')===null&&r.lastIndex===0");
 }
@@ -157,7 +160,17 @@ fn single_point_capture_consumers_callbacks_clones_and_collection_keep_aliases()
 #[test]
 fn single_point_capture_proofs_finish_supported_finalizers_and_keep_other_terms_host_failures() {
     assert_true(
-        r"var marker=0,value;try{var m=/()[\q{a}]()/dv.exec('a');value=m[1]===''&&m.indices[2][0]===1}finally{marker=3}value&&marker===3",
+        r#"
+            var marker = 0,
+                value;
+            try {
+                var m = /()[\q{a}]()/dv.exec('a');
+                value = m[1] === '' && m.indices[2][0] === 1
+            } finally {
+                marker = 3
+            }
+            value && marker === 3
+        "#,
     );
     assert_true(
         r"var marker=0,m;try{m=/()[\q{ab}&&\q{cd}]/dv.exec('ab')}finally{marker=3}marker===3&&m===null",
@@ -182,6 +195,16 @@ fn single_point_capture_proofs_finish_supported_finalizers_and_keep_other_terms_
         );
     }
     assert_true(
-        "var yes=0;for(var p of ['()(?<x>[a])(?<x>)','()[\\q{ab}&&a--a]']){try{new RegExp(p,'v')}catch(e){if(e instanceof SyntaxError)yes++}}yes===2",
+        r#"
+            var yes = 0;
+            for (var p of ['()(?<x>[a])(?<x>)', '()[\q{ab}&&a--a]']) {
+                try {
+                    new RegExp(p, 'v')
+                } catch (e) {
+                    if (e instanceof SyntaxError) yes++
+                }
+            }
+            yes === 2
+        "#,
     );
 }

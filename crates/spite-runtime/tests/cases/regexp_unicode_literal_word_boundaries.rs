@@ -83,7 +83,8 @@ fn unicode_literal_word_boundaries_overlap_line_context_and_folding() {
         assert_true(&format!(
             r#"
                 let m = /\b(?<x>ſ)(K)\b/di{mode}.exec('SK');
-                m[0] === 'SK' && m.groups.x === 'S' && m[2] === 'K' && !/\b(ſ)(K)\b/{mode}.test('ſK')
+                m[0] === 'SK' && m.groups.x === 'S' && m[2] === 'K' && !/\b(ſ)(K)\b/{mode}.test(
+                    'ſK')
             "#
         ));
         assert_true(&format!(
@@ -108,11 +109,15 @@ fn unicode_literal_word_boundaries_original_pair_and_lone_surrogate_captures() {
                 r.lastIndex = 1;
                 let m = r.exec('😀a');
                 m.index === 0 && m[0] === '😀a' && m[1] === '😀' && m.indices[1][1] === 2 && m.indices[2][
-                    0] === 2 && m.indices.groups.__proto__ === m.indices[1] && r.lastIndex === 3
+                    0
+                ] === 2 && m.indices.groups.__proto__ === m.indices[1] && r.lastIndex === 3
             "#
         ));
         assert_true(&format!(
-            r"let m=/\b(a)(\u{{1f600}})\B/d{mode}.exec('a😀');m[0]==='a😀'&&m.indices[2][0]===1&&m.indices[2][1]===3"
+            r#"
+                let m = /\b(a)(\u{{1f600}})\B/d{mode}.exec('a😀');
+                m[0] === 'a😀' && m.indices[2][0] === 1 && m.indices[2][1] === 3
+            "#
         ));
         assert_true(&format!(
             r#"
@@ -232,7 +237,15 @@ fn unicode_literal_word_boundary_clones_coercions_and_strict_writes() {
 fn unicode_literal_word_boundaries_opted_work_and_remaining_compositions() {
     assert_true(r"/\b[a]b\b/v.test('ab')");
     assert_true(
-        r#"let r=/\b[a]b\b/v,m=r.exec('ab');m!==null&&Array.isArray(m)&&m.length===1&&m[0]==='ab'&&m.index===0&&m.input==='ab'&&m.groups===undefined&&m.indices===undefined&&r.source==='\\b[a]b\\b'&&r.lastIndex===0&&r.exec('xb')===null&&r.exec('ax')===null&&r.exec('a')===null&&r.exec('xab')===null&&r.exec('!ab').index===1&&r.exec('abx')===null"#,
+        r#"
+            let r = /\b[a]b\b/v,
+                m = r.exec('ab');
+            m !== null && Array.isArray(m) && m.length === 1 && m[0] === 'ab' && m.index === 0 && m
+                .input === 'ab' && m.groups === undefined && m.indices === undefined && r.source ===
+                '\\b[a]b\\b' && r.lastIndex === 0 && r.exec('xb') === null && r.exec('ax') === null && r
+                .exec('a') === null && r.exec('xab') === null && r.exec('!ab').index === 1 && r.exec(
+                'abx') === null
+        "#,
     );
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),

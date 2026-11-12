@@ -204,7 +204,11 @@ fn unicode_scalar_literal_lone_input_units_remain_distinct() {
         r"let r=/😀/uy;r.lastIndex=2;let m=r.exec('\uD83D😀\uDE00');m.index===1&&r.lastIndex===3",
     );
     assert_true(
-        r"let r=/😀/vg;r.lastIndex=1;r.exec('😀x').index===0&&r.lastIndex===2&&r.exec('😀x')===null&&r.lastIndex===0",
+        r#"
+            let r = /😀/vg;
+            r.lastIndex = 1;
+            r.exec('😀x').index === 0 && r.lastIndex === 2 && r.exec('😀x') === null && r.lastIndex === 0
+        "#,
     );
 }
 
@@ -226,7 +230,11 @@ fn unicode_scalar_literal_opted_work_abort_preserves_state_and_unproved_atoms() 
         Ok(Value::Boolean(true))
     );
     assert_true(
-        r#"let m=/(?=😀)/v.exec('😀');m!==null&&m.length===1&&m[0]===''&&m.index===0&&m.input==='😀'&&m.groups===undefined"#,
+        r#"
+            let m = /(?=😀)/v.exec('😀');
+            m !== null && m.length === 1 && m[0] === '' && m.index === 0 && m.input === '😀' && m
+                .groups === undefined
+        "#,
     );
     for source in [
         r"/(\uD83D)(\uDE00)/u.exec('😀')",

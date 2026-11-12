@@ -94,7 +94,8 @@ fn unicode_noncapturing_branch_nested_assertions_counts_and_branch_scopes() {
         assert_true(&format!(
             r#"
                 let m = /((?:a)|(?:b)){{2,3}}/{mode}.exec('abba');
-                m[0] === 'abb' && m[1] === 'b' && /((?:a)|(?:b)){{2,3}}?/{mode}.exec('abba')[0] === 'ab'
+                m[0] === 'abb' && m[1] === 'b' && /((?:a)|(?:b)){{2,3}}?/{mode}.exec('abba')[0] ===
+                    'ab'
             "#
         ));
         assert_true(&format!(
@@ -136,7 +137,8 @@ fn unicode_noncapturing_branch_nested_assertions_contradictions_and_empty_counts
         r#"
             let m = /(?<whole>((?:\b(?:\Ba))|(?:(?:b\b)\B))*)/du.exec('');
             m[0] === '' && m[1] === '' && m.groups.whole === '' && m[2] === undefined && m.indices[1][
-                0] === 0 && m.indices[1][1] === 0 && m.indices[2] === undefined
+                0
+            ] === 0 && m.indices[1][1] === 0 && m.indices[2] === undefined
         "#,
     );
 }

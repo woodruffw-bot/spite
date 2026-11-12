@@ -287,7 +287,8 @@ fn single_nullable_point_consumers_callbacks_clones_and_collection_keep_empty_pr
             r.lastIndex = 9;
             var parts = 'ab'.split(r);
             'baa'.search(r) === 0 && r.lastIndex === 9 && parts.length === 4 && parts[0] === '' && parts[
-                1] === '' && parts[2] === '' && parts[3] === 'b' && 'aa!'.match(r).join('|') === 'a|a||' &&
+                    1] === '' && parts[2] === '' && parts[3] === 'b' && 'aa!'.match(r).join('|') ===
+                'a|a||' &&
                 'aa!'.replace(r, '<$<before>:$<after>>') === '<:><:><:>!<:>'
         "#,
     );
@@ -308,16 +309,53 @@ fn single_nullable_point_consumers_callbacks_clones_and_collection_keep_empty_pr
 #[test]
 fn single_nullable_point_scope_guard_keeps_assertions_and_host_failures_separate() {
     assert_true(
-        r"var marker=0,m;try{m=/()(?:[\q{a}]|)/dv.exec('a')}finally{marker=3}marker===3&&m[0]==='a'&&m[1]===''&&m.indices[1][0]===0",
+        r#"
+            var marker = 0,
+                m;
+            try {
+                m = /()(?:[\q{a}]|)/dv.exec('a')
+            } finally {
+                marker = 3
+            }
+            marker === 3 && m[0] === 'a' && m[1] === '' && m.indices[1][0] === 0
+        "#,
     );
     assert_true(
-        r"var marker=0,m;try{m=/()(?:[\q{a}]|)/dv.exec('!')}finally{marker=3}marker===3&&m[0]===''&&m[1]===''&&m.indices[1][0]===0",
+        r#"
+            var marker = 0,
+                m;
+            try {
+                m = /()(?:[\q{a}]|)/dv.exec('!')
+            } finally {
+                marker = 3
+            }
+            marker === 3 && m[0] === '' && m[1] === '' && m.indices[1][0] === 0
+        "#,
     );
     assert_true(
-        r"var marker=0,value;try{var m=/()(?:[\q{a}]|)()/dv.exec('a');value=m[1]===''&&m.indices[2][0]===1}finally{marker=3}value&&marker===3",
+        r#"
+            var marker = 0,
+                value;
+            try {
+                var m = /()(?:[\q{a}]|)()/dv.exec('a');
+                value = m[1] === '' && m.indices[2][0] === 1
+            } finally {
+                marker = 3
+            }
+            value && marker === 3
+        "#,
     );
     assert_true(
-        r"var marker=0,m;try{m=/()(?:[\q{ab}&&\q{cd}]|)/dv.exec('ab')}finally{marker=3}marker===3&&m[0]===''&&m[1]===''&&m.indices[1][0]===0&&m.indices[1][1]===0",
+        r#"
+            var marker = 0,
+                m;
+            try {
+                m = /()(?:[\q{ab}&&\q{cd}]|)/dv.exec('ab')
+            } finally {
+                marker = 3
+            }
+            marker === 3 && m[0] === '' && m[1] === '' && m.indices[1][0] === 0 && m.indices[1][1] === 0
+        "#,
     );
     for pattern in [
         r"^()[\q{a}]|()",
@@ -341,6 +379,16 @@ fn single_nullable_point_scope_guard_keeps_assertions_and_host_failures_separate
         );
     }
     assert_true(
-        "var yes=0;for(var p of ['()(?:(?<x>[a])|(?<x>))(?<x>)','()(?:[\\q{ab}&&a--a]|)']){try{new RegExp(p,'v')}catch(e){if(e instanceof SyntaxError)yes++}}yes===2",
+        r#"
+            var yes = 0;
+            for (var p of ['()(?:(?<x>[a])|(?<x>))(?<x>)', '()(?:[\q{ab}&&a--a]|)']) {
+                try {
+                    new RegExp(p, 'v')
+                } catch (e) {
+                    if (e instanceof SyntaxError) yes++
+                }
+            }
+            yes === 2
+        "#,
     );
 }

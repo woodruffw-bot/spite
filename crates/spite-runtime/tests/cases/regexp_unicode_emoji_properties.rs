@@ -81,7 +81,8 @@ fn unicode_emoji_properties_aliases_complements_and_unions() {
                     n = /[\P{{Emoji}}K]/i{mode},
                     x = /[^\P{{Emoji}}K]/i{mode};
                 p.test('K') && n.test('K') && !x.test('K') && [...'\u24C2\u24DC'].every(c => p.test(c) && n
-                    .test(c) === ('{mode}' === 'u') && x.test(c) === ('{mode}' === 'v'))
+                    .test(c) === ('{mode}' === 'u') && x.test(c) === ('{mode}' ===
+                        'v'))
             "#
         ));
     }
@@ -190,7 +191,8 @@ fn unicode_emoji_properties_consumers_original_text() {
         assert_true(&format!(
             r#"
                 let t = '';
-                let x = '\u00A9\u00AE\uDB40\uDC01\u00A9'.replace(/(\p{{Emoji}})/{mode}g, (m, c, p) => {{
+                let x = '\u00A9\u00AE\uDB40\uDC01\u00A9'.replace(/(\p{{Emoji}})/{mode}g, (m, c,
+                p) => {{
                     t += p;
                     return '_'
                 }});
@@ -280,12 +282,19 @@ fn unicode_emoji_properties_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     assert_true(
-        r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
+        r#"
+            let m = /\p{Script_Extensions=Latin}/u.exec('A');
+            JSON.stringify(m) === '["A"]' && m.index === 0 && m.input === 'A'
+        "#,
     );
     assert_true(r"/[\p{Emoji}&&A]/v.exec('A')===null");
     assert_true(r"/[\p{Emoji}--A]/v.exec('A')===null");
     assert_true(
-        r"let s=String.fromCodePoint(0xa9),m=/[\p{Emoji}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+        r#"
+            let s = String.fromCodePoint(0xa9),
+                m = /[\p{Emoji}--A]/v.exec(s);
+            m !== null && m.length === 1 && m[0] === s && m.index === 0 && m.input === s
+        "#,
     );
     for source in [r"/\p{Emoji}+b/u.exec('AA')", r"/\p{Emoji}A/v.exec('AA')"] {
         crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);

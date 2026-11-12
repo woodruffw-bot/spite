@@ -119,7 +119,10 @@ fn nested_fixed_lookbehind_child_positions_negation_and_outside_aliases_are_exac
         r"/(?<=(?<=^a)b)c/m.exec('q\nabc').index===4&&/(?<=(?<=^a)b)c/.exec('q\nabc')===null&&/(?<=\B)(?<=c(?<=\w))\w{3}/.exec('ab cdef')[0]==='def'",
     );
     assert_true(
-        r"let a=/(?=(?<x>a(?<=a(?<=a))b))\k<x>/d.exec('ab');a[0]==='ab'&&a.groups.x==='ab'&&a.indices.groups.x[1]===2",
+        r#"
+            let a = /(?=(?<x>a(?<=a(?<=a))b))\k<x>/d.exec('ab');
+            a[0] === 'ab' && a.groups.x === 'ab' && a.indices.groups.x[1] === 2
+        "#,
     );
 }
 

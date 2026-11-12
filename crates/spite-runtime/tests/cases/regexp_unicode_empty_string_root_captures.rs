@@ -147,7 +147,7 @@ fn empty_member_root_selection_keeps_class_identity_for_empty_and_longest_words(
             var m = /(?<before>)(?<part>[\q{|a|ab}])(?<after>)|(?<empty>)/dv.exec('!');
             m[0] === '' && m.groups.part === '' && m.groups.before === '' && m.groups.after === '' && m
                 .groups.empty === undefined && m.indices.groups.part[0] === 0 && m.indices.groups.part[
-                1] === 0 && m.indices.groups.after[0] === 0
+                    1] === 0 && m.indices.groups.after[0] === 0
         "#,
     );
     assert_true(
@@ -243,7 +243,8 @@ fn empty_member_root_consumers_preserve_defined_empty_captures_and_unicode_progr
             r.lastIndex = 9;
             var parts = 'abX'.split(r);
             'Xab'.search(r) === 0 && r.lastIndex === 9 && parts.length === 4 && parts[0] === '' && parts[
-                1] === 'ab' && parts[2] === undefined && parts[3] === 'X' && 'abXa'.match(r).join('|') ===
+                    1] === 'ab' && parts[2] === undefined && parts[3] === 'X' && 'abXa'.match(r).join(
+                '|') ===
                 'ab||a|' && 'abXa'.replace(r, '<$<part>:$<empty>>') === '<ab:><:>X<a:><:>'
         "#,
     );
@@ -263,19 +264,58 @@ fn empty_member_root_consumers_preserve_defined_empty_captures_and_unicode_progr
 #[test]
 fn empty_member_root_proofs_finish_finalizers_and_keep_other_features_separate() {
     assert_true(
-        r"var marker=0,m;try{m=/([\q{|a|ab}])|()/dv.exec('!')}finally{marker=3}marker===3&&m[0]===''&&m[1]===''&&m[2]===undefined&&m.indices[1][0]===0",
+        r#"
+            var marker = 0,
+                m;
+            try {
+                m = /([\q{|a|ab}])|()/dv.exec('!')
+            } finally {
+                marker = 3
+            }
+            marker === 3 && m[0] === '' && m[1] === '' && m[2] === undefined && m.indices[1][0] === 0
+        "#,
     );
     assert_true(
-        r"var marker=0,m;try{m=/()|([\q{|ab}])/dv.exec('!')}finally{marker=3}marker===3&&m[0]===''&&m[1]===''&&m[2]===undefined&&m.indices[1][0]===0",
+        r#"
+            var marker = 0,
+                m;
+            try {
+                m = /()|([\q{|ab}])/dv.exec('!')
+            } finally {
+                marker = 3
+            }
+            marker === 3 && m[0] === '' && m[1] === '' && m[2] === undefined && m.indices[1][0] === 0
+        "#,
     );
     assert_true(
-        r"var m=/(?<part>[\q{}--\q{}])|(?<empty>)/dv.exec('!');m.groups.part===undefined&&m.groups.empty===''&&m.indices.groups.empty[0]===0",
+        r#"
+            var m = /(?<part>[\q{}--\q{}])|(?<empty>)/dv.exec('!');
+            m.groups.part === undefined && m.groups.empty === '' && m.indices.groups.empty[0] === 0
+        "#,
     );
     assert_true(
-        r"var marker=0,m;try{m=/^([\q{|ab}])|()/dv.exec('!')}finally{marker=3}marker===3&&m[0]===''&&m[1]===''&&m[2]===undefined&&m.indices[1][0]===0",
+        r#"
+            var marker = 0,
+                m;
+            try {
+                m = /^([\q{|ab}])|()/dv.exec('!')
+            } finally {
+                marker = 3
+            }
+            marker === 3 && m[0] === '' && m[1] === '' && m[2] === undefined && m.indices[1][0] === 0
+        "#,
     );
     assert_true(
-        r"var marker=0,m;try{m=/([\q{|ab}])|()$/dv.exec('!')}finally{marker=3}marker===3&&m[0]===''&&m[1]===''&&m[2]===undefined&&m.indices[1][0]===0",
+        r#"
+            var marker = 0,
+                m;
+            try {
+                m = /([\q{|ab}])|()$/dv.exec('!')
+            } finally {
+                marker = 3
+            }
+            marker === 3 && m[0] === '' && m[1] === '' && m[2] === undefined && m.indices[1][0] === 0
+        "#,
     );
     for pattern in [
         r"^([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])|()",
@@ -297,6 +337,16 @@ fn empty_member_root_proofs_finish_finalizers_and_keep_other_features_separate()
         );
     }
     assert_true(
-        "var yes=0;for(var p of ['(?<x>[a])|(?<x>)(?<x>)','[\\q{|ab}&&a--a]|']){try{new RegExp(p,'v')}catch(e){if(e instanceof SyntaxError)yes++}}yes===2",
+        r#"
+            var yes = 0;
+            for (var p of ['(?<x>[a])|(?<x>)(?<x>)', '[\q{|ab}&&a--a]|']) {
+                try {
+                    new RegExp(p, 'v')
+                } catch (e) {
+                    if (e instanceof SyntaxError) yes++
+                }
+            }
+            yes === 2
+        "#,
     );
 }

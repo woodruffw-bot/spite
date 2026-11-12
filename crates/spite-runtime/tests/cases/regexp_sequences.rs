@@ -37,9 +37,11 @@ fn nested_and_empty_groups_have_fixed_capture_and_indices_ranges() {
             let m = /([a](b))()([c])/d.exec('xabc');
             m.length === 5 && m[0] === 'abc' && m[1] === 'ab' && m[2] === 'b' && m[3] === '' && m[4] ===
                 'c' && m.index === 1 && m.groups === undefined && m.indices.length === 5 && m.indices[0][
-                0] === 1 && m.indices[0][1] === 4 && m.indices[1][0] === 1 && m.indices[1][1] === 3 && m
+                    0
+                ] === 1 && m.indices[0][1] === 4 && m.indices[1][0] === 1 && m.indices[1][1] === 3 && m
                 .indices[2][0] === 2 && m.indices[2][1] === 3 && m.indices[3][0] === 3 && m.indices[3][
-                1] === 3 && m.indices[4][0] === 3 && m.indices[4][1] === 4 && m.indices.groups ===
+                    1
+                ] === 3 && m.indices[4][0] === 3 && m.indices[4][1] === 4 && m.indices.groups ===
                 undefined
         "#,
     );
@@ -57,7 +59,10 @@ fn dot_class_escapes_and_ordinary_case_folding_apply_per_atom() {
         "#,
     );
     assert_true(
-        r"!/a.b/.test('a\nb')&&/a.b/s.test('a\nb')&&/a.b/s.test('a\u2028b')&&!/[]a/.test('a')&&/[^]a/.test('\na')",
+        r#"
+            !/a.b/.test('a\nb') && /a.b/s.test('a\nb') && /a.b/s.test('a\u2028b') && !/[]a/.test('a') &&
+                /[^]a/.test('\na')
+        "#,
     );
 }
 
@@ -68,7 +73,8 @@ fn ordinary_sequences_consume_surrogate_units_without_pair_reinterpretation() {
             let s = '\uD800\uDC00',
                 m = /([\uD800])([\uDC00])/d.exec(s);
             m[0] === s && m[1].length === 1 && m[2].length === 1 && m.indices[1][0] === 0 && m.indices[1][
-                1] === 1 && m.indices[2][0] === 1 && m.indices[2][1] === 2
+                1
+            ] === 1 && m.indices[2][0] === 1 && m.indices[2][1] === 2
         "#,
     );
     assert_true(
@@ -160,7 +166,14 @@ fn opted_in_search_abort_keeps_state_and_skips_javascript_cleanup() {
 fn choices_quantifiers_assertions_backreferences_and_unicode_match_reference_results() {
     assert_true("/[a]b/v.test('ab')");
     assert_true(
-        r#"let r=/[a]b/v,m=r.exec('ab');Array.isArray(m)&&m.length===1&&m[0]==='ab'&&m.index===0&&m.input==='ab'&&m.groups===undefined&&m.indices===undefined&&r.source==='[a]b'&&r.lastIndex===0&&r.exec('xb')===null&&r.exec('ax')===null&&r.exec('a')===null&&r.exec('xab').index===1"#,
+        r#"
+            let r = /[a]b/v,
+                m = r.exec('ab');
+            Array.isArray(m) && m.length === 1 && m[0] === 'ab' && m.index === 0 && m.input === 'ab' && m
+                .groups === undefined && m.indices === undefined && r.source === '[a]b' && r.lastIndex ===
+                0 && r.exec('xb') === null && r.exec('ax') === null && r.exec('a') === null && r.exec(
+                    'xab').index === 1
+        "#,
     );
     for source in [
         r"/(?:(?:((?:(?:[a]+[b]+){2}){2}){2})|){2,3}/.test('a')",

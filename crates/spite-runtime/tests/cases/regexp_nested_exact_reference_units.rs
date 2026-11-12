@@ -92,7 +92,10 @@ fn named_ranges_retry_required_empty_original_gap_and_both_directions_are_exact(
     );
     assert_true(r"let a=/(\1*b)+/d.exec('bbb');a[1]==='b'&&a.indices[1][0]===2");
     assert_true(
-        r"let a=/(?<x>(?<y>b)\k<y>{2})+/di.exec('bBbBBb');a.groups.x==='BBb'&&a.groups.y==='B'&&a.indices[1][0]===3",
+        r#"
+            let a = /(?<x>(?<y>b)\k<y>{2})+/di.exec('bBbBBb');
+            a.groups.x === 'BBb' && a.groups.y === 'B' && a.indices[1][0] === 3
+        "#,
     );
     assert_true(
         r#"

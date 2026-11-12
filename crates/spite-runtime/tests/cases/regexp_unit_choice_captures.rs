@@ -39,7 +39,7 @@ fn enclosing_partial_runs_and_zero_iterations_keep_distinct_slots() {
             let a = /(x)(((a|b))*)(y)/d.exec('xy');
             a[1] === 'x' && a[2] === '' && a[3] === undefined && a[4] === undefined && a[5] === 'y' && a
                 .indices[2][0] === 1 && a.indices[2][1] === 1 && a.indices[3] === undefined && a.indices[
-                4] === undefined
+                    4] === undefined
         "#,
     );
     assert_true(
@@ -128,7 +128,8 @@ fn generic_consumers_intrinsic_arrays_and_callbacks_keep_inner_wrapper_values() 
             let r = /(x)(((a|b))+)(y)/dg,
                 a = [...'xay xababy'.matchAll(r)];
             a.length === 2 && a[1][2] === 'abab' && a[1][3] === 'b' && a[1][4] === 'b' && a[1].indices[3][
-                0] === 8 && a[1].indices[4][0] === 8 && r.lastIndex === 0
+                0
+            ] === 8 && a[1].indices[4][0] === 8 && r.lastIndex === 0
         "#,
     );
     assert_true(

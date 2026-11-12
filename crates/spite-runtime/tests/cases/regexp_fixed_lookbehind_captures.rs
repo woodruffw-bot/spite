@@ -120,7 +120,7 @@ fn fixed_lookbehind_captures_keep_before_match_ranges_negative_slots_and_outer_a
             let a = /(?<=(?<x>aa)(?<!((?<y>a)b)))c/d.exec('aac');
             a.groups.x === 'aa' && a.groups.y === undefined && a[2] === undefined && a[3] === undefined &&
                 a.indices.groups.x === a.indices[1] && a.indices.groups.x[0] === 0 && a.indices.groups.x[
-                1] === 2 && a.indices.groups.y === undefined
+                    1] === 2 && a.indices.groups.y === undefined
         "#,
     );
     assert_true(

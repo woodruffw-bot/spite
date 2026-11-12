@@ -95,7 +95,8 @@ fn nested_dependencies_import_retries_named_aliases_and_negative_effects_keep_ra
         r#"
             let a = /(a)(?<!(\3(b)\1){2}q)c/d.exec('bbabbaac');
             a.index === 6 && a[1] === 'a' && a[2] === undefined && a[3] === undefined && a.indices[1][
-                0] === 6
+                0
+            ] === 6
         "#,
     );
     assert_true(r"/(a)(?<=(\1\3(b)){2})c/.exec('ababc')===null");
@@ -128,7 +129,10 @@ fn consumers_global_sticky_empty_skip_and_callbacks_use_resolved_unit_ranges() {
         r"let a=/(a)(?<=(\3(\1)){0})b/d.exec('ab');a[1]==='a'&&a[2]===undefined&&a.indices[3]===undefined",
     );
     assert_true(
-        r"let a=[...'ab'.matchAll(/()(?<=(\3(\1)){2})/dg)];a.length===3&&a[2].index===2&&a[2].indices[3][0]===2",
+        r#"
+            let a = [...'ab'.matchAll(/()(?<=(\3(\1)){2})/dg)];
+            a.length === 3 && a[2].index === 2 && a[2].indices[3][0] === 2
+        "#,
     );
     assert_true(
         r#"

@@ -97,8 +97,9 @@ fn names_aliases_before_after_match_ranges_and_negative_slots() {
         r#"
             let a = /(?<x>a)(?<=(?<y>\k<x>){2})b/d.exec('aaab');
             a.index === 2 && a.groups.x === 'a' && a.groups.y === 'a' && a.indices.groups.x === a.indices[
-                    1] && a.indices.groups.y === a.indices[2] && a.indices[2][0] === 1 && a.indices[2][
-                1] === 2
+                1] && a.indices.groups.y === a.indices[2] && a.indices[2][0] === 1 && a.indices[2][
+                1
+            ] === 2
         "#,
     );
     assert_true(

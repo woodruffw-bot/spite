@@ -80,7 +80,10 @@ fn partial_empty_effects_names_owned_reads_and_negative_rollback_keep_ranges() {
         "#,
     );
     assert_true(
-        r"let a=/(?<=(a)(\1()\1){2})b/d.exec('ab');a[2]===''&&a[3]===''&&a.indices[2][0]===1&&a.indices[3][0]===1",
+        r#"
+            let a = /(?<=(a)(\1()\1){2})b/d.exec('ab');
+            a[2] === '' && a[3] === '' && a.indices[2][0] === 1 && a.indices[3][0] === 1
+        "#,
     );
     assert_true(
         r"let a=/(?<=a(?=(\2\2)+(b)))b/d.exec('ab');a.index===1&&a[1]===''&&a[2]==='b'&&a.indices[1][0]===1",
@@ -92,7 +95,10 @@ fn partial_empty_effects_names_owned_reads_and_negative_rollback_keep_ranges() {
         r"let a=/(?<!(a)(\1\1){2})b/d.exec('b');a[1]===undefined&&a[2]===undefined&&a.indices[2]===undefined",
     );
     assert_true(
-        r"let a=/(?<=([\uD800])(\1(\1)){2})b/d.exec('\uD800b');a.index===1&&a[2]===''&&a[3]===''&&a.indices[3][0]===1",
+        r#"
+            let a = /(?<=([\uD800])(\1(\1)){2})b/d.exec('\uD800b');
+            a.index === 1 && a[2] === '' && a[3] === '' && a.indices[3][0] === 1
+        "#,
     );
 }
 #[test]
@@ -114,7 +120,10 @@ fn consumers_global_sticky_empty_advancement_and_callbacks_keep_partial_slots() 
         "#,
     );
     assert_true(
-        r"let a=[...'aa'.matchAll(/(?=(\3(\3)){2}(a))a/dg)];a.length===2&&a[0][2]===''&&a[1].indices[2][0]===1",
+        r#"
+            let a = [...'aa'.matchAll(/(?=(\3(\3)){2}(a))a/dg)];
+            a.length === 2 && a[0][2] === '' && a[1].indices[2][0] === 1
+        "#,
     );
     assert_true(
         r#"

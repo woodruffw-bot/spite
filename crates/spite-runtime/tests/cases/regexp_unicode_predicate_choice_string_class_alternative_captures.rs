@@ -1577,13 +1577,46 @@ fn named_capture_results(
 #[test]
 fn predicate_choice_string_class_alternatives_retain_full_unknown_leaf_and_scope_proofs() {
     assert_true(
-        r####"var pattern="((\\b)|(\\B))(([\\q{a|ab}])|()){2}",r=new RegExp(pattern,"dv"),m=r.exec("aba");r.source===pattern&&r.flags==="dv"&&m.input==="aba"&&m.groups===undefined&&m.indices.groups===undefined&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"aba\",\"\",\"\",\"<undefined>\",\"a\",\"a\",\"<undefined>\"],[[0,3],[0,0],[0,0],\"<undefined>\",[2,3],[2,3],\"<undefined>\"],0,0]""####,
+        r#"
+            var pattern = "((\\b)|(\\B))(([\\q{a|ab}])|()){2}",
+                r = new RegExp(pattern, "dv"),
+                m = r.exec("aba");
+            r.source === pattern && r.flags === "dv" && m.input === "aba" && m.groups === undefined && m
+                .indices.groups === undefined && JSON.stringify([Array.from(m, v => v === undefined ?
+                    "<undefined>" : v), Array.from(m.indices, v => v === undefined ?
+                    "<undefined>" : v), m.index, r.lastIndex]) ===
+                "[[\"aba\",\"\",\"\",\"<undefined>\",\"a\",\"a\",\"<undefined>\"],[[0,3],[0,0],[0,0],\"<undefined>\",[2,3],[2,3],\"<undefined>\"],0,0]"
+        "#,
     );
     assert_true(
-        r####"var pattern="(((\\b)|(\\B))([\\q{a|ab}]))|()",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"ab\",\"ab\",\"\",\"\",\"<undefined>\",\"ab\",\"<undefined>\"],[[0,2],[0,2],[0,0],[0,0],\"<undefined>\",[0,2],\"<undefined>\"],0,0]""####,
+        r#"
+            var pattern = "(((\\b)|(\\B))([\\q{a|ab}]))|()",
+                input = "aba",
+                r = new RegExp(pattern, "dv"),
+                m = r.exec(input);
+            r.source === pattern && r.flags === "dv" && r.hasIndices && r.unicodeSets && (m === null || (m
+                    .input === input && m.groups === undefined && m.indices.groups === undefined &&
+                    Object.hasOwn(m, "groups") && Object.hasOwn(m.indices, "groups"))) && JSON.stringify(
+                    m === null ? null : [Array.from(m, v => v === undefined ? "<undefined>" : v), Array
+                        .from(m.indices, v => v === undefined ? "<undefined>" : v), m.index, r.lastIndex
+                    ]) ===
+                "[[\"ab\",\"ab\",\"\",\"\",\"<undefined>\",\"ab\",\"<undefined>\"],[[0,2],[0,2],[0,0],[0,0],\"<undefined>\",[0,2],\"<undefined>\"],0,0]"
+        "#,
     );
     assert_true(
-        r####"var pattern="((\\b)|(\\B))(((\\b)|(\\B))([\\q{a|ab}])|())",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"ab\",\"\",\"\",\"<undefined>\",\"ab\",\"\",\"\",\"<undefined>\",\"ab\",\"<undefined>\"],[[0,2],[0,0],[0,0],\"<undefined>\",[0,2],[0,0],[0,0],\"<undefined>\",[0,2],\"<undefined>\"],0,0]""####,
+        r#"
+            var pattern = "((\\b)|(\\B))(((\\b)|(\\B))([\\q{a|ab}])|())",
+                input = "aba",
+                r = new RegExp(pattern, "dv"),
+                m = r.exec(input);
+            r.source === pattern && r.flags === "dv" && r.hasIndices && r.unicodeSets && (m === null || (m
+                    .input === input && m.groups === undefined && m.indices.groups === undefined &&
+                    Object.hasOwn(m, "groups") && Object.hasOwn(m.indices, "groups"))) && JSON.stringify(
+                    m === null ? null : [Array.from(m, v => v === undefined ? "<undefined>" : v), Array
+                        .from(m.indices, v => v === undefined ? "<undefined>" : v), m.index, r.lastIndex
+                    ]) ===
+                "[[\"ab\",\"\",\"\",\"<undefined>\",\"ab\",\"\",\"\",\"<undefined>\",\"ab\",\"<undefined>\"],[[0,2],[0,0],[0,0],\"<undefined>\",[0,2],[0,0],[0,0],\"<undefined>\",[0,2],\"<undefined>\"],0,0]"
+        "#,
     );
     for pattern in [
         r"((\b)|(\B))(([\q{a|ab}])|())[a]",

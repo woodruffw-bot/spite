@@ -210,7 +210,8 @@ fn capture_free_positive_extension_preserves_capturing_assertions_and_original_e
                 .indices.groups.value[1] === 3 && z[0] === '' && z.groups.empty === '' && z.indices.groups
                 .empty[0] === 0 && z.indices.groups.empty[1] === 0;
             for (var source of ['(?=[\\p{Not_A_Property}]*)', '(?=(?<x>a)(?<x>b)*)',
-                '(?=\\k<missing>*)']) {
+                    '(?=\\k<missing>*)'
+                ]) {
                 var caught = false;
                 try {
                     new RegExp(source, 'v')

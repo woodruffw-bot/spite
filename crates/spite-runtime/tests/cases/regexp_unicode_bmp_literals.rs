@@ -129,7 +129,13 @@ fn unicode_bmp_names_lone_surrogates_and_matching_boundaries_are_exact() {
         r"let r=/a/uy;r.lastIndex=1;let a=r.exec('\uD800a\uDC00');a.index===1&&r.lastIndex===2",
     );
     assert_true(
-        r"let r=/(?<x>a(?<y>()))b/dug;r.lastIndex=1;let a=r.exec('\uD83D\uDE00ab');a.index===2&&a.groups.x==='a'&&a.groups.y===''&&a.indices.groups.x===a.indices[1]&&a.indices.groups.y===a.indices[2]&&a.indices[2][0]===3",
+        r#"
+            let r = /(?<x>a(?<y>()))b/dug;
+            r.lastIndex = 1;
+            let a = r.exec('\uD83D\uDE00ab');
+            a.index === 2 && a.groups.x === 'a' && a.groups.y === '' && a.indices.groups.x === a.indices[
+                1] && a.indices.groups.y === a.indices[2] && a.indices[2][0] === 3
+        "#,
     );
     assert_true(r"let r=/a/uy;r.lastIndex=1;r.exec('\uD83D\uDE00a')===null&&r.lastIndex===0");
     assert_true(

@@ -89,7 +89,11 @@ fn unicode_atom_outer_assertion_original_named_captures_context_and_widths() {
             "#
         ));
         assert_true(&format!(
-            r"let r=/^(\uD800)$/d{mode},m=r.exec('\uD800');m[1]==='\uD800'&&m.indices[1][1]===1&&!r.test('\uD800\uDC00')"
+            r#"
+                let r = /^(\uD800)$/d{mode},
+                    m = r.exec('\uD800');
+                m[1] === '\uD800' && m.indices[1][1] === 1 && !r.test('\uD800\uDC00')
+            "#
         ));
     }
 }
@@ -119,7 +123,8 @@ fn unicode_atom_outer_assertion_consumers_original_substrings_and_indices() {
             r#"
                 let a = [...'A\n😀\n\uD800'.matchAll(/^(?<x>.)$/dm{mode}g)];
                 a.length === 3 && a[0][1] === 'A' && a[1][1] === '😀' && a[1].index === 2 && a[1].indices[1][
-                    1] === 4 && a[2][1] === '\uD800'
+                    1
+                ] === 4 && a[2][1] === '\uD800'
             "#
         ));
         assert_true(&format!(
@@ -199,7 +204,11 @@ fn unicode_atom_outer_assertion_metadata_mode_clones_coercions_and_writes() {
 #[test]
 fn unicode_atom_outer_assertion_opted_work_and_remaining_bodies() {
     assert_true(
-        r"let m=/^([\q{a\)b}])$/v.exec('a)b');m.length===2 && m[0]==='a)b' && m[1]==='a)b' && m.index===0 && m.input==='a)b' && m.groups===undefined",
+        r#"
+            let m = /^([\q{a\)b}])$/v.exec('a)b');
+            m.length === 2 && m[0] === 'a)b' && m[1] === 'a)b' && m.index === 0 && m.input === 'a)b' && m
+                .groups === undefined
+        "#,
     );
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -217,7 +226,10 @@ fn unicode_atom_outer_assertion_opted_work_and_remaining_bodies() {
         Ok(Value::Boolean(true))
     );
     assert_true(
-        r#"let m=/^(\p{Script_Extensions=Latin})$/u.exec('A');JSON.stringify(m)==='["A","A"]'&&m.index===0&&m.input==='A'"#,
+        r#"
+            let m = /^(\p{Script_Extensions=Latin})$/u.exec('A');
+            JSON.stringify(m) === '["A","A"]' && m.index === 0 && m.input === 'A'
+        "#,
     );
     for source in [
         r"/^((.)+)b$/u.exec('A')",

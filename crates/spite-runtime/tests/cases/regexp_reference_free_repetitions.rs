@@ -79,14 +79,16 @@ fn reference_free_retries_keep_final_named_captures_and_outside_aliases() {
             let a = /(?<x>a)+\k<x>/d.exec('aaaaa'),
                 b = /(?<x>a)+?\k<x>/d.exec('aaaaa');
             a[0] === 'aaaaa' && a.groups.x === 'a' && a.indices.groups.x === a.indices[1] && a.indices[1][
-                0] === 3 && a.indices[1][1] === 4 && b[0] === 'aa' && b.indices.groups.x[0] === 0
+                0
+            ] === 3 && a.indices[1][1] === 4 && b[0] === 'aa' && b.indices.groups.x[0] === 0
         "#,
     );
     assert_true(
         r#"
             let a = /(?<x>[ab])+\k<x>/d.exec('abba');
             a[0] === 'abb' && a.groups.x === 'b' && a.indices.groups.x === a.indices[1] && a.indices[1][
-                0] === 1 && a.indices[1][1] === 2
+                0
+            ] === 1 && a.indices[1][1] === 2
         "#,
     );
     assert_true(

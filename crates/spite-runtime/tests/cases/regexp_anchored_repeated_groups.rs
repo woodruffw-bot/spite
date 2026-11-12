@@ -81,8 +81,9 @@ fn enclosing_alternative_and_zero_iteration_captures_keep_specified_slots() {
             let a = /^((a())*)$/d.exec('aaa'),
                 b = /^((a())*)$/d.exec('');
             a[1] === 'aaa' && a[2] === 'a' && a[3] === '' && a.indices[2][0] === 2 && b[1] === '' && b[
-                2] === undefined && b[3] === undefined && Object.hasOwn(b, '3') && Object.hasOwn(b.indices,
-                    '3')
+                2] === undefined && b[3] === undefined && Object.hasOwn(b, '3') && Object.hasOwn(b
+                .indices,
+                '3')
         "#,
     );
     assert_true(

@@ -87,7 +87,10 @@ fn names_aliases_backward_ranges_outside_imports_and_negative_rollback() {
         "#,
     );
     assert_true(
-        r"let a=/(b)(?<=((a)\3){2}\1)c/d.exec('aabc');a.index===2&&a[1]==='b'&&a[2]==='a'&&a.indices[2][0]===0",
+        r#"
+            let a = /(b)(?<=((a)\3){2}\1)c/d.exec('aabc');
+            a.index === 2 && a[1] === 'b' && a[2] === 'a' && a.indices[2][0] === 0
+        "#,
     );
     assert_true(
         r#"

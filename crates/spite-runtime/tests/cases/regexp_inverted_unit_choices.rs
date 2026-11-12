@@ -41,7 +41,10 @@ fn repeated_fixed_choice_bodies_keep_last_iteration_and_undefined_slots() {
         "#,
     );
     assert_true(
-        r"let a=/(([^z]|b)())+/d.exec('ab');a[1]==='b'&&a[2]==='b'&&a[3]===''&&a.indices[1][0]===1&&a.indices[3][0]===2",
+        r#"
+            let a = /(([^z]|b)())+/d.exec('ab');
+            a[1] === 'b' && a[2] === 'b' && a[3] === '' && a.indices[1][0] === 1 && a.indices[3][0] === 2
+        "#,
     );
 }
 
@@ -116,7 +119,10 @@ fn alternatives_and_state_keep_branch_capture_offsets_and_original_source() {
 #[test]
 fn escapes_flags_surrogates_and_adjacent_empty_groups_keep_exact_units() {
     assert_true(
-        r"let a=/\0()(\x61|\u0062)1/d.exec('\0b1');a[1]===''&&a[2]==='b'&&a.indices[1][0]===1&&a.indices[2][0]===1",
+        r#"
+            let a = /\0()(\x61|\u0062)1/d.exec('\0b1');
+            a[1] === '' && a[2] === 'b' && a.indices[1][0] === 1 && a.indices[2][0] === 1
+        "#,
     );
     assert_true(
         r#"

@@ -83,7 +83,8 @@ fn unicode_repeated_atom_ends_greedy_lazy_bounds_and_actual_endpoint() {
             r#"
                 let a = /a{{2,3}}$/{mode}.exec('aaaa'),
                     b = /a{{2,3}}?$/{mode}.exec('aaaa');
-                a.index === 1 && a[0] === 'aaa' && b.index === 1 && b[0] === 'aaa' && /^a{{2,3}}$/{mode}
+                a.index === 1 && a[0] === 'aaa' && b.index === 1 && b[0] === 'aaa' &&
+                    /^a{{2,3}}$/{mode}
                     .exec('aaaa') === null
             "#
         ));
@@ -133,8 +134,9 @@ fn unicode_repeated_atom_ends_complete_captures_sticky_and_original_pairs() {
             r#"
                 let r = /\uD800+$/{mode}g,
                     m = r.exec('B\uD800\uD800');
-                m.index === 1 && m[0] === '\uD800\uD800' && r.lastIndex === 3 && !/\uD800+$/{mode}.test(
-                    '😀')
+                m.index === 1 && m[0] === '\uD800\uD800' && r.lastIndex === 3 && !/\uD800+$/{mode}
+                    .test(
+                        '😀')
             "#
         ));
         assert_true(&format!(

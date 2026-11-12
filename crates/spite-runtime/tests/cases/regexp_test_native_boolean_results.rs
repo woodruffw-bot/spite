@@ -186,7 +186,18 @@ fn native_test_preserves_conversion_lookup_and_last_index_order() {
         "#,
     );
     assert_true(
-        "let r=/a/g,b=r.test({toString(){r.exec=function(s){return s==='a'?{}:null};return 'a'}});b&&r.lastIndex===0",
+        r#"
+            let r = /a/g,
+                b = r.test({
+                    toString() {
+                        r.exec = function(s) {
+                            return s === 'a' ? {} : null
+                        };
+                        return 'a'
+                    }
+                });
+            b && r.lastIndex === 0
+        "#,
     );
 }
 
@@ -204,7 +215,20 @@ fn custom_exec_results_and_bound_native_exec_keep_their_calls() {
         "#,
     );
     assert_true(
-        "let r=/a/g;r.exec=function(){return {get index(){throw 7},get length(){throw 8}}};r.test('')&&r.lastIndex===0",
+        r#"
+            let r = /a/g;
+            r.exec = function() {
+                return {
+                    get index() {
+                        throw 7
+                    },
+                    get length() {
+                        throw 8
+                    }
+                }
+            };
+            r.test('') && r.lastIndex === 0
+        "#,
     );
     assert_true("let r=/a/g;r.exec=function(){return null};!r.test('a')&&r.lastIndex===0");
     assert_true(
@@ -233,7 +257,12 @@ fn custom_exec_results_and_bound_native_exec_keep_their_calls() {
         "#,
     );
     assert_true(
-        "let r=/a/g,s=/b/g;r.exec=RegExp.prototype.exec.bind(s);r.test('b')&&r.lastIndex===0&&s.lastIndex===1",
+        r#"
+            let r = /a/g,
+                s = /b/g;
+            r.exec = RegExp.prototype.exec.bind(s);
+            r.test('b') && r.lastIndex === 0 && s.lastIndex === 1
+        "#,
     );
     for value in ["undefined", "true", "1", "'x'", "1n", "Symbol()"] {
         assert!(matches!(
@@ -274,7 +303,13 @@ fn native_test_fallback_brand_checks_and_strict_index_writes() {
         );
     }
     assert_true(
-        "let r=/a/;Object.defineProperty(r,'lastIndex',{writable:false});r.test('a')&&!r.test('b')&&r.lastIndex===0",
+        r#"
+            let r = /a/;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            r.test('a') && !r.test('b') && r.lastIndex === 0
+        "#,
     );
     assert_true("let r=/()/dgy;r.lastIndex=1;r.test('a')&&r.lastIndex===1");
     assert_true("let r=/😀/duy;r.lastIndex=1;r.test('😀')&&r.lastIndex===2");

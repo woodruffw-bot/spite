@@ -100,7 +100,8 @@ fn unicode_lowercase_properties_aliases_complements_and_unions() {
                     b = /\p{{Lower}}/i{mode},
                     n = /\P{{Lower}}/i{mode};
                 a.test('\u0061') && a.test('\u0062') && b.test('\u0061') && !a.test('\u200D') && !b.test(
-                    '\u005f') && b.test('ſ') && b.test('K') && n.test('\u0061') === ('{mode}' ===
+                    '\u005f') && b.test('ſ') && b.test('K') && n.test('\u0061') === (
+                    '{mode}' ===
                     'u') && n.test('\uDB40\uDC01') && n.test('\uD800') && n.test('\uFEFF')
             "#
         ));
@@ -118,7 +119,8 @@ fn unicode_lowercase_properties_aliases_complements_and_unions() {
                     b = /[^\P{{Lowercase}}K]/i{mode},
                     c = /[\p{{Lower}}\P{{Lowercase}}]/{mode};
                 a.test('K') && a.test('k') && a.test('\u0061') && a.test('ſ') && b.test('\u0062') === (
-                        '{mode}' === 'v') && !b.test('K') && c.test('\uDB40\uDC01') && c.test('A') && c
+                        '{mode}' === 'v') && !b.test('K') && c.test('\uDB40\uDC01') && c.test(
+                    'A') && c
                     .test('\uD800')
             "#
         ));
@@ -198,7 +200,8 @@ fn unicode_lowercase_properties_consumers_original_text() {
         assert_true(&format!(
             r#"
                 let t = '';
-                let x = '\u0061\u0062\uDB40\uDC01\u0061'.replace(/(\p{{Lower}})/{mode}g, (m, c, p) => {{
+                let x = '\u0061\u0062\uDB40\uDC01\u0061'.replace(/(\p{{Lower}})/{mode}g, (m, c,
+                p) => {{
                     t += p;
                     return '_'
                 }});
@@ -291,12 +294,19 @@ fn unicode_lowercase_properties_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     assert_true(
-        r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
+        r#"
+            let m = /\p{Script_Extensions=Latin}/u.exec('A');
+            JSON.stringify(m) === '["A"]' && m.index === 0 && m.input === 'A'
+        "#,
     );
     assert_true(r"/[\p{Lower}&&A]/v.exec('A')===null");
     assert_true(r"/[\p{Lower}--A]/v.exec('A')===null");
     assert_true(
-        r"let s=String.fromCodePoint(0x61),m=/[\p{Lower}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+        r#"
+            let s = String.fromCodePoint(0x61),
+                m = /[\p{Lower}--A]/v.exec(s);
+            m !== null && m.length === 1 && m[0] === s && m.index === 0 && m.input === s
+        "#,
     );
     for source in [r"/\p{Lower}+b/u.exec('AA')", r"/\p{Lower}A/v.exec('AA')"] {
         crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);

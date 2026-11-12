@@ -140,7 +140,7 @@ fn required_empty_assertions_and_consumers_preserve_zero_progress_rules() {
                 b = [...'q'.matchAll(/(?<x>)(?<last>(?<point>^)\k<x>)+/dg)];
             a.length === 2 && a[0].groups.last === undefined && a[1].groups.point === undefined && b
                 .length === 1 && b[0].groups.point === '' && b[0].indices.groups.point === b[0].indices[
-                3] && b[0].indices[3][0] === 0
+                    3] && b[0].indices[3][0] === 0
         "#,
     );
     assert_true(

@@ -95,7 +95,10 @@ fn inner_counts_retry_before_iteration_counts_and_outside_capture_closes() {
         "#,
     );
     assert_true(
-        r"let a=/(?<all>(?:a+?a|b)+?)a/d.exec('aaaa');a[0]==='aaa'&&a.groups.all==='aa'&&a.indices.groups.all[1]===2",
+        r#"
+            let a = /(?<all>(?:a+?a|b)+?)a/d.exec('aaaa');
+            a[0] === 'aaa' && a.groups.all === 'aa' && a.indices.groups.all[1] === 2
+        "#,
     );
     assert_true(
         r#"

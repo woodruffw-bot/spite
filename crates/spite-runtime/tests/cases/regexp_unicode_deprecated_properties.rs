@@ -137,7 +137,12 @@ fn unicode_deprecated_properties_captures_context_and_pair_starts() {
             "#
         ));
         assert_true(&format!(
-            r"let r=/\p{{Dep}}/d{mode}g;r.lastIndex=1;let m=r.exec('😀\u0673');m.index===2&&m[0]==='\u0673'&&r.lastIndex===3"
+            r#"
+                let r = /\p{{Dep}}/d{mode}g;
+                r.lastIndex = 1;
+                let m = r.exec('😀\u0673');
+                m.index === 2 && m[0] === '\u0673' && r.lastIndex === 3
+            "#
         ));
         assert_true(&format!(
             r"let r=/\p{{Dep}}/{mode}y;r.lastIndex=1;r.exec('😀\u0673')===null&&r.lastIndex===0"
@@ -152,7 +157,8 @@ fn unicode_deprecated_properties_consumers_original_text() {
             r#"
                 let a = [...'\u17A3😀\u0673G'.matchAll(/(?<x>\P{{Dep}})/d{mode}g)];
                 a.length === 2 && a[0][1] === '😀' && a[0].index === 1 && a[0].indices[1][1] === 3 && a[1][
-                    1] === 'G'
+                    1
+                ] === 'G'
             "#
         ));
         assert_true(&format!(
@@ -254,12 +260,19 @@ fn unicode_deprecated_properties_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     assert_true(
-        r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
+        r#"
+            let m = /\p{Script_Extensions=Latin}/u.exec('A');
+            JSON.stringify(m) === '["A"]' && m.index === 0 && m.input === 'A'
+        "#,
     );
     assert_true(r"/[\p{Dep}&&A]/v.exec('A')===null");
     assert_true(r"/[\p{Dep}--A]/v.exec('A')===null");
     assert_true(
-        r"let s=String.fromCodePoint(0x673),m=/[\p{Dep}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+        r#"
+            let s = String.fromCodePoint(0x673),
+                m = /[\p{Dep}--A]/v.exec(s);
+            m !== null && m.length === 1 && m[0] === s && m.index === 0 && m.input === s
+        "#,
     );
     for source in [r"/\p{Dep}+b/u.exec('AA')", r"/\p{Dep}A/v.exec('AA')"] {
         crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);

@@ -73,7 +73,11 @@ fn unicode_repeated_atom_inner_word_results_snapshot() {
 fn unicode_repeated_atom_inner_word_counts_and_scopes() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let m=/(\ba)+/{mode}.exec('aaa');m[0]==='a'&&m[1]==='a'&&m.index===0&&/\ba+/{mode}.exec('aaa')[0]==='aaa'"
+            r#"
+                let m = /(\ba)+/{mode}.exec('aaa');
+                m[0] === 'a' && m[1] === 'a' && m.index === 0 && /\ba+/{mode}.exec('aaa')[0] ===
+                    'aaa'
+            "#
         ));
         assert_true(&format!(
             r"let m=/(a\b)+/{mode}.exec('aaa');m[0]==='a'&&m.index===2&&/a+\b/{mode}.exec('aaa')[0]==='aaa'"

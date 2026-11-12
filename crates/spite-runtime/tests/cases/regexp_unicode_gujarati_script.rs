@@ -97,7 +97,12 @@ fn unicode_gujarati_script_captures_context_and_pair_starts() {
             "#
         ));
         assert_true(&format!(
-            r"let r=/\p{{sc=Gujarati}}/d{mode}g;r.lastIndex=1;let m=r.exec('😀ક');m.index===2&&m[0]==='ક'&&r.lastIndex===3"
+            r#"
+                let r = /\p{{sc=Gujarati}}/d{mode}g;
+                r.lastIndex = 1;
+                let m = r.exec('😀ક');
+                m.index === 2 && m[0] === 'ક' && r.lastIndex === 3
+            "#
         ));
         assert_true(&format!(
             r"let r=/\p{{Script=Gujr}}/{mode}y;r.lastIndex=1;r.exec('😀ક')===null&&r.lastIndex===0"
@@ -112,7 +117,8 @@ fn unicode_gujarati_script_consumers_preserve_original_text() {
             r#"
                 let a = [...'ક😀Aખ'.matchAll(/(?<x>\P{{sc=Gujarati}})/d{mode}g)];
                 a.length === 2 && a[0][1] === '😀' && a[0].index === 1 && a[0].indices[1][1] === 3 && a[1][
-                    1] === 'A' && a[1].index === 3
+                    1
+                ] === 'A' && a[1].index === 3
             "#
         ));
         assert_true(&format!(
@@ -122,7 +128,14 @@ fn unicode_gujarati_script_consumers_preserve_original_text() {
             r"'AકખA'.split(/(\p{{Script=Gujarati}})/{mode}).join('|')==='A|ક||ખ|A'&&'A😀ક'.search(/\p{{sc=Gujr}}/{mode})===3&&'કખA'.match(/\p{{Script=Gujr}}/{mode}g).join('')==='કખ'"
         ));
         assert_true(&format!(
-            r"let t='',x='કખAક'.replace(/(\p{{sc=Gujarati}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__A_'&&t==='013'"
+            r#"
+                let t = '',
+                    x = 'કખAક'.replace(/(\p{{sc=Gujarati}})/{mode}g, (m, c, p) => {{
+                        t += p;
+                        return '_'
+                    }});
+                x === '__A_' && t === '013'
+            "#
         ));
     }
 }
@@ -210,7 +223,11 @@ fn unicode_gujarati_script_opted_work_and_remaining_sets() {
     assert_true(r"/[\p{sc=Gujr}&&A]/v.exec('A')===null");
     assert_true(r"/[\p{sc=Gujr}--A]/v.exec('A')===null");
     assert_true(
-        r"let s=String.fromCodePoint(0xa95),m=/[\p{sc=Gujr}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+        r#"
+            let s = String.fromCodePoint(0xa95),
+                m = /[\p{sc=Gujr}--A]/v.exec(s);
+            m !== null && m.length === 1 && m[0] === s && m.index === 0 && m.input === s
+        "#,
     );
     for source in [
         r"/\p{sc=Gujr}+b/u.exec('AA')",

@@ -159,7 +159,8 @@ fn unicode_emoji_modifier_base_properties_consumers_original_text() {
             r#"
                 let a = [...'\u270A😀\u261DG'.matchAll(/(?<x>\P{{EBase}})/d{mode}g)];
                 a.length === 2 && a[0][1] === '😀' && a[0].index === 1 && a[0].indices[1][1] === 3 && a[1][
-                    1] === 'G'
+                    1
+                ] === 'G'
             "#
         ));
         assert_true(&format!(
@@ -261,12 +262,19 @@ fn unicode_emoji_modifier_base_properties_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     assert_true(
-        r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
+        r#"
+            let m = /\p{Script_Extensions=Latin}/u.exec('A');
+            JSON.stringify(m) === '["A"]' && m.index === 0 && m.input === 'A'
+        "#,
     );
     assert_true(r"/[\p{EBase}&&A]/v.exec('A')===null");
     assert_true(r"/[\p{EBase}--A]/v.exec('A')===null");
     assert_true(
-        r"let s=String.fromCodePoint(0x261d),m=/[\p{EBase}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+        r#"
+            let s = String.fromCodePoint(0x261d),
+                m = /[\p{EBase}--A]/v.exec(s);
+            m !== null && m.length === 1 && m[0] === s && m.index === 0 && m.input === s
+        "#,
     );
     for source in [r"/\p{EBase}+b/u.exec('AA')", r"/\p{EBase}A/v.exec('AA')"] {
         crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);

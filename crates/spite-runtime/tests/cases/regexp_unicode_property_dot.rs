@@ -81,7 +81,7 @@ fn unicode_property_dot_distinct_names_and_global_captures() {
                 let m = /(?<p>\p{{sc=Hani}})(?<__proto__>.)/d{mode}.exec('𠮷😀');
                 m.groups.p === '𠮷' && m.groups.__proto__ === '😀' && Object.getPrototypeOf(m.groups) ===
                     null && m.indices.groups.p === m.indices[1] && m.indices.groups.__proto__ === m.indices[
-                    2] && m.indices[1][1] === 2 && m.indices[2][0] === 2 && m.indices[2][1] === 4
+                        2] && m.indices[1][1] === 2 && m.indices[2][0] === 2 && m.indices[2][1] === 4
             "#
         ));
         assert_true(&format!(
@@ -140,7 +140,11 @@ fn unicode_property_dot_line_retries_and_folding() {
     }
     // Follow the existing tagged edition-17 folding rule; Node 24 differs here.
     assert_true(
-        r"let u=/(\P{ASCII})(.)/iu.exec('Ka'),v=/(\P{ASCII})(.)/iv.exec('Ka');u[1]==='K'&&u[2]==='a'&&v===null",
+        r#"
+            let u = /(\P{ASCII})(.)/iu.exec('Ka'),
+                v = /(\P{ASCII})(.)/iv.exec('Ka');
+            u[1] === 'K' && u[2] === 'a' && v === null
+        "#,
     );
 }
 
@@ -253,7 +257,10 @@ fn unicode_property_dot_opted_work_and_remaining_compositions() {
         Ok(Value::Boolean(true))
     );
     assert_true(
-        r#"let m=/(\p{Script_Extensions=Latin})(.)/v.exec('Aa');JSON.stringify(m)==='["Aa","A","a"]'&&m.index===0&&m.input==='Aa'"#,
+        r#"
+            let m = /(\p{Script_Extensions=Latin})(.)/v.exec('Aa');
+            JSON.stringify(m) === '["Aa","A","a"]' && m.index === 0 && m.input === 'Aa'
+        "#,
     );
     for source in [
         r"/(\p{sc=Han})(a)/u.exec('𠮷a')",

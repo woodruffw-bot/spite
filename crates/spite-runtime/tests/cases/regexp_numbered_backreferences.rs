@@ -97,15 +97,18 @@ fn native_results_keep_captures_indices_aliases_and_case_from_the_input() {
         r#"
             let a = /(?<x>a)\1/di.exec('qAa');
             a[0] === 'Aa' && a[1] === 'A' && a.groups.x === 'A' && a.indices[0][0] === 1 && a.indices[0][
-                1] === 3 && a.indices.groups.x === a.indices[1] && a.indices[1][0] === 1 && a.indices[1][
-                1] === 2
+                1
+            ] === 3 && a.indices.groups.x === a.indices[1] && a.indices[1][0] === 1 && a.indices[1][
+                1
+            ] === 2
         "#,
     );
     assert_true(
         r#"
             let a = /(a(\1b)\2)\1/d.exec('qabbabb');
             a[0] === 'abbabb' && a[1] === 'abb' && a[2] === 'b' && a.indices[1][0] === 1 && a.indices[1][
-                1] === 4 && a.indices[2][0] === 2 && a.indices[2][1] === 3
+                1
+            ] === 4 && a.indices[2][0] === 2 && a.indices[2][1] === 3
         "#,
     );
     assert_true(

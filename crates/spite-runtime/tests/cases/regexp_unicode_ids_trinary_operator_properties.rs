@@ -145,7 +145,8 @@ fn unicode_ids_trinary_operator_properties_consumers_original_text() {
             r#"
                 let a = [...'\u2FF3😀\u2FF2G'.matchAll(/(?<x>\P{{IDST}})/d{mode}g)];
                 a.length === 2 && a[0][1] === '😀' && a[0].index === 1 && a[0].indices[1][1] === 3 && a[1][
-                    1] === 'G'
+                    1
+                ] === 'G'
             "#
         ));
         assert_true(&format!(
@@ -247,12 +248,19 @@ fn unicode_ids_trinary_operator_properties_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     assert_true(
-        r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
+        r#"
+            let m = /\p{Script_Extensions=Latin}/u.exec('A');
+            JSON.stringify(m) === '["A"]' && m.index === 0 && m.input === 'A'
+        "#,
     );
     assert_true(r"/[\p{IDST}&&A]/v.exec('A')===null");
     assert_true(r"/[\p{IDST}--A]/v.exec('A')===null");
     assert_true(
-        r"let s=String.fromCodePoint(0x2ff2),m=/[\p{IDST}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+        r#"
+            let s = String.fromCodePoint(0x2ff2),
+                m = /[\p{IDST}--A]/v.exec(s);
+            m !== null && m.length === 1 && m[0] === s && m.index === 0 && m.input === s
+        "#,
     );
     for source in [r"/\p{IDST}+b/u.exec('AA')", r"/\p{IDST}A/v.exec('AA')"] {
         crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);

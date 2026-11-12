@@ -87,7 +87,10 @@ fn partial_ranges_names_indices_original_programs_and_negative_rollback_are_exac
         "#,
     );
     assert_true(
-        "let a=/(?<=a(?!(b)(\\1(\\1)){1}))b/d.exec('ab');a[1]===undefined&&a[2]===undefined&&a.indices[3]===undefined",
+        r#"
+            let a = /(?<=a(?!(b)(\1(\1)){1}))b/d.exec('ab');
+            a[1] === undefined && a[2] === undefined && a.indices[3] === undefined
+        "#,
     );
     assert_true(
         r#"
@@ -138,7 +141,10 @@ fn consumers_sticky_global_callbacks_and_required_empty_paths_keep_partial_captu
         "'abbb'.search(/(?<=a(?=(b)(\\1(\\1)){1}))b/)===1&&'abbb'.split(/(?<=a(?=(b)(\\1(\\1)){1}))b/).join('|')==='a|b|bb|b|bb'",
     );
     assert_true(
-        "let a=/(a)((\\1(\\1)){1}b)+/d.exec('aaabaab');a[2]==='aab'&&a[3]==='aa'&&a[4]==='a'&&a.indices[4][0]===5",
+        r#"
+            let a = /(a)((\1(\1)){1}b)+/d.exec('aaabaab');
+            a[2] === 'aab' && a[3] === 'aa' && a[4] === 'a' && a.indices[4][0] === 5
+        "#,
     );
     assert_true("let a=/(?=(\\3(\\3)){1}(a))a/d.exec('a');a[1]===''&&a[2]===''&&a[3]==='a'");
     assert_true("/(?<=a(?=(b)(\\1(\\1)){1}))b/.exec('abb')===null");

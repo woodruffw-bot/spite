@@ -36,7 +36,8 @@ fn empty_prefix_groups_keep_participation_and_earliest_body_positions() {
         r#"
             let m = /()([ab])+()/d.exec('xaa');
             m.index === 1 && m[0] === 'aa' && m[1] === '' && m[2] === 'a' && m[3] === '' && m.indices[1][
-                0] === 1 && m.indices[2][0] === 2 && m.indices[3][0] === 3
+                0
+            ] === 1 && m.indices[2][0] === 2 && m.indices[3][0] === 3
         "#,
     );
     assert_true(
@@ -118,7 +119,11 @@ fn prefix_groups_compose_with_branch_outer_captures_and_anchor_selection() {
         "#,
     );
     assert_true(
-        "let a=/^()a*$/d.exec('aa'),b=/^()a*?$/d.exec('aa');a[0]==='aa'&&b[0]==='aa'&&b[1]===''&&b.indices[1][0]===0",
+        r#"
+            let a = /^()a*$/d.exec('aa'),
+                b = /^()a*?$/d.exec('aa');
+            a[0] === 'aa' && b[0] === 'aa' && b[1] === '' && b.indices[1][0] === 0
+        "#,
     );
 }
 

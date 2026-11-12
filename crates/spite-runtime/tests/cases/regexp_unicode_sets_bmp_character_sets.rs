@@ -208,7 +208,14 @@ fn unicode_sets_bmp_character_opted_work_and_unproved_atoms() {
     let original = Realm::default().eval(r"/[a]b/v.exec('ab')").unwrap();
     assert!(matches!(original, Value::Object(_)));
     assert_true(
-        r#"let r=/[a]b/v,m=r.exec('ab');Array.isArray(m)&&m.length===1&&m[0]==='ab'&&m.index===0&&m.input==='ab'&&m.groups===undefined&&m.indices===undefined&&r.source==='[a]b'&&r.lastIndex===0&&r.exec('xb')===null&&r.exec('ax')===null&&r.exec('a')===null&&r.exec('xab').index===1"#,
+        r#"
+            let r = /[a]b/v,
+                m = r.exec('ab');
+            Array.isArray(m) && m.length === 1 && m[0] === 'ab' && m.index === 0 && m.input === 'ab' && m
+                .groups === undefined && m.indices === undefined && r.source === '[a]b' && r.lastIndex ===
+                0 && r.exec('xb') === null && r.exec('ax') === null && r.exec('a') === null && r.exec(
+                    'xab').index === 1
+        "#,
     );
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -226,7 +233,10 @@ fn unicode_sets_bmp_character_opted_work_and_unproved_atoms() {
         Ok(Value::Boolean(true))
     );
     assert_true(
-        r#"let m=/[\p{Script_Extensions=Latin}]/v.exec('a');JSON.stringify(m)==='["a"]'&&m.index===0&&m.input==='a'"#,
+        r#"
+            let m = /[\p{Script_Extensions=Latin}]/v.exec('a');
+            JSON.stringify(m) === '["a"]' && m.index === 0 && m.input === 'a'
+        "#,
     );
     assert_true(
         r"let m=/[a&&a]/v.exec('a');m!==null&&m.length===1&&m[0]==='a'&&m.index===0&&m.input==='a'",

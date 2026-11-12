@@ -511,7 +511,7 @@ fn simple_repeated_string_class_native_tables_and_consumers_keep_iteration_and_e
             m.index === 0 && m.groups.𝒜 === '' && m.groups.whole === '😀a😀' && m.groups.iteration ===
                 '😀' && m.groups.c === '😀' && m.groups.after === '' && m.indices.groups.iteration === m
                 .indices[3] && m.indices[3][0] === 3 && m.indices[3][1] === 5 && m.indices.groups.after[
-                0] === 5 && r.lastIndex === 5 && r.source.indexOf('1D49C') !== -1
+                    0] === 5 && r.lastIndex === 5 && r.source.indexOf('1D49C') !== -1
         "#,
     );
     assert_true(
@@ -560,24 +560,187 @@ fn simple_repeated_string_class_native_tables_and_consumers_keep_iteration_and_e
 #[test]
 fn simple_repeated_string_class_proofs_keep_counts_predicates_references_and_unknown_leaves_closed()
 {
-    assert_true(
-        r#"var marker=0,ok=false;try{ok=(function(){var pattern="()(([\\q{a|ab}])|()){2}()",rows=[],metadata=true;
-for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
-for(var input of ['ab!','','\n','x\nab']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
-return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"ab\",\"\",\"\",\"<undefined>\",\"\",\"\"],\"indices\":[[0,2],[0,0],[2,2],\"<undefined>\",[2,2],[2,2]],\"index\":0},2],[false,\"\",{\"values\":[\"\",\"\",\"\",\"<undefined>\",\"\",\"\"],\"indices\":[[0,0],[0,0],[0,0],\"<undefined>\",[0,0],[0,0]],\"index\":0},0],[false,\"\\n\",{\"values\":[\"\",\"\",\"\",\"<undefined>\",\"\",\"\"],\"indices\":[[0,0],[0,0],[0,0],\"<undefined>\",[0,0],[0,0]],\"index\":0},0],[false,\"x\\nab\",{\"values\":[\"\",\"\",\"\",\"<undefined>\",\"\",\"\"],\"indices\":[[0,0],[0,0],[0,0],\"<undefined>\",[0,0],[0,0]],\"index\":0},0],[true,\"ab!\",{\"values\":[\"ab\",\"\",\"\",\"<undefined>\",\"\",\"\"],\"indices\":[[0,2],[0,0],[2,2],\"<undefined>\",[2,2],[2,2]],\"index\":0},2],[true,\"\",{\"values\":[\"\",\"\",\"\",\"<undefined>\",\"\",\"\"],\"indices\":[[0,0],[0,0],[0,0],\"<undefined>\",[0,0],[0,0]],\"index\":0},0],[true,\"\\n\",{\"values\":[\"\",\"\",\"\",\"<undefined>\",\"\",\"\"],\"indices\":[[0,0],[0,0],[0,0],\"<undefined>\",[0,0],[0,0]],\"index\":0},0],[true,\"x\\nab\",{\"values\":[\"\",\"\",\"\",\"<undefined>\",\"\",\"\"],\"indices\":[[0,0],[0,0],[0,0],\"<undefined>\",[0,0],[0,0]],\"index\":0},0]]"})();}finally{marker=3}ok&&marker===3"#,
-    );
-    assert_true(
-        r#"var marker=0,ok=false;try{ok=(function(){var pattern="^()(([\\q{a|ab}])|())+()",rows=[],metadata=true;
-for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
-for(var input of ['aaaaaa','ababa','\nab\n','']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
-return metadata&&JSON.stringify(rows)==="[[false,\"aaaaaa\",{\"values\":[\"aaaaaa\",\"\",\"a\",\"a\",\"<undefined>\",\"\"],\"indices\":[[0,6],[0,0],[5,6],[5,6],\"<undefined>\",[6,6]],\"index\":0},6],[false,\"ababa\",{\"values\":[\"ababa\",\"\",\"a\",\"a\",\"<undefined>\",\"\"],\"indices\":[[0,5],[0,0],[4,5],[4,5],\"<undefined>\",[5,5]],\"index\":0},5],[false,\"\\nab\\n\",{\"values\":[\"\",\"\",\"\",\"<undefined>\",\"\",\"\"],\"indices\":[[0,0],[0,0],[0,0],\"<undefined>\",[0,0],[0,0]],\"index\":0},0],[false,\"\",{\"values\":[\"\",\"\",\"\",\"<undefined>\",\"\",\"\"],\"indices\":[[0,0],[0,0],[0,0],\"<undefined>\",[0,0],[0,0]],\"index\":0},0],[true,\"aaaaaa\",{\"values\":[\"aaaaaa\",\"\",\"a\",\"a\",\"<undefined>\",\"\"],\"indices\":[[0,6],[0,0],[5,6],[5,6],\"<undefined>\",[6,6]],\"index\":0},6],[true,\"ababa\",{\"values\":[\"ababa\",\"\",\"a\",\"a\",\"<undefined>\",\"\"],\"indices\":[[0,5],[0,0],[4,5],[4,5],\"<undefined>\",[5,5]],\"index\":0},5],[true,\"\\nab\\n\",{\"values\":[\"\",\"\",\"\",\"<undefined>\",\"\",\"\"],\"indices\":[[0,0],[0,0],[0,0],\"<undefined>\",[0,0],[0,0]],\"index\":0},0],[true,\"\",{\"values\":[\"\",\"\",\"\",\"<undefined>\",\"\",\"\"],\"indices\":[[0,0],[0,0],[0,0],\"<undefined>\",[0,0],[0,0]],\"index\":0},0]]"})();}finally{marker=3}ok&&marker===3"#,
-    );
-    assert_true(
-        r#"var marker=0,ok=false;try{ok=(function(){var pattern="()(([\\q{a|ab}])|())+()$",rows=[],metadata=true;
-for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
-for(var input of ['aaaaaa','ababa','\nab\n','']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
-return metadata&&JSON.stringify(rows)==="[[false,\"aaaaaa\",{\"values\":[\"aaaaaa\",\"\",\"a\",\"a\",\"<undefined>\",\"\"],\"indices\":[[0,6],[0,0],[5,6],[5,6],\"<undefined>\",[6,6]],\"index\":0},6],[false,\"ababa\",{\"values\":[\"ababa\",\"\",\"a\",\"a\",\"<undefined>\",\"\"],\"indices\":[[0,5],[0,0],[4,5],[4,5],\"<undefined>\",[5,5]],\"index\":0},5],[false,\"\\nab\\n\",{\"values\":[\"\",\"\",\"\",\"<undefined>\",\"\",\"\"],\"indices\":[[4,4],[4,4],[4,4],\"<undefined>\",[4,4],[4,4]],\"index\":4},4],[false,\"\",{\"values\":[\"\",\"\",\"\",\"<undefined>\",\"\",\"\"],\"indices\":[[0,0],[0,0],[0,0],\"<undefined>\",[0,0],[0,0]],\"index\":0},0],[true,\"aaaaaa\",{\"values\":[\"aaaaaa\",\"\",\"a\",\"a\",\"<undefined>\",\"\"],\"indices\":[[0,6],[0,0],[5,6],[5,6],\"<undefined>\",[6,6]],\"index\":0},6],[true,\"ababa\",{\"values\":[\"ababa\",\"\",\"a\",\"a\",\"<undefined>\",\"\"],\"indices\":[[0,5],[0,0],[4,5],[4,5],\"<undefined>\",[5,5]],\"index\":0},5],[true,\"\\nab\\n\",{\"values\":[\"\",\"\",\"\",\"<undefined>\",\"\",\"\"],\"indices\":[[0,0],[0,0],[0,0],\"<undefined>\",[0,0],[0,0]],\"index\":0},0],[true,\"\",{\"values\":[\"\",\"\",\"\",\"<undefined>\",\"\",\"\"],\"indices\":[[0,0],[0,0],[0,0],\"<undefined>\",[0,0],[0,0]],\"index\":0},0]]"})();}finally{marker=3}ok&&marker===3"#,
-    );
+    let expected_serialized_output = JsString::from(concat!(
+        r#"[[false,"ab!","#,
+        r#"{"values":["ab","","","<undefined>","",""],"#,
+        r#""indices":[[0,2],[0,0],[2,2],"<undefined>",[2,2],[2,2]],"index":0},2],"#,
+        r#"[false,"","#,
+        r#"{"values":["","","","<undefined>","",""],"#,
+        r#""indices":[[0,0],[0,0],[0,0],"<undefined>",[0,0],[0,0]],"index":0},0],"#,
+        r#"[false,"\n","#,
+        r#"{"values":["","","","<undefined>","",""],"#,
+        r#""indices":[[0,0],[0,0],[0,0],"<undefined>",[0,0],[0,0]],"index":0},0],"#,
+        r#"[false,"x\nab","#,
+        r#"{"values":["","","","<undefined>","",""],"#,
+        r#""indices":[[0,0],[0,0],[0,0],"<undefined>",[0,0],[0,0]],"index":0},0],"#,
+        r#"[true,"ab!","#,
+        r#"{"values":["ab","","","<undefined>","",""],"#,
+        r#""indices":[[0,2],[0,0],[2,2],"<undefined>",[2,2],[2,2]],"index":0},2],"#,
+        r#"[true,"","#,
+        r#"{"values":["","","","<undefined>","",""],"#,
+        r#""indices":[[0,0],[0,0],[0,0],"<undefined>",[0,0],[0,0]],"index":0},0],"#,
+        r#"[true,"\n","#,
+        r#"{"values":["","","","<undefined>","",""],"#,
+        r#""indices":[[0,0],[0,0],[0,0],"<undefined>",[0,0],[0,0]],"index":0},0],"#,
+        r#"[true,"x\nab","#,
+        r#"{"values":["","","","<undefined>","",""],"#,
+        r#""indices":[[0,0],[0,0],[0,0],"<undefined>",[0,0],[0,0]],"index":0},0]]"#,
+    ));
+    let expected_serialized_output_2 = JsString::from(concat!(
+        r#"[[false,"aaaaaa","#,
+        r#"{"values":["aaaaaa","","a","a","<undefined>",""],"#,
+        r#""indices":[[0,6],[0,0],[5,6],[5,6],"<undefined>",[6,6]],"index":0},6],"#,
+        r#"[false,"ababa","#,
+        r#"{"values":["ababa","","a","a","<undefined>",""],"#,
+        r#""indices":[[0,5],[0,0],[4,5],[4,5],"<undefined>",[5,5]],"index":0},5],"#,
+        r#"[false,"\nab\n","#,
+        r#"{"values":["","","","<undefined>","",""],"#,
+        r#""indices":[[0,0],[0,0],[0,0],"<undefined>",[0,0],[0,0]],"index":0},0],"#,
+        r#"[false,"","#,
+        r#"{"values":["","","","<undefined>","",""],"#,
+        r#""indices":[[0,0],[0,0],[0,0],"<undefined>",[0,0],[0,0]],"index":0},0],"#,
+        r#"[true,"aaaaaa","#,
+        r#"{"values":["aaaaaa","","a","a","<undefined>",""],"#,
+        r#""indices":[[0,6],[0,0],[5,6],[5,6],"<undefined>",[6,6]],"index":0},6],"#,
+        r#"[true,"ababa","#,
+        r#"{"values":["ababa","","a","a","<undefined>",""],"#,
+        r#""indices":[[0,5],[0,0],[4,5],[4,5],"<undefined>",[5,5]],"index":0},5],"#,
+        r#"[true,"\nab\n","#,
+        r#"{"values":["","","","<undefined>","",""],"#,
+        r#""indices":[[0,0],[0,0],[0,0],"<undefined>",[0,0],[0,0]],"index":0},0],"#,
+        r#"[true,"","#,
+        r#"{"values":["","","","<undefined>","",""],"#,
+        r#""indices":[[0,0],[0,0],[0,0],"<undefined>",[0,0],[0,0]],"index":0},0]]"#,
+    ));
+    let expected_serialized_output_3 = JsString::from(concat!(
+        r#"[[false,"aaaaaa","#,
+        r#"{"values":["aaaaaa","","a","a","<undefined>",""],"#,
+        r#""indices":[[0,6],[0,0],[5,6],[5,6],"<undefined>",[6,6]],"index":0},6],"#,
+        r#"[false,"ababa","#,
+        r#"{"values":["ababa","","a","a","<undefined>",""],"#,
+        r#""indices":[[0,5],[0,0],[4,5],[4,5],"<undefined>",[5,5]],"index":0},5],"#,
+        r#"[false,"\nab\n","#,
+        r#"{"values":["","","","<undefined>","",""],"#,
+        r#""indices":[[4,4],[4,4],[4,4],"<undefined>",[4,4],[4,4]],"index":4},4],"#,
+        r#"[false,"","#,
+        r#"{"values":["","","","<undefined>","",""],"#,
+        r#""indices":[[0,0],[0,0],[0,0],"<undefined>",[0,0],[0,0]],"index":0},0],"#,
+        r#"[true,"aaaaaa","#,
+        r#"{"values":["aaaaaa","","a","a","<undefined>",""],"#,
+        r#""indices":[[0,6],[0,0],[5,6],[5,6],"<undefined>",[6,6]],"index":0},6],"#,
+        r#"[true,"ababa","#,
+        r#"{"values":["ababa","","a","a","<undefined>",""],"#,
+        r#""indices":[[0,5],[0,0],[4,5],[4,5],"<undefined>",[5,5]],"index":0},5],"#,
+        r#"[true,"\nab\n","#,
+        r#"{"values":["","","","<undefined>","",""],"#,
+        r#""indices":[[0,0],[0,0],[0,0],"<undefined>",[0,0],[0,0]],"index":0},0],"#,
+        r#"[true,"","#,
+        r#"{"values":["","","","<undefined>","",""],"#,
+        r#""indices":[[0,0],[0,0],[0,0],"<undefined>",[0,0],[0,0]],"index":0},0]]"#,
+    ));
+
+    assert_true(&format!(
+        r#"
+            var marker = 0,
+                ok = false;
+            try {{
+                ok = (function() {{
+                    var pattern = "()(([\\q{{a|ab}}])|()){{2}}()",
+                        rows = [],
+                        metadata = true;
+                    for (var multi of [false, true]) {{
+                        var r = new RegExp(pattern, 'dvg' + (multi ? 'm' : ''));
+                        metadata = metadata && r.source === pattern;
+                        for (var input of ['ab!', '', '\n', 'x\nab']) {{
+                            r.lastIndex = 0;
+                            var m = r.exec(input),
+                                result = null;
+                            if (m !== null) result = {{
+                                values: Array.from(m, v => v === undefined ? '<undefined>' :
+                                    v),
+                                indices: Array.from(m.indices, v => v === undefined ?
+                                    '<undefined>' : v),
+                                index: m.index
+                            }};
+                            rows.push([multi, input, result, r.lastIndex]);
+                        }}
+                    }}
+                    return metadata && JSON.stringify(rows) === {expected_serialized_output:?}
+                }})();
+            }} finally {{
+                marker = 3
+            }}
+            ok && marker === 3
+        "#
+    ));
+    assert_true(&format!(
+        r#"
+            var marker = 0,
+                ok = false;
+            try {{
+                ok = (function() {{
+                    var pattern = "^()(([\\q{{a|ab}}])|())+()",
+                        rows = [],
+                        metadata = true;
+                    for (var multi of [false, true]) {{
+                        var r = new RegExp(pattern, 'dvg' + (multi ? 'm' : ''));
+                        metadata = metadata && r.source === pattern;
+                        for (var input of ['aaaaaa', 'ababa', '\nab\n', '']) {{
+                            r.lastIndex = 0;
+                            var m = r.exec(input),
+                                result = null;
+                            if (m !== null) result = {{
+                                values: Array.from(m, v => v === undefined ? '<undefined>' :
+                                    v),
+                                indices: Array.from(m.indices, v => v === undefined ?
+                                    '<undefined>' : v),
+                                index: m.index
+                            }};
+                            rows.push([multi, input, result, r.lastIndex]);
+                        }}
+                    }}
+                    return metadata && JSON.stringify(rows) === {expected_serialized_output_2:?}
+                }})();
+            }} finally {{
+                marker = 3
+            }}
+            ok && marker === 3
+        "#
+    ));
+    assert_true(&format!(
+        r#"
+            var marker = 0,
+                ok = false;
+            try {{
+                ok = (function() {{
+                    var pattern = "()(([\\q{{a|ab}}])|())+()$",
+                        rows = [],
+                        metadata = true;
+                    for (var multi of [false, true]) {{
+                        var r = new RegExp(pattern, 'dvg' + (multi ? 'm' : ''));
+                        metadata = metadata && r.source === pattern;
+                        for (var input of ['aaaaaa', 'ababa', '\nab\n', '']) {{
+                            r.lastIndex = 0;
+                            var m = r.exec(input),
+                                result = null;
+                            if (m !== null) result = {{
+                                values: Array.from(m, v => v === undefined ? '<undefined>' :
+                                    v),
+                                indices: Array.from(m.indices, v => v === undefined ?
+                                    '<undefined>' : v),
+                                index: m.index
+                            }};
+                            rows.push([multi, input, result, r.lastIndex]);
+                        }}
+                    }}
+                    return metadata && JSON.stringify(rows) === {expected_serialized_output_3:?}
+                }})();
+            }} finally {{
+                marker = 3
+            }}
+            ok && marker === 3
+        "#
+    ));
     for pattern in [
         r"()(([[\q{a|ab}]&&\p{RGI_Emoji}])|()){2}()",
         r"^()(([[\q{a|ab}]&&\p{RGI_Emoji}])|())+()",

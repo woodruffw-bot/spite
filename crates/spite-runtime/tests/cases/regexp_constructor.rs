@@ -16,7 +16,10 @@ fn default_patterns_flags_metadata_and_lastindex_have_standard_descriptors() {
         ));
     }
     assert_true(
-        "RegExp(null).source==='null' && RegExp(7).source==='7' && RegExp(true).source==='true' && RegExp(12n).source==='12'",
+        r#"
+            RegExp(null).source === 'null' && RegExp(7).source === '7' && RegExp(true).source === 'true' &&
+                RegExp(12n).source === '12'
+        "#,
     );
 }
 
@@ -403,7 +406,10 @@ fn native_exec_validates_brand_and_coerces_input_before_the_matching_boundary() 
         "let r=new RegExp('a'),t='';try{r.exec({toString(){t+='s';throw 7;}});}catch(e){t+=e;}t==='s7'",
     );
     assert_true(
-        "let m=new RegExp('(?:(?:(?:(?:a(a|bc)){2}){2})|){2,3}').exec('a');m.index===0&&m[0]===''&&m[1]===undefined",
+        r#"
+            let m = new RegExp('(?:(?:(?:(?:a(a|bc)){2}){2})|){2,3}').exec('a');
+            m.index === 0 && m[0] === '' && m[1] === undefined
+        "#,
     );
     assert_true(
         r#"
@@ -430,13 +436,30 @@ fn native_exec_validates_brand_and_coerces_input_before_the_matching_boundary() 
 #[test]
 fn lastindex_and_native_getters_ignore_inherited_setters_and_public_forgeries() {
     assert_true(
-        "Object.defineProperty(Object.prototype,'lastIndex',{set(){throw 7;}});let r=new RegExp('a','g');r.lastIndex=2;Object.freeze(r);let d=Object.getOwnPropertyDescriptor(r,'lastIndex');d.value===2 && !d.writable && !d.enumerable && !d.configurable",
+        r#"
+            Object.defineProperty(Object.prototype, 'lastIndex', {
+                set() {
+                    throw 7;
+                }
+            });
+            let r = new RegExp('a', 'g');
+            r.lastIndex = 2;
+            Object.freeze(r);
+            let d = Object.getOwnPropertyDescriptor(r, 'lastIndex');
+            d.value === 2 && !d.writable && !d.enumerable && !d.configurable
+        "#,
     );
     assert_true(
         "let r=new RegExp('a','g'),get=Object.getOwnPropertyDescriptor(RegExp.prototype,'global').get;Object.defineProperty(r,'global',{value:false});Object.defineProperty(r,'source',{value:'forged'});Object.defineProperty(r,'flags',{value:'z'});get.call(r) && RegExp.prototype.toString.call(r)==='/forged/z' && new RegExp(r).source==='a' && new RegExp(r).global",
     );
     assert_true(
-        "let r=new RegExp('a');r.lastIndex=-0;let same=RegExp(r),copy=new RegExp(r);same===r && 1/same.lastIndex===-Infinity && 1/copy.lastIndex===Infinity",
+        r#"
+            let r = new RegExp('a');
+            r.lastIndex = -0;
+            let same = RegExp(r),
+                copy = new RegExp(r);
+            same === r && 1 / same.lastIndex === -Infinity && 1 / copy.lastIndex === Infinity
+        "#,
     );
 }
 
@@ -446,10 +469,25 @@ fn every_argument_is_evaluated_before_identity_return_or_constructor_validation(
         "let r=new RegExp('a'),t='';RegExp(r,(t+='f',undefined),(t+='extra',7))===r && t==='fextra'",
     );
     assert_true(
-        "let t='',r=new RegExp((t+='p','a'),(t+='f','g'),(t+='extra',7));t==='pfextra' && r.source==='a' && r.global",
+        r#"
+            let t = '',
+                r = new RegExp((t += 'p', 'a'), (t += 'f', 'g'), (t += 'extra', 7));
+            t === 'pfextra' && r.source === 'a' && r.global
+        "#,
     );
     assert_true(
-        "let t='';try{new RegExp((t+='p','('),undefined,(()=>{t+='extra';throw 7;})());}catch(e){t+=e;}t==='pextra7'",
+        r#"
+            let t = '';
+            try {
+                new RegExp((t += 'p', '('), undefined, (() => {
+                    t += 'extra';
+                    throw 7;
+                })());
+            } catch (e) {
+                t += e;
+            }
+            t === 'pextra7'
+        "#,
     );
 }
 

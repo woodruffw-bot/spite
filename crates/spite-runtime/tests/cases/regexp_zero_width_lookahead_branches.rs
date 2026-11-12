@@ -156,7 +156,7 @@ fn zero_width_branch_consumers_empty_global_sticky_results_and_callbacks_keep_sl
                 return '_'
             });
             result === '_a_b' && a.length === 10 && a[0] === '' && a[1] === 'a' && a[2] === undefined && a[
-                    3] === 0 && a[4] === 'a' && a[6] === undefined && a[7] === 'b' && a[8] === 1 && a[
+                3] === 0 && a[4] === 'a' && a[6] === undefined && a[7] === 'b' && a[8] === 1 && a[
                 9] === 'b'
         "#,
     );

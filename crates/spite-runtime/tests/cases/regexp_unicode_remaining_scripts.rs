@@ -226,8 +226,10 @@ fn remaining_scripts_unknown_includes_default_surrogates_private_use_and_nonchar
         ));
         assert_true(&format!(
             r#"
-                /^\p{{sc=Unknown}}$/{flags}.test('\uE000') && !/^\p{{Cn}}$/{flags}.test('\uE000') &&
-                    /^\p{{sc=Unknown}}$/{flags}.test('\uD800') && !/^\p{{Cn}}$/{flags}.test('\uD800')
+                /^\p{{sc=Unknown}}$/{flags}.test('\uE000') && !/^\p{{Cn}}$/{flags}.test(
+                        '\uE000') &&
+                    /^\p{{sc=Unknown}}$/{flags}.test('\uD800') && !/^\p{{Cn}}$/{flags}.test(
+                        '\uD800')
             "#
         ));
     }
@@ -260,7 +262,9 @@ fn remaining_scripts_empty_hrkt_is_an_empty_character_set() {
                 let a = [...'あア😀\uD800'.matchAll(/(?<x>\P{{sc=Hrkt}})/d{mode}g)];
                 a.length === 4 && a[0][1] === 'あ' && a[1][1] === 'ア' && a[2][1] === '😀' && a[2].index === 2 &&
                     a[2].indices[1][1] === 4 && a[3][1] === '\uD800' && a[3].index === 4 && a[3].indices[1][
-                    1] === 5 && /^[^\p{{sc=Hrkt}}]$/{mode}.test('😀') && !/^[^\P{{sc=Hrkt}}]$/{mode}
+                        1
+                    ] === 5 && /^[^\p{{sc=Hrkt}}]$/{mode}.test('😀') && !
+                    /^[^\P{{sc=Hrkt}}]$/{mode}
                     .test('😀')
             "#
         ));
@@ -595,14 +599,28 @@ fn remaining_scripts_exact_names_and_unadmitted_set_operations() {
         ] {
             let pattern = JsString::from(format!(r"\p{{{name}}}").as_str());
             assert_true(&format!(
-                "let caught=false;try{{new RegExp({pattern:?},{mode:?})}}catch(e){{caught=e instanceof SyntaxError}}caught"
+                r#"
+                    let caught = false;
+                    try {{
+                        new RegExp({pattern:?}, {mode:?})
+                    }} catch (e) {{
+                        caught = e instanceof SyntaxError
+                    }}
+                    caught
+                "#
             ));
         }
         assert_true(&format!(
-            r"let m=/\p{{Script_Extensions=Coptic}}/{mode}.exec('Ⲁ');m.length===1&&m[0]==='Ⲁ'&&m.index===0&&m.input==='Ⲁ'"
+            r#"
+                let m = /\p{{Script_Extensions=Coptic}}/{mode}.exec('Ⲁ');
+                m.length === 1 && m[0] === 'Ⲁ' && m.index === 0 && m.input === 'Ⲁ'
+            "#
         ));
         assert_true(&format!(
-            r"let m=/\p{{scx=Unknown}}/{mode}.exec('\u0378');m.length===1&&m[0]==='\u0378'&&m.index===0&&m.input==='\u0378'"
+            r#"
+                let m = /\p{{scx=Unknown}}/{mode}.exec('\u0378');
+                m.length === 1 && m[0] === '\u0378' && m.index === 0 && m.input === '\u0378'
+            "#
         ));
     }
     assert_true(r"/[\p{sc=Coptic}&&A]/v.exec('A')===null");

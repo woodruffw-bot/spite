@@ -185,7 +185,7 @@ fn single_nullable_complete_consumers_keep_zero_capture_callbacks_clones_and_col
             var parts = 'ab'.split(r);
             'baa'.search(r) === 0 && r.lastIndex === 9 && parts.length === 2 && parts[0] === '' && parts[
                 1] === 'b' && 'aa!'.match(r).join('|') === 'a|a||' && 'aa!'.replace(
-                    /(?<whole>(?:[\q{a}]|))/vg, '<$<whole>>') === '<a><a><>!<>'
+                /(?<whole>(?:[\q{a}]|))/vg, '<$<whole>>') === '<a><a><>!<>'
         "#,
     );
     let mut realm = Realm::default();
@@ -200,16 +200,53 @@ fn single_nullable_complete_consumers_keep_zero_capture_callbacks_clones_and_col
 fn single_nullable_complete_proofs_finish_finalizers_and_keep_root_scope_and_unknown_terms_closed()
 {
     assert_true(
-        r"var caught=false;try{new RegExp('(?:[\\q{a}]|)\\1','v')}catch(e){caught=e instanceof SyntaxError}caught",
+        r#"
+            var caught = false;
+            try {
+                new RegExp('(?:[\\q{a}]|)\\1', 'v')
+            } catch (e) {
+                caught = e instanceof SyntaxError
+            }
+            caught
+        "#,
     );
     assert_true(
-        r"var marker=0,m;try{m=/(?:[\q{a}]|)/dv.exec('a')}finally{marker=3}marker===3&&m.length===1&&m[0]==='a'&&m.indices[0][1]===1&&m.groups===undefined",
+        r#"
+            var marker = 0,
+                m;
+            try {
+                m = /(?:[\q{a}]|)/dv.exec('a')
+            } finally {
+                marker = 3
+            }
+            marker === 3 && m.length === 1 && m[0] === 'a' && m.indices[0][1] === 1 && m.groups ===
+                undefined
+        "#,
     );
     assert_true(
-        r"var marker=0,m;try{m=/((?:[\q{a}]|))/dv.exec('!')}finally{marker=3}marker===3&&m[0]===''&&m[1]===''&&m.indices[1][0]===0",
+        r#"
+            var marker = 0,
+                m;
+            try {
+                m = /((?:[\q{a}]|))/dv.exec('!')
+            } finally {
+                marker = 3
+            }
+            marker === 3 && m[0] === '' && m[1] === '' && m.indices[1][0] === 0
+        "#,
     );
     assert_true(
-        r"var marker=0,m;try{m=/(?:[\q{ab}&&\q{cd}]|)/dv.exec('ab')}finally{marker=3}marker===3&&m[0]===''&&m.length===1&&m.groups===undefined&&m.indices.groups===undefined&&m.indices[0][0]===0&&m.indices[0][1]===0",
+        r#"
+            var marker = 0,
+                m;
+            try {
+                m = /(?:[\q{ab}&&\q{cd}]|)/dv.exec('ab')
+            } finally {
+                marker = 3
+            }
+            marker === 3 && m[0] === '' && m.length === 1 && m.groups === undefined && m.indices.groups ===
+                undefined && m.indices[0][0] === 0 && m.indices[0][1] === 0
+        "#,
     );
     for pattern in [
         r"^[\q{a}]|",
@@ -231,6 +268,16 @@ fn single_nullable_complete_proofs_finish_finalizers_and_keep_root_scope_and_unk
         );
     }
     assert_true(
-        "var yes=0;for(var p of ['(?<x>(?:[a]|))(?<x>)','(?:[\\q{ab}&&a--a]|)']){try{new RegExp(p,'v')}catch(e){if(e instanceof SyntaxError)yes++}}yes===2",
+        r#"
+            var yes = 0;
+            for (var p of ['(?<x>(?:[a]|))(?<x>)', '(?:[\q{ab}&&a--a]|)']) {
+                try {
+                    new RegExp(p, 'v')
+                } catch (e) {
+                    if (e instanceof SyntaxError) yes++
+                }
+            }
+            yes === 2
+        "#,
     );
 }

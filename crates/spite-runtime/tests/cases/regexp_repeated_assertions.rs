@@ -46,7 +46,7 @@ fn consuming_single_unit_groups_keep_empty_and_undefined_last_iteration_captures
             let a = /((a())*)/d.exec('aaa'),
                 b = /((a())*)/d.exec('x');
             a[1] === 'aaa' && a[2] === 'a' && a[3] === '' && a.indices[2][0] === 2 && b[0] === '' && b[
-                1] === '' && b[2] === undefined && b[3] === undefined && b.indices[1][0] === 0 && b
+                    1] === '' && b[2] === undefined && b[3] === undefined && b.indices[1][0] === 0 && b
                 .indices[2] === undefined
         "#,
     );
@@ -74,7 +74,8 @@ fn multiline_assertions_filter_each_complete_iteration_and_preserve_crlf_positio
             let a = /((a)($)(\r)($)(\n))+/dm.exec('a\r\na\r\n');
             a[0] === 'a\r\na\r\n' && a[1] === 'a\r\n' && a[2] === 'a' && a[3] === '' && a[5] === '' && a
                 .indices[1][0] === 3 && a.indices[3][0] === 4 && a.indices[5][0] === 5 && a.indices[6][
-                0] === 5
+                    0
+                ] === 5
         "#,
     );
     assert_true(
@@ -135,7 +136,12 @@ fn global_sticky_flags_dotall_pinned_case_and_surrogates_keep_complete_input_nei
         "#,
     );
     assert_true(
-        r"let r=/(\ba)*?/gy;r.lastIndex=1;let a=r.exec('aaa');a.index===1&&a[0]===''&&a[1]===undefined&&r.lastIndex===1",
+        r#"
+            let r = /(\ba)*?/gy;
+            r.lastIndex = 1;
+            let a = r.exec('aaa');
+            a.index === 1 && a[0] === '' && a[1] === undefined && r.lastIndex === 1
+        "#,
     );
     assert_true(
         r#"
@@ -143,7 +149,7 @@ fn global_sticky_flags_dotall_pinned_case_and_surrogates_keep_complete_input_nei
                 b = /(\uDCA9\B)+/d.exec('💩 ');
             a[0] === 'Μµ' && a[1] === 'µ' && a.indices[1][0] === 1 && b.index === 1 && b[1] === '\uDCA9' &&
                 b.indices[1][0] === 1 && /(.$\n)+/m.exec('\n\n') === null && /(.$\n)+/ms.exec('\n\n')[
-                0] === '\n\n'
+                    0] === '\n\n'
         "#,
     );
 }

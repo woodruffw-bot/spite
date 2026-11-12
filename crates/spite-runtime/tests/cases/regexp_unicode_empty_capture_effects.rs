@@ -57,7 +57,8 @@ fn conditional_empty_captures_keep_original_utf16_ranges_names_flags_and_sticky_
                 m = r.exec('ſK');
             r.source === source && m[0] === 'ſK' && m.groups['𝒜'] === '' && m.groups.first === '' && m
                 .groups.later === undefined && m.indices.groups['𝒜'] === m.indices[2] && m.indices[2][
-                0] === 2 && m.indices.groups.later === undefined
+                    0
+                ] === 2 && m.indices.groups.later === undefined
         "#,
     );
     assert_true(
@@ -136,8 +137,8 @@ fn conditional_empty_capture_consumers_callbacks_clones_and_collection_keep_part
             let r = /(?:[\q{a}]|(?<empty>)?)+/dvg,
                 a = [...'😀'.matchAll(r)];
             a.length === 2 && a[0].index === 0 && a[1].index === 2 && a.every(m => m.groups.empty ===
-                    undefined && Object.hasOwn(m.groups, 'empty') && m.indices.groups.empty === undefined
-                    ) && r.lastIndex === 0
+                undefined && Object.hasOwn(m.groups, 'empty') && m.indices.groups.empty === undefined
+            ) && r.lastIndex === 0
         "#,
     );
     let mut realm = Realm::default();
@@ -154,6 +155,25 @@ fn conditional_empty_capture_consumers_callbacks_clones_and_collection_keep_part
 
 #[test]
 fn complete_empty_capture_effects_finish_finalizers_and_keep_other_terms_deferred() {
+    let expected_serialized_output = JsString::from(concat!(
+        r#"[[false,"ab!","#,
+        r#"{"values":["","","<undefined>"],"indices":[[0,0],[0,0],"<undefined>"],"index":0},0],"#,
+        r#"[false,"","#,
+        r#"{"values":["","","<undefined>"],"indices":[[0,0],[0,0],"<undefined>"],"index":0},0],"#,
+        r#"[false,"\n","#,
+        r#"{"values":["","","<undefined>"],"indices":[[0,0],[0,0],"<undefined>"],"index":0},0],"#,
+        r#"[false,"x\nab","#,
+        r#"{"values":["","","<undefined>"],"indices":[[0,0],[0,0],"<undefined>"],"index":0},0],"#,
+        r#"[true,"ab!","#,
+        r#"{"values":["","","<undefined>"],"indices":[[0,0],[0,0],"<undefined>"],"index":0},0],"#,
+        r#"[true,"","#,
+        r#"{"values":["","","<undefined>"],"indices":[[0,0],[0,0],"<undefined>"],"index":0},0],"#,
+        r#"[true,"\n","#,
+        r#"{"values":["","","<undefined>"],"indices":[[0,0],[0,0],"<undefined>"],"index":0},0],"#,
+        r#"[true,"x\nab","#,
+        r#"{"values":["","","<undefined>"],"indices":[[0,0],[0,0],"<undefined>"],"index":0},0]]"#,
+    ));
+
     for source in [
         r"/(?:[\q{a}]|(?:|()))+/v.test('a')",
         r"/([\q{a|ab}&&a]|()?)+/v.test('a')",
@@ -197,12 +217,40 @@ fn complete_empty_capture_effects_finish_finalizers_and_keep_other_terms_deferre
             ));
         }
     }
-    assert_true(
-        r#"var marker=0,ok=false;try{ok=(function(){var pattern="([\\q{ab}&&\\q{cd}]|()?)+?",rows=[],metadata=true;
-for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;
-for(var input of ['ab!','','\n','x\nab']){r.lastIndex=0;var m=r.exec(input),result=null;if(m!==null)result={values:Array.from(m,v=>v===undefined?'<undefined>':v),indices:Array.from(m.indices,v=>v===undefined?'<undefined>':v),index:m.index};rows.push([multi,input,result,r.lastIndex]);}}
-return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"\",\"\",\"<undefined>\"],\"indices\":[[0,0],[0,0],\"<undefined>\"],\"index\":0},0],[false,\"\",{\"values\":[\"\",\"\",\"<undefined>\"],\"indices\":[[0,0],[0,0],\"<undefined>\"],\"index\":0},0],[false,\"\\n\",{\"values\":[\"\",\"\",\"<undefined>\"],\"indices\":[[0,0],[0,0],\"<undefined>\"],\"index\":0},0],[false,\"x\\nab\",{\"values\":[\"\",\"\",\"<undefined>\"],\"indices\":[[0,0],[0,0],\"<undefined>\"],\"index\":0},0],[true,\"ab!\",{\"values\":[\"\",\"\",\"<undefined>\"],\"indices\":[[0,0],[0,0],\"<undefined>\"],\"index\":0},0],[true,\"\",{\"values\":[\"\",\"\",\"<undefined>\"],\"indices\":[[0,0],[0,0],\"<undefined>\"],\"index\":0},0],[true,\"\\n\",{\"values\":[\"\",\"\",\"<undefined>\"],\"indices\":[[0,0],[0,0],\"<undefined>\"],\"index\":0},0],[true,\"x\\nab\",{\"values\":[\"\",\"\",\"<undefined>\"],\"indices\":[[0,0],[0,0],\"<undefined>\"],\"index\":0},0]]"})();}finally{marker=3}ok&&marker===3"#,
-    );
+    assert_true(&format!(
+        r#"
+            var marker = 0,
+                ok = false;
+            try {{
+                ok = (function() {{
+                    var pattern = "([\\q{{ab}}&&\\q{{cd}}]|()?)+?",
+                        rows = [],
+                        metadata = true;
+                    for (var multi of [false, true]) {{
+                        var r = new RegExp(pattern, 'dvg' + (multi ? 'm' : ''));
+                        metadata = metadata && r.source === pattern;
+                        for (var input of ['ab!', '', '\n', 'x\nab']) {{
+                            r.lastIndex = 0;
+                            var m = r.exec(input),
+                                result = null;
+                            if (m !== null) result = {{
+                                values: Array.from(m, v => v === undefined ? '<undefined>' :
+                                    v),
+                                indices: Array.from(m.indices, v => v === undefined ?
+                                    '<undefined>' : v),
+                                index: m.index
+                            }};
+                            rows.push([multi, input, result, r.lastIndex]);
+                        }}
+                    }}
+                    return metadata && JSON.stringify(rows) === {expected_serialized_output:?}
+                }})();
+            }} finally {{
+                marker = 3
+            }}
+            ok && marker === 3
+        "#
+    ));
     for (inner, expected_zero) in [
         (
             r"[\q{a|b}]|\b()?",
@@ -239,7 +287,18 @@ return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"\",\"\",
                 let pattern = JsString::from(source.as_str());
                 let expected = JsString::from(expected_zero);
                 assert_true(&format!(
-                    "var pattern={pattern:?},input='a😀b',r=new RegExp(pattern,'dvgy');r.lastIndex=2;var m=r.exec(input);r.source===pattern&&r.flags==='dgvy'&&m.input===input&&Object.hasOwn(m,'groups')&&Object.hasOwn(m.indices,'groups')&&m.groups===undefined&&m.indices.groups===undefined&&JSON.stringify([Array.from(m,v=>v===undefined?'<undefined>':v),Array.from(m.indices,v=>v===undefined?'<undefined>':v),m.index,r.lastIndex])==={expected:?}"
+                    r#"
+                        var pattern = {pattern:?},
+                            input = 'a😀b',
+                            r = new RegExp(pattern, 'dvgy');
+                        r.lastIndex = 2;
+                        var m = r.exec(input);
+                        r.source === pattern && r.flags === 'dgvy' && m.input === input && Object.hasOwn(m,
+                            'groups') && Object.hasOwn(m.indices, 'groups') && m.groups === undefined && m.indices
+                            .groups === undefined && JSON.stringify([Array.from(m, v => v === undefined ?
+                                '<undefined>' : v), Array.from(m.indices, v => v === undefined ?
+                                '<undefined>' : v), m.index, r.lastIndex]) === {expected:?}
+                    "#
                 ));
                 continue;
             }
@@ -257,7 +316,16 @@ return metadata&&JSON.stringify(rows)==="[[false,\"ab!\",{\"values\":[\"\",\"\",
     ] {
         let source = JsString::from(format!("marker=1;/{pattern}/v.test('a');").as_str());
         assert_true(&format!(
-            "let marker=0,caught=false;try{{eval({source:?});}}catch(e){{caught=e instanceof SyntaxError;}}caught && marker===0"
+            r#"
+                let marker = 0,
+                    caught = false;
+                try {{
+                    eval({source:?});
+                }} catch (e) {{
+                    caught = e instanceof SyntaxError;
+                }}
+                caught && marker === 0
+            "#
         ));
     }
 }

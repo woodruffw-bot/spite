@@ -98,7 +98,8 @@ fn branch_order_and_failed_capture_resets_preserve_undefined_slots_and_indices_a
         r#"
             let a = /(a)\1|\B(.)\2\B/d.exec('\uD800\uD800');
             a[1] === undefined && a[2].charCodeAt(0) === 0xD800 && a.indices[2][0] === 0 && a.indices[2][
-                1] === 1
+                1
+            ] === 1
         "#,
     );
     assert_true(

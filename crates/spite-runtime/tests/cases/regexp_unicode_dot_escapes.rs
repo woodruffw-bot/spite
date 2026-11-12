@@ -62,7 +62,10 @@ fn unicode_dot_escapes_consumers_and_complete_character_boundaries() {
             r"'😀a\n\uD800'.match(/./{mode}g).join('|')==='😀|a|\uD800'"
         ));
         assert_true(&format!(
-            r"let a=[...'😀a\n'.matchAll(/./d{mode}g)];a.length===2&&a[0].index===0&&a[0].indices[0][1]===2&&a[1].index===2"
+            r#"
+                let a = [...'😀a\n'.matchAll(/./d{mode}g)];
+                a.length === 2 && a[0].index === 0 && a[0].indices[0][1] === 2 && a[1].index === 2
+            "#
         ));
         assert_true(&format!(r"'😀a😀b'.split(/\D/{mode}).join('|')==='||||'"));
         assert_true(&format!(
@@ -94,7 +97,12 @@ fn unicode_dot_escapes_consumers_and_complete_character_boundaries() {
             r"let r=/\D/{mode}g;r.lastIndex=1;let m=r.exec('😀9');m.index===0&&m[0]==='😀'&&r.lastIndex===2"
         ));
         assert_true(&format!(
-            r"let r=/./{mode}y;r.lastIndex=1;let m=r.exec('\uDC00\uD800');m[0]==='\uD800'&&m.index===1&&r.lastIndex===2"
+            r#"
+                let r = /./{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('\uDC00\uD800');
+                m[0] === '\uD800' && m.index === 1 && r.lastIndex === 2
+            "#
         ));
     }
 }

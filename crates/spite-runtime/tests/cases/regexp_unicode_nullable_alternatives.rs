@@ -127,7 +127,10 @@ fn unicode_nullable_alternative_names_surrogates_and_scopes() {
         "#,
     );
     assert_true(
-        r"let m=/(|\uD800)+/du.exec('\uD800x');m[0]==='\uD800'&&m[1]==='\uD800'&&/(\uD83D|)+/u.exec('😀')[0]===''",
+        r#"
+            let m = /(|\uD800)+/du.exec('\uD800x');
+            m[0] === '\uD800' && m[1] === '\uD800' && /(\uD83D|)+/u.exec('😀')[0] === ''
+        "#,
     );
     assert_true(r"let m=/(|[ſK])+/div.exec('Sk');m[0]==='Sk'&&m[1]==='k'");
     assert_true(r"let m=/\B((?:\B^(?:.$)$)|)+\B$/dvms.exec('\r\n');m[0]==='\r\n'&&m[1]==='\n'");

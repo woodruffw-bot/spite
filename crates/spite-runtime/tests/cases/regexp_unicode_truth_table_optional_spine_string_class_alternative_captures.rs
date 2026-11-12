@@ -894,13 +894,62 @@ fn named_capture_results(
 #[test]
 fn truth_table_optional_spine_alternative_string_classes_validate_all_zero_bound_bodies() {
     assert_true(
-        r####"var pattern="^((([\\q{a|ab}])?)?|())?",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&m.groups===undefined&&m.indices.groups===undefined))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex,m.groups===undefined?"<undefined>":Object.keys(m.groups).map(k=>[k,m.groups[k]===undefined?"<undefined>":m.groups[k]]),m.indices.groups===undefined?"<undefined>":Object.keys(m.indices.groups).map(k=>[k,m.indices.groups[k]===undefined?"<undefined>":m.indices.groups[k]])])==="[[\"ab\",\"ab\",\"ab\",\"ab\",\"<undefined>\"],[[0,2],[0,2],[0,2],[0,2],\"<undefined>\"],0,0,\"<undefined>\",\"<undefined>\"]""####,
+        r#"
+            var pattern = "^((([\\q{a|ab}])?)?|())?",
+                input = "aba",
+                r = new RegExp(pattern, "dv"),
+                m = r.exec(input);
+            r.source === pattern && r.flags === "dv" && r.hasIndices && r.unicodeSets && (m === null || (m
+                    .input === input && Object.hasOwn(m, "groups") && Object.hasOwn(m.indices,
+                        "groups") && m.groups === undefined && m.indices.groups === undefined)) && JSON
+                .stringify(m === null ? null : [Array.from(m, v => v === undefined ? "<undefined>" : v),
+                    Array.from(m.indices, v => v === undefined ? "<undefined>" : v), m.index, r
+                    .lastIndex, m.groups === undefined ? "<undefined>" : Object.keys(m.groups).map(
+                        k => [k, m.groups[k] === undefined ? "<undefined>" : m.groups[k]]), m.indices
+                    .groups === undefined ? "<undefined>" : Object.keys(m.indices.groups).map(k => [k,
+                        m.indices.groups[k] === undefined ? "<undefined>" : m.indices.groups[k]
+                    ])
+                ]) ===
+                "[[\"ab\",\"ab\",\"ab\",\"ab\",\"<undefined>\"],[[0,2],[0,2],[0,2],[0,2],\"<undefined>\"],0,0,\"<undefined>\",\"<undefined>\"]"
+        "#,
     );
     assert_true(
-        r####"var pattern="((([\\q{a|ab}])?)?|())?$",input="aba",r=new RegExp(pattern,"dv"),m=r.exec(input);r.source===pattern&&r.flags==="dv"&&r.hasIndices&&r.unicodeSets&&(m===null||(m.input===input&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&m.groups===undefined&&m.indices.groups===undefined))&&JSON.stringify(m===null?null:[Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex,m.groups===undefined?"<undefined>":Object.keys(m.groups).map(k=>[k,m.groups[k]===undefined?"<undefined>":m.groups[k]]),m.indices.groups===undefined?"<undefined>":Object.keys(m.indices.groups).map(k=>[k,m.indices.groups[k]===undefined?"<undefined>":m.indices.groups[k]])])==="[[\"a\",\"a\",\"a\",\"a\",\"<undefined>\"],[[2,3],[2,3],[2,3],[2,3],\"<undefined>\"],2,0,\"<undefined>\",\"<undefined>\"]""####,
+        r#"
+            var pattern = "((([\\q{a|ab}])?)?|())?$",
+                input = "aba",
+                r = new RegExp(pattern, "dv"),
+                m = r.exec(input);
+            r.source === pattern && r.flags === "dv" && r.hasIndices && r.unicodeSets && (m === null || (m
+                    .input === input && Object.hasOwn(m, "groups") && Object.hasOwn(m.indices,
+                        "groups") && m.groups === undefined && m.indices.groups === undefined)) && JSON
+                .stringify(m === null ? null : [Array.from(m, v => v === undefined ? "<undefined>" : v),
+                    Array.from(m.indices, v => v === undefined ? "<undefined>" : v), m.index, r
+                    .lastIndex, m.groups === undefined ? "<undefined>" : Object.keys(m.groups).map(
+                        k => [k, m.groups[k] === undefined ? "<undefined>" : m.groups[k]]), m.indices
+                    .groups === undefined ? "<undefined>" : Object.keys(m.indices.groups).map(k => [k,
+                        m.indices.groups[k] === undefined ? "<undefined>" : m.indices.groups[k]
+                    ])
+                ]) ===
+                "[[\"a\",\"a\",\"a\",\"a\",\"<undefined>\"],[[2,3],[2,3],[2,3],[2,3],\"<undefined>\"],2,0,\"<undefined>\",\"<undefined>\"]"
+        "#,
     );
     assert_true(
-        r####"var pattern="((([\\q{ab}&&\\p{RGI_Emoji}]){0})?|())??",input="A😀!",r=new RegExp(pattern,"dgv");r.lastIndex=2;var m=r.exec(input);var own=true;for(var i=0;i<m.length;i++)own=own&&Object.hasOwn(m,""+i)&&Object.hasOwn(m.indices,""+i);own&&r.source===pattern&&r.flags==="dgv"&&r.hasIndices&&m.input===input&&m.groups===undefined&&m.indices.groups===undefined&&Object.hasOwn(m,"groups")&&Object.hasOwn(m.indices,"groups")&&JSON.stringify([Array.from(m,v=>v===undefined?"<undefined>":v),Array.from(m.indices,v=>v===undefined?"<undefined>":v),m.index,r.lastIndex])==="[[\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\"],[[1,1],\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\"],1,1]""####,
+        r#"
+            var pattern = "((([\\q{ab}&&\\p{RGI_Emoji}]){0})?|())??",
+                input = "A😀!",
+                r = new RegExp(pattern, "dgv");
+            r.lastIndex = 2;
+            var m = r.exec(input);
+            var own = true;
+            for (var i = 0; i < m.length; i++) own = own && Object.hasOwn(m, "" + i) && Object.hasOwn(m
+                .indices, "" + i);
+            own && r.source === pattern && r.flags === "dgv" && r.hasIndices && m.input === input && m
+                .groups === undefined && m.indices.groups === undefined && Object.hasOwn(m, "groups") &&
+                Object.hasOwn(m.indices, "groups") && JSON.stringify([Array.from(m, v => v === undefined ?
+                    "<undefined>" : v), Array.from(m.indices, v => v === undefined ?
+                    "<undefined>" : v), m.index, r.lastIndex]) ===
+                "[[\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\"],[[1,1],\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\"],1,1]"
+        "#,
     );
     for pattern in [
         r"((([\q{a|ab}]){0})?|z)??",

@@ -107,7 +107,11 @@ fn unicode_line_assertions_original_empty_captures_and_pair_starts() {
             r"let r=/^/{mode}g;r.lastIndex=3;r.exec('😀')===null&&r.lastIndex===0"
         ));
         assert_true(&format!(
-            r"let r=/(?<x>(^$))/d{mode};let m=r.exec('');m.groups.x===''&&m.indices[2][0]===0&&m.indices[2][1]===0"
+            r#"
+                let r = /(?<x>(^$))/d{mode};
+                let m = r.exec('');
+                m.groups.x === '' && m.indices[2][0] === 0 && m.indices[2][1] === 0
+            "#
         ));
         assert_true(&format!(
             r"[...'A\uD800\n\uDC00'.matchAll(/^/m{mode}g)].map(m=>m.index).join(',')==='0,3'"

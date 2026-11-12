@@ -17,7 +17,8 @@ fn grouped_quantified_continuations_preserve_whole_and_inner_ranges() {
         r#"
             let m = /^((a)+?(aa))$/d.exec('aaaa');
             m[1] === 'aaaa' && m[2] === 'a' && m[3] === 'aa' && m.indices[2][0] === 1 && m.indices[3][
-                0] === 2 && /^(a+?aa)$/.exec('aaaa')[1] === 'aaaa'
+                0
+            ] === 2 && /^(a+?aa)$/.exec('aaaa')[1] === 'aaaa'
         "#,
     );
     assert_true(
@@ -61,7 +62,11 @@ fn empty_groups_and_zero_iterations_keep_capture_participation() {
         "#,
     );
     assert_true(
-        "let a=/^((?:))$/.exec(''),b=/^((?:a)*x)$/.exec('x');a[1]===''&&b[1]==='x'&&/^((?:))$/.exec('x')===null",
+        r#"
+            let a = /^((?:))$/.exec(''),
+                b = /^((?:a)*x)$/.exec('x');
+            a[1] === '' && b[1] === 'x' && /^((?:))$/.exec('x') === null
+        "#,
     );
 }
 
@@ -100,7 +105,8 @@ fn grouped_anchor_bodies_compose_with_branch_and_outer_capture_prefixes() {
         r#"
             let m = /([x])|^(a+b)$|([y])/md.exec('z\naaab\ny');
             m.index === 2 && m[1] === undefined && m[2] === 'aaab' && m[3] === undefined && m.indices[2][
-                0] === 2
+                0
+            ] === 2
         "#,
     );
     assert_true(
