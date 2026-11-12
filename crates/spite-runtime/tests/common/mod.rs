@@ -7,6 +7,7 @@ pub use realm_entries::REALM_ENTRIES;
 
 pub mod regexp_captures;
 pub mod regexp_oracle;
+pub mod unicode_samples;
 
 /// Evaluates a behavioral assertion in a fresh Realm and reports its source.
 #[track_caller]

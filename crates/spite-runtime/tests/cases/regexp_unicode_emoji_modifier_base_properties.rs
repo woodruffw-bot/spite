@@ -2,11 +2,13 @@
 use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
+use std::ops::RangeInclusive;
 
-use crate::common::assert_true;
+use crate::common::{assert_true, unicode_samples};
 
 #[test]
 fn unicode_emoji_modifier_base_property_results_snapshot() {
+    let boundary_samples = unicode_samples::from_ranges(BOUNDARY_SAMPLES);
     let mut rows = String::new();
     for body in [
         r"\p{Emoji_Modifier_Base}",
@@ -20,7 +22,7 @@ fn unicode_emoji_modifier_base_property_results_snapshot() {
         let pattern = JsString::from(body);
         for flags in ["dug", "diug", "divg", "divmy"] {
             for input in [
-                "😀\u{261c}\u{261d}\u{261e}\u{26f8}\u{26f9}\u{26fa}\u{2709}\u{270a}\u{270d}\u{270e}\u{1f384}\u{1f385}\u{1f386}\u{1f3c1}\u{1f3c2}\u{1f3c4}\u{1f3c5}\u{1f3c6}\u{1f3c7}\u{1f3c8}\u{1f3c9}\u{1f3ca}\u{1f3cc}\u{1f3cd}\u{1f441}\u{1f442}\u{1f443}\u{1f444}\u{1f445}\u{1f446}\u{1f450}\u{1f451}\u{1f465}\u{1f466}\u{1f478}\u{1f479}\u{1f47b}\u{1f47c}\u{1f47d}\u{1f480}\u{1f481}\u{1f483}\u{1f484}\u{1f485}\u{1f487}\u{1f488}\u{1f48e}\u{1f48f}\u{1f490}\u{1f491}\u{1f492}\u{1f4a9}\u{1f4aa}\u{1f4ab}\u{1f573}\u{1f574}\u{1f575}\u{1f576}\u{1f579}\u{1f57a}\u{1f57b}\u{1f58f}\u{1f590}\u{1f591}\u{1f594}\u{1f595}\u{1f596}\u{1f597}\u{1f644}\u{1f645}\u{1f647}\u{1f648}\u{1f64a}\u{1f64b}\u{1f64f}\u{1f650}\u{1f6a2}\u{1f6a3}\u{1f6a4}\u{1f6b3}\u{1f6b4}\u{1f6b6}\u{1f6b7}\u{1f6bf}\u{1f6c0}\u{1f6c1}\u{1f6cb}\u{1f6cc}\u{1f6cd}\u{1f90b}\u{1f90c}\u{1f90d}\u{1f90e}\u{1f90f}\u{1f910}\u{1f917}\u{1f918}\u{1f91f}\u{1f920}\u{1f925}\u{1f926}\u{1f927}\u{1f92f}\u{1f930}\u{1f939}\u{1f93a}\u{1f93b}\u{1f93c}\u{1f93e}\u{1f93f}\u{1f976}\u{1f977}\u{1f978}\u{1f9b4}\u{1f9b5}\u{1f9b6}\u{1f9b7}\u{1f9b8}\u{1f9b9}\u{1f9ba}\u{1f9bb}\u{1f9bc}\u{1f9cc}\u{1f9cd}\u{1f9cf}\u{1f9d0}\u{1f9d1}\u{1f9dd}\u{1f9de}\u{1fac2}\u{1fac3}\u{1fac5}\u{1fac6}\u{1faef}\u{1faf0}\u{1fafb}\u{feff}ſK\n",
+                boundary_samples.as_str(),
                 "X\r\n\u{261d}\u{2028}\u{270a}\u{2029}",
                 "\u{ff10}\u{ff26}",
                 "",
@@ -400,3 +402,59 @@ fn unicode_emoji_modifier_base_property_unicode18_addition() {
         "#,
     );
 }
+
+// Property boundary probes in iteration order, including neighboring code points.
+const BOUNDARY_SAMPLES: &[RangeInclusive<u32>] = &[
+    0x1F600..=0x1F600,
+    0x261C..=0x261E,
+    0x26F8..=0x26FA,
+    0x2709..=0x270A,
+    0x270D..=0x270E,
+    0x1F384..=0x1F386,
+    0x1F3C1..=0x1F3C2,
+    0x1F3C4..=0x1F3CA,
+    0x1F3CC..=0x1F3CD,
+    0x1F441..=0x1F446,
+    0x1F450..=0x1F451,
+    0x1F465..=0x1F466,
+    0x1F478..=0x1F479,
+    0x1F47B..=0x1F47D,
+    0x1F480..=0x1F481,
+    0x1F483..=0x1F485,
+    0x1F487..=0x1F488,
+    0x1F48E..=0x1F492,
+    0x1F4A9..=0x1F4AB,
+    0x1F573..=0x1F576,
+    0x1F579..=0x1F57B,
+    0x1F58F..=0x1F591,
+    0x1F594..=0x1F597,
+    0x1F644..=0x1F645,
+    0x1F647..=0x1F648,
+    0x1F64A..=0x1F64B,
+    0x1F64F..=0x1F650,
+    0x1F6A2..=0x1F6A4,
+    0x1F6B3..=0x1F6B4,
+    0x1F6B6..=0x1F6B7,
+    0x1F6BF..=0x1F6C1,
+    0x1F6CB..=0x1F6CD,
+    0x1F90B..=0x1F910,
+    0x1F917..=0x1F918,
+    0x1F91F..=0x1F920,
+    0x1F925..=0x1F927,
+    0x1F92F..=0x1F930,
+    0x1F939..=0x1F93C,
+    0x1F93E..=0x1F93F,
+    0x1F976..=0x1F978,
+    0x1F9B4..=0x1F9BC,
+    0x1F9CC..=0x1F9CD,
+    0x1F9CF..=0x1F9D1,
+    0x1F9DD..=0x1F9DE,
+    0x1FAC2..=0x1FAC3,
+    0x1FAC5..=0x1FAC6,
+    0x1FAEF..=0x1FAF0,
+    0x1FAFB..=0x1FAFB,
+    0xFEFF..=0xFEFF,
+    0x017F..=0x017F,
+    0x212A..=0x212A,
+    0x000A..=0x000A,
+];
