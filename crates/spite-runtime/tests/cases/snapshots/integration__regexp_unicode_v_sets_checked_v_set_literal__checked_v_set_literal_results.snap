@@ -1,0 +1,273 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_unicode_v_sets_checked_v_set_literal.rs
+expression: rows
+---
+"(?<whole>([a--b]c))" flags="dvg" input="aac" lastIndex=0
+{
+  "matches": [
+    "ac",
+    "ac",
+    "ac"
+  ],
+  "index": 1,
+  "input": "aac",
+  "groups": {
+    "whole": "ac"
+  },
+  "indices": [
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      1,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<whole>([a--b]c))"
+}
+
+"(?<whole>([a--b]c))" flags="dvy" input="aac" lastIndex=0
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"(?<whole>([[K]]s))" flags="divg" input="\u212a\u017f!" lastIndex=0
+{
+  "matches": [
+    "Kſ",
+    "Kſ",
+    "Kſ"
+  ],
+  "index": 0,
+  "input": "Kſ!",
+  "groups": {
+    "whole": "Kſ"
+  },
+  "indices": [
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      2
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      0,
+      2
+    ]
+  },
+  "lastIndex": 2,
+  "source": "(?<whole>([[K]]s))"
+}
+
+"(?<whole>([[K]]s))" flags="dvg" input="K\u017f!" lastIndex=0
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"(?<whole>([[\u005cp{Any}]]\u005cu{1f601}))" flags="dvy" input="\ud83d\ude00\ud83d\ude01!" lastIndex=1
+{
+  "matches": [
+    "😀😁",
+    "😀😁",
+    "😀😁"
+  ],
+  "index": 0,
+  "input": "😀😁!",
+  "groups": {
+    "whole": "😀😁"
+  },
+  "indices": [
+    [
+      0,
+      4
+    ],
+    [
+      0,
+      4
+    ],
+    [
+      0,
+      4
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      0,
+      4
+    ]
+  },
+  "lastIndex": 4,
+  "source": "(?<whole>([[\\p{Any}]]\\u{1f601}))"
+}
+
+"(?<whole>([[\u005cuD800]]a))" flags="dvg" input="\ud800a!" lastIndex=0
+{
+  "matches": [
+    "\ud800a",
+    "\ud800a",
+    "\ud800a"
+  ],
+  "index": 0,
+  "input": "\ud800a!",
+  "groups": {
+    "whole": "\ud800a"
+  },
+  "indices": [
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      2
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      0,
+      2
+    ]
+  },
+  "lastIndex": 2,
+  "source": "(?<whole>([[\\uD800]]a))"
+}
+
+"(?<whole>([[\u005cuD83D]]\u005cuDE00))" flags="dvg" input="\ud83d\ude00" lastIndex=0
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"(?<whole>([[\u005c]]]\u005c$))" flags="dvg" input="x]$!" lastIndex=0
+{
+  "matches": [
+    "]$",
+    "]$",
+    "]$"
+  ],
+  "index": 1,
+  "input": "x]$!",
+  "groups": {
+    "whole": "]$"
+  },
+  "indices": [
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      1,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<whole>([[\\]]]\\$))"
+}
+
+"^(?<whole>([[a]]c))$" flags="dvmg" input="x\u000d\u000aac\u2028" lastIndex=0
+{
+  "matches": [
+    "ac",
+    "ac",
+    "ac"
+  ],
+  "index": 3,
+  "input": "x\r\nac ",
+  "groups": {
+    "whole": "ac"
+  },
+  "indices": [
+    [
+      3,
+      5
+    ],
+    [
+      3,
+      5
+    ],
+    [
+      3,
+      5
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      3,
+      5
+    ]
+  },
+  "lastIndex": 5,
+  "source": "^(?<whole>([[a]]c))$"
+}
+
+"^(?<whole>([[a]]\u005c$))$" flags="dvg" input="a$" lastIndex=0
+{
+  "matches": [
+    "a$",
+    "a$",
+    "a$"
+  ],
+  "index": 0,
+  "input": "a$",
+  "groups": {
+    "whole": "a$"
+  },
+  "indices": [
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      2
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      0,
+      2
+    ]
+  },
+  "lastIndex": 2,
+  "source": "^(?<whole>([[a]]\\$))$"
+}

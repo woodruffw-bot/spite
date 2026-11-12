@@ -1,0 +1,333 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_unicode_v_sets_checked_v_set_repeated_word.rs
+expression: rows
+---
+"(?<whole>(\u005cb[[a_]]+\u005cB))" flags="dvg" input="aa_!" lastIndex=0
+{
+  "matches": [
+    "aa",
+    "aa",
+    "aa"
+  ],
+  "index": 0,
+  "input": "aa_!",
+  "groups": {
+    "whole": "aa"
+  },
+  "indices": [
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      2
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      0,
+      2
+    ]
+  },
+  "lastIndex": 2,
+  "source": "(?<whole>(\\b[[a_]]+\\B))"
+}
+
+"(?<whole>(\u005cb[[a_]]+?\u005cB))" flags="dvg" input="aa_!" lastIndex=0
+{
+  "matches": [
+    "a",
+    "a",
+    "a"
+  ],
+  "index": 0,
+  "input": "aa_!",
+  "groups": {
+    "whole": "a"
+  },
+  "indices": [
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      1
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      0,
+      1
+    ]
+  },
+  "lastIndex": 1,
+  "source": "(?<whole>(\\b[[a_]]+?\\B))"
+}
+
+"(?<whole>(\u005cb[[a]]+?\u005cb))" flags="dvg" input="aaa!" lastIndex=0
+{
+  "matches": [
+    "aaa",
+    "aaa",
+    "aaa"
+  ],
+  "index": 0,
+  "input": "aaa!",
+  "groups": {
+    "whole": "aaa"
+  },
+  "indices": [
+    [
+      0,
+      3
+    ],
+    [
+      0,
+      3
+    ],
+    [
+      0,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      0,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<whole>(\\b[[a]]+?\\b))"
+}
+
+"(?<whole>(\u005cb[[K]]+\u005cb))" flags="dvg" input="\u212a\u212a!" lastIndex=0
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"(?<whole>(\u005cb[[K]]+\u005cb))" flags="divg" input="\u212a\u212a!" lastIndex=0
+{
+  "matches": [
+    "KK",
+    "KK",
+    "KK"
+  ],
+  "index": 0,
+  "input": "KK!",
+  "groups": {
+    "whole": "KK"
+  },
+  "indices": [
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      2
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      0,
+      2
+    ]
+  },
+  "lastIndex": 2,
+  "source": "(?<whole>(\\b[[K]]+\\b))"
+}
+
+"(?<whole>(\u005cB[a--a]*\u005cB))" flags="dvy" input="\ud83d\ude00!" lastIndex=1
+{
+  "matches": [
+    "",
+    "",
+    ""
+  ],
+  "index": 0,
+  "input": "😀!",
+  "groups": {
+    "whole": ""
+  },
+  "indices": [
+    [
+      0,
+      0
+    ],
+    [
+      0,
+      0
+    ],
+    [
+      0,
+      0
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      0,
+      0
+    ]
+  },
+  "lastIndex": 0,
+  "source": "(?<whole>(\\B[a--a]*\\B))"
+}
+
+"(?<whole>(\u005cb[a--a]*\u005cb))" flags="dvy" input="A\ud83d\ude00B" lastIndex=2
+{
+  "matches": [
+    "",
+    "",
+    ""
+  ],
+  "index": 1,
+  "input": "A😀B",
+  "groups": {
+    "whole": ""
+  },
+  "indices": [
+    [
+      1,
+      1
+    ],
+    [
+      1,
+      1
+    ],
+    [
+      1,
+      1
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      1,
+      1
+    ]
+  },
+  "lastIndex": 1,
+  "source": "(?<whole>(\\b[a--a]*\\b))"
+}
+
+"^(?<whole>(\u005cb[[a]]{2,3}?\u005cb))$" flags="dvmg" input="x\u000d\u000aaaa\u2028" lastIndex=0
+{
+  "matches": [
+    "aaa",
+    "aaa",
+    "aaa"
+  ],
+  "index": 3,
+  "input": "x\r\naaa ",
+  "groups": {
+    "whole": "aaa"
+  },
+  "indices": [
+    [
+      3,
+      6
+    ],
+    [
+      3,
+      6
+    ],
+    [
+      3,
+      6
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      3,
+      6
+    ]
+  },
+  "lastIndex": 6,
+  "source": "^(?<whole>(\\b[[a]]{2,3}?\\b))$"
+}
+
+"(?<whole>(\u005cb[[\u005cp{Any}]]{2}\u005cb))" flags="dvg" input="A\ud83d\ude00B" lastIndex=0
+{
+  "matches": [
+    "A😀",
+    "A😀",
+    "A😀"
+  ],
+  "index": 0,
+  "input": "A😀B",
+  "groups": {
+    "whole": "A😀"
+  },
+  "indices": [
+    [
+      0,
+      3
+    ],
+    [
+      0,
+      3
+    ],
+    [
+      0,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      0,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<whole>(\\b[[\\p{Any}]]{2}\\b))"
+}
+
+"(?<whole>(\u005cb[[a]]{0,1}?\u005cb))" flags="dvg" input="a!" lastIndex=0
+{
+  "matches": [
+    "",
+    "",
+    ""
+  ],
+  "index": 0,
+  "input": "a!",
+  "groups": {
+    "whole": ""
+  },
+  "indices": [
+    [
+      0,
+      0
+    ],
+    [
+      0,
+      0
+    ],
+    [
+      0,
+      0
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      0,
+      0
+    ]
+  },
+  "lastIndex": 0,
+  "source": "(?<whole>(\\b[[a]]{0,1}?\\b))"
+}

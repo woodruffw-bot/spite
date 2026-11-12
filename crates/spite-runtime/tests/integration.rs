@@ -1234,6 +1234,102 @@ mod regexp_unicode_unrepresentable_finite_nullable_string_classes;
 mod regexp_unicode_uppercase_properties;
 #[path = "cases/regexp_unicode_v_sets.rs"]
 mod regexp_unicode_v_sets;
+#[path = "cases/regexp_unicode_v_sets_checked_class_then_single_character_v_string.rs"]
+mod regexp_unicode_v_sets_checked_class_then_single_character_v_string;
+#[path = "cases/regexp_unicode_v_sets_checked_flat_v_set_pair_literal.rs"]
+mod regexp_unicode_v_sets_checked_flat_v_set_pair_literal;
+#[path = "cases/regexp_unicode_v_sets_checked_literal_checked_v_set.rs"]
+mod regexp_unicode_v_sets_checked_literal_checked_v_set;
+#[path = "cases/regexp_unicode_v_sets_checked_literal_v_set.rs"]
+mod regexp_unicode_v_sets_checked_literal_v_set;
+#[path = "cases/regexp_unicode_v_sets_checked_then_flat_v_set_pair.rs"]
+mod regexp_unicode_v_sets_checked_then_flat_v_set_pair;
+#[path = "cases/regexp_unicode_v_sets_checked_then_flat_v_set_pair_word.rs"]
+mod regexp_unicode_v_sets_checked_then_flat_v_set_pair_word;
+#[path = "cases/regexp_unicode_v_sets_checked_v_set_class_pair.rs"]
+mod regexp_unicode_v_sets_checked_v_set_class_pair;
+#[path = "cases/regexp_unicode_v_sets_checked_v_set_class_pair_word.rs"]
+mod regexp_unicode_v_sets_checked_v_set_class_pair_word;
+#[path = "cases/regexp_unicode_v_sets_checked_v_set_class_sequence.rs"]
+mod regexp_unicode_v_sets_checked_v_set_class_sequence;
+#[path = "cases/regexp_unicode_v_sets_checked_v_set_class_triple.rs"]
+mod regexp_unicode_v_sets_checked_v_set_class_triple;
+#[path = "cases/regexp_unicode_v_sets_checked_v_set_class_triple_word.rs"]
+mod regexp_unicode_v_sets_checked_v_set_class_triple_word;
+#[path = "cases/regexp_unicode_v_sets_checked_v_set_literal.rs"]
+mod regexp_unicode_v_sets_checked_v_set_literal;
+#[path = "cases/regexp_unicode_v_sets_checked_v_set_literal_flat_v_set.rs"]
+mod regexp_unicode_v_sets_checked_v_set_literal_flat_v_set;
+#[path = "cases/regexp_unicode_v_sets_checked_v_set_literal_set_word.rs"]
+mod regexp_unicode_v_sets_checked_v_set_literal_set_word;
+#[path = "cases/regexp_unicode_v_sets_checked_v_set_pair_literal.rs"]
+mod regexp_unicode_v_sets_checked_v_set_pair_literal;
+#[path = "cases/regexp_unicode_v_sets_checked_v_set_pair_literal_word.rs"]
+mod regexp_unicode_v_sets_checked_v_set_pair_literal_word;
+#[path = "cases/regexp_unicode_v_sets_checked_v_set_pair_word.rs"]
+mod regexp_unicode_v_sets_checked_v_set_pair_word;
+#[path = "cases/regexp_unicode_v_sets_checked_v_set_repeated_word.rs"]
+mod regexp_unicode_v_sets_checked_v_set_repeated_word;
+#[path = "cases/regexp_unicode_v_sets_checked_v_set_word.rs"]
+mod regexp_unicode_v_sets_checked_v_set_word;
+#[path = "cases/regexp_unicode_v_sets_flat_checked_v_set_pair_literal.rs"]
+mod regexp_unicode_v_sets_flat_checked_v_set_pair_literal;
+#[path = "cases/regexp_unicode_v_sets_flat_class_then_single_character_v_string.rs"]
+mod regexp_unicode_v_sets_flat_class_then_single_character_v_string;
+#[path = "cases/regexp_unicode_v_sets_flat_then_checked_v_set_pair.rs"]
+mod regexp_unicode_v_sets_flat_then_checked_v_set_pair;
+#[path = "cases/regexp_unicode_v_sets_flat_then_checked_v_set_pair_word.rs"]
+mod regexp_unicode_v_sets_flat_then_checked_v_set_pair_word;
+#[path = "cases/regexp_unicode_v_sets_flat_v_set_class_literal.rs"]
+mod regexp_unicode_v_sets_flat_v_set_class_literal;
+#[path = "cases/regexp_unicode_v_sets_flat_v_set_class_literal_word.rs"]
+mod regexp_unicode_v_sets_flat_v_set_class_literal_word;
+#[path = "cases/regexp_unicode_v_sets_flat_v_set_class_sequence.rs"]
+mod regexp_unicode_v_sets_flat_v_set_class_sequence;
+#[path = "cases/regexp_unicode_v_sets_flat_v_set_literal_checked_v_set.rs"]
+mod regexp_unicode_v_sets_flat_v_set_literal_checked_v_set;
+#[path = "cases/regexp_unicode_v_sets_flat_v_set_literal_flat_v_set.rs"]
+mod regexp_unicode_v_sets_flat_v_set_literal_flat_v_set;
+#[path = "cases/regexp_unicode_v_sets_flat_v_set_pair.rs"]
+mod regexp_unicode_v_sets_flat_v_set_pair;
+#[path = "cases/regexp_unicode_v_sets_flat_v_set_pair_literal.rs"]
+mod regexp_unicode_v_sets_flat_v_set_pair_literal;
+#[path = "cases/regexp_unicode_v_sets_flat_v_set_pair_word.rs"]
+mod regexp_unicode_v_sets_flat_v_set_pair_word;
+#[path = "cases/regexp_unicode_v_sets_literal_checked_flat_v_set_pair.rs"]
+mod regexp_unicode_v_sets_literal_checked_flat_v_set_pair;
+#[path = "cases/regexp_unicode_v_sets_literal_checked_v_set_pair.rs"]
+mod regexp_unicode_v_sets_literal_checked_v_set_pair;
+#[path = "cases/regexp_unicode_v_sets_literal_checked_v_set_pair_word.rs"]
+mod regexp_unicode_v_sets_literal_checked_v_set_pair_word;
+#[path = "cases/regexp_unicode_v_sets_literal_flat_checked_v_set_pair.rs"]
+mod regexp_unicode_v_sets_literal_flat_checked_v_set_pair;
+#[path = "cases/regexp_unicode_v_sets_literal_flat_v_set.rs"]
+mod regexp_unicode_v_sets_literal_flat_v_set;
+#[path = "cases/regexp_unicode_v_sets_literal_flat_v_set_pair.rs"]
+mod regexp_unicode_v_sets_literal_flat_v_set_pair;
+#[path = "cases/regexp_unicode_v_sets_literal_flat_v_set_word.rs"]
+mod regexp_unicode_v_sets_literal_flat_v_set_word;
+#[path = "cases/regexp_unicode_v_sets_literal_single_character_v_string_class.rs"]
+mod regexp_unicode_v_sets_literal_single_character_v_string_class;
+#[path = "cases/regexp_unicode_v_sets_mixed_v_set_class_sequence.rs"]
+mod regexp_unicode_v_sets_mixed_v_set_class_sequence;
+#[path = "cases/regexp_unicode_v_sets_raw_empty_single_character_v_string_repetition.rs"]
+mod regexp_unicode_v_sets_raw_empty_single_character_v_string_repetition;
+#[path = "cases/regexp_unicode_v_sets_single_character_v_string_class_literal.rs"]
+mod regexp_unicode_v_sets_single_character_v_string_class_literal;
+#[path = "cases/regexp_unicode_v_sets_single_character_v_string_class_pair.rs"]
+mod regexp_unicode_v_sets_single_character_v_string_class_pair;
+#[path = "cases/regexp_unicode_v_sets_single_character_v_string_operands.rs"]
+mod regexp_unicode_v_sets_single_character_v_string_operands;
+#[path = "cases/regexp_unicode_v_sets_single_character_v_string_repetition.rs"]
+mod regexp_unicode_v_sets_single_character_v_string_repetition;
+#[path = "cases/regexp_unicode_v_sets_single_character_v_string_then_flat_class.rs"]
+mod regexp_unicode_v_sets_single_character_v_string_then_flat_class;
+#[path = "cases/regexp_unicode_v_sets_single_character_v_strings.rs"]
+mod regexp_unicode_v_sets_single_character_v_strings;
+#[path = "cases/regexp_unicode_v_sets_wrapped_single_character_v_string_repetition.rs"]
+mod regexp_unicode_v_sets_wrapped_single_character_v_string_repetition;
 #[path = "cases/regexp_unicode_variation_selector_properties.rs"]
 mod regexp_unicode_variation_selector_properties;
 #[path = "cases/regexp_unicode_whitespace_properties.rs"]

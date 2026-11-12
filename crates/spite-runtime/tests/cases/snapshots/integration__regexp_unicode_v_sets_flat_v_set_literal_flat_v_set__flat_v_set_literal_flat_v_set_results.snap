@@ -1,0 +1,303 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_unicode_v_sets_flat_v_set_literal_flat_v_set.rs
+expression: rows
+---
+"(?<whole>([a]a[a]\u005cb))" flags="dvg" input_units=[97, 97, 97, 97, 33] lastIndex=0
+{
+  "matches": [
+    "aaa",
+    "aaa",
+    "aaa"
+  ],
+  "index": 1,
+  "input": "aaaa!",
+  "groups": {
+    "whole": "aaa"
+  },
+  "indices": [
+    [
+      1,
+      4
+    ],
+    [
+      1,
+      4
+    ],
+    [
+      1,
+      4
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      1,
+      4
+    ]
+  },
+  "lastIndex": 4,
+  "source": "(?<whole>([a]a[a]\\b))"
+}
+
+"(?<whole>([a]a[a]\u005cb))" flags="dvy" input_units=[97, 97, 97, 97, 33] lastIndex=0
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"(?<whole>([a]a[a]\u005cb))" flags="dvy" input_units=[97, 97, 97, 97, 33] lastIndex=1
+{
+  "matches": [
+    "aaa",
+    "aaa",
+    "aaa"
+  ],
+  "index": 1,
+  "input": "aaaa!",
+  "groups": {
+    "whole": "aaa"
+  },
+  "indices": [
+    [
+      1,
+      4
+    ],
+    [
+      1,
+      4
+    ],
+    [
+      1,
+      4
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      1,
+      4
+    ]
+  },
+  "lastIndex": 4,
+  "source": "(?<whole>([a]a[a]\\b))"
+}
+
+"^(?<whole>(\u005cB[\u005cp{Any}]\u005c$[\u005cp{Any}]\u005cb))$" flags="divg" input_units=[33, 36, 8490] lastIndex=0
+{
+  "matches": [
+    "!$K",
+    "!$K",
+    "!$K"
+  ],
+  "index": 0,
+  "input": "!$K",
+  "groups": {
+    "whole": "!$K"
+  },
+  "indices": [
+    [
+      0,
+      3
+    ],
+    [
+      0,
+      3
+    ],
+    [
+      0,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      0,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "^(?<whole>(\\B[\\p{Any}]\\$[\\p{Any}]\\b))$"
+}
+
+"(?<whole>([]b[c]))" flags="dvg" input_units=[97, 98, 99, 33] lastIndex=0
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"(?<whole>([a]b[^c]))" flags="dvg" input_units=[97, 98, 120, 33] lastIndex=0
+{
+  "matches": [
+    "abx",
+    "abx",
+    "abx"
+  ],
+  "index": 0,
+  "input": "abx!",
+  "groups": {
+    "whole": "abx"
+  },
+  "indices": [
+    [
+      0,
+      3
+    ],
+    [
+      0,
+      3
+    ],
+    [
+      0,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      0,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<whole>([a]b[^c]))"
+}
+
+"(?<whole>(\u005cb[\u005cu{1f600}]\u005cu{1f601}[\u005cu{1f600}]\u005cB))" flags="dvy" input_units=[65, 55357, 56832, 55357, 56833, 55357, 56832, 33] lastIndex=2
+{
+  "matches": [
+    "😀😁😀",
+    "😀😁😀",
+    "😀😁😀"
+  ],
+  "index": 1,
+  "input": "A😀😁😀!",
+  "groups": {
+    "whole": "😀😁😀"
+  },
+  "indices": [
+    [
+      1,
+      7
+    ],
+    [
+      1,
+      7
+    ],
+    [
+      1,
+      7
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      1,
+      7
+    ]
+  },
+  "lastIndex": 7,
+  "source": "(?<whole>(\\b[\\u{1f600}]\\u{1f601}[\\u{1f600}]\\B))"
+}
+
+"(?<whole>(\u005cb[\u005cuD800]\u005cuD800[\u005cuD800]\u005cB))" flags="dvg" input_units=[65, 55296, 55296, 55296, 33] lastIndex=0
+{
+  "matches": [
+    "\ud800\ud800\ud800",
+    "\ud800\ud800\ud800",
+    "\ud800\ud800\ud800"
+  ],
+  "index": 1,
+  "input": "A\ud800\ud800\ud800!",
+  "groups": {
+    "whole": "\ud800\ud800\ud800"
+  },
+  "indices": [
+    [
+      1,
+      4
+    ],
+    [
+      1,
+      4
+    ],
+    [
+      1,
+      4
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      1,
+      4
+    ]
+  },
+  "lastIndex": 4,
+  "source": "(?<whole>(\\b[\\uD800]\\uD800[\\uD800]\\B))"
+}
+
+"^(?<whole>(\u005cb[a]b[c]\u005cb))$" flags="dvmg" input_units=[120, 13, 10, 97, 98, 99, 8232, 97, 98, 120] lastIndex=0
+{
+  "matches": [
+    "abc",
+    "abc",
+    "abc"
+  ],
+  "index": 3,
+  "input": "x\r\nabc abx",
+  "groups": {
+    "whole": "abc"
+  },
+  "indices": [
+    [
+      3,
+      6
+    ],
+    [
+      3,
+      6
+    ],
+    [
+      3,
+      6
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      3,
+      6
+    ]
+  },
+  "lastIndex": 6,
+  "source": "^(?<whole>(\\b[a]b[c]\\b))$"
+}
+
+"(?<whole>(\u005cb[a]b[c]))" flags="dvg" input_units=[97, 98, 99, 120] lastIndex=0
+{
+  "matches": [
+    "abc",
+    "abc",
+    "abc"
+  ],
+  "index": 0,
+  "input": "abcx",
+  "groups": {
+    "whole": "abc"
+  },
+  "indices": [
+    [
+      0,
+      3
+    ],
+    [
+      0,
+      3
+    ],
+    [
+      0,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      0,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<whole>(\\b[a]b[c]))"
+}

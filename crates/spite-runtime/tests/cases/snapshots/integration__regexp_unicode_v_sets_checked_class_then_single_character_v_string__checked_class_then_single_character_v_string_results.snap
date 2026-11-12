@@ -1,0 +1,303 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_unicode_v_sets_checked_class_then_single_character_v_string.rs
+expression: rows
+---
+"(?<whole>([[a]][\\q{b}]))" flags="dvg" input_units=[97, 97, 98, 33] lastIndex=0
+{
+  "matches": [
+    "ab",
+    "ab",
+    "ab"
+  ],
+  "index": 1,
+  "input": "aab!",
+  "groups": {
+    "whole": "ab"
+  },
+  "indices": [
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      1,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<whole>([[a]][\\q{b}]))"
+}
+
+"(?<whole>([a&&a][\\q{a}]\\b))" flags="dvg" input_units=[97, 97, 97, 33] lastIndex=0
+{
+  "matches": [
+    "aa",
+    "aa",
+    "aa"
+  ],
+  "index": 1,
+  "input": "aaa!",
+  "groups": {
+    "whole": "aa"
+  },
+  "indices": [
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      1,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<whole>([a&&a][\\q{a}]\\b))"
+}
+
+"(?<whole>([a&&a][\\q{a}]\\b))" flags="dvy" input_units=[97, 97, 97, 33] lastIndex=0
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"(?<whole>([a&&a][\\q{a}]\\b))" flags="dvy" input_units=[97, 97, 97, 33] lastIndex=1
+{
+  "matches": [
+    "aa",
+    "aa",
+    "aa"
+  ],
+  "index": 1,
+  "input": "aaa!",
+  "groups": {
+    "whole": "aa"
+  },
+  "indices": [
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      1,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<whole>([a&&a][\\q{a}]\\b))"
+}
+
+"(?<whole>([s&&s][\\q{K}&&k]))" flags="divg" input_units=[33, 383, 8490, 33] lastIndex=0
+{
+  "matches": [
+    "ſK",
+    "ſK",
+    "ſK"
+  ],
+  "index": 1,
+  "input": "!ſK!",
+  "groups": {
+    "whole": "ſK"
+  },
+  "indices": [
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      1,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<whole>([s&&s][\\q{K}&&k]))"
+}
+
+"(?<whole>(\\B[[\\p{Any}]][^\\q{K|s}]\\B))" flags="divg" input_units=[8490, 383, 65, 36] lastIndex=0
+{
+  "matches": [
+    "A$",
+    "A$",
+    "A$"
+  ],
+  "index": 2,
+  "input": "KſA$",
+  "groups": {
+    "whole": "A$"
+  },
+  "indices": [
+    [
+      2,
+      4
+    ],
+    [
+      2,
+      4
+    ],
+    [
+      2,
+      4
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      2,
+      4
+    ]
+  },
+  "lastIndex": 4,
+  "source": "(?<whole>(\\B[[\\p{Any}]][^\\q{K|s}]\\B))"
+}
+
+"(?<whole>(\\b[[\\u{1f600}]][\\q{\\uD83D\\uDE80|x}--x]\\B))" flags="dvy" input_units=[65, 55357, 56832, 55357, 56960, 33] lastIndex=2
+{
+  "matches": [
+    "😀🚀",
+    "😀🚀",
+    "😀🚀"
+  ],
+  "index": 1,
+  "input": "A😀🚀!",
+  "groups": {
+    "whole": "😀🚀"
+  },
+  "indices": [
+    [
+      1,
+      5
+    ],
+    [
+      1,
+      5
+    ],
+    [
+      1,
+      5
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      1,
+      5
+    ]
+  },
+  "lastIndex": 5,
+  "source": "(?<whole>(\\b[[\\u{1f600}]][\\q{\\uD83D\\uDE80|x}--x]\\B))"
+}
+
+"(?<whole>([[\\\\]][\\q{\\uD800}]))" flags="dvg" input_units=[65, 92, 55296, 66] lastIndex=0
+{
+  "matches": [
+    "\\\ud800",
+    "\\\ud800",
+    "\\\ud800"
+  ],
+  "index": 1,
+  "input": "A\\\ud800B",
+  "groups": {
+    "whole": "\\\ud800"
+  },
+  "indices": [
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      1,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<whole>([[\\\\]][\\q{\\uD800}]))"
+}
+
+"(?<whole>(^[[\\$]][\\q{\\]|\\\\|\\[}]))" flags="dgmv" input_units=[122, 120, 121, 13, 10, 36, 93, 116, 97, 105, 108, 8232] lastIndex=0
+{
+  "matches": [
+    "$]",
+    "$]",
+    "$]"
+  ],
+  "index": 5,
+  "input": "zxy\r\n$]tail ",
+  "groups": {
+    "whole": "$]"
+  },
+  "indices": [
+    [
+      5,
+      7
+    ],
+    [
+      5,
+      7
+    ],
+    [
+      5,
+      7
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      5,
+      7
+    ]
+  },
+  "lastIndex": 7,
+  "source": "(?<whole>(^[[\\$]][\\q{\\]|\\\\|\\[}]))"
+}
+
+"(?<whole>([a--a][\\q{b}]))" flags="dvg" input_units=[97, 98, 33] lastIndex=0
+{
+  "match": null,
+  "lastIndex": 0
+}

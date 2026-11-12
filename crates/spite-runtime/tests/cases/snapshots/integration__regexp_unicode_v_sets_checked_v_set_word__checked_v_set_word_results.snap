@@ -1,0 +1,333 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_unicode_v_sets_checked_v_set_word.rs
+expression: rows
+---
+"(?<whole>(\u005cb[[K\u017f\u03b1]]\u005cb))" flags="dvg" input="\u212a \u017f \u03b1" lastIndex=0
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"(?<whole>(\u005cb[[K\u017f\u03b1]]\u005cb))" flags="divg" input="\u212a \u017f \u03b1" lastIndex=0
+{
+  "matches": [
+    "K",
+    "K",
+    "K"
+  ],
+  "index": 0,
+  "input": "K ſ α",
+  "groups": {
+    "whole": "K"
+  },
+  "indices": [
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      1
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      0,
+      1
+    ]
+  },
+  "lastIndex": 1,
+  "source": "(?<whole>(\\b[[Kſα]]\\b))"
+}
+
+"\u005cB(?<whole>([[K\u017f\u03b1]]))\u005cB" flags="dvg" input="\u212a \u017f \u03b1" lastIndex=0
+{
+  "matches": [
+    "ſ",
+    "ſ",
+    "ſ"
+  ],
+  "index": 2,
+  "input": "K ſ α",
+  "groups": {
+    "whole": "ſ"
+  },
+  "indices": [
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      2,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "\\B(?<whole>([[Kſα]]))\\B"
+}
+
+"\u005cB(?<whole>([[K\u017f\u03b1]]))\u005cB" flags="divg" input="\u212a \u017f \u03b1" lastIndex=0
+{
+  "matches": [
+    "α",
+    "α",
+    "α"
+  ],
+  "index": 4,
+  "input": "K ſ α",
+  "groups": {
+    "whole": "α"
+  },
+  "indices": [
+    [
+      4,
+      5
+    ],
+    [
+      4,
+      5
+    ],
+    [
+      4,
+      5
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      4,
+      5
+    ]
+  },
+  "lastIndex": 5,
+  "source": "\\B(?<whole>([[Kſα]]))\\B"
+}
+
+"(?<whole>(\u005cb[[\u005cp{Any}]]\u005cb))" flags="dvy" input="A\ud83d\ude00B" lastIndex=2
+{
+  "matches": [
+    "😀",
+    "😀",
+    "😀"
+  ],
+  "index": 1,
+  "input": "A😀B",
+  "groups": {
+    "whole": "😀"
+  },
+  "indices": [
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      1,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<whole>(\\b[[\\p{Any}]]\\b))"
+}
+
+"(?<whole>(\u005cb[[\u005cp{Any}]]\u005cb))" flags="divy" input="A\ud83d\ude00B" lastIndex=2
+{
+  "matches": [
+    "😀",
+    "😀",
+    "😀"
+  ],
+  "index": 1,
+  "input": "A😀B",
+  "groups": {
+    "whole": "😀"
+  },
+  "indices": [
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      1,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<whole>(\\b[[\\p{Any}]]\\b))"
+}
+
+"^(?<whole>(\u005cb[[K]]\u005cb))$" flags="dvmg" input="x\u000d\u000a\u212a\u2028K\u2029" lastIndex=0
+{
+  "matches": [
+    "K",
+    "K",
+    "K"
+  ],
+  "index": 5,
+  "input": "x\r\nK K ",
+  "groups": {
+    "whole": "K"
+  },
+  "indices": [
+    [
+      5,
+      6
+    ],
+    [
+      5,
+      6
+    ],
+    [
+      5,
+      6
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      5,
+      6
+    ]
+  },
+  "lastIndex": 6,
+  "source": "^(?<whole>(\\b[[K]]\\b))$"
+}
+
+"^(?<whole>(\u005cb[[K]]\u005cb))$" flags="divmg" input="x\u000d\u000a\u212a\u2028K\u2029" lastIndex=0
+{
+  "matches": [
+    "K",
+    "K",
+    "K"
+  ],
+  "index": 3,
+  "input": "x\r\nK K ",
+  "groups": {
+    "whole": "K"
+  },
+  "indices": [
+    [
+      3,
+      4
+    ],
+    [
+      3,
+      4
+    ],
+    [
+      3,
+      4
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      3,
+      4
+    ]
+  },
+  "lastIndex": 4,
+  "source": "^(?<whole>(\\b[[K]]\\b))$"
+}
+
+"(?<whole>(\u005cb[[\u005cb]]\u005cB))" flags="dvg" input="A\u0008!" lastIndex=0
+{
+  "matches": [
+    "\b",
+    "\b",
+    "\b"
+  ],
+  "index": 1,
+  "input": "A\b!",
+  "groups": {
+    "whole": "\b"
+  },
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      2
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      1,
+      2
+    ]
+  },
+  "lastIndex": 2,
+  "source": "(?<whole>(\\b[[\\b]]\\B))"
+}
+
+"(?<whole>(\u005cb[[\u005cb]]\u005cB))" flags="divg" input="A\u0008!" lastIndex=0
+{
+  "matches": [
+    "\b",
+    "\b",
+    "\b"
+  ],
+  "index": 1,
+  "input": "A\b!",
+  "groups": {
+    "whole": "\b"
+  },
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      2
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      1,
+      2
+    ]
+  },
+  "lastIndex": 2,
+  "source": "(?<whole>(\\b[[\\b]]\\B))"
+}
