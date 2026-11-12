@@ -147,7 +147,7 @@ fn generic_consumers_and_empty_advancement_share_anchored_repetition() {
 }
 
 #[test]
-fn unsupported_bodies_reject_whole_plans_with_ordered_host_effects() {
+fn pattern_variants_match_reference_results() {
     for source in [
         r"/(?:(?:((?:(?:^a+[b]+$){2}){2}){2})|){2,3}/.test('ab')",
         r"/(?:(?:^(ab|a)+$)|){2,3}/.test('a')",

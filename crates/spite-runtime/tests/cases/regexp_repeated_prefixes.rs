@@ -149,7 +149,7 @@ fn escaped_class_delimiters_dotall_case_and_surrogates_keep_actual_prefix_width(
 }
 
 #[test]
-fn optional_host_work_aborts_and_remaining_variable_group_features_are_unsupported() {
+fn pattern_variants_match_reference_results() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(100000),
         ..Limits::default()

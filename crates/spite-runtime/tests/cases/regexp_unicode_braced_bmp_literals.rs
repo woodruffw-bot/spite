@@ -208,7 +208,7 @@ fn unicode_braced_bmp_opted_work_aborts_and_other_bodies_remain_distinct() {
 }
 
 #[test]
-fn unicode_braced_bmp_former_complete_programs_and_ordered_calls() {
+fn unicode_braced_bmp_script_execution_and_coercion_order() {
     let mut rows = String::new();
     for source in [
         r"/(?:\u{61})/u.test('a')",

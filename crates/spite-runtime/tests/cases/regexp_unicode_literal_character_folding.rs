@@ -245,7 +245,7 @@ fn unicode_literal_character_folding_opted_work_and_additional_compositions() {
 }
 
 #[test]
-fn original_unicode_literal_character_folding_complete_programs() {
+fn unicode_literal_character_folding_script_execution() {
     let mut rows = String::new();
     for source in [
         r"/^a$/u.test('a')",

@@ -245,7 +245,7 @@ fn explicit_work_abort_preserves_last_index_and_skips_callbacks() {
 }
 
 #[test]
-fn larger_required_nullable_counts_backward_bodies_and_unicode_remain_pending() {
+fn pattern_variants_match_reference_results() {
     for source in [
         "new RegExp('(a|){2}').exec('aa')",
         "new RegExp('((a?)|b){2,3}').exec('bbc')",

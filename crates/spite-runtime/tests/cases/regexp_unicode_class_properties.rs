@@ -264,7 +264,7 @@ fn unicode_class_property_opted_work_and_remaining_sets() {
 }
 
 #[test]
-fn original_unicode_class_property_complete_programs() {
+fn unicode_class_property_script_execution() {
     let mut rows = String::new();
     for source in [
         r"/([\p{ASCII}])/iu.exec('a')",

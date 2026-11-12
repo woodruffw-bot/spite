@@ -99,7 +99,7 @@ fn copies_many_flat_alternatives_and_original_plans_survive_collection() {
 }
 
 #[test]
-fn unsupported_alternatives_captures_nested_choices_and_unicode_remain_host_gaps() {
+fn pattern_variants_match_reference_results() {
     for source in [
         r"/(?:(?:((?:(?:a|[b]+[a]+){2}){2}){2})|){2,3}/.test('a')",
         r"/(?:(?:((?:(?:a|b*[a]+){2}){2}){2})|){2,3}/.test('a')",

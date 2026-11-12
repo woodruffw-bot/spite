@@ -261,7 +261,7 @@ fn unicode_18_class_cross_plane_folding_keeps_original_widths() {
 }
 
 #[test]
-fn original_unicode_class_folding_complete_programs() {
+fn unicode_class_folding_script_execution() {
     let mut rows = String::new();
     for source in [
         r"/[a]/iu.exec('a')",

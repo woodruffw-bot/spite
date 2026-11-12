@@ -406,7 +406,7 @@ fn generic_match_search_replace_split_and_matchall_use_native_literal_execution(
 }
 
 #[test]
-fn unsupported_patterns_remain_host_failures_after_ordered_coercions() {
+fn complex_patterns_preserve_coercion_order() {
     for (source, flags) in [
         ("(?:(?:(?:(?:a(a|bc)){2}){2})|){2,3}", ""),
         ("(?:(?:((?:(?:a|[b]+[a]+){2}){2}){2})|){2,3}", ""),
@@ -443,7 +443,7 @@ fn opted_in_work_abort_remains_a_host_failure_and_skips_javascript_cleanup() {
 }
 
 #[test]
-fn shared_backend_copies_captures_and_unicode_indices_survive_collection() {
+fn copied_patterns_preserve_captures_and_indices_across_collection() {
     let mut realm = Realm::default();
     assert_eq!(realm.eval(r#"
         var source = '('.repeat(64) + '(?<run>a+)' + ')'.repeat(64),
@@ -474,7 +474,7 @@ fn shared_backend_copies_captures_and_unicode_indices_survive_collection() {
 }
 
 #[test]
-fn shared_backend_wide_flat_alternatives_keep_all_named_capture_slots() {
+fn wide_alternatives_preserve_named_capture_slots() {
     let mut realm = Realm::default();
     realm
         .eval("var r=new RegExp('(b)|'.repeat(10000)+'(?<x>a)\\\\k<x>','d'),copy=new RegExp(r)")
@@ -488,7 +488,7 @@ fn shared_backend_wide_flat_alternatives_keep_all_named_capture_slots() {
 }
 
 #[test]
-fn shared_backend_huge_nullable_work_abort_preserves_last_index_and_skips_handlers() {
+fn nullable_pattern_work_abort_preserves_last_index_and_skips_handlers() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30_000),
         ..Limits::default()

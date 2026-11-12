@@ -195,7 +195,7 @@ fn explicit_skipped_reference_work_aborts_before_last_index_and_handlers() {
 }
 
 #[test]
-fn nonzero_consuming_references_outside_optional_reads_unproved_choices_and_unicode_are_pending() {
+fn pattern_variants_match_reference_results() {
     for source in [
         r"/(?<=((a)\2){0,1})b/.exec('aab')",
         r"/(?<=((\2)a){1,2})b/.exec('ab')",

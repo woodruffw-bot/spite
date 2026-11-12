@@ -63,7 +63,7 @@ fn count_one_captured_atoms_result_snapshot() {
     insta::assert_snapshot!(rows);
 }
 #[test]
-fn original_gap_capture_effects_names_and_both_directions_keep_exact_ranges() {
+fn gap_captures_preserve_named_ranges_in_both_directions() {
     assert!(matches!(
         Realm::default().eval(r"/(?<=a(?=(b)(\1){1}))b/.exec('abb')"),
         Ok(Value::Object(_))
@@ -155,7 +155,7 @@ fn opted_in_work_abort_keeps_last_index_and_bypasses_handlers() {
     );
 }
 #[test]
-fn other_counts_partial_reference_spans_and_unicode_stay_pending() {
+fn pattern_variants_match_reference_results() {
     for source in [
         r"/(?<=a(?=(b)(\1){2,3}))b/.exec('abbb')",
         r"/(?<=a(?=(b)(\1){1,2}))b/.exec('abbb')",

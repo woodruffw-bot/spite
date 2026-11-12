@@ -1,10 +1,8 @@
 //! Promise.any fulfillment, ordered intrinsic AggregateErrors and guarded rejections.
 
-use crate::common::UnavailableHostRealm;
-use crate::common::drain_promise_jobs;
-use spite_runtime::{Error, Realm, Value};
+use crate::common::{UnavailableHostRealm, assert_true, drain_promise_jobs};
 
-use crate::common::assert_true;
+use spite_runtime::{Error, Realm, Value};
 
 #[test]
 fn first_fulfillment_wins_without_waiting_for_pending_inputs() {

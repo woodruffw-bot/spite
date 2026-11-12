@@ -1,10 +1,8 @@
 //! Promise.race subscription ordering, iterator cleanup and host failures.
 
-use crate::common::UnavailableHostRealm;
-use crate::common::drain_promise_jobs;
-use spite_runtime::{Error, Limits, Realm, Value};
+use crate::common::{UnavailableHostRealm, assert_true, drain_promise_jobs};
 
-use crate::common::assert_true;
+use spite_runtime::{Error, Limits, Realm, Value};
 
 #[test]
 fn capability_resolve_lookup_and_all_subscriptions_are_ordered_and_generic() {

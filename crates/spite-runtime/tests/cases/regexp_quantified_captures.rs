@@ -172,7 +172,7 @@ fn flags_and_surrogate_units_capture_original_input_units() {
 }
 
 #[test]
-fn unsupported_group_bodies_and_captured_suffixes_remain_host_failures() {
+fn pattern_variants_match_reference_results() {
     for source in [
         r"/(?:(?:(a[b]|c)+)|){2,3}/.test('ab')",
         r"/(?:(?:(?:(?:(a+[b]+)){2}){2})|){2,3}/.test('ab')",

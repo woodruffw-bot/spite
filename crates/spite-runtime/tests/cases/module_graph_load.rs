@@ -1,7 +1,7 @@
 //! Host-provided graph loading and stable Module request identities (16.2.1).
 
-use crate::common::assert_true_in;
-use crate::common::checkpoint_and_collect;
+use crate::common::{assert_true_in, checkpoint_and_collect};
+
 use spite_core::{JsString, Span};
 use spite_runtime::{Error, Realm};
 

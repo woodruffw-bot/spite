@@ -160,7 +160,7 @@ fn generic_consumers_callbacks_and_intrinsic_results_keep_line_assertion_slots()
 }
 
 #[test]
-fn optional_work_counts_full_sticky_suffixes_and_unsupported_repeated_atoms() {
+fn pattern_variants_match_reference_results() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(100000),
         ..Limits::default()

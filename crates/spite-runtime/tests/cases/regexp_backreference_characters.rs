@@ -127,7 +127,7 @@ fn generic_consumers_and_stateful_exec_use_character_reference_matches() {
 }
 
 #[test]
-fn remaining_reference_compositions_keep_explicit_unsupported_outcomes() {
+fn pattern_variants_match_reference_results() {
     for source in [
         r"/(?:(?:(?:([ab])(?:\1)+){2})|){2,3}/.test('aa')",
         r"/(?:(?:(?:(a|b)(?:\1)+){2})|){2,3}/.test('aa')",

@@ -179,7 +179,7 @@ fn generic_consumers_callbacks_and_intrinsic_arrays_keep_body_capture_layout() {
 }
 
 #[test]
-fn optional_work_abort_and_complete_unsupported_prefixes_remain_distinct() {
+fn pattern_variants_match_reference_results() {
     for source in [
         r"/(?:(?:(?:(?:([a])b+c+){2}){2})|){2,3}/.test('ab')",
         r"/(?:(?:((?:(?:(?:[a])b+c+){2}){2}){2})|){2,3}/.test('ab')",

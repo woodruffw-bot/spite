@@ -161,7 +161,7 @@ fn explicit_search_work_aborts_before_last_index_and_language_handlers() {
 }
 
 #[test]
-fn pending_reference_compositions_match_reference_results_and_failed_matches_return_null() {
+fn pattern_variants_match_reference_results() {
     for source in [
         r"/(?:(?:(?:(?<x>a)(?:\k<x>)+){2})|){2,3}/.test('aa')",
         r"/(?:(?:(?:(?<x>a)|(?<x>b)(?:\k<x>)+){2})|){2,3}/.test('bb')",

@@ -1,9 +1,7 @@
 //! Promise reaction scheduling, species and traced captures (27.2.5.4).
 
-use crate::common::drain_promise_jobs;
+use crate::common::{assert_true, drain_promise_jobs};
 use spite_runtime::{Error, PromiseJobOutcome, Realm, Value};
-
-use crate::common::assert_true;
 
 #[test]
 fn pending_reactions_run_asynchronously_in_registration_order_and_append_children() {

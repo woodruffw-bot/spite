@@ -260,7 +260,7 @@ fn unicode_literal_word_boundaries_opted_work_and_remaining_compositions() {
 }
 
 #[test]
-fn unicode_literal_word_boundary_former_whole_programs_snapshot() {
+fn unicode_literal_word_boundary_script_results_snapshot() {
     let mut rows = String::new();
     for source in [r"/\b(A)\b/u.exec('A')", r"/\bAB\b/v.exec('AB')"] {
         let mut realm = Realm::default();

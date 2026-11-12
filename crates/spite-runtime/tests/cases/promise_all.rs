@@ -1,10 +1,8 @@
 //! Ordered Promise.all aggregation, guarded callbacks and traced result lists.
 
-use crate::common::UnavailableHostRealm;
-use crate::common::drain_promise_jobs;
-use spite_runtime::{Error, Limits, Realm, Value};
+use crate::common::{UnavailableHostRealm, assert_true, drain_promise_jobs};
 
-use crate::common::assert_true;
+use spite_runtime::{Error, Limits, Realm, Value};
 
 #[test]
 fn results_follow_input_order_and_wait_for_all_values_including_empty_input() {

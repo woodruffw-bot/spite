@@ -225,7 +225,7 @@ fn unicode_repeated_atom_alternatives_opt_in_work_failure() {
 }
 
 #[test]
-fn unicode_repeated_atom_alternatives_former_whole_programs_snapshot() {
+fn unicode_repeated_atom_alternatives_script_results_snapshot() {
     let mut rows = String::new();
     for source in [
         r"/(a|b)+/u.test('ab')",

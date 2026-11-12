@@ -135,7 +135,7 @@ fn generic_string_consumers_use_the_same_capture_results() {
 }
 
 #[test]
-fn opted_in_host_aborts_and_unsupported_bodies_remain_distinct() {
+fn pattern_variants_match_reference_results() {
     for source in [
         r"/(?:(?:((?:(?:(?:a|bc)+)){2}){2})|){2,3}/.test('a')",
         r"/(?:(?:(?:(?:(?:(a+[b]+))){2}){2})|){2,3}/.test('ab')",

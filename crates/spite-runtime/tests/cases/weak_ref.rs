@@ -1,6 +1,6 @@
 //! WeakRef construction, real-slot branding, and explicit host checkpoints (26.1).
 
-use crate::common::REALM_ENTRIES;
+use crate::common::{REALM_ENTRIES, assert_true};
 use spite_core::{JsString, WellKnownSymbol};
 use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
 
@@ -22,8 +22,6 @@ fn child_realm_targets_share_the_agents_kept_object_checkpoint() {
     realm.collect(usize::MAX).unwrap();
     assert_eq!(realm.eval("reference.deref()"), Ok(Value::Undefined));
 }
-
-use crate::common::assert_true;
 
 fn type_error(source: &str) {
     let result = Realm::default().eval(source);

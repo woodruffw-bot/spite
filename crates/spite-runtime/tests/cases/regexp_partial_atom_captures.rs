@@ -163,7 +163,7 @@ fn dotall_pinned_case_and_surrogate_atoms_keep_actual_utf16_widths() {
 }
 
 #[test]
-fn optional_work_aborts_and_remaining_variable_features_are_unsupported() {
+fn pattern_variants_match_reference_results() {
     for source in [
         r"/(?:(?:(?:(?:(a+)(b)+){2}){2})|){2,3}/.test('ab')",
         r"/(?:(?:(?:(?:(a+b+)c){2}){2})|){2,3}/.test('abc')",

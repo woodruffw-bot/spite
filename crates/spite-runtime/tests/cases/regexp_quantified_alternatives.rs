@@ -136,7 +136,7 @@ fn copied_variable_plans_and_global_capture_layouts_survive_collection() {
 }
 
 #[test]
-fn nested_choices_quantified_captures_and_unsupported_branches_reject_the_whole_plan() {
+fn pattern_variants_match_reference_results() {
     for source in [
         r"/(?:(?:((?:(?:a+[b]+|a){2}){2}){2})|){2,3}/.test('a')",
         r"/(?:(?:(ab|c)+|b)|){2,3}/.test('b')",

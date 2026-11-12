@@ -150,7 +150,7 @@ fn generic_consumers_callbacks_and_intrinsic_arrays_share_branch_layout() {
 }
 
 #[test]
-fn optional_work_abort_and_complete_unsupported_bodies_remain_distinct() {
+fn pattern_variants_match_reference_results() {
     for source in [
         r"/(?:(?:(?:(?:(a|bc)|x){2}){2})|){2,3}/.test('a')",
         r"/(?:(?:(a+b)*|x)|){2,3}/.test('ab')",

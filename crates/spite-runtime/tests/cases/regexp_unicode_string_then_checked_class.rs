@@ -235,7 +235,7 @@ fn earlier_unsupported_controls_now_complete_language_finalizers() {
 }
 
 #[test]
-fn unsupported_syntax_and_parser_early_errors_remain_distinct() {
+fn pattern_variants_match_reference_results() {
     for source in [
         r"/([\q{a}])[[b]]/v.test('ab')",
         r"/[\q{a}]([[b]])/v.test('ab')",

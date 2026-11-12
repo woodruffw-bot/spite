@@ -252,7 +252,7 @@ fn explicit_work_abort_keeps_last_index_and_bypasses_language_handlers() {
     );
 }
 #[test]
-fn unproved_counts_choices_owner_reads_and_unicode_remain_pending() {
+fn pattern_variants_match_reference_results() {
     for source in [
         r"/(?<=a(?=(b{1,2})\1))b/.exec('abbbb')",
         r"/(?<=(\1{1,2}a{1,2}))a/.exec('a')",

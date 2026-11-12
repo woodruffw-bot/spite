@@ -1,7 +1,7 @@
 //! Resource early errors and remaining await-using host boundaries.
 
-use crate::common::UnavailableHostRealm;
-use crate::common::assert_true;
+use crate::common::{UnavailableHostRealm, assert_true};
+
 use spite_runtime::{Error, Realm, Value};
 
 #[test]

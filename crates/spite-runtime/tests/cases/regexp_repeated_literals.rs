@@ -184,7 +184,7 @@ fn generic_consumers_callbacks_and_intrinsic_results_share_repeated_capture_slot
 }
 
 #[test]
-fn optional_host_work_covers_sticky_repetitions_and_remaining_groups_are_unsupported() {
+fn pattern_variants_match_reference_results() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(100000),
         ..Limits::default()

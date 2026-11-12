@@ -233,7 +233,7 @@ fn unicode_character_assertions_opted_work_and_unproved_compositions() {
 }
 
 #[test]
-fn original_unicode_single_atom_anchor_complete_program() {
+fn unicode_single_atom_anchor_script_execution() {
     let source = r"/^./u.exec('a')";
     let Value::String(result) = Realm::default()
         .eval(&format!(

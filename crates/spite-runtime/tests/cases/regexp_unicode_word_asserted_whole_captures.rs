@@ -146,7 +146,7 @@ fn unicode_word_asserted_whole_captures_single_runes_empty_counts_and_aliases() 
 }
 
 #[test]
-fn unicode_word_asserted_whole_captures_former_whole_programs_snapshot() {
+fn unicode_word_asserted_whole_captures_script_results_snapshot() {
     let mut rows = String::new();
     for source in [
         r"/(\b)\b/u.test('A')",

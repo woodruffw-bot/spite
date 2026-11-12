@@ -601,7 +601,7 @@ fn unicode_latin_script_repetitions_retain_last_capture_and_outside_words() {
 }
 
 #[test]
-fn unicode_latin_script_former_direct_eval_context_executes_normally() {
+fn unicode_latin_script_direct_eval_preserves_surrounding_execution() {
     assert_true(r"(/([\p{Script=Latin}])/iu.exec('a'))!==null");
     assert_true(r"(/(\p{Script=Latin})(.)/v.exec('Aa'))!==null");
     assert_true(r"(/[\p{Script=Latin}]/iv.exec('a'))!==null");

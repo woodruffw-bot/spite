@@ -1,8 +1,7 @@
 //! Async lexical closures, intrinsic metadata and Promise-returning arrow calls.
 
-use crate::common::UnavailableHostRealm;
-use crate::common::assert_true;
-use crate::common::drain_promise_jobs;
+use crate::common::{UnavailableHostRealm, assert_true, drain_promise_jobs};
+
 use spite_runtime::{Error, Realm, Value};
 
 #[test]

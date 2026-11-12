@@ -1,8 +1,7 @@
 //! Serialized async-generator requests and shared source suspension (27.6.3).
 
-use crate::common::assert_true_in;
-use crate::common::checkpoint_and_collect;
-use crate::common::drain_promise_jobs;
+use crate::common::{assert_true_in, checkpoint_and_collect, drain_promise_jobs};
+
 use spite_runtime::{Error, Limits, Realm};
 
 #[test]

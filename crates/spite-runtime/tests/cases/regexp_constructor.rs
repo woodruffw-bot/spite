@@ -502,7 +502,7 @@ fn construction_and_source_have_no_default_size_limit_and_opted_in_output_limits
 }
 
 #[test]
-fn shared_backend_native_depth_and_counter_limits_are_host_failures() {
+fn native_matcher_depth_and_counter_limits_are_host_failures() {
     for program in [
         "new RegExp('('.repeat(512)+'a'+')'.repeat(512))",
         "new RegExp('(a?){888888888888888888888888888888}')",

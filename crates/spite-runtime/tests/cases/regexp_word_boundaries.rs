@@ -178,7 +178,7 @@ fn generic_consumers_advance_empty_results_and_preserve_callback_slots() {
 }
 
 #[test]
-fn optional_work_and_remaining_unsupported_assertion_forms_keep_host_ordering() {
+fn pattern_variants_match_reference_results() {
     for source in [
         r"/(?:(?:((?:(?:a+^b+){2}){2}){2})|){2,3}/.test('ab')",
         r"/(?:(?:\b(ab|a)+\b)|){2,3}/.test('ab')",

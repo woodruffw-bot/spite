@@ -201,7 +201,7 @@ fn unicode_nullable_alternative_opt_in_work_aborts_before_mutation() {
 }
 
 #[test]
-fn unicode_nullable_alternative_former_whole_programs_snapshot() {
+fn unicode_nullable_alternative_script_results_snapshot() {
     let mut rows = String::new();
     for source in [
         "new RegExp('(a|)*','u').exec('aa')",

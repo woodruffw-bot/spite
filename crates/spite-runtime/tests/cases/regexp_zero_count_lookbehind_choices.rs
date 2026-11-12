@@ -194,7 +194,7 @@ fn explicit_skipped_choice_work_aborts_before_last_index_and_handlers() {
 }
 
 #[test]
-fn nonzero_unequal_choices_mixed_empty_paths_unproved_bodies_and_unicode_are_pending() {
+fn pattern_variants_match_reference_results() {
     for source in [
         r"/(?<=(a|aa){1})b/.exec('ab')",
         r"/(?<=(a|aa){0,1})b/.exec('ab')",

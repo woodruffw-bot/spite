@@ -1,8 +1,7 @@
 //! Labelled source statements and direct iteration label chains.
 
-use crate::common::assert_true_in;
-use crate::common::checkpoint_and_collect;
-use crate::common::drain_promise_jobs;
+use crate::common::{assert_true_in, checkpoint_and_collect, drain_promise_jobs};
+
 use spite_runtime::Realm;
 
 #[test]

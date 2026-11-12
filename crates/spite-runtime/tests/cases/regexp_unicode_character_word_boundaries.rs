@@ -257,7 +257,7 @@ fn unicode_character_word_boundaries_opted_work_and_remaining_compositions() {
 }
 
 #[test]
-fn unicode_character_word_boundary_former_whole_program_snapshot() {
+fn unicode_character_word_boundary_script_results_snapshot() {
     let mut rows = String::new();
     for source in [r"/\bA\b/u.exec('A')", r"/\ba\b/u.test('a')"] {
         let mut realm = Realm::default();

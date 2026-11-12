@@ -6,7 +6,7 @@ use std::fmt::Write;
 use crate::common::assert_true;
 
 #[test]
-fn unicode_han_script_former_whole_programs_snapshot() {
+fn unicode_han_script_script_results_snapshot() {
     let mut rows = String::new();
     for source in [
         r"/\p{Script=Han}/v.exec('𠮷')",

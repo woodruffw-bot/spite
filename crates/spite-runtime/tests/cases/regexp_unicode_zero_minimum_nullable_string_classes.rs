@@ -174,7 +174,7 @@ fn string_consumers_replacements_clones_and_collection_keep_undefined_empty_matc
 }
 
 #[test]
-fn exact_zero_proofs_finish_finalizers_and_never_hide_unsupported_leaves_or_early_errors() {
+fn pattern_variants_match_reference_results() {
     for source in [
         r"/([\q{a|b}]|){2,3}/v.test('a')",
         r"/([\q{a|ab}&&a]|){2,3}/v.test('aaa')",

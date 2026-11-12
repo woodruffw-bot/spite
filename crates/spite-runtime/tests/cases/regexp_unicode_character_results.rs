@@ -173,8 +173,7 @@ fn consumers_clones_collection_and_direct_eval_retain_character_result_metadata(
 }
 
 #[test]
-fn former_unsupported_results_complete_finalizers_while_conservative_and_unknown_operands_stay_distinct()
- {
+fn pattern_variants_match_reference_results() {
     for (source, expected) in [
         (r"/([\q{ab}&&a])+/v.test('ab')", false),
         (r"/[^\q{ab}&&a]/v.test('a')", true),

@@ -159,7 +159,7 @@ fn generic_consumers_callbacks_and_intrinsic_arrays_share_capture_layout() {
 }
 
 #[test]
-fn optional_host_aborts_and_unsupported_bodies_remain_separate() {
+fn pattern_variants_match_reference_results() {
     for source in [
         r"/(?:(?:(a+b)*)|){2,3}/.test('ab')",
         r"/(?:(?:(?:(?:(a+[b]+)){2}){2})|){2,3}/.test('ab')",

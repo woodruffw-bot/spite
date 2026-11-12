@@ -251,7 +251,7 @@ fn property_zero_string_consumers_and_clones_keep_capture_free_metadata() {
 }
 
 #[test]
-fn property_early_errors_precede_erasure_and_nonzero_or_surrounding_terms_stay_pending() {
+fn pattern_variants_match_reference_results() {
     assert_true(
         r#"
         var invalid=[['\\P{RGI_Emoji}{0}','v'],['\\p{RGI_Emoji}{0}','u'],['\\p{NotAProperty}{0}','v'],['\\p{Script=NotAScript}{0}','u']],ok=true;

@@ -240,7 +240,7 @@ fn unicode_atom_captures_opted_work_and_unproved_syntax() {
 }
 
 #[test]
-fn original_unicode_atom_capture_complete_programs() {
+fn unicode_atom_capture_script_execution() {
     let mut rows = String::new();
     for source in [
         r"/([\u{1f600}])/u.test('a')",

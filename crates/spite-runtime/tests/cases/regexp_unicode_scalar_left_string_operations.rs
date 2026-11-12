@@ -142,7 +142,7 @@ fn consumers_clones_and_collection_use_consuming_character_results() {
 }
 
 #[test]
-fn former_unsupported_controls_finish_finalizers_and_complete_later_proof_and_early_errors() {
+fn pattern_variants_match_reference_results() {
     for (source, expected) in [
         (r"/[^\p{Any}&&\q{ab}]/v.test('ab')", true),
         (r"/[\p{Any}--\q{ab}]+/v.test('ab')", true),

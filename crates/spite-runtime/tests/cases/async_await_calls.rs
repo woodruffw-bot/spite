@@ -1,7 +1,7 @@
 //! Awaited call targets/arguments retain lookup, receiver and invocation order.
 
-use crate::common::assert_true_in;
-use crate::common::drain_promise_jobs;
+use crate::common::{assert_true_in, drain_promise_jobs};
+
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm};
 
 #[test]

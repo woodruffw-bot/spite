@@ -1,9 +1,7 @@
 //! Dynamic AsyncFunction conversion, prototype selection, scope and source.
 
-use crate::common::drain_promise_jobs;
+use crate::common::{assert_true, drain_promise_jobs};
 use spite_runtime::{Error, Limits, Realm, Value};
-
-use crate::common::assert_true;
 
 #[test]
 fn calls_and_construction_produce_async_functions_with_standard_source_and_fresh_promises() {

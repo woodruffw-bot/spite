@@ -231,7 +231,7 @@ fn unicode_class_assertion_opted_work_and_unproved_syntax() {
 }
 
 #[test]
-fn original_unicode_class_assertion_complete_programs() {
+fn unicode_class_assertion_script_execution() {
     let mut rows = String::new();
     for source in [
         r"/^[a]$/u.test('a')",

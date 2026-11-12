@@ -189,7 +189,7 @@ fn generic_consumers_callbacks_and_intrinsic_results_keep_assertion_capture_slot
 }
 
 #[test]
-fn optional_assertion_work_aborts_bypass_handlers_and_remaining_group_features_are_unsupported() {
+fn pattern_variants_match_reference_results() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(100000),
         ..Limits::default()

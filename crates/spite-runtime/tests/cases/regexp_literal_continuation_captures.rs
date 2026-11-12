@@ -138,7 +138,7 @@ fn intrinsic_arrays_and_undefined_alternative_slots_bypass_setters() {
 }
 
 #[test]
-fn opted_in_host_aborts_and_unsupported_suffixes_remain_distinct() {
+fn pattern_variants_match_reference_results() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(5000),
         ..Limits::default()

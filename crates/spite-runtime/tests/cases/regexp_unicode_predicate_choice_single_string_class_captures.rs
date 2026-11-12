@@ -1,8 +1,8 @@
 //! Required predicate choices preserve conditional lexical captures.
-use crate::common::assert_true_in;
-use crate::common::eval_string;
-use crate::common::regexp_captures::assert_no_match;
-use crate::common::regexp_captures::{MatchExpectation, assert_named_captures};
+use crate::common::{assert_true_in, eval_string};
+
+use crate::common::regexp_captures::{MatchExpectation, assert_named_captures, assert_no_match};
+
 use crate::common::regexp_matches::DESCRIBE_MATCH;
 use spite_core::JsString;
 use spite_runtime::Realm;

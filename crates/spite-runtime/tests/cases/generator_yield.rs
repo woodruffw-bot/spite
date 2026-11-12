@@ -1,7 +1,7 @@
 //! Ordinary GeneratorYield and resumed completions through the source VM (27.5.3).
 
-use crate::common::assert_true_in;
-use crate::common::checkpoint_and_collect;
+use crate::common::{assert_true_in, checkpoint_and_collect};
+
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm};
 
 #[test]

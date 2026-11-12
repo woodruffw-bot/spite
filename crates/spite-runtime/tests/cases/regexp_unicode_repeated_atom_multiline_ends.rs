@@ -277,7 +277,7 @@ fn unicode_repeated_atom_multiline_ends_opted_work_and_remaining_compositions() 
 }
 
 #[test]
-fn unicode_repeated_atom_multiline_end_former_whole_programs_snapshot() {
+fn unicode_repeated_atom_multiline_end_script_results_snapshot() {
     let mut rows = String::new();
     for source in [r"/a+$/um.exec('a')", r"/^a+$/vm.exec('a')"] {
         let Value::String(result) = Realm::default()

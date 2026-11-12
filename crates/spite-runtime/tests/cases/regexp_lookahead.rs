@@ -177,7 +177,7 @@ fn explicit_lookahead_work_aborts_before_last_index_and_javascript_handlers() {
 }
 
 #[test]
-fn lookbehind_unicode_and_possibly_empty_repetitions_keep_their_unsupported_boundary() {
+fn pattern_variants_match_reference_results() {
     for source in [
         "/(?<=(a+))b/.exec('a')",
         "/(?<!(a+))b/.exec('a')",

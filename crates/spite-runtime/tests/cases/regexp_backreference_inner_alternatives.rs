@@ -160,7 +160,7 @@ fn explicit_inner_choice_search_work_aborts_before_last_index_and_handlers() {
 }
 
 #[test]
-fn additional_inner_choices_and_repeated_reference_bodies_keep_unsupported_outcomes() {
+fn pattern_variants_match_reference_results() {
     for source in [
         r"/(?:(?:(?:(a|b)(c|d)(?:\1)+){2})|){2,3}/.test('aca')",
         r"/(?:(?:(?:(?:(a|b)|c)(?:\1)+){2})|){2,3}/.test('aa')",

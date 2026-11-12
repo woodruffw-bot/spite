@@ -244,7 +244,7 @@ fn unicode_scalar_literal_opted_work_abort_preserves_state_and_unproved_atoms() 
 }
 
 #[test]
-fn unicode_scalar_literal_original_complete_programs_and_ordered_calls() {
+fn unicode_scalar_literal_script_execution_and_coercion_order() {
     let mut rows = String::new();
     for source in [
         r"/(\u{1f600})/u.test('a')",

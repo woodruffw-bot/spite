@@ -192,7 +192,7 @@ fn unicode_positive_pure_empty_explicit_work_abort_preserves_state() {
 }
 
 #[test]
-fn unicode_positive_pure_empty_former_whole_programs_snapshot() {
+fn unicode_positive_pure_empty_script_results_snapshot() {
     let mut rows = String::new();
     for source in ["/()+/u.test('')", "/()+/u.exec('a')"] {
         let actual = Realm::default().eval(source).unwrap();

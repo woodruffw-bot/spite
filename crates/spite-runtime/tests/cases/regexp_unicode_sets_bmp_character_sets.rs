@@ -253,7 +253,7 @@ fn unicode_sets_bmp_character_opted_work_and_unproved_atoms() {
 }
 
 #[test]
-fn unicode_sets_bmp_character_former_complete_programs() {
+fn unicode_sets_bmp_character_script_execution() {
     let mut rows = String::new();
     {
         let source = r"/[a]/v.exec('a')";

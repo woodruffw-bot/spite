@@ -229,7 +229,7 @@ fn unicode_folded_literal_boundary_opted_work_and_additional_compositions() {
 }
 
 #[test]
-fn original_unicode_folded_literal_boundary_complete_programs() {
+fn unicode_folded_literal_boundary_script_execution() {
     let mut rows = String::new();
     for source in [r"/^ab$/iv.exec('AB')", r"/^(a)$/iu.exec('A')"] {
         let program = format!(

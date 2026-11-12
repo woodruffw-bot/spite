@@ -255,7 +255,7 @@ fn unicode_braced_bmp_character_opted_work_and_unproved_sets() {
 }
 
 #[test]
-fn unicode_braced_bmp_character_former_complete_programs() {
+fn unicode_braced_bmp_character_script_execution() {
     let mut rows = String::new();
     for source in [r"/[\u{61}]/u.exec('a')", r"/[\u{61}]/v.exec('a')"] {
         let result = Realm::default().eval(source).unwrap();

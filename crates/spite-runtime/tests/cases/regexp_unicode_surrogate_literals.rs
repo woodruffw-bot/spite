@@ -210,7 +210,7 @@ fn unicode_surrogate_opted_work_aborts_and_unproved_atom_joins() {
 }
 
 #[test]
-fn unicode_surrogate_literal_original_complete_programs_and_ordered_calls() {
+fn unicode_surrogate_literal_script_execution_and_coercion_order() {
     let mut rows = String::new();
     for source in [
         r"/(\u{D800})/u.test('a')",

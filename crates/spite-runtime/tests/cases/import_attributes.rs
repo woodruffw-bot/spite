@@ -1,7 +1,7 @@
 //! HostGetSupportedImportAttributes and loading-time attribute errors.
 
-use crate::common::assert_true_in;
-use crate::common::drain_promise_jobs;
+use crate::common::{assert_true_in, drain_promise_jobs};
+
 use spite_core::JsString;
 use spite_runtime::{Error, ExceptionKind, Limits, Realm};
 

@@ -541,7 +541,7 @@ fn unicode_devanagari_script_repetitions_retain_last_capture_and_outside_words()
 }
 
 #[test]
-fn unicode_devanagari_script_former_direct_eval_context_executes_normally() {
+fn unicode_devanagari_script_direct_eval_preserves_surrounding_execution() {
     assert_true(
         r#"
             let marker = 0,

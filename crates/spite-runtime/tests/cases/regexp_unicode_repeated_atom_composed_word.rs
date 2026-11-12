@@ -222,7 +222,7 @@ fn unicode_repeated_atom_composed_word_opted_work_and_unproved_units() {
 }
 
 #[test]
-fn unicode_repeated_atom_composed_word_former_whole_programs_snapshot() {
+fn unicode_repeated_atom_composed_word_script_results_snapshot() {
     let mut rows = String::new();
     for source in [
         r"/\b(\ba)+/u.exec('a')",

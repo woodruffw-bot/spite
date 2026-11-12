@@ -226,7 +226,7 @@ fn unicode_repeated_atom_nested_assertion_word_opted_work_and_unproved_units() {
 }
 
 #[test]
-fn unicode_repeated_atom_nested_assertion_word_former_whole_programs_snapshot() {
+fn unicode_repeated_atom_nested_assertion_word_script_results_snapshot() {
     let mut rows = String::new();
     for source in [r"/\b(\b(a))+/u.exec('a')", r"/(\b(a))+\b/v.exec('a')"] {
         let Value::String(result) = Realm::default()

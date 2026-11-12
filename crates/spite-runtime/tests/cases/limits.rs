@@ -4,7 +4,7 @@ use spite_core::DiagnosticKind;
 use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
 
 #[test]
-fn default_realms_accept_programs_beyond_the_former_resource_quotas() {
+fn default_realms_accept_large_programs_without_resource_quotas() {
     let cases = [
         (
             // A nonempty Block requires a new environment on every iteration.

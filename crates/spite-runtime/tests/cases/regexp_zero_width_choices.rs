@@ -174,7 +174,7 @@ fn explicit_pure_zero_choice_work_aborts_before_last_index_and_handlers() {
 }
 
 #[test]
-fn mixed_empty_consuming_choices_internal_references_counted_behind_and_unicode_are_pending() {
+fn pattern_variants_match_reference_results() {
     for source in [
         r"/(?:a|()){2,3}b/.exec('ab')",
         r"/(?:(\1)|()){2}a()/.exec('a')",

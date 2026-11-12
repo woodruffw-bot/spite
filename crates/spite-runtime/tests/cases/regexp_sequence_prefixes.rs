@@ -176,7 +176,7 @@ fn generic_consumers_callbacks_and_intrinsic_arrays_share_sequence_prefix_plans(
 }
 
 #[test]
-fn optional_search_budget_covers_all_prefix_atoms_and_keeps_unsupported_host_errors() {
+fn pattern_variants_match_reference_results() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(100000),
         ..Limits::default()

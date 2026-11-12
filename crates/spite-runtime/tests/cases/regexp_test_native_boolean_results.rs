@@ -281,7 +281,7 @@ fn native_test_fallback_brand_checks_and_strict_index_writes() {
 }
 
 #[test]
-fn native_test_search_quota_and_unsupported_boundary_are_preserved() {
+fn pattern_variants_match_reference_results() {
     let mut realm = Realm::new(Limits {
         max_steps: Some(30_000),
         ..Limits::default()

@@ -241,7 +241,7 @@ fn unicode_bmp_character_opted_work_and_unproved_atoms() {
 }
 
 #[test]
-fn unicode_bmp_character_former_complete_programs() {
+fn unicode_bmp_character_script_execution() {
     let mut rows = String::new();
     for source in [r"/[a]/u.exec('a')", r"/[a]/u.test('a')"] {
         let result = Realm::default().eval(source).unwrap();

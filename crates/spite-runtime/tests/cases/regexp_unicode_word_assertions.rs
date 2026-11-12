@@ -244,7 +244,7 @@ fn unicode_word_assertions_opted_work_and_remaining_compositions() {
 }
 
 #[test]
-fn unicode_word_assertion_former_whole_program_snapshot() {
+fn unicode_word_assertion_script_results_snapshot() {
     let source = r"/\b/iu.exec('a')";
     let mut realm = Realm::default();
     realm.eval(source).unwrap();

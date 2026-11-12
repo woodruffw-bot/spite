@@ -1,8 +1,7 @@
 //! Lexical resource lifetimes, abrupt completions and iterator cleanup.
 
-use crate::common::UnavailableHostRealm;
-use crate::common::assert_true_in;
-use crate::common::drain_promise_jobs;
+use crate::common::{UnavailableHostRealm, assert_true_in, drain_promise_jobs};
+
 use spite_runtime::{Error, Limits, Realm, Value};
 
 #[test]

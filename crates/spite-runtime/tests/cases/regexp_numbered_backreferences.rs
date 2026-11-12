@@ -196,7 +196,7 @@ fn explicit_search_work_aborts_before_last_index_writes_and_language_handlers() 
 }
 
 #[test]
-fn unsupported_reference_compositions_remain_distinct_from_match_failures() {
+fn pattern_variants_match_reference_results() {
     for source in [
         r"/(?:(?:(?:(a)(?:\1)+){2})|){2,3}/.test('aa')",
         r"/(?:(?:(?:(a|b)(?:\1)+){2})|){2,3}/.test('aa')",

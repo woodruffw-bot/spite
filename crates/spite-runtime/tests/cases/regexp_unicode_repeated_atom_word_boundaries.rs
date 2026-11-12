@@ -242,7 +242,7 @@ fn unicode_repeated_atom_word_boundary_opted_work_and_unproved_scopes() {
 }
 
 #[test]
-fn unicode_repeated_atom_word_boundary_former_whole_programs_snapshot() {
+fn unicode_repeated_atom_word_boundary_script_results_snapshot() {
     let mut rows = String::new();
     for source in [
         r"/\b(A)+\b/u.exec('A')",

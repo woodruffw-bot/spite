@@ -210,7 +210,7 @@ fn explicit_nested_zero_count_work_aborts_before_last_index_and_handlers() {
 }
 
 #[test]
-fn consuming_nested_counts_nonzero_internal_references_behind_wrappers_and_unicode_are_pending() {
+fn pattern_variants_match_reference_results() {
     for source in [
         r"/((a){0,2}){2}b/.exec('aab')",
         r"/((\1(?:a|)){1,2}){2}a()/.exec('a')",

@@ -151,7 +151,7 @@ fn consumers_clones_and_collection_keep_filtered_words_and_capture_metadata() {
 }
 
 #[test]
-fn former_unsupported_controls_finish_finalizers_and_remaining_grammar_is_proved_completely() {
+fn pattern_variants_match_reference_results() {
     for (source, expected) in [
         (r"/\b^[[\q{ab}]&&[\q{ab}]]/v.test('ab')", true),
         (r"/[[a--a]&&[\q{ab}]]/v.test('a')", false),

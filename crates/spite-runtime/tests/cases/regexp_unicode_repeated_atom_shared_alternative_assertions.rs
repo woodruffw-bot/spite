@@ -222,7 +222,7 @@ fn unicode_repeated_atom_shared_alternative_assertions_opt_in_work_failure() {
 }
 
 #[test]
-fn unicode_repeated_atom_shared_alternative_assertions_former_whole_program_snapshot() {
+fn unicode_repeated_atom_shared_alternative_assertions_script_results_snapshot() {
     let mut rows = String::new();
     {
         let source = r"/(\b(a|b))+/v.exec('a')";

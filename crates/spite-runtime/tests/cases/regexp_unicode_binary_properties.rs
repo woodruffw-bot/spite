@@ -270,7 +270,7 @@ fn unicode_binary_property_opted_work_and_remaining_sets() {
 }
 
 #[test]
-fn original_unicode_binary_property_complete_programs() {
+fn unicode_binary_property_script_execution() {
     let mut rows = String::new();
     for source in [
         r"/^\p{ASCII}$/v.exec('a')",

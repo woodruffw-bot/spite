@@ -163,7 +163,7 @@ fn explicit_work_aborts_preserve_last_index_and_bypass_handlers() {
 }
 
 #[test]
-fn variable_counts_choices_bare_capture_dependencies_and_unicode_remain_pending() {
+fn pattern_variants_match_reference_results() {
     for source in [
         r"/(?<=a(?=((b)\2){1,2}))b/.exec('abbbb')",
         r"/(?<=a(?=((b)\2){2}|b))b/.exec('abbbb')",

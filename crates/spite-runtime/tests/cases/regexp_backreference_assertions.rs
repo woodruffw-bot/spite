@@ -158,7 +158,7 @@ fn explicit_assertion_search_work_aborts_before_last_index_and_language_handlers
 }
 
 #[test]
-fn pending_reference_compositions_keep_unsupported_outcomes() {
+fn pattern_variants_match_reference_results() {
     for source in [
         r"/(?:(?:(?:^([ab])(?:\1)+$){2})|){2,3}/.test('aa')",
         r"/(?:(?:(?:^(a|b)(?:\1)+$){2})|){2,3}/.test('aa')",

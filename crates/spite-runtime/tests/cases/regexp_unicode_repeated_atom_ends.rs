@@ -270,7 +270,7 @@ fn unicode_repeated_atom_ends_opted_work_and_remaining_compositions() {
 }
 
 #[test]
-fn unicode_repeated_atom_end_former_whole_programs_snapshot() {
+fn unicode_repeated_atom_end_script_results_snapshot() {
     let mut rows = String::new();
     for source in [
         r"/^a+$/u.test('a')",

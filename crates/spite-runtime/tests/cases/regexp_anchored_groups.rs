@@ -133,7 +133,7 @@ fn original_source_pinned_flags_and_generic_consumers_preserve_captures() {
 }
 
 #[test]
-fn optional_work_aborts_and_complete_unsupported_bodies_remain_distinct() {
+fn pattern_variants_match_reference_results() {
     for source in [
         r"/(?:(?:(?:(?:^(a+[b]+)$){2}){2})|){2,3}/.test('ab')",
         r"/(?:(?:^(a+b)*$)|){2,3}/.test('ab')",

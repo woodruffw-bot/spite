@@ -150,7 +150,7 @@ fn opted_in_work_abort_preserves_last_index_and_bypasses_handlers() {
     );
 }
 #[test]
-fn forward_consuming_variable_widths_nullable_choices_and_unicode_stay_pending() {
+fn pattern_variants_match_reference_results() {
     for source in [
         r"/(?<=a(?=((b)\2+){2}))b/.exec('abbbbbb')",
         r"/(?<=a(?=((b)\2{2,3}){2}))b/.exec('abbbbbb')",

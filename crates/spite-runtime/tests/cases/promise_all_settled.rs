@@ -1,10 +1,8 @@
 //! Ordered settlement snapshots, shared callback guards and intrinsic allocation.
 
-use crate::common::UnavailableHostRealm;
-use crate::common::drain_promise_jobs;
-use spite_runtime::{Error, Realm, Value};
+use crate::common::{UnavailableHostRealm, assert_true, drain_promise_jobs};
 
-use crate::common::assert_true;
+use spite_runtime::{Error, Realm, Value};
 
 #[test]
 fn mixed_snapshots_keep_input_order_descriptors_and_original_values() {

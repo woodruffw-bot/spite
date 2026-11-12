@@ -1,9 +1,9 @@
 //! Lexical Array BindingInitialization with suspended defaults (14.3.3, Await).
 
-use crate::common::UnavailableHostRealm;
-use crate::common::assert_true_in;
-use crate::common::checkpoint_and_collect;
-use crate::common::drain_promise_jobs;
+use crate::common::{
+    UnavailableHostRealm, assert_true_in, checkpoint_and_collect, drain_promise_jobs,
+};
+
 use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm};
 
 #[test]

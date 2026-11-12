@@ -6,7 +6,7 @@ use std::fmt::Write;
 use crate::common::assert_true;
 
 #[test]
-fn unicode_repeated_atom_start_former_whole_program_snapshot() {
+fn unicode_repeated_atom_start_script_results_snapshot() {
     let source = r"/^a+/u.exec('a')";
     let Value::String(result) = Realm::default()
         .eval(&format!(

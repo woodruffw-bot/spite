@@ -268,7 +268,7 @@ fn unicode_class_opted_work_preserves_state_and_unproved_syntax() {
 }
 
 #[test]
-fn original_unicode_class_complete_programs() {
+fn unicode_class_script_execution() {
     let mut rows = String::new();
     for source in [
         r"/[\u{1f600}]/u.test('a')",

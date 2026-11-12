@@ -261,7 +261,7 @@ fn unicode_captured_atoms_opted_work_and_remaining_compositions() {
 }
 
 #[test]
-fn unicode_captured_atom_former_whole_programs_snapshot() {
+fn unicode_captured_atom_script_results_snapshot() {
     let mut rows = String::new();
     for source in [
         r"/([\u{1f600}])+/u.test('a')",
@@ -336,7 +336,7 @@ fn unicode_captured_atom_former_whole_programs_snapshot() {
 }
 
 #[test]
-fn unicode_captured_atom_former_direct_eval_runs_finally() {
+fn unicode_captured_atom_direct_eval_runs_finally() {
     let mut realm = Realm::default();
     realm.eval("var marker=0;").unwrap();
     let code = "marker=1; /([\\u{1f600}])+/v.test('a');";

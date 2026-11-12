@@ -1,9 +1,7 @@
 //! FinalizationRegistry language semantics and explicit host cleanup (26.2).
 
-use crate::common::REALM_ENTRIES;
-use crate::common::assert_true;
-use crate::common::assert_true_in;
-use crate::common::checkpoint_and_collect;
+use crate::common::{REALM_ENTRIES, assert_true, assert_true_in, checkpoint_and_collect};
+
 use spite_core::JsString;
 use spite_runtime::{Error, ExceptionKind, FinalizationCleanupOutcome, Limits, Realm, Value};
 

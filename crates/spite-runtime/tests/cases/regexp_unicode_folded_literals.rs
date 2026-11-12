@@ -274,7 +274,7 @@ fn unicode_folded_literal_opted_work_and_additional_compositions() {
 }
 
 #[test]
-fn original_unicode_folded_literal_complete_programs() {
+fn unicode_folded_literal_script_execution() {
     let mut rows = String::new();
     for source in [r"/ab/iu.exec('AB')", r"/(a)b/iu.exec('AB')"] {
         let program = format!(

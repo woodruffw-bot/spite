@@ -1,7 +1,7 @@
 //! Async YieldExpression delegation (15.5) through the shared source interpreter.
 
-use crate::common::assert_true_in;
-use crate::common::drain_promise_jobs;
+use crate::common::{assert_true_in, drain_promise_jobs};
+
 use spite_runtime::{Error, PromiseJobOutcome, Realm};
 
 #[test]

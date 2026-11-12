@@ -1,10 +1,8 @@
 //! Non-suspending async functions, intrinsic metadata and Promise-returning calls.
 
-use crate::common::UnavailableHostRealm;
-use crate::common::drain_promise_jobs;
-use spite_runtime::{Error, Limits, Realm, Value};
+use crate::common::{UnavailableHostRealm, assert_true, drain_promise_jobs};
 
-use crate::common::assert_true;
+use spite_runtime::{Error, Limits, Realm, Value};
 
 #[test]
 fn async_objects_have_the_intrinsic_graph_metadata_and_no_construct_capability() {

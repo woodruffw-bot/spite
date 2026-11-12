@@ -233,7 +233,7 @@ fn unicode_line_assertions_opted_work_and_remaining_compositions() {
 }
 
 #[test]
-fn unicode_line_assertion_former_whole_program_snapshot() {
+fn unicode_line_assertion_script_results_snapshot() {
     let source = r"/^$/.exec('')+/(?:^$)/u.exec('')";
     let mut realm = Realm::default();
     assert_eq!(realm.eval(source), Ok(Value::String(JsString::from(""))));

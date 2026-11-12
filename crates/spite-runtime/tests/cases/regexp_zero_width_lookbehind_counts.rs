@@ -200,8 +200,7 @@ fn explicit_zero_width_count_work_aborts_before_last_index_and_handlers() {
 }
 
 #[test]
-fn consuming_variable_counts_repeated_choices_references_nested_counts_and_lookaround_are_pending()
-{
+fn pattern_variants_match_reference_results() {
     for source in [
         r"/(?<=a{1,2})b/.exec('ab')",
         r"/(?<=(a?){1,2})b/.exec('ab')",

@@ -1,7 +1,7 @@
 //! Async-generator function objects and hidden intrinsic metadata (15.6, 27.4–6).
 
-use crate::common::assert_true_in;
-use crate::common::checkpoint_and_collect;
+use crate::common::{assert_true_in, checkpoint_and_collect};
+
 use spite_runtime::{PromiseJobOutcome, Realm};
 
 #[test]

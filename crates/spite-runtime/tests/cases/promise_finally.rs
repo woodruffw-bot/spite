@@ -1,9 +1,7 @@
 //! Generic finally dispatch, cleanup assimilation and native captures (27.2.5.3).
 
-use crate::common::drain_promise_jobs;
+use crate::common::{assert_true, drain_promise_jobs};
 use spite_runtime::{Realm, Value};
-
-use crate::common::assert_true;
 
 #[test]
 fn generic_dispatch_observes_species_before_then_and_preserves_noncallable_arguments() {

@@ -151,7 +151,7 @@ fn opted_in_work_abort_preserves_last_index_and_bypasses_handlers() {
     );
 }
 #[test]
-fn changing_owner_captures_variable_counts_choices_and_unicode_remain_pending() {
+fn pattern_variants_match_reference_results() {
     for source in [
         r"/(a)(?<=a(?<=((b)\1){1,2}))c/.exec('babac')",
         r"/(a)(?<=a(?<=(\1|b)))c/.exec('ac')",

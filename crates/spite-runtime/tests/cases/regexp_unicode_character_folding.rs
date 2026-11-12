@@ -203,7 +203,7 @@ fn unicode_character_folding_opted_work_and_unproved_syntax() {
 }
 
 #[test]
-fn original_unicode_character_folding_complete_programs() {
+fn unicode_character_folding_script_execution() {
     let mut rows = String::new();
     for source in [
         r"/^.$/iu.exec('a')",

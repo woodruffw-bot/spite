@@ -151,7 +151,7 @@ fn consumers_clones_and_collection_use_the_filtered_member_plan() {
 }
 
 #[test]
-fn former_controls_complete_finalizers_and_non_q_algebra_and_early_errors_stay_distinct() {
+fn string_set_operations_run_finalizers_and_preserve_early_errors() {
     for (source, expected) in [
         (r"/\b^[\q{ab}&&\q{ab}]/v.test('ab')", true),
         (r"/[\q{ab}&&\p{Any}]/v.test('ab')", false),

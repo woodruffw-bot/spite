@@ -249,7 +249,7 @@ fn unicode_hex_properties_opted_work_and_remaining_sets() {
 }
 
 #[test]
-fn original_unicode_hex_property_complete_program() {
+fn unicode_hex_property_script_execution() {
     let source = r"/\p{Hex_Digit}/u.exec('A')";
     let Value::String(result) = Realm::default()
         .eval(&format!(

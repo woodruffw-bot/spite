@@ -132,7 +132,7 @@ fn consumers_clones_and_collection_use_the_positive_nested_plan() {
 }
 
 #[test]
-fn former_controls_complete_finalizers_and_other_algebra_remains_pending() {
+fn string_set_operations_run_finalizers_and_preserve_early_errors() {
     for (source, expected) in [
         (r"/\b^[[\q{ab}]]/v.test('ab')", true),
         (r"/[[\q{ab}]--[a-z]]/v.test('ab')", true),

@@ -195,7 +195,7 @@ fn explicit_fixed_zero_wrapper_work_aborts_before_last_index_and_handlers() {
 }
 
 #[test]
-fn variable_consuming_wrappers_capture_reads_lookahead_and_unicode_are_pending() {
+fn pattern_variants_match_reference_results() {
     for source in [
         r"/(?<=(|a){2})a/.exec('a')",
         r"/(?<=((a{0,2}){2}){2})a/.exec('a')",

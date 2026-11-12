@@ -266,7 +266,7 @@ fn unicode_dot_escapes_unproved_syntax_matches_reference_results() {
 }
 
 #[test]
-fn original_unicode_dot_escape_complete_programs() {
+fn unicode_dot_escape_script_execution() {
     let mut rows = String::new();
     for source in [
         r"/./v.test('a')",

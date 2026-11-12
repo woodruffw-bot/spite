@@ -1,6 +1,6 @@
 //! Required empty iterations preserve class-versus-empty capture identity.
-use crate::common::assert_true;
-use crate::common::eval_string;
+use crate::common::{assert_true, eval_string};
+
 use crate::common::regexp_matches::DESCRIBE_MATCH;
 use spite_core::JsString;
 use spite_runtime::{Realm, Value};

@@ -241,7 +241,7 @@ fn string_consumers_advance_empty_matches_by_original_unicode_character() {
 }
 
 #[test]
-fn former_unsupported_patterns_complete_finalizers_but_unproved_patterns_do_not() {
+fn pattern_variants_match_reference_results() {
     for (source, expected) in [
         (r"/[\q{ab}]$\b/v.test('ab')", true),
         (r"/\b^[\q{ab}]/v.test('ab')", true),

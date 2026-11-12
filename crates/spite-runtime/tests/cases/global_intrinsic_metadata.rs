@@ -1,10 +1,8 @@
 //! Edition-17 global metadata and ordinary global own-key behavior (19, 26–28).
 
-use crate::common::REALM_ENTRIES;
+use crate::common::{REALM_ENTRIES, assert_true};
 use spite_core::JsString;
 use spite_runtime::{Error, ExceptionKind, Realm, Value};
-
-use crate::common::assert_true;
 
 #[test]
 fn published_intrinsic_inventory_has_correct_roles_and_realm_local_identities() {

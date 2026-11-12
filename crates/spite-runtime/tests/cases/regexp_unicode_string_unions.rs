@@ -119,7 +119,7 @@ fn union_results_equal_one_disjunction_and_string_consumers_advance_empty_matche
 }
 
 #[test]
-fn union_proof_keeps_other_operands_and_repetition_pending_and_cancels_without_mutation() {
+fn pattern_variants_match_reference_results() {
     assert_true(
         r#"var marker=0,ok=false;try{ok=(function(){var pattern="[\\q{ab}\\q{cd}]+",rows=[],metadata=true;
 for(var multi of [false,true]){var r=new RegExp(pattern,'dvg'+(multi?'m':''));metadata=metadata&&r.source===pattern;

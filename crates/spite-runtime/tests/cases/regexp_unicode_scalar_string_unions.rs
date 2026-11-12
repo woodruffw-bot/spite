@@ -134,7 +134,7 @@ fn consumers_clones_and_collection_use_the_complete_interval_string_plan() {
 }
 
 #[test]
-fn former_controls_complete_finalizers_and_unproved_algebra_and_early_errors_stay_distinct() {
+fn string_set_operations_run_finalizers_and_preserve_early_errors() {
     for (source, expected) in [
         (r"/\b^[\q{ab}\d]/v.test('ab')", true),
         (r"/[\q{ab}--\d]/v.test('ab')", true),
