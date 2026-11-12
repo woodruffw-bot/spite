@@ -22,14 +22,31 @@ fn unicode_character_assertion_results_snapshot() {
                 for start in [0, 1, 2, input.len(), input.len() + 1] {
                     let p = JsString::from(pattern);
                     let script = format!(
-                        "let r=new RegExp({p:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,lastIndex:r.lastIndex,source:r.source}})"
+                        r#"
+                            let r = new RegExp({p:?}, '{flags}');
+                            r.lastIndex = {start};
+                            let m = r.exec({input:?});
+                            JSON.stringify(m === null ? {{
+                                match: null,
+                                lastIndex: r.lastIndex
+                            }} : {{
+                                matches: [...m],
+                                index: m.index,
+                                input: m.input,
+                                groups: m.groups,
+                                indices: m.indices,
+                                lastIndex: r.lastIndex,
+                                source: r.source
+                            }})
+                        "#
                     );
                     let Value::String(result) = Realm::default().eval(&script).unwrap() else {
                         panic!("{script}")
                     };
                     writeln!(
                         rows,
-                        "{p:?} flags={flags:?} input={input:?} lastIndex={start} {result:?}"
+                        "{p:?} flags={flags:?} input={input:?} lastIndex={start} => {result}",
+                        result = result.to_utf8().expect("JSON output must be valid UTF-8"),
                     )
                     .unwrap();
                 }
@@ -219,12 +236,23 @@ fn unicode_character_assertions_opted_work_and_unproved_compositions() {
 fn original_unicode_single_atom_anchor_complete_program() {
     let source = r"/^./u.exec('a')";
     let Value::String(result) = Realm::default()
-        .eval(&format!("JSON.stringify({source})"))
+        .eval(&format!(
+            r#"
+            JSON.stringify({source}, null, 2)
+        "#
+        ))
         .unwrap()
     else {
         panic!("{source}")
     };
-    insta::assert_snapshot!(format!("{:?} {result:?}", JsString::from(source)), @r#"
-        "/^./u.exec('a')" "[\u0022a\u0022]"
+    insta::assert_snapshot!(format!(
+        "{:?}\n{result}\n",
+        JsString::from(source),
+        result = result.to_utf8().expect("JSON output must be valid UTF-8"),
+    ), @r#"
+        "/^./u.exec('a')"
+        [
+          "a"
+        ]
         "#);
 }

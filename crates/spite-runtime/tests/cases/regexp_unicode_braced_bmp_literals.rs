@@ -24,14 +24,32 @@ fn unicode_braced_bmp_results_snapshot() {
                 let p = JsString::from(pattern);
                 let input = JsString::from(input);
                 let script = format!(
-                    "let r=new RegExp({p:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indicesGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+                    r#"
+                        let r = new RegExp({p:?}, '{flags}');
+                        r.lastIndex = {start};
+                        let m = r.exec({input:?});
+                        JSON.stringify(m === null ? {{
+                            match: null,
+                            lastIndex: r.lastIndex
+                        }} : {{
+                            matches: [...m],
+                            index: m.index,
+                            input: m.input,
+                            groups: m.groups,
+                            indices: m.indices,
+                            indicesGroups: m.indices.groups,
+                            lastIndex: r.lastIndex,
+                            source: r.source
+                        }})
+                    "#
                 );
                 let Value::String(result) = Realm::default().eval(&script).unwrap() else {
                     panic!("{script}")
                 };
                 writeln!(
                     rows,
-                    "{p:?} flags={flags:?} input={input:?} lastIndex={start} {result:?}"
+                    "{p:?} flags={flags:?} input={input:?} lastIndex={start} => {result}",
+                    result = result.to_utf8().expect("JSON output must be valid UTF-8"),
                 )
                 .unwrap();
             }

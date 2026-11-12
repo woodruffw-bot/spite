@@ -1,0 +1,687 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_unicode_folded_literals.rs
+expression: rows
+---
+"(?<x>\u00df)(s)()" mode="u" input="\u00dfS" start=0
+{
+  "matches": [
+    "ßS",
+    "ß",
+    "S",
+    ""
+  ],
+  "index": 0,
+  "groups": {
+    "x": "ß"
+  },
+  "indices": [
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      2,
+      2
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      0,
+      1
+    ]
+  },
+  "lastIndex": 2
+}
+
+"(?<x>\u00df)(s)()" mode="u" input="\u00dfS" start=1
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"(?<x>\u00df)(s)()" mode="u" input="\ud837\udf95\u017f" start=0
+{
+  "matches": [
+    "𝾕ſ",
+    "𝾕",
+    "ſ",
+    ""
+  ],
+  "index": 0,
+  "groups": {
+    "x": "𝾕"
+  },
+  "indices": [
+    [
+      0,
+      3
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      3,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      0,
+      2
+    ]
+  },
+  "lastIndex": 3
+}
+
+"(?<x>\u00df)(s)()" mode="u" input="\ud837\udf95\u017f" start=1
+{
+  "matches": [
+    "𝾕ſ",
+    "𝾕",
+    "ſ",
+    ""
+  ],
+  "index": 0,
+  "groups": {
+    "x": "𝾕"
+  },
+  "indices": [
+    [
+      0,
+      3
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      3,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      0,
+      2
+    ]
+  },
+  "lastIndex": 3
+}
+
+"(?<x>\u00df)(s)()" mode="v" input="\u00dfS" start=0
+{
+  "matches": [
+    "ßS",
+    "ß",
+    "S",
+    ""
+  ],
+  "index": 0,
+  "groups": {
+    "x": "ß"
+  },
+  "indices": [
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      2,
+      2
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      0,
+      1
+    ]
+  },
+  "lastIndex": 2
+}
+
+"(?<x>\u00df)(s)()" mode="v" input="\u00dfS" start=1
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"(?<x>\u00df)(s)()" mode="v" input="\ud837\udf95\u017f" start=0
+{
+  "matches": [
+    "𝾕ſ",
+    "𝾕",
+    "ſ",
+    ""
+  ],
+  "index": 0,
+  "groups": {
+    "x": "𝾕"
+  },
+  "indices": [
+    [
+      0,
+      3
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      3,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      0,
+      2
+    ]
+  },
+  "lastIndex": 3
+}
+
+"(?<x>\u00df)(s)()" mode="v" input="\ud837\udf95\u017f" start=1
+{
+  "matches": [
+    "𝾕ſ",
+    "𝾕",
+    "ſ",
+    ""
+  ],
+  "index": 0,
+  "groups": {
+    "x": "𝾕"
+  },
+  "indices": [
+    [
+      0,
+      3
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      3,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      0,
+      2
+    ]
+  },
+  "lastIndex": 3
+}
+
+"(?<x>\u005cu{1df95})(s)()" mode="u" input="\u00dfS" start=0
+{
+  "matches": [
+    "ßS",
+    "ß",
+    "S",
+    ""
+  ],
+  "index": 0,
+  "groups": {
+    "x": "ß"
+  },
+  "indices": [
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      2,
+      2
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      0,
+      1
+    ]
+  },
+  "lastIndex": 2
+}
+
+"(?<x>\u005cu{1df95})(s)()" mode="u" input="\u00dfS" start=1
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"(?<x>\u005cu{1df95})(s)()" mode="u" input="\ud837\udf95\u017f" start=0
+{
+  "matches": [
+    "𝾕ſ",
+    "𝾕",
+    "ſ",
+    ""
+  ],
+  "index": 0,
+  "groups": {
+    "x": "𝾕"
+  },
+  "indices": [
+    [
+      0,
+      3
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      3,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      0,
+      2
+    ]
+  },
+  "lastIndex": 3
+}
+
+"(?<x>\u005cu{1df95})(s)()" mode="u" input="\ud837\udf95\u017f" start=1
+{
+  "matches": [
+    "𝾕ſ",
+    "𝾕",
+    "ſ",
+    ""
+  ],
+  "index": 0,
+  "groups": {
+    "x": "𝾕"
+  },
+  "indices": [
+    [
+      0,
+      3
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      3,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      0,
+      2
+    ]
+  },
+  "lastIndex": 3
+}
+
+"(?<x>\u005cu{1df95})(s)()" mode="v" input="\u00dfS" start=0
+{
+  "matches": [
+    "ßS",
+    "ß",
+    "S",
+    ""
+  ],
+  "index": 0,
+  "groups": {
+    "x": "ß"
+  },
+  "indices": [
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      2,
+      2
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      0,
+      1
+    ]
+  },
+  "lastIndex": 2
+}
+
+"(?<x>\u005cu{1df95})(s)()" mode="v" input="\u00dfS" start=1
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"(?<x>\u005cu{1df95})(s)()" mode="v" input="\ud837\udf95\u017f" start=0
+{
+  "matches": [
+    "𝾕ſ",
+    "𝾕",
+    "ſ",
+    ""
+  ],
+  "index": 0,
+  "groups": {
+    "x": "𝾕"
+  },
+  "indices": [
+    [
+      0,
+      3
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      3,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      0,
+      2
+    ]
+  },
+  "lastIndex": 3
+}
+
+"(?<x>\u005cu{1df95})(s)()" mode="v" input="\ud837\udf95\u017f" start=1
+{
+  "matches": [
+    "𝾕ſ",
+    "𝾕",
+    "ſ",
+    ""
+  ],
+  "index": 0,
+  "groups": {
+    "x": "𝾕"
+  },
+  "indices": [
+    [
+      0,
+      3
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      3,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      0,
+      2
+    ]
+  },
+  "lastIndex": 3
+}
+
+"((\u00df)())s" mode="u" input="\u00dfS" start=0
+{
+  "matches": [
+    "ßS",
+    "ß",
+    "ß",
+    ""
+  ],
+  "index": 0,
+  "indices": [
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      1
+    ]
+  ],
+  "lastIndex": 2
+}
+
+"((\u00df)())s" mode="u" input="\u00dfS" start=1
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"((\u00df)())s" mode="u" input="\ud837\udf95\u017f" start=0
+{
+  "matches": [
+    "𝾕ſ",
+    "𝾕",
+    "𝾕",
+    ""
+  ],
+  "index": 0,
+  "indices": [
+    [
+      0,
+      3
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      2,
+      2
+    ]
+  ],
+  "lastIndex": 3
+}
+
+"((\u00df)())s" mode="u" input="\ud837\udf95\u017f" start=1
+{
+  "matches": [
+    "𝾕ſ",
+    "𝾕",
+    "𝾕",
+    ""
+  ],
+  "index": 0,
+  "indices": [
+    [
+      0,
+      3
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      2,
+      2
+    ]
+  ],
+  "lastIndex": 3
+}
+
+"((\u00df)())s" mode="v" input="\u00dfS" start=0
+{
+  "matches": [
+    "ßS",
+    "ß",
+    "ß",
+    ""
+  ],
+  "index": 0,
+  "indices": [
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      1
+    ]
+  ],
+  "lastIndex": 2
+}
+
+"((\u00df)())s" mode="v" input="\u00dfS" start=1
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"((\u00df)())s" mode="v" input="\ud837\udf95\u017f" start=0
+{
+  "matches": [
+    "𝾕ſ",
+    "𝾕",
+    "𝾕",
+    ""
+  ],
+  "index": 0,
+  "indices": [
+    [
+      0,
+      3
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      2,
+      2
+    ]
+  ],
+  "lastIndex": 3
+}
+
+"((\u00df)())s" mode="v" input="\ud837\udf95\u017f" start=1
+{
+  "matches": [
+    "𝾕ſ",
+    "𝾕",
+    "𝾕",
+    ""
+  ],
+  "index": 0,
+  "indices": [
+    [
+      0,
+      3
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      2,
+      2
+    ]
+  ],
+  "lastIndex": 3
+}

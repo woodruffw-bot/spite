@@ -1,0 +1,608 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_unicode_script_extensions.rs
+expression: rows
+---
+"(?<x>\\P{scx=Common})" flags="dug" input="\u00b5\u03bcA" lastIndex=0
+{
+  "m": [
+    "μ",
+    "μ"
+  ],
+  "index": 1,
+  "groups": {
+    "x": "μ"
+  },
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      2
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      1,
+      2
+    ]
+  },
+  "lastIndex": 2,
+  "source": "(?<x>\\P{scx=Common})"
+}
+
+"(?<x>\\P{scx=Common})" flags="diug" input="\u00b5\u03bcA" lastIndex=0
+{
+  "m": [
+    "µ",
+    "µ"
+  ],
+  "index": 0,
+  "groups": {
+    "x": "µ"
+  },
+  "indices": [
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      1
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      0,
+      1
+    ]
+  },
+  "lastIndex": 1,
+  "source": "(?<x>\\P{scx=Common})"
+}
+
+"(?<x>\\P{scx=Common})" flags="divg" input="\u00b5\u03bcA" lastIndex=0
+{
+  "m": [
+    "A",
+    "A"
+  ],
+  "index": 2,
+  "groups": {
+    "x": "A"
+  },
+  "indices": [
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      2,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<x>\\P{scx=Common})"
+}
+
+"(?<x>\\P{scx=Common})" flags="divy" input="\u00b5\u03bcA" lastIndex=0
+{
+  "m": null,
+  "lastIndex": 0,
+  "source": "(?<x>\\P{scx=Common})"
+}
+
+"(?<x>[\\P{scx=Greek}A])" flags="dug" input="\u00b5\u03b9A" lastIndex=0
+{
+  "m": [
+    "µ",
+    "µ"
+  ],
+  "index": 0,
+  "groups": {
+    "x": "µ"
+  },
+  "indices": [
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      1
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      0,
+      1
+    ]
+  },
+  "lastIndex": 1,
+  "source": "(?<x>[\\P{scx=Greek}A])"
+}
+
+"(?<x>[\\P{scx=Greek}A])" flags="diug" input="\u00b5\u03b9A" lastIndex=0
+{
+  "m": [
+    "µ",
+    "µ"
+  ],
+  "index": 0,
+  "groups": {
+    "x": "µ"
+  },
+  "indices": [
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      1
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      0,
+      1
+    ]
+  },
+  "lastIndex": 1,
+  "source": "(?<x>[\\P{scx=Greek}A])"
+}
+
+"(?<x>[\\P{scx=Greek}A])" flags="divg" input="\u00b5\u03b9A" lastIndex=0
+{
+  "m": [
+    "A",
+    "A"
+  ],
+  "index": 2,
+  "groups": {
+    "x": "A"
+  },
+  "indices": [
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      2,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<x>[\\P{scx=Greek}A])"
+}
+
+"(?<x>[\\P{scx=Greek}A])" flags="divy" input="\u00b5\u03b9A" lastIndex=0
+{
+  "m": null,
+  "lastIndex": 0,
+  "source": "(?<x>[\\P{scx=Greek}A])"
+}
+
+"(?<x>\\p{scx=Inherited})" flags="dug" input="\u0300\u0345\u0301\u034f" lastIndex=0
+{
+  "m": [
+    "͏",
+    "͏"
+  ],
+  "index": 3,
+  "groups": {
+    "x": "͏"
+  },
+  "indices": [
+    [
+      3,
+      4
+    ],
+    [
+      3,
+      4
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      3,
+      4
+    ]
+  },
+  "lastIndex": 4,
+  "source": "(?<x>\\p{scx=Inherited})"
+}
+
+"(?<x>\\p{scx=Inherited})" flags="diug" input="\u0300\u0345\u0301\u034f" lastIndex=0
+{
+  "m": [
+    "͏",
+    "͏"
+  ],
+  "index": 3,
+  "groups": {
+    "x": "͏"
+  },
+  "indices": [
+    [
+      3,
+      4
+    ],
+    [
+      3,
+      4
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      3,
+      4
+    ]
+  },
+  "lastIndex": 4,
+  "source": "(?<x>\\p{scx=Inherited})"
+}
+
+"(?<x>\\p{scx=Inherited})" flags="divg" input="\u0300\u0345\u0301\u034f" lastIndex=0
+{
+  "m": [
+    "͏",
+    "͏"
+  ],
+  "index": 3,
+  "groups": {
+    "x": "͏"
+  },
+  "indices": [
+    [
+      3,
+      4
+    ],
+    [
+      3,
+      4
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      3,
+      4
+    ]
+  },
+  "lastIndex": 4,
+  "source": "(?<x>\\p{scx=Inherited})"
+}
+
+"(?<x>\\p{scx=Inherited})" flags="divy" input="\u0300\u0345\u0301\u034f" lastIndex=0
+{
+  "m": null,
+  "lastIndex": 0,
+  "source": "(?<x>\\p{scx=Inherited})"
+}
+
+"(?<x>\\p{scx=Hira})" flags="dug" input="\ud83d\ude00\u30fc\u3042\u30a2" lastIndex=1
+{
+  "m": [
+    "ー",
+    "ー"
+  ],
+  "index": 2,
+  "groups": {
+    "x": "ー"
+  },
+  "indices": [
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      2,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<x>\\p{scx=Hira})"
+}
+
+"(?<x>\\p{scx=Hira})" flags="diug" input="\ud83d\ude00\u30fc\u3042\u30a2" lastIndex=1
+{
+  "m": [
+    "ー",
+    "ー"
+  ],
+  "index": 2,
+  "groups": {
+    "x": "ー"
+  },
+  "indices": [
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      2,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<x>\\p{scx=Hira})"
+}
+
+"(?<x>\\p{scx=Hira})" flags="divg" input="\ud83d\ude00\u30fc\u3042\u30a2" lastIndex=1
+{
+  "m": [
+    "ー",
+    "ー"
+  ],
+  "index": 2,
+  "groups": {
+    "x": "ー"
+  },
+  "indices": [
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      2,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<x>\\p{scx=Hira})"
+}
+
+"(?<x>\\p{scx=Hira})" flags="divy" input="\ud83d\ude00\u30fc\u3042\u30a2" lastIndex=1
+{
+  "m": null,
+  "lastIndex": 0,
+  "source": "(?<x>\\p{scx=Hira})"
+}
+
+"(?<x>\\p{scx=Zzzz})" flags="dug" input="\ud83d\ude00\ud800\ue000\u0378" lastIndex=1
+{
+  "m": [
+    "\ud800",
+    "\ud800"
+  ],
+  "index": 2,
+  "groups": {
+    "x": "\ud800"
+  },
+  "indices": [
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      2,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<x>\\p{scx=Zzzz})"
+}
+
+"(?<x>\\p{scx=Zzzz})" flags="diug" input="\ud83d\ude00\ud800\ue000\u0378" lastIndex=1
+{
+  "m": [
+    "\ud800",
+    "\ud800"
+  ],
+  "index": 2,
+  "groups": {
+    "x": "\ud800"
+  },
+  "indices": [
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      2,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<x>\\p{scx=Zzzz})"
+}
+
+"(?<x>\\p{scx=Zzzz})" flags="divg" input="\ud83d\ude00\ud800\ue000\u0378" lastIndex=1
+{
+  "m": [
+    "\ud800",
+    "\ud800"
+  ],
+  "index": 2,
+  "groups": {
+    "x": "\ud800"
+  },
+  "indices": [
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      2,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<x>\\p{scx=Zzzz})"
+}
+
+"(?<x>\\p{scx=Zzzz})" flags="divy" input="\ud83d\ude00\ud800\ue000\u0378" lastIndex=1
+{
+  "m": null,
+  "lastIndex": 0,
+  "source": "(?<x>\\p{scx=Zzzz})"
+}
+
+"(?<x>\\P{scx=Hrkt})" flags="dug" input="\ud83d\ude00\ud800" lastIndex=1
+{
+  "m": [
+    "😀",
+    "😀"
+  ],
+  "index": 0,
+  "groups": {
+    "x": "😀"
+  },
+  "indices": [
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      2
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      0,
+      2
+    ]
+  },
+  "lastIndex": 2,
+  "source": "(?<x>\\P{scx=Hrkt})"
+}
+
+"(?<x>\\P{scx=Hrkt})" flags="diug" input="\ud83d\ude00\ud800" lastIndex=1
+{
+  "m": [
+    "😀",
+    "😀"
+  ],
+  "index": 0,
+  "groups": {
+    "x": "😀"
+  },
+  "indices": [
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      2
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      0,
+      2
+    ]
+  },
+  "lastIndex": 2,
+  "source": "(?<x>\\P{scx=Hrkt})"
+}
+
+"(?<x>\\P{scx=Hrkt})" flags="divg" input="\ud83d\ude00\ud800" lastIndex=1
+{
+  "m": [
+    "😀",
+    "😀"
+  ],
+  "index": 0,
+  "groups": {
+    "x": "😀"
+  },
+  "indices": [
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      2
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      0,
+      2
+    ]
+  },
+  "lastIndex": 2,
+  "source": "(?<x>\\P{scx=Hrkt})"
+}
+
+"(?<x>\\P{scx=Hrkt})" flags="divy" input="\ud83d\ude00\ud800" lastIndex=1
+{
+  "m": [
+    "😀",
+    "😀"
+  ],
+  "index": 0,
+  "groups": {
+    "x": "😀"
+  },
+  "indices": [
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      2
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      0,
+      2
+    ]
+  },
+  "lastIndex": 2,
+  "source": "(?<x>\\P{scx=Hrkt})"
+}

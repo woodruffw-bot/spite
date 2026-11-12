@@ -37,14 +37,32 @@ fn unicode_nullable_alternative_results_snapshot() {
             ] {
                 for start in [0, 1, 2, input.len(), input.len() + 1] {
                     let script = format!(
-                        "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+                        r#"
+                            let r = new RegExp({pattern:?}, '{flags}');
+                            r.lastIndex = {start};
+                            let m = r.exec({input:?});
+                            JSON.stringify(m === null ? {{
+                                match: null,
+                                lastIndex: r.lastIndex
+                            }} : {{
+                                matches: [...m],
+                                index: m.index,
+                                input: m.input,
+                                groups: m.groups,
+                                indices: m.indices,
+                                indexGroups: m.indices.groups,
+                                lastIndex: r.lastIndex,
+                                source: r.source
+                            }})
+                        "#
                     );
                     let Value::String(result) = Realm::default().eval(&script).unwrap() else {
                         panic!("{script}")
                     };
                     writeln!(
                         rows,
-                        "{pattern:?} flags={flags:?} input={input:?} lastIndex={start} {result:?}"
+                        "{pattern:?} flags={flags:?} input={input:?} lastIndex={start} => {result}",
+                        result = result.to_utf8().expect("JSON output must be valid UTF-8"),
                     )
                     .unwrap();
                 }
@@ -190,12 +208,21 @@ fn unicode_nullable_alternative_former_whole_programs_snapshot() {
         "new RegExp('(a|)*','v').exec('aa')",
     ] {
         let Value::String(result) = Realm::default()
-            .eval(&format!("JSON.stringify({source})"))
+            .eval(&format!(
+                r#"
+                JSON.stringify({source}, null, 2)
+            "#
+            ))
             .unwrap()
         else {
             panic!("{source}")
         };
-        writeln!(rows, "{source:?} {result:?}").unwrap();
+        writeln!(
+            rows,
+            "{source:?}\n{result}\n",
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
+        )
+        .unwrap();
     }
     assert_true(
         r"let m=new RegExp('(a|)*','u').exec('aa');m[0]==='aa'&&m[1]==='a'&&m.index===0&&m.input==='aa'",
@@ -204,7 +231,16 @@ fn unicode_nullable_alternative_former_whole_programs_snapshot() {
         r"let m=new RegExp('(a|)*','v').exec('aa');m[0]==='aa'&&m[1]==='a'&&m.index===0&&m.input==='aa'",
     );
     insta::assert_snapshot!(rows, @r#"
-        "new RegExp('(a|)*','u').exec('aa')" "[\u0022aa\u0022,\u0022a\u0022]"
-        "new RegExp('(a|)*','v').exec('aa')" "[\u0022aa\u0022,\u0022a\u0022]"
+        "new RegExp('(a|)*','u').exec('aa')"
+        [
+          "aa",
+          "a"
+        ]
+
+        "new RegExp('(a|)*','v').exec('aa')"
+        [
+          "aa",
+          "a"
+        ]
         "#);
 }

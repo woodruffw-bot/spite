@@ -38,14 +38,31 @@ fn unicode_class_results_snapshot() {
                 for start in [0, 1, 2, input.len(), input.len() + 1] {
                     let p = JsString::from(pattern);
                     let script = format!(
-                        "let r=new RegExp({p:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,lastIndex:r.lastIndex,source:r.source}})"
+                        r#"
+                            let r = new RegExp({p:?}, '{flags}');
+                            r.lastIndex = {start};
+                            let m = r.exec({input:?});
+                            JSON.stringify(m === null ? {{
+                                match: null,
+                                lastIndex: r.lastIndex
+                            }} : {{
+                                matches: [...m],
+                                index: m.index,
+                                input: m.input,
+                                groups: m.groups,
+                                indices: m.indices,
+                                lastIndex: r.lastIndex,
+                                source: r.source
+                            }})
+                        "#
                     );
                     let Value::String(result) = Realm::default().eval(&script).unwrap() else {
                         panic!("{script}")
                     };
                     writeln!(
                         rows,
-                        "{p:?} flags={flags:?} input={input:?} lastIndex={start} {result:?}"
+                        "{p:?} flags={flags:?} input={input:?} lastIndex={start} => {result}",
+                        result = result.to_utf8().expect("JSON output must be valid UTF-8"),
                     )
                     .unwrap();
                 }
@@ -271,29 +288,84 @@ fn original_unicode_class_complete_programs() {
         r"/[\uD7FF-\uE000]/v.exec('a')",
     ] {
         let Value::String(result) = Realm::default()
-            .eval(&format!("JSON.stringify({source})"))
+            .eval(&format!(
+                r#"
+                JSON.stringify({source}, null, 2)
+            "#
+            ))
             .unwrap()
         else {
             panic!("{source}")
         };
-        writeln!(rows, "{:?} {result:?}", JsString::from(source)).unwrap();
+        writeln!(
+            rows,
+            "{:?}\n{result}\n",
+            JsString::from(source),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
+        )
+        .unwrap();
     }
     insta::assert_snapshot!(rows, @r#"
-        "/[\u005cu{1f600}]/u.test('a')" "false"
-        "/[\u005cu{1f600}]/v.exec('a')" "null"
-        "/[^a]/u.exec('b')" "[\u0022b\u0022]"
-        "/[\u005cuD800]/u.exec('\u005cuD800')" "[\u0022\u005cud800\u0022]"
-        "/[\u005cuD7FF-\u005cuE000]/u.exec('a')" "null"
-        "/[\u005cu{1f600}]/u.exec('a')" "null"
-        "/[\u005cu{10000}]/u.exec('a')" "null"
-        "/[\u005cu{D800}]/v.exec('\u005cuD800')" "[\u0022\u005cud800\u0022]"
-        "/[\u005cu{D7FF}-\u005cu{E000}]/u.exec('a')" "null"
-        "/[^\u005cu{61}]/u.exec('b')" "[\u0022b\u0022]"
-        "/[\u005cD]/u.exec('a')" "[\u0022a\u0022]"
-        "/[^a]/v.exec('b')" "[\u0022b\u0022]"
-        "/[\u005cu{1f600}]/v.exec('\ud83d\ude00')" "[\u0022\ud83d\ude00\u0022]"
-        "/[\u005cuD800]/v.exec('\u005cuD800')" "[\u0022\u005cud800\u0022]"
-        "/[\u005cuD7FF-\u005cuE000]/v.exec('a')" "null"
+        "/[\u005cu{1f600}]/u.test('a')"
+        false
+
+        "/[\u005cu{1f600}]/v.exec('a')"
+        null
+
+        "/[^a]/u.exec('b')"
+        [
+          "b"
+        ]
+
+        "/[\u005cuD800]/u.exec('\u005cuD800')"
+        [
+          "\ud800"
+        ]
+
+        "/[\u005cuD7FF-\u005cuE000]/u.exec('a')"
+        null
+
+        "/[\u005cu{1f600}]/u.exec('a')"
+        null
+
+        "/[\u005cu{10000}]/u.exec('a')"
+        null
+
+        "/[\u005cu{D800}]/v.exec('\u005cuD800')"
+        [
+          "\ud800"
+        ]
+
+        "/[\u005cu{D7FF}-\u005cu{E000}]/u.exec('a')"
+        null
+
+        "/[^\u005cu{61}]/u.exec('b')"
+        [
+          "b"
+        ]
+
+        "/[\u005cD]/u.exec('a')"
+        [
+          "a"
+        ]
+
+        "/[^a]/v.exec('b')"
+        [
+          "b"
+        ]
+
+        "/[\u005cu{1f600}]/v.exec('\ud83d\ude00')"
+        [
+          "😀"
+        ]
+
+        "/[\u005cuD800]/v.exec('\u005cuD800')"
+        [
+          "\ud800"
+        ]
+
+        "/[\u005cuD7FF-\u005cuE000]/v.exec('a')"
+        null
         "#);
 }
 

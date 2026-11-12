@@ -24,14 +24,32 @@ fn unicode_binary_property_results_snapshot() {
                 let input = JsString::from(input);
                 for start in [0, 1, 2, input.len(), input.len() + 1] {
                     let script = format!(
-                        "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+                        r#"
+                            let r = new RegExp({pattern:?}, '{flags}');
+                            r.lastIndex = {start};
+                            let m = r.exec({input:?});
+                            JSON.stringify(m === null ? {{
+                                match: null,
+                                lastIndex: r.lastIndex
+                            }} : {{
+                                matches: [...m],
+                                index: m.index,
+                                input: m.input,
+                                groups: m.groups,
+                                indices: m.indices,
+                                indexGroups: m.indices.groups,
+                                lastIndex: r.lastIndex,
+                                source: r.source
+                            }})
+                        "#
                     );
                     let Value::String(result) = Realm::default().eval(&script).unwrap() else {
                         panic!("{script}")
                     };
                     writeln!(
                         rows,
-                        "{pattern:?} flags={flags:?} input={input:?} lastIndex={start} {result:?}"
+                        "{pattern:?} flags={flags:?} input={input:?} lastIndex={start} => {result}",
+                        result = result.to_utf8().expect("JSON output must be valid UTF-8"),
                     )
                     .unwrap();
                 }
@@ -259,15 +277,37 @@ fn original_unicode_binary_property_complete_programs() {
         r"/\p{ASCII}/iv.exec('a')",
         r"/\p{ASCII}/u.exec('a')",
     ] {
-        let program = format!("JSON.stringify(eval({:?}))", JsString::from(source));
+        let program = format!(
+            r#"
+            JSON.stringify(eval({:?}), null, 2)
+        "#,
+            JsString::from(source)
+        );
         let Value::String(result) = Realm::default().eval(&program).unwrap() else {
             panic!("{program}")
         };
-        writeln!(rows, "{:?} {result:?}", JsString::from(source)).unwrap();
+        writeln!(
+            rows,
+            "{:?}\n{result}\n",
+            JsString::from(source),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
+        )
+        .unwrap();
     }
     insta::assert_snapshot!(rows, @r#"
-        "/^\u005cp{ASCII}$/v.exec('a')" "[\u0022a\u0022]"
-        "/\u005cp{ASCII}/iv.exec('a')" "[\u0022a\u0022]"
-        "/\u005cp{ASCII}/u.exec('a')" "[\u0022a\u0022]"
+        "/^\u005cp{ASCII}$/v.exec('a')"
+        [
+          "a"
+        ]
+
+        "/\u005cp{ASCII}/iv.exec('a')"
+        [
+          "a"
+        ]
+
+        "/\u005cp{ASCII}/u.exec('a')"
+        [
+          "a"
+        ]
         "#);
 }

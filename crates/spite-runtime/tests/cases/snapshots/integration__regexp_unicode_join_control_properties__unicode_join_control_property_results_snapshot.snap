@@ -2,563 +2,563 @@
 source: crates/spite-runtime/tests/cases/regexp_unicode_join_control_properties.rs
 expression: rows
 ---
-"\u005cp{Join_Control}" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022\u005c\u005cp{Join_Control}\u0022}"
-"\u005cp{Join_Control}" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022\u005c\u005cp{Join_Control}\u0022}"
-"\u005cp{Join_Control}" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022\u005c\u005cp{Join_Control}\u0022}"
-"\u005cp{Join_Control}" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022\u005c\u005cp{Join_Control}\u0022}"
-"\u005cp{Join_Control}" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022\u005c\u005cp{Join_Control}\u0022}"
-"\u005cp{Join_Control}" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022\u005c\u005cp{Join_Control}\u0022}"
-"\u005cp{Join_Control}" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="dug" input="\uff10\uff26" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="dug" input="\uff10\uff26" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="dug" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="dug" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="dug" input="\uff10\uff26" lastIndex=3 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="dug" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="dug" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="dug" input="" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="dug" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="dug" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022\u005c\u005cp{Join_Control}\u0022}"
-"\u005cp{Join_Control}" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022\u005c\u005cp{Join_Control}\u0022}"
-"\u005cp{Join_Control}" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022\u005c\u005cp{Join_Control}\u0022}"
-"\u005cp{Join_Control}" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022\u005c\u005cp{Join_Control}\u0022}"
-"\u005cp{Join_Control}" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022\u005c\u005cp{Join_Control}\u0022}"
-"\u005cp{Join_Control}" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022\u005c\u005cp{Join_Control}\u0022}"
-"\u005cp{Join_Control}" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="diug" input="\uff10\uff26" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="diug" input="\uff10\uff26" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="diug" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="diug" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="diug" input="\uff10\uff26" lastIndex=3 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="diug" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="diug" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="diug" input="" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="diug" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="diug" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022\u005c\u005cp{Join_Control}\u0022}"
-"\u005cp{Join_Control}" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022\u005c\u005cp{Join_Control}\u0022}"
-"\u005cp{Join_Control}" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022\u005c\u005cp{Join_Control}\u0022}"
-"\u005cp{Join_Control}" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022\u005c\u005cp{Join_Control}\u0022}"
-"\u005cp{Join_Control}" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022\u005c\u005cp{Join_Control}\u0022}"
-"\u005cp{Join_Control}" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022\u005c\u005cp{Join_Control}\u0022}"
-"\u005cp{Join_Control}" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="divg" input="\uff10\uff26" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="divg" input="\uff10\uff26" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="divg" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="divg" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="divg" input="\uff10\uff26" lastIndex=3 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="divg" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="divg" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="divg" input="" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="divg" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="divg" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="divmy" input="\uff10\uff26" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="divmy" input="\uff10\uff26" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="divmy" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="divmy" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="divmy" input="\uff10\uff26" lastIndex=3 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="divmy" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="divmy" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="divmy" input="" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="divmy" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cp{Join_Control}" flags="divmy" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[0,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022\u005c\u005cP{Join_C}\u0022}"
-"\u005cP{Join_C}" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[0,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022\u005c\u005cP{Join_C}\u0022}"
-"\u005cP{Join_C}" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 "{\u0022matches\u0022:[\u0022\u200b\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[2,3]],\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022\u005c\u005cP{Join_C}\u0022}"
-"\u005cP{Join_C}" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 "{\u0022matches\u0022:[\u0022X\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[0,1]],\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022\u005c\u005cP{Join_C}\u0022}"
-"\u005cP{Join_C}" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 "{\u0022matches\u0022:[\u0022\u005cr\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[1,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022\u005c\u005cP{Join_C}\u0022}"
-"\u005cP{Join_C}" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 "{\u0022matches\u0022:[\u0022\u005cn\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[2,3]],\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022\u005c\u005cP{Join_C}\u0022}"
-"\u005cP{Join_C}" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="dug" input="\uff10\uff26" lastIndex=0 "{\u0022matches\u0022:[\u0022\uff10\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\uff10\uff26\u0022,\u0022indices\u0022:[[0,1]],\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022\u005c\u005cP{Join_C}\u0022}"
-"\u005cP{Join_C}" flags="dug" input="\uff10\uff26" lastIndex=1 "{\u0022matches\u0022:[\u0022\uff26\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022\uff10\uff26\u0022,\u0022indices\u0022:[[1,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022\u005c\u005cP{Join_C}\u0022}"
-"\u005cP{Join_C}" flags="dug" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="dug" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="dug" input="\uff10\uff26" lastIndex=3 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="dug" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="dug" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="dug" input="" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="dug" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="dug" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[0,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022\u005c\u005cP{Join_C}\u0022}"
-"\u005cP{Join_C}" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[0,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022\u005c\u005cP{Join_C}\u0022}"
-"\u005cP{Join_C}" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 "{\u0022matches\u0022:[\u0022\u200b\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[2,3]],\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022\u005c\u005cP{Join_C}\u0022}"
-"\u005cP{Join_C}" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 "{\u0022matches\u0022:[\u0022X\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[0,1]],\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022\u005c\u005cP{Join_C}\u0022}"
-"\u005cP{Join_C}" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 "{\u0022matches\u0022:[\u0022\u005cr\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[1,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022\u005c\u005cP{Join_C}\u0022}"
-"\u005cP{Join_C}" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 "{\u0022matches\u0022:[\u0022\u005cn\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[2,3]],\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022\u005c\u005cP{Join_C}\u0022}"
-"\u005cP{Join_C}" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="diug" input="\uff10\uff26" lastIndex=0 "{\u0022matches\u0022:[\u0022\uff10\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\uff10\uff26\u0022,\u0022indices\u0022:[[0,1]],\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022\u005c\u005cP{Join_C}\u0022}"
-"\u005cP{Join_C}" flags="diug" input="\uff10\uff26" lastIndex=1 "{\u0022matches\u0022:[\u0022\uff26\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022\uff10\uff26\u0022,\u0022indices\u0022:[[1,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022\u005c\u005cP{Join_C}\u0022}"
-"\u005cP{Join_C}" flags="diug" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="diug" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="diug" input="\uff10\uff26" lastIndex=3 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="diug" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="diug" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="diug" input="" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="diug" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="diug" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[0,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022\u005c\u005cP{Join_C}\u0022}"
-"\u005cP{Join_C}" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[0,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022\u005c\u005cP{Join_C}\u0022}"
-"\u005cP{Join_C}" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 "{\u0022matches\u0022:[\u0022\u200b\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[2,3]],\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022\u005c\u005cP{Join_C}\u0022}"
-"\u005cP{Join_C}" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 "{\u0022matches\u0022:[\u0022X\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[0,1]],\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022\u005c\u005cP{Join_C}\u0022}"
-"\u005cP{Join_C}" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 "{\u0022matches\u0022:[\u0022\u005cr\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[1,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022\u005c\u005cP{Join_C}\u0022}"
-"\u005cP{Join_C}" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 "{\u0022matches\u0022:[\u0022\u005cn\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[2,3]],\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022\u005c\u005cP{Join_C}\u0022}"
-"\u005cP{Join_C}" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="divg" input="\uff10\uff26" lastIndex=0 "{\u0022matches\u0022:[\u0022\uff10\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\uff10\uff26\u0022,\u0022indices\u0022:[[0,1]],\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022\u005c\u005cP{Join_C}\u0022}"
-"\u005cP{Join_C}" flags="divg" input="\uff10\uff26" lastIndex=1 "{\u0022matches\u0022:[\u0022\uff26\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022\uff10\uff26\u0022,\u0022indices\u0022:[[1,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022\u005c\u005cP{Join_C}\u0022}"
-"\u005cP{Join_C}" flags="divg" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="divg" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="divg" input="\uff10\uff26" lastIndex=3 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="divg" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="divg" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="divg" input="" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="divg" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="divg" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[0,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022\u005c\u005cP{Join_C}\u0022}"
-"\u005cP{Join_C}" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[0,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022\u005c\u005cP{Join_C}\u0022}"
-"\u005cP{Join_C}" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 "{\u0022matches\u0022:[\u0022\u200b\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[2,3]],\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022\u005c\u005cP{Join_C}\u0022}"
-"\u005cP{Join_C}" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 "{\u0022matches\u0022:[\u0022X\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[0,1]],\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022\u005c\u005cP{Join_C}\u0022}"
-"\u005cP{Join_C}" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 "{\u0022matches\u0022:[\u0022\u005cr\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[1,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022\u005c\u005cP{Join_C}\u0022}"
-"\u005cP{Join_C}" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 "{\u0022matches\u0022:[\u0022\u005cn\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[2,3]],\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022\u005c\u005cP{Join_C}\u0022}"
-"\u005cP{Join_C}" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="divmy" input="\uff10\uff26" lastIndex=0 "{\u0022matches\u0022:[\u0022\uff10\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\uff10\uff26\u0022,\u0022indices\u0022:[[0,1]],\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022\u005c\u005cP{Join_C}\u0022}"
-"\u005cP{Join_C}" flags="divmy" input="\uff10\uff26" lastIndex=1 "{\u0022matches\u0022:[\u0022\uff26\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022\uff10\uff26\u0022,\u0022indices\u0022:[[1,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022\u005c\u005cP{Join_C}\u0022}"
-"\u005cP{Join_C}" flags="divmy" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="divmy" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="divmy" input="\uff10\uff26" lastIndex=3 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="divmy" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="divmy" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="divmy" input="" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="divmy" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"\u005cP{Join_C}" flags="divmy" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[0,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022[^\u005c\u005cp{Join_C}]\u0022}"
-"[^\u005cp{Join_C}]" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[0,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022[^\u005c\u005cp{Join_C}]\u0022}"
-"[^\u005cp{Join_C}]" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 "{\u0022matches\u0022:[\u0022\u200b\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[2,3]],\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022[^\u005c\u005cp{Join_C}]\u0022}"
-"[^\u005cp{Join_C}]" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 "{\u0022matches\u0022:[\u0022X\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[0,1]],\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022[^\u005c\u005cp{Join_C}]\u0022}"
-"[^\u005cp{Join_C}]" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 "{\u0022matches\u0022:[\u0022\u005cr\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[1,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022[^\u005c\u005cp{Join_C}]\u0022}"
-"[^\u005cp{Join_C}]" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 "{\u0022matches\u0022:[\u0022\u005cn\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[2,3]],\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022[^\u005c\u005cp{Join_C}]\u0022}"
-"[^\u005cp{Join_C}]" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="dug" input="\uff10\uff26" lastIndex=0 "{\u0022matches\u0022:[\u0022\uff10\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\uff10\uff26\u0022,\u0022indices\u0022:[[0,1]],\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022[^\u005c\u005cp{Join_C}]\u0022}"
-"[^\u005cp{Join_C}]" flags="dug" input="\uff10\uff26" lastIndex=1 "{\u0022matches\u0022:[\u0022\uff26\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022\uff10\uff26\u0022,\u0022indices\u0022:[[1,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022[^\u005c\u005cp{Join_C}]\u0022}"
-"[^\u005cp{Join_C}]" flags="dug" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="dug" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="dug" input="\uff10\uff26" lastIndex=3 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="dug" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="dug" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="dug" input="" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="dug" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="dug" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[0,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022[^\u005c\u005cp{Join_C}]\u0022}"
-"[^\u005cp{Join_C}]" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[0,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022[^\u005c\u005cp{Join_C}]\u0022}"
-"[^\u005cp{Join_C}]" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 "{\u0022matches\u0022:[\u0022\u200b\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[2,3]],\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022[^\u005c\u005cp{Join_C}]\u0022}"
-"[^\u005cp{Join_C}]" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 "{\u0022matches\u0022:[\u0022X\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[0,1]],\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022[^\u005c\u005cp{Join_C}]\u0022}"
-"[^\u005cp{Join_C}]" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 "{\u0022matches\u0022:[\u0022\u005cr\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[1,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022[^\u005c\u005cp{Join_C}]\u0022}"
-"[^\u005cp{Join_C}]" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 "{\u0022matches\u0022:[\u0022\u005cn\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[2,3]],\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022[^\u005c\u005cp{Join_C}]\u0022}"
-"[^\u005cp{Join_C}]" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="diug" input="\uff10\uff26" lastIndex=0 "{\u0022matches\u0022:[\u0022\uff10\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\uff10\uff26\u0022,\u0022indices\u0022:[[0,1]],\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022[^\u005c\u005cp{Join_C}]\u0022}"
-"[^\u005cp{Join_C}]" flags="diug" input="\uff10\uff26" lastIndex=1 "{\u0022matches\u0022:[\u0022\uff26\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022\uff10\uff26\u0022,\u0022indices\u0022:[[1,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022[^\u005c\u005cp{Join_C}]\u0022}"
-"[^\u005cp{Join_C}]" flags="diug" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="diug" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="diug" input="\uff10\uff26" lastIndex=3 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="diug" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="diug" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="diug" input="" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="diug" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="diug" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[0,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022[^\u005c\u005cp{Join_C}]\u0022}"
-"[^\u005cp{Join_C}]" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[0,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022[^\u005c\u005cp{Join_C}]\u0022}"
-"[^\u005cp{Join_C}]" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 "{\u0022matches\u0022:[\u0022\u200b\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[2,3]],\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022[^\u005c\u005cp{Join_C}]\u0022}"
-"[^\u005cp{Join_C}]" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 "{\u0022matches\u0022:[\u0022X\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[0,1]],\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022[^\u005c\u005cp{Join_C}]\u0022}"
-"[^\u005cp{Join_C}]" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 "{\u0022matches\u0022:[\u0022\u005cr\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[1,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022[^\u005c\u005cp{Join_C}]\u0022}"
-"[^\u005cp{Join_C}]" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 "{\u0022matches\u0022:[\u0022\u005cn\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[2,3]],\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022[^\u005c\u005cp{Join_C}]\u0022}"
-"[^\u005cp{Join_C}]" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="divg" input="\uff10\uff26" lastIndex=0 "{\u0022matches\u0022:[\u0022\uff10\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\uff10\uff26\u0022,\u0022indices\u0022:[[0,1]],\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022[^\u005c\u005cp{Join_C}]\u0022}"
-"[^\u005cp{Join_C}]" flags="divg" input="\uff10\uff26" lastIndex=1 "{\u0022matches\u0022:[\u0022\uff26\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022\uff10\uff26\u0022,\u0022indices\u0022:[[1,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022[^\u005c\u005cp{Join_C}]\u0022}"
-"[^\u005cp{Join_C}]" flags="divg" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="divg" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="divg" input="\uff10\uff26" lastIndex=3 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="divg" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="divg" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="divg" input="" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="divg" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="divg" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[0,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022[^\u005c\u005cp{Join_C}]\u0022}"
-"[^\u005cp{Join_C}]" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[0,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022[^\u005c\u005cp{Join_C}]\u0022}"
-"[^\u005cp{Join_C}]" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 "{\u0022matches\u0022:[\u0022\u200b\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[2,3]],\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022[^\u005c\u005cp{Join_C}]\u0022}"
-"[^\u005cp{Join_C}]" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 "{\u0022matches\u0022:[\u0022X\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[0,1]],\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022[^\u005c\u005cp{Join_C}]\u0022}"
-"[^\u005cp{Join_C}]" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 "{\u0022matches\u0022:[\u0022\u005cr\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[1,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022[^\u005c\u005cp{Join_C}]\u0022}"
-"[^\u005cp{Join_C}]" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 "{\u0022matches\u0022:[\u0022\u005cn\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[2,3]],\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022[^\u005c\u005cp{Join_C}]\u0022}"
-"[^\u005cp{Join_C}]" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="divmy" input="\uff10\uff26" lastIndex=0 "{\u0022matches\u0022:[\u0022\uff10\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\uff10\uff26\u0022,\u0022indices\u0022:[[0,1]],\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022[^\u005c\u005cp{Join_C}]\u0022}"
-"[^\u005cp{Join_C}]" flags="divmy" input="\uff10\uff26" lastIndex=1 "{\u0022matches\u0022:[\u0022\uff26\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022\uff10\uff26\u0022,\u0022indices\u0022:[[1,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022[^\u005c\u005cp{Join_C}]\u0022}"
-"[^\u005cp{Join_C}]" flags="divmy" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="divmy" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="divmy" input="\uff10\uff26" lastIndex=3 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="divmy" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="divmy" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="divmy" input="" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="divmy" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[^\u005cp{Join_C}]" flags="divmy" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022[\u005c\u005cp{Join_C}K]\u0022}"
-"[\u005cp{Join_C}K]" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022[\u005c\u005cp{Join_C}K]\u0022}"
-"[\u005cp{Join_C}K]" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022[\u005c\u005cp{Join_C}K]\u0022}"
-"[\u005cp{Join_C}K]" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022[\u005c\u005cp{Join_C}K]\u0022}"
-"[\u005cp{Join_C}K]" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022[\u005c\u005cp{Join_C}K]\u0022}"
-"[\u005cp{Join_C}K]" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022[\u005c\u005cp{Join_C}K]\u0022}"
-"[\u005cp{Join_C}K]" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="dug" input="\uff10\uff26" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="dug" input="\uff10\uff26" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="dug" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="dug" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="dug" input="\uff10\uff26" lastIndex=3 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="dug" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="dug" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="dug" input="" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="dug" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="dug" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022[\u005c\u005cp{Join_C}K]\u0022}"
-"[\u005cp{Join_C}K]" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022[\u005c\u005cp{Join_C}K]\u0022}"
-"[\u005cp{Join_C}K]" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022[\u005c\u005cp{Join_C}K]\u0022}"
-"[\u005cp{Join_C}K]" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022[\u005c\u005cp{Join_C}K]\u0022}"
-"[\u005cp{Join_C}K]" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022[\u005c\u005cp{Join_C}K]\u0022}"
-"[\u005cp{Join_C}K]" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022[\u005c\u005cp{Join_C}K]\u0022}"
-"[\u005cp{Join_C}K]" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="diug" input="\uff10\uff26" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="diug" input="\uff10\uff26" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="diug" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="diug" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="diug" input="\uff10\uff26" lastIndex=3 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="diug" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="diug" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="diug" input="" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="diug" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="diug" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022[\u005c\u005cp{Join_C}K]\u0022}"
-"[\u005cp{Join_C}K]" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022[\u005c\u005cp{Join_C}K]\u0022}"
-"[\u005cp{Join_C}K]" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022[\u005c\u005cp{Join_C}K]\u0022}"
-"[\u005cp{Join_C}K]" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022[\u005c\u005cp{Join_C}K]\u0022}"
-"[\u005cp{Join_C}K]" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022[\u005c\u005cp{Join_C}K]\u0022}"
-"[\u005cp{Join_C}K]" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 "{\u0022matches\u0022:[\u0022\u200c\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[3,4]],\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022[\u005c\u005cp{Join_C}K]\u0022}"
-"[\u005cp{Join_C}K]" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="divg" input="\uff10\uff26" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="divg" input="\uff10\uff26" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="divg" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="divg" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="divg" input="\uff10\uff26" lastIndex=3 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="divg" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="divg" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="divg" input="" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="divg" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="divg" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="divmy" input="\uff10\uff26" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="divmy" input="\uff10\uff26" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="divmy" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="divmy" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="divmy" input="\uff10\uff26" lastIndex=3 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="divmy" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="divmy" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="divmy" input="" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="divmy" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cp{Join_C}K]" flags="divmy" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[0,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022[\u005c\u005cP{Join_Control}K]\u0022}"
-"[\u005cP{Join_Control}K]" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[0,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022[\u005c\u005cP{Join_Control}K]\u0022}"
-"[\u005cP{Join_Control}K]" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 "{\u0022matches\u0022:[\u0022\u200b\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[2,3]],\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022[\u005c\u005cP{Join_Control}K]\u0022}"
-"[\u005cP{Join_Control}K]" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 "{\u0022matches\u0022:[\u0022X\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[0,1]],\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022[\u005c\u005cP{Join_Control}K]\u0022}"
-"[\u005cP{Join_Control}K]" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 "{\u0022matches\u0022:[\u0022\u005cr\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[1,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022[\u005c\u005cP{Join_Control}K]\u0022}"
-"[\u005cP{Join_Control}K]" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 "{\u0022matches\u0022:[\u0022\u005cn\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[2,3]],\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022[\u005c\u005cP{Join_Control}K]\u0022}"
-"[\u005cP{Join_Control}K]" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="dug" input="\uff10\uff26" lastIndex=0 "{\u0022matches\u0022:[\u0022\uff10\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\uff10\uff26\u0022,\u0022indices\u0022:[[0,1]],\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022[\u005c\u005cP{Join_Control}K]\u0022}"
-"[\u005cP{Join_Control}K]" flags="dug" input="\uff10\uff26" lastIndex=1 "{\u0022matches\u0022:[\u0022\uff26\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022\uff10\uff26\u0022,\u0022indices\u0022:[[1,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022[\u005c\u005cP{Join_Control}K]\u0022}"
-"[\u005cP{Join_Control}K]" flags="dug" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="dug" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="dug" input="\uff10\uff26" lastIndex=3 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="dug" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="dug" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="dug" input="" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="dug" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="dug" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[0,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022[\u005c\u005cP{Join_Control}K]\u0022}"
-"[\u005cP{Join_Control}K]" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[0,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022[\u005c\u005cP{Join_Control}K]\u0022}"
-"[\u005cP{Join_Control}K]" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 "{\u0022matches\u0022:[\u0022\u200b\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[2,3]],\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022[\u005c\u005cP{Join_Control}K]\u0022}"
-"[\u005cP{Join_Control}K]" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 "{\u0022matches\u0022:[\u0022X\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[0,1]],\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022[\u005c\u005cP{Join_Control}K]\u0022}"
-"[\u005cP{Join_Control}K]" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 "{\u0022matches\u0022:[\u0022\u005cr\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[1,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022[\u005c\u005cP{Join_Control}K]\u0022}"
-"[\u005cP{Join_Control}K]" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 "{\u0022matches\u0022:[\u0022\u005cn\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[2,3]],\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022[\u005c\u005cP{Join_Control}K]\u0022}"
-"[\u005cP{Join_Control}K]" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="diug" input="\uff10\uff26" lastIndex=0 "{\u0022matches\u0022:[\u0022\uff10\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\uff10\uff26\u0022,\u0022indices\u0022:[[0,1]],\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022[\u005c\u005cP{Join_Control}K]\u0022}"
-"[\u005cP{Join_Control}K]" flags="diug" input="\uff10\uff26" lastIndex=1 "{\u0022matches\u0022:[\u0022\uff26\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022\uff10\uff26\u0022,\u0022indices\u0022:[[1,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022[\u005c\u005cP{Join_Control}K]\u0022}"
-"[\u005cP{Join_Control}K]" flags="diug" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="diug" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="diug" input="\uff10\uff26" lastIndex=3 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="diug" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="diug" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="diug" input="" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="diug" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="diug" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[0,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022[\u005c\u005cP{Join_Control}K]\u0022}"
-"[\u005cP{Join_Control}K]" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[0,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022[\u005c\u005cP{Join_Control}K]\u0022}"
-"[\u005cP{Join_Control}K]" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 "{\u0022matches\u0022:[\u0022\u200b\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[2,3]],\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022[\u005c\u005cP{Join_Control}K]\u0022}"
-"[\u005cP{Join_Control}K]" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 "{\u0022matches\u0022:[\u0022X\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[0,1]],\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022[\u005c\u005cP{Join_Control}K]\u0022}"
-"[\u005cP{Join_Control}K]" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 "{\u0022matches\u0022:[\u0022\u005cr\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[1,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022[\u005c\u005cP{Join_Control}K]\u0022}"
-"[\u005cP{Join_Control}K]" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 "{\u0022matches\u0022:[\u0022\u005cn\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[2,3]],\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022[\u005c\u005cP{Join_Control}K]\u0022}"
-"[\u005cP{Join_Control}K]" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="divg" input="\uff10\uff26" lastIndex=0 "{\u0022matches\u0022:[\u0022\uff10\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\uff10\uff26\u0022,\u0022indices\u0022:[[0,1]],\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022[\u005c\u005cP{Join_Control}K]\u0022}"
-"[\u005cP{Join_Control}K]" flags="divg" input="\uff10\uff26" lastIndex=1 "{\u0022matches\u0022:[\u0022\uff26\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022\uff10\uff26\u0022,\u0022indices\u0022:[[1,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022[\u005c\u005cP{Join_Control}K]\u0022}"
-"[\u005cP{Join_Control}K]" flags="divg" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="divg" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="divg" input="\uff10\uff26" lastIndex=3 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="divg" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="divg" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="divg" input="" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="divg" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="divg" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[0,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022[\u005c\u005cP{Join_Control}K]\u0022}"
-"[\u005cP{Join_Control}K]" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[0,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022[\u005c\u005cP{Join_Control}K]\u0022}"
-"[\u005cP{Join_Control}K]" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 "{\u0022matches\u0022:[\u0022\u200b\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022indices\u0022:[[2,3]],\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022[\u005c\u005cP{Join_Control}K]\u0022}"
-"[\u005cP{Join_Control}K]" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 "{\u0022matches\u0022:[\u0022X\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[0,1]],\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022[\u005c\u005cP{Join_Control}K]\u0022}"
-"[\u005cP{Join_Control}K]" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 "{\u0022matches\u0022:[\u0022\u005cr\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[1,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022[\u005c\u005cP{Join_Control}K]\u0022}"
-"[\u005cP{Join_Control}K]" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 "{\u0022matches\u0022:[\u0022\u005cn\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022indices\u0022:[[2,3]],\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022[\u005c\u005cP{Join_Control}K]\u0022}"
-"[\u005cP{Join_Control}K]" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="divmy" input="\uff10\uff26" lastIndex=0 "{\u0022matches\u0022:[\u0022\uff10\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\uff10\uff26\u0022,\u0022indices\u0022:[[0,1]],\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022[\u005c\u005cP{Join_Control}K]\u0022}"
-"[\u005cP{Join_Control}K]" flags="divmy" input="\uff10\uff26" lastIndex=1 "{\u0022matches\u0022:[\u0022\uff26\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022\uff10\uff26\u0022,\u0022indices\u0022:[[1,2]],\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022[\u005c\u005cP{Join_Control}K]\u0022}"
-"[\u005cP{Join_Control}K]" flags="divmy" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="divmy" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="divmy" input="\uff10\uff26" lastIndex=3 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="divmy" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="divmy" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="divmy" input="" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="divmy" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"[\u005cP{Join_Control}K]" flags="divmy" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="\uff10\uff26" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="\uff10\uff26" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="\uff10\uff26" lastIndex=3 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="\uff10\uff26" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="\uff10\uff26" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="\uff10\uff26" lastIndex=3 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="\uff10\uff26" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="\uff10\uff26" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="\uff10\uff26" lastIndex=3 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="\uff10\uff26" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="\uff10\uff26" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="\uff10\uff26" lastIndex=3 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022\ud83d\ude00\u0022},\u0022indices\u0022:[[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022x\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<x>\u005c\u005cP{Join_Control})\u0022}"
-"(?<x>\u005cP{Join_Control})" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022\ud83d\ude00\u0022},\u0022indices\u0022:[[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022x\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<x>\u005c\u005cP{Join_Control})\u0022}"
-"(?<x>\u005cP{Join_Control})" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 "{\u0022matches\u0022:[\u0022\u200b\u0022,\u0022\u200b\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022\u200b\u0022},\u0022indices\u0022:[[2,3],[2,3]],\u0022indexGroups\u0022:{\u0022x\u0022:[2,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<x>\u005c\u005cP{Join_Control})\u0022}"
-"(?<x>\u005cP{Join_Control})" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 "{\u0022matches\u0022:[\u0022X\u0022,\u0022X\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022X\u0022},\u0022indices\u0022:[[0,1],[0,1]],\u0022indexGroups\u0022:{\u0022x\u0022:[0,1]},\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022(?<x>\u005c\u005cP{Join_Control})\u0022}"
-"(?<x>\u005cP{Join_Control})" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 "{\u0022matches\u0022:[\u0022\u005cr\u0022,\u0022\u005cr\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022\u005cr\u0022},\u0022indices\u0022:[[1,2],[1,2]],\u0022indexGroups\u0022:{\u0022x\u0022:[1,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<x>\u005c\u005cP{Join_Control})\u0022}"
-"(?<x>\u005cP{Join_Control})" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 "{\u0022matches\u0022:[\u0022\u005cn\u0022,\u0022\u005cn\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022\u005cn\u0022},\u0022indices\u0022:[[2,3],[2,3]],\u0022indexGroups\u0022:{\u0022x\u0022:[2,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<x>\u005c\u005cP{Join_Control})\u0022}"
-"(?<x>\u005cP{Join_Control})" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="dug" input="\uff10\uff26" lastIndex=0 "{\u0022matches\u0022:[\u0022\uff10\u0022,\u0022\uff10\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\uff10\uff26\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022\uff10\u0022},\u0022indices\u0022:[[0,1],[0,1]],\u0022indexGroups\u0022:{\u0022x\u0022:[0,1]},\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022(?<x>\u005c\u005cP{Join_Control})\u0022}"
-"(?<x>\u005cP{Join_Control})" flags="dug" input="\uff10\uff26" lastIndex=1 "{\u0022matches\u0022:[\u0022\uff26\u0022,\u0022\uff26\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022\uff10\uff26\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022\uff26\u0022},\u0022indices\u0022:[[1,2],[1,2]],\u0022indexGroups\u0022:{\u0022x\u0022:[1,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<x>\u005c\u005cP{Join_Control})\u0022}"
-"(?<x>\u005cP{Join_Control})" flags="dug" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="dug" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="dug" input="\uff10\uff26" lastIndex=3 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="dug" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="dug" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="dug" input="" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="dug" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="dug" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022\ud83d\ude00\u0022},\u0022indices\u0022:[[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022x\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<x>\u005c\u005cP{Join_Control})\u0022}"
-"(?<x>\u005cP{Join_Control})" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022\ud83d\ude00\u0022},\u0022indices\u0022:[[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022x\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<x>\u005c\u005cP{Join_Control})\u0022}"
-"(?<x>\u005cP{Join_Control})" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 "{\u0022matches\u0022:[\u0022\u200b\u0022,\u0022\u200b\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022\u200b\u0022},\u0022indices\u0022:[[2,3],[2,3]],\u0022indexGroups\u0022:{\u0022x\u0022:[2,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<x>\u005c\u005cP{Join_Control})\u0022}"
-"(?<x>\u005cP{Join_Control})" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 "{\u0022matches\u0022:[\u0022X\u0022,\u0022X\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022X\u0022},\u0022indices\u0022:[[0,1],[0,1]],\u0022indexGroups\u0022:{\u0022x\u0022:[0,1]},\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022(?<x>\u005c\u005cP{Join_Control})\u0022}"
-"(?<x>\u005cP{Join_Control})" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 "{\u0022matches\u0022:[\u0022\u005cr\u0022,\u0022\u005cr\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022\u005cr\u0022},\u0022indices\u0022:[[1,2],[1,2]],\u0022indexGroups\u0022:{\u0022x\u0022:[1,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<x>\u005c\u005cP{Join_Control})\u0022}"
-"(?<x>\u005cP{Join_Control})" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 "{\u0022matches\u0022:[\u0022\u005cn\u0022,\u0022\u005cn\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022\u005cn\u0022},\u0022indices\u0022:[[2,3],[2,3]],\u0022indexGroups\u0022:{\u0022x\u0022:[2,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<x>\u005c\u005cP{Join_Control})\u0022}"
-"(?<x>\u005cP{Join_Control})" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="diug" input="\uff10\uff26" lastIndex=0 "{\u0022matches\u0022:[\u0022\uff10\u0022,\u0022\uff10\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\uff10\uff26\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022\uff10\u0022},\u0022indices\u0022:[[0,1],[0,1]],\u0022indexGroups\u0022:{\u0022x\u0022:[0,1]},\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022(?<x>\u005c\u005cP{Join_Control})\u0022}"
-"(?<x>\u005cP{Join_Control})" flags="diug" input="\uff10\uff26" lastIndex=1 "{\u0022matches\u0022:[\u0022\uff26\u0022,\u0022\uff26\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022\uff10\uff26\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022\uff26\u0022},\u0022indices\u0022:[[1,2],[1,2]],\u0022indexGroups\u0022:{\u0022x\u0022:[1,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<x>\u005c\u005cP{Join_Control})\u0022}"
-"(?<x>\u005cP{Join_Control})" flags="diug" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="diug" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="diug" input="\uff10\uff26" lastIndex=3 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="diug" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="diug" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="diug" input="" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="diug" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="diug" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022\ud83d\ude00\u0022},\u0022indices\u0022:[[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022x\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<x>\u005c\u005cP{Join_Control})\u0022}"
-"(?<x>\u005cP{Join_Control})" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022\ud83d\ude00\u0022},\u0022indices\u0022:[[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022x\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<x>\u005c\u005cP{Join_Control})\u0022}"
-"(?<x>\u005cP{Join_Control})" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 "{\u0022matches\u0022:[\u0022\u200b\u0022,\u0022\u200b\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022\u200b\u0022},\u0022indices\u0022:[[2,3],[2,3]],\u0022indexGroups\u0022:{\u0022x\u0022:[2,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<x>\u005c\u005cP{Join_Control})\u0022}"
-"(?<x>\u005cP{Join_Control})" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 "{\u0022matches\u0022:[\u0022X\u0022,\u0022X\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022X\u0022},\u0022indices\u0022:[[0,1],[0,1]],\u0022indexGroups\u0022:{\u0022x\u0022:[0,1]},\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022(?<x>\u005c\u005cP{Join_Control})\u0022}"
-"(?<x>\u005cP{Join_Control})" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 "{\u0022matches\u0022:[\u0022\u005cr\u0022,\u0022\u005cr\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022\u005cr\u0022},\u0022indices\u0022:[[1,2],[1,2]],\u0022indexGroups\u0022:{\u0022x\u0022:[1,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<x>\u005c\u005cP{Join_Control})\u0022}"
-"(?<x>\u005cP{Join_Control})" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 "{\u0022matches\u0022:[\u0022\u005cn\u0022,\u0022\u005cn\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022\u005cn\u0022},\u0022indices\u0022:[[2,3],[2,3]],\u0022indexGroups\u0022:{\u0022x\u0022:[2,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<x>\u005c\u005cP{Join_Control})\u0022}"
-"(?<x>\u005cP{Join_Control})" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="divg" input="\uff10\uff26" lastIndex=0 "{\u0022matches\u0022:[\u0022\uff10\u0022,\u0022\uff10\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\uff10\uff26\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022\uff10\u0022},\u0022indices\u0022:[[0,1],[0,1]],\u0022indexGroups\u0022:{\u0022x\u0022:[0,1]},\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022(?<x>\u005c\u005cP{Join_Control})\u0022}"
-"(?<x>\u005cP{Join_Control})" flags="divg" input="\uff10\uff26" lastIndex=1 "{\u0022matches\u0022:[\u0022\uff26\u0022,\u0022\uff26\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022\uff10\uff26\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022\uff26\u0022},\u0022indices\u0022:[[1,2],[1,2]],\u0022indexGroups\u0022:{\u0022x\u0022:[1,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<x>\u005c\u005cP{Join_Control})\u0022}"
-"(?<x>\u005cP{Join_Control})" flags="divg" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="divg" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="divg" input="\uff10\uff26" lastIndex=3 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="divg" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="divg" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="divg" input="" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="divg" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="divg" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022\ud83d\ude00\u0022},\u0022indices\u0022:[[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022x\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<x>\u005c\u005cP{Join_Control})\u0022}"
-"(?<x>\u005cP{Join_Control})" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022\ud83d\ude00\u0022},\u0022indices\u0022:[[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022x\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<x>\u005c\u005cP{Join_Control})\u0022}"
-"(?<x>\u005cP{Join_Control})" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 "{\u0022matches\u0022:[\u0022\u200b\u0022,\u0022\u200b\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u005cn\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022\u200b\u0022},\u0022indices\u0022:[[2,3],[2,3]],\u0022indexGroups\u0022:{\u0022x\u0022:[2,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<x>\u005c\u005cP{Join_Control})\u0022}"
-"(?<x>\u005cP{Join_Control})" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 "{\u0022matches\u0022:[\u0022X\u0022,\u0022X\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022X\u0022},\u0022indices\u0022:[[0,1],[0,1]],\u0022indexGroups\u0022:{\u0022x\u0022:[0,1]},\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022(?<x>\u005c\u005cP{Join_Control})\u0022}"
-"(?<x>\u005cP{Join_Control})" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 "{\u0022matches\u0022:[\u0022\u005cr\u0022,\u0022\u005cr\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022\u005cr\u0022},\u0022indices\u0022:[[1,2],[1,2]],\u0022indexGroups\u0022:{\u0022x\u0022:[1,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<x>\u005c\u005cP{Join_Control})\u0022}"
-"(?<x>\u005cP{Join_Control})" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 "{\u0022matches\u0022:[\u0022\u005cn\u0022,\u0022\u005cn\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022X\u005cr\u005cn\u200c\u2028\u200d\u2029\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022\u005cn\u0022},\u0022indices\u0022:[[2,3],[2,3]],\u0022indexGroups\u0022:{\u0022x\u0022:[2,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<x>\u005c\u005cP{Join_Control})\u0022}"
-"(?<x>\u005cP{Join_Control})" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="divmy" input="\uff10\uff26" lastIndex=0 "{\u0022matches\u0022:[\u0022\uff10\u0022,\u0022\uff10\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\uff10\uff26\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022\uff10\u0022},\u0022indices\u0022:[[0,1],[0,1]],\u0022indexGroups\u0022:{\u0022x\u0022:[0,1]},\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022(?<x>\u005c\u005cP{Join_Control})\u0022}"
-"(?<x>\u005cP{Join_Control})" flags="divmy" input="\uff10\uff26" lastIndex=1 "{\u0022matches\u0022:[\u0022\uff26\u0022,\u0022\uff26\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022\uff10\uff26\u0022,\u0022groups\u0022:{\u0022x\u0022:\u0022\uff26\u0022},\u0022indices\u0022:[[1,2],[1,2]],\u0022indexGroups\u0022:{\u0022x\u0022:[1,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<x>\u005c\u005cP{Join_Control})\u0022}"
-"(?<x>\u005cP{Join_Control})" flags="divmy" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="divmy" input="\uff10\uff26" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="divmy" input="\uff10\uff26" lastIndex=3 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="divmy" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="divmy" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="divmy" input="" lastIndex=2 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="divmy" input="" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-"(?<x>\u005cP{Join_Control})" flags="divmy" input="" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
+"\u005cp{Join_Control}" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 => {"matches":["‌"],"index":3,"input":"😀​‌‍‎ſK\n","indices":[[3,4]],"lastIndex":4,"source":"\\p{Join_Control}"}
+"\u005cp{Join_Control}" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 => {"matches":["‌"],"index":3,"input":"😀​‌‍‎ſK\n","indices":[[3,4]],"lastIndex":4,"source":"\\p{Join_Control}"}
+"\u005cp{Join_Control}" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 => {"matches":["‌"],"index":3,"input":"😀​‌‍‎ſK\n","indices":[[3,4]],"lastIndex":4,"source":"\\p{Join_Control}"}
+"\u005cp{Join_Control}" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 => {"matches":["‌"],"index":3,"input":"X\r\n‌ ‍ ","indices":[[3,4]],"lastIndex":4,"source":"\\p{Join_Control}"}
+"\u005cp{Join_Control}" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 => {"matches":["‌"],"index":3,"input":"X\r\n‌ ‍ ","indices":[[3,4]],"lastIndex":4,"source":"\\p{Join_Control}"}
+"\u005cp{Join_Control}" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 => {"matches":["‌"],"index":3,"input":"X\r\n‌ ‍ ","indices":[[3,4]],"lastIndex":4,"source":"\\p{Join_Control}"}
+"\u005cp{Join_Control}" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="dug" input="\uff10\uff26" lastIndex=0 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="dug" input="\uff10\uff26" lastIndex=1 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="dug" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="dug" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="dug" input="\uff10\uff26" lastIndex=3 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 => {"matches":["‌"],"index":3,"input":"😀​‌‍‎ſK\n","indices":[[3,4]],"lastIndex":4,"source":"\\p{Join_Control}"}
+"\u005cp{Join_Control}" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 => {"matches":["‌"],"index":3,"input":"😀​‌‍‎ſK\n","indices":[[3,4]],"lastIndex":4,"source":"\\p{Join_Control}"}
+"\u005cp{Join_Control}" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 => {"matches":["‌"],"index":3,"input":"😀​‌‍‎ſK\n","indices":[[3,4]],"lastIndex":4,"source":"\\p{Join_Control}"}
+"\u005cp{Join_Control}" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 => {"matches":["‌"],"index":3,"input":"X\r\n‌ ‍ ","indices":[[3,4]],"lastIndex":4,"source":"\\p{Join_Control}"}
+"\u005cp{Join_Control}" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 => {"matches":["‌"],"index":3,"input":"X\r\n‌ ‍ ","indices":[[3,4]],"lastIndex":4,"source":"\\p{Join_Control}"}
+"\u005cp{Join_Control}" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 => {"matches":["‌"],"index":3,"input":"X\r\n‌ ‍ ","indices":[[3,4]],"lastIndex":4,"source":"\\p{Join_Control}"}
+"\u005cp{Join_Control}" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="diug" input="\uff10\uff26" lastIndex=0 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="diug" input="\uff10\uff26" lastIndex=1 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="diug" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="diug" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="diug" input="\uff10\uff26" lastIndex=3 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 => {"matches":["‌"],"index":3,"input":"😀​‌‍‎ſK\n","indices":[[3,4]],"lastIndex":4,"source":"\\p{Join_Control}"}
+"\u005cp{Join_Control}" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 => {"matches":["‌"],"index":3,"input":"😀​‌‍‎ſK\n","indices":[[3,4]],"lastIndex":4,"source":"\\p{Join_Control}"}
+"\u005cp{Join_Control}" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 => {"matches":["‌"],"index":3,"input":"😀​‌‍‎ſK\n","indices":[[3,4]],"lastIndex":4,"source":"\\p{Join_Control}"}
+"\u005cp{Join_Control}" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 => {"matches":["‌"],"index":3,"input":"X\r\n‌ ‍ ","indices":[[3,4]],"lastIndex":4,"source":"\\p{Join_Control}"}
+"\u005cp{Join_Control}" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 => {"matches":["‌"],"index":3,"input":"X\r\n‌ ‍ ","indices":[[3,4]],"lastIndex":4,"source":"\\p{Join_Control}"}
+"\u005cp{Join_Control}" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 => {"matches":["‌"],"index":3,"input":"X\r\n‌ ‍ ","indices":[[3,4]],"lastIndex":4,"source":"\\p{Join_Control}"}
+"\u005cp{Join_Control}" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="divg" input="\uff10\uff26" lastIndex=0 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="divg" input="\uff10\uff26" lastIndex=1 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="divg" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="divg" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="divg" input="\uff10\uff26" lastIndex=3 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="divmy" input="\uff10\uff26" lastIndex=0 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="divmy" input="\uff10\uff26" lastIndex=1 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="divmy" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="divmy" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="divmy" input="\uff10\uff26" lastIndex=3 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="divmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"\u005cp{Join_Control}" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 => {"matches":["😀"],"index":0,"input":"😀​‌‍‎ſK\n","indices":[[0,2]],"lastIndex":2,"source":"\\P{Join_C}"}
+"\u005cP{Join_C}" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 => {"matches":["😀"],"index":0,"input":"😀​‌‍‎ſK\n","indices":[[0,2]],"lastIndex":2,"source":"\\P{Join_C}"}
+"\u005cP{Join_C}" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 => {"matches":["​"],"index":2,"input":"😀​‌‍‎ſK\n","indices":[[2,3]],"lastIndex":3,"source":"\\P{Join_C}"}
+"\u005cP{Join_C}" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 => {"matches":["X"],"index":0,"input":"X\r\n‌ ‍ ","indices":[[0,1]],"lastIndex":1,"source":"\\P{Join_C}"}
+"\u005cP{Join_C}" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 => {"matches":["\r"],"index":1,"input":"X\r\n‌ ‍ ","indices":[[1,2]],"lastIndex":2,"source":"\\P{Join_C}"}
+"\u005cP{Join_C}" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 => {"matches":["\n"],"index":2,"input":"X\r\n‌ ‍ ","indices":[[2,3]],"lastIndex":3,"source":"\\P{Join_C}"}
+"\u005cP{Join_C}" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="dug" input="\uff10\uff26" lastIndex=0 => {"matches":["０"],"index":0,"input":"０Ｆ","indices":[[0,1]],"lastIndex":1,"source":"\\P{Join_C}"}
+"\u005cP{Join_C}" flags="dug" input="\uff10\uff26" lastIndex=1 => {"matches":["Ｆ"],"index":1,"input":"０Ｆ","indices":[[1,2]],"lastIndex":2,"source":"\\P{Join_C}"}
+"\u005cP{Join_C}" flags="dug" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="dug" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="dug" input="\uff10\uff26" lastIndex=3 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 => {"matches":["😀"],"index":0,"input":"😀​‌‍‎ſK\n","indices":[[0,2]],"lastIndex":2,"source":"\\P{Join_C}"}
+"\u005cP{Join_C}" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 => {"matches":["😀"],"index":0,"input":"😀​‌‍‎ſK\n","indices":[[0,2]],"lastIndex":2,"source":"\\P{Join_C}"}
+"\u005cP{Join_C}" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 => {"matches":["​"],"index":2,"input":"😀​‌‍‎ſK\n","indices":[[2,3]],"lastIndex":3,"source":"\\P{Join_C}"}
+"\u005cP{Join_C}" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 => {"matches":["X"],"index":0,"input":"X\r\n‌ ‍ ","indices":[[0,1]],"lastIndex":1,"source":"\\P{Join_C}"}
+"\u005cP{Join_C}" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 => {"matches":["\r"],"index":1,"input":"X\r\n‌ ‍ ","indices":[[1,2]],"lastIndex":2,"source":"\\P{Join_C}"}
+"\u005cP{Join_C}" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 => {"matches":["\n"],"index":2,"input":"X\r\n‌ ‍ ","indices":[[2,3]],"lastIndex":3,"source":"\\P{Join_C}"}
+"\u005cP{Join_C}" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="diug" input="\uff10\uff26" lastIndex=0 => {"matches":["０"],"index":0,"input":"０Ｆ","indices":[[0,1]],"lastIndex":1,"source":"\\P{Join_C}"}
+"\u005cP{Join_C}" flags="diug" input="\uff10\uff26" lastIndex=1 => {"matches":["Ｆ"],"index":1,"input":"０Ｆ","indices":[[1,2]],"lastIndex":2,"source":"\\P{Join_C}"}
+"\u005cP{Join_C}" flags="diug" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="diug" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="diug" input="\uff10\uff26" lastIndex=3 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 => {"matches":["😀"],"index":0,"input":"😀​‌‍‎ſK\n","indices":[[0,2]],"lastIndex":2,"source":"\\P{Join_C}"}
+"\u005cP{Join_C}" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 => {"matches":["😀"],"index":0,"input":"😀​‌‍‎ſK\n","indices":[[0,2]],"lastIndex":2,"source":"\\P{Join_C}"}
+"\u005cP{Join_C}" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 => {"matches":["​"],"index":2,"input":"😀​‌‍‎ſK\n","indices":[[2,3]],"lastIndex":3,"source":"\\P{Join_C}"}
+"\u005cP{Join_C}" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 => {"matches":["X"],"index":0,"input":"X\r\n‌ ‍ ","indices":[[0,1]],"lastIndex":1,"source":"\\P{Join_C}"}
+"\u005cP{Join_C}" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 => {"matches":["\r"],"index":1,"input":"X\r\n‌ ‍ ","indices":[[1,2]],"lastIndex":2,"source":"\\P{Join_C}"}
+"\u005cP{Join_C}" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 => {"matches":["\n"],"index":2,"input":"X\r\n‌ ‍ ","indices":[[2,3]],"lastIndex":3,"source":"\\P{Join_C}"}
+"\u005cP{Join_C}" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="divg" input="\uff10\uff26" lastIndex=0 => {"matches":["０"],"index":0,"input":"０Ｆ","indices":[[0,1]],"lastIndex":1,"source":"\\P{Join_C}"}
+"\u005cP{Join_C}" flags="divg" input="\uff10\uff26" lastIndex=1 => {"matches":["Ｆ"],"index":1,"input":"０Ｆ","indices":[[1,2]],"lastIndex":2,"source":"\\P{Join_C}"}
+"\u005cP{Join_C}" flags="divg" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="divg" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="divg" input="\uff10\uff26" lastIndex=3 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 => {"matches":["😀"],"index":0,"input":"😀​‌‍‎ſK\n","indices":[[0,2]],"lastIndex":2,"source":"\\P{Join_C}"}
+"\u005cP{Join_C}" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 => {"matches":["😀"],"index":0,"input":"😀​‌‍‎ſK\n","indices":[[0,2]],"lastIndex":2,"source":"\\P{Join_C}"}
+"\u005cP{Join_C}" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 => {"matches":["​"],"index":2,"input":"😀​‌‍‎ſK\n","indices":[[2,3]],"lastIndex":3,"source":"\\P{Join_C}"}
+"\u005cP{Join_C}" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 => {"matches":["X"],"index":0,"input":"X\r\n‌ ‍ ","indices":[[0,1]],"lastIndex":1,"source":"\\P{Join_C}"}
+"\u005cP{Join_C}" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 => {"matches":["\r"],"index":1,"input":"X\r\n‌ ‍ ","indices":[[1,2]],"lastIndex":2,"source":"\\P{Join_C}"}
+"\u005cP{Join_C}" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 => {"matches":["\n"],"index":2,"input":"X\r\n‌ ‍ ","indices":[[2,3]],"lastIndex":3,"source":"\\P{Join_C}"}
+"\u005cP{Join_C}" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="divmy" input="\uff10\uff26" lastIndex=0 => {"matches":["０"],"index":0,"input":"０Ｆ","indices":[[0,1]],"lastIndex":1,"source":"\\P{Join_C}"}
+"\u005cP{Join_C}" flags="divmy" input="\uff10\uff26" lastIndex=1 => {"matches":["Ｆ"],"index":1,"input":"０Ｆ","indices":[[1,2]],"lastIndex":2,"source":"\\P{Join_C}"}
+"\u005cP{Join_C}" flags="divmy" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="divmy" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="divmy" input="\uff10\uff26" lastIndex=3 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="divmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"\u005cP{Join_C}" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 => {"matches":["😀"],"index":0,"input":"😀​‌‍‎ſK\n","indices":[[0,2]],"lastIndex":2,"source":"[^\\p{Join_C}]"}
+"[^\u005cp{Join_C}]" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 => {"matches":["😀"],"index":0,"input":"😀​‌‍‎ſK\n","indices":[[0,2]],"lastIndex":2,"source":"[^\\p{Join_C}]"}
+"[^\u005cp{Join_C}]" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 => {"matches":["​"],"index":2,"input":"😀​‌‍‎ſK\n","indices":[[2,3]],"lastIndex":3,"source":"[^\\p{Join_C}]"}
+"[^\u005cp{Join_C}]" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 => {"matches":["X"],"index":0,"input":"X\r\n‌ ‍ ","indices":[[0,1]],"lastIndex":1,"source":"[^\\p{Join_C}]"}
+"[^\u005cp{Join_C}]" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 => {"matches":["\r"],"index":1,"input":"X\r\n‌ ‍ ","indices":[[1,2]],"lastIndex":2,"source":"[^\\p{Join_C}]"}
+"[^\u005cp{Join_C}]" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 => {"matches":["\n"],"index":2,"input":"X\r\n‌ ‍ ","indices":[[2,3]],"lastIndex":3,"source":"[^\\p{Join_C}]"}
+"[^\u005cp{Join_C}]" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="dug" input="\uff10\uff26" lastIndex=0 => {"matches":["０"],"index":0,"input":"０Ｆ","indices":[[0,1]],"lastIndex":1,"source":"[^\\p{Join_C}]"}
+"[^\u005cp{Join_C}]" flags="dug" input="\uff10\uff26" lastIndex=1 => {"matches":["Ｆ"],"index":1,"input":"０Ｆ","indices":[[1,2]],"lastIndex":2,"source":"[^\\p{Join_C}]"}
+"[^\u005cp{Join_C}]" flags="dug" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="dug" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="dug" input="\uff10\uff26" lastIndex=3 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 => {"matches":["😀"],"index":0,"input":"😀​‌‍‎ſK\n","indices":[[0,2]],"lastIndex":2,"source":"[^\\p{Join_C}]"}
+"[^\u005cp{Join_C}]" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 => {"matches":["😀"],"index":0,"input":"😀​‌‍‎ſK\n","indices":[[0,2]],"lastIndex":2,"source":"[^\\p{Join_C}]"}
+"[^\u005cp{Join_C}]" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 => {"matches":["​"],"index":2,"input":"😀​‌‍‎ſK\n","indices":[[2,3]],"lastIndex":3,"source":"[^\\p{Join_C}]"}
+"[^\u005cp{Join_C}]" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 => {"matches":["X"],"index":0,"input":"X\r\n‌ ‍ ","indices":[[0,1]],"lastIndex":1,"source":"[^\\p{Join_C}]"}
+"[^\u005cp{Join_C}]" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 => {"matches":["\r"],"index":1,"input":"X\r\n‌ ‍ ","indices":[[1,2]],"lastIndex":2,"source":"[^\\p{Join_C}]"}
+"[^\u005cp{Join_C}]" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 => {"matches":["\n"],"index":2,"input":"X\r\n‌ ‍ ","indices":[[2,3]],"lastIndex":3,"source":"[^\\p{Join_C}]"}
+"[^\u005cp{Join_C}]" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="diug" input="\uff10\uff26" lastIndex=0 => {"matches":["０"],"index":0,"input":"０Ｆ","indices":[[0,1]],"lastIndex":1,"source":"[^\\p{Join_C}]"}
+"[^\u005cp{Join_C}]" flags="diug" input="\uff10\uff26" lastIndex=1 => {"matches":["Ｆ"],"index":1,"input":"０Ｆ","indices":[[1,2]],"lastIndex":2,"source":"[^\\p{Join_C}]"}
+"[^\u005cp{Join_C}]" flags="diug" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="diug" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="diug" input="\uff10\uff26" lastIndex=3 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 => {"matches":["😀"],"index":0,"input":"😀​‌‍‎ſK\n","indices":[[0,2]],"lastIndex":2,"source":"[^\\p{Join_C}]"}
+"[^\u005cp{Join_C}]" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 => {"matches":["😀"],"index":0,"input":"😀​‌‍‎ſK\n","indices":[[0,2]],"lastIndex":2,"source":"[^\\p{Join_C}]"}
+"[^\u005cp{Join_C}]" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 => {"matches":["​"],"index":2,"input":"😀​‌‍‎ſK\n","indices":[[2,3]],"lastIndex":3,"source":"[^\\p{Join_C}]"}
+"[^\u005cp{Join_C}]" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 => {"matches":["X"],"index":0,"input":"X\r\n‌ ‍ ","indices":[[0,1]],"lastIndex":1,"source":"[^\\p{Join_C}]"}
+"[^\u005cp{Join_C}]" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 => {"matches":["\r"],"index":1,"input":"X\r\n‌ ‍ ","indices":[[1,2]],"lastIndex":2,"source":"[^\\p{Join_C}]"}
+"[^\u005cp{Join_C}]" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 => {"matches":["\n"],"index":2,"input":"X\r\n‌ ‍ ","indices":[[2,3]],"lastIndex":3,"source":"[^\\p{Join_C}]"}
+"[^\u005cp{Join_C}]" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="divg" input="\uff10\uff26" lastIndex=0 => {"matches":["０"],"index":0,"input":"０Ｆ","indices":[[0,1]],"lastIndex":1,"source":"[^\\p{Join_C}]"}
+"[^\u005cp{Join_C}]" flags="divg" input="\uff10\uff26" lastIndex=1 => {"matches":["Ｆ"],"index":1,"input":"０Ｆ","indices":[[1,2]],"lastIndex":2,"source":"[^\\p{Join_C}]"}
+"[^\u005cp{Join_C}]" flags="divg" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="divg" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="divg" input="\uff10\uff26" lastIndex=3 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 => {"matches":["😀"],"index":0,"input":"😀​‌‍‎ſK\n","indices":[[0,2]],"lastIndex":2,"source":"[^\\p{Join_C}]"}
+"[^\u005cp{Join_C}]" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 => {"matches":["😀"],"index":0,"input":"😀​‌‍‎ſK\n","indices":[[0,2]],"lastIndex":2,"source":"[^\\p{Join_C}]"}
+"[^\u005cp{Join_C}]" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 => {"matches":["​"],"index":2,"input":"😀​‌‍‎ſK\n","indices":[[2,3]],"lastIndex":3,"source":"[^\\p{Join_C}]"}
+"[^\u005cp{Join_C}]" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 => {"matches":["X"],"index":0,"input":"X\r\n‌ ‍ ","indices":[[0,1]],"lastIndex":1,"source":"[^\\p{Join_C}]"}
+"[^\u005cp{Join_C}]" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 => {"matches":["\r"],"index":1,"input":"X\r\n‌ ‍ ","indices":[[1,2]],"lastIndex":2,"source":"[^\\p{Join_C}]"}
+"[^\u005cp{Join_C}]" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 => {"matches":["\n"],"index":2,"input":"X\r\n‌ ‍ ","indices":[[2,3]],"lastIndex":3,"source":"[^\\p{Join_C}]"}
+"[^\u005cp{Join_C}]" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="divmy" input="\uff10\uff26" lastIndex=0 => {"matches":["０"],"index":0,"input":"０Ｆ","indices":[[0,1]],"lastIndex":1,"source":"[^\\p{Join_C}]"}
+"[^\u005cp{Join_C}]" flags="divmy" input="\uff10\uff26" lastIndex=1 => {"matches":["Ｆ"],"index":1,"input":"０Ｆ","indices":[[1,2]],"lastIndex":2,"source":"[^\\p{Join_C}]"}
+"[^\u005cp{Join_C}]" flags="divmy" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="divmy" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="divmy" input="\uff10\uff26" lastIndex=3 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="divmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"[^\u005cp{Join_C}]" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 => {"matches":["‌"],"index":3,"input":"😀​‌‍‎ſK\n","indices":[[3,4]],"lastIndex":4,"source":"[\\p{Join_C}K]"}
+"[\u005cp{Join_C}K]" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 => {"matches":["‌"],"index":3,"input":"😀​‌‍‎ſK\n","indices":[[3,4]],"lastIndex":4,"source":"[\\p{Join_C}K]"}
+"[\u005cp{Join_C}K]" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 => {"matches":["‌"],"index":3,"input":"😀​‌‍‎ſK\n","indices":[[3,4]],"lastIndex":4,"source":"[\\p{Join_C}K]"}
+"[\u005cp{Join_C}K]" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 => {"matches":["‌"],"index":3,"input":"X\r\n‌ ‍ ","indices":[[3,4]],"lastIndex":4,"source":"[\\p{Join_C}K]"}
+"[\u005cp{Join_C}K]" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 => {"matches":["‌"],"index":3,"input":"X\r\n‌ ‍ ","indices":[[3,4]],"lastIndex":4,"source":"[\\p{Join_C}K]"}
+"[\u005cp{Join_C}K]" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 => {"matches":["‌"],"index":3,"input":"X\r\n‌ ‍ ","indices":[[3,4]],"lastIndex":4,"source":"[\\p{Join_C}K]"}
+"[\u005cp{Join_C}K]" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="dug" input="\uff10\uff26" lastIndex=0 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="dug" input="\uff10\uff26" lastIndex=1 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="dug" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="dug" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="dug" input="\uff10\uff26" lastIndex=3 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 => {"matches":["‌"],"index":3,"input":"😀​‌‍‎ſK\n","indices":[[3,4]],"lastIndex":4,"source":"[\\p{Join_C}K]"}
+"[\u005cp{Join_C}K]" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 => {"matches":["‌"],"index":3,"input":"😀​‌‍‎ſK\n","indices":[[3,4]],"lastIndex":4,"source":"[\\p{Join_C}K]"}
+"[\u005cp{Join_C}K]" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 => {"matches":["‌"],"index":3,"input":"😀​‌‍‎ſK\n","indices":[[3,4]],"lastIndex":4,"source":"[\\p{Join_C}K]"}
+"[\u005cp{Join_C}K]" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 => {"matches":["‌"],"index":3,"input":"X\r\n‌ ‍ ","indices":[[3,4]],"lastIndex":4,"source":"[\\p{Join_C}K]"}
+"[\u005cp{Join_C}K]" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 => {"matches":["‌"],"index":3,"input":"X\r\n‌ ‍ ","indices":[[3,4]],"lastIndex":4,"source":"[\\p{Join_C}K]"}
+"[\u005cp{Join_C}K]" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 => {"matches":["‌"],"index":3,"input":"X\r\n‌ ‍ ","indices":[[3,4]],"lastIndex":4,"source":"[\\p{Join_C}K]"}
+"[\u005cp{Join_C}K]" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="diug" input="\uff10\uff26" lastIndex=0 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="diug" input="\uff10\uff26" lastIndex=1 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="diug" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="diug" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="diug" input="\uff10\uff26" lastIndex=3 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 => {"matches":["‌"],"index":3,"input":"😀​‌‍‎ſK\n","indices":[[3,4]],"lastIndex":4,"source":"[\\p{Join_C}K]"}
+"[\u005cp{Join_C}K]" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 => {"matches":["‌"],"index":3,"input":"😀​‌‍‎ſK\n","indices":[[3,4]],"lastIndex":4,"source":"[\\p{Join_C}K]"}
+"[\u005cp{Join_C}K]" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 => {"matches":["‌"],"index":3,"input":"😀​‌‍‎ſK\n","indices":[[3,4]],"lastIndex":4,"source":"[\\p{Join_C}K]"}
+"[\u005cp{Join_C}K]" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 => {"matches":["‌"],"index":3,"input":"X\r\n‌ ‍ ","indices":[[3,4]],"lastIndex":4,"source":"[\\p{Join_C}K]"}
+"[\u005cp{Join_C}K]" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 => {"matches":["‌"],"index":3,"input":"X\r\n‌ ‍ ","indices":[[3,4]],"lastIndex":4,"source":"[\\p{Join_C}K]"}
+"[\u005cp{Join_C}K]" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 => {"matches":["‌"],"index":3,"input":"X\r\n‌ ‍ ","indices":[[3,4]],"lastIndex":4,"source":"[\\p{Join_C}K]"}
+"[\u005cp{Join_C}K]" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="divg" input="\uff10\uff26" lastIndex=0 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="divg" input="\uff10\uff26" lastIndex=1 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="divg" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="divg" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="divg" input="\uff10\uff26" lastIndex=3 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="divmy" input="\uff10\uff26" lastIndex=0 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="divmy" input="\uff10\uff26" lastIndex=1 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="divmy" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="divmy" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="divmy" input="\uff10\uff26" lastIndex=3 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="divmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"[\u005cp{Join_C}K]" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 => {"matches":["😀"],"index":0,"input":"😀​‌‍‎ſK\n","indices":[[0,2]],"lastIndex":2,"source":"[\\P{Join_Control}K]"}
+"[\u005cP{Join_Control}K]" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 => {"matches":["😀"],"index":0,"input":"😀​‌‍‎ſK\n","indices":[[0,2]],"lastIndex":2,"source":"[\\P{Join_Control}K]"}
+"[\u005cP{Join_Control}K]" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 => {"matches":["​"],"index":2,"input":"😀​‌‍‎ſK\n","indices":[[2,3]],"lastIndex":3,"source":"[\\P{Join_Control}K]"}
+"[\u005cP{Join_Control}K]" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 => {"matches":["X"],"index":0,"input":"X\r\n‌ ‍ ","indices":[[0,1]],"lastIndex":1,"source":"[\\P{Join_Control}K]"}
+"[\u005cP{Join_Control}K]" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 => {"matches":["\r"],"index":1,"input":"X\r\n‌ ‍ ","indices":[[1,2]],"lastIndex":2,"source":"[\\P{Join_Control}K]"}
+"[\u005cP{Join_Control}K]" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 => {"matches":["\n"],"index":2,"input":"X\r\n‌ ‍ ","indices":[[2,3]],"lastIndex":3,"source":"[\\P{Join_Control}K]"}
+"[\u005cP{Join_Control}K]" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="dug" input="\uff10\uff26" lastIndex=0 => {"matches":["０"],"index":0,"input":"０Ｆ","indices":[[0,1]],"lastIndex":1,"source":"[\\P{Join_Control}K]"}
+"[\u005cP{Join_Control}K]" flags="dug" input="\uff10\uff26" lastIndex=1 => {"matches":["Ｆ"],"index":1,"input":"０Ｆ","indices":[[1,2]],"lastIndex":2,"source":"[\\P{Join_Control}K]"}
+"[\u005cP{Join_Control}K]" flags="dug" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="dug" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="dug" input="\uff10\uff26" lastIndex=3 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 => {"matches":["😀"],"index":0,"input":"😀​‌‍‎ſK\n","indices":[[0,2]],"lastIndex":2,"source":"[\\P{Join_Control}K]"}
+"[\u005cP{Join_Control}K]" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 => {"matches":["😀"],"index":0,"input":"😀​‌‍‎ſK\n","indices":[[0,2]],"lastIndex":2,"source":"[\\P{Join_Control}K]"}
+"[\u005cP{Join_Control}K]" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 => {"matches":["​"],"index":2,"input":"😀​‌‍‎ſK\n","indices":[[2,3]],"lastIndex":3,"source":"[\\P{Join_Control}K]"}
+"[\u005cP{Join_Control}K]" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 => {"matches":["X"],"index":0,"input":"X\r\n‌ ‍ ","indices":[[0,1]],"lastIndex":1,"source":"[\\P{Join_Control}K]"}
+"[\u005cP{Join_Control}K]" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 => {"matches":["\r"],"index":1,"input":"X\r\n‌ ‍ ","indices":[[1,2]],"lastIndex":2,"source":"[\\P{Join_Control}K]"}
+"[\u005cP{Join_Control}K]" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 => {"matches":["\n"],"index":2,"input":"X\r\n‌ ‍ ","indices":[[2,3]],"lastIndex":3,"source":"[\\P{Join_Control}K]"}
+"[\u005cP{Join_Control}K]" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="diug" input="\uff10\uff26" lastIndex=0 => {"matches":["０"],"index":0,"input":"０Ｆ","indices":[[0,1]],"lastIndex":1,"source":"[\\P{Join_Control}K]"}
+"[\u005cP{Join_Control}K]" flags="diug" input="\uff10\uff26" lastIndex=1 => {"matches":["Ｆ"],"index":1,"input":"０Ｆ","indices":[[1,2]],"lastIndex":2,"source":"[\\P{Join_Control}K]"}
+"[\u005cP{Join_Control}K]" flags="diug" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="diug" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="diug" input="\uff10\uff26" lastIndex=3 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 => {"matches":["😀"],"index":0,"input":"😀​‌‍‎ſK\n","indices":[[0,2]],"lastIndex":2,"source":"[\\P{Join_Control}K]"}
+"[\u005cP{Join_Control}K]" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 => {"matches":["😀"],"index":0,"input":"😀​‌‍‎ſK\n","indices":[[0,2]],"lastIndex":2,"source":"[\\P{Join_Control}K]"}
+"[\u005cP{Join_Control}K]" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 => {"matches":["​"],"index":2,"input":"😀​‌‍‎ſK\n","indices":[[2,3]],"lastIndex":3,"source":"[\\P{Join_Control}K]"}
+"[\u005cP{Join_Control}K]" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 => {"matches":["X"],"index":0,"input":"X\r\n‌ ‍ ","indices":[[0,1]],"lastIndex":1,"source":"[\\P{Join_Control}K]"}
+"[\u005cP{Join_Control}K]" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 => {"matches":["\r"],"index":1,"input":"X\r\n‌ ‍ ","indices":[[1,2]],"lastIndex":2,"source":"[\\P{Join_Control}K]"}
+"[\u005cP{Join_Control}K]" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 => {"matches":["\n"],"index":2,"input":"X\r\n‌ ‍ ","indices":[[2,3]],"lastIndex":3,"source":"[\\P{Join_Control}K]"}
+"[\u005cP{Join_Control}K]" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="divg" input="\uff10\uff26" lastIndex=0 => {"matches":["０"],"index":0,"input":"０Ｆ","indices":[[0,1]],"lastIndex":1,"source":"[\\P{Join_Control}K]"}
+"[\u005cP{Join_Control}K]" flags="divg" input="\uff10\uff26" lastIndex=1 => {"matches":["Ｆ"],"index":1,"input":"０Ｆ","indices":[[1,2]],"lastIndex":2,"source":"[\\P{Join_Control}K]"}
+"[\u005cP{Join_Control}K]" flags="divg" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="divg" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="divg" input="\uff10\uff26" lastIndex=3 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 => {"matches":["😀"],"index":0,"input":"😀​‌‍‎ſK\n","indices":[[0,2]],"lastIndex":2,"source":"[\\P{Join_Control}K]"}
+"[\u005cP{Join_Control}K]" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 => {"matches":["😀"],"index":0,"input":"😀​‌‍‎ſK\n","indices":[[0,2]],"lastIndex":2,"source":"[\\P{Join_Control}K]"}
+"[\u005cP{Join_Control}K]" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 => {"matches":["​"],"index":2,"input":"😀​‌‍‎ſK\n","indices":[[2,3]],"lastIndex":3,"source":"[\\P{Join_Control}K]"}
+"[\u005cP{Join_Control}K]" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 => {"matches":["X"],"index":0,"input":"X\r\n‌ ‍ ","indices":[[0,1]],"lastIndex":1,"source":"[\\P{Join_Control}K]"}
+"[\u005cP{Join_Control}K]" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 => {"matches":["\r"],"index":1,"input":"X\r\n‌ ‍ ","indices":[[1,2]],"lastIndex":2,"source":"[\\P{Join_Control}K]"}
+"[\u005cP{Join_Control}K]" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 => {"matches":["\n"],"index":2,"input":"X\r\n‌ ‍ ","indices":[[2,3]],"lastIndex":3,"source":"[\\P{Join_Control}K]"}
+"[\u005cP{Join_Control}K]" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="divmy" input="\uff10\uff26" lastIndex=0 => {"matches":["０"],"index":0,"input":"０Ｆ","indices":[[0,1]],"lastIndex":1,"source":"[\\P{Join_Control}K]"}
+"[\u005cP{Join_Control}K]" flags="divmy" input="\uff10\uff26" lastIndex=1 => {"matches":["Ｆ"],"index":1,"input":"０Ｆ","indices":[[1,2]],"lastIndex":2,"source":"[\\P{Join_Control}K]"}
+"[\u005cP{Join_Control}K]" flags="divmy" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="divmy" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="divmy" input="\uff10\uff26" lastIndex=3 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="divmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"[\u005cP{Join_Control}K]" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="\uff10\uff26" lastIndex=0 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="\uff10\uff26" lastIndex=1 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="\uff10\uff26" lastIndex=3 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="\uff10\uff26" lastIndex=0 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="\uff10\uff26" lastIndex=1 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="\uff10\uff26" lastIndex=3 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="\uff10\uff26" lastIndex=0 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="\uff10\uff26" lastIndex=1 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="\uff10\uff26" lastIndex=3 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="\uff10\uff26" lastIndex=0 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="\uff10\uff26" lastIndex=1 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="\uff10\uff26" lastIndex=3 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"^(?<x>[\u005cp{Join_C}K])$" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 => {"matches":["😀","😀"],"index":0,"input":"😀​‌‍‎ſK\n","groups":{"x":"😀"},"indices":[[0,2],[0,2]],"indexGroups":{"x":[0,2]},"lastIndex":2,"source":"(?<x>\\P{Join_Control})"}
+"(?<x>\u005cP{Join_Control})" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 => {"matches":["😀","😀"],"index":0,"input":"😀​‌‍‎ſK\n","groups":{"x":"😀"},"indices":[[0,2],[0,2]],"indexGroups":{"x":[0,2]},"lastIndex":2,"source":"(?<x>\\P{Join_Control})"}
+"(?<x>\u005cP{Join_Control})" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 => {"matches":["​","​"],"index":2,"input":"😀​‌‍‎ſK\n","groups":{"x":"​"},"indices":[[2,3],[2,3]],"indexGroups":{"x":[2,3]},"lastIndex":3,"source":"(?<x>\\P{Join_Control})"}
+"(?<x>\u005cP{Join_Control})" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="dug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 => {"matches":["X","X"],"index":0,"input":"X\r\n‌ ‍ ","groups":{"x":"X"},"indices":[[0,1],[0,1]],"indexGroups":{"x":[0,1]},"lastIndex":1,"source":"(?<x>\\P{Join_Control})"}
+"(?<x>\u005cP{Join_Control})" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 => {"matches":["\r","\r"],"index":1,"input":"X\r\n‌ ‍ ","groups":{"x":"\r"},"indices":[[1,2],[1,2]],"indexGroups":{"x":[1,2]},"lastIndex":2,"source":"(?<x>\\P{Join_Control})"}
+"(?<x>\u005cP{Join_Control})" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 => {"matches":["\n","\n"],"index":2,"input":"X\r\n‌ ‍ ","groups":{"x":"\n"},"indices":[[2,3],[2,3]],"indexGroups":{"x":[2,3]},"lastIndex":3,"source":"(?<x>\\P{Join_Control})"}
+"(?<x>\u005cP{Join_Control})" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="dug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="dug" input="\uff10\uff26" lastIndex=0 => {"matches":["０","０"],"index":0,"input":"０Ｆ","groups":{"x":"０"},"indices":[[0,1],[0,1]],"indexGroups":{"x":[0,1]},"lastIndex":1,"source":"(?<x>\\P{Join_Control})"}
+"(?<x>\u005cP{Join_Control})" flags="dug" input="\uff10\uff26" lastIndex=1 => {"matches":["Ｆ","Ｆ"],"index":1,"input":"０Ｆ","groups":{"x":"Ｆ"},"indices":[[1,2],[1,2]],"indexGroups":{"x":[1,2]},"lastIndex":2,"source":"(?<x>\\P{Join_Control})"}
+"(?<x>\u005cP{Join_Control})" flags="dug" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="dug" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="dug" input="\uff10\uff26" lastIndex=3 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 => {"matches":["😀","😀"],"index":0,"input":"😀​‌‍‎ſK\n","groups":{"x":"😀"},"indices":[[0,2],[0,2]],"indexGroups":{"x":[0,2]},"lastIndex":2,"source":"(?<x>\\P{Join_Control})"}
+"(?<x>\u005cP{Join_Control})" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 => {"matches":["😀","😀"],"index":0,"input":"😀​‌‍‎ſK\n","groups":{"x":"😀"},"indices":[[0,2],[0,2]],"indexGroups":{"x":[0,2]},"lastIndex":2,"source":"(?<x>\\P{Join_Control})"}
+"(?<x>\u005cP{Join_Control})" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 => {"matches":["​","​"],"index":2,"input":"😀​‌‍‎ſK\n","groups":{"x":"​"},"indices":[[2,3],[2,3]],"indexGroups":{"x":[2,3]},"lastIndex":3,"source":"(?<x>\\P{Join_Control})"}
+"(?<x>\u005cP{Join_Control})" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="diug" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 => {"matches":["X","X"],"index":0,"input":"X\r\n‌ ‍ ","groups":{"x":"X"},"indices":[[0,1],[0,1]],"indexGroups":{"x":[0,1]},"lastIndex":1,"source":"(?<x>\\P{Join_Control})"}
+"(?<x>\u005cP{Join_Control})" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 => {"matches":["\r","\r"],"index":1,"input":"X\r\n‌ ‍ ","groups":{"x":"\r"},"indices":[[1,2],[1,2]],"indexGroups":{"x":[1,2]},"lastIndex":2,"source":"(?<x>\\P{Join_Control})"}
+"(?<x>\u005cP{Join_Control})" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 => {"matches":["\n","\n"],"index":2,"input":"X\r\n‌ ‍ ","groups":{"x":"\n"},"indices":[[2,3],[2,3]],"indexGroups":{"x":[2,3]},"lastIndex":3,"source":"(?<x>\\P{Join_Control})"}
+"(?<x>\u005cP{Join_Control})" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="diug" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="diug" input="\uff10\uff26" lastIndex=0 => {"matches":["０","０"],"index":0,"input":"０Ｆ","groups":{"x":"０"},"indices":[[0,1],[0,1]],"indexGroups":{"x":[0,1]},"lastIndex":1,"source":"(?<x>\\P{Join_Control})"}
+"(?<x>\u005cP{Join_Control})" flags="diug" input="\uff10\uff26" lastIndex=1 => {"matches":["Ｆ","Ｆ"],"index":1,"input":"０Ｆ","groups":{"x":"Ｆ"},"indices":[[1,2],[1,2]],"indexGroups":{"x":[1,2]},"lastIndex":2,"source":"(?<x>\\P{Join_Control})"}
+"(?<x>\u005cP{Join_Control})" flags="diug" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="diug" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="diug" input="\uff10\uff26" lastIndex=3 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 => {"matches":["😀","😀"],"index":0,"input":"😀​‌‍‎ſK\n","groups":{"x":"😀"},"indices":[[0,2],[0,2]],"indexGroups":{"x":[0,2]},"lastIndex":2,"source":"(?<x>\\P{Join_Control})"}
+"(?<x>\u005cP{Join_Control})" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 => {"matches":["😀","😀"],"index":0,"input":"😀​‌‍‎ſK\n","groups":{"x":"😀"},"indices":[[0,2],[0,2]],"indexGroups":{"x":[0,2]},"lastIndex":2,"source":"(?<x>\\P{Join_Control})"}
+"(?<x>\u005cP{Join_Control})" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 => {"matches":["​","​"],"index":2,"input":"😀​‌‍‎ſK\n","groups":{"x":"​"},"indices":[[2,3],[2,3]],"indexGroups":{"x":[2,3]},"lastIndex":3,"source":"(?<x>\\P{Join_Control})"}
+"(?<x>\u005cP{Join_Control})" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="divg" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 => {"matches":["X","X"],"index":0,"input":"X\r\n‌ ‍ ","groups":{"x":"X"},"indices":[[0,1],[0,1]],"indexGroups":{"x":[0,1]},"lastIndex":1,"source":"(?<x>\\P{Join_Control})"}
+"(?<x>\u005cP{Join_Control})" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 => {"matches":["\r","\r"],"index":1,"input":"X\r\n‌ ‍ ","groups":{"x":"\r"},"indices":[[1,2],[1,2]],"indexGroups":{"x":[1,2]},"lastIndex":2,"source":"(?<x>\\P{Join_Control})"}
+"(?<x>\u005cP{Join_Control})" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 => {"matches":["\n","\n"],"index":2,"input":"X\r\n‌ ‍ ","groups":{"x":"\n"},"indices":[[2,3],[2,3]],"indexGroups":{"x":[2,3]},"lastIndex":3,"source":"(?<x>\\P{Join_Control})"}
+"(?<x>\u005cP{Join_Control})" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="divg" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="divg" input="\uff10\uff26" lastIndex=0 => {"matches":["０","０"],"index":0,"input":"０Ｆ","groups":{"x":"０"},"indices":[[0,1],[0,1]],"indexGroups":{"x":[0,1]},"lastIndex":1,"source":"(?<x>\\P{Join_Control})"}
+"(?<x>\u005cP{Join_Control})" flags="divg" input="\uff10\uff26" lastIndex=1 => {"matches":["Ｆ","Ｆ"],"index":1,"input":"０Ｆ","groups":{"x":"Ｆ"},"indices":[[1,2],[1,2]],"indexGroups":{"x":[1,2]},"lastIndex":2,"source":"(?<x>\\P{Join_Control})"}
+"(?<x>\u005cP{Join_Control})" flags="divg" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="divg" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="divg" input="\uff10\uff26" lastIndex=3 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=0 => {"matches":["😀","😀"],"index":0,"input":"😀​‌‍‎ſK\n","groups":{"x":"😀"},"indices":[[0,2],[0,2]],"indexGroups":{"x":[0,2]},"lastIndex":2,"source":"(?<x>\\P{Join_Control})"}
+"(?<x>\u005cP{Join_Control})" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=1 => {"matches":["😀","😀"],"index":0,"input":"😀​‌‍‎ſK\n","groups":{"x":"😀"},"indices":[[0,2],[0,2]],"indexGroups":{"x":[0,2]},"lastIndex":2,"source":"(?<x>\\P{Join_Control})"}
+"(?<x>\u005cP{Join_Control})" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=2 => {"matches":["​","​"],"index":2,"input":"😀​‌‍‎ſK\n","groups":{"x":"​"},"indices":[[2,3],[2,3]],"indexGroups":{"x":[2,3]},"lastIndex":3,"source":"(?<x>\\P{Join_Control})"}
+"(?<x>\u005cP{Join_Control})" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=9 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="divmy" input="\ud83d\ude00\u200b\u200c\u200d\u200e\u017f\u212a\u000a" lastIndex=10 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=0 => {"matches":["X","X"],"index":0,"input":"X\r\n‌ ‍ ","groups":{"x":"X"},"indices":[[0,1],[0,1]],"indexGroups":{"x":[0,1]},"lastIndex":1,"source":"(?<x>\\P{Join_Control})"}
+"(?<x>\u005cP{Join_Control})" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=1 => {"matches":["\r","\r"],"index":1,"input":"X\r\n‌ ‍ ","groups":{"x":"\r"},"indices":[[1,2],[1,2]],"indexGroups":{"x":[1,2]},"lastIndex":2,"source":"(?<x>\\P{Join_Control})"}
+"(?<x>\u005cP{Join_Control})" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=2 => {"matches":["\n","\n"],"index":2,"input":"X\r\n‌ ‍ ","groups":{"x":"\n"},"indices":[[2,3],[2,3]],"indexGroups":{"x":[2,3]},"lastIndex":3,"source":"(?<x>\\P{Join_Control})"}
+"(?<x>\u005cP{Join_Control})" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=7 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="divmy" input="X\u000d\u000a\u200c\u2028\u200d\u2029" lastIndex=8 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="divmy" input="\uff10\uff26" lastIndex=0 => {"matches":["０","０"],"index":0,"input":"０Ｆ","groups":{"x":"０"},"indices":[[0,1],[0,1]],"indexGroups":{"x":[0,1]},"lastIndex":1,"source":"(?<x>\\P{Join_Control})"}
+"(?<x>\u005cP{Join_Control})" flags="divmy" input="\uff10\uff26" lastIndex=1 => {"matches":["Ｆ","Ｆ"],"index":1,"input":"０Ｆ","groups":{"x":"Ｆ"},"indices":[[1,2],[1,2]],"indexGroups":{"x":[1,2]},"lastIndex":2,"source":"(?<x>\\P{Join_Control})"}
+"(?<x>\u005cP{Join_Control})" flags="divmy" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="divmy" input="\uff10\uff26" lastIndex=2 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="divmy" input="\uff10\uff26" lastIndex=3 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="divmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
+"(?<x>\u005cP{Join_Control})" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}

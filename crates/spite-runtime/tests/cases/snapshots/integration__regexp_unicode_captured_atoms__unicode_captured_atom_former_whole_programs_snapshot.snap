@@ -1,0 +1,254 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_unicode_captured_atoms.rs
+expression: rows
+---
+/([\u{1f600}])+/u.test('a')
+false
+
+/(.)+/v.test('a')
+true
+
+/(a)+/u.test('a')
+true
+
+/(?:a)+/u.test('a')
+true
+
+/^([a])+$/u.test('a')
+true
+
+/^([a])+$/v.test('a')
+true
+
+/([a])+/iu.exec('a')
+[
+  "a",
+  "a"
+]
+
+/^([a])+$/iu.exec('a')
+[
+  "a",
+  "a"
+]
+
+/^((.)+)$/u.exec('A')
+[
+  "A",
+  "A",
+  "A"
+]
+
+/([\u{1f600}])+/v.exec('a')
+null
+
+/([^a])+/u.exec('b')
+[
+  "b",
+  "b"
+]
+
+/(\D)+/u.exec('a')
+[
+  "a",
+  "a"
+]
+
+/([\uD800])+/u.exec('\uD800')
+[
+  "\ud800",
+  "\ud800"
+]
+
+/([\uD7FF-\uE000])+/u.exec('a')
+null
+
+/([\u{1f600}])+/u.exec('a')
+null
+
+/([a])+/u.exec('a')
+[
+  "a",
+  "a"
+]
+
+/(.)+/u.exec('a')
+[
+  "a",
+  "a"
+]
+
+/(?:a)+/iu.exec('a')
+[
+  "a"
+]
+
+/([\u{10000}])+/u.exec('a')
+null
+
+/([\u{D800}])+/v.exec('\uD800')
+[
+  "\ud800",
+  "\ud800"
+]
+
+/([\u{D7FF}-\u{E000}])+/u.exec('a')
+null
+
+/([\u{61}])+/iv.exec('a')
+[
+  "a",
+  "a"
+]
+
+/([^\u{61}])+/u.exec('b')
+[
+  "b",
+  "b"
+]
+
+/([\u{61}])+/u.exec('a')
+[
+  "a",
+  "a"
+]
+
+/(?:\u{61})+/iu.exec('a')
+[
+  "a"
+]
+
+/^([a])+$/v.exec('a')
+[
+  "a",
+  "a"
+]
+
+/([^a])+/iv.exec('b')
+[
+  "b",
+  "b"
+]
+
+/(\w)+/iu.exec('a')
+[
+  "a",
+  "a"
+]
+
+/^([a])+$/u.exec('a')
+[
+  "a",
+  "a"
+]
+
+/(.)+/iu.exec('a')
+[
+  "a",
+  "a"
+]
+
+/(\W)+/iv.exec('a')
+null
+
+/./v.exec('a')+/(.)+/v.exec('a')
+"aa,a"
+
+/([\D])+/u.exec('a')
+[
+  "a",
+  "a"
+]
+
+/([^a])+/v.exec('b')
+[
+  "b",
+  "b"
+]
+
+/^(a)+$/iu.exec('A')
+[
+  "A",
+  "A"
+]
+
+/(a)+$/u.exec('a')
+[
+  "a",
+  "a"
+]
+
+/(a)+$/um.exec('a')
+[
+  "a",
+  "a"
+]
+
+/^(a)+/u.exec('a')
+[
+  "a",
+  "a"
+]
+
+/(a)+/u.exec('a')
+[
+  "a",
+  "a"
+]
+
+/([\W])+/iv.exec('a')
+null
+
+/(?:\u{1f600})+/iu.exec('😀')
+[
+  "😀"
+]
+
+/([\u{1f600}])+/v.exec('😀')
+[
+  "😀",
+  "😀"
+]
+
+/([a])+/iv.exec('a')
+[
+  "a",
+  "a"
+]
+
+/(\D)+/v.exec('a')
+[
+  "a",
+  "a"
+]
+
+/([\uD800])+/v.exec('\uD800')
+[
+  "\ud800",
+  "\ud800"
+]
+
+/([\uD7FF-\uE000])+/v.exec('a')
+null
+
+/([a])+/v.exec('a')
+[
+  "a",
+  "a"
+]
+
+/(.)+/v.exec('a')
+[
+  "a",
+  "a"
+]
+
+/(?:a)+/iv.exec('a')
+[
+  "a"
+]
+
+/(?:\uD800)+/iu.exec('\uD800')
+[
+  "\ud800"
+]

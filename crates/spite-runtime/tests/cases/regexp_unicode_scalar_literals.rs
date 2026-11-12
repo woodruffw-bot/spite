@@ -25,14 +25,32 @@ fn unicode_scalar_literal_results_snapshot() {
                 let p = JsString::from(pattern);
                 let input = JsString::from(input);
                 let script = format!(
-                    "let r=new RegExp({p:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indicesGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+                    r#"
+                        let r = new RegExp({p:?}, '{flags}');
+                        r.lastIndex = {start};
+                        let m = r.exec({input:?});
+                        JSON.stringify(m === null ? {{
+                            match: null,
+                            lastIndex: r.lastIndex
+                        }} : {{
+                            matches: [...m],
+                            index: m.index,
+                            input: m.input,
+                            groups: m.groups,
+                            indices: m.indices,
+                            indicesGroups: m.indices.groups,
+                            lastIndex: r.lastIndex,
+                            source: r.source
+                        }})
+                    "#
                 );
                 let Value::String(result) = Realm::default().eval(&script).unwrap() else {
                     panic!("{script}")
                 };
                 writeln!(
                     rows,
-                    "{p:?} flags={flags:?} input={input:?} lastIndex={start} {result:?}"
+                    "{p:?} flags={flags:?} input={input:?} lastIndex={start} => {result}",
+                    result = result.to_utf8().expect("JSON output must be valid UTF-8"),
                 )
                 .unwrap();
             }
@@ -243,11 +261,20 @@ fn unicode_scalar_literal_original_complete_programs_and_ordered_calls() {
         } else {
             assert_eq!(result, Value::Boolean(false));
         }
-        let script = format!("JSON.stringify({source})");
+        let script = format!(
+            r#"
+            JSON.stringify({source})
+        "#
+        );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("expected JSON")
         };
-        writeln!(rows, "{source:?} {result:?}").unwrap();
+        writeln!(
+            rows,
+            "{source:?} => {result}",
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
+        )
+        .unwrap();
     }
     for flag in ["u", "v"] {
         let setup = format!(
@@ -267,17 +294,22 @@ fn unicode_scalar_literal_original_complete_programs_and_ordered_calls() {
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("expected JSON")
         };
-        writeln!(rows, "{script:?} {result:?}").unwrap();
+        writeln!(
+            rows,
+            "{script:?} => {result}",
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
+        )
+        .unwrap();
     }
     insta::assert_snapshot!(rows, @r#"
-        "/(\\u{1f600})/u.test('a')" "false"
-        "/\\u{1f600}/u.exec('a')" "null"
-        "/\\u{1f600}/v.exec('a')" "null"
-        "/(?<x>\\u{1f600})/u.test('a')" "false"
-        "/(?:\\u{1f600})/u.test('a')" "false"
-        "/(?:\\u{1f600})/v.test('a')" "false"
-        "/\\u{10000}/u.exec('a')" "null"
-        "let r=new RegExp('\\\\u{1f600}','u'),t='';r.lastIndex={valueOf(){t+='i';return 0;}};let a=r.exec({toString(){t+='s';return 'a';}});JSON.stringify({match:a,trace:t,indexKind:typeof r.lastIndex})" "{\u0022match\u0022:null,\u0022trace\u0022:\u0022si\u0022,\u0022indexKind\u0022:\u0022object\u0022}"
-        "let r=new RegExp('\\\\u{1f600}','v'),t='';r.lastIndex={valueOf(){t+='i';return 0;}};let a=r.exec({toString(){t+='s';return 'a';}});JSON.stringify({match:a,trace:t,indexKind:typeof r.lastIndex})" "{\u0022match\u0022:null,\u0022trace\u0022:\u0022si\u0022,\u0022indexKind\u0022:\u0022object\u0022}"
+        "/(\\u{1f600})/u.test('a')" => false
+        "/\\u{1f600}/u.exec('a')" => null
+        "/\\u{1f600}/v.exec('a')" => null
+        "/(?<x>\\u{1f600})/u.test('a')" => false
+        "/(?:\\u{1f600})/u.test('a')" => false
+        "/(?:\\u{1f600})/v.test('a')" => false
+        "/\\u{10000}/u.exec('a')" => null
+        "let r=new RegExp('\\\\u{1f600}','u'),t='';r.lastIndex={valueOf(){t+='i';return 0;}};let a=r.exec({toString(){t+='s';return 'a';}});JSON.stringify({match:a,trace:t,indexKind:typeof r.lastIndex})" => {"match":null,"trace":"si","indexKind":"object"}
+        "let r=new RegExp('\\\\u{1f600}','v'),t='';r.lastIndex={valueOf(){t+='i';return 0;}};let a=r.exec({toString(){t+='s';return 'a';}});JSON.stringify({match:a,trace:t,indexKind:typeof r.lastIndex})" => {"match":null,"trace":"si","indexKind":"object"}
         "#);
 }

@@ -1,0 +1,807 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_unicode_v_sets.rs
+expression: rows
+---
+"(?<whole>([A&&a]))" flags="dvmg" input="\ud83d\ude00aA" lastIndex=0
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"(?<whole>([A&&a]))" flags="dvmg" input="\ud83d\ude00aA" lastIndex=1
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"(?<whole>([A&&a]))" flags="divmg" input="\ud83d\ude00aA" lastIndex=0
+{
+  "matches": [
+    "a",
+    "a",
+    "a"
+  ],
+  "index": 2,
+  "input": "😀aA",
+  "groups": {
+    "whole": "a"
+  },
+  "indices": [
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      2,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<whole>([A&&a]))"
+}
+
+"(?<whole>([A&&a]))" flags="divmg" input="\ud83d\ude00aA" lastIndex=1
+{
+  "matches": [
+    "a",
+    "a",
+    "a"
+  ],
+  "index": 2,
+  "input": "😀aA",
+  "groups": {
+    "whole": "a"
+  },
+  "indices": [
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      2,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<whole>([A&&a]))"
+}
+
+"(?<whole>([[A-Z]--[K]]))" flags="dvmg" input="\ud83d\ude00\u212akA" lastIndex=0
+{
+  "matches": [
+    "A",
+    "A",
+    "A"
+  ],
+  "index": 4,
+  "input": "😀KkA",
+  "groups": {
+    "whole": "A"
+  },
+  "indices": [
+    [
+      4,
+      5
+    ],
+    [
+      4,
+      5
+    ],
+    [
+      4,
+      5
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      4,
+      5
+    ]
+  },
+  "lastIndex": 5,
+  "source": "(?<whole>([[A-Z]--[K]]))"
+}
+
+"(?<whole>([[A-Z]--[K]]))" flags="dvmg" input="\ud83d\ude00\u212akA" lastIndex=1
+{
+  "matches": [
+    "A",
+    "A",
+    "A"
+  ],
+  "index": 4,
+  "input": "😀KkA",
+  "groups": {
+    "whole": "A"
+  },
+  "indices": [
+    [
+      4,
+      5
+    ],
+    [
+      4,
+      5
+    ],
+    [
+      4,
+      5
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      4,
+      5
+    ]
+  },
+  "lastIndex": 5,
+  "source": "(?<whole>([[A-Z]--[K]]))"
+}
+
+"(?<whole>([[A-Z]--[K]]))" flags="divmg" input="\ud83d\ude00\u212akA" lastIndex=0
+{
+  "matches": [
+    "A",
+    "A",
+    "A"
+  ],
+  "index": 4,
+  "input": "😀KkA",
+  "groups": {
+    "whole": "A"
+  },
+  "indices": [
+    [
+      4,
+      5
+    ],
+    [
+      4,
+      5
+    ],
+    [
+      4,
+      5
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      4,
+      5
+    ]
+  },
+  "lastIndex": 5,
+  "source": "(?<whole>([[A-Z]--[K]]))"
+}
+
+"(?<whole>([[A-Z]--[K]]))" flags="divmg" input="\ud83d\ude00\u212akA" lastIndex=1
+{
+  "matches": [
+    "A",
+    "A",
+    "A"
+  ],
+  "index": 4,
+  "input": "😀KkA",
+  "groups": {
+    "whole": "A"
+  },
+  "indices": [
+    [
+      4,
+      5
+    ],
+    [
+      4,
+      5
+    ],
+    [
+      4,
+      5
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      4,
+      5
+    ]
+  },
+  "lastIndex": 5,
+  "source": "(?<whole>([[A-Z]--[K]]))"
+}
+
+"(?<whole>([[\u005cu{1f600}-\u005cu{1f601}]--[\u005cu{1f601}]]))" flags="dvmg" input="\ud800\ud83d\ude00\udc00" lastIndex=0
+{
+  "matches": [
+    "😀",
+    "😀",
+    "😀"
+  ],
+  "index": 1,
+  "input": "\ud800😀\udc00",
+  "groups": {
+    "whole": "😀"
+  },
+  "indices": [
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      1,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<whole>([[\\u{1f600}-\\u{1f601}]--[\\u{1f601}]]))"
+}
+
+"(?<whole>([[\u005cu{1f600}-\u005cu{1f601}]--[\u005cu{1f601}]]))" flags="dvmg" input="\ud800\ud83d\ude00\udc00" lastIndex=1
+{
+  "matches": [
+    "😀",
+    "😀",
+    "😀"
+  ],
+  "index": 1,
+  "input": "\ud800😀\udc00",
+  "groups": {
+    "whole": "😀"
+  },
+  "indices": [
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      1,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<whole>([[\\u{1f600}-\\u{1f601}]--[\\u{1f601}]]))"
+}
+
+"(?<whole>([[\u005cu{1f600}-\u005cu{1f601}]--[\u005cu{1f601}]]))" flags="divmg" input="\ud800\ud83d\ude00\udc00" lastIndex=0
+{
+  "matches": [
+    "😀",
+    "😀",
+    "😀"
+  ],
+  "index": 1,
+  "input": "\ud800😀\udc00",
+  "groups": {
+    "whole": "😀"
+  },
+  "indices": [
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      1,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<whole>([[\\u{1f600}-\\u{1f601}]--[\\u{1f601}]]))"
+}
+
+"(?<whole>([[\u005cu{1f600}-\u005cu{1f601}]--[\u005cu{1f601}]]))" flags="divmg" input="\ud800\ud83d\ude00\udc00" lastIndex=1
+{
+  "matches": [
+    "😀",
+    "😀",
+    "😀"
+  ],
+  "index": 1,
+  "input": "\ud800😀\udc00",
+  "groups": {
+    "whole": "😀"
+  },
+  "indices": [
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      1,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<whole>([[\\u{1f600}-\\u{1f601}]--[\\u{1f601}]]))"
+}
+
+"(?<whole>([[\u005cuD800-\u005cuDFFF]--[\u005cuDC00-\u005cuDFFF]]))" flags="dvmg" input="\ud83d\ude00\ud800a\udc00" lastIndex=0
+{
+  "matches": [
+    "\ud800",
+    "\ud800",
+    "\ud800"
+  ],
+  "index": 2,
+  "input": "😀\ud800a\udc00",
+  "groups": {
+    "whole": "\ud800"
+  },
+  "indices": [
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      2,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<whole>([[\\uD800-\\uDFFF]--[\\uDC00-\\uDFFF]]))"
+}
+
+"(?<whole>([[\u005cuD800-\u005cuDFFF]--[\u005cuDC00-\u005cuDFFF]]))" flags="dvmg" input="\ud83d\ude00\ud800a\udc00" lastIndex=1
+{
+  "matches": [
+    "\ud800",
+    "\ud800",
+    "\ud800"
+  ],
+  "index": 2,
+  "input": "😀\ud800a\udc00",
+  "groups": {
+    "whole": "\ud800"
+  },
+  "indices": [
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      2,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<whole>([[\\uD800-\\uDFFF]--[\\uDC00-\\uDFFF]]))"
+}
+
+"(?<whole>([[\u005cuD800-\u005cuDFFF]--[\u005cuDC00-\u005cuDFFF]]))" flags="divmg" input="\ud83d\ude00\ud800a\udc00" lastIndex=0
+{
+  "matches": [
+    "\ud800",
+    "\ud800",
+    "\ud800"
+  ],
+  "index": 2,
+  "input": "😀\ud800a\udc00",
+  "groups": {
+    "whole": "\ud800"
+  },
+  "indices": [
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      2,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<whole>([[\\uD800-\\uDFFF]--[\\uDC00-\\uDFFF]]))"
+}
+
+"(?<whole>([[\u005cuD800-\u005cuDFFF]--[\u005cuDC00-\u005cuDFFF]]))" flags="divmg" input="\ud83d\ude00\ud800a\udc00" lastIndex=1
+{
+  "matches": [
+    "\ud800",
+    "\ud800",
+    "\ud800"
+  ],
+  "index": 2,
+  "input": "😀\ud800a\udc00",
+  "groups": {
+    "whole": "\ud800"
+  },
+  "indices": [
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      2,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<whole>([[\\uD800-\\uDFFF]--[\\uDC00-\\uDFFF]]))"
+}
+
+"^(?<whole>([[a-z]--[aeiou]]+))$" flags="dvmg" input="\ud83d\ude00\u000abcd\u000az" lastIndex=0
+{
+  "matches": [
+    "bcd",
+    "bcd",
+    "bcd"
+  ],
+  "index": 3,
+  "input": "😀\nbcd\nz",
+  "groups": {
+    "whole": "bcd"
+  },
+  "indices": [
+    [
+      3,
+      6
+    ],
+    [
+      3,
+      6
+    ],
+    [
+      3,
+      6
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      3,
+      6
+    ]
+  },
+  "lastIndex": 6,
+  "source": "^(?<whole>([[a-z]--[aeiou]]+))$"
+}
+
+"^(?<whole>([[a-z]--[aeiou]]+))$" flags="dvmg" input="\ud83d\ude00\u000abcd\u000az" lastIndex=1
+{
+  "matches": [
+    "bcd",
+    "bcd",
+    "bcd"
+  ],
+  "index": 3,
+  "input": "😀\nbcd\nz",
+  "groups": {
+    "whole": "bcd"
+  },
+  "indices": [
+    [
+      3,
+      6
+    ],
+    [
+      3,
+      6
+    ],
+    [
+      3,
+      6
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      3,
+      6
+    ]
+  },
+  "lastIndex": 6,
+  "source": "^(?<whole>([[a-z]--[aeiou]]+))$"
+}
+
+"^(?<whole>([[a-z]--[aeiou]]+))$" flags="divmg" input="\ud83d\ude00\u000abcd\u000az" lastIndex=0
+{
+  "matches": [
+    "bcd",
+    "bcd",
+    "bcd"
+  ],
+  "index": 3,
+  "input": "😀\nbcd\nz",
+  "groups": {
+    "whole": "bcd"
+  },
+  "indices": [
+    [
+      3,
+      6
+    ],
+    [
+      3,
+      6
+    ],
+    [
+      3,
+      6
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      3,
+      6
+    ]
+  },
+  "lastIndex": 6,
+  "source": "^(?<whole>([[a-z]--[aeiou]]+))$"
+}
+
+"^(?<whole>([[a-z]--[aeiou]]+))$" flags="divmg" input="\ud83d\ude00\u000abcd\u000az" lastIndex=1
+{
+  "matches": [
+    "bcd",
+    "bcd",
+    "bcd"
+  ],
+  "index": 3,
+  "input": "😀\nbcd\nz",
+  "groups": {
+    "whole": "bcd"
+  },
+  "indices": [
+    [
+      3,
+      6
+    ],
+    [
+      3,
+      6
+    ],
+    [
+      3,
+      6
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      3,
+      6
+    ]
+  },
+  "lastIndex": 6,
+  "source": "^(?<whole>([[a-z]--[aeiou]]+))$"
+}
+
+"(?<whole>([A--a]*?))" flags="dvmg" input="A\ud83d\ude00a" lastIndex=0
+{
+  "matches": [
+    "",
+    "",
+    ""
+  ],
+  "index": 0,
+  "input": "A😀a",
+  "groups": {
+    "whole": ""
+  },
+  "indices": [
+    [
+      0,
+      0
+    ],
+    [
+      0,
+      0
+    ],
+    [
+      0,
+      0
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      0,
+      0
+    ]
+  },
+  "lastIndex": 0,
+  "source": "(?<whole>([A--a]*?))"
+}
+
+"(?<whole>([A--a]*?))" flags="dvmg" input="A\ud83d\ude00a" lastIndex=1
+{
+  "matches": [
+    "",
+    "",
+    ""
+  ],
+  "index": 1,
+  "input": "A😀a",
+  "groups": {
+    "whole": ""
+  },
+  "indices": [
+    [
+      1,
+      1
+    ],
+    [
+      1,
+      1
+    ],
+    [
+      1,
+      1
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      1,
+      1
+    ]
+  },
+  "lastIndex": 1,
+  "source": "(?<whole>([A--a]*?))"
+}
+
+"(?<whole>([A--a]*?))" flags="divmg" input="A\ud83d\ude00a" lastIndex=0
+{
+  "matches": [
+    "",
+    "",
+    ""
+  ],
+  "index": 0,
+  "input": "A😀a",
+  "groups": {
+    "whole": ""
+  },
+  "indices": [
+    [
+      0,
+      0
+    ],
+    [
+      0,
+      0
+    ],
+    [
+      0,
+      0
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      0,
+      0
+    ]
+  },
+  "lastIndex": 0,
+  "source": "(?<whole>([A--a]*?))"
+}
+
+"(?<whole>([A--a]*?))" flags="divmg" input="A\ud83d\ude00a" lastIndex=1
+{
+  "matches": [
+    "",
+    "",
+    ""
+  ],
+  "index": 1,
+  "input": "A😀a",
+  "groups": {
+    "whole": ""
+  },
+  "indices": [
+    [
+      1,
+      1
+    ],
+    [
+      1,
+      1
+    ],
+    [
+      1,
+      1
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      1,
+      1
+    ]
+  },
+  "lastIndex": 1,
+  "source": "(?<whole>([A--a]*?))"
+}

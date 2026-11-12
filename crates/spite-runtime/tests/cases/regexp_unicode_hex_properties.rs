@@ -28,14 +28,32 @@ fn unicode_hex_property_results_snapshot() {
                 let input = JsString::from(input);
                 for start in [0, 1, 2, input.len(), input.len() + 1] {
                     let script = format!(
-                        "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+                        r#"
+                            let r = new RegExp({pattern:?}, '{flags}');
+                            r.lastIndex = {start};
+                            let m = r.exec({input:?});
+                            JSON.stringify(m === null ? {{
+                                match: null,
+                                lastIndex: r.lastIndex
+                            }} : {{
+                                matches: [...m],
+                                index: m.index,
+                                input: m.input,
+                                groups: m.groups,
+                                indices: m.indices,
+                                indexGroups: m.indices.groups,
+                                lastIndex: r.lastIndex,
+                                source: r.source
+                            }})
+                        "#
                     );
                     let Value::String(result) = Realm::default().eval(&script).unwrap() else {
                         panic!("{script}")
                     };
                     writeln!(
                         rows,
-                        "{pattern:?} flags={flags:?} input={input:?} lastIndex={start} {result:?}"
+                        "{pattern:?} flags={flags:?} input={input:?} lastIndex={start} => {result}",
+                        result = result.to_utf8().expect("JSON output must be valid UTF-8"),
                     )
                     .unwrap();
                 }
@@ -235,14 +253,23 @@ fn original_unicode_hex_property_complete_program() {
     let source = r"/\p{Hex_Digit}/u.exec('A')";
     let Value::String(result) = Realm::default()
         .eval(&format!(
-            "JSON.stringify(eval({:?}))",
+            r#"
+                JSON.stringify(eval({:?}), null, 2)
+            "#,
             JsString::from(source)
         ))
         .unwrap()
     else {
         panic!("{source}")
     };
-    insta::assert_snapshot!(format!("{:?} {result:?}", JsString::from(source)), @r#"
-        "/\u005cp{Hex_Digit}/u.exec('A')" "[\u0022A\u0022]"
+    insta::assert_snapshot!(format!(
+        "{:?}\n{result}\n",
+        JsString::from(source),
+        result = result.to_utf8().expect("JSON output must be valid UTF-8"),
+    ), @r#"
+        "/\u005cp{Hex_Digit}/u.exec('A')"
+        [
+          "A"
+        ]
         "#);
 }

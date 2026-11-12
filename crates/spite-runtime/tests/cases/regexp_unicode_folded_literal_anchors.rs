@@ -32,14 +32,32 @@ fn unicode_folded_literal_boundary_results_snapshot() {
                 let input = JsString::from(input);
                 for start in [0, 1, 2, input.len(), input.len() + 1] {
                     let script = format!(
-                        "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+                        r#"
+                            let r = new RegExp({pattern:?}, '{flags}');
+                            r.lastIndex = {start};
+                            let m = r.exec({input:?});
+                            JSON.stringify(m === null ? {{
+                                match: null,
+                                lastIndex: r.lastIndex
+                            }} : {{
+                                matches: [...m],
+                                index: m.index,
+                                input: m.input,
+                                groups: m.groups,
+                                indices: m.indices,
+                                indexGroups: m.indices.groups,
+                                lastIndex: r.lastIndex,
+                                source: r.source
+                            }})
+                        "#
                     );
                     let Value::String(result) = Realm::default().eval(&script).unwrap() else {
                         panic!("{script}")
                     };
                     writeln!(
                         rows,
-                        "{pattern:?} flags={flags:?} input={input:?} lastIndex={start} {result:?}"
+                        "{pattern:?} flags={flags:?} input={input:?} lastIndex={start} => {result}",
+                        result = result.to_utf8().expect("JSON output must be valid UTF-8"),
                     )
                     .unwrap();
                 }
@@ -214,15 +232,34 @@ fn unicode_folded_literal_boundary_opted_work_and_additional_compositions() {
 fn original_unicode_folded_literal_boundary_complete_programs() {
     let mut rows = String::new();
     for source in [r"/^ab$/iv.exec('AB')", r"/^(a)$/iu.exec('A')"] {
-        let program = format!("JSON.stringify(eval({:?}))", JsString::from(source));
+        let program = format!(
+            r#"
+            JSON.stringify(eval({:?}), null, 2)
+        "#,
+            JsString::from(source)
+        );
         let Value::String(result) = Realm::default().eval(&program).unwrap() else {
             panic!("{program}")
         };
-        writeln!(rows, "{:?} {result:?}", JsString::from(source)).unwrap();
+        writeln!(
+            rows,
+            "{:?}\n{result}\n",
+            JsString::from(source),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
+        )
+        .unwrap();
     }
     insta::assert_snapshot!(rows, @r#"
-        "/^ab$/iv.exec('AB')" "[\u0022AB\u0022]"
-        "/^(a)$/iu.exec('A')" "[\u0022A\u0022,\u0022A\u0022]"
+        "/^ab$/iv.exec('AB')"
+        [
+          "AB"
+        ]
+
+        "/^(a)$/iu.exec('A')"
+        [
+          "A",
+          "A"
+        ]
         "#);
 }
 
@@ -235,44 +272,35 @@ fn unicode_folded_literal_boundary_unicode_18_capture_widths_snapshot() {
             for input in [JsString::from("ßS"), JsString::from("\u{1df95}ſ")] {
                 for start in [0, 1] {
                     let script = format!(
-                        "let r=new RegExp({pattern:?},'di{mode}g');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex}})"
+                        r#"
+                            let r = new RegExp({pattern:?}, 'di{mode}g');
+                            r.lastIndex = {start};
+                            let m = r.exec({input:?});
+                            JSON.stringify(m === null ? {{
+                                match: null,
+                                lastIndex: r.lastIndex
+                            }} : {{
+                                matches: [...m],
+                                index: m.index,
+                                groups: m.groups,
+                                indices: m.indices,
+                                indexGroups: m.indices.groups,
+                                lastIndex: r.lastIndex
+                            }}, null, 2)
+                        "#
                     );
                     let Value::String(result) = Realm::default().eval(&script).unwrap() else {
                         panic!("{script}")
                     };
                     writeln!(
                         rows,
-                        "{pattern:?} mode={mode:?} input={input:?} start={start} {result:?}"
+                        "{pattern:?} mode={mode:?} input={input:?} start={start}\n{result}\n",
+                        result = result.to_utf8().expect("JSON output must be valid UTF-8"),
                     )
                     .unwrap();
                 }
             }
         }
     }
-    insta::assert_snapshot!(rows, @r#"
-        "^(?<x>\u00df)(s)()$" mode="u" input="\u00dfS" start=0 "{\u0022matches\u0022:[\u0022\u00dfS\u0022,\u0022\u00df\u0022,\u0022S\u0022,\u0022\u0022],\u0022index\u0022:0,\u0022groups\u0022:{\u0022x\u0022:\u0022\u00df\u0022},\u0022indices\u0022:[[0,2],[0,1],[1,2],[2,2]],\u0022indexGroups\u0022:{\u0022x\u0022:[0,1]},\u0022lastIndex\u0022:2}"
-        "^(?<x>\u00df)(s)()$" mode="u" input="\u00dfS" start=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "^(?<x>\u00df)(s)()$" mode="u" input="\ud837\udf95\u017f" start=0 "{\u0022matches\u0022:[\u0022\ud837\udf95\u017f\u0022,\u0022\ud837\udf95\u0022,\u0022\u017f\u0022,\u0022\u0022],\u0022index\u0022:0,\u0022groups\u0022:{\u0022x\u0022:\u0022\ud837\udf95\u0022},\u0022indices\u0022:[[0,3],[0,2],[2,3],[3,3]],\u0022indexGroups\u0022:{\u0022x\u0022:[0,2]},\u0022lastIndex\u0022:3}"
-        "^(?<x>\u00df)(s)()$" mode="u" input="\ud837\udf95\u017f" start=1 "{\u0022matches\u0022:[\u0022\ud837\udf95\u017f\u0022,\u0022\ud837\udf95\u0022,\u0022\u017f\u0022,\u0022\u0022],\u0022index\u0022:0,\u0022groups\u0022:{\u0022x\u0022:\u0022\ud837\udf95\u0022},\u0022indices\u0022:[[0,3],[0,2],[2,3],[3,3]],\u0022indexGroups\u0022:{\u0022x\u0022:[0,2]},\u0022lastIndex\u0022:3}"
-        "^(?<x>\u00df)(s)()$" mode="v" input="\u00dfS" start=0 "{\u0022matches\u0022:[\u0022\u00dfS\u0022,\u0022\u00df\u0022,\u0022S\u0022,\u0022\u0022],\u0022index\u0022:0,\u0022groups\u0022:{\u0022x\u0022:\u0022\u00df\u0022},\u0022indices\u0022:[[0,2],[0,1],[1,2],[2,2]],\u0022indexGroups\u0022:{\u0022x\u0022:[0,1]},\u0022lastIndex\u0022:2}"
-        "^(?<x>\u00df)(s)()$" mode="v" input="\u00dfS" start=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "^(?<x>\u00df)(s)()$" mode="v" input="\ud837\udf95\u017f" start=0 "{\u0022matches\u0022:[\u0022\ud837\udf95\u017f\u0022,\u0022\ud837\udf95\u0022,\u0022\u017f\u0022,\u0022\u0022],\u0022index\u0022:0,\u0022groups\u0022:{\u0022x\u0022:\u0022\ud837\udf95\u0022},\u0022indices\u0022:[[0,3],[0,2],[2,3],[3,3]],\u0022indexGroups\u0022:{\u0022x\u0022:[0,2]},\u0022lastIndex\u0022:3}"
-        "^(?<x>\u00df)(s)()$" mode="v" input="\ud837\udf95\u017f" start=1 "{\u0022matches\u0022:[\u0022\ud837\udf95\u017f\u0022,\u0022\ud837\udf95\u0022,\u0022\u017f\u0022,\u0022\u0022],\u0022index\u0022:0,\u0022groups\u0022:{\u0022x\u0022:\u0022\ud837\udf95\u0022},\u0022indices\u0022:[[0,3],[0,2],[2,3],[3,3]],\u0022indexGroups\u0022:{\u0022x\u0022:[0,2]},\u0022lastIndex\u0022:3}"
-        "^(?<x>\u005cu{1df95})(s)()$" mode="u" input="\u00dfS" start=0 "{\u0022matches\u0022:[\u0022\u00dfS\u0022,\u0022\u00df\u0022,\u0022S\u0022,\u0022\u0022],\u0022index\u0022:0,\u0022groups\u0022:{\u0022x\u0022:\u0022\u00df\u0022},\u0022indices\u0022:[[0,2],[0,1],[1,2],[2,2]],\u0022indexGroups\u0022:{\u0022x\u0022:[0,1]},\u0022lastIndex\u0022:2}"
-        "^(?<x>\u005cu{1df95})(s)()$" mode="u" input="\u00dfS" start=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "^(?<x>\u005cu{1df95})(s)()$" mode="u" input="\ud837\udf95\u017f" start=0 "{\u0022matches\u0022:[\u0022\ud837\udf95\u017f\u0022,\u0022\ud837\udf95\u0022,\u0022\u017f\u0022,\u0022\u0022],\u0022index\u0022:0,\u0022groups\u0022:{\u0022x\u0022:\u0022\ud837\udf95\u0022},\u0022indices\u0022:[[0,3],[0,2],[2,3],[3,3]],\u0022indexGroups\u0022:{\u0022x\u0022:[0,2]},\u0022lastIndex\u0022:3}"
-        "^(?<x>\u005cu{1df95})(s)()$" mode="u" input="\ud837\udf95\u017f" start=1 "{\u0022matches\u0022:[\u0022\ud837\udf95\u017f\u0022,\u0022\ud837\udf95\u0022,\u0022\u017f\u0022,\u0022\u0022],\u0022index\u0022:0,\u0022groups\u0022:{\u0022x\u0022:\u0022\ud837\udf95\u0022},\u0022indices\u0022:[[0,3],[0,2],[2,3],[3,3]],\u0022indexGroups\u0022:{\u0022x\u0022:[0,2]},\u0022lastIndex\u0022:3}"
-        "^(?<x>\u005cu{1df95})(s)()$" mode="v" input="\u00dfS" start=0 "{\u0022matches\u0022:[\u0022\u00dfS\u0022,\u0022\u00df\u0022,\u0022S\u0022,\u0022\u0022],\u0022index\u0022:0,\u0022groups\u0022:{\u0022x\u0022:\u0022\u00df\u0022},\u0022indices\u0022:[[0,2],[0,1],[1,2],[2,2]],\u0022indexGroups\u0022:{\u0022x\u0022:[0,1]},\u0022lastIndex\u0022:2}"
-        "^(?<x>\u005cu{1df95})(s)()$" mode="v" input="\u00dfS" start=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "^(?<x>\u005cu{1df95})(s)()$" mode="v" input="\ud837\udf95\u017f" start=0 "{\u0022matches\u0022:[\u0022\ud837\udf95\u017f\u0022,\u0022\ud837\udf95\u0022,\u0022\u017f\u0022,\u0022\u0022],\u0022index\u0022:0,\u0022groups\u0022:{\u0022x\u0022:\u0022\ud837\udf95\u0022},\u0022indices\u0022:[[0,3],[0,2],[2,3],[3,3]],\u0022indexGroups\u0022:{\u0022x\u0022:[0,2]},\u0022lastIndex\u0022:3}"
-        "^(?<x>\u005cu{1df95})(s)()$" mode="v" input="\ud837\udf95\u017f" start=1 "{\u0022matches\u0022:[\u0022\ud837\udf95\u017f\u0022,\u0022\ud837\udf95\u0022,\u0022\u017f\u0022,\u0022\u0022],\u0022index\u0022:0,\u0022groups\u0022:{\u0022x\u0022:\u0022\ud837\udf95\u0022},\u0022indices\u0022:[[0,3],[0,2],[2,3],[3,3]],\u0022indexGroups\u0022:{\u0022x\u0022:[0,2]},\u0022lastIndex\u0022:3}"
-        "((^(\u00df)()s$))" mode="u" input="\u00dfS" start=0 "{\u0022matches\u0022:[\u0022\u00dfS\u0022,\u0022\u00dfS\u0022,\u0022\u00dfS\u0022,\u0022\u00df\u0022,\u0022\u0022],\u0022index\u0022:0,\u0022indices\u0022:[[0,2],[0,2],[0,2],[0,1],[1,1]],\u0022lastIndex\u0022:2}"
-        "((^(\u00df)()s$))" mode="u" input="\u00dfS" start=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "((^(\u00df)()s$))" mode="u" input="\ud837\udf95\u017f" start=0 "{\u0022matches\u0022:[\u0022\ud837\udf95\u017f\u0022,\u0022\ud837\udf95\u017f\u0022,\u0022\ud837\udf95\u017f\u0022,\u0022\ud837\udf95\u0022,\u0022\u0022],\u0022index\u0022:0,\u0022indices\u0022:[[0,3],[0,3],[0,3],[0,2],[2,2]],\u0022lastIndex\u0022:3}"
-        "((^(\u00df)()s$))" mode="u" input="\ud837\udf95\u017f" start=1 "{\u0022matches\u0022:[\u0022\ud837\udf95\u017f\u0022,\u0022\ud837\udf95\u017f\u0022,\u0022\ud837\udf95\u017f\u0022,\u0022\ud837\udf95\u0022,\u0022\u0022],\u0022index\u0022:0,\u0022indices\u0022:[[0,3],[0,3],[0,3],[0,2],[2,2]],\u0022lastIndex\u0022:3}"
-        "((^(\u00df)()s$))" mode="v" input="\u00dfS" start=0 "{\u0022matches\u0022:[\u0022\u00dfS\u0022,\u0022\u00dfS\u0022,\u0022\u00dfS\u0022,\u0022\u00df\u0022,\u0022\u0022],\u0022index\u0022:0,\u0022indices\u0022:[[0,2],[0,2],[0,2],[0,1],[1,1]],\u0022lastIndex\u0022:2}"
-        "((^(\u00df)()s$))" mode="v" input="\u00dfS" start=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "((^(\u00df)()s$))" mode="v" input="\ud837\udf95\u017f" start=0 "{\u0022matches\u0022:[\u0022\ud837\udf95\u017f\u0022,\u0022\ud837\udf95\u017f\u0022,\u0022\ud837\udf95\u017f\u0022,\u0022\ud837\udf95\u0022,\u0022\u0022],\u0022index\u0022:0,\u0022indices\u0022:[[0,3],[0,3],[0,3],[0,2],[2,2]],\u0022lastIndex\u0022:3}"
-        "((^(\u00df)()s$))" mode="v" input="\ud837\udf95\u017f" start=1 "{\u0022matches\u0022:[\u0022\ud837\udf95\u017f\u0022,\u0022\ud837\udf95\u017f\u0022,\u0022\ud837\udf95\u017f\u0022,\u0022\ud837\udf95\u0022,\u0022\u0022],\u0022index\u0022:0,\u0022indices\u0022:[[0,3],[0,3],[0,3],[0,2],[2,2]],\u0022lastIndex\u0022:3}"
-        "#);
+    insta::assert_snapshot!(rows);
 }

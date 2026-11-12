@@ -32,14 +32,32 @@ fn unicode_literal_word_boundary_results_snapshot() {
             ] {
                 for start in [0, 1, 2, input.len(), input.len() + 1] {
                     let script = format!(
-                        "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+                        r#"
+                            let r = new RegExp({pattern:?}, '{flags}');
+                            r.lastIndex = {start};
+                            let m = r.exec({input:?});
+                            JSON.stringify(m === null ? {{
+                                match: null,
+                                lastIndex: r.lastIndex
+                            }} : {{
+                                matches: [...m],
+                                index: m.index,
+                                input: m.input,
+                                groups: m.groups,
+                                indices: m.indices,
+                                indexGroups: m.indices.groups,
+                                lastIndex: r.lastIndex,
+                                source: r.source
+                            }})
+                        "#
                     );
                     let Value::String(result) = Realm::default().eval(&script).unwrap() else {
                         panic!("{script}")
                     };
                     writeln!(
                         rows,
-                        "{pattern:?} flags={flags:?} input={input:?} lastIndex={start} {result:?}"
+                        "{pattern:?} flags={flags:?} input={input:?} lastIndex={start} => {result}",
+                        result = result.to_utf8().expect("JSON output must be valid UTF-8"),
                     )
                     .unwrap();
                 }
@@ -244,21 +262,38 @@ fn unicode_literal_word_boundaries_opted_work_and_remaining_compositions() {
 #[test]
 fn unicode_literal_word_boundary_former_whole_programs_snapshot() {
     let mut rows = String::new();
-    for (source, expected) in [
-        (r"/\b(A)\b/u.exec('A')", r#"["A","A"]"#),
-        (r"/\bAB\b/v.exec('AB')", r#"["AB"]"#),
-    ] {
+    for source in [r"/\b(A)\b/u.exec('A')", r"/\bAB\b/v.exec('AB')"] {
         let mut realm = Realm::default();
         realm.eval(source).unwrap();
-        let Value::String(result) = realm.eval(&format!("JSON.stringify({source})")).unwrap()
+        let Value::String(result) = realm
+            .eval(&format!(
+                r#"
+            JSON.stringify({source}, null, 2)
+        "#
+            ))
+            .unwrap()
         else {
             panic!("{source}")
         };
-        assert_eq!(result, JsString::from(expected));
-        writeln!(rows, "{:?} {result:?}", JsString::from(source)).unwrap();
+
+        writeln!(
+            rows,
+            "{:?}\n{result}\n",
+            JsString::from(source),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
+        )
+        .unwrap();
     }
     insta::assert_snapshot!(rows, @r#"
-        "/\u005cb(A)\u005cb/u.exec('A')" "[\u0022A\u0022,\u0022A\u0022]"
-        "/\u005cbAB\u005cb/v.exec('AB')" "[\u0022AB\u0022]"
+        "/\u005cb(A)\u005cb/u.exec('A')"
+        [
+          "A",
+          "A"
+        ]
+
+        "/\u005cbAB\u005cb/v.exec('AB')"
+        [
+          "AB"
+        ]
         "#);
 }

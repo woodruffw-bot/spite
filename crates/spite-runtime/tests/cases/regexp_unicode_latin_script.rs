@@ -400,15 +400,30 @@ fn unicode_latin_script_results_snapshot() {
                     let input = JsString::from(input);
                     for start in [0, 1, 3] {
                         let script = format!(
-                            "let r=new RegExp({pattern:?},{flags:?});r.lastIndex={start};let m=r.exec({input:?});JSON.stringify({{m,index:m?.index,groups:m?.groups,indices:m?.indices,indexGroups:m?.indices?.groups,lastIndex:r.lastIndex,source:r.source}})"
+                            r#"
+                                let r = new RegExp({pattern:?}, {flags:?});
+                                r.lastIndex = {start};
+                                let m = r.exec({input:?});
+                                JSON.stringify({{
+                                    m,
+                                    index: m?.index,
+                                    groups: m?.groups,
+                                    indices: m?.indices,
+                                    indexGroups: m?.indices?.groups,
+                                    lastIndex: r.lastIndex,
+                                    source: r.source
+                                }})
+                            "#
                         );
                         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
                             panic!("{script}")
                         };
                         writeln!(
                             rows,
-                            "{body:?} flags={flags:?} input={input:?} lastIndex={start} {result:?}"
-                        )
+                            "{body:?} flags={flags:?} input={input:?} lastIndex={start} => {result}"
+                        ,
+result = result.to_utf8().expect("JSON output must be valid UTF-8"),
+)
                         .unwrap();
                     }
                 }

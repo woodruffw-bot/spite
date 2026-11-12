@@ -35,14 +35,32 @@ fn unicode_repeated_atom_inner_word_results_snapshot() {
             ] {
                 for start in [0, 1, 2, input.len(), input.len() + 1] {
                     let script = format!(
-                        "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+                        r#"
+                            let r = new RegExp({pattern:?}, '{flags}');
+                            r.lastIndex = {start};
+                            let m = r.exec({input:?});
+                            JSON.stringify(m === null ? {{
+                                match: null,
+                                lastIndex: r.lastIndex
+                            }} : {{
+                                matches: [...m],
+                                index: m.index,
+                                input: m.input,
+                                groups: m.groups,
+                                indices: m.indices,
+                                indexGroups: m.indices.groups,
+                                lastIndex: r.lastIndex,
+                                source: r.source
+                            }})
+                        "#
                     );
                     let Value::String(result) = Realm::default().eval(&script).unwrap() else {
                         panic!("{script}")
                     };
                     writeln!(
                         rows,
-                        "{pattern:?} flags={flags:?} input={input:?} lastIndex={start} {result:?}"
+                        "{pattern:?} flags={flags:?} input={input:?} lastIndex={start} => {result}",
+                        result = result.to_utf8().expect("JSON output must be valid UTF-8"),
                     )
                     .unwrap();
                 }
@@ -206,14 +224,27 @@ fn unicode_repeated_atom_inner_word_former_whole_programs_snapshot() {
     {
         let source = r"/(\b.)+/u.exec('a')";
         let Value::String(result) = Realm::default()
-            .eval(&format!("JSON.stringify({source})"))
+            .eval(&format!(
+                r#"
+                JSON.stringify({source}, null, 2)
+            "#
+            ))
             .unwrap()
         else {
             panic!("{source}")
         };
-        writeln!(rows, "{source} {result:?}").unwrap();
+        writeln!(
+            rows,
+            "{source}\n{result}\n",
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
+        )
+        .unwrap();
     }
     insta::assert_snapshot!(rows, @r#"
-        /(\b.)+/u.exec('a') "[\u0022a\u0022,\u0022a\u0022]"
+        /(\b.)+/u.exec('a')
+        [
+          "a",
+          "a"
+        ]
         "#);
 }

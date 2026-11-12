@@ -31,12 +31,30 @@ fn unicode_class_folding_results_snapshot() {
                 for input in &inputs {
                     for start in [0, 1, 2, input.len(), input.len() + 1] {
                         let script = format!(
-                            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,lastIndex:r.lastIndex,source:r.source}})"
+                            r#"
+                                let r = new RegExp({pattern:?}, '{flags}');
+                                r.lastIndex = {start};
+                                let m = r.exec({input:?});
+                                JSON.stringify(m === null ? {{
+                                    match: null,
+                                    lastIndex: r.lastIndex
+                                }} : {{
+                                    matches: [...m],
+                                    index: m.index,
+                                    input: m.input,
+                                    groups: m.groups,
+                                    indices: m.indices,
+                                    lastIndex: r.lastIndex,
+                                    source: r.source
+                                }})
+                            "#
                         );
                         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
                             panic!("{script}")
                         };
-                        writeln!(rows,"{pattern:?} flags={flags:?} input={input:?} lastIndex={start} {result:?}").unwrap();
+                        writeln!(rows,"{pattern:?} flags={flags:?} input={input:?} lastIndex={start} => {result}",
+result = result.to_utf8().expect("JSON output must be valid UTF-8"),
+).unwrap();
                     }
                 }
             }
@@ -211,46 +229,35 @@ fn unicode_18_class_cross_plane_folding_keeps_original_widths() {
                     let p = JsString::from(pattern);
                     let t = JsString::from(input);
                     let script = format!(
-                        "let r=new RegExp({p:?},'di{mode}y');r.lastIndex={start};let m=r.exec({t:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{text:m[0],index:m.index,indices:m.indices[0],lastIndex:r.lastIndex}})"
+                        r#"
+                            let r = new RegExp({p:?}, 'di{mode}y');
+                            r.lastIndex = {start};
+                            let m = r.exec({t:?});
+                            JSON.stringify(m === null ? {{
+                                match: null,
+                                lastIndex: r.lastIndex
+                            }} : {{
+                                text: m[0],
+                                index: m.index,
+                                indices: m.indices[0],
+                                lastIndex: r.lastIndex
+                            }}, null, 2)
+                        "#
                     );
                     let Value::String(result) = Realm::default().eval(&script).unwrap() else {
                         panic!("{script}")
                     };
                     writeln!(
                         rows,
-                        "{p:?} mode={mode:?} input={t:?} start={start} {result:?}"
+                        "{p:?} mode={mode:?} input={t:?} start={start}\n{result}\n",
+                        result = result.to_utf8().expect("JSON output must be valid UTF-8"),
                     )
                     .unwrap();
                 }
             }
         }
     }
-    insta::assert_snapshot!(rows, @r#"
-        "[\u00df]" mode="u" input="\u00df" start=0 "{\u0022text\u0022:\u0022\u00df\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,1],\u0022lastIndex\u0022:1}"
-        "[\u00df]" mode="u" input="\u00df" start=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "[\u00df]" mode="u" input="\ud837\udf95" start=0 "{\u0022text\u0022:\u0022\ud837\udf95\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,2],\u0022lastIndex\u0022:2}"
-        "[\u00df]" mode="u" input="\ud837\udf95" start=1 "{\u0022text\u0022:\u0022\ud837\udf95\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,2],\u0022lastIndex\u0022:2}"
-        "[\u005cu{1df95}]" mode="u" input="\u00df" start=0 "{\u0022text\u0022:\u0022\u00df\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,1],\u0022lastIndex\u0022:1}"
-        "[\u005cu{1df95}]" mode="u" input="\u00df" start=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "[\u005cu{1df95}]" mode="u" input="\ud837\udf95" start=0 "{\u0022text\u0022:\u0022\ud837\udf95\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,2],\u0022lastIndex\u0022:2}"
-        "[\u005cu{1df95}]" mode="u" input="\ud837\udf95" start=1 "{\u0022text\u0022:\u0022\ud837\udf95\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,2],\u0022lastIndex\u0022:2}"
-        "[^\u005cu{10000}-\u005cu{10ffff}]" mode="u" input="\u00df" start=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "[^\u005cu{10000}-\u005cu{10ffff}]" mode="u" input="\u00df" start=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "[^\u005cu{10000}-\u005cu{10ffff}]" mode="u" input="\ud837\udf95" start=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "[^\u005cu{10000}-\u005cu{10ffff}]" mode="u" input="\ud837\udf95" start=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "[\u00df]" mode="v" input="\u00df" start=0 "{\u0022text\u0022:\u0022\u00df\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,1],\u0022lastIndex\u0022:1}"
-        "[\u00df]" mode="v" input="\u00df" start=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "[\u00df]" mode="v" input="\ud837\udf95" start=0 "{\u0022text\u0022:\u0022\ud837\udf95\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,2],\u0022lastIndex\u0022:2}"
-        "[\u00df]" mode="v" input="\ud837\udf95" start=1 "{\u0022text\u0022:\u0022\ud837\udf95\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,2],\u0022lastIndex\u0022:2}"
-        "[\u005cu{1df95}]" mode="v" input="\u00df" start=0 "{\u0022text\u0022:\u0022\u00df\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,1],\u0022lastIndex\u0022:1}"
-        "[\u005cu{1df95}]" mode="v" input="\u00df" start=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "[\u005cu{1df95}]" mode="v" input="\ud837\udf95" start=0 "{\u0022text\u0022:\u0022\ud837\udf95\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,2],\u0022lastIndex\u0022:2}"
-        "[\u005cu{1df95}]" mode="v" input="\ud837\udf95" start=1 "{\u0022text\u0022:\u0022\ud837\udf95\u0022,\u0022index\u0022:0,\u0022indices\u0022:[0,2],\u0022lastIndex\u0022:2}"
-        "[^\u005cu{10000}-\u005cu{10ffff}]" mode="v" input="\u00df" start=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "[^\u005cu{10000}-\u005cu{10ffff}]" mode="v" input="\u00df" start=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "[^\u005cu{10000}-\u005cu{10ffff}]" mode="v" input="\ud837\udf95" start=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "[^\u005cu{10000}-\u005cu{10ffff}]" mode="v" input="\ud837\udf95" start=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -265,19 +272,50 @@ fn original_unicode_class_folding_complete_programs() {
         r"/[a]/iv.exec('a')",
     ] {
         let Value::String(result) = Realm::default()
-            .eval(&format!("JSON.stringify({source})"))
+            .eval(&format!(
+                r#"
+                JSON.stringify({source}, null, 2)
+            "#
+            ))
             .unwrap()
         else {
             panic!("{source}")
         };
-        writeln!(rows, "{:?} {result:?}", JsString::from(source)).unwrap();
+        writeln!(
+            rows,
+            "{:?}\n{result}\n",
+            JsString::from(source),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
+        )
+        .unwrap();
     }
     insta::assert_snapshot!(rows, @r#"
-        "/[a]/iu.exec('a')" "[\u0022a\u0022]"
-        "/[\u005cu{61}]/iv.exec('a')" "[\u0022a\u0022]"
-        "/[^a]/iv.exec('b')" "[\u0022b\u0022]"
-        "/^[a]$/iu.exec('a')" "[\u0022a\u0022]"
-        "/[\u005cW]/iv.exec('a')" "null"
-        "/[a]/iv.exec('a')" "[\u0022a\u0022]"
+        "/[a]/iu.exec('a')"
+        [
+          "a"
+        ]
+
+        "/[\u005cu{61}]/iv.exec('a')"
+        [
+          "a"
+        ]
+
+        "/[^a]/iv.exec('b')"
+        [
+          "b"
+        ]
+
+        "/^[a]$/iu.exec('a')"
+        [
+          "a"
+        ]
+
+        "/[\u005cW]/iv.exec('a')"
+        null
+
+        "/[a]/iv.exec('a')"
+        [
+          "a"
+        ]
         "#);
 }

@@ -36,14 +36,32 @@ fn unicode_captured_atom_results_snapshot() {
             ] {
                 for start in [0, 1, 2, input.len(), input.len() + 1] {
                     let script = format!(
-                        "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+                        r#"
+                            let r = new RegExp({pattern:?}, '{flags}');
+                            r.lastIndex = {start};
+                            let m = r.exec({input:?});
+                            JSON.stringify(m === null ? {{
+                                match: null,
+                                lastIndex: r.lastIndex
+                            }} : {{
+                                matches: [...m],
+                                index: m.index,
+                                input: m.input,
+                                groups: m.groups,
+                                indices: m.indices,
+                                indexGroups: m.indices.groups,
+                                lastIndex: r.lastIndex,
+                                source: r.source
+                            }})
+                        "#
                     );
                     let Value::String(result) = Realm::default().eval(&script).unwrap() else {
                         panic!("{script}")
                     };
                     writeln!(
                         rows,
-                        "{pattern:?} flags={flags:?} input={input:?} lastIndex={start} {result:?}"
+                        "{pattern:?} flags={flags:?} input={input:?} lastIndex={start} => {result}",
+                        result = result.to_utf8().expect("JSON output must be valid UTF-8"),
                     )
                     .unwrap();
                 }
@@ -298,65 +316,23 @@ fn unicode_captured_atom_former_whole_programs_snapshot() {
         r"/(?:\uD800)+/iu.exec('\uD800')",
     ] {
         let Value::String(result) = Realm::default()
-            .eval(&format!("JSON.stringify({source})"))
+            .eval(&format!(
+                r#"
+                JSON.stringify({source}, null, 2)
+            "#
+            ))
             .unwrap()
         else {
             panic!("{source}")
         };
-        writeln!(rows, "{source} {result:?}").unwrap();
+        writeln!(
+            rows,
+            "{source}\n{result}\n",
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
+        )
+        .unwrap();
     }
-    insta::assert_snapshot!(rows, @r#"
-        /([\u{1f600}])+/u.test('a') "false"
-        /(.)+/v.test('a') "true"
-        /(a)+/u.test('a') "true"
-        /(?:a)+/u.test('a') "true"
-        /^([a])+$/u.test('a') "true"
-        /^([a])+$/v.test('a') "true"
-        /([a])+/iu.exec('a') "[\u0022a\u0022,\u0022a\u0022]"
-        /^([a])+$/iu.exec('a') "[\u0022a\u0022,\u0022a\u0022]"
-        /^((.)+)$/u.exec('A') "[\u0022A\u0022,\u0022A\u0022,\u0022A\u0022]"
-        /([\u{1f600}])+/v.exec('a') "null"
-        /([^a])+/u.exec('b') "[\u0022b\u0022,\u0022b\u0022]"
-        /(\D)+/u.exec('a') "[\u0022a\u0022,\u0022a\u0022]"
-        /([\uD800])+/u.exec('\uD800') "[\u0022\u005cud800\u0022,\u0022\u005cud800\u0022]"
-        /([\uD7FF-\uE000])+/u.exec('a') "null"
-        /([\u{1f600}])+/u.exec('a') "null"
-        /([a])+/u.exec('a') "[\u0022a\u0022,\u0022a\u0022]"
-        /(.)+/u.exec('a') "[\u0022a\u0022,\u0022a\u0022]"
-        /(?:a)+/iu.exec('a') "[\u0022a\u0022]"
-        /([\u{10000}])+/u.exec('a') "null"
-        /([\u{D800}])+/v.exec('\uD800') "[\u0022\u005cud800\u0022,\u0022\u005cud800\u0022]"
-        /([\u{D7FF}-\u{E000}])+/u.exec('a') "null"
-        /([\u{61}])+/iv.exec('a') "[\u0022a\u0022,\u0022a\u0022]"
-        /([^\u{61}])+/u.exec('b') "[\u0022b\u0022,\u0022b\u0022]"
-        /([\u{61}])+/u.exec('a') "[\u0022a\u0022,\u0022a\u0022]"
-        /(?:\u{61})+/iu.exec('a') "[\u0022a\u0022]"
-        /^([a])+$/v.exec('a') "[\u0022a\u0022,\u0022a\u0022]"
-        /([^a])+/iv.exec('b') "[\u0022b\u0022,\u0022b\u0022]"
-        /(\w)+/iu.exec('a') "[\u0022a\u0022,\u0022a\u0022]"
-        /^([a])+$/u.exec('a') "[\u0022a\u0022,\u0022a\u0022]"
-        /(.)+/iu.exec('a') "[\u0022a\u0022,\u0022a\u0022]"
-        /(\W)+/iv.exec('a') "null"
-        /./v.exec('a')+/(.)+/v.exec('a') "\u0022aa,a\u0022"
-        /([\D])+/u.exec('a') "[\u0022a\u0022,\u0022a\u0022]"
-        /([^a])+/v.exec('b') "[\u0022b\u0022,\u0022b\u0022]"
-        /^(a)+$/iu.exec('A') "[\u0022A\u0022,\u0022A\u0022]"
-        /(a)+$/u.exec('a') "[\u0022a\u0022,\u0022a\u0022]"
-        /(a)+$/um.exec('a') "[\u0022a\u0022,\u0022a\u0022]"
-        /^(a)+/u.exec('a') "[\u0022a\u0022,\u0022a\u0022]"
-        /(a)+/u.exec('a') "[\u0022a\u0022,\u0022a\u0022]"
-        /([\W])+/iv.exec('a') "null"
-        /(?:\u{1f600})+/iu.exec('😀') "[\u0022\ud83d\ude00\u0022]"
-        /([\u{1f600}])+/v.exec('😀') "[\u0022\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022]"
-        /([a])+/iv.exec('a') "[\u0022a\u0022,\u0022a\u0022]"
-        /(\D)+/v.exec('a') "[\u0022a\u0022,\u0022a\u0022]"
-        /([\uD800])+/v.exec('\uD800') "[\u0022\u005cud800\u0022,\u0022\u005cud800\u0022]"
-        /([\uD7FF-\uE000])+/v.exec('a') "null"
-        /([a])+/v.exec('a') "[\u0022a\u0022,\u0022a\u0022]"
-        /(.)+/v.exec('a') "[\u0022a\u0022,\u0022a\u0022]"
-        /(?:a)+/iv.exec('a') "[\u0022a\u0022]"
-        /(?:\uD800)+/iu.exec('\uD800') "[\u0022\u005cud800\u0022]"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]

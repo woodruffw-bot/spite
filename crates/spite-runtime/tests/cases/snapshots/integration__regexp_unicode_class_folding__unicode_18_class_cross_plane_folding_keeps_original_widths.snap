@@ -1,0 +1,207 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_unicode_class_folding.rs
+expression: rows
+---
+"[\u00df]" mode="u" input="\u00df" start=0
+{
+  "text": "ß",
+  "index": 0,
+  "indices": [
+    0,
+    1
+  ],
+  "lastIndex": 1
+}
+
+"[\u00df]" mode="u" input="\u00df" start=1
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"[\u00df]" mode="u" input="\ud837\udf95" start=0
+{
+  "text": "𝾕",
+  "index": 0,
+  "indices": [
+    0,
+    2
+  ],
+  "lastIndex": 2
+}
+
+"[\u00df]" mode="u" input="\ud837\udf95" start=1
+{
+  "text": "𝾕",
+  "index": 0,
+  "indices": [
+    0,
+    2
+  ],
+  "lastIndex": 2
+}
+
+"[\u005cu{1df95}]" mode="u" input="\u00df" start=0
+{
+  "text": "ß",
+  "index": 0,
+  "indices": [
+    0,
+    1
+  ],
+  "lastIndex": 1
+}
+
+"[\u005cu{1df95}]" mode="u" input="\u00df" start=1
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"[\u005cu{1df95}]" mode="u" input="\ud837\udf95" start=0
+{
+  "text": "𝾕",
+  "index": 0,
+  "indices": [
+    0,
+    2
+  ],
+  "lastIndex": 2
+}
+
+"[\u005cu{1df95}]" mode="u" input="\ud837\udf95" start=1
+{
+  "text": "𝾕",
+  "index": 0,
+  "indices": [
+    0,
+    2
+  ],
+  "lastIndex": 2
+}
+
+"[^\u005cu{10000}-\u005cu{10ffff}]" mode="u" input="\u00df" start=0
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"[^\u005cu{10000}-\u005cu{10ffff}]" mode="u" input="\u00df" start=1
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"[^\u005cu{10000}-\u005cu{10ffff}]" mode="u" input="\ud837\udf95" start=0
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"[^\u005cu{10000}-\u005cu{10ffff}]" mode="u" input="\ud837\udf95" start=1
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"[\u00df]" mode="v" input="\u00df" start=0
+{
+  "text": "ß",
+  "index": 0,
+  "indices": [
+    0,
+    1
+  ],
+  "lastIndex": 1
+}
+
+"[\u00df]" mode="v" input="\u00df" start=1
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"[\u00df]" mode="v" input="\ud837\udf95" start=0
+{
+  "text": "𝾕",
+  "index": 0,
+  "indices": [
+    0,
+    2
+  ],
+  "lastIndex": 2
+}
+
+"[\u00df]" mode="v" input="\ud837\udf95" start=1
+{
+  "text": "𝾕",
+  "index": 0,
+  "indices": [
+    0,
+    2
+  ],
+  "lastIndex": 2
+}
+
+"[\u005cu{1df95}]" mode="v" input="\u00df" start=0
+{
+  "text": "ß",
+  "index": 0,
+  "indices": [
+    0,
+    1
+  ],
+  "lastIndex": 1
+}
+
+"[\u005cu{1df95}]" mode="v" input="\u00df" start=1
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"[\u005cu{1df95}]" mode="v" input="\ud837\udf95" start=0
+{
+  "text": "𝾕",
+  "index": 0,
+  "indices": [
+    0,
+    2
+  ],
+  "lastIndex": 2
+}
+
+"[\u005cu{1df95}]" mode="v" input="\ud837\udf95" start=1
+{
+  "text": "𝾕",
+  "index": 0,
+  "indices": [
+    0,
+    2
+  ],
+  "lastIndex": 2
+}
+
+"[^\u005cu{10000}-\u005cu{10ffff}]" mode="v" input="\u00df" start=0
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"[^\u005cu{10000}-\u005cu{10ffff}]" mode="v" input="\u00df" start=1
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"[^\u005cu{10000}-\u005cu{10ffff}]" mode="v" input="\ud837\udf95" start=0
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"[^\u005cu{10000}-\u005cu{10ffff}]" mode="v" input="\ud837\udf95" start=1
+{
+  "match": null,
+  "lastIndex": 0
+}

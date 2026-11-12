@@ -1,0 +1,174 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_unicode_atom_captures.rs
+expression: rows
+---
+"/([\u005cu{1f600}])/u.test('a')"
+false
+
+"/(.)/v.test('a')"
+true
+
+"/([\u005cu{1f600}])/v.exec('a')"
+null
+
+"/([a])/iu.exec('a')"
+[
+  "a",
+  "a"
+]
+
+"/([^a])/u.exec('b')"
+[
+  "b",
+  "b"
+]
+
+"/(\u005cD)/u.exec('a')"
+[
+  "a",
+  "a"
+]
+
+"/([\u005cuD800])/u.exec('\u005cuD800')"
+[
+  "\ud800",
+  "\ud800"
+]
+
+"/([\u005cuD7FF-\u005cuE000])/u.exec('a')"
+null
+
+"/([\u005cu{1f600}])/u.exec('a')"
+null
+
+"/([a])/u.exec('a')"
+[
+  "a",
+  "a"
+]
+
+"/(.)/u.exec('a')"
+[
+  "a",
+  "a"
+]
+
+"/([\u005cu{10000}])/u.exec('a')"
+null
+
+"/([\u005cu{D800}])/v.exec('\u005cuD800')"
+[
+  "\ud800",
+  "\ud800"
+]
+
+"/([\u005cu{D7FF}-\u005cu{E000}])/u.exec('a')"
+null
+
+"/([\u005cu{61}])/iv.exec('a')"
+[
+  "a",
+  "a"
+]
+
+"/([^\u005cu{61}])/u.exec('b')"
+[
+  "b",
+  "b"
+]
+
+"/([\u005cu{61}])/u.exec('a')"
+[
+  "a",
+  "a"
+]
+
+"/(^.$)/iu.exec('a')"
+[
+  "a",
+  "a"
+]
+
+"/([^a])/iv.exec('b')"
+[
+  "b",
+  "b"
+]
+
+"/(\u005cw)/iu.exec('a')"
+[
+  "a",
+  "a"
+]
+
+"/(^[a]$)/iu.exec('a')"
+[
+  "a",
+  "a"
+]
+
+"/(.)/iu.exec('a')"
+[
+  "a",
+  "a"
+]
+
+"/(\u005cW)/iv.exec('a')"
+null
+
+"/./v.exec('a')+/(.)/v.exec('a')"
+"aa,a"
+
+"/([\u005cD])/u.exec('a')"
+[
+  "a",
+  "a"
+]
+
+"/([^a])/v.exec('b')"
+[
+  "b",
+  "b"
+]
+
+"/([\u005cW])/iv.exec('a')"
+null
+
+"/([\u005cu{1f600}])/v.exec('\ud83d\ude00')"
+[
+  "😀",
+  "😀"
+]
+
+"/([a])/iv.exec('a')"
+[
+  "a",
+  "a"
+]
+
+"/(\u005cD)/v.exec('a')"
+[
+  "a",
+  "a"
+]
+
+"/([\u005cuD800])/v.exec('\u005cuD800')"
+[
+  "\ud800",
+  "\ud800"
+]
+
+"/([\u005cuD7FF-\u005cuE000])/v.exec('a')"
+null
+
+"/([a])/v.exec('a')"
+[
+  "a",
+  "a"
+]
+
+"/(.)/v.exec('a')"
+[
+  "a",
+  "a"
+]

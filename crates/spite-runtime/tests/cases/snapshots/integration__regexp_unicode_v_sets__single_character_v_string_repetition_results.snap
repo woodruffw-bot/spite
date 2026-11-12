@@ -1,0 +1,297 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_unicode_v_sets.rs
+expression: rows
+---
+"(?<whole>([\\q{a|b}]+))" flags="dvg" input_units=[122, 97, 98, 98, 97, 33] lastIndex=0
+{
+  "matches": [
+    "abba",
+    "abba",
+    "abba"
+  ],
+  "index": 1,
+  "input": "zabba!",
+  "groups": {
+    "whole": "abba"
+  },
+  "indices": [
+    [
+      1,
+      5
+    ],
+    [
+      1,
+      5
+    ],
+    [
+      1,
+      5
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      1,
+      5
+    ]
+  },
+  "lastIndex": 5,
+  "source": "(?<whole>([\\q{a|b}]+))"
+}
+
+"(?<whole>([\\q{a|b}&&[b-z]]{1,3}?))" flags="dvg" input_units=[97, 98, 98, 98, 33] lastIndex=0
+{
+  "matches": [
+    "b",
+    "b",
+    "b"
+  ],
+  "index": 1,
+  "input": "abbb!",
+  "groups": {
+    "whole": "b"
+  },
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      2
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      1,
+      2
+    ]
+  },
+  "lastIndex": 2,
+  "source": "(?<whole>([\\q{a|b}&&[b-z]]{1,3}?))"
+}
+
+"(?<whole>(\\b[\\q{a}--a]{0}\\b))" flags="dvg" input_units=[97] lastIndex=0
+{
+  "matches": [
+    "",
+    "",
+    ""
+  ],
+  "index": 0,
+  "input": "a",
+  "groups": {
+    "whole": ""
+  },
+  "indices": [
+    [
+      0,
+      0
+    ],
+    [
+      0,
+      0
+    ],
+    [
+      0,
+      0
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      0,
+      0
+    ]
+  },
+  "lastIndex": 0,
+  "source": "(?<whole>(\\b[\\q{a}--a]{0}\\b))"
+}
+
+"(?<whole>([\\q{K}&&k]+))" flags="divg" input_units=[33, 8490, 75, 107, 33] lastIndex=0
+{
+  "matches": [
+    "KKk",
+    "KKk",
+    "KKk"
+  ],
+  "index": 1,
+  "input": "!KKk!",
+  "groups": {
+    "whole": "KKk"
+  },
+  "indices": [
+    [
+      1,
+      4
+    ],
+    [
+      1,
+      4
+    ],
+    [
+      1,
+      4
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      1,
+      4
+    ]
+  },
+  "lastIndex": 4,
+  "source": "(?<whole>([\\q{K}&&k]+))"
+}
+
+"(?<whole>([^\\q{K|s}]+?))" flags="divg" input_units=[8490, 383, 33] lastIndex=0
+{
+  "matches": [
+    "!",
+    "!",
+    "!"
+  ],
+  "index": 2,
+  "input": "Kſ!",
+  "groups": {
+    "whole": "!"
+  },
+  "indices": [
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      2,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<whole>([^\\q{K|s}]+?))"
+}
+
+"(?<whole>(\\b[\\q{\\uD83D\\uDE00|x}&&[^\\q{x}]]{1,2}\\B))" flags="dvy" input_units=[65, 55357, 56832, 55357, 56832, 33] lastIndex=2
+{
+  "matches": [
+    "😀😀",
+    "😀😀",
+    "😀😀"
+  ],
+  "index": 1,
+  "input": "A😀😀!",
+  "groups": {
+    "whole": "😀😀"
+  },
+  "indices": [
+    [
+      1,
+      5
+    ],
+    [
+      1,
+      5
+    ],
+    [
+      1,
+      5
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      1,
+      5
+    ]
+  },
+  "lastIndex": 5,
+  "source": "(?<whole>(\\b[\\q{\\uD83D\\uDE00|x}&&[^\\q{x}]]{1,2}\\B))"
+}
+
+"(?<whole>([\\q{\\uD800|x}--x]{2}))" flags="dvg" input_units=[65, 55296, 55296, 66] lastIndex=0
+{
+  "matches": [
+    "\ud800\ud800",
+    "\ud800\ud800",
+    "\ud800\ud800"
+  ],
+  "index": 1,
+  "input": "A\ud800\ud800B",
+  "groups": {
+    "whole": "\ud800\ud800"
+  },
+  "indices": [
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      1,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<whole>([\\q{\\uD800|x}--x]{2}))"
+}
+
+"^(?<whole>(\\B[[\\q{\\r|\\n|\\u2028}]--[\\q{\\r}]]{1,2}\\B))$" flags="dgmv" input_units=[120, 13, 10, 8232, 121] lastIndex=0
+{
+  "matches": [
+    "\n",
+    "\n",
+    "\n"
+  ],
+  "index": 2,
+  "input": "x\r\n y",
+  "groups": {
+    "whole": "\n"
+  },
+  "indices": [
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      2,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "^(?<whole>(\\B[[\\q{\\r|\\n|\\u2028}]--[\\q{\\r}]]{1,2}\\B))$"
+}
+
+"(?<whole>([\\q{a|b}--a]{2,3}))" flags="dvy" input_units=[97, 98, 98, 33] lastIndex=0
+{
+  "match": null,
+  "lastIndex": 0
+}

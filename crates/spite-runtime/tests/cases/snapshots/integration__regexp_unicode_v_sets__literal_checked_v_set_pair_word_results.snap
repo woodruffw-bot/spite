@@ -1,0 +1,303 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_unicode_v_sets.rs
+expression: rows
+---
+"(?<whole>(\u005cBa[[a]][[a]]\u005cb))" flags="dvg" input_units=[97, 97, 97, 97, 33] lastIndex=0
+{
+  "matches": [
+    "aaa",
+    "aaa",
+    "aaa"
+  ],
+  "index": 1,
+  "input": "aaaa!",
+  "groups": {
+    "whole": "aaa"
+  },
+  "indices": [
+    [
+      1,
+      4
+    ],
+    [
+      1,
+      4
+    ],
+    [
+      1,
+      4
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      1,
+      4
+    ]
+  },
+  "lastIndex": 4,
+  "source": "(?<whole>(\\Ba[[a]][[a]]\\b))"
+}
+
+"(?<whole>(\u005cBa[[a]][[a]]\u005cb))" flags="dvy" input_units=[97, 97, 97, 97, 33] lastIndex=0
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"(?<whole>(\u005cBa[[a]][[a]]\u005cb))" flags="dvy" input_units=[97, 97, 97, 97, 33] lastIndex=1
+{
+  "matches": [
+    "aaa",
+    "aaa",
+    "aaa"
+  ],
+  "index": 1,
+  "input": "aaaa!",
+  "groups": {
+    "whole": "aaa"
+  },
+  "indices": [
+    [
+      1,
+      4
+    ],
+    [
+      1,
+      4
+    ],
+    [
+      1,
+      4
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      1,
+      4
+    ]
+  },
+  "lastIndex": 4,
+  "source": "(?<whole>(\\Ba[[a]][[a]]\\b))"
+}
+
+"(?<whole>(\u005cbk[[s]][[A]]\u005cb))" flags="divg" input_units=[8490, 383, 97, 33] lastIndex=0
+{
+  "matches": [
+    "Kſa",
+    "Kſa",
+    "Kſa"
+  ],
+  "index": 0,
+  "input": "Kſa!",
+  "groups": {
+    "whole": "Kſa"
+  },
+  "indices": [
+    [
+      0,
+      3
+    ],
+    [
+      0,
+      3
+    ],
+    [
+      0,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      0,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<whole>(\\bk[[s]][[A]]\\b))"
+}
+
+"(?<whole>(\u005cbx[\u005cP{Ll}&&A][[s]]\u005cb))" flags="divg" input_units=[120, 65, 115, 33] lastIndex=0
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"(?<whole>(\u005cB\u005cu{1f600}[[\u005cp{Any}]][[a]]\u005cb))" flags="dvy" input_units=[55357, 56832, 55357, 56833, 97, 33] lastIndex=1
+{
+  "matches": [
+    "😀😁a",
+    "😀😁a",
+    "😀😁a"
+  ],
+  "index": 0,
+  "input": "😀😁a!",
+  "groups": {
+    "whole": "😀😁a"
+  },
+  "indices": [
+    [
+      0,
+      5
+    ],
+    [
+      0,
+      5
+    ],
+    [
+      0,
+      5
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      0,
+      5
+    ]
+  },
+  "lastIndex": 5,
+  "source": "(?<whole>(\\B\\u{1f600}[[\\p{Any}]][[a]]\\b))"
+}
+
+"(?<whole>(\u005cB\u005cu{1f600}[[\u005cu{1f601}]][[\u005cu{1f602}]]\u005cB))" flags="dvg" input_units=[33, 55357, 56832, 55357, 56833, 55357, 56834, 33] lastIndex=0
+{
+  "matches": [
+    "😀😁😂",
+    "😀😁😂",
+    "😀😁😂"
+  ],
+  "index": 1,
+  "input": "!😀😁😂!",
+  "groups": {
+    "whole": "😀😁😂"
+  },
+  "indices": [
+    [
+      1,
+      7
+    ],
+    [
+      1,
+      7
+    ],
+    [
+      1,
+      7
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      1,
+      7
+    ]
+  },
+  "lastIndex": 7,
+  "source": "(?<whole>(\\B\\u{1f600}[[\\u{1f601}]][[\\u{1f602}]]\\B))"
+}
+
+"(?<whole>(\u005cb\u005cuD800[[\u005cuD800]][[\u005cuD800]]\u005cB))" flags="dvg" input_units=[65, 55296, 55296, 55296, 33] lastIndex=0
+{
+  "matches": [
+    "\ud800\ud800\ud800",
+    "\ud800\ud800\ud800",
+    "\ud800\ud800\ud800"
+  ],
+  "index": 1,
+  "input": "A\ud800\ud800\ud800!",
+  "groups": {
+    "whole": "\ud800\ud800\ud800"
+  },
+  "indices": [
+    [
+      1,
+      4
+    ],
+    [
+      1,
+      4
+    ],
+    [
+      1,
+      4
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      1,
+      4
+    ]
+  },
+  "lastIndex": 4,
+  "source": "(?<whole>(\\b\\uD800[[\\uD800]][[\\uD800]]\\B))"
+}
+
+"(?<whole>(\u005cba[[a]][[\u005cp{Any}]]\u005cb))" flags="divg" input_units=[97, 97, 8490, 33] lastIndex=0
+{
+  "matches": [
+    "aaK",
+    "aaK",
+    "aaK"
+  ],
+  "index": 0,
+  "input": "aaK!",
+  "groups": {
+    "whole": "aaK"
+  },
+  "indices": [
+    [
+      0,
+      3
+    ],
+    [
+      0,
+      3
+    ],
+    [
+      0,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      0,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<whole>(\\ba[[a]][[\\p{Any}]]\\b))"
+}
+
+"^(?<whole>(\u005cbc[[a]][[b]]\u005cb))$" flags="dvmg" input_units=[120, 13, 10, 99, 97, 98, 8232, 99, 100] lastIndex=0
+{
+  "matches": [
+    "cab",
+    "cab",
+    "cab"
+  ],
+  "index": 3,
+  "input": "x\r\ncab cd",
+  "groups": {
+    "whole": "cab"
+  },
+  "indices": [
+    [
+      3,
+      6
+    ],
+    [
+      3,
+      6
+    ],
+    [
+      3,
+      6
+    ]
+  ],
+  "indexGroups": {
+    "whole": [
+      3,
+      6
+    ]
+  },
+  "lastIndex": 6,
+  "source": "^(?<whole>(\\bc[[a]][[b]]\\b))$"
+}

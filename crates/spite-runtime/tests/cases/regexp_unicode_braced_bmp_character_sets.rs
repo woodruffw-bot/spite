@@ -25,14 +25,31 @@ fn unicode_braced_bmp_character_results_snapshot() {
                 let p = JsString::from(pattern);
                 let input = JsString::from(input);
                 let script = format!(
-                    "let r=new RegExp({p:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,lastIndex:r.lastIndex,source:r.source}})"
+                    r#"
+                        let r = new RegExp({p:?}, '{flags}');
+                        r.lastIndex = {start};
+                        let m = r.exec({input:?});
+                        JSON.stringify(m === null ? {{
+                            match: null,
+                            lastIndex: r.lastIndex
+                        }} : {{
+                            matches: [...m],
+                            index: m.index,
+                            input: m.input,
+                            groups: m.groups,
+                            indices: m.indices,
+                            lastIndex: r.lastIndex,
+                            source: r.source
+                        }})
+                    "#
                 );
                 let Value::String(result) = Realm::default().eval(&script).unwrap() else {
                     panic!("{script}")
                 };
                 writeln!(
                     rows,
-                    "{p:?} flags={flags:?} input={input:?} lastIndex={start} {result:?}"
+                    "{p:?} flags={flags:?} input={input:?} lastIndex={start} => {result}",
+                    result = result.to_utf8().expect("JSON output must be valid UTF-8"),
                 )
                 .unwrap();
             }
@@ -248,15 +265,30 @@ fn unicode_braced_bmp_character_former_complete_programs() {
             assert_eq!(result, Value::Boolean(true));
         }
         let script = format!(
-            "JSON.stringify((()=>{{let a={source};return typeof a==='boolean'?a:{{matches:[...a],index:a.index,input:a.input,groups:a.groups}}}})())"
+            r#"
+                JSON.stringify((() => {{
+                    let a = {source};
+                    return typeof a === 'boolean' ? a : {{
+                        matches: [...a],
+                        index: a.index,
+                        input: a.input,
+                        groups: a.groups
+                    }}
+                }})())
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("expected JSON")
         };
-        writeln!(rows, "{source:?} {result:?}").unwrap();
+        writeln!(
+            rows,
+            "{source:?} => {result}",
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
+        )
+        .unwrap();
     }
     insta::assert_snapshot!(rows, @r#"
-        "/[\\u{61}]/u.exec('a')" "{\u0022matches\u0022:[\u0022a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022a\u0022}"
-        "/[\\u{61}]/v.exec('a')" "{\u0022matches\u0022:[\u0022a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022a\u0022}"
+        "/[\\u{61}]/u.exec('a')" => {"matches":["a"],"index":0,"input":"a"}
+        "/[\\u{61}]/v.exec('a')" => {"matches":["a"],"index":0,"input":"a"}
         "#);
 }

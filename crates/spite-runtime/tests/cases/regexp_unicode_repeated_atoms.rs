@@ -34,14 +34,32 @@ fn unicode_repeated_atom_results_snapshot() {
             ] {
                 for start in [0, 1, 2, input.len(), input.len() + 1] {
                     let script = format!(
-                        "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+                        r#"
+                            let r = new RegExp({pattern:?}, '{flags}');
+                            r.lastIndex = {start};
+                            let m = r.exec({input:?});
+                            JSON.stringify(m === null ? {{
+                                match: null,
+                                lastIndex: r.lastIndex
+                            }} : {{
+                                matches: [...m],
+                                index: m.index,
+                                input: m.input,
+                                groups: m.groups,
+                                indices: m.indices,
+                                indexGroups: m.indices.groups,
+                                lastIndex: r.lastIndex,
+                                source: r.source
+                            }})
+                        "#
                     );
                     let Value::String(result) = Realm::default().eval(&script).unwrap() else {
                         panic!("{script}")
                     };
                     writeln!(
                         rows,
-                        "{pattern:?} flags={flags:?} input={input:?} lastIndex={start} {result:?}"
+                        "{pattern:?} flags={flags:?} input={input:?} lastIndex={start} => {result}",
+                        result = result.to_utf8().expect("JSON output must be valid UTF-8"),
                     )
                     .unwrap();
                 }
@@ -276,34 +294,120 @@ fn unicode_repeated_atom_former_whole_programs_snapshot() {
         r"/\uDE00+/u.exec('\uDE00')",
         r"/\p{space}+/u.exec('AA')",
     ] {
-        let program = format!("JSON.stringify({source})");
+        let program = format!(
+            r#"
+            JSON.stringify({source}, null, 2)
+        "#
+        );
         let Value::String(result) = Realm::default().eval(&program).unwrap() else {
             panic!("{source}")
         };
-        writeln!(rows, "{source} {result:?}").unwrap();
+        writeln!(
+            rows,
+            "{source}\n{result}\n",
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
+        )
+        .unwrap();
     }
     insta::assert_snapshot!(rows, @r#"
-        /a+/u.test('a') "true"
-        /[a]+/v.test('a') "true"
-        /\p{AHex}+/u.exec('AA') "[\u0022AA\u0022]"
-        /\p{ASCII}+/v.exec('A') "[\u0022A\u0022]"
-        /[a]*/u.exec('a') "[\u0022a\u0022]"
-        /(?:a?)/u.exec('a') "[\u0022a\u0022]"
-        /[\u{61}]*/u.exec('a') "[\u0022a\u0022]"
-        /\u{61}+/v.exec('aa') "[\u0022aa\u0022]"
-        /\w+/iv.exec('a') "[\u0022a\u0022]"
-        /[a]+/iv.exec('a') "[\u0022a\u0022]"
-        /[\p{ASCII}]+/v.exec('A') "[\u0022A\u0022]"
-        /\D+/u.exec('a') "[\u0022a\u0022]"
-        /\p{Hex}+/u.exec('AA') "[\u0022AA\u0022]"
-        /\p{Join_C}+/u.exec('AA') "null"
-        /a+/iv.exec('A') "[\u0022A\u0022]"
-        /\p{NChar}+/u.exec('AA') "null"
-        /[a]+/u.exec('a') "[\u0022a\u0022]"
-        /😀+/u.exec('😀') "[\u0022\ud83d\ude00\u0022]"
-        /[a]*/v.exec('a') "[\u0022a\u0022]"
-        /(?:a?)/v.exec('a') "[\u0022a\u0022]"
-        /\uDE00+/u.exec('\uDE00') "[\u0022\u005cude00\u0022]"
-        /\p{space}+/u.exec('AA') "null"
+        /a+/u.test('a')
+        true
+
+        /[a]+/v.test('a')
+        true
+
+        /\p{AHex}+/u.exec('AA')
+        [
+          "AA"
+        ]
+
+        /\p{ASCII}+/v.exec('A')
+        [
+          "A"
+        ]
+
+        /[a]*/u.exec('a')
+        [
+          "a"
+        ]
+
+        /(?:a?)/u.exec('a')
+        [
+          "a"
+        ]
+
+        /[\u{61}]*/u.exec('a')
+        [
+          "a"
+        ]
+
+        /\u{61}+/v.exec('aa')
+        [
+          "aa"
+        ]
+
+        /\w+/iv.exec('a')
+        [
+          "a"
+        ]
+
+        /[a]+/iv.exec('a')
+        [
+          "a"
+        ]
+
+        /[\p{ASCII}]+/v.exec('A')
+        [
+          "A"
+        ]
+
+        /\D+/u.exec('a')
+        [
+          "a"
+        ]
+
+        /\p{Hex}+/u.exec('AA')
+        [
+          "AA"
+        ]
+
+        /\p{Join_C}+/u.exec('AA')
+        null
+
+        /a+/iv.exec('A')
+        [
+          "A"
+        ]
+
+        /\p{NChar}+/u.exec('AA')
+        null
+
+        /[a]+/u.exec('a')
+        [
+          "a"
+        ]
+
+        /😀+/u.exec('😀')
+        [
+          "😀"
+        ]
+
+        /[a]*/v.exec('a')
+        [
+          "a"
+        ]
+
+        /(?:a?)/v.exec('a')
+        [
+          "a"
+        ]
+
+        /\uDE00+/u.exec('\uDE00')
+        [
+          "\ude00"
+        ]
+
+        /\p{space}+/u.exec('AA')
+        null
         "#);
 }

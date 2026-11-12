@@ -1,0 +1,556 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_unicode_sets_bmp_literals.rs
+expression: rows
+---
+"a" flags="dv" input="ba" lastIndex=9
+{
+  "matches": [
+    "a"
+  ],
+  "index": 1,
+  "input": "ba",
+  "indices": [
+    [
+      1,
+      2
+    ]
+  ],
+  "lastIndex": 9,
+  "source": "a"
+}
+
+"a" flags="dvg" input="\ud83d\ude00ab" lastIndex=0
+{
+  "matches": [
+    "a"
+  ],
+  "index": 2,
+  "input": "😀ab",
+  "indices": [
+    [
+      2,
+      3
+    ]
+  ],
+  "lastIndex": 3,
+  "source": "a"
+}
+
+"a" flags="dvg" input="\ud83d\ude00ab" lastIndex=1
+{
+  "matches": [
+    "a"
+  ],
+  "index": 2,
+  "input": "😀ab",
+  "indices": [
+    [
+      2,
+      3
+    ]
+  ],
+  "lastIndex": 3,
+  "source": "a"
+}
+
+"a" flags="dvy" input="\ud83d\ude00ab" lastIndex=1
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"a" flags="dvy" input="\ud83d\ude00ab" lastIndex=2
+{
+  "matches": [
+    "a"
+  ],
+  "index": 2,
+  "input": "😀ab",
+  "indices": [
+    [
+      2,
+      3
+    ]
+  ],
+  "lastIndex": 3,
+  "source": "a"
+}
+
+"a" flags="dvg" input="a\ud83d\ude00b" lastIndex=1
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"ab" flags="dvg" input="\ud83d\ude00ab\ud83d\ude00ab" lastIndex=1
+{
+  "matches": [
+    "ab"
+  ],
+  "index": 2,
+  "input": "😀ab😀ab",
+  "indices": [
+    [
+      2,
+      4
+    ]
+  ],
+  "lastIndex": 4,
+  "source": "ab"
+}
+
+"ab" flags="dvg" input="\ud83d\ude00ab\ud83d\ude00ab" lastIndex=4
+{
+  "matches": [
+    "ab"
+  ],
+  "index": 6,
+  "input": "😀ab😀ab",
+  "indices": [
+    [
+      6,
+      8
+    ]
+  ],
+  "lastIndex": 8,
+  "source": "ab"
+}
+
+"ab" flags="dvg" input="\ud83d\ude00ab\ud83d\ude00ab" lastIndex=5
+{
+  "matches": [
+    "ab"
+  ],
+  "index": 6,
+  "input": "😀ab😀ab",
+  "indices": [
+    [
+      6,
+      8
+    ]
+  ],
+  "lastIndex": 8,
+  "source": "ab"
+}
+
+"ab" flags="dvy" input="\ud83d\ude00ab\ud83d\ude00ab" lastIndex=5
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"ab" flags="dvy" input="\ud83d\ude00ab\ud83d\ude00ab" lastIndex=6
+{
+  "matches": [
+    "ab"
+  ],
+  "index": 6,
+  "input": "😀ab😀ab",
+  "indices": [
+    [
+      6,
+      8
+    ]
+  ],
+  "lastIndex": 8,
+  "source": "ab"
+}
+
+"(a())b" flags="dvg" input="\ud83d\ude00ab" lastIndex=1
+{
+  "matches": [
+    "ab",
+    "a",
+    ""
+  ],
+  "index": 2,
+  "input": "😀ab",
+  "indices": [
+    [
+      2,
+      4
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      3,
+      3
+    ]
+  ],
+  "lastIndex": 4,
+  "source": "(a())b"
+}
+
+"()(ab)()" flags="dvy" input="\ud83d\ude00ab" lastIndex=2
+{
+  "matches": [
+    "ab",
+    "",
+    "ab",
+    ""
+  ],
+  "index": 2,
+  "input": "😀ab",
+  "indices": [
+    [
+      2,
+      4
+    ],
+    [
+      2,
+      2
+    ],
+    [
+      2,
+      4
+    ],
+    [
+      4,
+      4
+    ]
+  ],
+  "lastIndex": 4,
+  "source": "()(ab)()"
+}
+
+"(?<x>a(?<y>()))b" flags="dvg" input="\ud83d\ude00ab" lastIndex=1
+{
+  "matches": [
+    "ab",
+    "a",
+    "",
+    ""
+  ],
+  "index": 2,
+  "input": "😀ab",
+  "groups": {
+    "x": "a",
+    "y": ""
+  },
+  "indices": [
+    [
+      2,
+      4
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      3,
+      3
+    ],
+    [
+      3,
+      3
+    ]
+  ],
+  "indicesGroups": {
+    "x": [
+      2,
+      3
+    ],
+    "y": [
+      3,
+      3
+    ]
+  },
+  "lastIndex": 4,
+  "source": "(?<x>a(?<y>()))b"
+}
+
+"(?<\u03c0>a)b" flags="dv" input="\ud83d\ude00ab" lastIndex=0
+{
+  "matches": [
+    "ab",
+    "a"
+  ],
+  "index": 2,
+  "input": "😀ab",
+  "groups": {
+    "π": "a"
+  },
+  "indices": [
+    [
+      2,
+      4
+    ],
+    [
+      2,
+      3
+    ]
+  ],
+  "indicesGroups": {
+    "π": [
+      2,
+      3
+    ]
+  },
+  "lastIndex": 0,
+  "source": "(?<π>a)b"
+}
+
+"((a)(?:b))(c)" flags="dvms" input="\ud83d\ude00abc" lastIndex=0
+{
+  "matches": [
+    "abc",
+    "ab",
+    "a",
+    "c"
+  ],
+  "index": 2,
+  "input": "😀abc",
+  "indices": [
+    [
+      2,
+      5
+    ],
+    [
+      2,
+      4
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      4,
+      5
+    ]
+  ],
+  "lastIndex": 0,
+  "source": "((a)(?:b))(c)"
+}
+
+"\u005cu0061\u005cx62" flags="dvg" input="\ud83d\ude00ab" lastIndex=1
+{
+  "matches": [
+    "ab"
+  ],
+  "index": 2,
+  "input": "😀ab",
+  "indices": [
+    [
+      2,
+      4
+    ]
+  ],
+  "lastIndex": 4,
+  "source": "\\u0061\\x62"
+}
+
+"\u005c(a\u005c)" flags="dv" input="\ud83d\ude00(a)" lastIndex=0
+{
+  "matches": [
+    "(a)"
+  ],
+  "index": 2,
+  "input": "😀(a)",
+  "indices": [
+    [
+      2,
+      5
+    ]
+  ],
+  "lastIndex": 0,
+  "source": "\\(a\\)"
+}
+
+"\u005c0" flags="dvg" input="\ud83d\ude00\u0000x" lastIndex=1
+{
+  "matches": [
+    "\u0000"
+  ],
+  "index": 2,
+  "input": "😀\u0000x",
+  "indices": [
+    [
+      2,
+      3
+    ]
+  ],
+  "lastIndex": 3,
+  "source": "\\0"
+}
+
+"\u005ccA" flags="dvg" input="\ud83d\ude00\u0001x" lastIndex=1
+{
+  "matches": [
+    "\u0001"
+  ],
+  "index": 2,
+  "input": "😀\u0001x",
+  "indices": [
+    [
+      2,
+      3
+    ]
+  ],
+  "lastIndex": 3,
+  "source": "\\cA"
+}
+
+"\u005cx7f" flags="dvg" input="\ud83d\ude00\u007fx" lastIndex=1
+{
+  "matches": [
+    ""
+  ],
+  "index": 2,
+  "input": "😀x",
+  "indices": [
+    [
+      2,
+      3
+    ]
+  ],
+  "lastIndex": 3,
+  "source": "\\x7f"
+}
+
+"\u005cn" flags="dvg" input="\ud83d\ude00\u000ax" lastIndex=1
+{
+  "matches": [
+    "\n"
+  ],
+  "index": 2,
+  "input": "😀\nx",
+  "indices": [
+    [
+      2,
+      3
+    ]
+  ],
+  "lastIndex": 3,
+  "source": "\\n"
+}
+
+"a" flags="dvg" input="a" lastIndex=2
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"a" flags="dvy" input="b" lastIndex=0
+{
+  "match": null,
+  "lastIndex": 0
+}
+
+"\u00e9" flags="dvg" input="\ud83d\ude00\u00e9" lastIndex=1
+{
+  "matches": [
+    "é"
+  ],
+  "index": 2,
+  "input": "😀é",
+  "indices": [
+    [
+      2,
+      3
+    ]
+  ],
+  "lastIndex": 3,
+  "source": "é"
+}
+
+"(\u03c3())" flags="dvg" input="\ud83d\ude00\u03c3\u03a3" lastIndex=1
+{
+  "matches": [
+    "σ",
+    "σ",
+    ""
+  ],
+  "index": 2,
+  "input": "😀σΣ",
+  "indices": [
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      3,
+      3
+    ]
+  ],
+  "lastIndex": 3,
+  "source": "(σ())"
+}
+
+"\u212a" flags="dv" input="k\u212a" lastIndex=0
+{
+  "matches": [
+    "K"
+  ],
+  "index": 1,
+  "input": "kK",
+  "indices": [
+    [
+      1,
+      2
+    ]
+  ],
+  "lastIndex": 0,
+  "source": "K"
+}
+
+"\u005cu00e9" flags="dvy" input="\ud83d\ude00\u00e9" lastIndex=2
+{
+  "matches": [
+    "é"
+  ],
+  "index": 2,
+  "input": "😀é",
+  "indices": [
+    [
+      2,
+      3
+    ]
+  ],
+  "lastIndex": 3,
+  "source": "\\u00e9"
+}
+
+"\u005cu2028" flags="dv" input="\ud83d\ude00\u2028" lastIndex=0
+{
+  "matches": [
+    " "
+  ],
+  "index": 2,
+  "input": "😀 ",
+  "indices": [
+    [
+      2,
+      3
+    ]
+  ],
+  "lastIndex": 0,
+  "source": "\\u2028"
+}
+
+"(?:(\u00b5))" flags="dv" input="\u039c\u00b5" lastIndex=0
+{
+  "matches": [
+    "µ",
+    "µ"
+  ],
+  "index": 1,
+  "input": "Μµ",
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      2
+    ]
+  ],
+  "lastIndex": 0,
+  "source": "(?:(µ))"
+}

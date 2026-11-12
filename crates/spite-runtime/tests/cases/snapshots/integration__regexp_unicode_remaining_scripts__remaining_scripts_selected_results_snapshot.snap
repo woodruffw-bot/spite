@@ -1,0 +1,562 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_unicode_remaining_scripts.rs
+expression: rows
+---
+"(?<x>\\p{sc=Qaac})" flags="dug" input="A\u2c80\ud83d\ude00" lastIndex=0
+{
+  "m": [
+    "Ⲁ",
+    "Ⲁ"
+  ],
+  "index": 1,
+  "groups": {
+    "x": "Ⲁ"
+  },
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      2
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      1,
+      2
+    ]
+  },
+  "lastIndex": 2,
+  "source": "(?<x>\\p{sc=Qaac})"
+}
+
+"(?<x>\\p{sc=Qaac})" flags="diug" input="A\u2c80\ud83d\ude00" lastIndex=0
+{
+  "m": [
+    "Ⲁ",
+    "Ⲁ"
+  ],
+  "index": 1,
+  "groups": {
+    "x": "Ⲁ"
+  },
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      2
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      1,
+      2
+    ]
+  },
+  "lastIndex": 2,
+  "source": "(?<x>\\p{sc=Qaac})"
+}
+
+"(?<x>\\p{sc=Qaac})" flags="divg" input="A\u2c80\ud83d\ude00" lastIndex=0
+{
+  "m": [
+    "Ⲁ",
+    "Ⲁ"
+  ],
+  "index": 1,
+  "groups": {
+    "x": "Ⲁ"
+  },
+  "indices": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      2
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      1,
+      2
+    ]
+  },
+  "lastIndex": 2,
+  "source": "(?<x>\\p{sc=Qaac})"
+}
+
+"(?<x>\\p{sc=Qaac})" flags="divy" input="A\u2c80\ud83d\ude00" lastIndex=0
+{
+  "m": null,
+  "lastIndex": 0,
+  "source": "(?<x>\\p{sc=Qaac})"
+}
+
+"(?<x>[^\\P{Script=Adlam}])" flags="dug" input="\ud83d\ude00\ud83a\udd00" lastIndex=1
+{
+  "m": [
+    "𞤀",
+    "𞤀"
+  ],
+  "index": 2,
+  "groups": {
+    "x": "𞤀"
+  },
+  "indices": [
+    [
+      2,
+      4
+    ],
+    [
+      2,
+      4
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      2,
+      4
+    ]
+  },
+  "lastIndex": 4,
+  "source": "(?<x>[^\\P{Script=Adlam}])"
+}
+
+"(?<x>[^\\P{Script=Adlam}])" flags="diug" input="\ud83d\ude00\ud83a\udd00" lastIndex=1
+{
+  "m": [
+    "𞤀",
+    "𞤀"
+  ],
+  "index": 2,
+  "groups": {
+    "x": "𞤀"
+  },
+  "indices": [
+    [
+      2,
+      4
+    ],
+    [
+      2,
+      4
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      2,
+      4
+    ]
+  },
+  "lastIndex": 4,
+  "source": "(?<x>[^\\P{Script=Adlam}])"
+}
+
+"(?<x>[^\\P{Script=Adlam}])" flags="divg" input="\ud83d\ude00\ud83a\udd00" lastIndex=1
+{
+  "m": [
+    "𞤀",
+    "𞤀"
+  ],
+  "index": 2,
+  "groups": {
+    "x": "𞤀"
+  },
+  "indices": [
+    [
+      2,
+      4
+    ],
+    [
+      2,
+      4
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      2,
+      4
+    ]
+  },
+  "lastIndex": 4,
+  "source": "(?<x>[^\\P{Script=Adlam}])"
+}
+
+"(?<x>[^\\P{Script=Adlam}])" flags="divy" input="\ud83d\ude00\ud83a\udd00" lastIndex=1
+{
+  "m": null,
+  "lastIndex": 0,
+  "source": "(?<x>[^\\P{Script=Adlam}])"
+}
+
+"(?<x>\\p{sc=Cprt})" flags="dug" input="\ud802\udc00A" lastIndex=1
+{
+  "m": [
+    "𐠀",
+    "𐠀"
+  ],
+  "index": 0,
+  "groups": {
+    "x": "𐠀"
+  },
+  "indices": [
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      2
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      0,
+      2
+    ]
+  },
+  "lastIndex": 2,
+  "source": "(?<x>\\p{sc=Cprt})"
+}
+
+"(?<x>\\p{sc=Cprt})" flags="diug" input="\ud802\udc00A" lastIndex=1
+{
+  "m": [
+    "𐠀",
+    "𐠀"
+  ],
+  "index": 0,
+  "groups": {
+    "x": "𐠀"
+  },
+  "indices": [
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      2
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      0,
+      2
+    ]
+  },
+  "lastIndex": 2,
+  "source": "(?<x>\\p{sc=Cprt})"
+}
+
+"(?<x>\\p{sc=Cprt})" flags="divg" input="\ud802\udc00A" lastIndex=1
+{
+  "m": [
+    "𐠀",
+    "𐠀"
+  ],
+  "index": 0,
+  "groups": {
+    "x": "𐠀"
+  },
+  "indices": [
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      2
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      0,
+      2
+    ]
+  },
+  "lastIndex": 2,
+  "source": "(?<x>\\p{sc=Cprt})"
+}
+
+"(?<x>\\p{sc=Cprt})" flags="divy" input="\ud802\udc00A" lastIndex=1
+{
+  "m": [
+    "𐠀",
+    "𐠀"
+  ],
+  "index": 0,
+  "groups": {
+    "x": "𐠀"
+  },
+  "indices": [
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      2
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      0,
+      2
+    ]
+  },
+  "lastIndex": 2,
+  "source": "(?<x>\\p{sc=Cprt})"
+}
+
+"(?<x>\\p{sc=Zzzz})" flags="dug" input="\ud83d\ude00\ud800\u0378" lastIndex=1
+{
+  "m": [
+    "\ud800",
+    "\ud800"
+  ],
+  "index": 2,
+  "groups": {
+    "x": "\ud800"
+  },
+  "indices": [
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      2,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<x>\\p{sc=Zzzz})"
+}
+
+"(?<x>\\p{sc=Zzzz})" flags="diug" input="\ud83d\ude00\ud800\u0378" lastIndex=1
+{
+  "m": [
+    "\ud800",
+    "\ud800"
+  ],
+  "index": 2,
+  "groups": {
+    "x": "\ud800"
+  },
+  "indices": [
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      2,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<x>\\p{sc=Zzzz})"
+}
+
+"(?<x>\\p{sc=Zzzz})" flags="divg" input="\ud83d\ude00\ud800\u0378" lastIndex=1
+{
+  "m": [
+    "\ud800",
+    "\ud800"
+  ],
+  "index": 2,
+  "groups": {
+    "x": "\ud800"
+  },
+  "indices": [
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      3
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      2,
+      3
+    ]
+  },
+  "lastIndex": 3,
+  "source": "(?<x>\\p{sc=Zzzz})"
+}
+
+"(?<x>\\p{sc=Zzzz})" flags="divy" input="\ud83d\ude00\ud800\u0378" lastIndex=1
+{
+  "m": null,
+  "lastIndex": 0,
+  "source": "(?<x>\\p{sc=Zzzz})"
+}
+
+"(?<x>\\p{sc=Hrkt})" flags="dug" input="A" lastIndex=0
+{
+  "m": null,
+  "lastIndex": 0,
+  "source": "(?<x>\\p{sc=Hrkt})"
+}
+
+"(?<x>\\p{sc=Hrkt})" flags="diug" input="A" lastIndex=0
+{
+  "m": null,
+  "lastIndex": 0,
+  "source": "(?<x>\\p{sc=Hrkt})"
+}
+
+"(?<x>\\p{sc=Hrkt})" flags="divg" input="A" lastIndex=0
+{
+  "m": null,
+  "lastIndex": 0,
+  "source": "(?<x>\\p{sc=Hrkt})"
+}
+
+"(?<x>\\p{sc=Hrkt})" flags="divy" input="A" lastIndex=0
+{
+  "m": null,
+  "lastIndex": 0,
+  "source": "(?<x>\\p{sc=Hrkt})"
+}
+
+"(?<x>\\P{sc=Hrkt})" flags="dug" input="\ud83d\ude00\ud800" lastIndex=1
+{
+  "m": [
+    "😀",
+    "😀"
+  ],
+  "index": 0,
+  "groups": {
+    "x": "😀"
+  },
+  "indices": [
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      2
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      0,
+      2
+    ]
+  },
+  "lastIndex": 2,
+  "source": "(?<x>\\P{sc=Hrkt})"
+}
+
+"(?<x>\\P{sc=Hrkt})" flags="diug" input="\ud83d\ude00\ud800" lastIndex=1
+{
+  "m": [
+    "😀",
+    "😀"
+  ],
+  "index": 0,
+  "groups": {
+    "x": "😀"
+  },
+  "indices": [
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      2
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      0,
+      2
+    ]
+  },
+  "lastIndex": 2,
+  "source": "(?<x>\\P{sc=Hrkt})"
+}
+
+"(?<x>\\P{sc=Hrkt})" flags="divg" input="\ud83d\ude00\ud800" lastIndex=1
+{
+  "m": [
+    "😀",
+    "😀"
+  ],
+  "index": 0,
+  "groups": {
+    "x": "😀"
+  },
+  "indices": [
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      2
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      0,
+      2
+    ]
+  },
+  "lastIndex": 2,
+  "source": "(?<x>\\P{sc=Hrkt})"
+}
+
+"(?<x>\\P{sc=Hrkt})" flags="divy" input="\ud83d\ude00\ud800" lastIndex=1
+{
+  "m": [
+    "😀",
+    "😀"
+  ],
+  "index": 0,
+  "groups": {
+    "x": "😀"
+  },
+  "indices": [
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      2
+    ]
+  ],
+  "indexGroups": {
+    "x": [
+      0,
+      2
+    ]
+  },
+  "lastIndex": 2,
+  "source": "(?<x>\\P{sc=Hrkt})"
+}

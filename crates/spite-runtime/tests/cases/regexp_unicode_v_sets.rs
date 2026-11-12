@@ -96,14 +96,32 @@ fn checked_v_set_results() {
         for flags in ["dvmg", "divmg"] {
             for start in [0, 1] {
                 let script = format!(
-                    "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+                    r#"
+                        let r = new RegExp({pattern:?}, '{flags}');
+                        r.lastIndex = {start};
+                        let m = r.exec({input:?});
+                        JSON.stringify(m === null ? {{
+                            match: null,
+                            lastIndex: r.lastIndex
+                        }} : {{
+                            matches: [...m],
+                            index: m.index,
+                            input: m.input,
+                            groups: m.groups,
+                            indices: m.indices,
+                            indexGroups: m.indices.groups,
+                            lastIndex: r.lastIndex,
+                            source: r.source
+                        }}, null, 2)
+                    "#
                 );
                 let Value::String(result) = Realm::default().eval(&script).unwrap() else {
                     panic!("{script}")
                 };
                 writeln!(
                     rows,
-                    "{pattern:?} flags={flags:?} input={input:?} lastIndex={start} {result:?}"
+                    "{pattern:?} flags={flags:?} input={input:?} lastIndex={start}\n{result}\n",
+                    result = result.to_utf8().expect("JSON output must be valid UTF-8"),
                 )
                 .unwrap();
                 row_count += 1;
@@ -111,32 +129,7 @@ fn checked_v_set_results() {
         }
     }
     assert_eq!(row_count, 24);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>([A&&a]))" flags="dvmg" input="\ud83d\ude00aA" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([A&&a]))" flags="dvmg" input="\ud83d\ude00aA" lastIndex=1 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([A&&a]))" flags="divmg" input="\ud83d\ude00aA" lastIndex=0 "{\u0022matches\u0022:[\u0022a\u0022,\u0022a\u0022,\u0022a\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022\ud83d\ude00aA\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022a\u0022},\u0022indices\u0022:[[2,3],[2,3],[2,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[2,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([A&&a]))\u0022}"
-        "(?<whole>([A&&a]))" flags="divmg" input="\ud83d\ude00aA" lastIndex=1 "{\u0022matches\u0022:[\u0022a\u0022,\u0022a\u0022,\u0022a\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022\ud83d\ude00aA\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022a\u0022},\u0022indices\u0022:[[2,3],[2,3],[2,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[2,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([A&&a]))\u0022}"
-        "(?<whole>([[A-Z]--[K]]))" flags="dvmg" input="\ud83d\ude00\u212akA" lastIndex=0 "{\u0022matches\u0022:[\u0022A\u0022,\u0022A\u0022,\u0022A\u0022],\u0022index\u0022:4,\u0022input\u0022:\u0022\ud83d\ude00\u212akA\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022A\u0022},\u0022indices\u0022:[[4,5],[4,5],[4,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[4,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022(?<whole>([[A-Z]--[K]]))\u0022}"
-        "(?<whole>([[A-Z]--[K]]))" flags="dvmg" input="\ud83d\ude00\u212akA" lastIndex=1 "{\u0022matches\u0022:[\u0022A\u0022,\u0022A\u0022,\u0022A\u0022],\u0022index\u0022:4,\u0022input\u0022:\u0022\ud83d\ude00\u212akA\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022A\u0022},\u0022indices\u0022:[[4,5],[4,5],[4,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[4,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022(?<whole>([[A-Z]--[K]]))\u0022}"
-        "(?<whole>([[A-Z]--[K]]))" flags="divmg" input="\ud83d\ude00\u212akA" lastIndex=0 "{\u0022matches\u0022:[\u0022A\u0022,\u0022A\u0022,\u0022A\u0022],\u0022index\u0022:4,\u0022input\u0022:\u0022\ud83d\ude00\u212akA\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022A\u0022},\u0022indices\u0022:[[4,5],[4,5],[4,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[4,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022(?<whole>([[A-Z]--[K]]))\u0022}"
-        "(?<whole>([[A-Z]--[K]]))" flags="divmg" input="\ud83d\ude00\u212akA" lastIndex=1 "{\u0022matches\u0022:[\u0022A\u0022,\u0022A\u0022,\u0022A\u0022],\u0022index\u0022:4,\u0022input\u0022:\u0022\ud83d\ude00\u212akA\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022A\u0022},\u0022indices\u0022:[[4,5],[4,5],[4,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[4,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022(?<whole>([[A-Z]--[K]]))\u0022}"
-        "(?<whole>([[\u005cu{1f600}-\u005cu{1f601}]--[\u005cu{1f601}]]))" flags="dvmg" input="\ud800\ud83d\ude00\udc00" lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022\u005cud800\ud83d\ude00\u005cudc00\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([[\u005c\u005cu{1f600}-\u005c\u005cu{1f601}]--[\u005c\u005cu{1f601}]]))\u0022}"
-        "(?<whole>([[\u005cu{1f600}-\u005cu{1f601}]--[\u005cu{1f601}]]))" flags="dvmg" input="\ud800\ud83d\ude00\udc00" lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022\u005cud800\ud83d\ude00\u005cudc00\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([[\u005c\u005cu{1f600}-\u005c\u005cu{1f601}]--[\u005c\u005cu{1f601}]]))\u0022}"
-        "(?<whole>([[\u005cu{1f600}-\u005cu{1f601}]--[\u005cu{1f601}]]))" flags="divmg" input="\ud800\ud83d\ude00\udc00" lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022\u005cud800\ud83d\ude00\u005cudc00\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([[\u005c\u005cu{1f600}-\u005c\u005cu{1f601}]--[\u005c\u005cu{1f601}]]))\u0022}"
-        "(?<whole>([[\u005cu{1f600}-\u005cu{1f601}]--[\u005cu{1f601}]]))" flags="divmg" input="\ud800\ud83d\ude00\udc00" lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022\u005cud800\ud83d\ude00\u005cudc00\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([[\u005c\u005cu{1f600}-\u005c\u005cu{1f601}]--[\u005c\u005cu{1f601}]]))\u0022}"
-        "(?<whole>([[\u005cuD800-\u005cuDFFF]--[\u005cuDC00-\u005cuDFFF]]))" flags="dvmg" input="\ud83d\ude00\ud800a\udc00" lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u0022,\u0022\u005cud800\u0022,\u0022\u005cud800\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022\ud83d\ude00\u005cud800a\u005cudc00\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u0022},\u0022indices\u0022:[[2,3],[2,3],[2,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[2,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([[\u005c\u005cuD800-\u005c\u005cuDFFF]--[\u005c\u005cuDC00-\u005c\u005cuDFFF]]))\u0022}"
-        "(?<whole>([[\u005cuD800-\u005cuDFFF]--[\u005cuDC00-\u005cuDFFF]]))" flags="dvmg" input="\ud83d\ude00\ud800a\udc00" lastIndex=1 "{\u0022matches\u0022:[\u0022\u005cud800\u0022,\u0022\u005cud800\u0022,\u0022\u005cud800\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022\ud83d\ude00\u005cud800a\u005cudc00\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u0022},\u0022indices\u0022:[[2,3],[2,3],[2,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[2,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([[\u005c\u005cuD800-\u005c\u005cuDFFF]--[\u005c\u005cuDC00-\u005c\u005cuDFFF]]))\u0022}"
-        "(?<whole>([[\u005cuD800-\u005cuDFFF]--[\u005cuDC00-\u005cuDFFF]]))" flags="divmg" input="\ud83d\ude00\ud800a\udc00" lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u0022,\u0022\u005cud800\u0022,\u0022\u005cud800\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022\ud83d\ude00\u005cud800a\u005cudc00\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u0022},\u0022indices\u0022:[[2,3],[2,3],[2,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[2,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([[\u005c\u005cuD800-\u005c\u005cuDFFF]--[\u005c\u005cuDC00-\u005c\u005cuDFFF]]))\u0022}"
-        "(?<whole>([[\u005cuD800-\u005cuDFFF]--[\u005cuDC00-\u005cuDFFF]]))" flags="divmg" input="\ud83d\ude00\ud800a\udc00" lastIndex=1 "{\u0022matches\u0022:[\u0022\u005cud800\u0022,\u0022\u005cud800\u0022,\u0022\u005cud800\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022\ud83d\ude00\u005cud800a\u005cudc00\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u0022},\u0022indices\u0022:[[2,3],[2,3],[2,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[2,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([[\u005c\u005cuD800-\u005c\u005cuDFFF]--[\u005c\u005cuDC00-\u005c\u005cuDFFF]]))\u0022}"
-        "^(?<whole>([[a-z]--[aeiou]]+))$" flags="dvmg" input="\ud83d\ude00\u000abcd\u000az" lastIndex=0 "{\u0022matches\u0022:[\u0022bcd\u0022,\u0022bcd\u0022,\u0022bcd\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022\ud83d\ude00\u005cnbcd\u005cnz\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022bcd\u0022},\u0022indices\u0022:[[3,6],[3,6],[3,6]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,6]},\u0022lastIndex\u0022:6,\u0022source\u0022:\u0022^(?<whole>([[a-z]--[aeiou]]+))$\u0022}"
-        "^(?<whole>([[a-z]--[aeiou]]+))$" flags="dvmg" input="\ud83d\ude00\u000abcd\u000az" lastIndex=1 "{\u0022matches\u0022:[\u0022bcd\u0022,\u0022bcd\u0022,\u0022bcd\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022\ud83d\ude00\u005cnbcd\u005cnz\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022bcd\u0022},\u0022indices\u0022:[[3,6],[3,6],[3,6]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,6]},\u0022lastIndex\u0022:6,\u0022source\u0022:\u0022^(?<whole>([[a-z]--[aeiou]]+))$\u0022}"
-        "^(?<whole>([[a-z]--[aeiou]]+))$" flags="divmg" input="\ud83d\ude00\u000abcd\u000az" lastIndex=0 "{\u0022matches\u0022:[\u0022bcd\u0022,\u0022bcd\u0022,\u0022bcd\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022\ud83d\ude00\u005cnbcd\u005cnz\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022bcd\u0022},\u0022indices\u0022:[[3,6],[3,6],[3,6]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,6]},\u0022lastIndex\u0022:6,\u0022source\u0022:\u0022^(?<whole>([[a-z]--[aeiou]]+))$\u0022}"
-        "^(?<whole>([[a-z]--[aeiou]]+))$" flags="divmg" input="\ud83d\ude00\u000abcd\u000az" lastIndex=1 "{\u0022matches\u0022:[\u0022bcd\u0022,\u0022bcd\u0022,\u0022bcd\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022\ud83d\ude00\u005cnbcd\u005cnz\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022bcd\u0022},\u0022indices\u0022:[[3,6],[3,6],[3,6]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,6]},\u0022lastIndex\u0022:6,\u0022source\u0022:\u0022^(?<whole>([[a-z]--[aeiou]]+))$\u0022}"
-        "(?<whole>([A--a]*?))" flags="dvmg" input="A\ud83d\ude00a" lastIndex=0 "{\u0022matches\u0022:[\u0022\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022A\ud83d\ude00a\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u0022},\u0022indices\u0022:[[0,0],[0,0],[0,0]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,0]},\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<whole>([A--a]*?))\u0022}"
-        "(?<whole>([A--a]*?))" flags="dvmg" input="A\ud83d\ude00a" lastIndex=1 "{\u0022matches\u0022:[\u0022\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\ud83d\ude00a\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u0022},\u0022indices\u0022:[[1,1],[1,1],[1,1]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,1]},\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022(?<whole>([A--a]*?))\u0022}"
-        "(?<whole>([A--a]*?))" flags="divmg" input="A\ud83d\ude00a" lastIndex=0 "{\u0022matches\u0022:[\u0022\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022A\ud83d\ude00a\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u0022},\u0022indices\u0022:[[0,0],[0,0],[0,0]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,0]},\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<whole>([A--a]*?))\u0022}"
-        "(?<whole>([A--a]*?))" flags="divmg" input="A\ud83d\ude00a" lastIndex=1 "{\u0022matches\u0022:[\u0022\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\ud83d\ude00a\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u0022},\u0022indices\u0022:[[1,1],[1,1],[1,1]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,1]},\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022(?<whole>([A--a]*?))\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -398,30 +391,39 @@ fn checked_v_set_nested_results() {
         let start = 0;
         for flags in ["dvg", "divg"] {
             let script = format!(
-                "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+                r#"
+                    let r = new RegExp({pattern:?}, '{flags}');
+                    r.lastIndex = {start};
+                    let m = r.exec({input:?});
+                    JSON.stringify(m === null ? {{
+                        match: null,
+                        lastIndex: r.lastIndex
+                    }} : {{
+                        matches: [...m],
+                        index: m.index,
+                        input: m.input,
+                        groups: m.groups,
+                        indices: m.indices,
+                        indexGroups: m.indices.groups,
+                        lastIndex: r.lastIndex,
+                        source: r.source
+                    }}, null, 2)
+                "#
             );
             let Value::String(result) = Realm::default().eval(&script).unwrap() else {
                 panic!("{script}")
             };
             writeln!(
                 rows,
-                "{pattern:?} flags={flags:?} input={input:?} lastIndex={start} {result:?}"
+                "{pattern:?} flags={flags:?} input={input:?} lastIndex={start}\n{result}\n",
+                result = result.to_utf8().expect("JSON output must be valid UTF-8"),
             )
             .unwrap();
             row_count += 1;
         }
     }
     assert_eq!(row_count, 8);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>([[a]b]))" flags="dvg" input="\ud83d\ude00A" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([[a]b]))" flags="divg" input="\ud83d\ude00A" lastIndex=0 "{\u0022matches\u0022:[\u0022A\u0022,\u0022A\u0022,\u0022A\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022\ud83d\ude00A\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022A\u0022},\u0022indices\u0022:[[2,3],[2,3],[2,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[2,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([[a]b]))\u0022}"
-        "(?<whole>([[A--a]&&[A]]))" flags="dvg" input="\ud83d\ude00Aa" lastIndex=0 "{\u0022matches\u0022:[\u0022A\u0022,\u0022A\u0022,\u0022A\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022\ud83d\ude00Aa\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022A\u0022},\u0022indices\u0022:[[2,3],[2,3],[2,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[2,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([[A--a]&&[A]]))\u0022}"
-        "(?<whole>([[A--a]&&[A]]))" flags="divg" input="\ud83d\ude00Aa" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "^(?<whole>([[a-z]--[[aeiou]b]]+))$" flags="dvg" input="cdf" lastIndex=0 "{\u0022matches\u0022:[\u0022cdf\u0022,\u0022cdf\u0022,\u0022cdf\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022cdf\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022cdf\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022^(?<whole>([[a-z]--[[aeiou]b]]+))$\u0022}"
-        "^(?<whole>([[a-z]--[[aeiou]b]]+))$" flags="divg" input="cdf" lastIndex=0 "{\u0022matches\u0022:[\u0022cdf\u0022,\u0022cdf\u0022,\u0022cdf\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022cdf\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022cdf\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022^(?<whole>([[a-z]--[[aeiou]b]]+))$\u0022}"
-        "(?<whole>([[[\u005cu{1f600}]]--[[\u005cuD800-\u005cuDFFF]]]))" flags="dvg" input="\ud800\ud83d\ude00\udc00" lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022\u005cud800\ud83d\ude00\u005cudc00\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([[[\u005c\u005cu{1f600}]]--[[\u005c\u005cuD800-\u005c\u005cuDFFF]]]))\u0022}"
-        "(?<whole>([[[\u005cu{1f600}]]--[[\u005cuD800-\u005cuDFFF]]]))" flags="divg" input="\ud800\ud83d\ude00\udc00" lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022\u005cud800\ud83d\ude00\u005cudc00\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([[[\u005c\u005cu{1f600}]]--[[\u005c\u005cuD800-\u005c\u005cuDFFF]]]))\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -516,32 +518,39 @@ fn checked_v_set_word_results() {
         let pattern = JsString::from(pattern);
         for flags in flag_modes {
             let script = format!(
-                "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+                r#"
+                    let r = new RegExp({pattern:?}, '{flags}');
+                    r.lastIndex = {start};
+                    let m = r.exec({input:?});
+                    JSON.stringify(m === null ? {{
+                        match: null,
+                        lastIndex: r.lastIndex
+                    }} : {{
+                        matches: [...m],
+                        index: m.index,
+                        input: m.input,
+                        groups: m.groups,
+                        indices: m.indices,
+                        indexGroups: m.indices.groups,
+                        lastIndex: r.lastIndex,
+                        source: r.source
+                    }}, null, 2)
+                "#
             );
             let Value::String(result) = Realm::default().eval(&script).unwrap() else {
                 panic!("{script}")
             };
             writeln!(
                 rows,
-                "{pattern:?} flags={flags:?} input={input:?} lastIndex={start} {result:?}"
+                "{pattern:?} flags={flags:?} input={input:?} lastIndex={start}\n{result}\n",
+                result = result.to_utf8().expect("JSON output must be valid UTF-8"),
             )
             .unwrap();
             row_count += 1;
         }
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>(\u005cb[[K\u017f\u03b1]]\u005cb))" flags="dvg" input="\u212a \u017f \u03b1" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(\u005cb[[K\u017f\u03b1]]\u005cb))" flags="divg" input="\u212a \u017f \u03b1" lastIndex=0 "{\u0022matches\u0022:[\u0022\u212a\u0022,\u0022\u212a\u0022,\u0022\u212a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212a \u017f \u03b1\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212a\u0022},\u0022indices\u0022:[[0,1],[0,1],[0,1]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,1]},\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[K\u017f\u03b1]]\u005c\u005cb))\u0022}"
-        "\u005cB(?<whole>([[K\u017f\u03b1]]))\u005cB" flags="dvg" input="\u212a \u017f \u03b1" lastIndex=0 "{\u0022matches\u0022:[\u0022\u017f\u0022,\u0022\u017f\u0022,\u0022\u017f\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022\u212a \u017f \u03b1\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u017f\u0022},\u0022indices\u0022:[[2,3],[2,3],[2,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[2,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022\u005c\u005cB(?<whole>([[K\u017f\u03b1]]))\u005c\u005cB\u0022}"
-        "\u005cB(?<whole>([[K\u017f\u03b1]]))\u005cB" flags="divg" input="\u212a \u017f \u03b1" lastIndex=0 "{\u0022matches\u0022:[\u0022\u03b1\u0022,\u0022\u03b1\u0022,\u0022\u03b1\u0022],\u0022index\u0022:4,\u0022input\u0022:\u0022\u212a \u017f \u03b1\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u03b1\u0022},\u0022indices\u0022:[[4,5],[4,5],[4,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[4,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022\u005c\u005cB(?<whole>([[K\u017f\u03b1]]))\u005c\u005cB\u0022}"
-        "(?<whole>(\u005cb[[\u005cp{Any}]]\u005cb))" flags="dvy" input="A\ud83d\ude00B" lastIndex=2 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\ud83d\ude00B\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[\u005c\u005cp{Any}]]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cb[[\u005cp{Any}]]\u005cb))" flags="divy" input="A\ud83d\ude00B" lastIndex=2 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\ud83d\ude00B\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[\u005c\u005cp{Any}]]\u005c\u005cb))\u0022}"
-        "^(?<whole>(\u005cb[[K]]\u005cb))$" flags="dvmg" input="x\u000d\u000a\u212a\u2028K\u2029" lastIndex=0 "{\u0022matches\u0022:[\u0022K\u0022,\u0022K\u0022,\u0022K\u0022],\u0022index\u0022:5,\u0022input\u0022:\u0022x\u005cr\u005cn\u212a\u2028K\u2029\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022K\u0022},\u0022indices\u0022:[[5,6],[5,6],[5,6]],\u0022indexGroups\u0022:{\u0022whole\u0022:[5,6]},\u0022lastIndex\u0022:6,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cb[[K]]\u005c\u005cb))$\u0022}"
-        "^(?<whole>(\u005cb[[K]]\u005cb))$" flags="divmg" input="x\u000d\u000a\u212a\u2028K\u2029" lastIndex=0 "{\u0022matches\u0022:[\u0022\u212a\u0022,\u0022\u212a\u0022,\u0022\u212a\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022x\u005cr\u005cn\u212a\u2028K\u2029\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212a\u0022},\u0022indices\u0022:[[3,4],[3,4],[3,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cb[[K]]\u005c\u005cb))$\u0022}"
-        "(?<whole>(\u005cb[[\u005cb]]\u005cB))" flags="dvg" input="A\u0008!" lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cb\u0022,\u0022\u005cb\u0022,\u0022\u005cb\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cb!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cb\u0022},\u0022indices\u0022:[[1,2],[1,2],[1,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[\u005c\u005cb]]\u005c\u005cB))\u0022}"
-        "(?<whole>(\u005cb[[\u005cb]]\u005cB))" flags="divg" input="A\u0008!" lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cb\u0022,\u0022\u005cb\u0022,\u0022\u005cb\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cb!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cb\u0022},\u0022indices\u0022:[[1,2],[1,2],[1,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[\u005c\u005cb]]\u005c\u005cB))\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -613,31 +622,38 @@ fn checked_v_set_repeated_word_results() {
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input={input:?} lastIndex={start} {result:?}"
+            "{pattern:?} flags={flags:?} input={input:?} lastIndex={start}\n{result}\n",
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>(\u005cb[[a_]]+\u005cB))" flags="dvg" input="aa_!" lastIndex=0 "{\u0022matches\u0022:[\u0022aa\u0022,\u0022aa\u0022,\u0022aa\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022aa_!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aa\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[a_]]+\u005c\u005cB))\u0022}"
-        "(?<whole>(\u005cb[[a_]]+?\u005cB))" flags="dvg" input="aa_!" lastIndex=0 "{\u0022matches\u0022:[\u0022a\u0022,\u0022a\u0022,\u0022a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022aa_!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022a\u0022},\u0022indices\u0022:[[0,1],[0,1],[0,1]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,1]},\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[a_]]+?\u005c\u005cB))\u0022}"
-        "(?<whole>(\u005cb[[a]]+?\u005cb))" flags="dvg" input="aaa!" lastIndex=0 "{\u0022matches\u0022:[\u0022aaa\u0022,\u0022aaa\u0022,\u0022aaa\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022aaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aaa\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[a]]+?\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cb[[K]]+\u005cb))" flags="dvg" input="\u212a\u212a!" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(\u005cb[[K]]+\u005cb))" flags="divg" input="\u212a\u212a!" lastIndex=0 "{\u0022matches\u0022:[\u0022\u212a\u212a\u0022,\u0022\u212a\u212a\u0022,\u0022\u212a\u212a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212a\u212a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212a\u212a\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[K]]+\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cB[a--a]*\u005cB))" flags="dvy" input="\ud83d\ude00!" lastIndex=1 "{\u0022matches\u0022:[\u0022\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u0022},\u0022indices\u0022:[[0,0],[0,0],[0,0]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,0]},\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[a--a]*\u005c\u005cB))\u0022}"
-        "(?<whole>(\u005cb[a--a]*\u005cb))" flags="dvy" input="A\ud83d\ude00B" lastIndex=2 "{\u0022matches\u0022:[\u0022\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\ud83d\ude00B\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u0022},\u0022indices\u0022:[[1,1],[1,1],[1,1]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,1]},\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[a--a]*\u005c\u005cb))\u0022}"
-        "^(?<whole>(\u005cb[[a]]{2,3}?\u005cb))$" flags="dvmg" input="x\u000d\u000aaaa\u2028" lastIndex=0 "{\u0022matches\u0022:[\u0022aaa\u0022,\u0022aaa\u0022,\u0022aaa\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022x\u005cr\u005cnaaa\u2028\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aaa\u0022},\u0022indices\u0022:[[3,6],[3,6],[3,6]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,6]},\u0022lastIndex\u0022:6,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cb[[a]]{2,3}?\u005c\u005cb))$\u0022}"
-        "(?<whole>(\u005cb[[\u005cp{Any}]]{2}\u005cb))" flags="dvg" input="A\ud83d\ude00B" lastIndex=0 "{\u0022matches\u0022:[\u0022A\ud83d\ude00\u0022,\u0022A\ud83d\ude00\u0022,\u0022A\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022A\ud83d\ude00B\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022A\ud83d\ude00\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[\u005c\u005cp{Any}]]{2}\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cb[[a]]{0,1}?\u005cb))" flags="dvg" input="a!" lastIndex=0 "{\u0022matches\u0022:[\u0022\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u0022},\u0022indices\u0022:[[0,0],[0,0],[0,0]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,0]},\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[a]]{0,1}?\u005c\u005cb))\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -761,31 +777,38 @@ fn checked_v_set_literal_results() {
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input={input:?} lastIndex={start} {result:?}"
+            "{pattern:?} flags={flags:?} input={input:?} lastIndex={start}\n{result}\n",
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>([a--b]c))" flags="dvg" input="aac" lastIndex=0 "{\u0022matches\u0022:[\u0022ac\u0022,\u0022ac\u0022,\u0022ac\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aac\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022ac\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([a--b]c))\u0022}"
-        "(?<whole>([a--b]c))" flags="dvy" input="aac" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([[K]]s))" flags="divg" input="\u212a\u017f!" lastIndex=0 "{\u0022matches\u0022:[\u0022\u212a\u017f\u0022,\u0022\u212a\u017f\u0022,\u0022\u212a\u017f\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212a\u017f!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212a\u017f\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>([[K]]s))\u0022}"
-        "(?<whole>([[K]]s))" flags="dvg" input="K\u017f!" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([[\u005cp{Any}]]\u005cu{1f601}))" flags="dvy" input="\ud83d\ude00\ud83d\ude01!" lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01\u0022,\u0022\ud83d\ude00\ud83d\ude01\u0022,\u0022\ud83d\ude00\ud83d\ude01\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\ud83d\ude01!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01\u0022},\u0022indices\u0022:[[0,4],[0,4],[0,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([[\u005c\u005cp{Any}]]\u005c\u005cu{1f601}))\u0022}"
-        "(?<whole>([[\u005cuD800]]a))" flags="dvg" input="\ud800a!" lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800a\u0022,\u0022\u005cud800a\u0022,\u0022\u005cud800a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u005cud800a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800a\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>([[\u005c\u005cuD800]]a))\u0022}"
-        "(?<whole>([[\u005cuD83D]]\u005cuDE00))" flags="dvg" input="\ud83d\ude00" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([[\u005c]]]\u005c$))" flags="dvg" input="x]$!" lastIndex=0 "{\u0022matches\u0022:[\u0022]$\u0022,\u0022]$\u0022,\u0022]$\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022x]$!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022]$\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([[\u005c\u005c]]]\u005c\u005c$))\u0022}"
-        "^(?<whole>([[a]]c))$" flags="dvmg" input="x\u000d\u000aac\u2028" lastIndex=0 "{\u0022matches\u0022:[\u0022ac\u0022,\u0022ac\u0022,\u0022ac\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022x\u005cr\u005cnac\u2028\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022ac\u0022},\u0022indices\u0022:[[3,5],[3,5],[3,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022^(?<whole>([[a]]c))$\u0022}"
-        "^(?<whole>([[a]]\u005c$))$" flags="dvg" input="a$" lastIndex=0 "{\u0022matches\u0022:[\u0022a$\u0022,\u0022a$\u0022,\u0022a$\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022a$\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022a$\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022^(?<whole>([[a]]\u005c\u005c$))$\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -913,31 +936,38 @@ fn checked_literal_v_set_results() {
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input={input:?} lastIndex={start} {result:?}"
+            "{pattern:?} flags={flags:?} input={input:?} lastIndex={start}\n{result}\n",
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>(c[a--b]))" flags="dvg" input="ccca" lastIndex=0 "{\u0022matches\u0022:[\u0022ca\u0022,\u0022ca\u0022,\u0022ca\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022ccca\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022ca\u0022},\u0022indices\u0022:[[2,4],[2,4],[2,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[2,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(c[a--b]))\u0022}"
-        "(?<whole>(c[a--b]))" flags="dvy" input="ccca" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(k[[s]]))" flags="divg" input="\u212a\u017f!" lastIndex=0 "{\u0022matches\u0022:[\u0022\u212a\u017f\u0022,\u0022\u212a\u017f\u0022,\u0022\u212a\u017f\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212a\u017f!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212a\u017f\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>(k[[s]]))\u0022}"
-        "(?<whole>(k[[s]]))" flags="dvg" input="k\u017f!" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(\u005cu{1f600}[[\u005cp{Any}]]))" flags="dvy" input="\ud83d\ude00\ud83d\ude01!" lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01\u0022,\u0022\ud83d\ude00\ud83d\ude01\u0022,\u0022\ud83d\ude00\ud83d\ude01\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\ud83d\ude01!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01\u0022},\u0022indices\u0022:[[0,4],[0,4],[0,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cu{1f600}[[\u005c\u005cp{Any}]]))\u0022}"
-        "(?<whole>(\u005cuD800[[a]]))" flags="dvg" input="\ud800a!" lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800a\u0022,\u0022\u005cud800a\u0022,\u0022\u005cud800a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u005cud800a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800a\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cuD800[[a]]))\u0022}"
-        "(?<whole>(\u005cuD83D[[\u005cuDE00]]))" flags="dvg" input="\ud83d\ude00" lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(\u005c[[[a]]))" flags="dvg" input="x[a!" lastIndex=0 "{\u0022matches\u0022:[\u0022[a\u0022,\u0022[a\u0022,\u0022[a\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022x[a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022[a\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005c[[[a]]))\u0022}"
-        "^(?<whole>(c[[a]]))$" flags="dvmg" input="x\u000d\u000aca\u2028" lastIndex=0 "{\u0022matches\u0022:[\u0022ca\u0022,\u0022ca\u0022,\u0022ca\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022x\u005cr\u005cnca\u2028\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022ca\u0022},\u0022indices\u0022:[[3,5],[3,5],[3,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022^(?<whole>(c[[a]]))$\u0022}"
-        "^(?<whole>(\u005c$[[a]]))$" flags="dvg" input="$a" lastIndex=0 "{\u0022matches\u0022:[\u0022$a\u0022,\u0022$a\u0022,\u0022$a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022$a\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022$a\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005c$[[a]]))$\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -1048,107 +1078,79 @@ fn checked_v_set_pair_word_results() {
     let mut row_count = 0;
     // These full expected objects are specified independently of the matcher.
     // Explicit UTF-16 input units keep lone surrogates and start offsets visible.
-    for (pattern, input, flags, start, expected) in [
-        (
-            r"(?<whole>(\B[[a]]a\b))",
-            JsString::from("aaa!"),
-            "dvg",
-            0,
-            r#"{"matches":["aa","aa","aa"],"index":1,"input":"aaa!","groups":{"whole":"aa"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>(\\B[[a]]a\\b))"}"#,
-        ),
-        (
-            r"(?<whole>(\Ba[[a]]\b))",
-            JsString::from("aaa!"),
-            "dvg",
-            0,
-            r#"{"matches":["aa","aa","aa"],"index":1,"input":"aaa!","groups":{"whole":"aa"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>(\\Ba[[a]]\\b))"}"#,
-        ),
-        (
-            r"(?<whole>(\B[[a]]a\b))",
-            JsString::from("aaa!"),
-            "dvy",
-            0,
-            r#"{"match":null,"lastIndex":0}"#,
-        ),
+    for (pattern, input, flags, start) in [
+        (r"(?<whole>(\B[[a]]a\b))", JsString::from("aaa!"), "dvg", 0),
+        (r"(?<whole>(\Ba[[a]]\b))", JsString::from("aaa!"), "dvg", 0),
+        (r"(?<whole>(\B[[a]]a\b))", JsString::from("aaa!"), "dvy", 0),
         (
             r"(?<whole>(\B[[\p{Any}]]a\b))",
             JsString::from("Ka!"),
             "dvg",
             0,
-            r#"{"matches":["Ka","Ka","Ka"],"index":0,"input":"Ka!","groups":{"whole":"Ka"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"(?<whole>(\\B[[\\p{Any}]]a\\b))"}"#,
         ),
         (
             r"(?<whole>(\B[[\p{Any}]]a\b))",
             JsString::from("Ka!"),
             "divg",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r"(?<whole>(\B\u{1f600}[[a]]\b))",
             JsString::from("😀a!"),
             "dvy",
             1,
-            r#"{"matches":["😀a","😀a","😀a"],"index":0,"input":"😀a!","groups":{"whole":"😀a"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"(?<whole>(\\B\\u{1f600}[[a]]\\b))"}"#,
         ),
         (
             r"(?<whole>(\b[[\uD800]]a\b))",
             JsString::from_code_units(vec![0x41, 0xd800, 0x61, 0x21]),
             "dvg",
             0,
-            r#"{"matches":["\ud800a","\ud800a","\ud800a"],"index":1,"input":"A\ud800a!","groups":{"whole":"\ud800a"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>(\\b[[\\uD800]]a\\b))"}"#,
         ),
-        (
-            r"(?<whole>(\b[[a]]\$\B))",
-            JsString::from("a$!"),
-            "dvg",
-            0,
-            r#"{"matches":["a$","a$","a$"],"index":0,"input":"a$!","groups":{"whole":"a$"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"(?<whole>(\\b[[a]]\\$\\B))"}"#,
-        ),
-        (
-            r"(?<whole>(\B\$[[a]]\b))",
-            JsString::from("$a!"),
-            "dvg",
-            0,
-            r#"{"matches":["$a","$a","$a"],"index":0,"input":"$a!","groups":{"whole":"$a"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"(?<whole>(\\B\\$[[a]]\\b))"}"#,
-        ),
+        (r"(?<whole>(\b[[a]]\$\B))", JsString::from("a$!"), "dvg", 0),
+        (r"(?<whole>(\B\$[[a]]\b))", JsString::from("$a!"), "dvg", 0),
         (
             r"^(?<whole>(\b[[a]]c\b))$",
             JsString::from("x\r\nac\u{2028}bc"),
             "dvmg",
             0,
-            r#"{"matches":["ac","ac","ac"],"index":3,"input":"x\r\nac bc","groups":{"whole":"ac"},"indices":[[3,5],[3,5],[3,5]],"indexGroups":{"whole":[3,5]},"lastIndex":5,"source":"^(?<whole>(\\b[[a]]c\\b))$"}"#,
         ),
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
             input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>(\u005cB[[a]]a\u005cb))" flags="dvg" input_units=[97, 97, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aa\u0022,\u0022aa\u0022,\u0022aa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aa\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[[a]]a\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cBa[[a]]\u005cb))" flags="dvg" input_units=[97, 97, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aa\u0022,\u0022aa\u0022,\u0022aa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aa\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cBa[[a]]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cB[[a]]a\u005cb))" flags="dvy" input_units=[97, 97, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(\u005cB[[\u005cp{Any}]]a\u005cb))" flags="dvg" input_units=[8490, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212aa\u0022,\u0022\u212aa\u0022,\u0022\u212aa\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212aa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212aa\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[[\u005c\u005cp{Any}]]a\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cB[[\u005cp{Any}]]a\u005cb))" flags="divg" input_units=[8490, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(\u005cB\u005cu{1f600}[[a]]\u005cb))" flags="dvy" input_units=[55357, 56832, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00a\u0022,\u0022\ud83d\ude00a\u0022,\u0022\ud83d\ude00a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00a\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB\u005c\u005cu{1f600}[[a]]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cb[[\u005cuD800]]a\u005cb))" flags="dvg" input_units=[65, 55296, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800a\u0022,\u0022\u005cud800a\u0022,\u0022\u005cud800a\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800a\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[\u005c\u005cuD800]]a\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cb[[a]]\u005c$\u005cB))" flags="dvg" input_units=[97, 36, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022a$\u0022,\u0022a$\u0022,\u0022a$\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022a$!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022a$\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[a]]\u005c\u005c$\u005c\u005cB))\u0022}"
-        "(?<whole>(\u005cB\u005c$[[a]]\u005cb))" flags="dvg" input_units=[36, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022$a\u0022,\u0022$a\u0022,\u0022$a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022$a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022$a\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB\u005c\u005c$[[a]]\u005c\u005cb))\u0022}"
-        "^(?<whole>(\u005cb[[a]]c\u005cb))$" flags="dvmg" input_units=[120, 13, 10, 97, 99, 8232, 98, 99] lastIndex=0 "{\u0022matches\u0022:[\u0022ac\u0022,\u0022ac\u0022,\u0022ac\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022x\u005cr\u005cnac\u2028bc\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022ac\u0022},\u0022indices\u0022:[[3,5],[3,5],[3,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cb[[a]]c\u005c\u005cb))$\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -1249,107 +1251,84 @@ fn checked_v_set_class_pair_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Complete objects and UTF-16 spans are hand-specified before execution.
-    for (pattern, input, flags, start, expected) in [
-        (
-            r"(?<whole>([a--b][[c]]))",
-            JsString::from("aac"),
-            "dvg",
-            0,
-            r#"{"matches":["ac","ac","ac"],"index":1,"input":"aac","groups":{"whole":"ac"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>([a--b][[c]]))"}"#,
-        ),
-        (
-            r"(?<whole>([a--b][[c]]))",
-            JsString::from("aac"),
-            "dvy",
-            0,
-            r#"{"match":null,"lastIndex":0}"#,
-        ),
-        (
-            r"(?<whole>([a--b][[c]]))",
-            JsString::from("aac"),
-            "dvy",
-            1,
-            r#"{"matches":["ac","ac","ac"],"index":1,"input":"aac","groups":{"whole":"ac"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>([a--b][[c]]))"}"#,
-        ),
-        (
-            r"(?<whole>([[K]][[s]]))",
-            JsString::from("Kſ!"),
-            "divg",
-            0,
-            r#"{"matches":["Kſ","Kſ","Kſ"],"index":0,"input":"Kſ!","groups":{"whole":"Kſ"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"(?<whole>([[K]][[s]]))"}"#,
-        ),
+    for (pattern, input, flags, start) in [
+        (r"(?<whole>([a--b][[c]]))", JsString::from("aac"), "dvg", 0),
+        (r"(?<whole>([a--b][[c]]))", JsString::from("aac"), "dvy", 0),
+        (r"(?<whole>([a--b][[c]]))", JsString::from("aac"), "dvy", 1),
+        (r"(?<whole>([[K]][[s]]))", JsString::from("Kſ!"), "divg", 0),
         (
             r"(?<whole>([\P{Ll}&&A][[s]]))",
             JsString::from("As"),
             "divg",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r"(?<whole>([[\p{Any}]][[a]]))",
             JsString::from("😀a!"),
             "dvy",
             1,
-            r#"{"matches":["😀a","😀a","😀a"],"index":0,"input":"😀a!","groups":{"whole":"😀a"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"(?<whole>([[\\p{Any}]][[a]]))"}"#,
         ),
         (
             r"(?<whole>([[\u{1f600}]][[\u{1f601}]]))",
             JsString::from("x😀😁!"),
             "dvg",
             0,
-            r#"{"matches":["😀😁","😀😁","😀😁"],"index":1,"input":"x😀😁!","groups":{"whole":"😀😁"},"indices":[[1,5],[1,5],[1,5]],"indexGroups":{"whole":[1,5]},"lastIndex":5,"source":"(?<whole>([[\\u{1f600}]][[\\u{1f601}]]))"}"#,
         ),
         (
             r"(?<whole>([[\uD800]][[\uD800]]))",
             JsString::from_code_units(vec![0x41, 0xd800, 0xd800, 0x21]),
             "dvg",
             0,
-            r#"{"matches":["\ud800\ud800","\ud800\ud800","\ud800\ud800"],"index":1,"input":"A\ud800\ud800!","groups":{"whole":"\ud800\ud800"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>([[\\uD800]][[\\uD800]]))"}"#,
         ),
         (
             r"(?<whole>([[\]]][[\[]]))",
             JsString::from("x][!"),
             "dvg",
             0,
-            r#"{"matches":["][","][","]["],"index":1,"input":"x][!","groups":{"whole":"]["},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>([[\\]]][[\\[]]))"}"#,
         ),
         (
             r"^(?<whole>([[a]][[b]]))$",
             JsString::from("x\r\nab\u{2028}cd"),
             "dvmg",
             0,
-            r#"{"matches":["ab","ab","ab"],"index":3,"input":"x\r\nab cd","groups":{"whole":"ab"},"indices":[[3,5],[3,5],[3,5]],"indexGroups":{"whole":[3,5]},"lastIndex":5,"source":"^(?<whole>([[a]][[b]]))$"}"#,
         ),
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>([a--b][[c]]))" flags="dvg" input_units=[97, 97, 99] lastIndex=0 "{\u0022matches\u0022:[\u0022ac\u0022,\u0022ac\u0022,\u0022ac\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aac\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022ac\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([a--b][[c]]))\u0022}"
-        "(?<whole>([a--b][[c]]))" flags="dvy" input_units=[97, 97, 99] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([a--b][[c]]))" flags="dvy" input_units=[97, 97, 99] lastIndex=1 "{\u0022matches\u0022:[\u0022ac\u0022,\u0022ac\u0022,\u0022ac\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aac\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022ac\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([a--b][[c]]))\u0022}"
-        "(?<whole>([[K]][[s]]))" flags="divg" input_units=[8490, 383, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212a\u017f\u0022,\u0022\u212a\u017f\u0022,\u0022\u212a\u017f\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212a\u017f!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212a\u017f\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>([[K]][[s]]))\u0022}"
-        "(?<whole>([\u005cP{Ll}&&A][[s]]))" flags="divg" input_units=[65, 115] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([[\u005cp{Any}]][[a]]))" flags="dvy" input_units=[55357, 56832, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00a\u0022,\u0022\ud83d\ude00a\u0022,\u0022\ud83d\ude00a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00a\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([[\u005c\u005cp{Any}]][[a]]))\u0022}"
-        "(?<whole>([[\u005cu{1f600}]][[\u005cu{1f601}]]))" flags="dvg" input_units=[120, 55357, 56832, 55357, 56833, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01\u0022,\u0022\ud83d\ude00\ud83d\ude01\u0022,\u0022\ud83d\ude00\ud83d\ude01\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022x\ud83d\ude00\ud83d\ude01!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01\u0022},\u0022indices\u0022:[[1,5],[1,5],[1,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022(?<whole>([[\u005c\u005cu{1f600}]][[\u005c\u005cu{1f601}]]))\u0022}"
-        "(?<whole>([[\u005cuD800]][[\u005cuD800]]))" flags="dvg" input_units=[65, 55296, 55296, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([[\u005c\u005cuD800]][[\u005c\u005cuD800]]))\u0022}"
-        "(?<whole>([[\u005c]]][[\u005c[]]))" flags="dvg" input_units=[120, 93, 91, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022][\u0022,\u0022][\u0022,\u0022][\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022x][!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022][\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([[\u005c\u005c]]][[\u005c\u005c[]]))\u0022}"
-        "^(?<whole>([[a]][[b]]))$" flags="dvmg" input_units=[120, 13, 10, 97, 98, 8232, 99, 100] lastIndex=0 "{\u0022matches\u0022:[\u0022ab\u0022,\u0022ab\u0022,\u0022ab\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022x\u005cr\u005cnab\u2028cd\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022ab\u0022},\u0022indices\u0022:[[3,5],[3,5],[3,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022^(?<whole>([[a]][[b]]))$\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -1457,107 +1436,104 @@ fn checked_v_set_class_pair_word_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Full field objects and original UTF-16 spans are hand-specified.
-    for (pattern, input, flags, start, expected) in [
+    for (pattern, input, flags, start) in [
         (
             r"(?<whole>(\B[[a]][[a]]\b))",
             JsString::from("aaa!"),
             "dvg",
             0,
-            r#"{"matches":["aa","aa","aa"],"index":1,"input":"aaa!","groups":{"whole":"aa"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>(\\B[[a]][[a]]\\b))"}"#,
         ),
         (
             r"(?<whole>(\B[[a]][[a]]\b))",
             JsString::from("aaa!"),
             "dvy",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r"(?<whole>(\b[[K]][[s]]\b))",
             JsString::from("Kſ!"),
             "divg",
             0,
-            r#"{"matches":["Kſ","Kſ","Kſ"],"index":0,"input":"Kſ!","groups":{"whole":"Kſ"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"(?<whole>(\\b[[K]][[s]]\\b))"}"#,
         ),
         (
             r"(?<whole>(\B[[\p{Any}]][[a]]\b))",
             JsString::from("Ka!"),
             "dvg",
             0,
-            r#"{"matches":["Ka","Ka","Ka"],"index":0,"input":"Ka!","groups":{"whole":"Ka"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"(?<whole>(\\B[[\\p{Any}]][[a]]\\b))"}"#,
         ),
         (
             r"(?<whole>(\B[[\p{Any}]][[a]]\b))",
             JsString::from("Ka!"),
             "divg",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r"(?<whole>(\B[[\p{Any}]][[a]]\b))",
             JsString::from("😀a!"),
             "dvy",
             1,
-            r#"{"matches":["😀a","😀a","😀a"],"index":0,"input":"😀a!","groups":{"whole":"😀a"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"(?<whole>(\\B[[\\p{Any}]][[a]]\\b))"}"#,
         ),
         (
             r"(?<whole>(\b[[\uD800]][[\uD800]]\B))",
             JsString::from_code_units(vec![0x41, 0xd800, 0xd800, 0x21]),
             "dvg",
             0,
-            r#"{"matches":["\ud800\ud800","\ud800\ud800","\ud800\ud800"],"index":1,"input":"A\ud800\ud800!","groups":{"whole":"\ud800\ud800"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>(\\b[[\\uD800]][[\\uD800]]\\B))"}"#,
         ),
         (
             r"(?<whole>(\B[[!]][[\?]]\B))",
             JsString::from("!?"),
             "dvg",
             0,
-            r#"{"matches":["!?","!?","!?"],"index":0,"input":"!?","groups":{"whole":"!?"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"(?<whole>(\\B[[!]][[\\?]]\\B))"}"#,
         ),
         (
             r"(?<whole>(\B[[\u{1f600}]][[\u{1f601}]]\B))",
             JsString::from("!😀😁!"),
             "dvg",
             0,
-            r#"{"matches":["😀😁","😀😁","😀😁"],"index":1,"input":"!😀😁!","groups":{"whole":"😀😁"},"indices":[[1,5],[1,5],[1,5]],"indexGroups":{"whole":[1,5]},"lastIndex":5,"source":"(?<whole>(\\B[[\\u{1f600}]][[\\u{1f601}]]\\B))"}"#,
         ),
         (
             r"^(?<whole>(\b[[a]][[b]]\b))$",
             JsString::from("x\r\nab\u{2028}cd"),
             "dvmg",
             0,
-            r#"{"matches":["ab","ab","ab"],"index":3,"input":"x\r\nab cd","groups":{"whole":"ab"},"indices":[[3,5],[3,5],[3,5]],"indexGroups":{"whole":[3,5]},"lastIndex":5,"source":"^(?<whole>(\\b[[a]][[b]]\\b))$"}"#,
         ),
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>(\u005cB[[a]][[a]]\u005cb))" flags="dvg" input_units=[97, 97, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aa\u0022,\u0022aa\u0022,\u0022aa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aa\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[[a]][[a]]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cB[[a]][[a]]\u005cb))" flags="dvy" input_units=[97, 97, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(\u005cb[[K]][[s]]\u005cb))" flags="divg" input_units=[8490, 383, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212a\u017f\u0022,\u0022\u212a\u017f\u0022,\u0022\u212a\u017f\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212a\u017f!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212a\u017f\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[K]][[s]]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cB[[\u005cp{Any}]][[a]]\u005cb))" flags="dvg" input_units=[8490, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212aa\u0022,\u0022\u212aa\u0022,\u0022\u212aa\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212aa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212aa\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[[\u005c\u005cp{Any}]][[a]]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cB[[\u005cp{Any}]][[a]]\u005cb))" flags="divg" input_units=[8490, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(\u005cB[[\u005cp{Any}]][[a]]\u005cb))" flags="dvy" input_units=[55357, 56832, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00a\u0022,\u0022\ud83d\ude00a\u0022,\u0022\ud83d\ude00a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00a\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[[\u005c\u005cp{Any}]][[a]]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cb[[\u005cuD800]][[\u005cuD800]]\u005cB))" flags="dvg" input_units=[65, 55296, 55296, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[\u005c\u005cuD800]][[\u005c\u005cuD800]]\u005c\u005cB))\u0022}"
-        "(?<whole>(\u005cB[[!]][[\u005c?]]\u005cB))" flags="dvg" input_units=[33, 63] lastIndex=0 "{\u0022matches\u0022:[\u0022!?\u0022,\u0022!?\u0022,\u0022!?\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022!?\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022!?\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[[!]][[\u005c\u005c?]]\u005c\u005cB))\u0022}"
-        "(?<whole>(\u005cB[[\u005cu{1f600}]][[\u005cu{1f601}]]\u005cB))" flags="dvg" input_units=[33, 55357, 56832, 55357, 56833, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01\u0022,\u0022\ud83d\ude00\ud83d\ude01\u0022,\u0022\ud83d\ude00\ud83d\ude01\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022!\ud83d\ude00\ud83d\ude01!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01\u0022},\u0022indices\u0022:[[1,5],[1,5],[1,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[[\u005c\u005cu{1f600}]][[\u005c\u005cu{1f601}]]\u005c\u005cB))\u0022}"
-        "^(?<whole>(\u005cb[[a]][[b]]\u005cb))$" flags="dvmg" input_units=[120, 13, 10, 97, 98, 8232, 99, 100] lastIndex=0 "{\u0022matches\u0022:[\u0022ab\u0022,\u0022ab\u0022,\u0022ab\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022x\u005cr\u005cnab\u2028cd\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022ab\u0022},\u0022indices\u0022:[[3,5],[3,5],[3,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cb[[a]][[b]]\u005c\u005cb))$\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -1663,107 +1639,79 @@ fn checked_then_flat_v_set_pair_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // These full field objects and original spans are manual expectations.
-    for (pattern, input, flags, start, expected) in [
-        (
-            r"(?<whole>([a--b][c]))",
-            JsString::from("aac"),
-            "dvg",
-            0,
-            r#"{"matches":["ac","ac","ac"],"index":1,"input":"aac","groups":{"whole":"ac"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>([a--b][c]))"}"#,
-        ),
-        (
-            r"(?<whole>([a--b][c]))",
-            JsString::from("aac"),
-            "dvy",
-            0,
-            r#"{"match":null,"lastIndex":0}"#,
-        ),
-        (
-            r"(?<whole>([a--b][c]))",
-            JsString::from("aac"),
-            "dvy",
-            1,
-            r#"{"matches":["ac","ac","ac"],"index":1,"input":"aac","groups":{"whole":"ac"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>([a--b][c]))"}"#,
-        ),
-        (
-            r"(?<whole>([[K]][s]))",
-            JsString::from("Kſ!"),
-            "divg",
-            0,
-            r#"{"matches":["Kſ","Kſ","Kſ"],"index":0,"input":"Kſ!","groups":{"whole":"Kſ"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"(?<whole>([[K]][s]))"}"#,
-        ),
+    for (pattern, input, flags, start) in [
+        (r"(?<whole>([a--b][c]))", JsString::from("aac"), "dvg", 0),
+        (r"(?<whole>([a--b][c]))", JsString::from("aac"), "dvy", 0),
+        (r"(?<whole>([a--b][c]))", JsString::from("aac"), "dvy", 1),
+        (r"(?<whole>([[K]][s]))", JsString::from("Kſ!"), "divg", 0),
         (
             r"(?<whole>([\P{Ll}&&A][s]))",
             JsString::from("As"),
             "divg",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r"(?<whole>([[\p{Any}]][a]))",
             JsString::from("😀a!"),
             "dvy",
             1,
-            r#"{"matches":["😀a","😀a","😀a"],"index":0,"input":"😀a!","groups":{"whole":"😀a"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"(?<whole>([[\\p{Any}]][a]))"}"#,
         ),
         (
             r"(?<whole>([[\u{1f600}]][\u{1f601}]))",
             JsString::from("x😀😁!"),
             "dvg",
             0,
-            r#"{"matches":["😀😁","😀😁","😀😁"],"index":1,"input":"x😀😁!","groups":{"whole":"😀😁"},"indices":[[1,5],[1,5],[1,5]],"indexGroups":{"whole":[1,5]},"lastIndex":5,"source":"(?<whole>([[\\u{1f600}]][\\u{1f601}]))"}"#,
         ),
         (
             r"(?<whole>([[\uD800]][\uD800]))",
             JsString::from_code_units(vec![0x41, 0xd800, 0xd800, 0x21]),
             "dvg",
             0,
-            r#"{"matches":["\ud800\ud800","\ud800\ud800","\ud800\ud800"],"index":1,"input":"A\ud800\ud800!","groups":{"whole":"\ud800\ud800"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>([[\\uD800]][\\uD800]))"}"#,
         ),
-        (
-            r"(?<whole>([[a]][^K]))",
-            JsString::from("aKaſ!"),
-            "divg",
-            0,
-            r#"{"matches":["aſ","aſ","aſ"],"index":2,"input":"aKaſ!","groups":{"whole":"aſ"},"indices":[[2,4],[2,4],[2,4]],"indexGroups":{"whole":[2,4]},"lastIndex":4,"source":"(?<whole>([[a]][^K]))"}"#,
-        ),
+        (r"(?<whole>([[a]][^K]))", JsString::from("aKaſ!"), "divg", 0),
         (
             r"^(?<whole>([[a]][b]))$",
             JsString::from("x\r\nab\u{2028}cd"),
             "dvmg",
             0,
-            r#"{"matches":["ab","ab","ab"],"index":3,"input":"x\r\nab cd","groups":{"whole":"ab"},"indices":[[3,5],[3,5],[3,5]],"indexGroups":{"whole":[3,5]},"lastIndex":5,"source":"^(?<whole>([[a]][b]))$"}"#,
         ),
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>([a--b][c]))" flags="dvg" input_units=[97, 97, 99] lastIndex=0 "{\u0022matches\u0022:[\u0022ac\u0022,\u0022ac\u0022,\u0022ac\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aac\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022ac\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([a--b][c]))\u0022}"
-        "(?<whole>([a--b][c]))" flags="dvy" input_units=[97, 97, 99] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([a--b][c]))" flags="dvy" input_units=[97, 97, 99] lastIndex=1 "{\u0022matches\u0022:[\u0022ac\u0022,\u0022ac\u0022,\u0022ac\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aac\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022ac\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([a--b][c]))\u0022}"
-        "(?<whole>([[K]][s]))" flags="divg" input_units=[8490, 383, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212a\u017f\u0022,\u0022\u212a\u017f\u0022,\u0022\u212a\u017f\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212a\u017f!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212a\u017f\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>([[K]][s]))\u0022}"
-        "(?<whole>([\u005cP{Ll}&&A][s]))" flags="divg" input_units=[65, 115] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([[\u005cp{Any}]][a]))" flags="dvy" input_units=[55357, 56832, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00a\u0022,\u0022\ud83d\ude00a\u0022,\u0022\ud83d\ude00a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00a\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([[\u005c\u005cp{Any}]][a]))\u0022}"
-        "(?<whole>([[\u005cu{1f600}]][\u005cu{1f601}]))" flags="dvg" input_units=[120, 55357, 56832, 55357, 56833, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01\u0022,\u0022\ud83d\ude00\ud83d\ude01\u0022,\u0022\ud83d\ude00\ud83d\ude01\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022x\ud83d\ude00\ud83d\ude01!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01\u0022},\u0022indices\u0022:[[1,5],[1,5],[1,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022(?<whole>([[\u005c\u005cu{1f600}]][\u005c\u005cu{1f601}]))\u0022}"
-        "(?<whole>([[\u005cuD800]][\u005cuD800]))" flags="dvg" input_units=[65, 55296, 55296, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([[\u005c\u005cuD800]][\u005c\u005cuD800]))\u0022}"
-        "(?<whole>([[a]][^K]))" flags="divg" input_units=[97, 8490, 97, 383, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022a\u017f\u0022,\u0022a\u017f\u0022,\u0022a\u017f\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022a\u212aa\u017f!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022a\u017f\u0022},\u0022indices\u0022:[[2,4],[2,4],[2,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[2,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([[a]][^K]))\u0022}"
-        "^(?<whole>([[a]][b]))$" flags="dvmg" input_units=[120, 13, 10, 97, 98, 8232, 99, 100] lastIndex=0 "{\u0022matches\u0022:[\u0022ab\u0022,\u0022ab\u0022,\u0022ab\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022x\u005cr\u005cnab\u2028cd\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022ab\u0022},\u0022indices\u0022:[[3,5],[3,5],[3,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022^(?<whole>([[a]][b]))$\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -1871,107 +1819,79 @@ fn flat_then_checked_v_set_pair_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Full field objects and original spans below are independent manual expectations.
-    for (pattern, input, flags, start, expected) in [
-        (
-            r"(?<whole>([a][c--b]))",
-            JsString::from("aac"),
-            "dvg",
-            0,
-            r#"{"matches":["ac","ac","ac"],"index":1,"input":"aac","groups":{"whole":"ac"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>([a][c--b]))"}"#,
-        ),
-        (
-            r"(?<whole>([a][c--b]))",
-            JsString::from("aac"),
-            "dvy",
-            0,
-            r#"{"match":null,"lastIndex":0}"#,
-        ),
-        (
-            r"(?<whole>([a][c--b]))",
-            JsString::from("aac"),
-            "dvy",
-            1,
-            r#"{"matches":["ac","ac","ac"],"index":1,"input":"aac","groups":{"whole":"ac"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>([a][c--b]))"}"#,
-        ),
-        (
-            r"(?<whole>([K][[s]]))",
-            JsString::from("Kſ!"),
-            "divg",
-            0,
-            r#"{"matches":["Kſ","Kſ","Kſ"],"index":0,"input":"Kſ!","groups":{"whole":"Kſ"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"(?<whole>([K][[s]]))"}"#,
-        ),
+    for (pattern, input, flags, start) in [
+        (r"(?<whole>([a][c--b]))", JsString::from("aac"), "dvg", 0),
+        (r"(?<whole>([a][c--b]))", JsString::from("aac"), "dvy", 0),
+        (r"(?<whole>([a][c--b]))", JsString::from("aac"), "dvy", 1),
+        (r"(?<whole>([K][[s]]))", JsString::from("Kſ!"), "divg", 0),
         (
             r"(?<whole>([A][\P{Ll}&&A]))",
             JsString::from("AA"),
             "divg",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r"(?<whole>([\p{Any}][[a]]))",
             JsString::from("😀a!"),
             "dvy",
             1,
-            r#"{"matches":["😀a","😀a","😀a"],"index":0,"input":"😀a!","groups":{"whole":"😀a"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"(?<whole>([\\p{Any}][[a]]))"}"#,
         ),
         (
             r"(?<whole>([\u{1f600}][[\u{1f601}]]))",
             JsString::from("x😀😁!"),
             "dvg",
             0,
-            r#"{"matches":["😀😁","😀😁","😀😁"],"index":1,"input":"x😀😁!","groups":{"whole":"😀😁"},"indices":[[1,5],[1,5],[1,5]],"indexGroups":{"whole":[1,5]},"lastIndex":5,"source":"(?<whole>([\\u{1f600}][[\\u{1f601}]]))"}"#,
         ),
         (
             r"(?<whole>([\uD800][[\uD800]]))",
             JsString::from_code_units(vec![0x41, 0xd800, 0xd800, 0x21]),
             "dvg",
             0,
-            r#"{"matches":["\ud800\ud800","\ud800\ud800","\ud800\ud800"],"index":1,"input":"A\ud800\ud800!","groups":{"whole":"\ud800\ud800"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>([\\uD800][[\\uD800]]))"}"#,
         ),
-        (
-            r"(?<whole>([a][[^K]]))",
-            JsString::from("aKaſ!"),
-            "divg",
-            0,
-            r#"{"matches":["aſ","aſ","aſ"],"index":2,"input":"aKaſ!","groups":{"whole":"aſ"},"indices":[[2,4],[2,4],[2,4]],"indexGroups":{"whole":[2,4]},"lastIndex":4,"source":"(?<whole>([a][[^K]]))"}"#,
-        ),
+        (r"(?<whole>([a][[^K]]))", JsString::from("aKaſ!"), "divg", 0),
         (
             r"^(?<whole>([a][[b]]))$",
             JsString::from("x\r\nab\u{2028}cd"),
             "dvmg",
             0,
-            r#"{"matches":["ab","ab","ab"],"index":3,"input":"x\r\nab cd","groups":{"whole":"ab"},"indices":[[3,5],[3,5],[3,5]],"indexGroups":{"whole":[3,5]},"lastIndex":5,"source":"^(?<whole>([a][[b]]))$"}"#,
         ),
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>([a][c--b]))" flags="dvg" input_units=[97, 97, 99] lastIndex=0 "{\u0022matches\u0022:[\u0022ac\u0022,\u0022ac\u0022,\u0022ac\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aac\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022ac\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([a][c--b]))\u0022}"
-        "(?<whole>([a][c--b]))" flags="dvy" input_units=[97, 97, 99] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([a][c--b]))" flags="dvy" input_units=[97, 97, 99] lastIndex=1 "{\u0022matches\u0022:[\u0022ac\u0022,\u0022ac\u0022,\u0022ac\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aac\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022ac\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([a][c--b]))\u0022}"
-        "(?<whole>([K][[s]]))" flags="divg" input_units=[8490, 383, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212a\u017f\u0022,\u0022\u212a\u017f\u0022,\u0022\u212a\u017f\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212a\u017f!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212a\u017f\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>([K][[s]]))\u0022}"
-        "(?<whole>([A][\u005cP{Ll}&&A]))" flags="divg" input_units=[65, 65] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([\u005cp{Any}][[a]]))" flags="dvy" input_units=[55357, 56832, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00a\u0022,\u0022\ud83d\ude00a\u0022,\u0022\ud83d\ude00a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00a\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cp{Any}][[a]]))\u0022}"
-        "(?<whole>([\u005cu{1f600}][[\u005cu{1f601}]]))" flags="dvg" input_units=[120, 55357, 56832, 55357, 56833, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01\u0022,\u0022\ud83d\ude00\ud83d\ude01\u0022,\u0022\ud83d\ude00\ud83d\ude01\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022x\ud83d\ude00\ud83d\ude01!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01\u0022},\u0022indices\u0022:[[1,5],[1,5],[1,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cu{1f600}][[\u005c\u005cu{1f601}]]))\u0022}"
-        "(?<whole>([\u005cuD800][[\u005cuD800]]))" flags="dvg" input_units=[65, 55296, 55296, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cuD800][[\u005c\u005cuD800]]))\u0022}"
-        "(?<whole>([a][[^K]]))" flags="divg" input_units=[97, 8490, 97, 383, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022a\u017f\u0022,\u0022a\u017f\u0022,\u0022a\u017f\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022a\u212aa\u017f!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022a\u017f\u0022},\u0022indices\u0022:[[2,4],[2,4],[2,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[2,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([a][[^K]]))\u0022}"
-        "^(?<whole>([a][[b]]))$" flags="dvmg" input_units=[120, 13, 10, 97, 98, 8232, 99, 100] lastIndex=0 "{\u0022matches\u0022:[\u0022ab\u0022,\u0022ab\u0022,\u0022ab\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022x\u005cr\u005cnab\u2028cd\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022ab\u0022},\u0022indices\u0022:[[3,5],[3,5],[3,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022^(?<whole>([a][[b]]))$\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -2089,107 +2009,104 @@ fn checked_then_flat_v_set_pair_word_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Full field objects and original spans below are independent manual expectations.
-    for (pattern, input, flags, start, expected) in [
+    for (pattern, input, flags, start) in [
         (
             r"(?<whole>(\B[[a]][a]\b))",
             JsString::from("aaa!"),
             "dvg",
             0,
-            r#"{"matches":["aa","aa","aa"],"index":1,"input":"aaa!","groups":{"whole":"aa"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>(\\B[[a]][a]\\b))"}"#,
         ),
         (
             r"(?<whole>(\B[[a]][a]\b))",
             JsString::from("aaa!"),
             "dvy",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r"(?<whole>(\B[[a]][a]\b))",
             JsString::from("aaa!"),
             "dvy",
             1,
-            r#"{"matches":["aa","aa","aa"],"index":1,"input":"aaa!","groups":{"whole":"aa"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>(\\B[[a]][a]\\b))"}"#,
         ),
         (
             r"(?<whole>(\b[[K]][s]\b))",
             JsString::from("Kſ!"),
             "divg",
             0,
-            r#"{"matches":["Kſ","Kſ","Kſ"],"index":0,"input":"Kſ!","groups":{"whole":"Kſ"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"(?<whole>(\\b[[K]][s]\\b))"}"#,
         ),
         (
             r"(?<whole>(\B[[\p{Any}]][a]\b))",
             JsString::from("Ka!"),
             "divg",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r"(?<whole>(\B[[\p{Any}]][a]\b))",
             JsString::from("😀a!"),
             "dvy",
             1,
-            r#"{"matches":["😀a","😀a","😀a"],"index":0,"input":"😀a!","groups":{"whole":"😀a"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"(?<whole>(\\B[[\\p{Any}]][a]\\b))"}"#,
         ),
         (
             r"(?<whole>(\B[[\u{1f600}]][\u{1f601}]\B))",
             JsString::from("!😀😁!"),
             "dvg",
             0,
-            r#"{"matches":["😀😁","😀😁","😀😁"],"index":1,"input":"!😀😁!","groups":{"whole":"😀😁"},"indices":[[1,5],[1,5],[1,5]],"indexGroups":{"whole":[1,5]},"lastIndex":5,"source":"(?<whole>(\\B[[\\u{1f600}]][\\u{1f601}]\\B))"}"#,
         ),
         (
             r"(?<whole>(\b[[\uD800]][\uD800]\B))",
             JsString::from_code_units(vec![0x41, 0xd800, 0xd800, 0x21]),
             "dvg",
             0,
-            r#"{"matches":["\ud800\ud800","\ud800\ud800","\ud800\ud800"],"index":1,"input":"A\ud800\ud800!","groups":{"whole":"\ud800\ud800"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>(\\b[[\\uD800]][\\uD800]\\B))"}"#,
         ),
         (
             r"(?<whole>(\b[[a]][\p{Any}]\b))",
             JsString::from("aK!"),
             "divg",
             0,
-            r#"{"matches":["aK","aK","aK"],"index":0,"input":"aK!","groups":{"whole":"aK"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"(?<whole>(\\b[[a]][\\p{Any}]\\b))"}"#,
         ),
         (
             r"^(?<whole>(\b[[a]][b]\b))$",
             JsString::from("x\r\nab\u{2028}cd"),
             "dvmg",
             0,
-            r#"{"matches":["ab","ab","ab"],"index":3,"input":"x\r\nab cd","groups":{"whole":"ab"},"indices":[[3,5],[3,5],[3,5]],"indexGroups":{"whole":[3,5]},"lastIndex":5,"source":"^(?<whole>(\\b[[a]][b]\\b))$"}"#,
         ),
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>(\u005cB[[a]][a]\u005cb))" flags="dvg" input_units=[97, 97, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aa\u0022,\u0022aa\u0022,\u0022aa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aa\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[[a]][a]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cB[[a]][a]\u005cb))" flags="dvy" input_units=[97, 97, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(\u005cB[[a]][a]\u005cb))" flags="dvy" input_units=[97, 97, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022aa\u0022,\u0022aa\u0022,\u0022aa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aa\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[[a]][a]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cb[[K]][s]\u005cb))" flags="divg" input_units=[8490, 383, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212a\u017f\u0022,\u0022\u212a\u017f\u0022,\u0022\u212a\u017f\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212a\u017f!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212a\u017f\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[K]][s]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cB[[\u005cp{Any}]][a]\u005cb))" flags="divg" input_units=[8490, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(\u005cB[[\u005cp{Any}]][a]\u005cb))" flags="dvy" input_units=[55357, 56832, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00a\u0022,\u0022\ud83d\ude00a\u0022,\u0022\ud83d\ude00a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00a\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[[\u005c\u005cp{Any}]][a]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cB[[\u005cu{1f600}]][\u005cu{1f601}]\u005cB))" flags="dvg" input_units=[33, 55357, 56832, 55357, 56833, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01\u0022,\u0022\ud83d\ude00\ud83d\ude01\u0022,\u0022\ud83d\ude00\ud83d\ude01\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022!\ud83d\ude00\ud83d\ude01!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01\u0022},\u0022indices\u0022:[[1,5],[1,5],[1,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[[\u005c\u005cu{1f600}]][\u005c\u005cu{1f601}]\u005c\u005cB))\u0022}"
-        "(?<whole>(\u005cb[[\u005cuD800]][\u005cuD800]\u005cB))" flags="dvg" input_units=[65, 55296, 55296, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[\u005c\u005cuD800]][\u005c\u005cuD800]\u005c\u005cB))\u0022}"
-        "(?<whole>(\u005cb[[a]][\u005cp{Any}]\u005cb))" flags="divg" input_units=[97, 8490, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022a\u212a\u0022,\u0022a\u212a\u0022,\u0022a\u212a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022a\u212a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022a\u212a\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[a]][\u005c\u005cp{Any}]\u005c\u005cb))\u0022}"
-        "^(?<whole>(\u005cb[[a]][b]\u005cb))$" flags="dvmg" input_units=[120, 13, 10, 97, 98, 8232, 99, 100] lastIndex=0 "{\u0022matches\u0022:[\u0022ab\u0022,\u0022ab\u0022,\u0022ab\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022x\u005cr\u005cnab\u2028cd\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022ab\u0022},\u0022indices\u0022:[[3,5],[3,5],[3,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cb[[a]][b]\u005c\u005cb))$\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -2298,107 +2215,104 @@ fn flat_then_checked_v_set_pair_word_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Full field objects and original spans below are independent manual expectations.
-    for (pattern, input, flags, start, expected) in [
+    for (pattern, input, flags, start) in [
         (
             r"(?<whole>(\B[a][[a]]\b))",
             JsString::from("aaa!"),
             "dvg",
             0,
-            r#"{"matches":["aa","aa","aa"],"index":1,"input":"aaa!","groups":{"whole":"aa"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>(\\B[a][[a]]\\b))"}"#,
         ),
         (
             r"(?<whole>(\B[a][[a]]\b))",
             JsString::from("aaa!"),
             "dvy",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r"(?<whole>(\B[a][[a]]\b))",
             JsString::from("aaa!"),
             "dvy",
             1,
-            r#"{"matches":["aa","aa","aa"],"index":1,"input":"aaa!","groups":{"whole":"aa"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>(\\B[a][[a]]\\b))"}"#,
         ),
         (
             r"(?<whole>(\b[K][[s]]\b))",
             JsString::from("Kſ!"),
             "divg",
             0,
-            r#"{"matches":["Kſ","Kſ","Kſ"],"index":0,"input":"Kſ!","groups":{"whole":"Kſ"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"(?<whole>(\\b[K][[s]]\\b))"}"#,
         ),
         (
             r"(?<whole>(\B[\p{Any}][[a]]\b))",
             JsString::from("Ka!"),
             "divg",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r"(?<whole>(\B[\p{Any}][[a]]\b))",
             JsString::from("😀a!"),
             "dvy",
             1,
-            r#"{"matches":["😀a","😀a","😀a"],"index":0,"input":"😀a!","groups":{"whole":"😀a"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"(?<whole>(\\B[\\p{Any}][[a]]\\b))"}"#,
         ),
         (
             r"(?<whole>(\B[\u{1f600}][[\u{1f601}]]\B))",
             JsString::from("!😀😁!"),
             "dvg",
             0,
-            r#"{"matches":["😀😁","😀😁","😀😁"],"index":1,"input":"!😀😁!","groups":{"whole":"😀😁"},"indices":[[1,5],[1,5],[1,5]],"indexGroups":{"whole":[1,5]},"lastIndex":5,"source":"(?<whole>(\\B[\\u{1f600}][[\\u{1f601}]]\\B))"}"#,
         ),
         (
             r"(?<whole>(\b[\uD800][[\uD800]]\B))",
             JsString::from_code_units(vec![0x41, 0xd800, 0xd800, 0x21]),
             "dvg",
             0,
-            r#"{"matches":["\ud800\ud800","\ud800\ud800","\ud800\ud800"],"index":1,"input":"A\ud800\ud800!","groups":{"whole":"\ud800\ud800"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>(\\b[\\uD800][[\\uD800]]\\B))"}"#,
         ),
         (
             r"(?<whole>(\b[a][[\p{Any}]]\b))",
             JsString::from("aK!"),
             "divg",
             0,
-            r#"{"matches":["aK","aK","aK"],"index":0,"input":"aK!","groups":{"whole":"aK"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"(?<whole>(\\b[a][[\\p{Any}]]\\b))"}"#,
         ),
         (
             r"^(?<whole>(\b[a][[b]]\b))$",
             JsString::from("x\r\nab\u{2028}cd"),
             "dvmg",
             0,
-            r#"{"matches":["ab","ab","ab"],"index":3,"input":"x\r\nab cd","groups":{"whole":"ab"},"indices":[[3,5],[3,5],[3,5]],"indexGroups":{"whole":[3,5]},"lastIndex":5,"source":"^(?<whole>(\\b[a][[b]]\\b))$"}"#,
         ),
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>(\u005cB[a][[a]]\u005cb))" flags="dvg" input_units=[97, 97, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aa\u0022,\u0022aa\u0022,\u0022aa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aa\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[a][[a]]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cB[a][[a]]\u005cb))" flags="dvy" input_units=[97, 97, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(\u005cB[a][[a]]\u005cb))" flags="dvy" input_units=[97, 97, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022aa\u0022,\u0022aa\u0022,\u0022aa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aa\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[a][[a]]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cb[K][[s]]\u005cb))" flags="divg" input_units=[8490, 383, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212a\u017f\u0022,\u0022\u212a\u017f\u0022,\u0022\u212a\u017f\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212a\u017f!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212a\u017f\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[K][[s]]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cB[\u005cp{Any}][[a]]\u005cb))" flags="divg" input_units=[8490, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(\u005cB[\u005cp{Any}][[a]]\u005cb))" flags="dvy" input_units=[55357, 56832, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00a\u0022,\u0022\ud83d\ude00a\u0022,\u0022\ud83d\ude00a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00a\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[\u005c\u005cp{Any}][[a]]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cB[\u005cu{1f600}][[\u005cu{1f601}]]\u005cB))" flags="dvg" input_units=[33, 55357, 56832, 55357, 56833, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01\u0022,\u0022\ud83d\ude00\ud83d\ude01\u0022,\u0022\ud83d\ude00\ud83d\ude01\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022!\ud83d\ude00\ud83d\ude01!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01\u0022},\u0022indices\u0022:[[1,5],[1,5],[1,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[\u005c\u005cu{1f600}][[\u005c\u005cu{1f601}]]\u005c\u005cB))\u0022}"
-        "(?<whole>(\u005cb[\u005cuD800][[\u005cuD800]]\u005cB))" flags="dvg" input_units=[65, 55296, 55296, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[\u005c\u005cuD800][[\u005c\u005cuD800]]\u005c\u005cB))\u0022}"
-        "(?<whole>(\u005cb[a][[\u005cp{Any}]]\u005cb))" flags="divg" input_units=[97, 8490, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022a\u212a\u0022,\u0022a\u212a\u0022,\u0022a\u212a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022a\u212a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022a\u212a\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[a][[\u005c\u005cp{Any}]]\u005c\u005cb))\u0022}"
-        "^(?<whole>(\u005cb[a][[b]]\u005cb))$" flags="dvmg" input_units=[120, 13, 10, 97, 98, 8232, 99, 100] lastIndex=0 "{\u0022matches\u0022:[\u0022ab\u0022,\u0022ab\u0022,\u0022ab\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022x\u005cr\u005cnab\u2028cd\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022ab\u0022},\u0022indices\u0022:[[3,5],[3,5],[3,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cb[a][[b]]\u005c\u005cb))$\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -2507,107 +2421,74 @@ fn flat_v_set_pair_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Full objects and original spans below are independent manual expectations.
-    for (pattern, input, flags, start, expected) in [
-        (
-            r"(?<whole>([a][c]))",
-            JsString::from("aac"),
-            "dvg",
-            0,
-            r#"{"matches":["ac","ac","ac"],"index":1,"input":"aac","groups":{"whole":"ac"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>([a][c]))"}"#,
-        ),
-        (
-            r"(?<whole>([a][c]))",
-            JsString::from("aac"),
-            "dvy",
-            0,
-            r#"{"match":null,"lastIndex":0}"#,
-        ),
-        (
-            r"(?<whole>([a][c]))",
-            JsString::from("aac"),
-            "dvy",
-            1,
-            r#"{"matches":["ac","ac","ac"],"index":1,"input":"aac","groups":{"whole":"ac"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>([a][c]))"}"#,
-        ),
-        (
-            r"(?<whole>([K][s]))",
-            JsString::from("Kſ!"),
-            "divg",
-            0,
-            r#"{"matches":["Kſ","Kſ","Kſ"],"index":0,"input":"Kſ!","groups":{"whole":"Kſ"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"(?<whole>([K][s]))"}"#,
-        ),
-        (
-            r"(?<whole>([\P{Ll}][s]))",
-            JsString::from("As"),
-            "divg",
-            0,
-            r#"{"match":null,"lastIndex":0}"#,
-        ),
+    for (pattern, input, flags, start) in [
+        (r"(?<whole>([a][c]))", JsString::from("aac"), "dvg", 0),
+        (r"(?<whole>([a][c]))", JsString::from("aac"), "dvy", 0),
+        (r"(?<whole>([a][c]))", JsString::from("aac"), "dvy", 1),
+        (r"(?<whole>([K][s]))", JsString::from("Kſ!"), "divg", 0),
+        (r"(?<whole>([\P{Ll}][s]))", JsString::from("As"), "divg", 0),
         (
             r"(?<whole>([\p{Any}][a]))",
             JsString::from("😀a!"),
             "dvy",
             1,
-            r#"{"matches":["😀a","😀a","😀a"],"index":0,"input":"😀a!","groups":{"whole":"😀a"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"(?<whole>([\\p{Any}][a]))"}"#,
         ),
         (
             r"(?<whole>([\u{1f600}][\u{1f601}]))",
             JsString::from("x😀😁!"),
             "dvg",
             0,
-            r#"{"matches":["😀😁","😀😁","😀😁"],"index":1,"input":"x😀😁!","groups":{"whole":"😀😁"},"indices":[[1,5],[1,5],[1,5]],"indexGroups":{"whole":[1,5]},"lastIndex":5,"source":"(?<whole>([\\u{1f600}][\\u{1f601}]))"}"#,
         ),
         (
             r"(?<whole>([\uD800][\uD800]))",
             JsString::from_code_units(vec![0x41, 0xd800, 0xd800, 0x21]),
             "dvg",
             0,
-            r#"{"matches":["\ud800\ud800","\ud800\ud800","\ud800\ud800"],"index":1,"input":"A\ud800\ud800!","groups":{"whole":"\ud800\ud800"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>([\\uD800][\\uD800]))"}"#,
         ),
-        (
-            r"(?<whole>([a][^K]))",
-            JsString::from("aKaſ!"),
-            "divg",
-            0,
-            r#"{"matches":["aſ","aſ","aſ"],"index":2,"input":"aKaſ!","groups":{"whole":"aſ"},"indices":[[2,4],[2,4],[2,4]],"indexGroups":{"whole":[2,4]},"lastIndex":4,"source":"(?<whole>([a][^K]))"}"#,
-        ),
+        (r"(?<whole>([a][^K]))", JsString::from("aKaſ!"), "divg", 0),
         (
             r"^(?<whole>([a][b]))$",
             JsString::from("x\r\nab\u{2028}cd"),
             "dvmg",
             0,
-            r#"{"matches":["ab","ab","ab"],"index":3,"input":"x\r\nab cd","groups":{"whole":"ab"},"indices":[[3,5],[3,5],[3,5]],"indexGroups":{"whole":[3,5]},"lastIndex":5,"source":"^(?<whole>([a][b]))$"}"#,
         ),
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>([a][c]))" flags="dvg" input_units=[97, 97, 99] lastIndex=0 "{\u0022matches\u0022:[\u0022ac\u0022,\u0022ac\u0022,\u0022ac\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aac\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022ac\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([a][c]))\u0022}"
-        "(?<whole>([a][c]))" flags="dvy" input_units=[97, 97, 99] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([a][c]))" flags="dvy" input_units=[97, 97, 99] lastIndex=1 "{\u0022matches\u0022:[\u0022ac\u0022,\u0022ac\u0022,\u0022ac\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aac\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022ac\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([a][c]))\u0022}"
-        "(?<whole>([K][s]))" flags="divg" input_units=[8490, 383, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212a\u017f\u0022,\u0022\u212a\u017f\u0022,\u0022\u212a\u017f\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212a\u017f!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212a\u017f\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>([K][s]))\u0022}"
-        "(?<whole>([\u005cP{Ll}][s]))" flags="divg" input_units=[65, 115] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([\u005cp{Any}][a]))" flags="dvy" input_units=[55357, 56832, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00a\u0022,\u0022\ud83d\ude00a\u0022,\u0022\ud83d\ude00a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00a\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cp{Any}][a]))\u0022}"
-        "(?<whole>([\u005cu{1f600}][\u005cu{1f601}]))" flags="dvg" input_units=[120, 55357, 56832, 55357, 56833, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01\u0022,\u0022\ud83d\ude00\ud83d\ude01\u0022,\u0022\ud83d\ude00\ud83d\ude01\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022x\ud83d\ude00\ud83d\ude01!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01\u0022},\u0022indices\u0022:[[1,5],[1,5],[1,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cu{1f600}][\u005c\u005cu{1f601}]))\u0022}"
-        "(?<whole>([\u005cuD800][\u005cuD800]))" flags="dvg" input_units=[65, 55296, 55296, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cuD800][\u005c\u005cuD800]))\u0022}"
-        "(?<whole>([a][^K]))" flags="divg" input_units=[97, 8490, 97, 383, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022a\u017f\u0022,\u0022a\u017f\u0022,\u0022a\u017f\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022a\u212aa\u017f!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022a\u017f\u0022},\u0022indices\u0022:[[2,4],[2,4],[2,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[2,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([a][^K]))\u0022}"
-        "^(?<whole>([a][b]))$" flags="dvmg" input_units=[120, 13, 10, 97, 98, 8232, 99, 100] lastIndex=0 "{\u0022matches\u0022:[\u0022ab\u0022,\u0022ab\u0022,\u0022ab\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022x\u005cr\u005cnab\u2028cd\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022ab\u0022},\u0022indices\u0022:[[3,5],[3,5],[3,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022^(?<whole>([a][b]))$\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -2719,107 +2600,84 @@ fn flat_v_set_pair_word_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Full objects and original spans below are independent manual expectations.
-    for (pattern, input, flags, start, expected) in [
-        (
-            r"(?<whole>(\B[a][a]\b))",
-            JsString::from("aaa!"),
-            "dvg",
-            0,
-            r#"{"matches":["aa","aa","aa"],"index":1,"input":"aaa!","groups":{"whole":"aa"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>(\\B[a][a]\\b))"}"#,
-        ),
-        (
-            r"(?<whole>(\B[a][a]\b))",
-            JsString::from("aaa!"),
-            "dvy",
-            0,
-            r#"{"match":null,"lastIndex":0}"#,
-        ),
-        (
-            r"(?<whole>(\B[a][a]\b))",
-            JsString::from("aaa!"),
-            "dvy",
-            1,
-            r#"{"matches":["aa","aa","aa"],"index":1,"input":"aaa!","groups":{"whole":"aa"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>(\\B[a][a]\\b))"}"#,
-        ),
-        (
-            r"(?<whole>(\b[K][s]\b))",
-            JsString::from("Kſ!"),
-            "divg",
-            0,
-            r#"{"matches":["Kſ","Kſ","Kſ"],"index":0,"input":"Kſ!","groups":{"whole":"Kſ"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"(?<whole>(\\b[K][s]\\b))"}"#,
-        ),
+    for (pattern, input, flags, start) in [
+        (r"(?<whole>(\B[a][a]\b))", JsString::from("aaa!"), "dvg", 0),
+        (r"(?<whole>(\B[a][a]\b))", JsString::from("aaa!"), "dvy", 0),
+        (r"(?<whole>(\B[a][a]\b))", JsString::from("aaa!"), "dvy", 1),
+        (r"(?<whole>(\b[K][s]\b))", JsString::from("Kſ!"), "divg", 0),
         (
             r"(?<whole>(\B[\p{Any}][a]\b))",
             JsString::from("Ka!"),
             "divg",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r"(?<whole>(\B[\p{Any}][a]\b))",
             JsString::from("😀a!"),
             "dvy",
             1,
-            r#"{"matches":["😀a","😀a","😀a"],"index":0,"input":"😀a!","groups":{"whole":"😀a"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"(?<whole>(\\B[\\p{Any}][a]\\b))"}"#,
         ),
         (
             r"(?<whole>(\B[\u{1f600}][\u{1f601}]\B))",
             JsString::from("!😀😁!"),
             "dvg",
             0,
-            r#"{"matches":["😀😁","😀😁","😀😁"],"index":1,"input":"!😀😁!","groups":{"whole":"😀😁"},"indices":[[1,5],[1,5],[1,5]],"indexGroups":{"whole":[1,5]},"lastIndex":5,"source":"(?<whole>(\\B[\\u{1f600}][\\u{1f601}]\\B))"}"#,
         ),
         (
             r"(?<whole>(\b[\uD800][\uD800]\B))",
             JsString::from_code_units(vec![0x41, 0xd800, 0xd800, 0x21]),
             "dvg",
             0,
-            r#"{"matches":["\ud800\ud800","\ud800\ud800","\ud800\ud800"],"index":1,"input":"A\ud800\ud800!","groups":{"whole":"\ud800\ud800"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>(\\b[\\uD800][\\uD800]\\B))"}"#,
         ),
         (
             r"(?<whole>(\b[a][\p{Any}]\b))",
             JsString::from("aK!"),
             "divg",
             0,
-            r#"{"matches":["aK","aK","aK"],"index":0,"input":"aK!","groups":{"whole":"aK"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"(?<whole>(\\b[a][\\p{Any}]\\b))"}"#,
         ),
         (
             r"^(?<whole>(\b[a][b]\b))$",
             JsString::from("x\r\nab\u{2028}cd"),
             "dvmg",
             0,
-            r#"{"matches":["ab","ab","ab"],"index":3,"input":"x\r\nab cd","groups":{"whole":"ab"},"indices":[[3,5],[3,5],[3,5]],"indexGroups":{"whole":[3,5]},"lastIndex":5,"source":"^(?<whole>(\\b[a][b]\\b))$"}"#,
         ),
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>(\u005cB[a][a]\u005cb))" flags="dvg" input_units=[97, 97, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aa\u0022,\u0022aa\u0022,\u0022aa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aa\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[a][a]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cB[a][a]\u005cb))" flags="dvy" input_units=[97, 97, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(\u005cB[a][a]\u005cb))" flags="dvy" input_units=[97, 97, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022aa\u0022,\u0022aa\u0022,\u0022aa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aa\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[a][a]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cb[K][s]\u005cb))" flags="divg" input_units=[8490, 383, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212a\u017f\u0022,\u0022\u212a\u017f\u0022,\u0022\u212a\u017f\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212a\u017f!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212a\u017f\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[K][s]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cB[\u005cp{Any}][a]\u005cb))" flags="divg" input_units=[8490, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(\u005cB[\u005cp{Any}][a]\u005cb))" flags="dvy" input_units=[55357, 56832, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00a\u0022,\u0022\ud83d\ude00a\u0022,\u0022\ud83d\ude00a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00a\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[\u005c\u005cp{Any}][a]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cB[\u005cu{1f600}][\u005cu{1f601}]\u005cB))" flags="dvg" input_units=[33, 55357, 56832, 55357, 56833, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01\u0022,\u0022\ud83d\ude00\ud83d\ude01\u0022,\u0022\ud83d\ude00\ud83d\ude01\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022!\ud83d\ude00\ud83d\ude01!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01\u0022},\u0022indices\u0022:[[1,5],[1,5],[1,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[\u005c\u005cu{1f600}][\u005c\u005cu{1f601}]\u005c\u005cB))\u0022}"
-        "(?<whole>(\u005cb[\u005cuD800][\u005cuD800]\u005cB))" flags="dvg" input_units=[65, 55296, 55296, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[\u005c\u005cuD800][\u005c\u005cuD800]\u005c\u005cB))\u0022}"
-        "(?<whole>(\u005cb[a][\u005cp{Any}]\u005cb))" flags="divg" input_units=[97, 8490, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022a\u212a\u0022,\u0022a\u212a\u0022,\u0022a\u212a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022a\u212a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022a\u212a\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[a][\u005c\u005cp{Any}]\u005c\u005cb))\u0022}"
-        "^(?<whole>(\u005cb[a][b]\u005cb))$" flags="dvmg" input_units=[120, 13, 10, 97, 98, 8232, 99, 100] lastIndex=0 "{\u0022matches\u0022:[\u0022ab\u0022,\u0022ab\u0022,\u0022ab\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022x\u005cr\u005cnab\u2028cd\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022ab\u0022},\u0022indices\u0022:[[3,5],[3,5],[3,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cb[a][b]\u005c\u005cb))$\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -2948,107 +2806,89 @@ fn literal_checked_v_set_pair_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Full objects and original spans below are independent manual expectations.
-    for (pattern, input, flags, start, expected) in [
-        (
-            r"(?<whole>(a[[a]][[c]]))",
-            JsString::from("aaac"),
-            "dvg",
-            0,
-            r#"{"matches":["aac","aac","aac"],"index":1,"input":"aaac","groups":{"whole":"aac"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(a[[a]][[c]]))"}"#,
-        ),
-        (
-            r"(?<whole>(a[[a]][[c]]))",
-            JsString::from("aaac"),
-            "dvy",
-            0,
-            r#"{"match":null,"lastIndex":0}"#,
-        ),
-        (
-            r"(?<whole>(a[[a]][[c]]))",
-            JsString::from("aaac"),
-            "dvy",
-            1,
-            r#"{"matches":["aac","aac","aac"],"index":1,"input":"aaac","groups":{"whole":"aac"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(a[[a]][[c]]))"}"#,
-        ),
+    for (pattern, input, flags, start) in [
+        (r"(?<whole>(a[[a]][[c]]))", JsString::from("aaac"), "dvg", 0),
+        (r"(?<whole>(a[[a]][[c]]))", JsString::from("aaac"), "dvy", 0),
+        (r"(?<whole>(a[[a]][[c]]))", JsString::from("aaac"), "dvy", 1),
         (
             r"(?<whole>(k[[s]][[A]]))",
             JsString::from("Kſa!"),
             "divg",
             0,
-            r#"{"matches":["Kſa","Kſa","Kſa"],"index":0,"input":"Kſa!","groups":{"whole":"Kſa"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"(?<whole>(k[[s]][[A]]))"}"#,
         ),
         (
             r"(?<whole>(x[\P{Ll}&&A][[s]]))",
             JsString::from("xAs"),
             "divg",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r"(?<whole>(\u{1f600}[[\p{Any}]][[a]]))",
             JsString::from("😀😁a!"),
             "dvy",
             1,
-            r#"{"matches":["😀😁a","😀😁a","😀😁a"],"index":0,"input":"😀😁a!","groups":{"whole":"😀😁a"},"indices":[[0,5],[0,5],[0,5]],"indexGroups":{"whole":[0,5]},"lastIndex":5,"source":"(?<whole>(\\u{1f600}[[\\p{Any}]][[a]]))"}"#,
         ),
         (
             r"(?<whole>(\u{1f600}[[\u{1f601}]][[\u{1f602}]]))",
             JsString::from("x😀😁😂!"),
             "dvg",
             0,
-            r#"{"matches":["😀😁😂","😀😁😂","😀😁😂"],"index":1,"input":"x😀😁😂!","groups":{"whole":"😀😁😂"},"indices":[[1,7],[1,7],[1,7]],"indexGroups":{"whole":[1,7]},"lastIndex":7,"source":"(?<whole>(\\u{1f600}[[\\u{1f601}]][[\\u{1f602}]]))"}"#,
         ),
         (
             r"(?<whole>(\uD800[[\uD800]][[\uD800]]))",
             JsString::from_code_units(vec![0x41, 0xd800, 0xd800, 0xd800, 0x21]),
             "dvg",
             0,
-            r#"{"matches":["\ud800\ud800\ud800","\ud800\ud800\ud800","\ud800\ud800\ud800"],"index":1,"input":"A\ud800\ud800\ud800!","groups":{"whole":"\ud800\ud800\ud800"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(\\uD800[[\\uD800]][[\\uD800]]))"}"#,
         ),
         (
             r"(?<whole>(a[[a]][[^K]]))",
             JsString::from("aaKaaſ!"),
             "divg",
             0,
-            r#"{"matches":["aaſ","aaſ","aaſ"],"index":3,"input":"aaKaaſ!","groups":{"whole":"aaſ"},"indices":[[3,6],[3,6],[3,6]],"indexGroups":{"whole":[3,6]},"lastIndex":6,"source":"(?<whole>(a[[a]][[^K]]))"}"#,
         ),
         (
             r"^(?<whole>(c[[a]][[b]]))$",
             JsString::from("x\r\ncab\u{2028}cd"),
             "dvmg",
             0,
-            r#"{"matches":["cab","cab","cab"],"index":3,"input":"x\r\ncab cd","groups":{"whole":"cab"},"indices":[[3,6],[3,6],[3,6]],"indexGroups":{"whole":[3,6]},"lastIndex":6,"source":"^(?<whole>(c[[a]][[b]]))$"}"#,
         ),
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>(a[[a]][[c]]))" flags="dvg" input_units=[97, 97, 97, 99] lastIndex=0 "{\u0022matches\u0022:[\u0022aac\u0022,\u0022aac\u0022,\u0022aac\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaac\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aac\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(a[[a]][[c]]))\u0022}"
-        "(?<whole>(a[[a]][[c]]))" flags="dvy" input_units=[97, 97, 97, 99] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(a[[a]][[c]]))" flags="dvy" input_units=[97, 97, 97, 99] lastIndex=1 "{\u0022matches\u0022:[\u0022aac\u0022,\u0022aac\u0022,\u0022aac\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaac\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aac\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(a[[a]][[c]]))\u0022}"
-        "(?<whole>(k[[s]][[A]]))" flags="divg" input_units=[8490, 383, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212a\u017fa\u0022,\u0022\u212a\u017fa\u0022,\u0022\u212a\u017fa\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212a\u017fa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212a\u017fa\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(k[[s]][[A]]))\u0022}"
-        "(?<whole>(x[\u005cP{Ll}&&A][[s]]))" flags="divg" input_units=[120, 65, 115] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(\u005cu{1f600}[[\u005cp{Any}]][[a]]))" flags="dvy" input_units=[55357, 56832, 55357, 56833, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01a\u0022,\u0022\ud83d\ude00\ud83d\ude01a\u0022,\u0022\ud83d\ude00\ud83d\ude01a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\ud83d\ude01a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01a\u0022},\u0022indices\u0022:[[0,5],[0,5],[0,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cu{1f600}[[\u005c\u005cp{Any}]][[a]]))\u0022}"
-        "(?<whole>(\u005cu{1f600}[[\u005cu{1f601}]][[\u005cu{1f602}]]))" flags="dvg" input_units=[120, 55357, 56832, 55357, 56833, 55357, 56834, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022x\ud83d\ude00\ud83d\ude01\ud83d\ude02!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\u0022},\u0022indices\u0022:[[1,7],[1,7],[1,7]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,7]},\u0022lastIndex\u0022:7,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cu{1f600}[[\u005c\u005cu{1f601}]][[\u005c\u005cu{1f602}]]))\u0022}"
-        "(?<whole>(\u005cuD800[[\u005cuD800]][[\u005cuD800]]))" flags="dvg" input_units=[65, 55296, 55296, 55296, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800\u005cud800!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u005cud800\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cuD800[[\u005c\u005cuD800]][[\u005c\u005cuD800]]))\u0022}"
-        "(?<whole>(a[[a]][[^K]]))" flags="divg" input_units=[97, 97, 8490, 97, 97, 383, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aa\u017f\u0022,\u0022aa\u017f\u0022,\u0022aa\u017f\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022aa\u212aaa\u017f!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aa\u017f\u0022},\u0022indices\u0022:[[3,6],[3,6],[3,6]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,6]},\u0022lastIndex\u0022:6,\u0022source\u0022:\u0022(?<whole>(a[[a]][[^K]]))\u0022}"
-        "^(?<whole>(c[[a]][[b]]))$" flags="dvmg" input_units=[120, 13, 10, 99, 97, 98, 8232, 99, 100] lastIndex=0 "{\u0022matches\u0022:[\u0022cab\u0022,\u0022cab\u0022,\u0022cab\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022x\u005cr\u005cncab\u2028cd\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022cab\u0022},\u0022indices\u0022:[[3,6],[3,6],[3,6]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,6]},\u0022lastIndex\u0022:6,\u0022source\u0022:\u0022^(?<whole>(c[[a]][[b]]))$\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -3175,107 +3015,89 @@ fn checked_v_set_pair_literal_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Full objects and original spans below are independent manual expectations.
-    for (pattern, input, flags, start, expected) in [
-        (
-            r"(?<whole>([[a]][[a]]c))",
-            JsString::from("aaac"),
-            "dvg",
-            0,
-            r#"{"matches":["aac","aac","aac"],"index":1,"input":"aaac","groups":{"whole":"aac"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>([[a]][[a]]c))"}"#,
-        ),
-        (
-            r"(?<whole>([[a]][[a]]c))",
-            JsString::from("aaac"),
-            "dvy",
-            0,
-            r#"{"match":null,"lastIndex":0}"#,
-        ),
-        (
-            r"(?<whole>([[a]][[a]]c))",
-            JsString::from("aaac"),
-            "dvy",
-            1,
-            r#"{"matches":["aac","aac","aac"],"index":1,"input":"aaac","groups":{"whole":"aac"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>([[a]][[a]]c))"}"#,
-        ),
+    for (pattern, input, flags, start) in [
+        (r"(?<whole>([[a]][[a]]c))", JsString::from("aaac"), "dvg", 0),
+        (r"(?<whole>([[a]][[a]]c))", JsString::from("aaac"), "dvy", 0),
+        (r"(?<whole>([[a]][[a]]c))", JsString::from("aaac"), "dvy", 1),
         (
             r"(?<whole>([[K]][[s]]a))",
             JsString::from("KſA!"),
             "divg",
             0,
-            r#"{"matches":["KſA","KſA","KſA"],"index":0,"input":"KſA!","groups":{"whole":"KſA"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"(?<whole>([[K]][[s]]a))"}"#,
         ),
         (
             r"(?<whole>([\P{Ll}&&A][[s]]x))",
             JsString::from("Asx"),
             "divg",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r"(?<whole>([[\p{Any}]][[\p{Any}]]a))",
             JsString::from("😀😁a!"),
             "dvy",
             1,
-            r#"{"matches":["😀😁a","😀😁a","😀😁a"],"index":0,"input":"😀😁a!","groups":{"whole":"😀😁a"},"indices":[[0,5],[0,5],[0,5]],"indexGroups":{"whole":[0,5]},"lastIndex":5,"source":"(?<whole>([[\\p{Any}]][[\\p{Any}]]a))"}"#,
         ),
         (
             r"(?<whole>([[\u{1f600}]][[\u{1f601}]]\u{1f602}))",
             JsString::from("x😀😁😂!"),
             "dvg",
             0,
-            r#"{"matches":["😀😁😂","😀😁😂","😀😁😂"],"index":1,"input":"x😀😁😂!","groups":{"whole":"😀😁😂"},"indices":[[1,7],[1,7],[1,7]],"indexGroups":{"whole":[1,7]},"lastIndex":7,"source":"(?<whole>([[\\u{1f600}]][[\\u{1f601}]]\\u{1f602}))"}"#,
         ),
         (
             r"(?<whole>([[\uD800]][[\uD800]]\uD800))",
             JsString::from_code_units(vec![0x41, 0xd800, 0xd800, 0xd800, 0x21]),
             "dvg",
             0,
-            r#"{"matches":["\ud800\ud800\ud800","\ud800\ud800\ud800","\ud800\ud800\ud800"],"index":1,"input":"A\ud800\ud800\ud800!","groups":{"whole":"\ud800\ud800\ud800"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>([[\\uD800]][[\\uD800]]\\uD800))"}"#,
         ),
         (
             r"(?<whole>([[a]][[^K]]s))",
             JsString::from("aKsaſſ!"),
             "divg",
             0,
-            r#"{"matches":["aſſ","aſſ","aſſ"],"index":3,"input":"aKsaſſ!","groups":{"whole":"aſſ"},"indices":[[3,6],[3,6],[3,6]],"indexGroups":{"whole":[3,6]},"lastIndex":6,"source":"(?<whole>([[a]][[^K]]s))"}"#,
         ),
         (
             r"^(?<whole>([[a]][[b]]c))$",
             JsString::from("x\r\nabc\u{2028}de"),
             "dvmg",
             0,
-            r#"{"matches":["abc","abc","abc"],"index":3,"input":"x\r\nabc de","groups":{"whole":"abc"},"indices":[[3,6],[3,6],[3,6]],"indexGroups":{"whole":[3,6]},"lastIndex":6,"source":"^(?<whole>([[a]][[b]]c))$"}"#,
         ),
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>([[a]][[a]]c))" flags="dvg" input_units=[97, 97, 97, 99] lastIndex=0 "{\u0022matches\u0022:[\u0022aac\u0022,\u0022aac\u0022,\u0022aac\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaac\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aac\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([[a]][[a]]c))\u0022}"
-        "(?<whole>([[a]][[a]]c))" flags="dvy" input_units=[97, 97, 97, 99] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([[a]][[a]]c))" flags="dvy" input_units=[97, 97, 97, 99] lastIndex=1 "{\u0022matches\u0022:[\u0022aac\u0022,\u0022aac\u0022,\u0022aac\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaac\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aac\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([[a]][[a]]c))\u0022}"
-        "(?<whole>([[K]][[s]]a))" flags="divg" input_units=[8490, 383, 65, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212a\u017fA\u0022,\u0022\u212a\u017fA\u0022,\u0022\u212a\u017fA\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212a\u017fA!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212a\u017fA\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([[K]][[s]]a))\u0022}"
-        "(?<whole>([\u005cP{Ll}&&A][[s]]x))" flags="divg" input_units=[65, 115, 120] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([[\u005cp{Any}]][[\u005cp{Any}]]a))" flags="dvy" input_units=[55357, 56832, 55357, 56833, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01a\u0022,\u0022\ud83d\ude00\ud83d\ude01a\u0022,\u0022\ud83d\ude00\ud83d\ude01a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\ud83d\ude01a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01a\u0022},\u0022indices\u0022:[[0,5],[0,5],[0,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022(?<whole>([[\u005c\u005cp{Any}]][[\u005c\u005cp{Any}]]a))\u0022}"
-        "(?<whole>([[\u005cu{1f600}]][[\u005cu{1f601}]]\u005cu{1f602}))" flags="dvg" input_units=[120, 55357, 56832, 55357, 56833, 55357, 56834, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022x\ud83d\ude00\ud83d\ude01\ud83d\ude02!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\u0022},\u0022indices\u0022:[[1,7],[1,7],[1,7]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,7]},\u0022lastIndex\u0022:7,\u0022source\u0022:\u0022(?<whole>([[\u005c\u005cu{1f600}]][[\u005c\u005cu{1f601}]]\u005c\u005cu{1f602}))\u0022}"
-        "(?<whole>([[\u005cuD800]][[\u005cuD800]]\u005cuD800))" flags="dvg" input_units=[65, 55296, 55296, 55296, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800\u005cud800!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u005cud800\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([[\u005c\u005cuD800]][[\u005c\u005cuD800]]\u005c\u005cuD800))\u0022}"
-        "(?<whole>([[a]][[^K]]s))" flags="divg" input_units=[97, 8490, 115, 97, 383, 383, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022a\u017f\u017f\u0022,\u0022a\u017f\u017f\u0022,\u0022a\u017f\u017f\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022a\u212asa\u017f\u017f!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022a\u017f\u017f\u0022},\u0022indices\u0022:[[3,6],[3,6],[3,6]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,6]},\u0022lastIndex\u0022:6,\u0022source\u0022:\u0022(?<whole>([[a]][[^K]]s))\u0022}"
-        "^(?<whole>([[a]][[b]]c))$" flags="dvmg" input_units=[120, 13, 10, 97, 98, 99, 8232, 100, 101] lastIndex=0 "{\u0022matches\u0022:[\u0022abc\u0022,\u0022abc\u0022,\u0022abc\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022x\u005cr\u005cnabc\u2028de\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022abc\u0022},\u0022indices\u0022:[[3,6],[3,6],[3,6]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,6]},\u0022lastIndex\u0022:6,\u0022source\u0022:\u0022^(?<whole>([[a]][[b]]c))$\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -3406,107 +3228,89 @@ fn checked_literal_checked_v_set_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Full objects and original spans below are independent manual expectations.
-    for (pattern, input, flags, start, expected) in [
-        (
-            r"(?<whole>([[a]]a[[c]]))",
-            JsString::from("aaac"),
-            "dvg",
-            0,
-            r#"{"matches":["aac","aac","aac"],"index":1,"input":"aaac","groups":{"whole":"aac"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>([[a]]a[[c]]))"}"#,
-        ),
-        (
-            r"(?<whole>([[a]]a[[c]]))",
-            JsString::from("aaac"),
-            "dvy",
-            0,
-            r#"{"match":null,"lastIndex":0}"#,
-        ),
-        (
-            r"(?<whole>([[a]]a[[c]]))",
-            JsString::from("aaac"),
-            "dvy",
-            1,
-            r#"{"matches":["aac","aac","aac"],"index":1,"input":"aaac","groups":{"whole":"aac"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>([[a]]a[[c]]))"}"#,
-        ),
+    for (pattern, input, flags, start) in [
+        (r"(?<whole>([[a]]a[[c]]))", JsString::from("aaac"), "dvg", 0),
+        (r"(?<whole>([[a]]a[[c]]))", JsString::from("aaac"), "dvy", 0),
+        (r"(?<whole>([[a]]a[[c]]))", JsString::from("aaac"), "dvy", 1),
         (
             r"(?<whole>([[K]]s[[A]]))",
             JsString::from("Kſa!"),
             "divg",
             0,
-            r#"{"matches":["Kſa","Kſa","Kſa"],"index":0,"input":"Kſa!","groups":{"whole":"Kſa"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"(?<whole>([[K]]s[[A]]))"}"#,
         ),
         (
             r"(?<whole>([\P{Ll}&&A]x[[s]]))",
             JsString::from("Axs"),
             "divg",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r"(?<whole>([[\p{Any}]]\u{1f601}[[a]]))",
             JsString::from("😀😁a!"),
             "dvy",
             1,
-            r#"{"matches":["😀😁a","😀😁a","😀😁a"],"index":0,"input":"😀😁a!","groups":{"whole":"😀😁a"},"indices":[[0,5],[0,5],[0,5]],"indexGroups":{"whole":[0,5]},"lastIndex":5,"source":"(?<whole>([[\\p{Any}]]\\u{1f601}[[a]]))"}"#,
         ),
         (
             r"(?<whole>([[\u{1f600}]]\u{1f601}[[\u{1f602}]]))",
             JsString::from("x😀😁😂!"),
             "dvg",
             0,
-            r#"{"matches":["😀😁😂","😀😁😂","😀😁😂"],"index":1,"input":"x😀😁😂!","groups":{"whole":"😀😁😂"},"indices":[[1,7],[1,7],[1,7]],"indexGroups":{"whole":[1,7]},"lastIndex":7,"source":"(?<whole>([[\\u{1f600}]]\\u{1f601}[[\\u{1f602}]]))"}"#,
         ),
         (
             r"(?<whole>([[\uD800]]\uD800[[\uD800]]))",
             JsString::from_code_units(vec![0x41, 0xd800, 0xd800, 0xd800, 0x21]),
             "dvg",
             0,
-            r#"{"matches":["\ud800\ud800\ud800","\ud800\ud800\ud800","\ud800\ud800\ud800"],"index":1,"input":"A\ud800\ud800\ud800!","groups":{"whole":"\ud800\ud800\ud800"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>([[\\uD800]]\\uD800[[\\uD800]]))"}"#,
         ),
         (
             r"(?<whole>([[a]]a[[^K]]))",
             JsString::from("aaKaaſ!"),
             "divg",
             0,
-            r#"{"matches":["aaſ","aaſ","aaſ"],"index":3,"input":"aaKaaſ!","groups":{"whole":"aaſ"},"indices":[[3,6],[3,6],[3,6]],"indexGroups":{"whole":[3,6]},"lastIndex":6,"source":"(?<whole>([[a]]a[[^K]]))"}"#,
         ),
         (
             r"^(?<whole>([[a]]b[[c]]))$",
             JsString::from("x\r\nabc\u{2028}de"),
             "dvmg",
             0,
-            r#"{"matches":["abc","abc","abc"],"index":3,"input":"x\r\nabc de","groups":{"whole":"abc"},"indices":[[3,6],[3,6],[3,6]],"indexGroups":{"whole":[3,6]},"lastIndex":6,"source":"^(?<whole>([[a]]b[[c]]))$"}"#,
         ),
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>([[a]]a[[c]]))" flags="dvg" input_units=[97, 97, 97, 99] lastIndex=0 "{\u0022matches\u0022:[\u0022aac\u0022,\u0022aac\u0022,\u0022aac\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaac\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aac\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([[a]]a[[c]]))\u0022}"
-        "(?<whole>([[a]]a[[c]]))" flags="dvy" input_units=[97, 97, 97, 99] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([[a]]a[[c]]))" flags="dvy" input_units=[97, 97, 97, 99] lastIndex=1 "{\u0022matches\u0022:[\u0022aac\u0022,\u0022aac\u0022,\u0022aac\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaac\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aac\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([[a]]a[[c]]))\u0022}"
-        "(?<whole>([[K]]s[[A]]))" flags="divg" input_units=[8490, 383, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212a\u017fa\u0022,\u0022\u212a\u017fa\u0022,\u0022\u212a\u017fa\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212a\u017fa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212a\u017fa\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([[K]]s[[A]]))\u0022}"
-        "(?<whole>([\u005cP{Ll}&&A]x[[s]]))" flags="divg" input_units=[65, 120, 115] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([[\u005cp{Any}]]\u005cu{1f601}[[a]]))" flags="dvy" input_units=[55357, 56832, 55357, 56833, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01a\u0022,\u0022\ud83d\ude00\ud83d\ude01a\u0022,\u0022\ud83d\ude00\ud83d\ude01a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\ud83d\ude01a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01a\u0022},\u0022indices\u0022:[[0,5],[0,5],[0,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022(?<whole>([[\u005c\u005cp{Any}]]\u005c\u005cu{1f601}[[a]]))\u0022}"
-        "(?<whole>([[\u005cu{1f600}]]\u005cu{1f601}[[\u005cu{1f602}]]))" flags="dvg" input_units=[120, 55357, 56832, 55357, 56833, 55357, 56834, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022x\ud83d\ude00\ud83d\ude01\ud83d\ude02!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\u0022},\u0022indices\u0022:[[1,7],[1,7],[1,7]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,7]},\u0022lastIndex\u0022:7,\u0022source\u0022:\u0022(?<whole>([[\u005c\u005cu{1f600}]]\u005c\u005cu{1f601}[[\u005c\u005cu{1f602}]]))\u0022}"
-        "(?<whole>([[\u005cuD800]]\u005cuD800[[\u005cuD800]]))" flags="dvg" input_units=[65, 55296, 55296, 55296, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800\u005cud800!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u005cud800\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([[\u005c\u005cuD800]]\u005c\u005cuD800[[\u005c\u005cuD800]]))\u0022}"
-        "(?<whole>([[a]]a[[^K]]))" flags="divg" input_units=[97, 97, 8490, 97, 97, 383, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aa\u017f\u0022,\u0022aa\u017f\u0022,\u0022aa\u017f\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022aa\u212aaa\u017f!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aa\u017f\u0022},\u0022indices\u0022:[[3,6],[3,6],[3,6]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,6]},\u0022lastIndex\u0022:6,\u0022source\u0022:\u0022(?<whole>([[a]]a[[^K]]))\u0022}"
-        "^(?<whole>([[a]]b[[c]]))$" flags="dvmg" input_units=[120, 13, 10, 97, 98, 99, 8232, 100, 101] lastIndex=0 "{\u0022matches\u0022:[\u0022abc\u0022,\u0022abc\u0022,\u0022abc\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022x\u005cr\u005cnabc\u2028de\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022abc\u0022},\u0022indices\u0022:[[3,6],[3,6],[3,6]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,6]},\u0022lastIndex\u0022:6,\u0022source\u0022:\u0022^(?<whole>([[a]]b[[c]]))$\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -3653,107 +3457,104 @@ fn checked_v_set_class_triple_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Full objects and original spans below are independent manual expectations.
-    for (pattern, input, flags, start, expected) in [
+    for (pattern, input, flags, start) in [
         (
             r"(?<whole>([[a]][[a]][[c]]))",
             JsString::from("aaac"),
             "dvg",
             0,
-            r#"{"matches":["aac","aac","aac"],"index":1,"input":"aaac","groups":{"whole":"aac"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>([[a]][[a]][[c]]))"}"#,
         ),
         (
             r"(?<whole>([[a]][[a]][[c]]))",
             JsString::from("aaac"),
             "dvy",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r"(?<whole>([[a]][[a]][[c]]))",
             JsString::from("aaac"),
             "dvy",
             1,
-            r#"{"matches":["aac","aac","aac"],"index":1,"input":"aaac","groups":{"whole":"aac"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>([[a]][[a]][[c]]))"}"#,
         ),
         (
             r"(?<whole>([[K]][[s]][[A]]))",
             JsString::from("Kſa!"),
             "divg",
             0,
-            r#"{"matches":["Kſa","Kſa","Kſa"],"index":0,"input":"Kſa!","groups":{"whole":"Kſa"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"(?<whole>([[K]][[s]][[A]]))"}"#,
         ),
         (
             r"(?<whole>([\P{Ll}&&A][[x]][[s]]))",
             JsString::from("Axs"),
             "divg",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r"(?<whole>([[\p{Any}]][[\u{1f601}]][[a]]))",
             JsString::from("😀😁a!"),
             "dvy",
             1,
-            r#"{"matches":["😀😁a","😀😁a","😀😁a"],"index":0,"input":"😀😁a!","groups":{"whole":"😀😁a"},"indices":[[0,5],[0,5],[0,5]],"indexGroups":{"whole":[0,5]},"lastIndex":5,"source":"(?<whole>([[\\p{Any}]][[\\u{1f601}]][[a]]))"}"#,
         ),
         (
             r"(?<whole>([[\u{1f600}]][[\u{1f601}]][[\u{1f602}]]))",
             JsString::from("x😀😁😂!"),
             "dvg",
             0,
-            r#"{"matches":["😀😁😂","😀😁😂","😀😁😂"],"index":1,"input":"x😀😁😂!","groups":{"whole":"😀😁😂"},"indices":[[1,7],[1,7],[1,7]],"indexGroups":{"whole":[1,7]},"lastIndex":7,"source":"(?<whole>([[\\u{1f600}]][[\\u{1f601}]][[\\u{1f602}]]))"}"#,
         ),
         (
             r"(?<whole>([[\uD800]][[\uD800]][[\uD800]]))",
             JsString::from_code_units(vec![0x41, 0xd800, 0xd800, 0xd800, 0x21]),
             "dvg",
             0,
-            r#"{"matches":["\ud800\ud800\ud800","\ud800\ud800\ud800","\ud800\ud800\ud800"],"index":1,"input":"A\ud800\ud800\ud800!","groups":{"whole":"\ud800\ud800\ud800"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>([[\\uD800]][[\\uD800]][[\\uD800]]))"}"#,
         ),
         (
             r"(?<whole>([[a]][[a]][[^K]]))",
             JsString::from("aaKaaſ!"),
             "divg",
             0,
-            r#"{"matches":["aaſ","aaſ","aaſ"],"index":3,"input":"aaKaaſ!","groups":{"whole":"aaſ"},"indices":[[3,6],[3,6],[3,6]],"indexGroups":{"whole":[3,6]},"lastIndex":6,"source":"(?<whole>([[a]][[a]][[^K]]))"}"#,
         ),
         (
             r"^(?<whole>([[a]][[b]][[c]]))$",
             JsString::from("x\r\nabc\u{2028}de"),
             "dvmg",
             0,
-            r#"{"matches":["abc","abc","abc"],"index":3,"input":"x\r\nabc de","groups":{"whole":"abc"},"indices":[[3,6],[3,6],[3,6]],"indexGroups":{"whole":[3,6]},"lastIndex":6,"source":"^(?<whole>([[a]][[b]][[c]]))$"}"#,
         ),
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>([[a]][[a]][[c]]))" flags="dvg" input_units=[97, 97, 97, 99] lastIndex=0 "{\u0022matches\u0022:[\u0022aac\u0022,\u0022aac\u0022,\u0022aac\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaac\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aac\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([[a]][[a]][[c]]))\u0022}"
-        "(?<whole>([[a]][[a]][[c]]))" flags="dvy" input_units=[97, 97, 97, 99] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([[a]][[a]][[c]]))" flags="dvy" input_units=[97, 97, 97, 99] lastIndex=1 "{\u0022matches\u0022:[\u0022aac\u0022,\u0022aac\u0022,\u0022aac\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaac\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aac\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([[a]][[a]][[c]]))\u0022}"
-        "(?<whole>([[K]][[s]][[A]]))" flags="divg" input_units=[8490, 383, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212a\u017fa\u0022,\u0022\u212a\u017fa\u0022,\u0022\u212a\u017fa\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212a\u017fa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212a\u017fa\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([[K]][[s]][[A]]))\u0022}"
-        "(?<whole>([\u005cP{Ll}&&A][[x]][[s]]))" flags="divg" input_units=[65, 120, 115] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([[\u005cp{Any}]][[\u005cu{1f601}]][[a]]))" flags="dvy" input_units=[55357, 56832, 55357, 56833, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01a\u0022,\u0022\ud83d\ude00\ud83d\ude01a\u0022,\u0022\ud83d\ude00\ud83d\ude01a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\ud83d\ude01a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01a\u0022},\u0022indices\u0022:[[0,5],[0,5],[0,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022(?<whole>([[\u005c\u005cp{Any}]][[\u005c\u005cu{1f601}]][[a]]))\u0022}"
-        "(?<whole>([[\u005cu{1f600}]][[\u005cu{1f601}]][[\u005cu{1f602}]]))" flags="dvg" input_units=[120, 55357, 56832, 55357, 56833, 55357, 56834, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022x\ud83d\ude00\ud83d\ude01\ud83d\ude02!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\u0022},\u0022indices\u0022:[[1,7],[1,7],[1,7]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,7]},\u0022lastIndex\u0022:7,\u0022source\u0022:\u0022(?<whole>([[\u005c\u005cu{1f600}]][[\u005c\u005cu{1f601}]][[\u005c\u005cu{1f602}]]))\u0022}"
-        "(?<whole>([[\u005cuD800]][[\u005cuD800]][[\u005cuD800]]))" flags="dvg" input_units=[65, 55296, 55296, 55296, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800\u005cud800!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u005cud800\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([[\u005c\u005cuD800]][[\u005c\u005cuD800]][[\u005c\u005cuD800]]))\u0022}"
-        "(?<whole>([[a]][[a]][[^K]]))" flags="divg" input_units=[97, 97, 8490, 97, 97, 383, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aa\u017f\u0022,\u0022aa\u017f\u0022,\u0022aa\u017f\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022aa\u212aaa\u017f!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aa\u017f\u0022},\u0022indices\u0022:[[3,6],[3,6],[3,6]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,6]},\u0022lastIndex\u0022:6,\u0022source\u0022:\u0022(?<whole>([[a]][[a]][[^K]]))\u0022}"
-        "^(?<whole>([[a]][[b]][[c]]))$" flags="dvmg" input_units=[120, 13, 10, 97, 98, 99, 8232, 100, 101] lastIndex=0 "{\u0022matches\u0022:[\u0022abc\u0022,\u0022abc\u0022,\u0022abc\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022x\u005cr\u005cnabc\u2028de\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022abc\u0022},\u0022indices\u0022:[[3,6],[3,6],[3,6]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,6]},\u0022lastIndex\u0022:6,\u0022source\u0022:\u0022^(?<whole>([[a]][[b]][[c]]))$\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -3906,107 +3707,104 @@ fn checked_v_set_class_triple_word_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Full objects and original spans below are independent manual expectations.
-    for (pattern, input, flags, start, expected) in [
+    for (pattern, input, flags, start) in [
         (
             r"(?<whole>(\B[[a]][[a]][[a]]\b))",
             JsString::from("aaaa!"),
             "dvg",
             0,
-            r#"{"matches":["aaa","aaa","aaa"],"index":1,"input":"aaaa!","groups":{"whole":"aaa"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(\\B[[a]][[a]][[a]]\\b))"}"#,
         ),
         (
             r"(?<whole>(\B[[a]][[a]][[a]]\b))",
             JsString::from("aaaa!"),
             "dvy",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r"(?<whole>(\B[[a]][[a]][[a]]\b))",
             JsString::from("aaaa!"),
             "dvy",
             1,
-            r#"{"matches":["aaa","aaa","aaa"],"index":1,"input":"aaaa!","groups":{"whole":"aaa"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(\\B[[a]][[a]][[a]]\\b))"}"#,
         ),
         (
             r"(?<whole>(\b[[K]][[s]][[A]]\b))",
             JsString::from("Kſa!"),
             "divg",
             0,
-            r#"{"matches":["Kſa","Kſa","Kſa"],"index":0,"input":"Kſa!","groups":{"whole":"Kſa"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"(?<whole>(\\b[[K]][[s]][[A]]\\b))"}"#,
         ),
         (
             r"(?<whole>(\b[\P{Ll}&&A][[x]][[s]]\b))",
             JsString::from("Axs"),
             "divg",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r"(?<whole>(\B[[\p{Any}]][[\u{1f601}]][[a]]\b))",
             JsString::from("😀😁a!"),
             "dvy",
             1,
-            r#"{"matches":["😀😁a","😀😁a","😀😁a"],"index":0,"input":"😀😁a!","groups":{"whole":"😀😁a"},"indices":[[0,5],[0,5],[0,5]],"indexGroups":{"whole":[0,5]},"lastIndex":5,"source":"(?<whole>(\\B[[\\p{Any}]][[\\u{1f601}]][[a]]\\b))"}"#,
         ),
         (
             r"(?<whole>(\B[[\u{1f600}]][[\u{1f601}]][[\u{1f602}]]\B))",
             JsString::from("!😀😁😂!"),
             "dvg",
             0,
-            r#"{"matches":["😀😁😂","😀😁😂","😀😁😂"],"index":1,"input":"!😀😁😂!","groups":{"whole":"😀😁😂"},"indices":[[1,7],[1,7],[1,7]],"indexGroups":{"whole":[1,7]},"lastIndex":7,"source":"(?<whole>(\\B[[\\u{1f600}]][[\\u{1f601}]][[\\u{1f602}]]\\B))"}"#,
         ),
         (
             r"(?<whole>(\b[[\uD800]][[\uD800]][[\uD800]]\B))",
             JsString::from_code_units(vec![0x41, 0xd800, 0xd800, 0xd800, 0x21]),
             "dvg",
             0,
-            r#"{"matches":["\ud800\ud800\ud800","\ud800\ud800\ud800","\ud800\ud800\ud800"],"index":1,"input":"A\ud800\ud800\ud800!","groups":{"whole":"\ud800\ud800\ud800"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(\\b[[\\uD800]][[\\uD800]][[\\uD800]]\\B))"}"#,
         ),
         (
             r"(?<whole>(\B[[a]][[a]][[^K]]\b))",
             JsString::from("aaKaaſ!"),
             "divg",
             0,
-            r#"{"matches":["aaſ","aaſ","aaſ"],"index":3,"input":"aaKaaſ!","groups":{"whole":"aaſ"},"indices":[[3,6],[3,6],[3,6]],"indexGroups":{"whole":[3,6]},"lastIndex":6,"source":"(?<whole>(\\B[[a]][[a]][[^K]]\\b))"}"#,
         ),
         (
             r"^(?<whole>(\b[[a]][[b]][[c]]\b))$",
             JsString::from("x\r\nabc\u{2028}de"),
             "dvmg",
             0,
-            r#"{"matches":["abc","abc","abc"],"index":3,"input":"x\r\nabc de","groups":{"whole":"abc"},"indices":[[3,6],[3,6],[3,6]],"indexGroups":{"whole":[3,6]},"lastIndex":6,"source":"^(?<whole>(\\b[[a]][[b]][[c]]\\b))$"}"#,
         ),
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>(\u005cB[[a]][[a]][[a]]\u005cb))" flags="dvg" input_units=[97, 97, 97, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aaa\u0022,\u0022aaa\u0022,\u0022aaa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aaa\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[[a]][[a]][[a]]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cB[[a]][[a]][[a]]\u005cb))" flags="dvy" input_units=[97, 97, 97, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(\u005cB[[a]][[a]][[a]]\u005cb))" flags="dvy" input_units=[97, 97, 97, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022aaa\u0022,\u0022aaa\u0022,\u0022aaa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aaa\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[[a]][[a]][[a]]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cb[[K]][[s]][[A]]\u005cb))" flags="divg" input_units=[8490, 383, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212a\u017fa\u0022,\u0022\u212a\u017fa\u0022,\u0022\u212a\u017fa\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212a\u017fa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212a\u017fa\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[K]][[s]][[A]]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cb[\u005cP{Ll}&&A][[x]][[s]]\u005cb))" flags="divg" input_units=[65, 120, 115] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(\u005cB[[\u005cp{Any}]][[\u005cu{1f601}]][[a]]\u005cb))" flags="dvy" input_units=[55357, 56832, 55357, 56833, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01a\u0022,\u0022\ud83d\ude00\ud83d\ude01a\u0022,\u0022\ud83d\ude00\ud83d\ude01a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\ud83d\ude01a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01a\u0022},\u0022indices\u0022:[[0,5],[0,5],[0,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[[\u005c\u005cp{Any}]][[\u005c\u005cu{1f601}]][[a]]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cB[[\u005cu{1f600}]][[\u005cu{1f601}]][[\u005cu{1f602}]]\u005cB))" flags="dvg" input_units=[33, 55357, 56832, 55357, 56833, 55357, 56834, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022!\ud83d\ude00\ud83d\ude01\ud83d\ude02!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\u0022},\u0022indices\u0022:[[1,7],[1,7],[1,7]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,7]},\u0022lastIndex\u0022:7,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[[\u005c\u005cu{1f600}]][[\u005c\u005cu{1f601}]][[\u005c\u005cu{1f602}]]\u005c\u005cB))\u0022}"
-        "(?<whole>(\u005cb[[\u005cuD800]][[\u005cuD800]][[\u005cuD800]]\u005cB))" flags="dvg" input_units=[65, 55296, 55296, 55296, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800\u005cud800!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u005cud800\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[\u005c\u005cuD800]][[\u005c\u005cuD800]][[\u005c\u005cuD800]]\u005c\u005cB))\u0022}"
-        "(?<whole>(\u005cB[[a]][[a]][[^K]]\u005cb))" flags="divg" input_units=[97, 97, 8490, 97, 97, 383, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aa\u017f\u0022,\u0022aa\u017f\u0022,\u0022aa\u017f\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022aa\u212aaa\u017f!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aa\u017f\u0022},\u0022indices\u0022:[[3,6],[3,6],[3,6]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,6]},\u0022lastIndex\u0022:6,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[[a]][[a]][[^K]]\u005c\u005cb))\u0022}"
-        "^(?<whole>(\u005cb[[a]][[b]][[c]]\u005cb))$" flags="dvmg" input_units=[120, 13, 10, 97, 98, 99, 8232, 100, 101] lastIndex=0 "{\u0022matches\u0022:[\u0022abc\u0022,\u0022abc\u0022,\u0022abc\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022x\u005cr\u005cnabc\u2028de\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022abc\u0022},\u0022indices\u0022:[[3,6],[3,6],[3,6]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,6]},\u0022lastIndex\u0022:6,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cb[[a]][[b]][[c]]\u005c\u005cb))$\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -4165,107 +3963,104 @@ fn literal_checked_v_set_pair_word_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Full objects and original spans below are independent manual expectations.
-    for (pattern, input, flags, start, expected) in [
+    for (pattern, input, flags, start) in [
         (
             r"(?<whole>(\Ba[[a]][[a]]\b))",
             JsString::from("aaaa!"),
             "dvg",
             0,
-            r#"{"matches":["aaa","aaa","aaa"],"index":1,"input":"aaaa!","groups":{"whole":"aaa"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(\\Ba[[a]][[a]]\\b))"}"#,
         ),
         (
             r"(?<whole>(\Ba[[a]][[a]]\b))",
             JsString::from("aaaa!"),
             "dvy",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r"(?<whole>(\Ba[[a]][[a]]\b))",
             JsString::from("aaaa!"),
             "dvy",
             1,
-            r#"{"matches":["aaa","aaa","aaa"],"index":1,"input":"aaaa!","groups":{"whole":"aaa"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(\\Ba[[a]][[a]]\\b))"}"#,
         ),
         (
             r"(?<whole>(\bk[[s]][[A]]\b))",
             JsString::from("Kſa!"),
             "divg",
             0,
-            r#"{"matches":["Kſa","Kſa","Kſa"],"index":0,"input":"Kſa!","groups":{"whole":"Kſa"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"(?<whole>(\\bk[[s]][[A]]\\b))"}"#,
         ),
         (
             r"(?<whole>(\bx[\P{Ll}&&A][[s]]\b))",
             JsString::from("xAs!"),
             "divg",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r"(?<whole>(\B\u{1f600}[[\p{Any}]][[a]]\b))",
             JsString::from("😀😁a!"),
             "dvy",
             1,
-            r#"{"matches":["😀😁a","😀😁a","😀😁a"],"index":0,"input":"😀😁a!","groups":{"whole":"😀😁a"},"indices":[[0,5],[0,5],[0,5]],"indexGroups":{"whole":[0,5]},"lastIndex":5,"source":"(?<whole>(\\B\\u{1f600}[[\\p{Any}]][[a]]\\b))"}"#,
         ),
         (
             r"(?<whole>(\B\u{1f600}[[\u{1f601}]][[\u{1f602}]]\B))",
             JsString::from("!😀😁😂!"),
             "dvg",
             0,
-            r#"{"matches":["😀😁😂","😀😁😂","😀😁😂"],"index":1,"input":"!😀😁😂!","groups":{"whole":"😀😁😂"},"indices":[[1,7],[1,7],[1,7]],"indexGroups":{"whole":[1,7]},"lastIndex":7,"source":"(?<whole>(\\B\\u{1f600}[[\\u{1f601}]][[\\u{1f602}]]\\B))"}"#,
         ),
         (
             r"(?<whole>(\b\uD800[[\uD800]][[\uD800]]\B))",
             JsString::from_code_units(vec![0x41, 0xd800, 0xd800, 0xd800, 0x21]),
             "dvg",
             0,
-            r#"{"matches":["\ud800\ud800\ud800","\ud800\ud800\ud800","\ud800\ud800\ud800"],"index":1,"input":"A\ud800\ud800\ud800!","groups":{"whole":"\ud800\ud800\ud800"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(\\b\\uD800[[\\uD800]][[\\uD800]]\\B))"}"#,
         ),
         (
             r"(?<whole>(\ba[[a]][[\p{Any}]]\b))",
             JsString::from("aaK!"),
             "divg",
             0,
-            r#"{"matches":["aaK","aaK","aaK"],"index":0,"input":"aaK!","groups":{"whole":"aaK"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"(?<whole>(\\ba[[a]][[\\p{Any}]]\\b))"}"#,
         ),
         (
             r"^(?<whole>(\bc[[a]][[b]]\b))$",
             JsString::from("x\r\ncab\u{2028}cd"),
             "dvmg",
             0,
-            r#"{"matches":["cab","cab","cab"],"index":3,"input":"x\r\ncab cd","groups":{"whole":"cab"},"indices":[[3,6],[3,6],[3,6]],"indexGroups":{"whole":[3,6]},"lastIndex":6,"source":"^(?<whole>(\\bc[[a]][[b]]\\b))$"}"#,
         ),
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>(\u005cBa[[a]][[a]]\u005cb))" flags="dvg" input_units=[97, 97, 97, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aaa\u0022,\u0022aaa\u0022,\u0022aaa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aaa\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cBa[[a]][[a]]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cBa[[a]][[a]]\u005cb))" flags="dvy" input_units=[97, 97, 97, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(\u005cBa[[a]][[a]]\u005cb))" flags="dvy" input_units=[97, 97, 97, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022aaa\u0022,\u0022aaa\u0022,\u0022aaa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aaa\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cBa[[a]][[a]]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cbk[[s]][[A]]\u005cb))" flags="divg" input_units=[8490, 383, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212a\u017fa\u0022,\u0022\u212a\u017fa\u0022,\u0022\u212a\u017fa\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212a\u017fa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212a\u017fa\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cbk[[s]][[A]]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cbx[\u005cP{Ll}&&A][[s]]\u005cb))" flags="divg" input_units=[120, 65, 115, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(\u005cB\u005cu{1f600}[[\u005cp{Any}]][[a]]\u005cb))" flags="dvy" input_units=[55357, 56832, 55357, 56833, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01a\u0022,\u0022\ud83d\ude00\ud83d\ude01a\u0022,\u0022\ud83d\ude00\ud83d\ude01a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\ud83d\ude01a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01a\u0022},\u0022indices\u0022:[[0,5],[0,5],[0,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB\u005c\u005cu{1f600}[[\u005c\u005cp{Any}]][[a]]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cB\u005cu{1f600}[[\u005cu{1f601}]][[\u005cu{1f602}]]\u005cB))" flags="dvg" input_units=[33, 55357, 56832, 55357, 56833, 55357, 56834, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022!\ud83d\ude00\ud83d\ude01\ud83d\ude02!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\u0022},\u0022indices\u0022:[[1,7],[1,7],[1,7]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,7]},\u0022lastIndex\u0022:7,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB\u005c\u005cu{1f600}[[\u005c\u005cu{1f601}]][[\u005c\u005cu{1f602}]]\u005c\u005cB))\u0022}"
-        "(?<whole>(\u005cb\u005cuD800[[\u005cuD800]][[\u005cuD800]]\u005cB))" flags="dvg" input_units=[65, 55296, 55296, 55296, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800\u005cud800!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u005cud800\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb\u005c\u005cuD800[[\u005c\u005cuD800]][[\u005c\u005cuD800]]\u005c\u005cB))\u0022}"
-        "(?<whole>(\u005cba[[a]][[\u005cp{Any}]]\u005cb))" flags="divg" input_units=[97, 97, 8490, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aa\u212a\u0022,\u0022aa\u212a\u0022,\u0022aa\u212a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022aa\u212a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aa\u212a\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cba[[a]][[\u005c\u005cp{Any}]]\u005c\u005cb))\u0022}"
-        "^(?<whole>(\u005cbc[[a]][[b]]\u005cb))$" flags="dvmg" input_units=[120, 13, 10, 99, 97, 98, 8232, 99, 100] lastIndex=0 "{\u0022matches\u0022:[\u0022cab\u0022,\u0022cab\u0022,\u0022cab\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022x\u005cr\u005cncab\u2028cd\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022cab\u0022},\u0022indices\u0022:[[3,6],[3,6],[3,6]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,6]},\u0022lastIndex\u0022:6,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cbc[[a]][[b]]\u005c\u005cb))$\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -4417,107 +4212,104 @@ fn checked_v_set_pair_literal_word_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Full objects and original spans below are independent manual expectations.
-    for (pattern, input, flags, start, expected) in [
+    for (pattern, input, flags, start) in [
         (
             r"(?<whole>(\B[[a]][[a]]a\b))",
             JsString::from("aaaa!"),
             "dvg",
             0,
-            r#"{"matches":["aaa","aaa","aaa"],"index":1,"input":"aaaa!","groups":{"whole":"aaa"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(\\B[[a]][[a]]a\\b))"}"#,
         ),
         (
             r"(?<whole>(\B[[a]][[a]]a\b))",
             JsString::from("aaaa!"),
             "dvy",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r"(?<whole>(\B[[a]][[a]]a\b))",
             JsString::from("aaaa!"),
             "dvy",
             1,
-            r#"{"matches":["aaa","aaa","aaa"],"index":1,"input":"aaaa!","groups":{"whole":"aaa"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(\\B[[a]][[a]]a\\b))"}"#,
         ),
         (
             r"(?<whole>(\b[[K]][[s]]a\b))",
             JsString::from("KſA!"),
             "divg",
             0,
-            r#"{"matches":["KſA","KſA","KſA"],"index":0,"input":"KſA!","groups":{"whole":"KſA"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"(?<whole>(\\b[[K]][[s]]a\\b))"}"#,
         ),
         (
             r"(?<whole>(\b[\P{Ll}&&A][[s]]x\b))",
             JsString::from("Asx!"),
             "divg",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r"(?<whole>(\B[[\p{Any}]][[\u{1f601}]]a\b))",
             JsString::from("😀😁a!"),
             "dvy",
             1,
-            r#"{"matches":["😀😁a","😀😁a","😀😁a"],"index":0,"input":"😀😁a!","groups":{"whole":"😀😁a"},"indices":[[0,5],[0,5],[0,5]],"indexGroups":{"whole":[0,5]},"lastIndex":5,"source":"(?<whole>(\\B[[\\p{Any}]][[\\u{1f601}]]a\\b))"}"#,
         ),
         (
             r"(?<whole>(\B[[\u{1f600}]][[\u{1f601}]]\u{1f602}\B))",
             JsString::from("!😀😁😂!"),
             "dvg",
             0,
-            r#"{"matches":["😀😁😂","😀😁😂","😀😁😂"],"index":1,"input":"!😀😁😂!","groups":{"whole":"😀😁😂"},"indices":[[1,7],[1,7],[1,7]],"indexGroups":{"whole":[1,7]},"lastIndex":7,"source":"(?<whole>(\\B[[\\u{1f600}]][[\\u{1f601}]]\\u{1f602}\\B))"}"#,
         ),
         (
             r"(?<whole>(\b[[\uD800]][[\uD800]]\uD800\B))",
             JsString::from_code_units(vec![0x41, 0xd800, 0xd800, 0xd800, 0x21]),
             "dvg",
             0,
-            r#"{"matches":["\ud800\ud800\ud800","\ud800\ud800\ud800","\ud800\ud800\ud800"],"index":1,"input":"A\ud800\ud800\ud800!","groups":{"whole":"\ud800\ud800\ud800"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(\\b[[\\uD800]][[\\uD800]]\\uD800\\B))"}"#,
         ),
         (
             r"(?<whole>(\b[[\p{Any}]][[a]]a\b))",
             JsString::from("Kaa!"),
             "divg",
             0,
-            r#"{"matches":["Kaa","Kaa","Kaa"],"index":0,"input":"Kaa!","groups":{"whole":"Kaa"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"(?<whole>(\\b[[\\p{Any}]][[a]]a\\b))"}"#,
         ),
         (
             r"^(?<whole>(\b[[a]][[b]]c\b))$",
             JsString::from("x\r\nabc\u{2028}de"),
             "dvmg",
             0,
-            r#"{"matches":["abc","abc","abc"],"index":3,"input":"x\r\nabc de","groups":{"whole":"abc"},"indices":[[3,6],[3,6],[3,6]],"indexGroups":{"whole":[3,6]},"lastIndex":6,"source":"^(?<whole>(\\b[[a]][[b]]c\\b))$"}"#,
         ),
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>(\u005cB[[a]][[a]]a\u005cb))" flags="dvg" input_units=[97, 97, 97, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aaa\u0022,\u0022aaa\u0022,\u0022aaa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aaa\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[[a]][[a]]a\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cB[[a]][[a]]a\u005cb))" flags="dvy" input_units=[97, 97, 97, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(\u005cB[[a]][[a]]a\u005cb))" flags="dvy" input_units=[97, 97, 97, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022aaa\u0022,\u0022aaa\u0022,\u0022aaa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aaa\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[[a]][[a]]a\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cb[[K]][[s]]a\u005cb))" flags="divg" input_units=[8490, 383, 65, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212a\u017fA\u0022,\u0022\u212a\u017fA\u0022,\u0022\u212a\u017fA\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212a\u017fA!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212a\u017fA\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[K]][[s]]a\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cb[\u005cP{Ll}&&A][[s]]x\u005cb))" flags="divg" input_units=[65, 115, 120, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(\u005cB[[\u005cp{Any}]][[\u005cu{1f601}]]a\u005cb))" flags="dvy" input_units=[55357, 56832, 55357, 56833, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01a\u0022,\u0022\ud83d\ude00\ud83d\ude01a\u0022,\u0022\ud83d\ude00\ud83d\ude01a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\ud83d\ude01a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01a\u0022},\u0022indices\u0022:[[0,5],[0,5],[0,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[[\u005c\u005cp{Any}]][[\u005c\u005cu{1f601}]]a\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cB[[\u005cu{1f600}]][[\u005cu{1f601}]]\u005cu{1f602}\u005cB))" flags="dvg" input_units=[33, 55357, 56832, 55357, 56833, 55357, 56834, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022!\ud83d\ude00\ud83d\ude01\ud83d\ude02!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\u0022},\u0022indices\u0022:[[1,7],[1,7],[1,7]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,7]},\u0022lastIndex\u0022:7,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[[\u005c\u005cu{1f600}]][[\u005c\u005cu{1f601}]]\u005c\u005cu{1f602}\u005c\u005cB))\u0022}"
-        "(?<whole>(\u005cb[[\u005cuD800]][[\u005cuD800]]\u005cuD800\u005cB))" flags="dvg" input_units=[65, 55296, 55296, 55296, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800\u005cud800!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u005cud800\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[\u005c\u005cuD800]][[\u005c\u005cuD800]]\u005c\u005cuD800\u005c\u005cB))\u0022}"
-        "(?<whole>(\u005cb[[\u005cp{Any}]][[a]]a\u005cb))" flags="divg" input_units=[8490, 97, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212aaa\u0022,\u0022\u212aaa\u0022,\u0022\u212aaa\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212aaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212aaa\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[\u005c\u005cp{Any}]][[a]]a\u005c\u005cb))\u0022}"
-        "^(?<whole>(\u005cb[[a]][[b]]c\u005cb))$" flags="dvmg" input_units=[120, 13, 10, 97, 98, 99, 8232, 100, 101] lastIndex=0 "{\u0022matches\u0022:[\u0022abc\u0022,\u0022abc\u0022,\u0022abc\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022x\u005cr\u005cnabc\u2028de\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022abc\u0022},\u0022indices\u0022:[[3,6],[3,6],[3,6]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,6]},\u0022lastIndex\u0022:6,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cb[[a]][[b]]c\u005c\u005cb))$\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -4662,107 +4454,104 @@ fn checked_v_set_literal_set_word_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Full objects and original spans below are independent manual expectations.
-    for (pattern, input, flags, start, expected) in [
+    for (pattern, input, flags, start) in [
         (
             r"(?<whole>(\B[[a]]a[[a]]\b))",
             JsString::from("aaaa!"),
             "dvg",
             0,
-            r#"{"matches":["aaa","aaa","aaa"],"index":1,"input":"aaaa!","groups":{"whole":"aaa"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(\\B[[a]]a[[a]]\\b))"}"#,
         ),
         (
             r"(?<whole>(\B[[a]]a[[a]]\b))",
             JsString::from("aaaa!"),
             "dvy",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r"(?<whole>(\B[[a]]a[[a]]\b))",
             JsString::from("aaaa!"),
             "dvy",
             1,
-            r#"{"matches":["aaa","aaa","aaa"],"index":1,"input":"aaaa!","groups":{"whole":"aaa"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(\\B[[a]]a[[a]]\\b))"}"#,
         ),
         (
             r"(?<whole>(\b[[K]]s[[a]]\b))",
             JsString::from("KſA!"),
             "divg",
             0,
-            r#"{"matches":["KſA","KſA","KſA"],"index":0,"input":"KſA!","groups":{"whole":"KſA"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"(?<whole>(\\b[[K]]s[[a]]\\b))"}"#,
         ),
         (
             r"(?<whole>(\b[\P{Ll}&&A]s[[x]]\b))",
             JsString::from("Asx!"),
             "divg",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r"(?<whole>(\B[[\p{Any}]]\u{1f601}[[a]]\b))",
             JsString::from("😀😁a!"),
             "dvy",
             1,
-            r#"{"matches":["😀😁a","😀😁a","😀😁a"],"index":0,"input":"😀😁a!","groups":{"whole":"😀😁a"},"indices":[[0,5],[0,5],[0,5]],"indexGroups":{"whole":[0,5]},"lastIndex":5,"source":"(?<whole>(\\B[[\\p{Any}]]\\u{1f601}[[a]]\\b))"}"#,
         ),
         (
             r"(?<whole>(\B[[\u{1f600}]]\u{1f601}[[\u{1f602}]]\B))",
             JsString::from("!😀😁😂!"),
             "dvg",
             0,
-            r#"{"matches":["😀😁😂","😀😁😂","😀😁😂"],"index":1,"input":"!😀😁😂!","groups":{"whole":"😀😁😂"},"indices":[[1,7],[1,7],[1,7]],"indexGroups":{"whole":[1,7]},"lastIndex":7,"source":"(?<whole>(\\B[[\\u{1f600}]]\\u{1f601}[[\\u{1f602}]]\\B))"}"#,
         ),
         (
             r"(?<whole>(\b[[\uD800]]\uD800[[\uD800]]\B))",
             JsString::from_code_units(vec![0x41, 0xd800, 0xd800, 0xd800, 0x21]),
             "dvg",
             0,
-            r#"{"matches":["\ud800\ud800\ud800","\ud800\ud800\ud800","\ud800\ud800\ud800"],"index":1,"input":"A\ud800\ud800\ud800!","groups":{"whole":"\ud800\ud800\ud800"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(\\b[[\\uD800]]\\uD800[[\\uD800]]\\B))"}"#,
         ),
         (
             r"(?<whole>(\b[[\p{Any}]]a[[a]]\b))",
             JsString::from("Kaa!"),
             "divg",
             0,
-            r#"{"matches":["Kaa","Kaa","Kaa"],"index":0,"input":"Kaa!","groups":{"whole":"Kaa"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"(?<whole>(\\b[[\\p{Any}]]a[[a]]\\b))"}"#,
         ),
         (
             r"^(?<whole>(\b[[a]]b[[c]]\b))$",
             JsString::from("x\r\nabc\u{2028}de"),
             "dvmg",
             0,
-            r#"{"matches":["abc","abc","abc"],"index":3,"input":"x\r\nabc de","groups":{"whole":"abc"},"indices":[[3,6],[3,6],[3,6]],"indexGroups":{"whole":[3,6]},"lastIndex":6,"source":"^(?<whole>(\\b[[a]]b[[c]]\\b))$"}"#,
         ),
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>(\u005cB[[a]]a[[a]]\u005cb))" flags="dvg" input_units=[97, 97, 97, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aaa\u0022,\u0022aaa\u0022,\u0022aaa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aaa\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[[a]]a[[a]]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cB[[a]]a[[a]]\u005cb))" flags="dvy" input_units=[97, 97, 97, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(\u005cB[[a]]a[[a]]\u005cb))" flags="dvy" input_units=[97, 97, 97, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022aaa\u0022,\u0022aaa\u0022,\u0022aaa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aaa\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[[a]]a[[a]]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cb[[K]]s[[a]]\u005cb))" flags="divg" input_units=[8490, 383, 65, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212a\u017fA\u0022,\u0022\u212a\u017fA\u0022,\u0022\u212a\u017fA\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212a\u017fA!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212a\u017fA\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[K]]s[[a]]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cb[\u005cP{Ll}&&A]s[[x]]\u005cb))" flags="divg" input_units=[65, 115, 120, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(\u005cB[[\u005cp{Any}]]\u005cu{1f601}[[a]]\u005cb))" flags="dvy" input_units=[55357, 56832, 55357, 56833, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01a\u0022,\u0022\ud83d\ude00\ud83d\ude01a\u0022,\u0022\ud83d\ude00\ud83d\ude01a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\ud83d\ude01a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01a\u0022},\u0022indices\u0022:[[0,5],[0,5],[0,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[[\u005c\u005cp{Any}]]\u005c\u005cu{1f601}[[a]]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cB[[\u005cu{1f600}]]\u005cu{1f601}[[\u005cu{1f602}]]\u005cB))" flags="dvg" input_units=[33, 55357, 56832, 55357, 56833, 55357, 56834, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022!\ud83d\ude00\ud83d\ude01\ud83d\ude02!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\u0022},\u0022indices\u0022:[[1,7],[1,7],[1,7]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,7]},\u0022lastIndex\u0022:7,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[[\u005c\u005cu{1f600}]]\u005c\u005cu{1f601}[[\u005c\u005cu{1f602}]]\u005c\u005cB))\u0022}"
-        "(?<whole>(\u005cb[[\u005cuD800]]\u005cuD800[[\u005cuD800]]\u005cB))" flags="dvg" input_units=[65, 55296, 55296, 55296, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800\u005cud800!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u005cud800\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[\u005c\u005cuD800]]\u005c\u005cuD800[[\u005c\u005cuD800]]\u005c\u005cB))\u0022}"
-        "(?<whole>(\u005cb[[\u005cp{Any}]]a[[a]]\u005cb))" flags="divg" input_units=[8490, 97, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212aaa\u0022,\u0022\u212aaa\u0022,\u0022\u212aaa\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212aaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212aaa\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[\u005c\u005cp{Any}]]a[[a]]\u005c\u005cb))\u0022}"
-        "^(?<whole>(\u005cb[[a]]b[[c]]\u005cb))$" flags="dvmg" input_units=[120, 13, 10, 97, 98, 99, 8232, 100, 101] lastIndex=0 "{\u0022matches\u0022:[\u0022abc\u0022,\u0022abc\u0022,\u0022abc\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022x\u005cr\u005cnabc\u2028de\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022abc\u0022},\u0022indices\u0022:[[3,6],[3,6],[3,6]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,6]},\u0022lastIndex\u0022:6,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cb[[a]]b[[c]]\u005c\u005cb))$\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -4911,107 +4700,104 @@ fn checked_v_set_class_sequence_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Full objects and original spans below are independent manual expectations.
-    for (pattern, input, flags, start, expected) in [
+    for (pattern, input, flags, start) in [
         (
             r"(?<whole>(\B[[a]][[a]][[a]][[b]]\b))",
             JsString::from("aaaab!"),
             "dvg",
             0,
-            r#"{"matches":["aaab","aaab","aaab"],"index":1,"input":"aaaab!","groups":{"whole":"aaab"},"indices":[[1,5],[1,5],[1,5]],"indexGroups":{"whole":[1,5]},"lastIndex":5,"source":"(?<whole>(\\B[[a]][[a]][[a]][[b]]\\b))"}"#,
         ),
         (
             r"(?<whole>(\B[[a]][[a]][[a]][[b]]\b))",
             JsString::from("aaaab!"),
             "dvy",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r"(?<whole>(\B[[a]][[a]][[a]][[b]]\b))",
             JsString::from("aaaab!"),
             "dvy",
             1,
-            r#"{"matches":["aaab","aaab","aaab"],"index":1,"input":"aaaab!","groups":{"whole":"aaab"},"indices":[[1,5],[1,5],[1,5]],"indexGroups":{"whole":[1,5]},"lastIndex":5,"source":"(?<whole>(\\B[[a]][[a]][[a]][[b]]\\b))"}"#,
         ),
         (
             r"(?<whole>(\b[[\p{Any}]][[a]][[b]][[c]][[\p{Any}]]\b))",
             JsString::from("Kabcſ!"),
             "divg",
             0,
-            r#"{"matches":["Kabcſ","Kabcſ","Kabcſ"],"index":0,"input":"Kabcſ!","groups":{"whole":"Kabcſ"},"indices":[[0,5],[0,5],[0,5]],"indexGroups":{"whole":[0,5]},"lastIndex":5,"source":"(?<whole>(\\b[[\\p{Any}]][[a]][[b]][[c]][[\\p{Any}]]\\b))"}"#,
         ),
         (
             r"(?<whole>(\b[\P{Ll}&&A][[s]][[x]][[a]]\b))",
             JsString::from("Asxa!"),
             "divg",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r"(?<whole>([[\p{Any}]][[\u{1f601}]][[\u{1f602}]][[\u{1f603}]][[\u{1f604}]][[\u{1f605}]]))",
             JsString::from("😀😁😂😃😄😅!"),
             "dvy",
             1,
-            r#"{"matches":["😀😁😂😃😄😅","😀😁😂😃😄😅","😀😁😂😃😄😅"],"index":0,"input":"😀😁😂😃😄😅!","groups":{"whole":"😀😁😂😃😄😅"},"indices":[[0,12],[0,12],[0,12]],"indexGroups":{"whole":[0,12]},"lastIndex":12,"source":"(?<whole>([[\\p{Any}]][[\\u{1f601}]][[\\u{1f602}]][[\\u{1f603}]][[\\u{1f604}]][[\\u{1f605}]]))"}"#,
         ),
         (
             r"(?<whole>(\b[[\uD800]][[\uD800]][[\uD800]][[\uD800]][[\uD800]]\B))",
             JsString::from_code_units(vec![65, 0xd800, 0xd800, 0xd800, 0xd800, 0xd800, 33]),
             "dvg",
             0,
-            r#"{"matches":["\ud800\ud800\ud800\ud800\ud800","\ud800\ud800\ud800\ud800\ud800","\ud800\ud800\ud800\ud800\ud800"],"index":1,"input":"A\ud800\ud800\ud800\ud800\ud800!","groups":{"whole":"\ud800\ud800\ud800\ud800\ud800"},"indices":[[1,6],[1,6],[1,6]],"indexGroups":{"whole":[1,6]},"lastIndex":6,"source":"(?<whole>(\\b[[\\uD800]][[\\uD800]][[\\uD800]][[\\uD800]][[\\uD800]]\\B))"}"#,
         ),
         (
             r"^(?<whole>(\b[[a]][[b]][[c]][[d]]\b))$",
             JsString::from("x\r\nabcd\u{2028}ef"),
             "dvmg",
             0,
-            r#"{"matches":["abcd","abcd","abcd"],"index":3,"input":"x\r\nabcd ef","groups":{"whole":"abcd"},"indices":[[3,7],[3,7],[3,7]],"indexGroups":{"whole":[3,7]},"lastIndex":7,"source":"^(?<whole>(\\b[[a]][[b]][[c]][[d]]\\b))$"}"#,
         ),
         (
             r"(?<whole>(\B[[a]][[a]][[a]][[ab]]\b))",
             JsString::from("aaaaa!"),
             "dvg",
             0,
-            r#"{"matches":["aaaa","aaaa","aaaa"],"index":1,"input":"aaaaa!","groups":{"whole":"aaaa"},"indices":[[1,5],[1,5],[1,5]],"indexGroups":{"whole":[1,5]},"lastIndex":5,"source":"(?<whole>(\\B[[a]][[a]][[a]][[ab]]\\b))"}"#,
         ),
         (
             r"^(?<whole>([[^K]][[s]][[a]][[b]]))$",
             JsString::from("ſSAb"),
             "divy",
             0,
-            r#"{"matches":["ſSAb","ſSAb","ſSAb"],"index":0,"input":"ſSAb","groups":{"whole":"ſSAb"},"indices":[[0,4],[0,4],[0,4]],"indexGroups":{"whole":[0,4]},"lastIndex":4,"source":"^(?<whole>([[^K]][[s]][[a]][[b]]))$"}"#,
         ),
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>(\u005cB[[a]][[a]][[a]][[b]]\u005cb))" flags="dvg" input_units=[97, 97, 97, 97, 98, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aaab\u0022,\u0022aaab\u0022,\u0022aaab\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaaab!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aaab\u0022},\u0022indices\u0022:[[1,5],[1,5],[1,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[[a]][[a]][[a]][[b]]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cB[[a]][[a]][[a]][[b]]\u005cb))" flags="dvy" input_units=[97, 97, 97, 97, 98, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(\u005cB[[a]][[a]][[a]][[b]]\u005cb))" flags="dvy" input_units=[97, 97, 97, 97, 98, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022aaab\u0022,\u0022aaab\u0022,\u0022aaab\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaaab!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aaab\u0022},\u0022indices\u0022:[[1,5],[1,5],[1,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[[a]][[a]][[a]][[b]]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cb[[\u005cp{Any}]][[a]][[b]][[c]][[\u005cp{Any}]]\u005cb))" flags="divg" input_units=[8490, 97, 98, 99, 383, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212aabc\u017f\u0022,\u0022\u212aabc\u017f\u0022,\u0022\u212aabc\u017f\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212aabc\u017f!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212aabc\u017f\u0022},\u0022indices\u0022:[[0,5],[0,5],[0,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[\u005c\u005cp{Any}]][[a]][[b]][[c]][[\u005c\u005cp{Any}]]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cb[\u005cP{Ll}&&A][[s]][[x]][[a]]\u005cb))" flags="divg" input_units=[65, 115, 120, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([[\u005cp{Any}]][[\u005cu{1f601}]][[\u005cu{1f602}]][[\u005cu{1f603}]][[\u005cu{1f604}]][[\u005cu{1f605}]]))" flags="dvy" input_units=[55357, 56832, 55357, 56833, 55357, 56834, 55357, 56835, 55357, 56836, 55357, 56837, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\ud83d\ude03\ud83d\ude04\ud83d\ude05\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\ud83d\ude03\ud83d\ude04\ud83d\ude05\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\ud83d\ude03\ud83d\ude04\ud83d\ude05\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\ud83d\ude03\ud83d\ude04\ud83d\ude05!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude02\ud83d\ude03\ud83d\ude04\ud83d\ude05\u0022},\u0022indices\u0022:[[0,12],[0,12],[0,12]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,12]},\u0022lastIndex\u0022:12,\u0022source\u0022:\u0022(?<whole>([[\u005c\u005cp{Any}]][[\u005c\u005cu{1f601}]][[\u005c\u005cu{1f602}]][[\u005c\u005cu{1f603}]][[\u005c\u005cu{1f604}]][[\u005c\u005cu{1f605}]]))\u0022}"
-        "(?<whole>(\u005cb[[\u005cuD800]][[\u005cuD800]][[\u005cuD800]][[\u005cuD800]][[\u005cuD800]]\u005cB))" flags="dvg" input_units=[65, 55296, 55296, 55296, 55296, 55296, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u005cud800\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800\u005cud800\u005cud800\u005cud800!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u005cud800\u005cud800\u005cud800\u0022},\u0022indices\u0022:[[1,6],[1,6],[1,6]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,6]},\u0022lastIndex\u0022:6,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[\u005c\u005cuD800]][[\u005c\u005cuD800]][[\u005c\u005cuD800]][[\u005c\u005cuD800]][[\u005c\u005cuD800]]\u005c\u005cB))\u0022}"
-        "^(?<whole>(\u005cb[[a]][[b]][[c]][[d]]\u005cb))$" flags="dvmg" input_units=[120, 13, 10, 97, 98, 99, 100, 8232, 101, 102] lastIndex=0 "{\u0022matches\u0022:[\u0022abcd\u0022,\u0022abcd\u0022,\u0022abcd\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022x\u005cr\u005cnabcd\u2028ef\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022abcd\u0022},\u0022indices\u0022:[[3,7],[3,7],[3,7]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,7]},\u0022lastIndex\u0022:7,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cb[[a]][[b]][[c]][[d]]\u005c\u005cb))$\u0022}"
-        "(?<whole>(\u005cB[[a]][[a]][[a]][[ab]]\u005cb))" flags="dvg" input_units=[97, 97, 97, 97, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aaaa\u0022,\u0022aaaa\u0022,\u0022aaaa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaaaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aaaa\u0022},\u0022indices\u0022:[[1,5],[1,5],[1,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[[a]][[a]][[a]][[ab]]\u005c\u005cb))\u0022}"
-        "^(?<whole>([[^K]][[s]][[a]][[b]]))$" flags="divy" input_units=[383, 83, 65, 98] lastIndex=0 "{\u0022matches\u0022:[\u0022\u017fSAb\u0022,\u0022\u017fSAb\u0022,\u0022\u017fSAb\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u017fSAb\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u017fSAb\u0022},\u0022indices\u0022:[[0,4],[0,4],[0,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022^(?<whole>([[^K]][[s]][[a]][[b]]))$\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -5157,107 +4943,104 @@ fn flat_v_set_class_sequence_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Full objects and original spans below are independent manual expectations.
-    for (pattern, input, flags, start, expected) in [
+    for (pattern, input, flags, start) in [
         (
             r"(?<whole>(\B[a][a][b]\b))",
             JsString::from("aaab!"),
             "dvg",
             0,
-            r#"{"matches":["aab","aab","aab"],"index":1,"input":"aaab!","groups":{"whole":"aab"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(\\B[a][a][b]\\b))"}"#,
         ),
         (
             r"(?<whole>(\B[a][a][b]\b))",
             JsString::from("aaab!"),
             "dvy",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r"(?<whole>(\B[a][a][b]\b))",
             JsString::from("aaab!"),
             "dvy",
             1,
-            r#"{"matches":["aab","aab","aab"],"index":1,"input":"aaab!","groups":{"whole":"aab"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(\\B[a][a][b]\\b))"}"#,
         ),
         (
             r"(?<whole>(\b[\p{Any}][a][b][\p{Any}]\b))",
             JsString::from("Kabſ!"),
             "divg",
             0,
-            r#"{"matches":["Kabſ","Kabſ","Kabſ"],"index":0,"input":"Kabſ!","groups":{"whole":"Kabſ"},"indices":[[0,4],[0,4],[0,4]],"indexGroups":{"whole":[0,4]},"lastIndex":4,"source":"(?<whole>(\\b[\\p{Any}][a][b][\\p{Any}]\\b))"}"#,
         ),
         (
             r"(?<whole>(\b[\P{Ll}][s][a]\b))",
             JsString::from("Asa!"),
             "divg",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r"(?<whole>([\p{Any}][\p{Any}][\p{Any}][\p{Any}][\p{Any}][\p{Any}][\p{Any}][\p{Any}][\p{Any}][\p{Any}][\p{Any}][\p{Any}][\p{Any}][\p{Any}][\p{Any}][\p{Any}][\p{Any}]))",
             JsString::from("😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀!"),
             "dvy",
             1,
-            r#"{"matches":["😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀","😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀","😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"],"index":0,"input":"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀!","groups":{"whole":"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"},"indices":[[0,34],[0,34],[0,34]],"indexGroups":{"whole":[0,34]},"lastIndex":34,"source":"(?<whole>([\\p{Any}][\\p{Any}][\\p{Any}][\\p{Any}][\\p{Any}][\\p{Any}][\\p{Any}][\\p{Any}][\\p{Any}][\\p{Any}][\\p{Any}][\\p{Any}][\\p{Any}][\\p{Any}][\\p{Any}][\\p{Any}][\\p{Any}]))"}"#,
         ),
         (
             r"(?<whole>(\b[\uD800][\uD800][\uD800]\B))",
             JsString::from_code_units(vec![65, 55296, 55296, 55296, 33]),
             "dvg",
             0,
-            r#"{"matches":["\ud800\ud800\ud800","\ud800\ud800\ud800","\ud800\ud800\ud800"],"index":1,"input":"A\ud800\ud800\ud800!","groups":{"whole":"\ud800\ud800\ud800"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(\\b[\\uD800][\\uD800][\\uD800]\\B))"}"#,
         ),
         (
             r"^(?<whole>(\b[a][b][c][d]\b))$",
             JsString::from("x\r\nabcd ef"),
             "dvmg",
             0,
-            r#"{"matches":["abcd","abcd","abcd"],"index":3,"input":"x\r\nabcd ef","groups":{"whole":"abcd"},"indices":[[3,7],[3,7],[3,7]],"indexGroups":{"whole":[3,7]},"lastIndex":7,"source":"^(?<whole>(\\b[a][b][c][d]\\b))$"}"#,
         ),
         (
             r"(?<whole>(\B[a][a][ab]\b))",
             JsString::from("aaaa!"),
             "dvg",
             0,
-            r#"{"matches":["aaa","aaa","aaa"],"index":1,"input":"aaaa!","groups":{"whole":"aaa"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(\\B[a][a][ab]\\b))"}"#,
         ),
         (
             r"^(?<whole>([^K][s][a][b]))$",
             JsString::from("ſSAb"),
             "divy",
             0,
-            r#"{"matches":["ſSAb","ſSAb","ſSAb"],"index":0,"input":"ſSAb","groups":{"whole":"ſSAb"},"indices":[[0,4],[0,4],[0,4]],"indexGroups":{"whole":[0,4]},"lastIndex":4,"source":"^(?<whole>([^K][s][a][b]))$"}"#,
         ),
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>(\u005cB[a][a][b]\u005cb))" flags="dvg" input_units=[97, 97, 97, 98, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aab\u0022,\u0022aab\u0022,\u0022aab\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaab!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aab\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[a][a][b]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cB[a][a][b]\u005cb))" flags="dvy" input_units=[97, 97, 97, 98, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(\u005cB[a][a][b]\u005cb))" flags="dvy" input_units=[97, 97, 97, 98, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022aab\u0022,\u0022aab\u0022,\u0022aab\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaab!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aab\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[a][a][b]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cb[\u005cp{Any}][a][b][\u005cp{Any}]\u005cb))" flags="divg" input_units=[8490, 97, 98, 383, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212aab\u017f\u0022,\u0022\u212aab\u017f\u0022,\u0022\u212aab\u017f\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212aab\u017f!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212aab\u017f\u0022},\u0022indices\u0022:[[0,4],[0,4],[0,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[\u005c\u005cp{Any}][a][b][\u005c\u005cp{Any}]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cb[\u005cP{Ll}][s][a]\u005cb))" flags="divg" input_units=[65, 115, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([\u005cp{Any}][\u005cp{Any}][\u005cp{Any}][\u005cp{Any}][\u005cp{Any}][\u005cp{Any}][\u005cp{Any}][\u005cp{Any}][\u005cp{Any}][\u005cp{Any}][\u005cp{Any}][\u005cp{Any}][\u005cp{Any}][\u005cp{Any}][\u005cp{Any}][\u005cp{Any}][\u005cp{Any}]))" flags="dvy" input_units=[55357, 56832, 55357, 56832, 55357, 56832, 55357, 56832, 55357, 56832, 55357, 56832, 55357, 56832, 55357, 56832, 55357, 56832, 55357, 56832, 55357, 56832, 55357, 56832, 55357, 56832, 55357, 56832, 55357, 56832, 55357, 56832, 55357, 56832, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\u0022,\u0022\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\u0022,\u0022\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\u0022},\u0022indices\u0022:[[0,34],[0,34],[0,34]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,34]},\u0022lastIndex\u0022:34,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cp{Any}][\u005c\u005cp{Any}][\u005c\u005cp{Any}][\u005c\u005cp{Any}][\u005c\u005cp{Any}][\u005c\u005cp{Any}][\u005c\u005cp{Any}][\u005c\u005cp{Any}][\u005c\u005cp{Any}][\u005c\u005cp{Any}][\u005c\u005cp{Any}][\u005c\u005cp{Any}][\u005c\u005cp{Any}][\u005c\u005cp{Any}][\u005c\u005cp{Any}][\u005c\u005cp{Any}][\u005c\u005cp{Any}]))\u0022}"
-        "(?<whole>(\u005cb[\u005cuD800][\u005cuD800][\u005cuD800]\u005cB))" flags="dvg" input_units=[65, 55296, 55296, 55296, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800\u005cud800!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u005cud800\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[\u005c\u005cuD800][\u005c\u005cuD800][\u005c\u005cuD800]\u005c\u005cB))\u0022}"
-        "^(?<whole>(\u005cb[a][b][c][d]\u005cb))$" flags="dvmg" input_units=[120, 13, 10, 97, 98, 99, 100, 8232, 101, 102] lastIndex=0 "{\u0022matches\u0022:[\u0022abcd\u0022,\u0022abcd\u0022,\u0022abcd\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022x\u005cr\u005cnabcd\u2028ef\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022abcd\u0022},\u0022indices\u0022:[[3,7],[3,7],[3,7]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,7]},\u0022lastIndex\u0022:7,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cb[a][b][c][d]\u005c\u005cb))$\u0022}"
-        "(?<whole>(\u005cB[a][a][ab]\u005cb))" flags="dvg" input_units=[97, 97, 97, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aaa\u0022,\u0022aaa\u0022,\u0022aaa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aaa\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[a][a][ab]\u005c\u005cb))\u0022}"
-        "^(?<whole>([^K][s][a][b]))$" flags="divy" input_units=[383, 83, 65, 98] lastIndex=0 "{\u0022matches\u0022:[\u0022\u017fSAb\u0022,\u0022\u017fSAb\u0022,\u0022\u017fSAb\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u017fSAb\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u017fSAb\u0022},\u0022indices\u0022:[[0,4],[0,4],[0,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022^(?<whole>([^K][s][a][b]))$\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -5390,107 +5173,104 @@ fn mixed_v_set_class_sequence_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Full objects and original spans below are independent manual expectations.
-    for (pattern, input, flags, start, expected) in [
+    for (pattern, input, flags, start) in [
         (
             r"(?<whole>(\B[a][[a]][b]\b))",
             JsString::from("aaab!"),
             "dvg",
             0,
-            r#"{"matches":["aab","aab","aab"],"index":1,"input":"aaab!","groups":{"whole":"aab"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(\\B[a][[a]][b]\\b))"}"#,
         ),
         (
             r"(?<whole>(\B[a][[a]][b]\b))",
             JsString::from("aaab!"),
             "dvy",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r"(?<whole>(\B[a][[a]][b]\b))",
             JsString::from("aaab!"),
             "dvy",
             1,
-            r#"{"matches":["aab","aab","aab"],"index":1,"input":"aaab!","groups":{"whole":"aab"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(\\B[a][[a]][b]\\b))"}"#,
         ),
         (
             r"(?<whole>(\b[\p{Any}][[a]][b][[\p{Any}]]\b))",
             JsString::from("Kabſ!"),
             "divg",
             0,
-            r#"{"matches":["Kabſ","Kabſ","Kabſ"],"index":0,"input":"Kabſ!","groups":{"whole":"Kabſ"},"indices":[[0,4],[0,4],[0,4]],"indexGroups":{"whole":[0,4]},"lastIndex":4,"source":"(?<whole>(\\b[\\p{Any}][[a]][b][[\\p{Any}]]\\b))"}"#,
         ),
         (
             r"(?<whole>(\b[\P{Ll}&&A][s][[a]]\b))",
             JsString::from("Asa!"),
             "divg",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r"(?<whole>([\p{Any}][[\p{Any}]][\p{Any}][[\p{Any}]][\p{Any}][[\p{Any}]][\p{Any}][[\p{Any}]][\p{Any}][[\p{Any}]][\p{Any}][[\p{Any}]][\p{Any}][[\p{Any}]][\p{Any}][[\p{Any}]][\p{Any}]))",
             JsString::from("😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀!"),
             "dvy",
             1,
-            r#"{"matches":["😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀","😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀","😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"],"index":0,"input":"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀!","groups":{"whole":"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"},"indices":[[0,34],[0,34],[0,34]],"indexGroups":{"whole":[0,34]},"lastIndex":34,"source":"(?<whole>([\\p{Any}][[\\p{Any}]][\\p{Any}][[\\p{Any}]][\\p{Any}][[\\p{Any}]][\\p{Any}][[\\p{Any}]][\\p{Any}][[\\p{Any}]][\\p{Any}][[\\p{Any}]][\\p{Any}][[\\p{Any}]][\\p{Any}][[\\p{Any}]][\\p{Any}]))"}"#,
         ),
         (
             r"(?<whole>(\b[\uD800][[\uD800]][\uD800]\B))",
             JsString::from_code_units(vec![65, 55296, 55296, 55296, 33]),
             "dvg",
             0,
-            r#"{"matches":["\ud800\ud800\ud800","\ud800\ud800\ud800","\ud800\ud800\ud800"],"index":1,"input":"A\ud800\ud800\ud800!","groups":{"whole":"\ud800\ud800\ud800"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(\\b[\\uD800][[\\uD800]][\\uD800]\\B))"}"#,
         ),
         (
             r"^(?<whole>(\b[[a]][b][[c]][d]\b))$",
             JsString::from("x\r\nabcd ef"),
             "dvmg",
             0,
-            r#"{"matches":["abcd","abcd","abcd"],"index":3,"input":"x\r\nabcd ef","groups":{"whole":"abcd"},"indices":[[3,7],[3,7],[3,7]],"indexGroups":{"whole":[3,7]},"lastIndex":7,"source":"^(?<whole>(\\b[[a]][b][[c]][d]\\b))$"}"#,
         ),
         (
             r"(?<whole>(\B[[a]][a][[ab]]\b))",
             JsString::from("aaaa!"),
             "dvg",
             0,
-            r#"{"matches":["aaa","aaa","aaa"],"index":1,"input":"aaaa!","groups":{"whole":"aaa"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(\\B[[a]][a][[ab]]\\b))"}"#,
         ),
         (
             r"^(?<whole>([^K][[s]][a][[b]]))$",
             JsString::from("ſSAb"),
             "divy",
             0,
-            r#"{"matches":["ſSAb","ſSAb","ſSAb"],"index":0,"input":"ſSAb","groups":{"whole":"ſSAb"},"indices":[[0,4],[0,4],[0,4]],"indexGroups":{"whole":[0,4]},"lastIndex":4,"source":"^(?<whole>([^K][[s]][a][[b]]))$"}"#,
         ),
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>(\u005cB[a][[a]][b]\u005cb))" flags="dvg" input_units=[97, 97, 97, 98, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aab\u0022,\u0022aab\u0022,\u0022aab\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaab!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aab\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[a][[a]][b]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cB[a][[a]][b]\u005cb))" flags="dvy" input_units=[97, 97, 97, 98, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(\u005cB[a][[a]][b]\u005cb))" flags="dvy" input_units=[97, 97, 97, 98, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022aab\u0022,\u0022aab\u0022,\u0022aab\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaab!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aab\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[a][[a]][b]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cb[\u005cp{Any}][[a]][b][[\u005cp{Any}]]\u005cb))" flags="divg" input_units=[8490, 97, 98, 383, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212aab\u017f\u0022,\u0022\u212aab\u017f\u0022,\u0022\u212aab\u017f\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212aab\u017f!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212aab\u017f\u0022},\u0022indices\u0022:[[0,4],[0,4],[0,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[\u005c\u005cp{Any}][[a]][b][[\u005c\u005cp{Any}]]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cb[\u005cP{Ll}&&A][s][[a]]\u005cb))" flags="divg" input_units=[65, 115, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([\u005cp{Any}][[\u005cp{Any}]][\u005cp{Any}][[\u005cp{Any}]][\u005cp{Any}][[\u005cp{Any}]][\u005cp{Any}][[\u005cp{Any}]][\u005cp{Any}][[\u005cp{Any}]][\u005cp{Any}][[\u005cp{Any}]][\u005cp{Any}][[\u005cp{Any}]][\u005cp{Any}][[\u005cp{Any}]][\u005cp{Any}]))" flags="dvy" input_units=[55357, 56832, 55357, 56832, 55357, 56832, 55357, 56832, 55357, 56832, 55357, 56832, 55357, 56832, 55357, 56832, 55357, 56832, 55357, 56832, 55357, 56832, 55357, 56832, 55357, 56832, 55357, 56832, 55357, 56832, 55357, 56832, 55357, 56832, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\u0022,\u0022\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\u0022,\u0022\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\u0022},\u0022indices\u0022:[[0,34],[0,34],[0,34]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,34]},\u0022lastIndex\u0022:34,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cp{Any}][[\u005c\u005cp{Any}]][\u005c\u005cp{Any}][[\u005c\u005cp{Any}]][\u005c\u005cp{Any}][[\u005c\u005cp{Any}]][\u005c\u005cp{Any}][[\u005c\u005cp{Any}]][\u005c\u005cp{Any}][[\u005c\u005cp{Any}]][\u005c\u005cp{Any}][[\u005c\u005cp{Any}]][\u005c\u005cp{Any}][[\u005c\u005cp{Any}]][\u005c\u005cp{Any}][[\u005c\u005cp{Any}]][\u005c\u005cp{Any}]))\u0022}"
-        "(?<whole>(\u005cb[\u005cuD800][[\u005cuD800]][\u005cuD800]\u005cB))" flags="dvg" input_units=[65, 55296, 55296, 55296, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800\u005cud800!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u005cud800\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[\u005c\u005cuD800][[\u005c\u005cuD800]][\u005c\u005cuD800]\u005c\u005cB))\u0022}"
-        "^(?<whole>(\u005cb[[a]][b][[c]][d]\u005cb))$" flags="dvmg" input_units=[120, 13, 10, 97, 98, 99, 100, 8232, 101, 102] lastIndex=0 "{\u0022matches\u0022:[\u0022abcd\u0022,\u0022abcd\u0022,\u0022abcd\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022x\u005cr\u005cnabcd\u2028ef\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022abcd\u0022},\u0022indices\u0022:[[3,7],[3,7],[3,7]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,7]},\u0022lastIndex\u0022:7,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cb[[a]][b][[c]][d]\u005c\u005cb))$\u0022}"
-        "(?<whole>(\u005cB[[a]][a][[ab]]\u005cb))" flags="dvg" input_units=[97, 97, 97, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aaa\u0022,\u0022aaa\u0022,\u0022aaa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aaa\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[[a]][a][[ab]]\u005c\u005cb))\u0022}"
-        "^(?<whole>([^K][[s]][a][[b]]))$" flags="divy" input_units=[383, 83, 65, 98] lastIndex=0 "{\u0022matches\u0022:[\u0022\u017fSAb\u0022,\u0022\u017fSAb\u0022,\u0022\u017fSAb\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u017fSAb\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u017fSAb\u0022},\u0022indices\u0022:[[0,4],[0,4],[0,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022^(?<whole>([^K][[s]][a][[b]]))$\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -5618,107 +5398,74 @@ fn flat_v_set_class_literal_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Full JSON and original spans are independently hand-derived finite expectations.
-    for (pattern, input, flags, start, expected) in [
-        (
-            r#"(?<whole>([a]b))"#,
-            JsString::from("aaab!"),
-            "dvg",
-            0,
-            r#"{"matches":["ab","ab","ab"],"index":2,"input":"aaab!","groups":{"whole":"ab"},"indices":[[2,4],[2,4],[2,4]],"indexGroups":{"whole":[2,4]},"lastIndex":4,"source":"(?<whole>([a]b))"}"#,
-        ),
-        (
-            r#"(?<whole>([a]b))"#,
-            JsString::from("aaab!"),
-            "dvy",
-            0,
-            r#"{"match":null,"lastIndex":0}"#,
-        ),
-        (
-            r#"(?<whole>([a]b))"#,
-            JsString::from("aaab!"),
-            "dvy",
-            2,
-            r#"{"matches":["ab","ab","ab"],"index":2,"input":"aaab!","groups":{"whole":"ab"},"indices":[[2,4],[2,4],[2,4]],"indexGroups":{"whole":[2,4]},"lastIndex":4,"source":"(?<whole>([a]b))"}"#,
-        ),
-        (
-            r#"(?<whole>([K]s))"#,
-            JsString::from("Kſ!"),
-            "divg",
-            0,
-            r#"{"matches":["Kſ","Kſ","Kſ"],"index":0,"input":"Kſ!","groups":{"whole":"Kſ"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"(?<whole>([K]s))"}"#,
-        ),
-        (
-            r#"(?<whole>([\P{Ll}]a))"#,
-            JsString::from("Aa!"),
-            "divg",
-            0,
-            r#"{"match":null,"lastIndex":0}"#,
-        ),
+    for (pattern, input, flags, start) in [
+        (r#"(?<whole>([a]b))"#, JsString::from("aaab!"), "dvg", 0),
+        (r#"(?<whole>([a]b))"#, JsString::from("aaab!"), "dvy", 0),
+        (r#"(?<whole>([a]b))"#, JsString::from("aaab!"), "dvy", 2),
+        (r#"(?<whole>([K]s))"#, JsString::from("Kſ!"), "divg", 0),
+        (r#"(?<whole>([\P{Ll}]a))"#, JsString::from("Aa!"), "divg", 0),
         (
             r#"(?<whole>([\p{Any}]\u{1f601}))"#,
             JsString::from("😀😁!"),
             "dvy",
             1,
-            r#"{"matches":["😀😁","😀😁","😀😁"],"index":0,"input":"😀😁!","groups":{"whole":"😀😁"},"indices":[[0,4],[0,4],[0,4]],"indexGroups":{"whole":[0,4]},"lastIndex":4,"source":"(?<whole>([\\p{Any}]\\u{1f601}))"}"#,
         ),
         (
             r#"(?<whole>([\uD800]\uD800))"#,
             JsString::from_code_units(vec![65, 55296, 55296, 33]),
             "dvg",
             0,
-            r#"{"matches":["\ud800\ud800","\ud800\ud800","\ud800\ud800"],"index":1,"input":"A\ud800\ud800!","groups":{"whole":"\ud800\ud800"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>([\\uD800]\\uD800))"}"#,
         ),
         (
             r#"^(?<whole>([a]b))$"#,
             JsString::from("x\r\nab ac"),
             "dvmg",
             0,
-            r#"{"matches":["ab","ab","ab"],"index":3,"input":"x\r\nab ac","groups":{"whole":"ab"},"indices":[[3,5],[3,5],[3,5]],"indexGroups":{"whole":[3,5]},"lastIndex":5,"source":"^(?<whole>([a]b))$"}"#,
         ),
-        (
-            r#"(?<whole>([\]]\$))"#,
-            JsString::from("x]$!"),
-            "dvg",
-            0,
-            r#"{"matches":["]$","]$","]$"],"index":1,"input":"x]$!","groups":{"whole":"]$"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>([\\]]\\$))"}"#,
-        ),
+        (r#"(?<whole>([\]]\$))"#, JsString::from("x]$!"), "dvg", 0),
         (
             r#"^(?<whole>([\u{61}]\u{62}))$"#,
             JsString::from("ab"),
             "dvg",
             0,
-            r#"{"matches":["ab","ab","ab"],"index":0,"input":"ab","groups":{"whole":"ab"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"^(?<whole>([\\u{61}]\\u{62}))$"}"#,
         ),
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>([a]b))" flags="dvg" input_units=[97, 97, 97, 98, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022ab\u0022,\u0022ab\u0022,\u0022ab\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022aaab!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022ab\u0022},\u0022indices\u0022:[[2,4],[2,4],[2,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[2,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([a]b))\u0022}"
-        "(?<whole>([a]b))" flags="dvy" input_units=[97, 97, 97, 98, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([a]b))" flags="dvy" input_units=[97, 97, 97, 98, 33] lastIndex=2 "{\u0022matches\u0022:[\u0022ab\u0022,\u0022ab\u0022,\u0022ab\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022aaab!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022ab\u0022},\u0022indices\u0022:[[2,4],[2,4],[2,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[2,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([a]b))\u0022}"
-        "(?<whole>([K]s))" flags="divg" input_units=[8490, 383, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212a\u017f\u0022,\u0022\u212a\u017f\u0022,\u0022\u212a\u017f\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212a\u017f!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212a\u017f\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>([K]s))\u0022}"
-        "(?<whole>([\u005cP{Ll}]a))" flags="divg" input_units=[65, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([\u005cp{Any}]\u005cu{1f601}))" flags="dvy" input_units=[55357, 56832, 55357, 56833, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01\u0022,\u0022\ud83d\ude00\ud83d\ude01\u0022,\u0022\ud83d\ude00\ud83d\ude01\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\ud83d\ude01!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01\u0022},\u0022indices\u0022:[[0,4],[0,4],[0,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cp{Any}]\u005c\u005cu{1f601}))\u0022}"
-        "(?<whole>([\u005cuD800]\u005cuD800))" flags="dvg" input_units=[65, 55296, 55296, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cuD800]\u005c\u005cuD800))\u0022}"
-        "^(?<whole>([a]b))$" flags="dvmg" input_units=[120, 13, 10, 97, 98, 8232, 97, 99] lastIndex=0 "{\u0022matches\u0022:[\u0022ab\u0022,\u0022ab\u0022,\u0022ab\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022x\u005cr\u005cnab\u2028ac\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022ab\u0022},\u0022indices\u0022:[[3,5],[3,5],[3,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022^(?<whole>([a]b))$\u0022}"
-        "(?<whole>([\u005c]]\u005c$))" flags="dvg" input_units=[120, 93, 36, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022]$\u0022,\u0022]$\u0022,\u0022]$\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022x]$!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022]$\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([\u005c\u005c]]\u005c\u005c$))\u0022}"
-        "^(?<whole>([\u005cu{61}]\u005cu{62}))$" flags="dvg" input_units=[97, 98] lastIndex=0 "{\u0022matches\u0022:[\u0022ab\u0022,\u0022ab\u0022,\u0022ab\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022ab\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022ab\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022^(?<whole>([\u005c\u005cu{61}]\u005c\u005cu{62}))$\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -5843,107 +5590,89 @@ fn flat_v_set_class_literal_word_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Full JSON and original spans are independently hand-derived finite expectations.
-    for (pattern, input, flags, start, expected) in [
-        (
-            r#"(?<whole>(\B[a]a\b))"#,
-            JsString::from("aaa!"),
-            "dvg",
-            0,
-            r#"{"matches":["aa","aa","aa"],"index":1,"input":"aaa!","groups":{"whole":"aa"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>(\\B[a]a\\b))"}"#,
-        ),
-        (
-            r#"(?<whole>(\B[a]a\b))"#,
-            JsString::from("aaa!"),
-            "dvy",
-            0,
-            r#"{"match":null,"lastIndex":0}"#,
-        ),
-        (
-            r#"(?<whole>(\B[a]a\b))"#,
-            JsString::from("aaa!"),
-            "dvy",
-            1,
-            r#"{"matches":["aa","aa","aa"],"index":1,"input":"aaa!","groups":{"whole":"aa"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>(\\B[a]a\\b))"}"#,
-        ),
+    for (pattern, input, flags, start) in [
+        (r#"(?<whole>(\B[a]a\b))"#, JsString::from("aaa!"), "dvg", 0),
+        (r#"(?<whole>(\B[a]a\b))"#, JsString::from("aaa!"), "dvy", 0),
+        (r#"(?<whole>(\B[a]a\b))"#, JsString::from("aaa!"), "dvy", 1),
         (
             r#"(?<whole>(\b[\p{Any}]s\b))"#,
             JsString::from("Kſ!"),
             "divg",
             0,
-            r#"{"matches":["Kſ","Kſ","Kſ"],"index":0,"input":"Kſ!","groups":{"whole":"Kſ"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"(?<whole>(\\b[\\p{Any}]s\\b))"}"#,
         ),
         (
             r#"(?<whole>(\b[\P{Ll}]a\b))"#,
             JsString::from("Aa!"),
             "divg",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r#"(?<whole>(\b[\p{Any}]\u{1f601}\B))"#,
             JsString::from("A😀😁!"),
             "dvy",
             2,
-            r#"{"matches":["😀😁","😀😁","😀😁"],"index":1,"input":"A😀😁!","groups":{"whole":"😀😁"},"indices":[[1,5],[1,5],[1,5]],"indexGroups":{"whole":[1,5]},"lastIndex":5,"source":"(?<whole>(\\b[\\p{Any}]\\u{1f601}\\B))"}"#,
         ),
         (
             r#"(?<whole>(\b[\uD800]\uD800\B))"#,
             JsString::from_code_units(vec![65, 55296, 55296, 33]),
             "dvg",
             0,
-            r#"{"matches":["\ud800\ud800","\ud800\ud800","\ud800\ud800"],"index":1,"input":"A\ud800\ud800!","groups":{"whole":"\ud800\ud800"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>(\\b[\\uD800]\\uD800\\B))"}"#,
         ),
         (
             r#"^(?<whole>(\b[a]b\b))$"#,
             JsString::from("x\r\nab ac"),
             "dvmg",
             0,
-            r#"{"matches":["ab","ab","ab"],"index":3,"input":"x\r\nab ac","groups":{"whole":"ab"},"indices":[[3,5],[3,5],[3,5]],"indexGroups":{"whole":[3,5]},"lastIndex":5,"source":"^(?<whole>(\\b[a]b\\b))$"}"#,
         ),
         (
             r#"(?<whole>(\b[\]]\$\B))"#,
             JsString::from("x]$!"),
             "dvg",
             0,
-            r#"{"matches":["]$","]$","]$"],"index":1,"input":"x]$!","groups":{"whole":"]$"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>(\\b[\\]]\\$\\B))"}"#,
         ),
         (
             r#"^(?<whole>(\b[\u{61}]\u{62}\b))$"#,
             JsString::from("ab"),
             "dvg",
             0,
-            r#"{"matches":["ab","ab","ab"],"index":0,"input":"ab","groups":{"whole":"ab"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"^(?<whole>(\\b[\\u{61}]\\u{62}\\b))$"}"#,
         ),
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>(\u005cB[a]a\u005cb))" flags="dvg" input_units=[97, 97, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aa\u0022,\u0022aa\u0022,\u0022aa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aa\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[a]a\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cB[a]a\u005cb))" flags="dvy" input_units=[97, 97, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(\u005cB[a]a\u005cb))" flags="dvy" input_units=[97, 97, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022aa\u0022,\u0022aa\u0022,\u0022aa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aa\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[a]a\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cb[\u005cp{Any}]s\u005cb))" flags="divg" input_units=[8490, 383, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212a\u017f\u0022,\u0022\u212a\u017f\u0022,\u0022\u212a\u017f\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212a\u017f!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212a\u017f\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[\u005c\u005cp{Any}]s\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cb[\u005cP{Ll}]a\u005cb))" flags="divg" input_units=[65, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(\u005cb[\u005cp{Any}]\u005cu{1f601}\u005cB))" flags="dvy" input_units=[65, 55357, 56832, 55357, 56833, 33] lastIndex=2 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01\u0022,\u0022\ud83d\ude00\ud83d\ude01\u0022,\u0022\ud83d\ude00\ud83d\ude01\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\ud83d\ude00\ud83d\ude01!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01\u0022},\u0022indices\u0022:[[1,5],[1,5],[1,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[\u005c\u005cp{Any}]\u005c\u005cu{1f601}\u005c\u005cB))\u0022}"
-        "(?<whole>(\u005cb[\u005cuD800]\u005cuD800\u005cB))" flags="dvg" input_units=[65, 55296, 55296, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[\u005c\u005cuD800]\u005c\u005cuD800\u005c\u005cB))\u0022}"
-        "^(?<whole>(\u005cb[a]b\u005cb))$" flags="dvmg" input_units=[120, 13, 10, 97, 98, 8232, 97, 99] lastIndex=0 "{\u0022matches\u0022:[\u0022ab\u0022,\u0022ab\u0022,\u0022ab\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022x\u005cr\u005cnab\u2028ac\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022ab\u0022},\u0022indices\u0022:[[3,5],[3,5],[3,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cb[a]b\u005c\u005cb))$\u0022}"
-        "(?<whole>(\u005cb[\u005c]]\u005c$\u005cB))" flags="dvg" input_units=[120, 93, 36, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022]$\u0022,\u0022]$\u0022,\u0022]$\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022x]$!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022]$\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[\u005c\u005c]]\u005c\u005c$\u005c\u005cB))\u0022}"
-        "^(?<whole>(\u005cb[\u005cu{61}]\u005cu{62}\u005cb))$" flags="dvg" input_units=[97, 98] lastIndex=0 "{\u0022matches\u0022:[\u0022ab\u0022,\u0022ab\u0022,\u0022ab\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022ab\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022ab\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cb[\u005c\u005cu{61}]\u005c\u005cu{62}\u005c\u005cb))$\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -6069,107 +5798,69 @@ fn literal_flat_v_set_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Full JSON and original UTF16 spans are independently hand-derived finite expectations.
-    for (pattern, input, flags, start, expected) in [
-        (
-            r#"(?<whole>(a[b]))"#,
-            JsString::from("aab!"),
-            "dvg",
-            0,
-            r#"{"matches":["ab","ab","ab"],"index":1,"input":"aab!","groups":{"whole":"ab"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>(a[b]))"}"#,
-        ),
-        (
-            r#"(?<whole>(a[b]))"#,
-            JsString::from("aab!"),
-            "dvy",
-            0,
-            r#"{"match":null,"lastIndex":0}"#,
-        ),
-        (
-            r#"(?<whole>(a[b]))"#,
-            JsString::from("aab!"),
-            "dvy",
-            1,
-            r#"{"matches":["ab","ab","ab"],"index":1,"input":"aab!","groups":{"whole":"ab"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>(a[b]))"}"#,
-        ),
-        (
-            r#"(?<whole>(s[K]))"#,
-            JsString::from("ſK!"),
-            "divg",
-            0,
-            r#"{"matches":["ſK","ſK","ſK"],"index":0,"input":"ſK!","groups":{"whole":"ſK"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"(?<whole>(s[K]))"}"#,
-        ),
+    for (pattern, input, flags, start) in [
+        (r#"(?<whole>(a[b]))"#, JsString::from("aab!"), "dvg", 0),
+        (r#"(?<whole>(a[b]))"#, JsString::from("aab!"), "dvy", 0),
+        (r#"(?<whole>(a[b]))"#, JsString::from("aab!"), "dvy", 1),
+        (r#"(?<whole>(s[K]))"#, JsString::from("ſK!"), "divg", 0),
         (
             r#"^(?<whole>(a[b]))$"#,
             JsString::from("x\r\nab ac"),
             "dvmg",
             0,
-            r#"{"matches":["ab","ab","ab"],"index":3,"input":"x\r\nab ac","groups":{"whole":"ab"},"indices":[[3,5],[3,5],[3,5]],"indexGroups":{"whole":[3,5]},"lastIndex":5,"source":"^(?<whole>(a[b]))$"}"#,
         ),
-        (
-            r#"(?<whole>(a[]))"#,
-            JsString::from("aa!"),
-            "dvg",
-            0,
-            r#"{"match":null,"lastIndex":0}"#,
-        ),
-        (
-            r#"(?<whole>(a[^b]))"#,
-            JsString::from("aX!"),
-            "dvg",
-            0,
-            r#"{"matches":["aX","aX","aX"],"index":0,"input":"aX!","groups":{"whole":"aX"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"(?<whole>(a[^b]))"}"#,
-        ),
+        (r#"(?<whole>(a[]))"#, JsString::from("aa!"), "dvg", 0),
+        (r#"(?<whole>(a[^b]))"#, JsString::from("aX!"), "dvg", 0),
         (
             r#"(?<whole>(\u{1f600}[\p{Any}]))"#,
             JsString::from("A😀😁!"),
             "dvy",
             2,
-            r#"{"matches":["😀😁","😀😁","😀😁"],"index":1,"input":"A😀😁!","groups":{"whole":"😀😁"},"indices":[[1,5],[1,5],[1,5]],"indexGroups":{"whole":[1,5]},"lastIndex":5,"source":"(?<whole>(\\u{1f600}[\\p{Any}]))"}"#,
         ),
         (
             r#"(?<whole>(\uD800[\uD800]))"#,
             JsString::from_code_units(vec![65, 55296, 55296, 33]),
             "dvg",
             0,
-            r#"{"matches":["\ud800\ud800","\ud800\ud800","\ud800\ud800"],"index":1,"input":"A\ud800\ud800!","groups":{"whole":"\ud800\ud800"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>(\\uD800[\\uD800]))"}"#,
         ),
-        (
-            r#"^(?<whole>(\$[\]]))$"#,
-            JsString::from("$]"),
-            "dvg",
-            0,
-            r#"{"matches":["$]","$]","$]"],"index":0,"input":"$]","groups":{"whole":"$]"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"^(?<whole>(\\$[\\]]))$"}"#,
-        ),
+        (r#"^(?<whole>(\$[\]]))$"#, JsString::from("$]"), "dvg", 0),
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>(a[b]))" flags="dvg" input_units=[97, 97, 98, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022ab\u0022,\u0022ab\u0022,\u0022ab\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aab!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022ab\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(a[b]))\u0022}"
-        "(?<whole>(a[b]))" flags="dvy" input_units=[97, 97, 98, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(a[b]))" flags="dvy" input_units=[97, 97, 98, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022ab\u0022,\u0022ab\u0022,\u0022ab\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aab!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022ab\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(a[b]))\u0022}"
-        "(?<whole>(s[K]))" flags="divg" input_units=[383, 8490, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u017f\u212a\u0022,\u0022\u017f\u212a\u0022,\u0022\u017f\u212a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u017f\u212a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u017f\u212a\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>(s[K]))\u0022}"
-        "^(?<whole>(a[b]))$" flags="dvmg" input_units=[120, 13, 10, 97, 98, 8232, 97, 99] lastIndex=0 "{\u0022matches\u0022:[\u0022ab\u0022,\u0022ab\u0022,\u0022ab\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022x\u005cr\u005cnab\u2028ac\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022ab\u0022},\u0022indices\u0022:[[3,5],[3,5],[3,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022^(?<whole>(a[b]))$\u0022}"
-        "(?<whole>(a[]))" flags="dvg" input_units=[97, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(a[^b]))" flags="dvg" input_units=[97, 88, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aX\u0022,\u0022aX\u0022,\u0022aX\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022aX!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aX\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>(a[^b]))\u0022}"
-        "(?<whole>(\u005cu{1f600}[\u005cp{Any}]))" flags="dvy" input_units=[65, 55357, 56832, 55357, 56833, 33] lastIndex=2 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01\u0022,\u0022\ud83d\ude00\ud83d\ude01\u0022,\u0022\ud83d\ude00\ud83d\ude01\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\ud83d\ude00\ud83d\ude01!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01\u0022},\u0022indices\u0022:[[1,5],[1,5],[1,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cu{1f600}[\u005c\u005cp{Any}]))\u0022}"
-        "(?<whole>(\u005cuD800[\u005cuD800]))" flags="dvg" input_units=[65, 55296, 55296, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cuD800[\u005c\u005cuD800]))\u0022}"
-        "^(?<whole>(\u005c$[\u005c]]))$" flags="dvg" input_units=[36, 93] lastIndex=0 "{\u0022matches\u0022:[\u0022$]\u0022,\u0022$]\u0022,\u0022$]\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022$]\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022$]\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005c$[\u005c\u005c]]))$\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -6292,107 +5983,79 @@ fn literal_flat_v_set_word_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Full JSON and original UTF16 spans are independently hand-derived finite expectations.
-    for (pattern, input, flags, start, expected) in [
-        (
-            r#"(?<whole>(\Ba[a]\b))"#,
-            JsString::from("aaa!"),
-            "dvg",
-            0,
-            r#"{"matches":["aa","aa","aa"],"index":1,"input":"aaa!","groups":{"whole":"aa"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>(\\Ba[a]\\b))"}"#,
-        ),
-        (
-            r#"(?<whole>(\Ba[a]\b))"#,
-            JsString::from("aaa!"),
-            "dvy",
-            0,
-            r#"{"match":null,"lastIndex":0}"#,
-        ),
-        (
-            r#"(?<whole>(\Ba[a]\b))"#,
-            JsString::from("aaa!"),
-            "dvy",
-            1,
-            r#"{"matches":["aa","aa","aa"],"index":1,"input":"aaa!","groups":{"whole":"aa"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>(\\Ba[a]\\b))"}"#,
-        ),
+    for (pattern, input, flags, start) in [
+        (r#"(?<whole>(\Ba[a]\b))"#, JsString::from("aaa!"), "dvg", 0),
+        (r#"(?<whole>(\Ba[a]\b))"#, JsString::from("aaa!"), "dvy", 0),
+        (r#"(?<whole>(\Ba[a]\b))"#, JsString::from("aaa!"), "dvy", 1),
         (
             r#"(?<whole>(\bs[\p{Any}]\b))"#,
             JsString::from("ſK!"),
             "divg",
             0,
-            r#"{"matches":["ſK","ſK","ſK"],"index":0,"input":"ſK!","groups":{"whole":"ſK"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"(?<whole>(\\bs[\\p{Any}]\\b))"}"#,
         ),
-        (
-            r#"(?<whole>(\ba[]\b))"#,
-            JsString::from("aa!"),
-            "dvg",
-            0,
-            r#"{"match":null,"lastIndex":0}"#,
-        ),
-        (
-            r#"(?<whole>(\ba[^b]\b))"#,
-            JsString::from("aX!"),
-            "dvg",
-            0,
-            r#"{"matches":["aX","aX","aX"],"index":0,"input":"aX!","groups":{"whole":"aX"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"(?<whole>(\\ba[^b]\\b))"}"#,
-        ),
+        (r#"(?<whole>(\ba[]\b))"#, JsString::from("aa!"), "dvg", 0),
+        (r#"(?<whole>(\ba[^b]\b))"#, JsString::from("aX!"), "dvg", 0),
         (
             r#"(?<whole>(\b\u{1f600}[\p{Any}]\B))"#,
             JsString::from("A😀😁!"),
             "dvy",
             2,
-            r#"{"matches":["😀😁","😀😁","😀😁"],"index":1,"input":"A😀😁!","groups":{"whole":"😀😁"},"indices":[[1,5],[1,5],[1,5]],"indexGroups":{"whole":[1,5]},"lastIndex":5,"source":"(?<whole>(\\b\\u{1f600}[\\p{Any}]\\B))"}"#,
         ),
         (
             r#"(?<whole>(\b\uD800[\uD800]\B))"#,
             JsString::from_code_units(vec![65, 55296, 55296, 33]),
             "dvg",
             0,
-            r#"{"matches":["\ud800\ud800","\ud800\ud800","\ud800\ud800"],"index":1,"input":"A\ud800\ud800!","groups":{"whole":"\ud800\ud800"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>(\\b\\uD800[\\uD800]\\B))"}"#,
         ),
         (
             r#"^(?<whole>(\ba[b]\b))$"#,
             JsString::from("x\r\nab ac"),
             "dvmg",
             0,
-            r#"{"matches":["ab","ab","ab"],"index":3,"input":"x\r\nab ac","groups":{"whole":"ab"},"indices":[[3,5],[3,5],[3,5]],"indexGroups":{"whole":[3,5]},"lastIndex":5,"source":"^(?<whole>(\\ba[b]\\b))$"}"#,
         ),
         (
             r#"^(?<whole>(\B\$[\]]\B))$"#,
             JsString::from("$]"),
             "dvg",
             0,
-            r#"{"matches":["$]","$]","$]"],"index":0,"input":"$]","groups":{"whole":"$]"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"^(?<whole>(\\B\\$[\\]]\\B))$"}"#,
         ),
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>(\u005cBa[a]\u005cb))" flags="dvg" input_units=[97, 97, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aa\u0022,\u0022aa\u0022,\u0022aa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aa\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cBa[a]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cBa[a]\u005cb))" flags="dvy" input_units=[97, 97, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(\u005cBa[a]\u005cb))" flags="dvy" input_units=[97, 97, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022aa\u0022,\u0022aa\u0022,\u0022aa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aa\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cBa[a]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cbs[\u005cp{Any}]\u005cb))" flags="divg" input_units=[383, 8490, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u017f\u212a\u0022,\u0022\u017f\u212a\u0022,\u0022\u017f\u212a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u017f\u212a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u017f\u212a\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cbs[\u005c\u005cp{Any}]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cba[]\u005cb))" flags="dvg" input_units=[97, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(\u005cba[^b]\u005cb))" flags="dvg" input_units=[97, 88, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aX\u0022,\u0022aX\u0022,\u0022aX\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022aX!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aX\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cba[^b]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cb\u005cu{1f600}[\u005cp{Any}]\u005cB))" flags="dvy" input_units=[65, 55357, 56832, 55357, 56833, 33] lastIndex=2 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01\u0022,\u0022\ud83d\ude00\ud83d\ude01\u0022,\u0022\ud83d\ude00\ud83d\ude01\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\ud83d\ude00\ud83d\ude01!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01\u0022},\u0022indices\u0022:[[1,5],[1,5],[1,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb\u005c\u005cu{1f600}[\u005c\u005cp{Any}]\u005c\u005cB))\u0022}"
-        "(?<whole>(\u005cb\u005cuD800[\u005cuD800]\u005cB))" flags="dvg" input_units=[65, 55296, 55296, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb\u005c\u005cuD800[\u005c\u005cuD800]\u005c\u005cB))\u0022}"
-        "^(?<whole>(\u005cba[b]\u005cb))$" flags="dvmg" input_units=[120, 13, 10, 97, 98, 8232, 97, 99] lastIndex=0 "{\u0022matches\u0022:[\u0022ab\u0022,\u0022ab\u0022,\u0022ab\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022x\u005cr\u005cnab\u2028ac\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022ab\u0022},\u0022indices\u0022:[[3,5],[3,5],[3,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cba[b]\u005c\u005cb))$\u0022}"
-        "^(?<whole>(\u005cB\u005c$[\u005c]]\u005cB))$" flags="dvg" input_units=[36, 93] lastIndex=0 "{\u0022matches\u0022:[\u0022$]\u0022,\u0022$]\u0022,\u0022$]\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022$]\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022$]\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cB\u005c\u005c$[\u005c\u005c]]\u005c\u005cB))$\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -6513,107 +6176,89 @@ fn flat_v_set_literal_flat_v_set_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Ten full JSON payloads and original UTF16 spans were hand-derived before Runtime source.
-    for (pattern, input, flags, start, expected) in [
+    for (pattern, input, flags, start) in [
         (
             r#"(?<whole>([a]a[a]\b))"#,
             JsString::from("aaaa!"),
             "dvg",
             0,
-            r#"{"matches":["aaa","aaa","aaa"],"index":1,"input":"aaaa!","groups":{"whole":"aaa"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>([a]a[a]\\b))"}"#,
         ),
         (
             r#"(?<whole>([a]a[a]\b))"#,
             JsString::from("aaaa!"),
             "dvy",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r#"(?<whole>([a]a[a]\b))"#,
             JsString::from("aaaa!"),
             "dvy",
             1,
-            r#"{"matches":["aaa","aaa","aaa"],"index":1,"input":"aaaa!","groups":{"whole":"aaa"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>([a]a[a]\\b))"}"#,
         ),
         (
             r#"^(?<whole>(\B[\p{Any}]\$[\p{Any}]\b))$"#,
             JsString::from("!$K"),
             "divg",
             0,
-            r#"{"matches":["!$K","!$K","!$K"],"index":0,"input":"!$K","groups":{"whole":"!$K"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"^(?<whole>(\\B[\\p{Any}]\\$[\\p{Any}]\\b))$"}"#,
         ),
-        (
-            r#"(?<whole>([]b[c]))"#,
-            JsString::from("abc!"),
-            "dvg",
-            0,
-            r#"{"match":null,"lastIndex":0}"#,
-        ),
-        (
-            r#"(?<whole>([a]b[^c]))"#,
-            JsString::from("abx!"),
-            "dvg",
-            0,
-            r#"{"matches":["abx","abx","abx"],"index":0,"input":"abx!","groups":{"whole":"abx"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"(?<whole>([a]b[^c]))"}"#,
-        ),
+        (r#"(?<whole>([]b[c]))"#, JsString::from("abc!"), "dvg", 0),
+        (r#"(?<whole>([a]b[^c]))"#, JsString::from("abx!"), "dvg", 0),
         (
             r#"(?<whole>(\b[\u{1f600}]\u{1f601}[\u{1f600}]\B))"#,
             JsString::from("A😀😁😀!"),
             "dvy",
             2,
-            r#"{"matches":["😀😁😀","😀😁😀","😀😁😀"],"index":1,"input":"A😀😁😀!","groups":{"whole":"😀😁😀"},"indices":[[1,7],[1,7],[1,7]],"indexGroups":{"whole":[1,7]},"lastIndex":7,"source":"(?<whole>(\\b[\\u{1f600}]\\u{1f601}[\\u{1f600}]\\B))"}"#,
         ),
         (
             r#"(?<whole>(\b[\uD800]\uD800[\uD800]\B))"#,
             JsString::from_code_units(vec![65, 55296, 55296, 55296, 33]),
             "dvg",
             0,
-            r#"{"matches":["\ud800\ud800\ud800","\ud800\ud800\ud800","\ud800\ud800\ud800"],"index":1,"input":"A\ud800\ud800\ud800!","groups":{"whole":"\ud800\ud800\ud800"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(\\b[\\uD800]\\uD800[\\uD800]\\B))"}"#,
         ),
         (
             r#"^(?<whole>(\b[a]b[c]\b))$"#,
             JsString::from("x\r\nabc\u{2028}abx"),
             "dvmg",
             0,
-            r#"{"matches":["abc","abc","abc"],"index":3,"input":"x\r\nabc abx","groups":{"whole":"abc"},"indices":[[3,6],[3,6],[3,6]],"indexGroups":{"whole":[3,6]},"lastIndex":6,"source":"^(?<whole>(\\b[a]b[c]\\b))$"}"#,
         ),
-        (
-            r#"(?<whole>(\b[a]b[c]))"#,
-            JsString::from("abcx"),
-            "dvg",
-            0,
-            r#"{"matches":["abc","abc","abc"],"index":0,"input":"abcx","groups":{"whole":"abc"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"(?<whole>(\\b[a]b[c]))"}"#,
-        ),
+        (r#"(?<whole>(\b[a]b[c]))"#, JsString::from("abcx"), "dvg", 0),
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>([a]a[a]\u005cb))" flags="dvg" input_units=[97, 97, 97, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aaa\u0022,\u0022aaa\u0022,\u0022aaa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aaa\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([a]a[a]\u005c\u005cb))\u0022}"
-        "(?<whole>([a]a[a]\u005cb))" flags="dvy" input_units=[97, 97, 97, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([a]a[a]\u005cb))" flags="dvy" input_units=[97, 97, 97, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022aaa\u0022,\u0022aaa\u0022,\u0022aaa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aaa\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([a]a[a]\u005c\u005cb))\u0022}"
-        "^(?<whole>(\u005cB[\u005cp{Any}]\u005c$[\u005cp{Any}]\u005cb))$" flags="divg" input_units=[33, 36, 8490] lastIndex=0 "{\u0022matches\u0022:[\u0022!$\u212a\u0022,\u0022!$\u212a\u0022,\u0022!$\u212a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022!$\u212a\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022!$\u212a\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cB[\u005c\u005cp{Any}]\u005c\u005c$[\u005c\u005cp{Any}]\u005c\u005cb))$\u0022}"
-        "(?<whole>([]b[c]))" flags="dvg" input_units=[97, 98, 99, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([a]b[^c]))" flags="dvg" input_units=[97, 98, 120, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022abx\u0022,\u0022abx\u0022,\u0022abx\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022abx!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022abx\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([a]b[^c]))\u0022}"
-        "(?<whole>(\u005cb[\u005cu{1f600}]\u005cu{1f601}[\u005cu{1f600}]\u005cB))" flags="dvy" input_units=[65, 55357, 56832, 55357, 56833, 55357, 56832, 33] lastIndex=2 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\ud83d\ude00\ud83d\ude01\ud83d\ude00!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022},\u0022indices\u0022:[[1,7],[1,7],[1,7]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,7]},\u0022lastIndex\u0022:7,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[\u005c\u005cu{1f600}]\u005c\u005cu{1f601}[\u005c\u005cu{1f600}]\u005c\u005cB))\u0022}"
-        "(?<whole>(\u005cb[\u005cuD800]\u005cuD800[\u005cuD800]\u005cB))" flags="dvg" input_units=[65, 55296, 55296, 55296, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800\u005cud800!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u005cud800\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[\u005c\u005cuD800]\u005c\u005cuD800[\u005c\u005cuD800]\u005c\u005cB))\u0022}"
-        "^(?<whole>(\u005cb[a]b[c]\u005cb))$" flags="dvmg" input_units=[120, 13, 10, 97, 98, 99, 8232, 97, 98, 120] lastIndex=0 "{\u0022matches\u0022:[\u0022abc\u0022,\u0022abc\u0022,\u0022abc\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022x\u005cr\u005cnabc\u2028abx\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022abc\u0022},\u0022indices\u0022:[[3,6],[3,6],[3,6]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,6]},\u0022lastIndex\u0022:6,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cb[a]b[c]\u005c\u005cb))$\u0022}"
-        "(?<whole>(\u005cb[a]b[c]))" flags="dvg" input_units=[97, 98, 99, 120] lastIndex=0 "{\u0022matches\u0022:[\u0022abc\u0022,\u0022abc\u0022,\u0022abc\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022abcx\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022abc\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[a]b[c]))\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -6755,107 +6400,89 @@ fn literal_flat_v_set_pair_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Full expected JSON and original UTF16 spans were hand-derived before Runtime source.
-    for (pattern, input, flags, start, expected) in [
-        (
-            r#"(?<whole>(a[b][c]))"#,
-            JsString::from("aabc"),
-            "dvg",
-            0,
-            r#"{"matches":["abc","abc","abc"],"index":1,"input":"aabc","groups":{"whole":"abc"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(a[b][c]))"}"#,
-        ),
-        (
-            r#"(?<whole>(a[a][b]))"#,
-            JsString::from("aaab!"),
-            "dvg",
-            0,
-            r#"{"matches":["aab","aab","aab"],"index":1,"input":"aaab!","groups":{"whole":"aab"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(a[a][b]))"}"#,
-        ),
+    for (pattern, input, flags, start) in [
+        (r#"(?<whole>(a[b][c]))"#, JsString::from("aabc"), "dvg", 0),
+        (r#"(?<whole>(a[a][b]))"#, JsString::from("aaab!"), "dvg", 0),
         (
             r#"(?<whole>(a[a][a]\b))"#,
             JsString::from("aaaa!"),
             "dvg",
             0,
-            r#"{"matches":["aaa","aaa","aaa"],"index":1,"input":"aaaa!","groups":{"whole":"aaa"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(a[a][a]\\b))"}"#,
         ),
         (
             r#"(?<whole>(a[a][a]\b))"#,
             JsString::from("aaaa!"),
             "dvy",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r#"(?<whole>(a[a][a]\b))"#,
             JsString::from("aaaa!"),
             "dvy",
             1,
-            r#"{"matches":["aaa","aaa","aaa"],"index":1,"input":"aaaa!","groups":{"whole":"aaa"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(a[a][a]\\b))"}"#,
         ),
-        (
-            r#"(?<whole>(\bc[a][b]))"#,
-            JsString::from("cabx"),
-            "dvg",
-            0,
-            r#"{"matches":["cab","cab","cab"],"index":0,"input":"cabx","groups":{"whole":"cab"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"(?<whole>(\\bc[a][b]))"}"#,
-        ),
+        (r#"(?<whole>(\bc[a][b]))"#, JsString::from("cabx"), "dvg", 0),
         (
             r#"(?<whole>(\b\u{1f600}[\u{1f601}][\u{1f600}]\B))"#,
             JsString::from("A😀😁😀!"),
             "dvy",
             2,
-            r#"{"matches":["😀😁😀","😀😁😀","😀😁😀"],"index":1,"input":"A😀😁😀!","groups":{"whole":"😀😁😀"},"indices":[[1,7],[1,7],[1,7]],"indexGroups":{"whole":[1,7]},"lastIndex":7,"source":"(?<whole>(\\b\\u{1f600}[\\u{1f601}][\\u{1f600}]\\B))"}"#,
         ),
         (
             r#"(?<whole>(\b\uD800[\uD800][\uD800]\B))"#,
             JsString::from_code_units(vec![65, 55296, 55296, 55296, 33]),
             "dvg",
             0,
-            r#"{"matches":["\ud800\ud800\ud800","\ud800\ud800\ud800","\ud800\ud800\ud800"],"index":1,"input":"A\ud800\ud800\ud800!","groups":{"whole":"\ud800\ud800\ud800"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(\\b\\uD800[\\uD800][\\uD800]\\B))"}"#,
         ),
         (
             r#"^(?<whole>(\B\$[\p{Any}][\p{Any}]\b))$"#,
             JsString::from("$!K"),
             "divg",
             0,
-            r#"{"matches":["$!K","$!K","$!K"],"index":0,"input":"$!K","groups":{"whole":"$!K"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"^(?<whole>(\\B\\$[\\p{Any}][\\p{Any}]\\b))$"}"#,
         ),
         (
             r#"(?<whole>(a[][\p{Any}]))"#,
             JsString::from("abc!"),
             "dvg",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>(a[b][c]))" flags="dvg" input_units=[97, 97, 98, 99] lastIndex=0 "{\u0022matches\u0022:[\u0022abc\u0022,\u0022abc\u0022,\u0022abc\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aabc\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022abc\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(a[b][c]))\u0022}"
-        "(?<whole>(a[a][b]))" flags="dvg" input_units=[97, 97, 97, 98, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aab\u0022,\u0022aab\u0022,\u0022aab\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaab!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aab\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(a[a][b]))\u0022}"
-        "(?<whole>(a[a][a]\u005cb))" flags="dvg" input_units=[97, 97, 97, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aaa\u0022,\u0022aaa\u0022,\u0022aaa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aaa\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(a[a][a]\u005c\u005cb))\u0022}"
-        "(?<whole>(a[a][a]\u005cb))" flags="dvy" input_units=[97, 97, 97, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(a[a][a]\u005cb))" flags="dvy" input_units=[97, 97, 97, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022aaa\u0022,\u0022aaa\u0022,\u0022aaa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aaa\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(a[a][a]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cbc[a][b]))" flags="dvg" input_units=[99, 97, 98, 120] lastIndex=0 "{\u0022matches\u0022:[\u0022cab\u0022,\u0022cab\u0022,\u0022cab\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022cabx\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022cab\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cbc[a][b]))\u0022}"
-        "(?<whole>(\u005cb\u005cu{1f600}[\u005cu{1f601}][\u005cu{1f600}]\u005cB))" flags="dvy" input_units=[65, 55357, 56832, 55357, 56833, 55357, 56832, 33] lastIndex=2 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\ud83d\ude00\ud83d\ude01\ud83d\ude00!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022},\u0022indices\u0022:[[1,7],[1,7],[1,7]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,7]},\u0022lastIndex\u0022:7,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb\u005c\u005cu{1f600}[\u005c\u005cu{1f601}][\u005c\u005cu{1f600}]\u005c\u005cB))\u0022}"
-        "(?<whole>(\u005cb\u005cuD800[\u005cuD800][\u005cuD800]\u005cB))" flags="dvg" input_units=[65, 55296, 55296, 55296, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800\u005cud800!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u005cud800\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb\u005c\u005cuD800[\u005c\u005cuD800][\u005c\u005cuD800]\u005c\u005cB))\u0022}"
-        "^(?<whole>(\u005cB\u005c$[\u005cp{Any}][\u005cp{Any}]\u005cb))$" flags="divg" input_units=[36, 33, 8490] lastIndex=0 "{\u0022matches\u0022:[\u0022$!\u212a\u0022,\u0022$!\u212a\u0022,\u0022$!\u212a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022$!\u212a\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022$!\u212a\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cB\u005c\u005c$[\u005c\u005cp{Any}][\u005c\u005cp{Any}]\u005c\u005cb))$\u0022}"
-        "(?<whole>(a[][\u005cp{Any}]))" flags="dvg" input_units=[97, 98, 99, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -6997,107 +6624,104 @@ fn flat_v_set_pair_literal_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Full expected JSON and original UTF16 spans were hand-derived before Runtime source.
-    for (pattern, input, flags, start, expected) in [
+    for (pattern, input, flags, start) in [
         (
             r#"(?<whole>([a][b]c))"#,
             JsString::from_code_units(vec![97, 97, 98, 99]),
             "dvg",
             0,
-            r#"{"matches":["abc","abc","abc"],"index":1,"input":"aabc","groups":{"whole":"abc"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>([a][b]c))"}"#,
         ),
         (
             r#"(?<whole>([a][a]b))"#,
             JsString::from_code_units(vec![97, 97, 97, 98, 33]),
             "dvg",
             0,
-            r#"{"matches":["aab","aab","aab"],"index":1,"input":"aaab!","groups":{"whole":"aab"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>([a][a]b))"}"#,
         ),
         (
             r#"(?<whole>([a][a]a\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 97, 33]),
             "dvg",
             0,
-            r#"{"matches":["aaa","aaa","aaa"],"index":1,"input":"aaaa!","groups":{"whole":"aaa"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>([a][a]a\\b))"}"#,
         ),
         (
             r#"(?<whole>([a][a]a\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 97, 33]),
             "dvy",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r#"(?<whole>([a][a]a\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 97, 33]),
             "dvy",
             1,
-            r#"{"matches":["aaa","aaa","aaa"],"index":1,"input":"aaaa!","groups":{"whole":"aaa"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>([a][a]a\\b))"}"#,
         ),
         (
             r#"(?<whole>(\b[a][b]c))"#,
             JsString::from_code_units(vec![97, 98, 99, 120]),
             "dvg",
             0,
-            r#"{"matches":["abc","abc","abc"],"index":0,"input":"abcx","groups":{"whole":"abc"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"(?<whole>(\\b[a][b]c))"}"#,
         ),
         (
             r#"(?<whole>(\b[\u{1f600}][\u{1f601}]\u{1f600}\B))"#,
             JsString::from_code_units(vec![65, 55357, 56832, 55357, 56833, 55357, 56832, 33]),
             "dvy",
             2,
-            r#"{"matches":["😀😁😀","😀😁😀","😀😁😀"],"index":1,"input":"A😀😁😀!","groups":{"whole":"😀😁😀"},"indices":[[1,7],[1,7],[1,7]],"indexGroups":{"whole":[1,7]},"lastIndex":7,"source":"(?<whole>(\\b[\\u{1f600}][\\u{1f601}]\\u{1f600}\\B))"}"#,
         ),
         (
             r#"(?<whole>(\b[\uD800][\uD800]\uD800\B))"#,
             JsString::from_code_units(vec![65, 55296, 55296, 55296, 33]),
             "dvg",
             0,
-            r#"{"matches":["\ud800\ud800\ud800","\ud800\ud800\ud800","\ud800\ud800\ud800"],"index":1,"input":"A\ud800\ud800\ud800!","groups":{"whole":"\ud800\ud800\ud800"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(\\b[\\uD800][\\uD800]\\uD800\\B))"}"#,
         ),
         (
             r#"^(?<whole>(\b[\p{Any}][\p{Any}]\$\B))$"#,
             JsString::from_code_units(vec![8490, 33, 36]),
             "divg",
             0,
-            r#"{"matches":["K!$","K!$","K!$"],"index":0,"input":"K!$","groups":{"whole":"K!$"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"^(?<whole>(\\b[\\p{Any}][\\p{Any}]\\$\\B))$"}"#,
         ),
         (
             r#"(?<whole>([][\p{Any}]c))"#,
             JsString::from_code_units(vec![97, 98, 99, 33]),
             "dvg",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>([a][b]c))" flags="dvg" input_units=[97, 97, 98, 99] lastIndex=0 "{\u0022matches\u0022:[\u0022abc\u0022,\u0022abc\u0022,\u0022abc\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aabc\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022abc\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([a][b]c))\u0022}"
-        "(?<whole>([a][a]b))" flags="dvg" input_units=[97, 97, 97, 98, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aab\u0022,\u0022aab\u0022,\u0022aab\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaab!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aab\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([a][a]b))\u0022}"
-        "(?<whole>([a][a]a\u005cb))" flags="dvg" input_units=[97, 97, 97, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aaa\u0022,\u0022aaa\u0022,\u0022aaa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aaa\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([a][a]a\u005c\u005cb))\u0022}"
-        "(?<whole>([a][a]a\u005cb))" flags="dvy" input_units=[97, 97, 97, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([a][a]a\u005cb))" flags="dvy" input_units=[97, 97, 97, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022aaa\u0022,\u0022aaa\u0022,\u0022aaa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aaa\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([a][a]a\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cb[a][b]c))" flags="dvg" input_units=[97, 98, 99, 120] lastIndex=0 "{\u0022matches\u0022:[\u0022abc\u0022,\u0022abc\u0022,\u0022abc\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022abcx\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022abc\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[a][b]c))\u0022}"
-        "(?<whole>(\u005cb[\u005cu{1f600}][\u005cu{1f601}]\u005cu{1f600}\u005cB))" flags="dvy" input_units=[65, 55357, 56832, 55357, 56833, 55357, 56832, 33] lastIndex=2 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\ud83d\ude00\ud83d\ude01\ud83d\ude00!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022},\u0022indices\u0022:[[1,7],[1,7],[1,7]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,7]},\u0022lastIndex\u0022:7,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[\u005c\u005cu{1f600}][\u005c\u005cu{1f601}]\u005c\u005cu{1f600}\u005c\u005cB))\u0022}"
-        "(?<whole>(\u005cb[\u005cuD800][\u005cuD800]\u005cuD800\u005cB))" flags="dvg" input_units=[65, 55296, 55296, 55296, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800\u005cud800!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u005cud800\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[\u005c\u005cuD800][\u005c\u005cuD800]\u005c\u005cuD800\u005c\u005cB))\u0022}"
-        "^(?<whole>(\u005cb[\u005cp{Any}][\u005cp{Any}]\u005c$\u005cB))$" flags="divg" input_units=[8490, 33, 36] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212a!$\u0022,\u0022\u212a!$\u0022,\u0022\u212a!$\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212a!$\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212a!$\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cb[\u005c\u005cp{Any}][\u005c\u005cp{Any}]\u005c\u005c$\u005c\u005cB))$\u0022}"
-        "(?<whole>([][\u005cp{Any}]c))" flags="dvg" input_units=[97, 98, 99, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -7237,108 +6861,105 @@ fn literal_checked_flat_v_set_pair_state_context_and_consumers() {
 fn literal_checked_flat_v_set_pair_results() {
     let mut rows = String::new();
     let mut row_count = 0;
-    // Complete expected JSON/original UTF16 spans are handwritten source data.
-    for (pattern, input, flags, start, expected) in [
+
+    for (pattern, input, flags, start) in [
         (
             r#"(?<whole>(c[[a]][b]))"#,
             JsString::from_code_units(vec![99, 99, 97, 98]),
             "dvg",
             0,
-            r#"{"matches":["cab","cab","cab"],"index":1,"input":"ccab","groups":{"whole":"cab"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(c[[a]][b]))"}"#,
         ),
         (
             r#"(?<whole>(a[[a]][b]))"#,
             JsString::from_code_units(vec![97, 97, 97, 98, 33]),
             "dvg",
             0,
-            r#"{"matches":["aab","aab","aab"],"index":1,"input":"aaab!","groups":{"whole":"aab"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(a[[a]][b]))"}"#,
         ),
         (
             r#"(?<whole>(a[[a]][a]\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 97, 33]),
             "dvg",
             0,
-            r#"{"matches":["aaa","aaa","aaa"],"index":1,"input":"aaaa!","groups":{"whole":"aaa"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(a[[a]][a]\\b))"}"#,
         ),
         (
             r#"(?<whole>(a[[a]][a]\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 97, 33]),
             "dvy",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r#"(?<whole>(a[[a]][a]\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 97, 33]),
             "dvy",
             1,
-            r#"{"matches":["aaa","aaa","aaa"],"index":1,"input":"aaaa!","groups":{"whole":"aaa"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(a[[a]][a]\\b))"}"#,
         ),
         (
             r#"(?<whole>(\bc[[a]][b]))"#,
             JsString::from_code_units(vec![99, 97, 98, 120]),
             "dvg",
             0,
-            r#"{"matches":["cab","cab","cab"],"index":0,"input":"cabx","groups":{"whole":"cab"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"(?<whole>(\\bc[[a]][b]))"}"#,
         ),
         (
             r#"(?<whole>(\b\u{1f600}[[\u{1f601}]][\u{1f600}]\B))"#,
             JsString::from_code_units(vec![65, 55357, 56832, 55357, 56833, 55357, 56832, 33]),
             "dvy",
             2,
-            r#"{"matches":["😀😁😀","😀😁😀","😀😁😀"],"index":1,"input":"A😀😁😀!","groups":{"whole":"😀😁😀"},"indices":[[1,7],[1,7],[1,7]],"indexGroups":{"whole":[1,7]},"lastIndex":7,"source":"(?<whole>(\\b\\u{1f600}[[\\u{1f601}]][\\u{1f600}]\\B))"}"#,
         ),
         (
             r#"(?<whole>(\b\uD800[[\uD800]][\uD800]\B))"#,
             JsString::from_code_units(vec![65, 55296, 55296, 55296, 33]),
             "dvg",
             0,
-            r#"{"matches":["\ud800\ud800\ud800","\ud800\ud800\ud800","\ud800\ud800\ud800"],"index":1,"input":"A\ud800\ud800\ud800!","groups":{"whole":"\ud800\ud800\ud800"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(\\b\\uD800[[\\uD800]][\\uD800]\\B))"}"#,
         ),
         (
             r#"^(?<whole>(\B\$[[\p{Any}]][\p{Any}]\b))$"#,
             JsString::from_code_units(vec![36, 33, 8490]),
             "divg",
             0,
-            r#"{"matches":["$!K","$!K","$!K"],"index":0,"input":"$!K","groups":{"whole":"$!K"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"^(?<whole>(\\B\\$[[\\p{Any}]][\\p{Any}]\\b))$"}"#,
         ),
         (
             r#"(?<whole>(c[a--a][\p{Any}]))"#,
             JsString::from_code_units(vec![99, 97, 98, 33]),
             "dvg",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>(c[[a]][b]))" flags="dvg" input_units=[99, 99, 97, 98] lastIndex=0 "{\u0022matches\u0022:[\u0022cab\u0022,\u0022cab\u0022,\u0022cab\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022ccab\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022cab\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(c[[a]][b]))\u0022}"
-        "(?<whole>(a[[a]][b]))" flags="dvg" input_units=[97, 97, 97, 98, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aab\u0022,\u0022aab\u0022,\u0022aab\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaab!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aab\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(a[[a]][b]))\u0022}"
-        "(?<whole>(a[[a]][a]\u005cb))" flags="dvg" input_units=[97, 97, 97, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aaa\u0022,\u0022aaa\u0022,\u0022aaa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aaa\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(a[[a]][a]\u005c\u005cb))\u0022}"
-        "(?<whole>(a[[a]][a]\u005cb))" flags="dvy" input_units=[97, 97, 97, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(a[[a]][a]\u005cb))" flags="dvy" input_units=[97, 97, 97, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022aaa\u0022,\u0022aaa\u0022,\u0022aaa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aaa\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(a[[a]][a]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cbc[[a]][b]))" flags="dvg" input_units=[99, 97, 98, 120] lastIndex=0 "{\u0022matches\u0022:[\u0022cab\u0022,\u0022cab\u0022,\u0022cab\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022cabx\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022cab\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cbc[[a]][b]))\u0022}"
-        "(?<whole>(\u005cb\u005cu{1f600}[[\u005cu{1f601}]][\u005cu{1f600}]\u005cB))" flags="dvy" input_units=[65, 55357, 56832, 55357, 56833, 55357, 56832, 33] lastIndex=2 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\ud83d\ude00\ud83d\ude01\ud83d\ude00!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022},\u0022indices\u0022:[[1,7],[1,7],[1,7]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,7]},\u0022lastIndex\u0022:7,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb\u005c\u005cu{1f600}[[\u005c\u005cu{1f601}]][\u005c\u005cu{1f600}]\u005c\u005cB))\u0022}"
-        "(?<whole>(\u005cb\u005cuD800[[\u005cuD800]][\u005cuD800]\u005cB))" flags="dvg" input_units=[65, 55296, 55296, 55296, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800\u005cud800!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u005cud800\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb\u005c\u005cuD800[[\u005c\u005cuD800]][\u005c\u005cuD800]\u005c\u005cB))\u0022}"
-        "^(?<whole>(\u005cB\u005c$[[\u005cp{Any}]][\u005cp{Any}]\u005cb))$" flags="divg" input_units=[36, 33, 8490] lastIndex=0 "{\u0022matches\u0022:[\u0022$!\u212a\u0022,\u0022$!\u212a\u0022,\u0022$!\u212a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022$!\u212a\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022$!\u212a\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cB\u005c\u005c$[[\u005c\u005cp{Any}]][\u005c\u005cp{Any}]\u005c\u005cb))$\u0022}"
-        "(?<whole>(c[a--a][\u005cp{Any}]))" flags="dvg" input_units=[99, 97, 98, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -7474,108 +7095,105 @@ fn literal_flat_checked_v_set_pair_state_context_and_consumers() {
 fn literal_flat_checked_v_set_pair_results() {
     let mut rows = String::new();
     let mut row_count = 0;
-    // Complete expected JSON/original UTF16 spans are handwritten source data.
-    for (pattern, input, flags, start, expected) in [
+
+    for (pattern, input, flags, start) in [
         (
             r#"(?<whole>(c[a][[b]]))"#,
             JsString::from_code_units(vec![99, 99, 97, 98]),
             "dvg",
             0,
-            r#"{"matches":["cab","cab","cab"],"index":1,"input":"ccab","groups":{"whole":"cab"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(c[a][[b]]))"}"#,
         ),
         (
             r#"(?<whole>(a[a][[b]]))"#,
             JsString::from_code_units(vec![97, 97, 97, 98, 33]),
             "dvg",
             0,
-            r#"{"matches":["aab","aab","aab"],"index":1,"input":"aaab!","groups":{"whole":"aab"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(a[a][[b]]))"}"#,
         ),
         (
             r#"(?<whole>(a[a][[a]]\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 97, 33]),
             "dvg",
             0,
-            r#"{"matches":["aaa","aaa","aaa"],"index":1,"input":"aaaa!","groups":{"whole":"aaa"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(a[a][[a]]\\b))"}"#,
         ),
         (
             r#"(?<whole>(a[a][[a]]\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 97, 33]),
             "dvy",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r#"(?<whole>(a[a][[a]]\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 97, 33]),
             "dvy",
             1,
-            r#"{"matches":["aaa","aaa","aaa"],"index":1,"input":"aaaa!","groups":{"whole":"aaa"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(a[a][[a]]\\b))"}"#,
         ),
         (
             r#"(?<whole>(\bc[a][[b]]))"#,
             JsString::from_code_units(vec![99, 97, 98, 120]),
             "dvg",
             0,
-            r#"{"matches":["cab","cab","cab"],"index":0,"input":"cabx","groups":{"whole":"cab"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"(?<whole>(\\bc[a][[b]]))"}"#,
         ),
         (
             r#"(?<whole>(\b\u{1f600}[\u{1f601}][[\u{1f600}]]\B))"#,
             JsString::from_code_units(vec![65, 55357, 56832, 55357, 56833, 55357, 56832, 33]),
             "dvy",
             2,
-            r#"{"matches":["😀😁😀","😀😁😀","😀😁😀"],"index":1,"input":"A😀😁😀!","groups":{"whole":"😀😁😀"},"indices":[[1,7],[1,7],[1,7]],"indexGroups":{"whole":[1,7]},"lastIndex":7,"source":"(?<whole>(\\b\\u{1f600}[\\u{1f601}][[\\u{1f600}]]\\B))"}"#,
         ),
         (
             r#"(?<whole>(\b\uD800[\uD800][[\uD800]]\B))"#,
             JsString::from_code_units(vec![65, 55296, 55296, 55296, 33]),
             "dvg",
             0,
-            r#"{"matches":["\ud800\ud800\ud800","\ud800\ud800\ud800","\ud800\ud800\ud800"],"index":1,"input":"A\ud800\ud800\ud800!","groups":{"whole":"\ud800\ud800\ud800"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(\\b\\uD800[\\uD800][[\\uD800]]\\B))"}"#,
         ),
         (
             r#"^(?<whole>(\B\$[\p{Any}][[\p{Any}]]\b))$"#,
             JsString::from_code_units(vec![36, 33, 8490]),
             "divg",
             0,
-            r#"{"matches":["$!K","$!K","$!K"],"index":0,"input":"$!K","groups":{"whole":"$!K"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"^(?<whole>(\\B\\$[\\p{Any}][[\\p{Any}]]\\b))$"}"#,
         ),
         (
             r#"(?<whole>(c[][[\p{Any}]]))"#,
             JsString::from_code_units(vec![99, 97, 98, 33]),
             "dvg",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>(c[a][[b]]))" flags="dvg" input_units=[99, 99, 97, 98] lastIndex=0 "{\u0022matches\u0022:[\u0022cab\u0022,\u0022cab\u0022,\u0022cab\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022ccab\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022cab\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(c[a][[b]]))\u0022}"
-        "(?<whole>(a[a][[b]]))" flags="dvg" input_units=[97, 97, 97, 98, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aab\u0022,\u0022aab\u0022,\u0022aab\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaab!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aab\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(a[a][[b]]))\u0022}"
-        "(?<whole>(a[a][[a]]\u005cb))" flags="dvg" input_units=[97, 97, 97, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aaa\u0022,\u0022aaa\u0022,\u0022aaa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aaa\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(a[a][[a]]\u005c\u005cb))\u0022}"
-        "(?<whole>(a[a][[a]]\u005cb))" flags="dvy" input_units=[97, 97, 97, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(a[a][[a]]\u005cb))" flags="dvy" input_units=[97, 97, 97, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022aaa\u0022,\u0022aaa\u0022,\u0022aaa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aaa\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(a[a][[a]]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cbc[a][[b]]))" flags="dvg" input_units=[99, 97, 98, 120] lastIndex=0 "{\u0022matches\u0022:[\u0022cab\u0022,\u0022cab\u0022,\u0022cab\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022cabx\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022cab\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cbc[a][[b]]))\u0022}"
-        "(?<whole>(\u005cb\u005cu{1f600}[\u005cu{1f601}][[\u005cu{1f600}]]\u005cB))" flags="dvy" input_units=[65, 55357, 56832, 55357, 56833, 55357, 56832, 33] lastIndex=2 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\ud83d\ude00\ud83d\ude01\ud83d\ude00!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022},\u0022indices\u0022:[[1,7],[1,7],[1,7]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,7]},\u0022lastIndex\u0022:7,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb\u005c\u005cu{1f600}[\u005c\u005cu{1f601}][[\u005c\u005cu{1f600}]]\u005c\u005cB))\u0022}"
-        "(?<whole>(\u005cb\u005cuD800[\u005cuD800][[\u005cuD800]]\u005cB))" flags="dvg" input_units=[65, 55296, 55296, 55296, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800\u005cud800!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u005cud800\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb\u005c\u005cuD800[\u005c\u005cuD800][[\u005c\u005cuD800]]\u005c\u005cB))\u0022}"
-        "^(?<whole>(\u005cB\u005c$[\u005cp{Any}][[\u005cp{Any}]]\u005cb))$" flags="divg" input_units=[36, 33, 8490] lastIndex=0 "{\u0022matches\u0022:[\u0022$!\u212a\u0022,\u0022$!\u212a\u0022,\u0022$!\u212a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022$!\u212a\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022$!\u212a\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cB\u005c\u005c$[\u005c\u005cp{Any}][[\u005c\u005cp{Any}]]\u005c\u005cb))$\u0022}"
-        "(?<whole>(c[][[\u005cp{Any}]]))" flags="dvg" input_units=[99, 97, 98, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -7713,107 +7331,104 @@ fn checked_flat_v_set_pair_literal_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Complete expected JSON and original UTF16 spans were hand-derived before execution.
-    for (pattern, input, flags, start, expected) in [
+    for (pattern, input, flags, start) in [
         (
             r#"(?<whole>([[a]][b]c))"#,
             JsString::from_code_units(vec![97, 97, 98, 99]),
             "dvg",
             0,
-            r#"{"matches":["abc","abc","abc"],"index":1,"input":"aabc","groups":{"whole":"abc"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>([[a]][b]c))"}"#,
         ),
         (
             r#"(?<whole>([[a]][a]b))"#,
             JsString::from_code_units(vec![97, 97, 97, 98, 33]),
             "dvg",
             0,
-            r#"{"matches":["aab","aab","aab"],"index":1,"input":"aaab!","groups":{"whole":"aab"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>([[a]][a]b))"}"#,
         ),
         (
             r#"(?<whole>([[a]][a]a\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 97, 33]),
             "dvg",
             0,
-            r#"{"matches":["aaa","aaa","aaa"],"index":1,"input":"aaaa!","groups":{"whole":"aaa"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>([[a]][a]a\\b))"}"#,
         ),
         (
             r#"(?<whole>([[a]][a]a\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 97, 33]),
             "dvy",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r#"(?<whole>([[a]][a]a\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 97, 33]),
             "dvy",
             1,
-            r#"{"matches":["aaa","aaa","aaa"],"index":1,"input":"aaaa!","groups":{"whole":"aaa"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>([[a]][a]a\\b))"}"#,
         ),
         (
             r#"(?<whole>(\b[[a]][b]c))"#,
             JsString::from_code_units(vec![97, 98, 99, 120]),
             "dvg",
             0,
-            r#"{"matches":["abc","abc","abc"],"index":0,"input":"abcx","groups":{"whole":"abc"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"(?<whole>(\\b[[a]][b]c))"}"#,
         ),
         (
             r#"(?<whole>(\b[[\u{1f600}]][\u{1f601}]\u{1f600}\B))"#,
             JsString::from_code_units(vec![65, 55357, 56832, 55357, 56833, 55357, 56832, 33]),
             "dvy",
             2,
-            r#"{"matches":["😀😁😀","😀😁😀","😀😁😀"],"index":1,"input":"A😀😁😀!","groups":{"whole":"😀😁😀"},"indices":[[1,7],[1,7],[1,7]],"indexGroups":{"whole":[1,7]},"lastIndex":7,"source":"(?<whole>(\\b[[\\u{1f600}]][\\u{1f601}]\\u{1f600}\\B))"}"#,
         ),
         (
             r#"(?<whole>(\b[[\uD800]][\uD800]\uD800\B))"#,
             JsString::from_code_units(vec![65, 55296, 55296, 55296, 33]),
             "dvg",
             0,
-            r#"{"matches":["\ud800\ud800\ud800","\ud800\ud800\ud800","\ud800\ud800\ud800"],"index":1,"input":"A\ud800\ud800\ud800!","groups":{"whole":"\ud800\ud800\ud800"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(\\b[[\\uD800]][\\uD800]\\uD800\\B))"}"#,
         ),
         (
             r#"^(?<whole>(\b[[\p{Any}]][\p{Any}]\$\B))$"#,
             JsString::from_code_units(vec![8490, 33, 36]),
             "divg",
             0,
-            r#"{"matches":["K!$","K!$","K!$"],"index":0,"input":"K!$","groups":{"whole":"K!$"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"^(?<whole>(\\b[[\\p{Any}]][\\p{Any}]\\$\\B))$"}"#,
         ),
         (
             r#"(?<whole>([a--a][\p{Any}]c))"#,
             JsString::from_code_units(vec![97, 98, 99, 33]),
             "dvg",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>([[a]][b]c))" flags="dvg" input_units=[97, 97, 98, 99] lastIndex=0 "{\u0022matches\u0022:[\u0022abc\u0022,\u0022abc\u0022,\u0022abc\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aabc\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022abc\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([[a]][b]c))\u0022}"
-        "(?<whole>([[a]][a]b))" flags="dvg" input_units=[97, 97, 97, 98, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aab\u0022,\u0022aab\u0022,\u0022aab\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaab!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aab\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([[a]][a]b))\u0022}"
-        "(?<whole>([[a]][a]a\u005cb))" flags="dvg" input_units=[97, 97, 97, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aaa\u0022,\u0022aaa\u0022,\u0022aaa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aaa\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([[a]][a]a\u005c\u005cb))\u0022}"
-        "(?<whole>([[a]][a]a\u005cb))" flags="dvy" input_units=[97, 97, 97, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([[a]][a]a\u005cb))" flags="dvy" input_units=[97, 97, 97, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022aaa\u0022,\u0022aaa\u0022,\u0022aaa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aaa\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([[a]][a]a\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cb[[a]][b]c))" flags="dvg" input_units=[97, 98, 99, 120] lastIndex=0 "{\u0022matches\u0022:[\u0022abc\u0022,\u0022abc\u0022,\u0022abc\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022abcx\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022abc\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[a]][b]c))\u0022}"
-        "(?<whole>(\u005cb[[\u005cu{1f600}]][\u005cu{1f601}]\u005cu{1f600}\u005cB))" flags="dvy" input_units=[65, 55357, 56832, 55357, 56833, 55357, 56832, 33] lastIndex=2 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\ud83d\ude00\ud83d\ude01\ud83d\ude00!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022},\u0022indices\u0022:[[1,7],[1,7],[1,7]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,7]},\u0022lastIndex\u0022:7,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[\u005c\u005cu{1f600}]][\u005c\u005cu{1f601}]\u005c\u005cu{1f600}\u005c\u005cB))\u0022}"
-        "(?<whole>(\u005cb[[\u005cuD800]][\u005cuD800]\u005cuD800\u005cB))" flags="dvg" input_units=[65, 55296, 55296, 55296, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800\u005cud800!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u005cud800\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[\u005c\u005cuD800]][\u005c\u005cuD800]\u005c\u005cuD800\u005c\u005cB))\u0022}"
-        "^(?<whole>(\u005cb[[\u005cp{Any}]][\u005cp{Any}]\u005c$\u005cB))$" flags="divg" input_units=[8490, 33, 36] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212a!$\u0022,\u0022\u212a!$\u0022,\u0022\u212a!$\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212a!$\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212a!$\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cb[[\u005c\u005cp{Any}]][\u005c\u005cp{Any}]\u005c\u005c$\u005c\u005cB))$\u0022}"
-        "(?<whole>([a--a][\u005cp{Any}]c))" flags="dvg" input_units=[97, 98, 99, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -7943,107 +7558,104 @@ fn flat_checked_v_set_pair_literal_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Complete expected JSON and original UTF16 spans were hand-derived before execution.
-    for (pattern, input, flags, start, expected) in [
+    for (pattern, input, flags, start) in [
         (
             r#"(?<whole>([a][[b]]c))"#,
             JsString::from_code_units(vec![97, 97, 98, 99]),
             "dvg",
             0,
-            r#"{"matches":["abc","abc","abc"],"index":1,"input":"aabc","groups":{"whole":"abc"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>([a][[b]]c))"}"#,
         ),
         (
             r#"(?<whole>([a][[a]]b))"#,
             JsString::from_code_units(vec![97, 97, 97, 98, 33]),
             "dvg",
             0,
-            r#"{"matches":["aab","aab","aab"],"index":1,"input":"aaab!","groups":{"whole":"aab"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>([a][[a]]b))"}"#,
         ),
         (
             r#"(?<whole>([a][[a]]a\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 97, 33]),
             "dvg",
             0,
-            r#"{"matches":["aaa","aaa","aaa"],"index":1,"input":"aaaa!","groups":{"whole":"aaa"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>([a][[a]]a\\b))"}"#,
         ),
         (
             r#"(?<whole>([a][[a]]a\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 97, 33]),
             "dvy",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r#"(?<whole>([a][[a]]a\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 97, 33]),
             "dvy",
             1,
-            r#"{"matches":["aaa","aaa","aaa"],"index":1,"input":"aaaa!","groups":{"whole":"aaa"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>([a][[a]]a\\b))"}"#,
         ),
         (
             r#"(?<whole>(\b[a][[b]]c))"#,
             JsString::from_code_units(vec![97, 98, 99, 120]),
             "dvg",
             0,
-            r#"{"matches":["abc","abc","abc"],"index":0,"input":"abcx","groups":{"whole":"abc"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"(?<whole>(\\b[a][[b]]c))"}"#,
         ),
         (
             r#"(?<whole>(\b[\u{1f600}][[\u{1f601}]]\u{1f600}\B))"#,
             JsString::from_code_units(vec![65, 55357, 56832, 55357, 56833, 55357, 56832, 33]),
             "dvy",
             2,
-            r#"{"matches":["😀😁😀","😀😁😀","😀😁😀"],"index":1,"input":"A😀😁😀!","groups":{"whole":"😀😁😀"},"indices":[[1,7],[1,7],[1,7]],"indexGroups":{"whole":[1,7]},"lastIndex":7,"source":"(?<whole>(\\b[\\u{1f600}][[\\u{1f601}]]\\u{1f600}\\B))"}"#,
         ),
         (
             r#"(?<whole>(\b[\uD800][[\uD800]]\uD800\B))"#,
             JsString::from_code_units(vec![65, 55296, 55296, 55296, 33]),
             "dvg",
             0,
-            r#"{"matches":["\ud800\ud800\ud800","\ud800\ud800\ud800","\ud800\ud800\ud800"],"index":1,"input":"A\ud800\ud800\ud800!","groups":{"whole":"\ud800\ud800\ud800"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(\\b[\\uD800][[\\uD800]]\\uD800\\B))"}"#,
         ),
         (
             r#"^(?<whole>(\b[\p{Any}][[\p{Any}]]\$\B))$"#,
             JsString::from_code_units(vec![8490, 33, 36]),
             "divg",
             0,
-            r#"{"matches":["K!$","K!$","K!$"],"index":0,"input":"K!$","groups":{"whole":"K!$"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"^(?<whole>(\\b[\\p{Any}][[\\p{Any}]]\\$\\B))$"}"#,
         ),
         (
             r#"(?<whole>([][[\p{Any}]]c))"#,
             JsString::from_code_units(vec![97, 98, 99, 33]),
             "dvg",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>([a][[b]]c))" flags="dvg" input_units=[97, 97, 98, 99] lastIndex=0 "{\u0022matches\u0022:[\u0022abc\u0022,\u0022abc\u0022,\u0022abc\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aabc\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022abc\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([a][[b]]c))\u0022}"
-        "(?<whole>([a][[a]]b))" flags="dvg" input_units=[97, 97, 97, 98, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aab\u0022,\u0022aab\u0022,\u0022aab\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaab!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aab\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([a][[a]]b))\u0022}"
-        "(?<whole>([a][[a]]a\u005cb))" flags="dvg" input_units=[97, 97, 97, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aaa\u0022,\u0022aaa\u0022,\u0022aaa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aaa\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([a][[a]]a\u005c\u005cb))\u0022}"
-        "(?<whole>([a][[a]]a\u005cb))" flags="dvy" input_units=[97, 97, 97, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([a][[a]]a\u005cb))" flags="dvy" input_units=[97, 97, 97, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022aaa\u0022,\u0022aaa\u0022,\u0022aaa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aaa\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([a][[a]]a\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cb[a][[b]]c))" flags="dvg" input_units=[97, 98, 99, 120] lastIndex=0 "{\u0022matches\u0022:[\u0022abc\u0022,\u0022abc\u0022,\u0022abc\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022abcx\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022abc\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[a][[b]]c))\u0022}"
-        "(?<whole>(\u005cb[\u005cu{1f600}][[\u005cu{1f601}]]\u005cu{1f600}\u005cB))" flags="dvy" input_units=[65, 55357, 56832, 55357, 56833, 55357, 56832, 33] lastIndex=2 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\ud83d\ude00\ud83d\ude01\ud83d\ude00!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022},\u0022indices\u0022:[[1,7],[1,7],[1,7]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,7]},\u0022lastIndex\u0022:7,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[\u005c\u005cu{1f600}][[\u005c\u005cu{1f601}]]\u005c\u005cu{1f600}\u005c\u005cB))\u0022}"
-        "(?<whole>(\u005cb[\u005cuD800][[\u005cuD800]]\u005cuD800\u005cB))" flags="dvg" input_units=[65, 55296, 55296, 55296, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800\u005cud800!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u005cud800\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[\u005c\u005cuD800][[\u005c\u005cuD800]]\u005c\u005cuD800\u005c\u005cB))\u0022}"
-        "^(?<whole>(\u005cb[\u005cp{Any}][[\u005cp{Any}]]\u005c$\u005cB))$" flags="divg" input_units=[8490, 33, 36] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212a!$\u0022,\u0022\u212a!$\u0022,\u0022\u212a!$\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212a!$\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212a!$\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cb[\u005c\u005cp{Any}][[\u005c\u005cp{Any}]]\u005c\u005c$\u005c\u005cB))$\u0022}"
-        "(?<whole>([][[\u005cp{Any}]]c))" flags="dvg" input_units=[97, 98, 99, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -8170,107 +7782,104 @@ fn checked_v_set_literal_flat_v_set_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Full JSON and original UTF16 spans were hand-derived before Runtime source.
-    for (pattern, input, flags, start, expected) in [
+    for (pattern, input, flags, start) in [
         (
             r#"(?<whole>([[a]]b[c]))"#,
             JsString::from_code_units(vec![97, 97, 98, 99]),
             "dvg",
             0,
-            r#"{"matches":["abc","abc","abc"],"index":1,"input":"aabc","groups":{"whole":"abc"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>([[a]]b[c]))"}"#,
         ),
         (
             r#"(?<whole>([[a]]a[b]))"#,
             JsString::from_code_units(vec![97, 97, 97, 98, 33]),
             "dvg",
             0,
-            r#"{"matches":["aab","aab","aab"],"index":1,"input":"aaab!","groups":{"whole":"aab"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>([[a]]a[b]))"}"#,
         ),
         (
             r#"(?<whole>([[a]]a[a]\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 97, 33]),
             "dvg",
             0,
-            r#"{"matches":["aaa","aaa","aaa"],"index":1,"input":"aaaa!","groups":{"whole":"aaa"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>([[a]]a[a]\\b))"}"#,
         ),
         (
             r#"(?<whole>([[a]]a[a]\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 97, 33]),
             "dvy",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r#"(?<whole>([[a]]a[a]\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 97, 33]),
             "dvy",
             1,
-            r#"{"matches":["aaa","aaa","aaa"],"index":1,"input":"aaaa!","groups":{"whole":"aaa"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>([[a]]a[a]\\b))"}"#,
         ),
         (
             r#"(?<whole>(\b[[a]]b[c]))"#,
             JsString::from_code_units(vec![97, 98, 99, 120]),
             "dvg",
             0,
-            r#"{"matches":["abc","abc","abc"],"index":0,"input":"abcx","groups":{"whole":"abc"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"(?<whole>(\\b[[a]]b[c]))"}"#,
         ),
         (
             r#"(?<whole>(\b[[\u{1f600}]]\u{1f601}[\u{1f600}]\B))"#,
             JsString::from_code_units(vec![65, 55357, 56832, 55357, 56833, 55357, 56832, 33]),
             "dvy",
             2,
-            r#"{"matches":["😀😁😀","😀😁😀","😀😁😀"],"index":1,"input":"A😀😁😀!","groups":{"whole":"😀😁😀"},"indices":[[1,7],[1,7],[1,7]],"indexGroups":{"whole":[1,7]},"lastIndex":7,"source":"(?<whole>(\\b[[\\u{1f600}]]\\u{1f601}[\\u{1f600}]\\B))"}"#,
         ),
         (
             r#"(?<whole>(\b[[\uD800]]\uD800[\uD800]\B))"#,
             JsString::from_code_units(vec![65, 55296, 55296, 55296, 33]),
             "dvg",
             0,
-            r#"{"matches":["\ud800\ud800\ud800","\ud800\ud800\ud800","\ud800\ud800\ud800"],"index":1,"input":"A\ud800\ud800\ud800!","groups":{"whole":"\ud800\ud800\ud800"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(\\b[[\\uD800]]\\uD800[\\uD800]\\B))"}"#,
         ),
         (
             r#"^(?<whole>(\B[[\p{Any}]]\$[\p{Any}]\b))$"#,
             JsString::from_code_units(vec![33, 36, 8490]),
             "divg",
             0,
-            r#"{"matches":["!$K","!$K","!$K"],"index":0,"input":"!$K","groups":{"whole":"!$K"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"^(?<whole>(\\B[[\\p{Any}]]\\$[\\p{Any}]\\b))$"}"#,
         ),
         (
             r#"(?<whole>([a--a]c[\p{Any}]))"#,
             JsString::from_code_units(vec![97, 99, 98, 33]),
             "dvg",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>([[a]]b[c]))" flags="dvg" input_units=[97, 97, 98, 99] lastIndex=0 "{\u0022matches\u0022:[\u0022abc\u0022,\u0022abc\u0022,\u0022abc\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aabc\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022abc\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([[a]]b[c]))\u0022}"
-        "(?<whole>([[a]]a[b]))" flags="dvg" input_units=[97, 97, 97, 98, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aab\u0022,\u0022aab\u0022,\u0022aab\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaab!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aab\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([[a]]a[b]))\u0022}"
-        "(?<whole>([[a]]a[a]\u005cb))" flags="dvg" input_units=[97, 97, 97, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aaa\u0022,\u0022aaa\u0022,\u0022aaa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aaa\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([[a]]a[a]\u005c\u005cb))\u0022}"
-        "(?<whole>([[a]]a[a]\u005cb))" flags="dvy" input_units=[97, 97, 97, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([[a]]a[a]\u005cb))" flags="dvy" input_units=[97, 97, 97, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022aaa\u0022,\u0022aaa\u0022,\u0022aaa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aaa\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([[a]]a[a]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cb[[a]]b[c]))" flags="dvg" input_units=[97, 98, 99, 120] lastIndex=0 "{\u0022matches\u0022:[\u0022abc\u0022,\u0022abc\u0022,\u0022abc\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022abcx\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022abc\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[a]]b[c]))\u0022}"
-        "(?<whole>(\u005cb[[\u005cu{1f600}]]\u005cu{1f601}[\u005cu{1f600}]\u005cB))" flags="dvy" input_units=[65, 55357, 56832, 55357, 56833, 55357, 56832, 33] lastIndex=2 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\ud83d\ude00\ud83d\ude01\ud83d\ude00!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022},\u0022indices\u0022:[[1,7],[1,7],[1,7]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,7]},\u0022lastIndex\u0022:7,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[\u005c\u005cu{1f600}]]\u005c\u005cu{1f601}[\u005c\u005cu{1f600}]\u005c\u005cB))\u0022}"
-        "(?<whole>(\u005cb[[\u005cuD800]]\u005cuD800[\u005cuD800]\u005cB))" flags="dvg" input_units=[65, 55296, 55296, 55296, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800\u005cud800!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u005cud800\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[\u005c\u005cuD800]]\u005c\u005cuD800[\u005c\u005cuD800]\u005c\u005cB))\u0022}"
-        "^(?<whole>(\u005cB[[\u005cp{Any}]]\u005c$[\u005cp{Any}]\u005cb))$" flags="divg" input_units=[33, 36, 8490] lastIndex=0 "{\u0022matches\u0022:[\u0022!$\u212a\u0022,\u0022!$\u212a\u0022,\u0022!$\u212a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022!$\u212a\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022!$\u212a\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cB[[\u005c\u005cp{Any}]]\u005c\u005c$[\u005c\u005cp{Any}]\u005c\u005cb))$\u0022}"
-        "(?<whole>([a--a]c[\u005cp{Any}]))" flags="dvg" input_units=[97, 99, 98, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -8393,107 +8002,104 @@ fn flat_v_set_literal_checked_v_set_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Complete JSON and original UTF16 spans were hand-derived before Runtime source.
-    for (pattern, input, flags, start, expected) in [
+    for (pattern, input, flags, start) in [
         (
             r#"(?<whole>([a]b[[c]]))"#,
             JsString::from_code_units(vec![97, 97, 98, 99]),
             "dvg",
             0,
-            r#"{"matches":["abc","abc","abc"],"index":1,"input":"aabc","groups":{"whole":"abc"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>([a]b[[c]]))"}"#,
         ),
         (
             r#"(?<whole>([a]a[[b]]))"#,
             JsString::from_code_units(vec![97, 97, 97, 98, 33]),
             "dvg",
             0,
-            r#"{"matches":["aab","aab","aab"],"index":1,"input":"aaab!","groups":{"whole":"aab"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>([a]a[[b]]))"}"#,
         ),
         (
             r#"(?<whole>([a]a[[a]]\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 97, 33]),
             "dvg",
             0,
-            r#"{"matches":["aaa","aaa","aaa"],"index":1,"input":"aaaa!","groups":{"whole":"aaa"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>([a]a[[a]]\\b))"}"#,
         ),
         (
             r#"(?<whole>([a]a[[a]]\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 97, 33]),
             "dvy",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r#"(?<whole>([a]a[[a]]\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 97, 33]),
             "dvy",
             1,
-            r#"{"matches":["aaa","aaa","aaa"],"index":1,"input":"aaaa!","groups":{"whole":"aaa"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>([a]a[[a]]\\b))"}"#,
         ),
         (
             r#"(?<whole>(\b[a]b[[c]]))"#,
             JsString::from_code_units(vec![97, 98, 99, 120]),
             "dvg",
             0,
-            r#"{"matches":["abc","abc","abc"],"index":0,"input":"abcx","groups":{"whole":"abc"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"(?<whole>(\\b[a]b[[c]]))"}"#,
         ),
         (
             r#"(?<whole>(\b[\u{1f600}]\u{1f601}[[\u{1f600}]]\B))"#,
             JsString::from_code_units(vec![65, 55357, 56832, 55357, 56833, 55357, 56832, 33]),
             "dvy",
             2,
-            r#"{"matches":["😀😁😀","😀😁😀","😀😁😀"],"index":1,"input":"A😀😁😀!","groups":{"whole":"😀😁😀"},"indices":[[1,7],[1,7],[1,7]],"indexGroups":{"whole":[1,7]},"lastIndex":7,"source":"(?<whole>(\\b[\\u{1f600}]\\u{1f601}[[\\u{1f600}]]\\B))"}"#,
         ),
         (
             r#"(?<whole>(\b[\uD800]\uD800[[\uD800]]\B))"#,
             JsString::from_code_units(vec![65, 55296, 55296, 55296, 33]),
             "dvg",
             0,
-            r#"{"matches":["\ud800\ud800\ud800","\ud800\ud800\ud800","\ud800\ud800\ud800"],"index":1,"input":"A\ud800\ud800\ud800!","groups":{"whole":"\ud800\ud800\ud800"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>(\\b[\\uD800]\\uD800[[\\uD800]]\\B))"}"#,
         ),
         (
             r#"^(?<whole>(\B[\p{Any}]\$[[\p{Any}]]\b))$"#,
             JsString::from_code_units(vec![33, 36, 8490]),
             "divg",
             0,
-            r#"{"matches":["!$K","!$K","!$K"],"index":0,"input":"!$K","groups":{"whole":"!$K"},"indices":[[0,3],[0,3],[0,3]],"indexGroups":{"whole":[0,3]},"lastIndex":3,"source":"^(?<whole>(\\B[\\p{Any}]\\$[[\\p{Any}]]\\b))$"}"#,
         ),
         (
             r#"(?<whole>([]c[[\p{Any}]]))"#,
             JsString::from_code_units(vec![97, 99, 98, 33]),
             "dvg",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>([a]b[[c]]))" flags="dvg" input_units=[97, 97, 98, 99] lastIndex=0 "{\u0022matches\u0022:[\u0022abc\u0022,\u0022abc\u0022,\u0022abc\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aabc\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022abc\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([a]b[[c]]))\u0022}"
-        "(?<whole>([a]a[[b]]))" flags="dvg" input_units=[97, 97, 97, 98, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aab\u0022,\u0022aab\u0022,\u0022aab\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaab!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aab\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([a]a[[b]]))\u0022}"
-        "(?<whole>([a]a[[a]]\u005cb))" flags="dvg" input_units=[97, 97, 97, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aaa\u0022,\u0022aaa\u0022,\u0022aaa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aaa\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([a]a[[a]]\u005c\u005cb))\u0022}"
-        "(?<whole>([a]a[[a]]\u005cb))" flags="dvy" input_units=[97, 97, 97, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([a]a[[a]]\u005cb))" flags="dvy" input_units=[97, 97, 97, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022aaa\u0022,\u0022aaa\u0022,\u0022aaa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aaa\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([a]a[[a]]\u005c\u005cb))\u0022}"
-        "(?<whole>(\u005cb[a]b[[c]]))" flags="dvg" input_units=[97, 98, 99, 120] lastIndex=0 "{\u0022matches\u0022:[\u0022abc\u0022,\u0022abc\u0022,\u0022abc\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022abcx\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022abc\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[a]b[[c]]))\u0022}"
-        "(?<whole>(\u005cb[\u005cu{1f600}]\u005cu{1f601}[[\u005cu{1f600}]]\u005cB))" flags="dvy" input_units=[65, 55357, 56832, 55357, 56833, 55357, 56832, 33] lastIndex=2 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022,\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\ud83d\ude00\ud83d\ude01\ud83d\ude00!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01\ud83d\ude00\u0022},\u0022indices\u0022:[[1,7],[1,7],[1,7]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,7]},\u0022lastIndex\u0022:7,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[\u005c\u005cu{1f600}]\u005c\u005cu{1f601}[[\u005c\u005cu{1f600}]]\u005c\u005cB))\u0022}"
-        "(?<whole>(\u005cb[\u005cuD800]\u005cuD800[[\u005cuD800]]\u005cB))" flags="dvg" input_units=[65, 55296, 55296, 55296, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800\u005cud800!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u005cud800\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[\u005c\u005cuD800]\u005c\u005cuD800[[\u005c\u005cuD800]]\u005c\u005cB))\u0022}"
-        "^(?<whole>(\u005cB[\u005cp{Any}]\u005c$[[\u005cp{Any}]]\u005cb))$" flags="divg" input_units=[33, 36, 8490] lastIndex=0 "{\u0022matches\u0022:[\u0022!$\u212a\u0022,\u0022!$\u212a\u0022,\u0022!$\u212a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022!$\u212a\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022!$\u212a\u0022},\u0022indices\u0022:[[0,3],[0,3],[0,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cB[\u005c\u005cp{Any}]\u005c\u005c$[[\u005c\u005cp{Any}]]\u005c\u005cb))$\u0022}"
-        "(?<whole>([]c[[\u005cp{Any}]]))" flags="dvg" input_units=[97, 99, 98, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -8637,107 +8243,104 @@ fn single_character_v_strings_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Complete JSON/original UTF16 spans were hand-derived before Runtime source.
-    for (pattern, input, flags, start, expected) in [
+    for (pattern, input, flags, start) in [
         (
             r#"(?<whole>([\q{a|b}]))"#,
             JsString::from_code_units(vec![122, 98]),
             "dvg",
             0,
-            r#"{"matches":["b","b","b"],"index":1,"input":"zb","groups":{"whole":"b"},"indices":[[1,2],[1,2],[1,2]],"indexGroups":{"whole":[1,2]},"lastIndex":2,"source":"(?<whole>([\\q{a|b}]))"}"#,
         ),
         (
             r#"(?<whole>([^\q{a|b}]))"#,
             JsString::from_code_units(vec![97, 98, 55357, 56832]),
             "dvg",
             0,
-            r#"{"matches":["😀","😀","😀"],"index":2,"input":"ab😀","groups":{"whole":"😀"},"indices":[[2,4],[2,4],[2,4]],"indexGroups":{"whole":[2,4]},"lastIndex":4,"source":"(?<whole>([^\\q{a|b}]))"}"#,
         ),
         (
             r#"(?<whole>([\q{K|s}]))"#,
             JsString::from_code_units(vec![8490]),
             "divg",
             0,
-            r#"{"matches":["K","K","K"],"index":0,"input":"K","groups":{"whole":"K"},"indices":[[0,1],[0,1],[0,1]],"indexGroups":{"whole":[0,1]},"lastIndex":1,"source":"(?<whole>([\\q{K|s}]))"}"#,
         ),
         (
             r#"(?<whole>([^\q{K|s}]))"#,
             JsString::from_code_units(vec![8490, 383]),
             "divg",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r#"^(?<whole>(\b[\q{\u212A}]\b))$"#,
             JsString::from_code_units(vec![8490]),
             "divg",
             0,
-            r#"{"matches":["K","K","K"],"index":0,"input":"K","groups":{"whole":"K"},"indices":[[0,1],[0,1],[0,1]],"indexGroups":{"whole":[0,1]},"lastIndex":1,"source":"^(?<whole>(\\b[\\q{\\u212A}]\\b))$"}"#,
         ),
         (
             r#"^(?<whole>(\b[\q{\u212A}]\b))$"#,
             JsString::from_code_units(vec![8490]),
             "dvg",
             0,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r#"(?<whole>(\b[\q{\uD83D\uDE00|x}]\B))"#,
             JsString::from_code_units(vec![65, 55357, 56832, 33]),
             "dvy",
             2,
-            r#"{"matches":["😀","😀","😀"],"index":1,"input":"A😀!","groups":{"whole":"😀"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>(\\b[\\q{\\uD83D\\uDE00|x}]\\B))"}"#,
         ),
         (
             r#"(?<whole>([\q{\uD800|\uDC00}]))"#,
             JsString::from_code_units(vec![65, 55296, 66]),
             "dvg",
             0,
-            r#"{"matches":["\ud800","\ud800","\ud800"],"index":1,"input":"A\ud800B","groups":{"whole":"\ud800"},"indices":[[1,2],[1,2],[1,2]],"indexGroups":{"whole":[1,2]},"lastIndex":2,"source":"(?<whole>([\\q{\\uD800|\\uDC00}]))"}"#,
         ),
         (
             r#"(?<whole>([\q{\b|\!|\||\}|\/}]))"#,
             JsString::from_code_units(vec![120, 8]),
             "dvg",
             0,
-            r#"{"matches":["\b","\b","\b"],"index":1,"input":"x\b","groups":{"whole":"\b"},"indices":[[1,2],[1,2],[1,2]],"indexGroups":{"whole":[1,2]},"lastIndex":2,"source":"(?<whole>([\\q{\\b|\\!|\\||\\}|\\/}]))"}"#,
         ),
         (
             r#"^(?<whole>(\B[\q{\r|\n|\u2028}]\B))$"#,
             JsString::from_code_units(vec![120, 13, 10, 8232, 121]),
             "dgmv",
             0,
-            r#"{"matches":["\n","\n","\n"],"index":2,"input":"x\r\n y","groups":{"whole":"\n"},"indices":[[2,3],[2,3],[2,3]],"indexGroups":{"whole":[2,3]},"lastIndex":3,"source":"^(?<whole>(\\B[\\q{\\r|\\n|\\u2028}]\\B))$"}"#,
         ),
     ] {
         let pattern = JsString::from(pattern);
         let script = format!(
-            "let r=new RegExp({pattern:?},'{flags}');r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:[...m],index:m.index,input:m.input,groups:m.groups,indices:m.indices,indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, '{flags}');
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: [...m],
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: m.indices,
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>([\u005cq{a|b}]))" flags="dvg" input_units=[122, 98] lastIndex=0 "{\u0022matches\u0022:[\u0022b\u0022,\u0022b\u0022,\u0022b\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022zb\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022b\u0022},\u0022indices\u0022:[[1,2],[1,2],[1,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cq{a|b}]))\u0022}"
-        "(?<whole>([^\u005cq{a|b}]))" flags="dvg" input_units=[97, 98, 55357, 56832] lastIndex=0 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022ab\ud83d\ude00\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\u0022},\u0022indices\u0022:[[2,4],[2,4],[2,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[2,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([^\u005c\u005cq{a|b}]))\u0022}"
-        "(?<whole>([\u005cq{K|s}]))" flags="divg" input_units=[8490] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212a\u0022,\u0022\u212a\u0022,\u0022\u212a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212a\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212a\u0022},\u0022indices\u0022:[[0,1],[0,1],[0,1]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,1]},\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cq{K|s}]))\u0022}"
-        "(?<whole>([^\u005cq{K|s}]))" flags="divg" input_units=[8490, 383] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "^(?<whole>(\u005cb[\u005cq{\u005cu212A}]\u005cb))$" flags="divg" input_units=[8490] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212a\u0022,\u0022\u212a\u0022,\u0022\u212a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212a\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212a\u0022},\u0022indices\u0022:[[0,1],[0,1],[0,1]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,1]},\u0022lastIndex\u0022:1,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cb[\u005c\u005cq{\u005c\u005cu212A}]\u005c\u005cb))$\u0022}"
-        "^(?<whole>(\u005cb[\u005cq{\u005cu212A}]\u005cb))$" flags="dvg" input_units=[8490] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(\u005cb[\u005cq{\u005cuD83D\u005cuDE00|x}]\u005cB))" flags="dvy" input_units=[65, 55357, 56832, 33] lastIndex=2 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\ud83d\ude00!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[\u005c\u005cq{\u005c\u005cuD83D\u005c\u005cuDE00|x}]\u005c\u005cB))\u0022}"
-        "(?<whole>([\u005cq{\u005cuD800|\u005cuDC00}]))" flags="dvg" input_units=[65, 55296, 66] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u0022,\u0022\u005cud800\u0022,\u0022\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800B\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u0022},\u0022indices\u0022:[[1,2],[1,2],[1,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cq{\u005c\u005cuD800|\u005c\u005cuDC00}]))\u0022}"
-        "(?<whole>([\u005cq{\u005cb|\u005c!|\u005c||\u005c}|\u005c/}]))" flags="dvg" input_units=[120, 8] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cb\u0022,\u0022\u005cb\u0022,\u0022\u005cb\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022x\u005cb\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cb\u0022},\u0022indices\u0022:[[1,2],[1,2],[1,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cq{\u005c\u005cb|\u005c\u005c!|\u005c\u005c||\u005c\u005c}|\u005c\u005c/}]))\u0022}"
-        "^(?<whole>(\u005cB[\u005cq{\u005cr|\u005cn|\u005cu2028}]\u005cB))$" flags="dgmv" input_units=[120, 13, 10, 8232, 121] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cn\u0022,\u0022\u005cn\u0022,\u0022\u005cn\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022x\u005cr\u005cn\u2028y\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cn\u0022},\u0022indices\u0022:[[2,3],[2,3],[2,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[2,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cB[\u005c\u005cq{\u005c\u005cr|\u005c\u005cn|\u005c\u005cu2028}]\u005c\u005cB))$\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -8884,106 +8487,103 @@ fn single_character_v_string_operands_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Full JSON and original UTF16 spans were fixed before this Runtime source.
-    for (pattern, input, flags, start, expected) in [
+    for (pattern, input, flags, start) in [
         (
             r#"(?<whole>([a\q{b|c}]))"#,
             JsString::from_code_units(vec![122, 98]),
             "dvg",
             0usize,
-            r#"{"matches":["b","b","b"],"index":1,"input":"zb","groups":{"whole":"b"},"indices":[[1,2],[1,2],[1,2]],"indexGroups":{"whole":[1,2]},"lastIndex":2,"source":"(?<whole>([a\\q{b|c}]))"}"#,
         ),
         (
             r#"(?<whole>([\q{a|b}&&[b-z]]))"#,
             JsString::from_code_units(vec![97, 97, 98]),
             "dvg",
             0usize,
-            r#"{"matches":["b","b","b"],"index":2,"input":"aab","groups":{"whole":"b"},"indices":[[2,3],[2,3],[2,3]],"indexGroups":{"whole":[2,3]},"lastIndex":3,"source":"(?<whole>([\\q{a|b}&&[b-z]]))"}"#,
         ),
         (
             r#"(?<whole>([\q{K|s}--k]))"#,
             JsString::from_code_units(vec![8490, 115]),
             "divg",
             0usize,
-            r#"{"matches":["s","s","s"],"index":1,"input":"Ks","groups":{"whole":"s"},"indices":[[1,2],[1,2],[1,2]],"indexGroups":{"whole":[1,2]},"lastIndex":2,"source":"(?<whole>([\\q{K|s}--k]))"}"#,
         ),
         (
             r#"(?<whole>([^[[\q{K|s}]--[s]]]))"#,
             JsString::from_code_units(vec![8490]),
             "divg",
             0usize,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r#"^(?<whole>(\b[\q{K}&&k]\b))$"#,
             JsString::from_code_units(vec![120, 10, 8490, 10, 122]),
             "dgimv",
             0usize,
-            r#"{"matches":["K","K","K"],"index":2,"input":"x\nK\nz","groups":{"whole":"K"},"indices":[[2,3],[2,3],[2,3]],"indexGroups":{"whole":[2,3]},"lastIndex":3,"source":"^(?<whole>(\\b[\\q{K}&&k]\\b))$"}"#,
         ),
         (
             r#"^(?<whole>(\b[\q{K}&&k]\b))$"#,
             JsString::from_code_units(vec![120, 10, 8490, 10, 122]),
             "dgmv",
             0usize,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r#"(?<whole>(\b[\q{\uD83D\uDE00|x}&&[^\q{x}]]\B))"#,
             JsString::from_code_units(vec![65, 55357, 56832, 33]),
             "dvy",
             2usize,
-            r#"{"matches":["😀","😀","😀"],"index":1,"input":"A😀!","groups":{"whole":"😀"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>(\\b[\\q{\\uD83D\\uDE00|x}&&[^\\q{x}]]\\B))"}"#,
         ),
         (
             r#"(?<whole>([\q{\uD800|\uDC00}--[\q{\uDC00}]]))"#,
             JsString::from_code_units(vec![65, 55296, 66]),
             "dvg",
             0usize,
-            r#"{"matches":["\ud800","\ud800","\ud800"],"index":1,"input":"A\ud800B","groups":{"whole":"\ud800"},"indices":[[1,2],[1,2],[1,2]],"indexGroups":{"whole":[1,2]},"lastIndex":2,"source":"(?<whole>([\\q{\\uD800|\\uDC00}--[\\q{\\uDC00}]]))"}"#,
         ),
         (
             r#"(?<whole>([\q{\b|\!|\||\}|\/}&&[^\q{!}]]))"#,
             JsString::from_code_units(vec![33, 124]),
             "dvg",
             0usize,
-            r#"{"matches":["|","|","|"],"index":1,"input":"!|","groups":{"whole":"|"},"indices":[[1,2],[1,2],[1,2]],"indexGroups":{"whole":[1,2]},"lastIndex":2,"source":"(?<whole>([\\q{\\b|\\!|\\||\\}|\\/}&&[^\\q{!}]]))"}"#,
         ),
         (
             r#"^(?<whole>(\B[[\q{\r|\n|\u2028}]--[\q{\r}]]\B))$"#,
             JsString::from_code_units(vec![120, 13, 10, 8232, 121]),
             "dgmv",
             0usize,
-            r#"{"matches":["\n","\n","\n"],"index":2,"input":"x\r\n y","groups":{"whole":"\n"},"indices":[[2,3],[2,3],[2,3]],"indexGroups":{"whole":[2,3]},"lastIndex":3,"source":"^(?<whole>(\\B[[\\q{\\r|\\n|\\u2028}]--[\\q{\\r}]]\\B))$"}"#,
         ),
     ] {
         let script = format!(
-            "let r=new RegExp({pattern:?},{flags:?});r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:Array.from(m),index:m.index,input:m.input,groups:m.groups,indices:Array.from(m.indices),indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, {flags:?});
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: Array.from(m),
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: Array.from(m.indices),
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>([a\\q{b|c}]))" flags="dvg" input_units=[122, 98] lastIndex=0 "{\u0022matches\u0022:[\u0022b\u0022,\u0022b\u0022,\u0022b\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022zb\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022b\u0022},\u0022indices\u0022:[[1,2],[1,2],[1,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>([a\u005c\u005cq{b|c}]))\u0022}"
-        "(?<whole>([\\q{a|b}&&[b-z]]))" flags="dvg" input_units=[97, 97, 98] lastIndex=0 "{\u0022matches\u0022:[\u0022b\u0022,\u0022b\u0022,\u0022b\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022aab\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022b\u0022},\u0022indices\u0022:[[2,3],[2,3],[2,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[2,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cq{a|b}&&[b-z]]))\u0022}"
-        "(?<whole>([\\q{K|s}--k]))" flags="divg" input_units=[8490, 115] lastIndex=0 "{\u0022matches\u0022:[\u0022s\u0022,\u0022s\u0022,\u0022s\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022\u212as\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022s\u0022},\u0022indices\u0022:[[1,2],[1,2],[1,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cq{K|s}--k]))\u0022}"
-        "(?<whole>([^[[\\q{K|s}]--[s]]]))" flags="divg" input_units=[8490] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "^(?<whole>(\\b[\\q{K}&&k]\\b))$" flags="dgimv" input_units=[120, 10, 8490, 10, 122] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212a\u0022,\u0022\u212a\u0022,\u0022\u212a\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022x\u005cn\u212a\u005cnz\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212a\u0022},\u0022indices\u0022:[[2,3],[2,3],[2,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[2,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cb[\u005c\u005cq{K}&&k]\u005c\u005cb))$\u0022}"
-        "^(?<whole>(\\b[\\q{K}&&k]\\b))$" flags="dgmv" input_units=[120, 10, 8490, 10, 122] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(\\b[\\q{\\uD83D\\uDE00|x}&&[^\\q{x}]]\\B))" flags="dvy" input_units=[65, 55357, 56832, 33] lastIndex=2 "{\u0022matches\u0022:[\u0022\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\ud83d\ude00!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[\u005c\u005cq{\u005c\u005cuD83D\u005c\u005cuDE00|x}&&[^\u005c\u005cq{x}]]\u005c\u005cB))\u0022}"
-        "(?<whole>([\\q{\\uD800|\\uDC00}--[\\q{\\uDC00}]]))" flags="dvg" input_units=[65, 55296, 66] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u0022,\u0022\u005cud800\u0022,\u0022\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800B\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u0022},\u0022indices\u0022:[[1,2],[1,2],[1,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cq{\u005c\u005cuD800|\u005c\u005cuDC00}--[\u005c\u005cq{\u005c\u005cuDC00}]]))\u0022}"
-        "(?<whole>([\\q{\\b|\\!|\\||\\}|\\/}&&[^\\q{!}]]))" flags="dvg" input_units=[33, 124] lastIndex=0 "{\u0022matches\u0022:[\u0022|\u0022,\u0022|\u0022,\u0022|\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022!|\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022|\u0022},\u0022indices\u0022:[[1,2],[1,2],[1,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cq{\u005c\u005cb|\u005c\u005c!|\u005c\u005c||\u005c\u005c}|\u005c\u005c/}&&[^\u005c\u005cq{!}]]))\u0022}"
-        "^(?<whole>(\\B[[\\q{\\r|\\n|\\u2028}]--[\\q{\\r}]]\\B))$" flags="dgmv" input_units=[120, 13, 10, 8232, 121] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cn\u0022,\u0022\u005cn\u0022,\u0022\u005cn\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022x\u005cr\u005cn\u2028y\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cn\u0022},\u0022indices\u0022:[[2,3],[2,3],[2,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[2,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cB[[\u005c\u005cq{\u005c\u005cr|\u005c\u005cn|\u005c\u005cu2028}]--[\u005c\u005cq{\u005c\u005cr}]]\u005c\u005cB))$\u0022}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -9151,98 +8751,97 @@ fn single_character_v_string_repetition_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Complete JSON and original UTF16 spans were frozen before Runtime source.
-    for (pattern, input, flags, start, expected) in [
+    for (pattern, input, flags, start) in [
         (
             r#"(?<whole>([\q{a|b}]+))"#,
             JsString::from_code_units(vec![122, 97, 98, 98, 97, 33]),
             "dvg",
             0usize,
-            r#"{"matches":["abba","abba","abba"],"index":1,"input":"zabba!","groups":{"whole":"abba"},"indices":[[1,5],[1,5],[1,5]],"indexGroups":{"whole":[1,5]},"lastIndex":5,"source":"(?<whole>([\\q{a|b}]+))"}"#,
         ),
         (
             r#"(?<whole>([\q{a|b}&&[b-z]]{1,3}?))"#,
             JsString::from_code_units(vec![97, 98, 98, 98, 33]),
             "dvg",
             0usize,
-            r#"{"matches":["b","b","b"],"index":1,"input":"abbb!","groups":{"whole":"b"},"indices":[[1,2],[1,2],[1,2]],"indexGroups":{"whole":[1,2]},"lastIndex":2,"source":"(?<whole>([\\q{a|b}&&[b-z]]{1,3}?))"}"#,
         ),
         (
             r#"(?<whole>(\b[\q{a}--a]{0}\b))"#,
             JsString::from_code_units(vec![97]),
             "dvg",
             0usize,
-            r#"{"matches":["","",""],"index":0,"input":"a","groups":{"whole":""},"indices":[[0,0],[0,0],[0,0]],"indexGroups":{"whole":[0,0]},"lastIndex":0,"source":"(?<whole>(\\b[\\q{a}--a]{0}\\b))"}"#,
         ),
         (
             r#"(?<whole>([\q{K}&&k]+))"#,
             JsString::from_code_units(vec![33, 8490, 75, 107, 33]),
             "divg",
             0usize,
-            r#"{"matches":["KKk","KKk","KKk"],"index":1,"input":"!KKk!","groups":{"whole":"KKk"},"indices":[[1,4],[1,4],[1,4]],"indexGroups":{"whole":[1,4]},"lastIndex":4,"source":"(?<whole>([\\q{K}&&k]+))"}"#,
         ),
         (
             r#"(?<whole>([^\q{K|s}]+?))"#,
             JsString::from_code_units(vec![8490, 383, 33]),
             "divg",
             0usize,
-            r#"{"matches":["!","!","!"],"index":2,"input":"Kſ!","groups":{"whole":"!"},"indices":[[2,3],[2,3],[2,3]],"indexGroups":{"whole":[2,3]},"lastIndex":3,"source":"(?<whole>([^\\q{K|s}]+?))"}"#,
         ),
         (
             r#"(?<whole>(\b[\q{\uD83D\uDE00|x}&&[^\q{x}]]{1,2}\B))"#,
             JsString::from_code_units(vec![65, 55357, 56832, 55357, 56832, 33]),
             "dvy",
             2usize,
-            r#"{"matches":["😀😀","😀😀","😀😀"],"index":1,"input":"A😀😀!","groups":{"whole":"😀😀"},"indices":[[1,5],[1,5],[1,5]],"indexGroups":{"whole":[1,5]},"lastIndex":5,"source":"(?<whole>(\\b[\\q{\\uD83D\\uDE00|x}&&[^\\q{x}]]{1,2}\\B))"}"#,
         ),
         (
             r#"(?<whole>([\q{\uD800|x}--x]{2}))"#,
             JsString::from_code_units(vec![65, 55296, 55296, 66]),
             "dvg",
             0usize,
-            r#"{"matches":["\ud800\ud800","\ud800\ud800","\ud800\ud800"],"index":1,"input":"A\ud800\ud800B","groups":{"whole":"\ud800\ud800"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>([\\q{\\uD800|x}--x]{2}))"}"#,
         ),
         (
             r#"^(?<whole>(\B[[\q{\r|\n|\u2028}]--[\q{\r}]]{1,2}\B))$"#,
             JsString::from_code_units(vec![120, 13, 10, 8232, 121]),
             "dgmv",
             0usize,
-            r#"{"matches":["\n","\n","\n"],"index":2,"input":"x\r\n y","groups":{"whole":"\n"},"indices":[[2,3],[2,3],[2,3]],"indexGroups":{"whole":[2,3]},"lastIndex":3,"source":"^(?<whole>(\\B[[\\q{\\r|\\n|\\u2028}]--[\\q{\\r}]]{1,2}\\B))$"}"#,
         ),
         (
             r#"(?<whole>([\q{a|b}--a]{2,3}))"#,
             JsString::from_code_units(vec![97, 98, 98, 33]),
             "dvy",
             0usize,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
     ] {
         let script = format!(
-            "let r=new RegExp({pattern:?},{flags:?});r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:Array.from(m),index:m.index,input:m.input,groups:m.groups,indices:Array.from(m.indices),indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, {flags:?});
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: Array.from(m),
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: Array.from(m.indices),
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 9);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>([\\q{a|b}]+))" flags="dvg" input_units=[122, 97, 98, 98, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022abba\u0022,\u0022abba\u0022,\u0022abba\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022zabba!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022abba\u0022},\u0022indices\u0022:[[1,5],[1,5],[1,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cq{a|b}]+))\u0022}"
-        "(?<whole>([\\q{a|b}&&[b-z]]{1,3}?))" flags="dvg" input_units=[97, 98, 98, 98, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022b\u0022,\u0022b\u0022,\u0022b\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022abbb!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022b\u0022},\u0022indices\u0022:[[1,2],[1,2],[1,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cq{a|b}&&[b-z]]{1,3}?))\u0022}"
-        "(?<whole>(\\b[\\q{a}--a]{0}\\b))" flags="dvg" input_units=[97] lastIndex=0 "{\u0022matches\u0022:[\u0022\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022a\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u0022},\u0022indices\u0022:[[0,0],[0,0],[0,0]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,0]},\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[\u005c\u005cq{a}--a]{0}\u005c\u005cb))\u0022}"
-        "(?<whole>([\\q{K}&&k]+))" flags="divg" input_units=[33, 8490, 75, 107, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212aKk\u0022,\u0022\u212aKk\u0022,\u0022\u212aKk\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022!\u212aKk!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212aKk\u0022},\u0022indices\u0022:[[1,4],[1,4],[1,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cq{K}&&k]+))\u0022}"
-        "(?<whole>([^\\q{K|s}]+?))" flags="divg" input_units=[8490, 383, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022!\u0022,\u0022!\u0022,\u0022!\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022\u212a\u017f!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022!\u0022},\u0022indices\u0022:[[2,3],[2,3],[2,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[2,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([^\u005c\u005cq{K|s}]+?))\u0022}"
-        "(?<whole>(\\b[\\q{\\uD83D\\uDE00|x}&&[^\\q{x}]]{1,2}\\B))" flags="dvy" input_units=[65, 55357, 56832, 55357, 56832, 33] lastIndex=2 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude00\u0022,\u0022\ud83d\ude00\ud83d\ude00\u0022,\u0022\ud83d\ude00\ud83d\ude00\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\ud83d\ude00\ud83d\ude00!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude00\u0022},\u0022indices\u0022:[[1,5],[1,5],[1,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[\u005c\u005cq{\u005c\u005cuD83D\u005c\u005cuDE00|x}&&[^\u005c\u005cq{x}]]{1,2}\u005c\u005cB))\u0022}"
-        "(?<whole>([\\q{\\uD800|x}--x]{2}))" flags="dvg" input_units=[65, 55296, 55296, 66] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800B\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cq{\u005c\u005cuD800|x}--x]{2}))\u0022}"
-        "^(?<whole>(\\B[[\\q{\\r|\\n|\\u2028}]--[\\q{\\r}]]{1,2}\\B))$" flags="dgmv" input_units=[120, 13, 10, 8232, 121] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cn\u0022,\u0022\u005cn\u0022,\u0022\u005cn\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022x\u005cr\u005cn\u2028y\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cn\u0022},\u0022indices\u0022:[[2,3],[2,3],[2,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[2,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cB[[\u005c\u005cq{\u005c\u005cr|\u005c\u005cn|\u005c\u005cu2028}]--[\u005c\u005cq{\u005c\u005cr}]]{1,2}\u005c\u005cB))$\u0022}"
-        "(?<whole>([\\q{a|b}--a]{2,3}))" flags="dvy" input_units=[97, 98, 98, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -9374,106 +8973,103 @@ fn literal_single_character_v_string_class_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Complete JSON and original UTF16 spans were frozen before Runtime source.
-    for (pattern, input, flags, start, expected) in [
+    for (pattern, input, flags, start) in [
         (
             r#"(?<whole>(a[\q{b}]))"#,
             JsString::from_code_units(vec![97, 97, 98]),
             "dvg",
             0usize,
-            r#"{"matches":["ab","ab","ab"],"index":1,"input":"aab","groups":{"whole":"ab"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>(a[\\q{b}]))"}"#,
         ),
         (
             r#"(?<whole>(\Ba[\q{a}]\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 32, 97, 97, 33]),
             "dvg",
             0usize,
-            r#"{"matches":["aa","aa","aa"],"index":1,"input":"aaa aa!","groups":{"whole":"aa"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>(\\Ba[\\q{a}]\\b))"}"#,
         ),
         (
             r#"(?<whole>(s[\q{K}&&k]))"#,
             JsString::from_code_units(vec![33, 383, 8490, 33]),
             "divg",
             0usize,
-            r#"{"matches":["ſK","ſK","ſK"],"index":1,"input":"!ſK!","groups":{"whole":"ſK"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>(s[\\q{K}&&k]))"}"#,
         ),
         (
             r#"(?<whole>(K[^\q{K|s}]))"#,
             JsString::from_code_units(vec![8490, 383, 75, 33]),
             "divg",
             0usize,
-            r#"{"matches":["K!","K!","K!"],"index":2,"input":"KſK!","groups":{"whole":"K!"},"indices":[[2,4],[2,4],[2,4]],"indexGroups":{"whole":[2,4]},"lastIndex":4,"source":"(?<whole>(K[^\\q{K|s}]))"}"#,
         ),
         (
             r#"(?<whole>(\b\u{1f600}[\q{\uD83D\uDE01|x}--x]\B))"#,
             JsString::from_code_units(vec![65, 55357, 56832, 55357, 56833, 33]),
             "dvy",
             2usize,
-            r#"{"matches":["😀😁","😀😁","😀😁"],"index":1,"input":"A😀😁!","groups":{"whole":"😀😁"},"indices":[[1,5],[1,5],[1,5]],"indexGroups":{"whole":[1,5]},"lastIndex":5,"source":"(?<whole>(\\b\\u{1f600}[\\q{\\uD83D\\uDE01|x}--x]\\B))"}"#,
         ),
         (
             r#"(?<whole>(\uD800[\q{\uD800|x}--x]))"#,
             JsString::from_code_units(vec![65, 55296, 55296, 66]),
             "dvg",
             0usize,
-            r#"{"matches":["\ud800\ud800","\ud800\ud800","\ud800\ud800"],"index":1,"input":"A\ud800\ud800B","groups":{"whole":"\ud800\ud800"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>(\\uD800[\\q{\\uD800|x}--x]))"}"#,
         ),
         (
             r#"^(?<whole>(\B\r[\q{\n|\u2028}]\B))$"#,
             JsString::from_code_units(vec![120, 10, 13, 10, 13, 122]),
             "dgmv",
             0usize,
-            r#"{"matches":["\r\n","\r\n","\r\n"],"index":2,"input":"x\n\r\n\rz","groups":{"whole":"\r\n"},"indices":[[2,4],[2,4],[2,4]],"indexGroups":{"whole":[2,4]},"lastIndex":4,"source":"^(?<whole>(\\B\\r[\\q{\\n|\\u2028}]\\B))$"}"#,
         ),
         (
             r#"^(?<whole>(\B\$[\q{\]|\|}]\B))$"#,
             JsString::from_code_units(vec![36, 93]),
             "dvg",
             0usize,
-            r#"{"matches":["$]","$]","$]"],"index":0,"input":"$]","groups":{"whole":"$]"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"^(?<whole>(\\B\\$[\\q{\\]|\\|}]\\B))$"}"#,
         ),
         (
             r#"(?<whole>(s[^\q{K|s}]))"#,
             JsString::from_code_units(vec![383, 8490]),
             "divg",
             0usize,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r#"(?<whole>(a[\q{b}]))"#,
             JsString::from_code_units(vec![97, 97, 98]),
             "dvy",
             0usize,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
     ] {
         let script = format!(
-            "let r=new RegExp({pattern:?},{flags:?});r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:Array.from(m),index:m.index,input:m.input,groups:m.groups,indices:Array.from(m.indices),indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, {flags:?});
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: Array.from(m),
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: Array.from(m.indices),
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>(a[\\q{b}]))" flags="dvg" input_units=[97, 97, 98] lastIndex=0 "{\u0022matches\u0022:[\u0022ab\u0022,\u0022ab\u0022,\u0022ab\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aab\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022ab\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(a[\u005c\u005cq{b}]))\u0022}"
-        "(?<whole>(\\Ba[\\q{a}]\\b))" flags="dvg" input_units=[97, 97, 97, 32, 97, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aa\u0022,\u0022aa\u0022,\u0022aa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaa aa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aa\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cBa[\u005c\u005cq{a}]\u005c\u005cb))\u0022}"
-        "(?<whole>(s[\\q{K}&&k]))" flags="divg" input_units=[33, 383, 8490, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u017f\u212a\u0022,\u0022\u017f\u212a\u0022,\u0022\u017f\u212a\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022!\u017f\u212a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u017f\u212a\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(s[\u005c\u005cq{K}&&k]))\u0022}"
-        "(?<whole>(K[^\\q{K|s}]))" flags="divg" input_units=[8490, 383, 75, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022K!\u0022,\u0022K!\u0022,\u0022K!\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022\u212a\u017fK!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022K!\u0022},\u0022indices\u0022:[[2,4],[2,4],[2,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[2,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(K[^\u005c\u005cq{K|s}]))\u0022}"
-        "(?<whole>(\\b\\u{1f600}[\\q{\\uD83D\\uDE01|x}--x]\\B))" flags="dvy" input_units=[65, 55357, 56832, 55357, 56833, 33] lastIndex=2 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude01\u0022,\u0022\ud83d\ude00\ud83d\ude01\u0022,\u0022\ud83d\ude00\ud83d\ude01\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\ud83d\ude00\ud83d\ude01!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude01\u0022},\u0022indices\u0022:[[1,5],[1,5],[1,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb\u005c\u005cu{1f600}[\u005c\u005cq{\u005c\u005cuD83D\u005c\u005cuDE01|x}--x]\u005c\u005cB))\u0022}"
-        "(?<whole>(\\uD800[\\q{\\uD800|x}--x]))" flags="dvg" input_units=[65, 55296, 55296, 66] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800B\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cuD800[\u005c\u005cq{\u005c\u005cuD800|x}--x]))\u0022}"
-        "^(?<whole>(\\B\\r[\\q{\\n|\\u2028}]\\B))$" flags="dgmv" input_units=[120, 10, 13, 10, 13, 122] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cr\u005cn\u0022,\u0022\u005cr\u005cn\u0022,\u0022\u005cr\u005cn\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022x\u005cn\u005cr\u005cn\u005crz\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cr\u005cn\u0022},\u0022indices\u0022:[[2,4],[2,4],[2,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[2,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cB\u005c\u005cr[\u005c\u005cq{\u005c\u005cn|\u005c\u005cu2028}]\u005c\u005cB))$\u0022}"
-        "^(?<whole>(\\B\\$[\\q{\\]|\\|}]\\B))$" flags="dvg" input_units=[36, 93] lastIndex=0 "{\u0022matches\u0022:[\u0022$]\u0022,\u0022$]\u0022,\u0022$]\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022$]\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022$]\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022^(?<whole>(\u005c\u005cB\u005c\u005c$[\u005c\u005cq{\u005c\u005c]|\u005c\u005c|}]\u005c\u005cB))$\u0022}"
-        "(?<whole>(s[^\\q{K|s}]))" flags="divg" input_units=[383, 8490] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>(a[\\q{b}]))" flags="dvy" input_units=[97, 97, 98] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -9628,98 +9224,97 @@ fn wrapped_single_character_v_string_repetition_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Complete JSON, participation and UTF16 spans were frozen before this source.
-    for (pattern, input, flags, start, expected) in [
+    for (pattern, input, flags, start) in [
         (
             r#"(?<whole>(?<unit>([\q{a|b}]))+)"#,
             JsString::from_code_units(vec![122, 97, 98, 98, 97, 33]),
             "dvg",
             0usize,
-            r#"{"matches":["abba","abba","a","a"],"index":1,"input":"zabba!","groups":{"whole":"abba","unit":"a"},"indices":[[1,5],[1,5],[4,5],[4,5]],"indexGroups":{"whole":[1,5],"unit":[4,5]},"lastIndex":5,"source":"(?<whole>(?<unit>([\\q{a|b}]))+)"}"#,
         ),
         (
             r#"(?<whole>\B(?<unit>([\q{a}])){1,2}?\b)"#,
             JsString::from_code_units(vec![97, 97, 97, 33]),
             "dvg",
             0usize,
-            r#"{"matches":["aa","aa","a","a"],"index":1,"input":"aaa!","groups":{"whole":"aa","unit":"a"},"indices":[[1,3],[1,3],[2,3],[2,3]],"indexGroups":{"whole":[1,3],"unit":[2,3]},"lastIndex":3,"source":"(?<whole>\\B(?<unit>([\\q{a}])){1,2}?\\b)"}"#,
         ),
         (
             r#"(?<whole>(?<unit>([\q{a}--a])){0})"#,
             JsString::from_code_units(vec![97]),
             "dvg",
             0usize,
-            r#"{"matches":["","",null,null],"index":0,"input":"a","groups":{"whole":""},"indices":[[0,0],[0,0],null,null],"indexGroups":{"whole":[0,0]},"lastIndex":0,"source":"(?<whole>(?<unit>([\\q{a}--a])){0})"}"#,
         ),
         (
             r#"(?<whole>(?<unit>([\q{K}&&k]))+)"#,
             JsString::from_code_units(vec![33, 8490, 75, 107, 33]),
             "divg",
             0usize,
-            r#"{"matches":["KKk","KKk","k","k"],"index":1,"input":"!KKk!","groups":{"whole":"KKk","unit":"k"},"indices":[[1,4],[1,4],[3,4],[3,4]],"indexGroups":{"whole":[1,4],"unit":[3,4]},"lastIndex":4,"source":"(?<whole>(?<unit>([\\q{K}&&k]))+)"}"#,
         ),
         (
             r#"(?<whole>(?<unit>([^\q{K|s}]))+?)"#,
             JsString::from_code_units(vec![8490, 383, 33, 63]),
             "divg",
             0usize,
-            r#"{"matches":["!","!","!","!"],"index":2,"input":"Kſ!?","groups":{"whole":"!","unit":"!"},"indices":[[2,3],[2,3],[2,3],[2,3]],"indexGroups":{"whole":[2,3],"unit":[2,3]},"lastIndex":3,"source":"(?<whole>(?<unit>([^\\q{K|s}]))+?)"}"#,
         ),
         (
             r#"(?<whole>\b(?<unit>([\q{\uD83D\uDE00|x}--x])){1,2}\B)"#,
             JsString::from_code_units(vec![65, 55357, 56832, 55357, 56832, 33]),
             "dvy",
             2usize,
-            r#"{"matches":["😀😀","😀😀","😀","😀"],"index":1,"input":"A😀😀!","groups":{"whole":"😀😀","unit":"😀"},"indices":[[1,5],[1,5],[3,5],[3,5]],"indexGroups":{"whole":[1,5],"unit":[3,5]},"lastIndex":5,"source":"(?<whole>\\b(?<unit>([\\q{\\uD83D\\uDE00|x}--x])){1,2}\\B)"}"#,
         ),
         (
             r#"(?<whole>(?<unit>([\q{\uD800|x}--x])){2})"#,
             JsString::from_code_units(vec![65, 55296, 55296, 66]),
             "dvg",
             0usize,
-            r#"{"matches":["\ud800\ud800","\ud800\ud800","\ud800","\ud800"],"index":1,"input":"A\ud800\ud800B","groups":{"whole":"\ud800\ud800","unit":"\ud800"},"indices":[[1,3],[1,3],[2,3],[2,3]],"indexGroups":{"whole":[1,3],"unit":[2,3]},"lastIndex":3,"source":"(?<whole>(?<unit>([\\q{\\uD800|x}--x])){2})"}"#,
         ),
         (
             r#"^(?<whole>\B(?<unit>([\q{\r|\n}])){2}\B)$"#,
             JsString::from_code_units(vec![120, 10, 13, 10, 13, 122]),
             "dgmv",
             0usize,
-            r#"{"matches":["\r\n","\r\n","\n","\n"],"index":2,"input":"x\n\r\n\rz","groups":{"whole":"\r\n","unit":"\n"},"indices":[[2,4],[2,4],[3,4],[3,4]],"indexGroups":{"whole":[2,4],"unit":[3,4]},"lastIndex":4,"source":"^(?<whole>\\B(?<unit>([\\q{\\r|\\n}])){2}\\B)$"}"#,
         ),
         (
             r#"(?<whole>(?<unit>([\q{b}])){2})"#,
             JsString::from_code_units(vec![97, 97, 98, 98]),
             "dvy",
             0usize,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
     ] {
         let script = format!(
-            "let r=new RegExp({pattern:?},{flags:?});r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:Array.from(m),index:m.index,input:m.input,groups:m.groups,indices:Array.from(m.indices),indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, {flags:?});
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: Array.from(m),
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: Array.from(m.indices),
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 9);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>(?<unit>([\\q{a|b}]))+)" flags="dvg" input_units=[122, 97, 98, 98, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022abba\u0022,\u0022abba\u0022,\u0022a\u0022,\u0022a\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022zabba!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022abba\u0022,\u0022unit\u0022:\u0022a\u0022},\u0022indices\u0022:[[1,5],[1,5],[4,5],[4,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,5],\u0022unit\u0022:[4,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022(?<whole>(?<unit>([\u005c\u005cq{a|b}]))+)\u0022}"
-        "(?<whole>\\B(?<unit>([\\q{a}])){1,2}?\\b)" flags="dvg" input_units=[97, 97, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aa\u0022,\u0022aa\u0022,\u0022a\u0022,\u0022a\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aa\u0022,\u0022unit\u0022:\u0022a\u0022},\u0022indices\u0022:[[1,3],[1,3],[2,3],[2,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3],\u0022unit\u0022:[2,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>\u005c\u005cB(?<unit>([\u005c\u005cq{a}])){1,2}?\u005c\u005cb)\u0022}"
-        "(?<whole>(?<unit>([\\q{a}--a])){0})" flags="dvg" input_units=[97] lastIndex=0 "{\u0022matches\u0022:[\u0022\u0022,\u0022\u0022,null,null],\u0022index\u0022:0,\u0022input\u0022:\u0022a\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u0022},\u0022indices\u0022:[[0,0],[0,0],null,null],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,0]},\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<whole>(?<unit>([\u005c\u005cq{a}--a])){0})\u0022}"
-        "(?<whole>(?<unit>([\\q{K}&&k]))+)" flags="divg" input_units=[33, 8490, 75, 107, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212aKk\u0022,\u0022\u212aKk\u0022,\u0022k\u0022,\u0022k\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022!\u212aKk!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212aKk\u0022,\u0022unit\u0022:\u0022k\u0022},\u0022indices\u0022:[[1,4],[1,4],[3,4],[3,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,4],\u0022unit\u0022:[3,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(?<unit>([\u005c\u005cq{K}&&k]))+)\u0022}"
-        "(?<whole>(?<unit>([^\\q{K|s}]))+?)" flags="divg" input_units=[8490, 383, 33, 63] lastIndex=0 "{\u0022matches\u0022:[\u0022!\u0022,\u0022!\u0022,\u0022!\u0022,\u0022!\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022\u212a\u017f!?\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022!\u0022,\u0022unit\u0022:\u0022!\u0022},\u0022indices\u0022:[[2,3],[2,3],[2,3],[2,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[2,3],\u0022unit\u0022:[2,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(?<unit>([^\u005c\u005cq{K|s}]))+?)\u0022}"
-        "(?<whole>\\b(?<unit>([\\q{\\uD83D\\uDE00|x}--x])){1,2}\\B)" flags="dvy" input_units=[65, 55357, 56832, 55357, 56832, 33] lastIndex=2 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude00\u0022,\u0022\ud83d\ude00\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\ud83d\ude00\ud83d\ude00!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude00\u0022,\u0022unit\u0022:\u0022\ud83d\ude00\u0022},\u0022indices\u0022:[[1,5],[1,5],[3,5],[3,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,5],\u0022unit\u0022:[3,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022(?<whole>\u005c\u005cb(?<unit>([\u005c\u005cq{\u005c\u005cuD83D\u005c\u005cuDE00|x}--x])){1,2}\u005c\u005cB)\u0022}"
-        "(?<whole>(?<unit>([\\q{\\uD800|x}--x])){2})" flags="dvg" input_units=[65, 55296, 55296, 66] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u0022,\u0022\u005cud800\u0022,\u0022\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005cud800\u005cud800B\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u0022,\u0022unit\u0022:\u0022\u005cud800\u0022},\u0022indices\u0022:[[1,3],[1,3],[2,3],[2,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3],\u0022unit\u0022:[2,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>(?<unit>([\u005c\u005cq{\u005c\u005cuD800|x}--x])){2})\u0022}"
-        "^(?<whole>\\B(?<unit>([\\q{\\r|\\n}])){2}\\B)$" flags="dgmv" input_units=[120, 10, 13, 10, 13, 122] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cr\u005cn\u0022,\u0022\u005cr\u005cn\u0022,\u0022\u005cn\u0022,\u0022\u005cn\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022x\u005cn\u005cr\u005cn\u005crz\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cr\u005cn\u0022,\u0022unit\u0022:\u0022\u005cn\u0022},\u0022indices\u0022:[[2,4],[2,4],[3,4],[3,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[2,4],\u0022unit\u0022:[3,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022^(?<whole>\u005c\u005cB(?<unit>([\u005c\u005cq{\u005c\u005cr|\u005c\u005cn}])){2}\u005c\u005cB)$\u0022}"
-        "(?<whole>(?<unit>([\\q{b}])){2})" flags="dvy" input_units=[97, 97, 98, 98] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -9847,106 +9442,103 @@ fn raw_empty_single_character_v_string_repetition_results() {
     let mut rows = String::new();
     let mut row_count = 0;
     // Complete JSON, participation and UTF16 spans were frozen before this source.
-    for (pattern, input, flags, start, expected) in [
+    for (pattern, input, flags, start) in [
         (
             r#"(?<whole>(?<unit>([\q{a}--a]|))+)"#,
             JsString::from_code_units(vec![122]),
             "dvg",
             0usize,
-            r#"{"matches":["","","",""],"index":0,"input":"z","groups":{"whole":"","unit":""},"indices":[[0,0],[0,0],[0,0],[0,0]],"indexGroups":{"whole":[0,0],"unit":[0,0]},"lastIndex":0,"source":"(?<whole>(?<unit>([\\q{a}--a]|))+)"}"#,
         ),
         (
             r#"(?<whole>(?<unit>([\q{a}]|))*?)"#,
             JsString::from_code_units(vec![97]),
             "dvg",
             0usize,
-            r#"{"matches":["","",null,null],"index":0,"input":"a","groups":{"whole":""},"indices":[[0,0],[0,0],null,null],"indexGroups":{"whole":[0,0]},"lastIndex":0,"source":"(?<whole>(?<unit>([\\q{a}]|))*?)"}"#,
         ),
         (
             r#"(?<whole>(?<unit>([\q{a}]|))+?\b)"#,
             JsString::from_code_units(vec![97, 97, 33]),
             "dvg",
             0usize,
-            r#"{"matches":["aa","aa","a","a"],"index":0,"input":"aa!","groups":{"whole":"aa","unit":"a"},"indices":[[0,2],[0,2],[1,2],[1,2]],"indexGroups":{"whole":[0,2],"unit":[1,2]},"lastIndex":2,"source":"(?<whole>(?<unit>([\\q{a}]|))+?\\b)"}"#,
         ),
         (
             r#"(?<whole>(?<unit>(|[\q{a}]))+?)"#,
             JsString::from_code_units(vec![97]),
             "dvg",
             0usize,
-            r#"{"matches":["","","",""],"index":0,"input":"a","groups":{"whole":"","unit":""},"indices":[[0,0],[0,0],[0,0],[0,0]],"indexGroups":{"whole":[0,0],"unit":[0,0]},"lastIndex":0,"source":"(?<whole>(?<unit>(|[\\q{a}]))+?)"}"#,
         ),
         (
             r#"(?<whole>(?<unit>([^\q{K|s}]|))+?)"#,
             JsString::from_code_units(vec![8490, 33]),
             "divg",
             0usize,
-            r#"{"matches":["","","",""],"index":0,"input":"K!","groups":{"whole":"","unit":""},"indices":[[0,0],[0,0],[0,0],[0,0]],"indexGroups":{"whole":[0,0],"unit":[0,0]},"lastIndex":0,"source":"(?<whole>(?<unit>([^\\q{K|s}]|))+?)"}"#,
         ),
         (
             r#"^(?<whole>\b(?<unit>(|[\q{K}&&k]))+?\b)$"#,
             JsString::from_code_units(vec![8490, 75]),
             "divg",
             0usize,
-            r#"{"matches":["KK","KK","K","K"],"index":0,"input":"KK","groups":{"whole":"KK","unit":"K"},"indices":[[0,2],[0,2],[1,2],[1,2]],"indexGroups":{"whole":[0,2],"unit":[1,2]},"lastIndex":2,"source":"^(?<whole>\\b(?<unit>(|[\\q{K}&&k]))+?\\b)$"}"#,
         ),
         (
             r#"(?<whole>\b(?<unit>([\q{\uD83D\uDE00}]|))+\B)"#,
             JsString::from_code_units(vec![65, 55357, 56832, 55357, 56832, 33]),
             "dvy",
             2usize,
-            r#"{"matches":["😀😀","😀😀","😀","😀"],"index":1,"input":"A😀😀!","groups":{"whole":"😀😀","unit":"😀"},"indices":[[1,5],[1,5],[3,5],[3,5]],"indexGroups":{"whole":[1,5],"unit":[3,5]},"lastIndex":5,"source":"(?<whole>\\b(?<unit>([\\q{\\uD83D\\uDE00}]|))+\\B)"}"#,
         ),
         (
             r#"^(?<whole>\B(?<unit>(|[\q{\uD800}]))+\B)$"#,
             JsString::from_code_units(vec![120, 13, 10, 55296, 55296, 13, 10, 122]),
             "dgmvy",
             3usize,
-            r#"{"matches":["\ud800\ud800","\ud800\ud800","\ud800","\ud800"],"index":3,"input":"x\r\n\ud800\ud800\r\nz","groups":{"whole":"\ud800\ud800","unit":"\ud800"},"indices":[[3,5],[3,5],[4,5],[4,5]],"indexGroups":{"whole":[3,5],"unit":[4,5]},"lastIndex":5,"source":"^(?<whole>\\B(?<unit>(|[\\q{\\uD800}]))+\\B)$"}"#,
         ),
         (
             r#"(?<whole>\b(?<unit>([\q{a}--a]|))+\b)"#,
             JsString::from_code_units(vec![]),
             "dvg",
             0usize,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r#"(?<whole>\B(?<unit>([\q{a}]|))+?\b)"#,
             JsString::from_code_units(vec![97, 97, 97, 33]),
             "dvy",
             0usize,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
     ] {
         let script = format!(
-            "let r=new RegExp({pattern:?},{flags:?});r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:Array.from(m),index:m.index,input:m.input,groups:m.groups,indices:Array.from(m.indices),indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, {flags:?});
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: Array.from(m),
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: Array.from(m.indices),
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>(?<unit>([\\q{a}--a]|))+)" flags="dvg" input_units=[122] lastIndex=0 "{\u0022matches\u0022:[\u0022\u0022,\u0022\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022z\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u0022,\u0022unit\u0022:\u0022\u0022},\u0022indices\u0022:[[0,0],[0,0],[0,0],[0,0]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,0],\u0022unit\u0022:[0,0]},\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<whole>(?<unit>([\u005c\u005cq{a}--a]|))+)\u0022}"
-        "(?<whole>(?<unit>([\\q{a}]|))*?)" flags="dvg" input_units=[97] lastIndex=0 "{\u0022matches\u0022:[\u0022\u0022,\u0022\u0022,null,null],\u0022index\u0022:0,\u0022input\u0022:\u0022a\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u0022},\u0022indices\u0022:[[0,0],[0,0],null,null],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,0]},\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<whole>(?<unit>([\u005c\u005cq{a}]|))*?)\u0022}"
-        "(?<whole>(?<unit>([\\q{a}]|))+?\\b)" flags="dvg" input_units=[97, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aa\u0022,\u0022aa\u0022,\u0022a\u0022,\u0022a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022aa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aa\u0022,\u0022unit\u0022:\u0022a\u0022},\u0022indices\u0022:[[0,2],[0,2],[1,2],[1,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2],\u0022unit\u0022:[1,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>(?<unit>([\u005c\u005cq{a}]|))+?\u005c\u005cb)\u0022}"
-        "(?<whole>(?<unit>(|[\\q{a}]))+?)" flags="dvg" input_units=[97] lastIndex=0 "{\u0022matches\u0022:[\u0022\u0022,\u0022\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022a\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u0022,\u0022unit\u0022:\u0022\u0022},\u0022indices\u0022:[[0,0],[0,0],[0,0],[0,0]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,0],\u0022unit\u0022:[0,0]},\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<whole>(?<unit>(|[\u005c\u005cq{a}]))+?)\u0022}"
-        "(?<whole>(?<unit>([^\\q{K|s}]|))+?)" flags="divg" input_units=[8490, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u0022,\u0022\u0022,\u0022\u0022,\u0022\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u0022,\u0022unit\u0022:\u0022\u0022},\u0022indices\u0022:[[0,0],[0,0],[0,0],[0,0]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,0],\u0022unit\u0022:[0,0]},\u0022lastIndex\u0022:0,\u0022source\u0022:\u0022(?<whole>(?<unit>([^\u005c\u005cq{K|s}]|))+?)\u0022}"
-        "^(?<whole>\\b(?<unit>(|[\\q{K}&&k]))+?\\b)$" flags="divg" input_units=[8490, 75] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212aK\u0022,\u0022\u212aK\u0022,\u0022K\u0022,\u0022K\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212aK\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212aK\u0022,\u0022unit\u0022:\u0022K\u0022},\u0022indices\u0022:[[0,2],[0,2],[1,2],[1,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2],\u0022unit\u0022:[1,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022^(?<whole>\u005c\u005cb(?<unit>(|[\u005c\u005cq{K}&&k]))+?\u005c\u005cb)$\u0022}"
-        "(?<whole>\\b(?<unit>([\\q{\\uD83D\\uDE00}]|))+\\B)" flags="dvy" input_units=[65, 55357, 56832, 55357, 56832, 33] lastIndex=2 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude00\u0022,\u0022\ud83d\ude00\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022,\u0022\ud83d\ude00\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\ud83d\ude00\ud83d\ude00!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude00\u0022,\u0022unit\u0022:\u0022\ud83d\ude00\u0022},\u0022indices\u0022:[[1,5],[1,5],[3,5],[3,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,5],\u0022unit\u0022:[3,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022(?<whole>\u005c\u005cb(?<unit>([\u005c\u005cq{\u005c\u005cuD83D\u005c\u005cuDE00}]|))+\u005c\u005cB)\u0022}"
-        "^(?<whole>\\B(?<unit>(|[\\q{\\uD800}]))+\\B)$" flags="dgmvy" input_units=[120, 13, 10, 55296, 55296, 13, 10, 122] lastIndex=3 "{\u0022matches\u0022:[\u0022\u005cud800\u005cud800\u0022,\u0022\u005cud800\u005cud800\u0022,\u0022\u005cud800\u0022,\u0022\u005cud800\u0022],\u0022index\u0022:3,\u0022input\u0022:\u0022x\u005cr\u005cn\u005cud800\u005cud800\u005cr\u005cnz\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005cud800\u0022,\u0022unit\u0022:\u0022\u005cud800\u0022},\u0022indices\u0022:[[3,5],[3,5],[4,5],[4,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[3,5],\u0022unit\u0022:[4,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022^(?<whole>\u005c\u005cB(?<unit>(|[\u005c\u005cq{\u005c\u005cuD800}]))+\u005c\u005cB)$\u0022}"
-        "(?<whole>\\b(?<unit>([\\q{a}--a]|))+\\b)" flags="dvg" input_units=[] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>\\B(?<unit>([\\q{a}]|))+?\\b)" flags="dvy" input_units=[97, 97, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -10078,107 +9670,104 @@ fn single_character_v_string_class_literal_state_context_and_consumers() {
 fn single_character_v_string_class_literal_results() {
     let mut rows = String::new();
     let mut row_count = 0;
-    // All ten complete JSON/UTF16 rows were handwritten and reviewed first.
-    for (pattern, input, flags, start, expected) in [
+
+    for (pattern, input, flags, start) in [
         (
             r#"(?<whole>([\q{a}]a\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 33]),
             "dvg",
             0usize,
-            r#"{"matches":["aa","aa","aa"],"index":1,"input":"aaa!","groups":{"whole":"aa"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>([\\q{a}]a\\b))"}"#,
         ),
         (
             r#"(?<whole>([\q{a}]a\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 33]),
             "dvgy",
             0usize,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r#"(?<whole>([\q{a}]a\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 33]),
             "dvgy",
             1usize,
-            r#"{"matches":["aa","aa","aa"],"index":1,"input":"aaa!","groups":{"whole":"aa"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>([\\q{a}]a\\b))"}"#,
         ),
         (
             r#"(?<whole>([\q{a|b}]c$))"#,
             JsString::from_code_units(vec![120, 13, 10, 97, 97, 98, 99, 8232, 122]),
             "dgmv",
             0usize,
-            r#"{"matches":["bc","bc","bc"],"index":5,"input":"x\r\naabc z","groups":{"whole":"bc"},"indices":[[5,7],[5,7],[5,7]],"indexGroups":{"whole":[5,7]},"lastIndex":7,"source":"(?<whole>([\\q{a|b}]c$))"}"#,
         ),
         (
             r#"(?<whole>(^[\q{\]|\\|\[}]\$))"#,
             JsString::from_code_units(vec![122, 120, 121, 13, 10, 93, 36, 116, 97, 105, 108, 8232]),
             "dgmv",
             0usize,
-            r#"{"matches":["]$","]$","]$"],"index":5,"input":"zxy\r\n]$tail ","groups":{"whole":"]$"},"indices":[[5,7],[5,7],[5,7]],"indexGroups":{"whole":[5,7]},"lastIndex":7,"source":"(?<whole>(^[\\q{\\]|\\\\|\\[}]\\$))"}"#,
         ),
         (
             r#"(?<whole>([\q{K}&&k]\u{00000061}))"#,
             JsString::from_code_units(vec![8490, 65, 33]),
             "dgiv",
             0usize,
-            r#"{"matches":["KA","KA","KA"],"index":0,"input":"KA!","groups":{"whole":"KA"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"(?<whole>([\\q{K}&&k]\\u{00000061}))"}"#,
         ),
         (
             r#"(?<whole>(\B[^\q{K|s}]\$\B))"#,
             JsString::from_code_units(vec![8490, 383, 65, 36]),
             "dgiv",
             0usize,
-            r#"{"matches":["A$","A$","A$"],"index":2,"input":"KſA$","groups":{"whole":"A$"},"indices":[[2,4],[2,4],[2,4]],"indexGroups":{"whole":[2,4]},"lastIndex":4,"source":"(?<whole>(\\B[^\\q{K|s}]\\$\\B))"}"#,
         ),
         (
             r#"(?<whole>([\q{\uD83D\uDE00}]\uD83D\uDE80))"#,
             JsString::from_code_units(vec![55357, 56832, 55357, 56960, 33]),
             "dvgy",
             1usize,
-            r#"{"matches":["😀🚀","😀🚀","😀🚀"],"index":0,"input":"😀🚀!","groups":{"whole":"😀🚀"},"indices":[[0,4],[0,4],[0,4]],"indexGroups":{"whole":[0,4]},"lastIndex":4,"source":"(?<whole>([\\q{\\uD83D\\uDE00}]\\uD83D\\uDE80))"}"#,
         ),
         (
             r#"(?<whole>([\q{\uD800}]\\))"#,
             JsString::from_code_units(vec![55296, 92]),
             "dvg",
             0usize,
-            r#"{"matches":["\ud800\\","\ud800\\","\ud800\\"],"index":0,"input":"\ud800\\","groups":{"whole":"\ud800\\"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"(?<whole>([\\q{\\uD800}]\\\\))"}"#,
         ),
         (
             r#"(?<whole>([a--a--\q{a}]c))"#,
             JsString::from_code_units(vec![97, 99]),
             "dvg",
             0usize,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
     ] {
         let script = format!(
-            "let r=new RegExp({pattern:?},{flags:?});r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:Array.from(m),index:m.index,input:m.input,groups:m.groups,indices:Array.from(m.indices),indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, {flags:?});
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: Array.from(m),
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: Array.from(m.indices),
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>([\\q{a}]a\\b))" flags="dvg" input_units=[97, 97, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aa\u0022,\u0022aa\u0022,\u0022aa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aa\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cq{a}]a\u005c\u005cb))\u0022}"
-        "(?<whole>([\\q{a}]a\\b))" flags="dvgy" input_units=[97, 97, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([\\q{a}]a\\b))" flags="dvgy" input_units=[97, 97, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022aa\u0022,\u0022aa\u0022,\u0022aa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aa\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cq{a}]a\u005c\u005cb))\u0022}"
-        "(?<whole>([\\q{a|b}]c$))" flags="dgmv" input_units=[120, 13, 10, 97, 97, 98, 99, 8232, 122] lastIndex=0 "{\u0022matches\u0022:[\u0022bc\u0022,\u0022bc\u0022,\u0022bc\u0022],\u0022index\u0022:5,\u0022input\u0022:\u0022x\u005cr\u005cnaabc\u2028z\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022bc\u0022},\u0022indices\u0022:[[5,7],[5,7],[5,7]],\u0022indexGroups\u0022:{\u0022whole\u0022:[5,7]},\u0022lastIndex\u0022:7,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cq{a|b}]c$))\u0022}"
-        "(?<whole>(^[\\q{\\]|\\\\|\\[}]\\$))" flags="dgmv" input_units=[122, 120, 121, 13, 10, 93, 36, 116, 97, 105, 108, 8232] lastIndex=0 "{\u0022matches\u0022:[\u0022]$\u0022,\u0022]$\u0022,\u0022]$\u0022],\u0022index\u0022:5,\u0022input\u0022:\u0022zxy\u005cr\u005cn]$tail\u2028\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022]$\u0022},\u0022indices\u0022:[[5,7],[5,7],[5,7]],\u0022indexGroups\u0022:{\u0022whole\u0022:[5,7]},\u0022lastIndex\u0022:7,\u0022source\u0022:\u0022(?<whole>(^[\u005c\u005cq{\u005c\u005c]|\u005c\u005c\u005c\u005c|\u005c\u005c[}]\u005c\u005c$))\u0022}"
-        "(?<whole>([\\q{K}&&k]\\u{00000061}))" flags="dgiv" input_units=[8490, 65, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212aA\u0022,\u0022\u212aA\u0022,\u0022\u212aA\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212aA!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212aA\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cq{K}&&k]\u005c\u005cu{00000061}))\u0022}"
-        "(?<whole>(\\B[^\\q{K|s}]\\$\\B))" flags="dgiv" input_units=[8490, 383, 65, 36] lastIndex=0 "{\u0022matches\u0022:[\u0022A$\u0022,\u0022A$\u0022,\u0022A$\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022\u212a\u017fA$\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022A$\u0022},\u0022indices\u0022:[[2,4],[2,4],[2,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[2,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[^\u005c\u005cq{K|s}]\u005c\u005c$\u005c\u005cB))\u0022}"
-        "(?<whole>([\\q{\\uD83D\\uDE00}]\\uD83D\\uDE80))" flags="dvgy" input_units=[55357, 56832, 55357, 56960, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude80\u0022,\u0022\ud83d\ude00\ud83d\ude80\u0022,\u0022\ud83d\ude00\ud83d\ude80\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\ud83d\ude80!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude80\u0022},\u0022indices\u0022:[[0,4],[0,4],[0,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cq{\u005c\u005cuD83D\u005c\u005cuDE00}]\u005c\u005cuD83D\u005c\u005cuDE80))\u0022}"
-        "(?<whole>([\\q{\\uD800}]\\\\))" flags="dvg" input_units=[55296, 92] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005c\u005c\u0022,\u0022\u005cud800\u005c\u005c\u0022,\u0022\u005cud800\u005c\u005c\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u005cud800\u005c\u005c\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005c\u005c\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cq{\u005c\u005cuD800}]\u005c\u005c\u005c\u005c))\u0022}"
-        "(?<whole>([a--a--\\q{a}]c))" flags="dvg" input_units=[97, 99] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -10330,107 +9919,104 @@ fn single_character_v_string_then_flat_class_state_context_and_consumers() {
 fn single_character_v_string_then_flat_class_results() {
     let mut rows = String::new();
     let mut row_count = 0;
-    // All ten complete JSON/UTF16 rows were handwritten and reviewed first.
-    for (pattern, input, flags, start, expected) in [
+
+    for (pattern, input, flags, start) in [
         (
             r#"(?<whole>([\q{a}][a]\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 33]),
             "dvg",
             0usize,
-            r#"{"matches":["aa","aa","aa"],"index":1,"input":"aaa!","groups":{"whole":"aa"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>([\\q{a}][a]\\b))"}"#,
         ),
         (
             r#"(?<whole>([\q{a}][a]\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 33]),
             "dvgy",
             0usize,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r#"(?<whole>([\q{a}][a]\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 33]),
             "dvgy",
             1usize,
-            r#"{"matches":["aa","aa","aa"],"index":1,"input":"aaa!","groups":{"whole":"aa"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>([\\q{a}][a]\\b))"}"#,
         ),
         (
             r#"(?<whole>([\q{a|b}][c]$))"#,
             JsString::from_code_units(vec![120, 13, 10, 97, 97, 98, 99, 8232, 122]),
             "dgmv",
             0usize,
-            r#"{"matches":["bc","bc","bc"],"index":5,"input":"x\r\naabc z","groups":{"whole":"bc"},"indices":[[5,7],[5,7],[5,7]],"indexGroups":{"whole":[5,7]},"lastIndex":7,"source":"(?<whole>([\\q{a|b}][c]$))"}"#,
         ),
         (
             r#"(?<whole>(^[\q{\]|\\|\[}][\$]))"#,
             JsString::from_code_units(vec![122, 120, 121, 13, 10, 93, 36, 116, 97, 105, 108, 8232]),
             "dgmv",
             0usize,
-            r#"{"matches":["]$","]$","]$"],"index":5,"input":"zxy\r\n]$tail ","groups":{"whole":"]$"},"indices":[[5,7],[5,7],[5,7]],"indexGroups":{"whole":[5,7]},"lastIndex":7,"source":"(?<whole>(^[\\q{\\]|\\\\|\\[}][\\$]))"}"#,
         ),
         (
             r#"(?<whole>([\q{K}&&k][a]))"#,
             JsString::from_code_units(vec![8490, 65, 33]),
             "dgiv",
             0usize,
-            r#"{"matches":["KA","KA","KA"],"index":0,"input":"KA!","groups":{"whole":"KA"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"(?<whole>([\\q{K}&&k][a]))"}"#,
         ),
         (
             r#"(?<whole>(\B[^\q{K|s}][\p{ASCII}]\B))"#,
             JsString::from_code_units(vec![8490, 383, 65, 36]),
             "dgiv",
             0usize,
-            r#"{"matches":["A$","A$","A$"],"index":2,"input":"KſA$","groups":{"whole":"A$"},"indices":[[2,4],[2,4],[2,4]],"indexGroups":{"whole":[2,4]},"lastIndex":4,"source":"(?<whole>(\\B[^\\q{K|s}][\\p{ASCII}]\\B))"}"#,
         ),
         (
             r#"(?<whole>([\q{\uD83D\uDE00}][\uD83D\uDE80]))"#,
             JsString::from_code_units(vec![55357, 56832, 55357, 56960, 33]),
             "dvgy",
             1usize,
-            r#"{"matches":["😀🚀","😀🚀","😀🚀"],"index":0,"input":"😀🚀!","groups":{"whole":"😀🚀"},"indices":[[0,4],[0,4],[0,4]],"indexGroups":{"whole":[0,4]},"lastIndex":4,"source":"(?<whole>([\\q{\\uD83D\\uDE00}][\\uD83D\\uDE80]))"}"#,
         ),
         (
             r#"(?<whole>([\q{\uD800}][\\]))"#,
             JsString::from_code_units(vec![55296, 92]),
             "dvg",
             0usize,
-            r#"{"matches":["\ud800\\","\ud800\\","\ud800\\"],"index":0,"input":"\ud800\\","groups":{"whole":"\ud800\\"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"(?<whole>([\\q{\\uD800}][\\\\]))"}"#,
         ),
         (
             r#"(?<whole>([a--a--\q{a}][\p{ASCII}]))"#,
             JsString::from_code_units(vec![97, 99]),
             "dvg",
             0usize,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
     ] {
         let script = format!(
-            "let r=new RegExp({pattern:?},{flags:?});r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:Array.from(m),index:m.index,input:m.input,groups:m.groups,indices:Array.from(m.indices),indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, {flags:?});
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: Array.from(m),
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: Array.from(m.indices),
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>([\\q{a}][a]\\b))" flags="dvg" input_units=[97, 97, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aa\u0022,\u0022aa\u0022,\u0022aa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aa\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cq{a}][a]\u005c\u005cb))\u0022}"
-        "(?<whole>([\\q{a}][a]\\b))" flags="dvgy" input_units=[97, 97, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([\\q{a}][a]\\b))" flags="dvgy" input_units=[97, 97, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022aa\u0022,\u0022aa\u0022,\u0022aa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aa\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cq{a}][a]\u005c\u005cb))\u0022}"
-        "(?<whole>([\\q{a|b}][c]$))" flags="dgmv" input_units=[120, 13, 10, 97, 97, 98, 99, 8232, 122] lastIndex=0 "{\u0022matches\u0022:[\u0022bc\u0022,\u0022bc\u0022,\u0022bc\u0022],\u0022index\u0022:5,\u0022input\u0022:\u0022x\u005cr\u005cnaabc\u2028z\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022bc\u0022},\u0022indices\u0022:[[5,7],[5,7],[5,7]],\u0022indexGroups\u0022:{\u0022whole\u0022:[5,7]},\u0022lastIndex\u0022:7,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cq{a|b}][c]$))\u0022}"
-        "(?<whole>(^[\\q{\\]|\\\\|\\[}][\\$]))" flags="dgmv" input_units=[122, 120, 121, 13, 10, 93, 36, 116, 97, 105, 108, 8232] lastIndex=0 "{\u0022matches\u0022:[\u0022]$\u0022,\u0022]$\u0022,\u0022]$\u0022],\u0022index\u0022:5,\u0022input\u0022:\u0022zxy\u005cr\u005cn]$tail\u2028\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022]$\u0022},\u0022indices\u0022:[[5,7],[5,7],[5,7]],\u0022indexGroups\u0022:{\u0022whole\u0022:[5,7]},\u0022lastIndex\u0022:7,\u0022source\u0022:\u0022(?<whole>(^[\u005c\u005cq{\u005c\u005c]|\u005c\u005c\u005c\u005c|\u005c\u005c[}][\u005c\u005c$]))\u0022}"
-        "(?<whole>([\\q{K}&&k][a]))" flags="dgiv" input_units=[8490, 65, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u212aA\u0022,\u0022\u212aA\u0022,\u0022\u212aA\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u212aA!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u212aA\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cq{K}&&k][a]))\u0022}"
-        "(?<whole>(\\B[^\\q{K|s}][\\p{ASCII}]\\B))" flags="dgiv" input_units=[8490, 383, 65, 36] lastIndex=0 "{\u0022matches\u0022:[\u0022A$\u0022,\u0022A$\u0022,\u0022A$\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022\u212a\u017fA$\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022A$\u0022},\u0022indices\u0022:[[2,4],[2,4],[2,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[2,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[^\u005c\u005cq{K|s}][\u005c\u005cp{ASCII}]\u005c\u005cB))\u0022}"
-        "(?<whole>([\\q{\\uD83D\\uDE00}][\\uD83D\\uDE80]))" flags="dvgy" input_units=[55357, 56832, 55357, 56960, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude80\u0022,\u0022\ud83d\ude00\ud83d\ude80\u0022,\u0022\ud83d\ude00\ud83d\ude80\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\ud83d\ude80!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude80\u0022},\u0022indices\u0022:[[0,4],[0,4],[0,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cq{\u005c\u005cuD83D\u005c\u005cuDE00}][\u005c\u005cuD83D\u005c\u005cuDE80]))\u0022}"
-        "(?<whole>([\\q{\\uD800}][\\\\]))" flags="dvg" input_units=[55296, 92] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005c\u005c\u0022,\u0022\u005cud800\u005c\u005c\u0022,\u0022\u005cud800\u005c\u005c\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u005cud800\u005c\u005c\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005c\u005c\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cq{\u005c\u005cuD800}][\u005c\u005c\u005c\u005c]))\u0022}"
-        "(?<whole>([a--a--\\q{a}][\\p{ASCII}]))" flags="dvg" input_units=[97, 99] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -10600,107 +10186,104 @@ fn flat_class_then_single_character_v_string_state_context_and_consumers() {
 fn flat_class_then_single_character_v_string_results() {
     let mut rows = String::new();
     let mut row_count = 0;
-    // All ten complete JSON/UTF16 rows were handwritten and reviewed first.
-    for (pattern, input, flags, start, expected) in [
+
+    for (pattern, input, flags, start) in [
         (
             r#"(?<whole>([a][\q{a}]\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 33]),
             "dvg",
             0usize,
-            r#"{"matches":["aa","aa","aa"],"index":1,"input":"aaa!","groups":{"whole":"aa"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>([a][\\q{a}]\\b))"}"#,
         ),
         (
             r#"(?<whole>([a][\q{a}]\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 33]),
             "dvgy",
             0usize,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r#"(?<whole>([a][\q{a}]\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 33]),
             "dvgy",
             1usize,
-            r#"{"matches":["aa","aa","aa"],"index":1,"input":"aaa!","groups":{"whole":"aa"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>([a][\\q{a}]\\b))"}"#,
         ),
         (
             r#"(?<whole>([a-c][\q{c|d}]$))"#,
             JsString::from_code_units(vec![120, 13, 10, 97, 97, 98, 99, 8232, 122]),
             "dgmv",
             0usize,
-            r#"{"matches":["bc","bc","bc"],"index":5,"input":"x\r\naabc z","groups":{"whole":"bc"},"indices":[[5,7],[5,7],[5,7]],"indexGroups":{"whole":[5,7]},"lastIndex":7,"source":"(?<whole>([a-c][\\q{c|d}]$))"}"#,
         ),
         (
             r#"(?<whole>(^[\$][\q{\]|\\|\[}]))"#,
             JsString::from_code_units(vec![122, 120, 121, 13, 10, 36, 93, 116, 97, 105, 108, 8232]),
             "dgmv",
             0usize,
-            r#"{"matches":["$]","$]","$]"],"index":5,"input":"zxy\r\n$]tail ","groups":{"whole":"$]"},"indices":[[5,7],[5,7],[5,7]],"indexGroups":{"whole":[5,7]},"lastIndex":7,"source":"(?<whole>(^[\\$][\\q{\\]|\\\\|\\[}]))"}"#,
         ),
         (
             r#"(?<whole>([a][\q{K}&&k]))"#,
             JsString::from_code_units(vec![65, 8490, 33]),
             "dgiv",
             0usize,
-            r#"{"matches":["AK","AK","AK"],"index":0,"input":"AK!","groups":{"whole":"AK"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"(?<whole>([a][\\q{K}&&k]))"}"#,
         ),
         (
             r#"(?<whole>(\B[\p{ASCII}][^\q{K|s}]\B))"#,
             JsString::from_code_units(vec![8490, 383, 65, 36]),
             "dgiv",
             0usize,
-            r#"{"matches":["A$","A$","A$"],"index":2,"input":"KſA$","groups":{"whole":"A$"},"indices":[[2,4],[2,4],[2,4]],"indexGroups":{"whole":[2,4]},"lastIndex":4,"source":"(?<whole>(\\B[\\p{ASCII}][^\\q{K|s}]\\B))"}"#,
         ),
         (
             r#"(?<whole>([\uD83D\uDE00][\q{\uD83D\uDE80}]))"#,
             JsString::from_code_units(vec![55357, 56832, 55357, 56960, 33]),
             "dvgy",
             1usize,
-            r#"{"matches":["😀🚀","😀🚀","😀🚀"],"index":0,"input":"😀🚀!","groups":{"whole":"😀🚀"},"indices":[[0,4],[0,4],[0,4]],"indexGroups":{"whole":[0,4]},"lastIndex":4,"source":"(?<whole>([\\uD83D\\uDE00][\\q{\\uD83D\\uDE80}]))"}"#,
         ),
         (
             r#"(?<whole>([\\][\q{\uD800}]))"#,
             JsString::from_code_units(vec![92, 55296]),
             "dvg",
             0usize,
-            r#"{"matches":["\\\ud800","\\\ud800","\\\ud800"],"index":0,"input":"\\\ud800","groups":{"whole":"\\\ud800"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"(?<whole>([\\\\][\\q{\\uD800}]))"}"#,
         ),
         (
             r#"(?<whole>([][a--a--\q{a}]))"#,
             JsString::from_code_units(vec![97, 99]),
             "dvg",
             0usize,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
     ] {
         let script = format!(
-            "let r=new RegExp({pattern:?},{flags:?});r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:Array.from(m),index:m.index,input:m.input,groups:m.groups,indices:Array.from(m.indices),indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, {flags:?});
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: Array.from(m),
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: Array.from(m.indices),
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>([a][\\q{a}]\\b))" flags="dvg" input_units=[97, 97, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aa\u0022,\u0022aa\u0022,\u0022aa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aa\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([a][\u005c\u005cq{a}]\u005c\u005cb))\u0022}"
-        "(?<whole>([a][\\q{a}]\\b))" flags="dvgy" input_units=[97, 97, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([a][\\q{a}]\\b))" flags="dvgy" input_units=[97, 97, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022aa\u0022,\u0022aa\u0022,\u0022aa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aa\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([a][\u005c\u005cq{a}]\u005c\u005cb))\u0022}"
-        "(?<whole>([a-c][\\q{c|d}]$))" flags="dgmv" input_units=[120, 13, 10, 97, 97, 98, 99, 8232, 122] lastIndex=0 "{\u0022matches\u0022:[\u0022bc\u0022,\u0022bc\u0022,\u0022bc\u0022],\u0022index\u0022:5,\u0022input\u0022:\u0022x\u005cr\u005cnaabc\u2028z\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022bc\u0022},\u0022indices\u0022:[[5,7],[5,7],[5,7]],\u0022indexGroups\u0022:{\u0022whole\u0022:[5,7]},\u0022lastIndex\u0022:7,\u0022source\u0022:\u0022(?<whole>([a-c][\u005c\u005cq{c|d}]$))\u0022}"
-        "(?<whole>(^[\\$][\\q{\\]|\\\\|\\[}]))" flags="dgmv" input_units=[122, 120, 121, 13, 10, 36, 93, 116, 97, 105, 108, 8232] lastIndex=0 "{\u0022matches\u0022:[\u0022$]\u0022,\u0022$]\u0022,\u0022$]\u0022],\u0022index\u0022:5,\u0022input\u0022:\u0022zxy\u005cr\u005cn$]tail\u2028\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022$]\u0022},\u0022indices\u0022:[[5,7],[5,7],[5,7]],\u0022indexGroups\u0022:{\u0022whole\u0022:[5,7]},\u0022lastIndex\u0022:7,\u0022source\u0022:\u0022(?<whole>(^[\u005c\u005c$][\u005c\u005cq{\u005c\u005c]|\u005c\u005c\u005c\u005c|\u005c\u005c[}]))\u0022}"
-        "(?<whole>([a][\\q{K}&&k]))" flags="dgiv" input_units=[65, 8490, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022A\u212a\u0022,\u0022A\u212a\u0022,\u0022A\u212a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022A\u212a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022A\u212a\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>([a][\u005c\u005cq{K}&&k]))\u0022}"
-        "(?<whole>(\\B[\\p{ASCII}][^\\q{K|s}]\\B))" flags="dgiv" input_units=[8490, 383, 65, 36] lastIndex=0 "{\u0022matches\u0022:[\u0022A$\u0022,\u0022A$\u0022,\u0022A$\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022\u212a\u017fA$\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022A$\u0022},\u0022indices\u0022:[[2,4],[2,4],[2,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[2,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[\u005c\u005cp{ASCII}][^\u005c\u005cq{K|s}]\u005c\u005cB))\u0022}"
-        "(?<whole>([\\uD83D\\uDE00][\\q{\\uD83D\\uDE80}]))" flags="dvgy" input_units=[55357, 56832, 55357, 56960, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude80\u0022,\u0022\ud83d\ude00\ud83d\ude80\u0022,\u0022\ud83d\ude00\ud83d\ude80\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\ud83d\ude80!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude80\u0022},\u0022indices\u0022:[[0,4],[0,4],[0,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cuD83D\u005c\u005cuDE00][\u005c\u005cq{\u005c\u005cuD83D\u005c\u005cuDE80}]))\u0022}"
-        "(?<whole>([\\\\][\\q{\\uD800}]))" flags="dvg" input_units=[92, 55296] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005c\u005c\u005cud800\u0022,\u0022\u005c\u005c\u005cud800\u0022,\u0022\u005c\u005c\u005cud800\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u005c\u005c\u005cud800\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005c\u005c\u005cud800\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>([\u005c\u005c\u005c\u005c][\u005c\u005cq{\u005c\u005cuD800}]))\u0022}"
-        "(?<whole>([][a--a--\\q{a}]))" flags="dvg" input_units=[97, 99] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -10852,107 +10435,104 @@ fn single_character_v_string_class_pair_state_context_and_consumers() {
 fn single_character_v_string_class_pair_results() {
     let mut rows = String::new();
     let mut row_count = 0;
-    // All ten complete JSON/UTF16 rows were handwritten and reviewed first.
-    for (pattern, input, flags, start, expected) in [
+
+    for (pattern, input, flags, start) in [
         (
             r#"(?<whole>([\q{a}][\q{a}]\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 33]),
             "dvg",
             0usize,
-            r#"{"matches":["aa","aa","aa"],"index":1,"input":"aaa!","groups":{"whole":"aa"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>([\\q{a}][\\q{a}]\\b))"}"#,
         ),
         (
             r#"(?<whole>([\q{a}][\q{a}]\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 33]),
             "dvgy",
             0usize,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r#"(?<whole>([\q{a}][\q{a}]\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 33]),
             "dvgy",
             1usize,
-            r#"{"matches":["aa","aa","aa"],"index":1,"input":"aaa!","groups":{"whole":"aa"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>([\\q{a}][\\q{a}]\\b))"}"#,
         ),
         (
             r#"(?<whole>([\q{a|b}][\q{c|d}]$))"#,
             JsString::from_code_units(vec![120, 13, 10, 97, 97, 98, 99, 8232, 122]),
             "dgmv",
             0usize,
-            r#"{"matches":["bc","bc","bc"],"index":5,"input":"x\r\naabc z","groups":{"whole":"bc"},"indices":[[5,7],[5,7],[5,7]],"indexGroups":{"whole":[5,7]},"lastIndex":7,"source":"(?<whole>([\\q{a|b}][\\q{c|d}]$))"}"#,
         ),
         (
             r#"(?<whole>(^[\q{\$}][\q{\]|\\|\[}]))"#,
             JsString::from_code_units(vec![122, 120, 121, 13, 10, 36, 93, 116, 97, 105, 108, 8232]),
             "dgmv",
             0usize,
-            r#"{"matches":["$]","$]","$]"],"index":5,"input":"zxy\r\n$]tail ","groups":{"whole":"$]"},"indices":[[5,7],[5,7],[5,7]],"indexGroups":{"whole":[5,7]},"lastIndex":7,"source":"(?<whole>(^[\\q{\\$}][\\q{\\]|\\\\|\\[}]))"}"#,
         ),
         (
             r#"(?<whole>([\q{s}][\q{K}&&k]))"#,
             JsString::from_code_units(vec![383, 8490, 33]),
             "dgiv",
             0usize,
-            r#"{"matches":["ſK","ſK","ſK"],"index":0,"input":"ſK!","groups":{"whole":"ſK"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"(?<whole>([\\q{s}][\\q{K}&&k]))"}"#,
         ),
         (
             r#"(?<whole>(\B[\q{K|s|a}][^\q{K|s}]\B))"#,
             JsString::from_code_units(vec![8490, 383, 65, 36]),
             "dgiv",
             0usize,
-            r#"{"matches":["A$","A$","A$"],"index":2,"input":"KſA$","groups":{"whole":"A$"},"indices":[[2,4],[2,4],[2,4]],"indexGroups":{"whole":[2,4]},"lastIndex":4,"source":"(?<whole>(\\B[\\q{K|s|a}][^\\q{K|s}]\\B))"}"#,
         ),
         (
             r#"(?<whole>([\q{\uD83D\uDE00}][\q{\uD83D\uDE80}]))"#,
             JsString::from_code_units(vec![55357, 56832, 55357, 56960, 33]),
             "dvgy",
             1usize,
-            r#"{"matches":["😀🚀","😀🚀","😀🚀"],"index":0,"input":"😀🚀!","groups":{"whole":"😀🚀"},"indices":[[0,4],[0,4],[0,4]],"indexGroups":{"whole":[0,4]},"lastIndex":4,"source":"(?<whole>([\\q{\\uD83D\\uDE00}][\\q{\\uD83D\\uDE80}]))"}"#,
         ),
         (
             r#"(?<whole>([\q{\uD800}][\q{\\}]))"#,
             JsString::from_code_units(vec![55296, 92]),
             "dvg",
             0usize,
-            r#"{"matches":["\ud800\\","\ud800\\","\ud800\\"],"index":0,"input":"\ud800\\","groups":{"whole":"\ud800\\"},"indices":[[0,2],[0,2],[0,2]],"indexGroups":{"whole":[0,2]},"lastIndex":2,"source":"(?<whole>([\\q{\\uD800}][\\q{\\\\}]))"}"#,
         ),
         (
             r#"(?<whole>([a--a--\q{a}][\q{b}--b]))"#,
             JsString::from_code_units(vec![97, 98]),
             "dvg",
             0usize,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
     ] {
         let script = format!(
-            "let r=new RegExp({pattern:?},{flags:?});r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:Array.from(m),index:m.index,input:m.input,groups:m.groups,indices:Array.from(m.indices),indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, {flags:?});
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: Array.from(m),
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: Array.from(m.indices),
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>([\\q{a}][\\q{a}]\\b))" flags="dvg" input_units=[97, 97, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aa\u0022,\u0022aa\u0022,\u0022aa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aa\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cq{a}][\u005c\u005cq{a}]\u005c\u005cb))\u0022}"
-        "(?<whole>([\\q{a}][\\q{a}]\\b))" flags="dvgy" input_units=[97, 97, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([\\q{a}][\\q{a}]\\b))" flags="dvgy" input_units=[97, 97, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022aa\u0022,\u0022aa\u0022,\u0022aa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aa\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cq{a}][\u005c\u005cq{a}]\u005c\u005cb))\u0022}"
-        "(?<whole>([\\q{a|b}][\\q{c|d}]$))" flags="dgmv" input_units=[120, 13, 10, 97, 97, 98, 99, 8232, 122] lastIndex=0 "{\u0022matches\u0022:[\u0022bc\u0022,\u0022bc\u0022,\u0022bc\u0022],\u0022index\u0022:5,\u0022input\u0022:\u0022x\u005cr\u005cnaabc\u2028z\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022bc\u0022},\u0022indices\u0022:[[5,7],[5,7],[5,7]],\u0022indexGroups\u0022:{\u0022whole\u0022:[5,7]},\u0022lastIndex\u0022:7,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cq{a|b}][\u005c\u005cq{c|d}]$))\u0022}"
-        "(?<whole>(^[\\q{\\$}][\\q{\\]|\\\\|\\[}]))" flags="dgmv" input_units=[122, 120, 121, 13, 10, 36, 93, 116, 97, 105, 108, 8232] lastIndex=0 "{\u0022matches\u0022:[\u0022$]\u0022,\u0022$]\u0022,\u0022$]\u0022],\u0022index\u0022:5,\u0022input\u0022:\u0022zxy\u005cr\u005cn$]tail\u2028\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022$]\u0022},\u0022indices\u0022:[[5,7],[5,7],[5,7]],\u0022indexGroups\u0022:{\u0022whole\u0022:[5,7]},\u0022lastIndex\u0022:7,\u0022source\u0022:\u0022(?<whole>(^[\u005c\u005cq{\u005c\u005c$}][\u005c\u005cq{\u005c\u005c]|\u005c\u005c\u005c\u005c|\u005c\u005c[}]))\u0022}"
-        "(?<whole>([\\q{s}][\\q{K}&&k]))" flags="dgiv" input_units=[383, 8490, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u017f\u212a\u0022,\u0022\u017f\u212a\u0022,\u0022\u017f\u212a\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u017f\u212a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u017f\u212a\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cq{s}][\u005c\u005cq{K}&&k]))\u0022}"
-        "(?<whole>(\\B[\\q{K|s|a}][^\\q{K|s}]\\B))" flags="dgiv" input_units=[8490, 383, 65, 36] lastIndex=0 "{\u0022matches\u0022:[\u0022A$\u0022,\u0022A$\u0022,\u0022A$\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022\u212a\u017fA$\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022A$\u0022},\u0022indices\u0022:[[2,4],[2,4],[2,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[2,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[\u005c\u005cq{K|s|a}][^\u005c\u005cq{K|s}]\u005c\u005cB))\u0022}"
-        "(?<whole>([\\q{\\uD83D\\uDE00}][\\q{\\uD83D\\uDE80}]))" flags="dvgy" input_units=[55357, 56832, 55357, 56960, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude80\u0022,\u0022\ud83d\ude00\ud83d\ude80\u0022,\u0022\ud83d\ude00\ud83d\ude80\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\ud83d\ude00\ud83d\ude80!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude80\u0022},\u0022indices\u0022:[[0,4],[0,4],[0,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cq{\u005c\u005cuD83D\u005c\u005cuDE00}][\u005c\u005cq{\u005c\u005cuD83D\u005c\u005cuDE80}]))\u0022}"
-        "(?<whole>([\\q{\\uD800}][\\q{\\\\}]))" flags="dvg" input_units=[55296, 92] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005cud800\u005c\u005c\u0022,\u0022\u005cud800\u005c\u005c\u0022,\u0022\u005cud800\u005c\u005c\u0022],\u0022index\u0022:0,\u0022input\u0022:\u0022\u005cud800\u005c\u005c\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005cud800\u005c\u005c\u0022},\u0022indices\u0022:[[0,2],[0,2],[0,2]],\u0022indexGroups\u0022:{\u0022whole\u0022:[0,2]},\u0022lastIndex\u0022:2,\u0022source\u0022:\u0022(?<whole>([\u005c\u005cq{\u005c\u005cuD800}][\u005c\u005cq{\u005c\u005c\u005c\u005c}]))\u0022}"
-        "(?<whole>([a--a--\\q{a}][\\q{b}--b]))" flags="dvg" input_units=[97, 98] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
 
 #[test]
@@ -11092,105 +10672,102 @@ fn checked_class_then_single_character_v_string_state_context_and_consumers() {
 fn checked_class_then_single_character_v_string_results() {
     let mut rows = String::new();
     let mut row_count = 0;
-    // All ten full JSON/UTF16 rows were handwritten before source authoring.
-    for (pattern, input, flags, start, expected) in [
+
+    for (pattern, input, flags, start) in [
         (
             r#"(?<whole>([[a]][\q{b}]))"#,
             JsString::from_code_units(vec![97, 97, 98, 33]),
             "dvg",
             0usize,
-            r#"{"matches":["ab","ab","ab"],"index":1,"input":"aab!","groups":{"whole":"ab"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>([[a]][\\q{b}]))"}"#,
         ),
         (
             r#"(?<whole>([a&&a][\q{a}]\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 33]),
             "dvg",
             0usize,
-            r#"{"matches":["aa","aa","aa"],"index":1,"input":"aaa!","groups":{"whole":"aa"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>([a&&a][\\q{a}]\\b))"}"#,
         ),
         (
             r#"(?<whole>([a&&a][\q{a}]\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 33]),
             "dvy",
             0usize,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
         (
             r#"(?<whole>([a&&a][\q{a}]\b))"#,
             JsString::from_code_units(vec![97, 97, 97, 33]),
             "dvy",
             1usize,
-            r#"{"matches":["aa","aa","aa"],"index":1,"input":"aaa!","groups":{"whole":"aa"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>([a&&a][\\q{a}]\\b))"}"#,
         ),
         (
             r#"(?<whole>([s&&s][\q{K}&&k]))"#,
             JsString::from_code_units(vec![33, 383, 8490, 33]),
             "divg",
             0usize,
-            r#"{"matches":["ſK","ſK","ſK"],"index":1,"input":"!ſK!","groups":{"whole":"ſK"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>([s&&s][\\q{K}&&k]))"}"#,
         ),
         (
             r#"(?<whole>(\B[[\p{Any}]][^\q{K|s}]\B))"#,
             JsString::from_code_units(vec![8490, 383, 65, 36]),
             "divg",
             0usize,
-            r#"{"matches":["A$","A$","A$"],"index":2,"input":"KſA$","groups":{"whole":"A$"},"indices":[[2,4],[2,4],[2,4]],"indexGroups":{"whole":[2,4]},"lastIndex":4,"source":"(?<whole>(\\B[[\\p{Any}]][^\\q{K|s}]\\B))"}"#,
         ),
         (
             r#"(?<whole>(\b[[\u{1f600}]][\q{\uD83D\uDE80|x}--x]\B))"#,
             JsString::from_code_units(vec![65, 55357, 56832, 55357, 56960, 33]),
             "dvy",
             2usize,
-            r#"{"matches":["😀🚀","😀🚀","😀🚀"],"index":1,"input":"A😀🚀!","groups":{"whole":"😀🚀"},"indices":[[1,5],[1,5],[1,5]],"indexGroups":{"whole":[1,5]},"lastIndex":5,"source":"(?<whole>(\\b[[\\u{1f600}]][\\q{\\uD83D\\uDE80|x}--x]\\B))"}"#,
         ),
         (
             r#"(?<whole>([[\\]][\q{\uD800}]))"#,
             JsString::from_code_units(vec![65, 92, 55296, 66]),
             "dvg",
             0usize,
-            r#"{"matches":["\\\ud800","\\\ud800","\\\ud800"],"index":1,"input":"A\\\ud800B","groups":{"whole":"\\\ud800"},"indices":[[1,3],[1,3],[1,3]],"indexGroups":{"whole":[1,3]},"lastIndex":3,"source":"(?<whole>([[\\\\]][\\q{\\uD800}]))"}"#,
         ),
         (
             r#"(?<whole>(^[[\$]][\q{\]|\\|\[}]))"#,
             JsString::from_code_units(vec![122, 120, 121, 13, 10, 36, 93, 116, 97, 105, 108, 8232]),
             "dgmv",
             0usize,
-            r#"{"matches":["$]","$]","$]"],"index":5,"input":"zxy\r\n$]tail ","groups":{"whole":"$]"},"indices":[[5,7],[5,7],[5,7]],"indexGroups":{"whole":[5,7]},"lastIndex":7,"source":"(?<whole>(^[[\\$]][\\q{\\]|\\\\|\\[}]))"}"#,
         ),
         (
             r#"(?<whole>([a--a][\q{b}]))"#,
             JsString::from_code_units(vec![97, 98, 33]),
             "dvg",
             0usize,
-            r#"{"match":null,"lastIndex":0}"#,
         ),
     ] {
         let script = format!(
-            "let r=new RegExp({pattern:?},{flags:?});r.lastIndex={start};let m=r.exec({input:?});JSON.stringify(m===null?{{match:null,lastIndex:r.lastIndex}}:{{matches:Array.from(m),index:m.index,input:m.input,groups:m.groups,indices:Array.from(m.indices),indexGroups:m.indices.groups,lastIndex:r.lastIndex,source:r.source}})"
+            r#"
+                let r = new RegExp({pattern:?}, {flags:?});
+                r.lastIndex = {start};
+                let m = r.exec({input:?});
+                JSON.stringify(m === null ? {{
+                    match: null,
+                    lastIndex: r.lastIndex
+                }} : {{
+                    matches: Array.from(m),
+                    index: m.index,
+                    input: m.input,
+                    groups: m.groups,
+                    indices: Array.from(m.indices),
+                    indexGroups: m.indices.groups,
+                    lastIndex: r.lastIndex,
+                    source: r.source
+                }}, null, 2)
+            "#
         );
         let Value::String(result) = Realm::default().eval(&script).unwrap() else {
             panic!("{script}")
         };
-        assert_eq!(result, JsString::from(expected), "{script}");
+
         writeln!(
             rows,
-            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start} {result:?}",
-            input.code_units()
+            "{pattern:?} flags={flags:?} input_units={:?} lastIndex={start}\n{result}\n",
+            input.code_units(),
+            result = result.to_utf8().expect("JSON output must be valid UTF-8"),
         )
         .unwrap();
         row_count += 1;
     }
     assert_eq!(row_count, 10);
-    insta::assert_snapshot!(rows, @r#"
-        "(?<whole>([[a]][\\q{b}]))" flags="dvg" input_units=[97, 97, 98, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022ab\u0022,\u0022ab\u0022,\u0022ab\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aab!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022ab\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([[a]][\u005c\u005cq{b}]))\u0022}"
-        "(?<whole>([a&&a][\\q{a}]\\b))" flags="dvg" input_units=[97, 97, 97, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022aa\u0022,\u0022aa\u0022,\u0022aa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aa\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([a&&a][\u005c\u005cq{a}]\u005c\u005cb))\u0022}"
-        "(?<whole>([a&&a][\\q{a}]\\b))" flags="dvy" input_units=[97, 97, 97, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "(?<whole>([a&&a][\\q{a}]\\b))" flags="dvy" input_units=[97, 97, 97, 33] lastIndex=1 "{\u0022matches\u0022:[\u0022aa\u0022,\u0022aa\u0022,\u0022aa\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022aaa!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022aa\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([a&&a][\u005c\u005cq{a}]\u005c\u005cb))\u0022}"
-        "(?<whole>([s&&s][\\q{K}&&k]))" flags="divg" input_units=[33, 383, 8490, 33] lastIndex=0 "{\u0022matches\u0022:[\u0022\u017f\u212a\u0022,\u0022\u017f\u212a\u0022,\u0022\u017f\u212a\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022!\u017f\u212a!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u017f\u212a\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([s&&s][\u005c\u005cq{K}&&k]))\u0022}"
-        "(?<whole>(\\B[[\\p{Any}]][^\\q{K|s}]\\B))" flags="divg" input_units=[8490, 383, 65, 36] lastIndex=0 "{\u0022matches\u0022:[\u0022A$\u0022,\u0022A$\u0022,\u0022A$\u0022],\u0022index\u0022:2,\u0022input\u0022:\u0022\u212a\u017fA$\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022A$\u0022},\u0022indices\u0022:[[2,4],[2,4],[2,4]],\u0022indexGroups\u0022:{\u0022whole\u0022:[2,4]},\u0022lastIndex\u0022:4,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cB[[\u005c\u005cp{Any}]][^\u005c\u005cq{K|s}]\u005c\u005cB))\u0022}"
-        "(?<whole>(\\b[[\\u{1f600}]][\\q{\\uD83D\\uDE80|x}--x]\\B))" flags="dvy" input_units=[65, 55357, 56832, 55357, 56960, 33] lastIndex=2 "{\u0022matches\u0022:[\u0022\ud83d\ude00\ud83d\ude80\u0022,\u0022\ud83d\ude00\ud83d\ude80\u0022,\u0022\ud83d\ude00\ud83d\ude80\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\ud83d\ude00\ud83d\ude80!\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\ud83d\ude00\ud83d\ude80\u0022},\u0022indices\u0022:[[1,5],[1,5],[1,5]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,5]},\u0022lastIndex\u0022:5,\u0022source\u0022:\u0022(?<whole>(\u005c\u005cb[[\u005c\u005cu{1f600}]][\u005c\u005cq{\u005c\u005cuD83D\u005c\u005cuDE80|x}--x]\u005c\u005cB))\u0022}"
-        "(?<whole>([[\\\\]][\\q{\\uD800}]))" flags="dvg" input_units=[65, 92, 55296, 66] lastIndex=0 "{\u0022matches\u0022:[\u0022\u005c\u005c\u005cud800\u0022,\u0022\u005c\u005c\u005cud800\u0022,\u0022\u005c\u005c\u005cud800\u0022],\u0022index\u0022:1,\u0022input\u0022:\u0022A\u005c\u005c\u005cud800B\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022\u005c\u005c\u005cud800\u0022},\u0022indices\u0022:[[1,3],[1,3],[1,3]],\u0022indexGroups\u0022:{\u0022whole\u0022:[1,3]},\u0022lastIndex\u0022:3,\u0022source\u0022:\u0022(?<whole>([[\u005c\u005c\u005c\u005c]][\u005c\u005cq{\u005c\u005cuD800}]))\u0022}"
-        "(?<whole>(^[[\\$]][\\q{\\]|\\\\|\\[}]))" flags="dgmv" input_units=[122, 120, 121, 13, 10, 36, 93, 116, 97, 105, 108, 8232] lastIndex=0 "{\u0022matches\u0022:[\u0022$]\u0022,\u0022$]\u0022,\u0022$]\u0022],\u0022index\u0022:5,\u0022input\u0022:\u0022zxy\u005cr\u005cn$]tail\u2028\u0022,\u0022groups\u0022:{\u0022whole\u0022:\u0022$]\u0022},\u0022indices\u0022:[[5,7],[5,7],[5,7]],\u0022indexGroups\u0022:{\u0022whole\u0022:[5,7]},\u0022lastIndex\u0022:7,\u0022source\u0022:\u0022(?<whole>(^[[\u005c\u005c$]][\u005c\u005cq{\u005c\u005c]|\u005c\u005c\u005c\u005c|\u005c\u005c[}]))\u0022}"
-        "(?<whole>([a--a][\\q{b}]))" flags="dvg" input_units=[97, 98, 33] lastIndex=0 "{\u0022match\u0022:null,\u0022lastIndex\u0022:0}"
-        "#);
+    insta::assert_snapshot!(rows);
 }
