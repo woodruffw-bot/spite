@@ -98,7 +98,7 @@ fn entries_are_objects_read_by_index_without_length_or_iteration() {
     assert_true(
         r#"
             let o = Object.fromEntries([function() {}, Object(1), Object(true), Object(1n), Object(
-            Symbol())]);
+                Symbol())]);
             Object.hasOwn(o, 'undefined') && o.undefined === undefined && Object.keys(o).length === 1
         "#,
     );
@@ -242,7 +242,19 @@ fn invalid_inputs_and_iterator_acquisition_failures_do_not_close() {
     }
     assert_true("Object.keys(Object.fromEntries('')).length===0");
     assert_true(
-        "let caught=false;try{Object.fromEntries({get [Symbol.iterator](){throw 7;}});}catch(e){caught=e===7;}caught",
+        r#"
+            let caught = false;
+            try {
+                Object.fromEntries({
+                    get [Symbol.iterator]() {
+                        throw 7;
+                    }
+                });
+            } catch (e) {
+                caught = e === 7;
+            }
+            caught
+        "#,
     );
     assert_true(
         r#"

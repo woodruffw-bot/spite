@@ -37,7 +37,13 @@ fn default_and_explicit_constructors_use_base_return_and_prototype_rules() {
         "#,
     );
     assert_true(
-        "class C{}function N(){}N.prototype=7;Object.getPrototypeOf(Reflect.construct(C,[],N))===Object.prototype",
+        r#"
+            class C {}
+
+            function N() {}
+            N.prototype = 7;
+            Object.getPrototypeOf(Reflect.construct(C, [], N)) === Object.prototype
+        "#,
     );
 }
 
@@ -112,13 +118,42 @@ fn class_calls_evaluate_arguments_and_apply_lists_before_throwing() {
 #[test]
 fn constructor_and_method_descriptors_are_non_enumerable_and_exact() {
     assert_true(
-        "class C{m(a,b=1){} static s(){} get x(){return 1;}set x(v){}}let p=Object.getOwnPropertyDescriptor(C,'prototype'),c=Object.getOwnPropertyDescriptor(C.prototype,'constructor'),m=Object.getOwnPropertyDescriptor(C.prototype,'m'),x=Object.getOwnPropertyDescriptor(C.prototype,'x');!p.writable && !p.enumerable && !p.configurable && c.writable && !c.enumerable && c.configurable && c.value===C && m.writable && !m.enumerable && m.configurable && m.value.length===1 && !Object.hasOwn(m.value,'prototype') && !x.enumerable && x.configurable && x.get.name==='get x' && x.set.name==='set x' && Object.keys(C).length===0 && Object.keys(C.prototype).length===0 && Object.getPrototypeOf(C)===Function.prototype && Object.getPrototypeOf(C.prototype)===Object.prototype",
+        r#"
+            class C {
+                m(a, b = 1) {}
+                static s() {}
+                get x() {
+                    return 1;
+                }
+                set x(v) {}
+            }
+            let p = Object.getOwnPropertyDescriptor(C, 'prototype'),
+                c = Object.getOwnPropertyDescriptor(C.prototype, 'constructor'),
+                m = Object.getOwnPropertyDescriptor(C.prototype, 'm'),
+                x = Object.getOwnPropertyDescriptor(C.prototype, 'x');
+            !p.writable && !p.enumerable && !p.configurable && c.writable && !c.enumerable && c
+                .configurable && c.value === C && m.writable && !m.enumerable && m.configurable && m.value
+                .length === 1 && !Object.hasOwn(m.value, 'prototype') && !x.enumerable && x.configurable &&
+                x.get.name === 'get x' && x.set.name === 'set x' && Object.keys(C).length === 0 && Object
+                .keys(C.prototype).length === 0 && Object.getPrototypeOf(C) === Function.prototype &&
+                Object.getPrototypeOf(C.prototype) === Object.prototype
+        "#,
     );
     assert_true(
         "class C{m(){}static s(){}}let caught=0;try{new C.prototype.m;}catch(e){caught+=e instanceof TypeError;}try{new C.s;}catch(e){caught+=e instanceof TypeError;}caught===2 && typeof C==='function' && Object.prototype.toString.call(C)==='[object Function]'",
     );
     assert_true(
-        "class C{['constructor'](){return 7;}static constructor(){return 8;}}new C().constructor()===7 && C.constructor()===8",
+        r#"
+            class C {
+                ['constructor']() {
+                    return 7;
+                }
+                static constructor() {
+                    return 8;
+                }
+            }
+            new C().constructor() === 7 && C.constructor() === 8
+        "#,
     );
 }
 
@@ -377,7 +412,17 @@ fn computed_names_are_ordered_and_do_not_create_a_class_this_binding() {
         "#,
     );
     assert_true(
-        "let caught=false;try{class C{static ['prototype'](){}}}catch(e){caught=e instanceof TypeError;}caught",
+        r#"
+            let caught = false;
+            try {
+                class C {
+                    static['prototype']() {}
+                }
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught
+        "#,
     );
 }
 
@@ -426,7 +471,17 @@ fn class_super_uses_constructor_and_method_home_objects() {
         "#,
     );
     assert_true(
-        "class C{m(){return new.target; }static s(){return new.target;}}new C().m()===undefined && C.s()===undefined",
+        r#"
+            class C {
+                m() {
+                    return new.target;
+                }
+                static s() {
+                    return new.target;
+                }
+            }
+            new C().m() === undefined && C.s() === undefined
+        "#,
     );
 }
 

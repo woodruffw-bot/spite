@@ -7,7 +7,11 @@ use crate::common::assert_true;
 #[test]
 fn arrays_strings_holes_and_live_lengths_are_iterated() {
     assert_true(
-        "let values=[];for(let x of [,2])values.push(x);values.length===2 && values[0]===undefined && values[1]===2",
+        r#"
+            let values = [];
+            for (let x of [, 2]) values.push(x);
+            values.length === 2 && values[0] === undefined && values[1] === 2
+        "#,
     );
     assert_true(
         r#"
@@ -209,7 +213,16 @@ fn var_is_hoisted_and_uses_the_surrounding_binding() {
 #[test]
 fn lexical_bindings_have_rhs_tdz_and_fresh_iteration_environments() {
     assert_true(
-        "let x=[1],caught=false;try{for(let x of x){};}catch(e){caught=e instanceof ReferenceError;}caught && x[0]===1",
+        r#"
+            let x = [1],
+                caught = false;
+            try {
+                for (let x of x) {};
+            } catch (e) {
+                caught = e instanceof ReferenceError;
+            }
+            caught && x[0] === 1
+        "#,
     );
     assert_true(
         r#"

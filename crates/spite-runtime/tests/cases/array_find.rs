@@ -43,7 +43,16 @@ fn holes_deleted_elements_and_inherited_values_are_visited() {
         "[,1,,].findIndex(v=>v===undefined)===0 && [,1,,].findLastIndex(v=>v===undefined)===2",
     );
     assert_true(
-        "let a=[1,2,3],log='';a.find((v,k)=>{log+=k+':'+v+';';delete a[1];return false;});log==='0:1;1:undefined;2:3;'",
+        r#"
+            let a = [1, 2, 3],
+                log = '';
+            a.find((v, k) => {
+                log += k + ':' + v + ';';
+                delete a[1];
+                return false;
+            });
+            log === '0:1;1:undefined;2:3;'
+        "#,
     );
     assert_true(
         r#"
@@ -115,7 +124,7 @@ fn generic_receivers_and_full_safe_integer_range_are_supported() {
                 length: Infinity
             };
             Array.prototype.findLast.call(o, () => true) === 'last' && Array.prototype.findLastIndex.call(
-                    o, () => true) === 9007199254740990 && Array.prototype.findIndex.call(o, () =>
+                o, () => true) === 9007199254740990 && Array.prototype.findIndex.call(o, () =>
                 true) === 0
         "#,
     );

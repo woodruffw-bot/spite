@@ -83,7 +83,13 @@ fn generic_receivers_convert_length_and_preserve_safe_integer_keys() {
         "-0",
     ] {
         assert_true(&format!(
-            "let o={{length:{length},0:7}};Array.prototype.pop.call(o)===undefined && Object.is(o.length,0) && o[0]===7"
+            r#"
+                let o = {{
+                    length: {length},
+                    0: 7
+                }};
+                Array.prototype.pop.call(o) === undefined && Object.is(o.length, 0) && o[0] === 7
+            "#
         ));
     }
 }

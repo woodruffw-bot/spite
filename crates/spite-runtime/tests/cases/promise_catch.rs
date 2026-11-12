@@ -140,7 +140,7 @@ fn proxy_get_and_apply_hooks_follow_generic_invoke_semantics() {
                     apply(t, self, args) {
                         log += 'a';
                         if (self !== receiver || args.length !== 2 || args[0] !== undefined || args[
-                            1] !== 3) throw 1;
+                                1] !== 3) throw 1;
                         return 8
                     }
                 });

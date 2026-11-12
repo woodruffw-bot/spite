@@ -34,10 +34,19 @@ fn create_uses_exact_prototype_identity_without_calling_or_coercing_it() {
         "#,
     );
     assert_true(
-        "let o=Object.create(null);Object.getPrototypeOf(o)===null && !('constructor' in o) && !('toString' in o)",
+        r#"
+            let o = Object.create(null);
+            Object.getPrototypeOf(o) === null && !('constructor' in o) && !('toString' in o)
+        "#,
     );
     assert_true(
-        "let F=function(){throw 1;};let o=Object.create(F);Object.getPrototypeOf(o)===F && typeof o==='object'",
+        r#"
+            let F = function() {
+                throw 1;
+            };
+            let o = Object.create(F);
+            Object.getPrototypeOf(o) === F && typeof o === 'object'
+        "#,
     );
     assert_true(
         r#"
@@ -57,7 +66,14 @@ fn create_uses_exact_prototype_identity_without_calling_or_coercing_it() {
         "#,
     );
     assert_true(
-        "let o=Object.create(null,{['__proto__']:{value:7}});o.__proto__===7 && Object.getPrototypeOf(o)===null",
+        r#"
+            let o = Object.create(null, {
+                ['__proto__']: {
+                    value: 7
+                }
+            });
+            o.__proto__ === 7 && Object.getPrototypeOf(o) === null
+        "#,
     );
     for prototype in ["undefined", "1", "true", "1n", "'x'"] {
         type_error(&format!("Object.create({prototype},null)"));
@@ -297,7 +313,10 @@ fn primitive_properties_and_invalid_targets_follow_distinct_conversion_rules() {
         "let o={};Object.defineProperties(o,Function.prototype)===o && Object.keys(o).length===0",
     );
     assert_true(
-        "let target={};Object.defineProperties(target,globalThis)===target && Reflect.ownKeys(target).length===0",
+        r#"
+            let target = {};
+            Object.defineProperties(target, globalThis) === target && Reflect.ownKeys(target).length === 0
+        "#,
     );
     assert_true(
         "let target={};Object.defineProperties(target,Array)===target&&Reflect.ownKeys(target).length===0",

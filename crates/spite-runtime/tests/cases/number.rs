@@ -75,7 +75,16 @@ fn object_conversion_calls_valueof_then_tostring_and_propagates_abrupt_results()
         "#,
     );
     assert_true(
-        "let called=false; new Number({valueOf:()=>3,toString:()=>{called=true;return '4';}}).valueOf()===3 && !called",
+        r#"
+            let called = false;
+            new Number({
+                valueOf: () => 3,
+                toString: () => {
+                    called = true;
+                    return '4';
+                }
+            }).valueOf() === 3 && !called
+        "#,
     );
     let mut realm = Realm::default();
     realm.eval("let flag=0").unwrap();
@@ -96,13 +105,21 @@ fn object_conversion_calls_valueof_then_tostring_and_propagates_abrupt_results()
 #[test]
 fn wrappers_have_own_slots_and_bound_construction_ignores_bound_this() {
     assert_true(
-        "let a=new Number(-0), b=new Number; a!==b && a instanceof Number && a.constructor===Number && 1/a.valueOf()===-Infinity && 1/b.valueOf()===Infinity && 1/Number.prototype.valueOf()===Infinity",
+        r#"
+            let a = new Number(-0),
+                b = new Number;
+            a !== b && a instanceof Number && a.constructor === Number && 1 / a.valueOf() === -Infinity &&
+                1 / b.valueOf() === Infinity && 1 / Number.prototype.valueOf() === Infinity
+        "#,
     );
     assert_true(
         "Number.isNaN(new Number(undefined).valueOf()) && Number.isNaN(new Number(NaN).valueOf())",
     );
     assert_true(
-        "let N=Number.bind({},'7'); N()===7 && new N(8).valueOf()===7 && new N instanceof N && new N instanceof Number",
+        r#"
+            let N = Number.bind({}, '7');
+            N() === 7 && new N(8).valueOf() === 7 && new N instanceof N && new N instanceof Number
+        "#,
     );
     assert_true(
         "let n=new Number(2); +n===2 && n+3===5 && `${n}`==='2' && n==2 && n!==2 && !!new Number(0)",

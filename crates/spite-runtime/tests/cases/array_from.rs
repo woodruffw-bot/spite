@@ -71,10 +71,24 @@ fn mapping_observes_live_values_and_snapshot_or_iterated_lengths() {
         "#,
     );
     assert_true(
-        "let source=[1,2];let a=Array.from(source,(v,i)=>{if(i===0)source.push(3);return v+i;});a.join(',')==='1,3,5'",
+        r#"
+            let source = [1, 2];
+            let a = Array.from(source, (v, i) => {
+                if (i === 0) source.push(3);
+                return v + i;
+            });
+            a.join(',') === '1,3,5'
+        "#,
     );
     assert_true(
-        "let source=[1,2,3];let a=Array.from(source,(v,i)=>{source.length=1;return v;});a.length===1 && a[0]===1",
+        r#"
+            let source = [1, 2, 3];
+            let a = Array.from(source, (v, i) => {
+                source.length = 1;
+                return v;
+            });
+            a.length === 1 && a[0] === 1
+        "#,
     );
     assert_true("function f(){'use strict';return this;}Array.from([1],f,7)[0]===7");
     assert_true("function f(){return this;}Array.from([1],f,true)[0] instanceof Boolean");

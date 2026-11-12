@@ -1237,7 +1237,15 @@ fn is_lock_free_converts_once_and_reports_consistent_agent_flags() {
         "#,
     );
     assert_true(
-        "let log='';Atomics.isLockFree.call(null,{[Symbol.toPrimitive](hint){log+=hint;return 4;}}) && log==='number'",
+        r#"
+            let log = '';
+            Atomics.isLockFree.call(null, {
+                [Symbol.toPrimitive](hint) {
+                    log += hint;
+                    return 4;
+                }
+            }) && log === 'number'
+        "#,
     );
     for value in ["1n", "Symbol()"] {
         exception(

@@ -338,7 +338,15 @@ fn unreachable_resource_symbols_do_not_keep_weak_map_cycles_alive() {
 #[test]
 fn default_resource_lists_are_unrestricted_and_host_failures_skip_remaining_cleanup() {
     assert_true(
-        "let s=new DisposableStack,n=0;for(let i=0;i<5000;i++)s.defer(()=>{n++});s.dispose();n===5000&&s.disposed",
+        r#"
+            let s = new DisposableStack,
+                n = 0;
+            for (let i = 0; i < 5000; i++) s.defer(() => {
+                n++
+            });
+            s.dispose();
+            n === 5000 && s.disposed
+        "#,
     );
     let mut realm = Realm::new(Limits {
         max_steps: Some(5000),

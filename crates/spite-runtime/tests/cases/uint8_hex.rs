@@ -490,7 +490,7 @@ fn detached_and_oob_receivers_fail_even_for_empty_inputs_and_regrow_recovers_fix
             let s = fixed.setFromHex('0a0b');
             initial && short && r.read === 4 && r.written === 2 && recovered && s.read === 4 && s
                 .written === 2 && fixed.toHex() === '0a0b00' && auto.toHex() === '0a0b00000000' && bytes[
-                0] === 144 && bytes[1] === 145
+                    0] === 144 && bytes[1] === 145
         "#,
     );
     assert_true(

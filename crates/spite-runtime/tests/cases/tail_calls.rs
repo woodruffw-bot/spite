@@ -12,16 +12,39 @@ fn strict_functions_arrows_methods_and_forwarders_reuse_native_call_depth() {
             assert_true(
                 r#"
                     'use strict';
-                    function even(n){if(n===0)return true;return odd(n-1)}
-                    function odd(n){if(n===0)return false;return even(n-1)}
-                    let arrow=n=>n===0?7:arrow(n-1);
-                    class C{m(n){if(n===0)return this;return this.m(n-1)}
-                        #private(n){if(n===0)return this;return this.#private(n-1)}
-                        private(n){return this.#private(n)}}
-                    let c=new C;
-                    function forwarded(n){if(n===0)return 9;return proxy.call(null,n-1)}
-                    let proxy=new Proxy(forwarded.bind(null),{});
-                    even(512)&&!odd(512)&&arrow(512)===7&&c.m(512)===c&&c.private(512)===c&&forwarded(512)===9
+
+                    function even(n) {
+                        if (n === 0) return true;
+                        return odd(n - 1)
+                    }
+
+                    function odd(n) {
+                        if (n === 0) return false;
+                        return even(n - 1)
+                    }
+                    let arrow = n => n === 0 ? 7 : arrow(n - 1);
+                    class C {
+                        m(n) {
+                            if (n === 0) return this;
+                            return this.m(n - 1)
+                        }
+                        #private(n) {
+                            if (n === 0) return this;
+                            return this.#private(n - 1)
+                        }
+                        private(n) {
+                            return this.#private(n)
+                        }
+                    }
+                    let c = new C;
+
+                    function forwarded(n) {
+                        if (n === 0) return 9;
+                        return proxy.call(null, n - 1)
+                    }
+                    let proxy = new Proxy(forwarded.bind(null), {});
+                    even(512) && !odd(512) && arrow(512) === 7 && c.m(512) === c && c.private(512) === c &&
+                        forwarded(512) === 9
                 "#,
             );
         })
@@ -372,24 +395,41 @@ fn optional_and_tagged_tail_values_survive_gc_and_keep_protected_cleanup() {
 
 #[test]
 fn derived_constructor_tail_returns_keep_lexical_super_this_and_new_target() {
-    std::thread::Builder::new().stack_size(2 * 1024 * 1024).spawn(|| assert_true(r#"
-        'use strict';let observed;
-        class C extends Object{
-            #value=31;
-            constructor(){
-                let run=n=>n===0?(observed=new.target,super()):run(n-1);
-                return run(512);
-            }
-            read(){return this.#value}
-        }
-        class D extends C{}
-        let d=new D;
-        class E extends Object{
-            constructor(){super();let run=n=>n===0?(observed=new.target,undefined):run(n-1);return run(512)}
-        }
-        let before=observed===D,e=new E;
-        before&&d instanceof D&&d.read()===31&&e instanceof E&&observed===E
-    "#)).unwrap().join().unwrap();
+    std::thread::Builder::new()
+        .stack_size(2 * 1024 * 1024)
+        .spawn(|| {
+            assert_true(
+                r#"
+                    'use strict';
+                    let observed;
+                    class C extends Object {
+                        #value = 31;
+                        constructor() {
+                            let run = n => n === 0 ? (observed = new.target, super()) : run(n - 1);
+                            return run(512);
+                        }
+                        read() {
+                            return this.#value
+                        }
+                    }
+                    class D extends C {}
+                    let d = new D;
+                    class E extends Object {
+                        constructor() {
+                            super();
+                            let run = n => n === 0 ? (observed = new.target, undefined) : run(n - 1);
+                            return run(512)
+                        }
+                    }
+                    let before = observed === D,
+                        e = new E;
+                    before && d instanceof D && d.read() === 31 && e instanceof E && observed === E
+                "#,
+            );
+        })
+        .unwrap()
+        .join()
+        .unwrap();
 }
 
 #[test]

@@ -440,7 +440,18 @@ fn default_forwarding_initializes_fields_from_base_to_derived_without_iteration(
         "#,
     );
     assert_true(
-        "let n=0,C=class{x=++n;};for(let i=0;i<100;i++){C=class extends C{x=++n;};}new C().x===101 && n===101",
+        r#"
+            let n = 0,
+                C = class {
+                    x = ++n;
+                };
+            for (let i = 0; i < 100; i++) {
+                C = class extends C {
+                    x = ++n;
+                };
+            }
+            new C().x === 101 && n === 101
+        "#,
     );
     assert_true(
         r#"
@@ -741,7 +752,18 @@ fn field_definition_errors_follow_initializer_effects_and_stop_later_fields() {
         "#,
     );
     assert_true(
-        "class C extends Array{length=2;}let caught=false;try{new C;}catch(e){caught=e instanceof TypeError;}caught",
+        r#"
+            class C extends Array {
+                length = 2;
+            }
+            let caught = false;
+            try {
+                new C;
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught
+        "#,
     );
 }
 

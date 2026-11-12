@@ -184,13 +184,24 @@ fn non_extensible_objects_keep_mutable_existing_properties_and_prototype_identit
 #[test]
 fn changing_callable_prototypes_and_descriptor_results_preserves_internal_brands() {
     assert_true(
-        "let n=new Number(3);Object.setPrototypeOf(n,null);Number.prototype.valueOf.call(n)===3 && Object.getPrototypeOf(n)===null",
+        r#"
+            let n = new Number(3);
+            Object.setPrototypeOf(n, null);
+            Number.prototype.valueOf.call(n) === 3 && Object.getPrototypeOf(n) === null
+        "#,
     );
     assert_true(
         "let e=TypeError();Object.setPrototypeOf(e,null);Error.isError(e) && Object.prototype.toString.call(e)==='[object Error]'",
     );
     assert_true(
-        "let o={x:1};Object.preventExtensions(o);let d=Object.getOwnPropertyDescriptor(o,'x');Object.isExtensible(d) && d.writable && d.configurable",
+        r#"
+            let o = {
+                x: 1
+            };
+            Object.preventExtensions(o);
+            let d = Object.getOwnPropertyDescriptor(o, 'x');
+            Object.isExtensible(d) && d.writable && d.configurable
+        "#,
     );
     let mut realm = Realm::default();
     realm

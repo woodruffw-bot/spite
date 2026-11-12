@@ -750,10 +750,10 @@ fn full_string_property_inventory_supports_reflection_copying_and_integrity() {
             let p = String.prototype;
             Object.freeze(p) === p && Object.isFrozen(p) && Object.isSealed(p) && !Object.isExtensible(
                 p) && 'é'.normalize() === 'é' && 'x'.match({
-                    [Symbol.match]() {
-                        return 7;
-                    }
-                }) === 7
+                [Symbol.match]() {
+                    return 7;
+                }
+            }) === 7
         "#,
     );
     assert_true(

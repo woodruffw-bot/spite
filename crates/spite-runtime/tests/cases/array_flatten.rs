@@ -36,7 +36,12 @@ fn flat_uses_array_brand_and_compacts_holes_at_each_flattened_level() {
         "#,
     );
     assert_true(
-        "let a=[1];Object.setPrototypeOf(a,null);let b=Array.prototype.flat.call([a]);b.length===1 && b[0]===1",
+        r#"
+            let a = [1];
+            Object.setPrototypeOf(a, null);
+            let b = Array.prototype.flat.call([a]);
+            b.length === 1 && b[0] === 1
+        "#,
     );
     assert_true(
         "Array.prototype.flat.call('ab').join(',')==='a,b' && Array.prototype.flat.call({0:[1,[2]],2:3,length:3}).flat().join(',')==='1,2,3'",
@@ -415,9 +420,21 @@ fn intrinsics_have_standard_metadata_and_are_not_constructors() {
 
 #[test]
 fn deep_flattening_uses_an_explicit_stack_and_cycles_obey_opted_in_work_limits() {
-    std::thread::Builder::new().stack_size(2 * 1024 * 1024).spawn(|| {
-        assert_true("let a=1;for(var i=0;i<4000;i++)a=[a];let b=a.flat(Infinity);b.length===1 && b[0]===1 && a.flat(1e100)[0]===1");
-    }).unwrap().join().unwrap();
+    std::thread::Builder::new()
+        .stack_size(2 * 1024 * 1024)
+        .spawn(|| {
+            assert_true(
+                r#"
+                    let a = 1;
+                    for (var i = 0; i < 4000; i++) a = [a];
+                    let b = a.flat(Infinity);
+                    b.length === 1 && b[0] === 1 && a.flat(1e100)[0] === 1
+                "#,
+            );
+        })
+        .unwrap()
+        .join()
+        .unwrap();
     let mut realm = Realm::new(Limits {
         max_steps: Some(5000),
         ..Limits::default()

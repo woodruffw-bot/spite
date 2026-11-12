@@ -278,7 +278,24 @@ fn object_rest_excludes_exact_keys_and_copies_live_own_enumerable_data() {
         "#,
     );
     assert_true(
-        "let source={get a(){source.b=2;return 1;}},rest;try{throw source;}catch({a,...r}){rest=r;}rest.b===2",
+        r#"
+            let source = {
+                    get a() {
+                        source.b = 2;
+                        return 1;
+                    }
+                },
+                rest;
+            try {
+                throw source;
+            } catch ({
+                a,
+                ...r
+            }) {
+                rest = r;
+            }
+            rest.b === 2
+        "#,
     );
     assert_true(
         r#"
@@ -388,7 +405,15 @@ fn object_patterns_preserve_primitive_receivers_and_nullish_errors() {
 #[test]
 fn array_patterns_consume_iterators_and_elisions_skip_value_getters() {
     assert_true(
-        "let result;try{throw [1,,3,4];}catch([a,b=2,...rest]){result=a===1 && b===2 && rest.join(',')==='3,4';}result",
+        r#"
+            let result;
+            try {
+                throw [1, , 3, 4];
+            } catch ([a, b = 2, ...rest]) {
+                result = a === 1 && b === 2 && rest.join(',') === '3,4';
+            }
+            result
+        "#,
     );
     assert_true(
         "let result;try{throw '😀x';}catch([first,...rest]){result=first==='😀' && rest.join('')==='x';}result",
@@ -397,7 +422,18 @@ fn array_patterns_consume_iterators_and_elisions_skip_value_getters() {
         "let result;try{throw [1,2,3];}catch([x,...[y,z]]){result=x===1 && y===2 && z===3;}result",
     );
     assert_true(
-        "let result;try{throw [1,2,3];}catch([x,...{length,0:y}]){result=x===1 && length===2 && y===2;}result",
+        r#"
+            let result;
+            try {
+                throw [1, 2, 3];
+            } catch ([x, ...{
+                length,
+                0: y
+            }]) {
+                result = x === 1 && length === 2 && y === 2;
+            }
+            result
+        "#,
     );
     assert_true(
         r#"

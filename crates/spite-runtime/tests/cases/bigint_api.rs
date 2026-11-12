@@ -49,7 +49,20 @@ fn constructor_uses_number_hint_once_and_preserves_abrupt_results() {
         "#,
     );
     assert_true(
-        "let log='',o={valueOf(){log+='v';return {};},toString(){log+='s';return '7';}};BigInt(o)===7n && log==='vs'",
+        r#"
+            let log = '',
+                o = {
+                    valueOf() {
+                        log += 'v';
+                        return {};
+                    },
+                    toString() {
+                        log += 's';
+                        return '7';
+                    }
+                };
+            BigInt(o) === 7n && log === 'vs'
+        "#,
     );
     assert_true(
         r#"
@@ -156,7 +169,12 @@ fn wrapper_brands_survive_prototype_changes_and_do_not_coerce_impostors() {
         "Object.getOwnPropertyNames(Object.getOwnPropertyDescriptors(1n)).length===0 && Object.values(1n).length===0",
     );
     assert_true(
-        "let a=Object(7n),b=new Object(7n);a!==b && a instanceof BigInt && a.valueOf()===7n && Object.keys(a).length===0 && Object.getOwnPropertyNames(a).length===0",
+        r#"
+            let a = Object(7n),
+                b = new Object(7n);
+            a !== b && a instanceof BigInt && a.valueOf() === 7n && Object.keys(a).length === 0 && Object
+                .getOwnPropertyNames(a).length === 0
+        "#,
     );
     assert_true(
         "let a=Object(7n);Object.setPrototypeOf(a,null);BigInt.prototype.valueOf.call(a)===7n && BigInt.prototype.toString.call(a)==='7' && Object.prototype.toString.call(a)==='[object Object]'",
@@ -291,10 +309,19 @@ fn observable_tags_and_ordinary_coercions_use_the_exposed_prototype() {
 #[test]
 fn intrinsics_have_standard_descriptors_and_survive_collection() {
     assert_true(
-        "BigInt.name==='BigInt' && BigInt.length===1 && BigInt.prototype.constructor===BigInt && BigInt.prototype.toString.length===0 && BigInt.prototype.valueOf.length===0 && BigInt.prototype.toLocaleString.length===0",
+        r#"
+            BigInt.name === 'BigInt' && BigInt.length === 1 && BigInt.prototype.constructor === BigInt &&
+                BigInt.prototype.toString.length === 0 && BigInt.prototype.valueOf.length === 0 && BigInt
+                .prototype.toLocaleString.length === 0
+        "#,
     );
     assert_true(
-        "let d=Object.getOwnPropertyDescriptor(BigInt,'prototype'),t=Object.getOwnPropertyDescriptor(BigInt.prototype,Symbol.toStringTag);!d.writable && !d.enumerable && !d.configurable && !t.writable && !t.enumerable && t.configurable && t.value==='BigInt'",
+        r#"
+            let d = Object.getOwnPropertyDescriptor(BigInt, 'prototype'),
+                t = Object.getOwnPropertyDescriptor(BigInt.prototype, Symbol.toStringTag);
+            !d.writable && !d.enumerable && !d.configurable && !t.writable && !t.enumerable && t
+                .configurable && t.value === 'BigInt'
+        "#,
     );
     assert_true(
         "Object.getOwnPropertyNames(BigInt.prototype).sort().join(',')==='constructor,toLocaleString,toString,valueOf' && Object.freeze(BigInt.prototype)===BigInt.prototype && Object.isFrozen(BigInt.prototype)",

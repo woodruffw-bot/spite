@@ -133,7 +133,7 @@ fn subclasses_and_intrinsic_prototype_fallback_initialize_only_real_instances() 
             if (!(instance instanceof Derived) || !(instance instanceof C) || instance.marker !== 7 ||
                 Object.getPrototypeOf(instance) !== Derived.prototype) throw 1;
             if (register.call(instance, target, 8, token) !== undefined || unregister.call(instance,
-                token) !== true) throw 2;
+                    token) !== true) throw 2;
             class Fake extends C {
                 constructor() {
                     return {};
@@ -319,7 +319,7 @@ fn target_token_categories_and_samevalue_rules_do_not_execute_coercion_hooks() {
                 if (registry.register(target, undefined, token) !== undefined || !registry.unregister(
                         token)) throw 1;
                 if (registry.register({}, registered, target) !== undefined || !registry.unregister(
-                    target)) throw 2;
+                        target)) throw 2;
                 let caught = false;
                 try {
                     registry.register(target, target);

@@ -367,16 +367,36 @@ fn calls_construction_causes_and_descriptors_follow_the_error_family() {
 #[test]
 fn constructor_and_instance_descriptors_are_standard() {
     assert_true(
-        "let F=AggregateError.bind({},[7],'bound'),a=new F,b=AggregateError.call(null,[8],'call');a instanceof AggregateError && a.message==='bound' && a.errors[0]===7 && b.errors[0]===8 && b.message==='call'",
+        r#"
+            let F = AggregateError.bind({}, [7], 'bound'),
+                a = new F,
+                b = AggregateError.call(null, [8], 'call');
+            a instanceof AggregateError && a.message === 'bound' && a.errors[0] === 7 && b.errors[0] ===
+                8 && b.message === 'call'
+        "#,
     );
     assert_true(
         "Object.getPrototypeOf(AggregateError)===Error && Object.getPrototypeOf(AggregateError.prototype)===Error.prototype && AggregateError.prototype.constructor===AggregateError && AggregateError.prototype.name==='AggregateError' && AggregateError.prototype.message==='' && !('errors' in AggregateError.prototype) && !Error.isError(AggregateError.prototype) && ({}).toString.call(AggregateError.prototype)==='[object Object]' && ({}).toString.call(AggregateError([]))==='[object Error]'",
     );
     assert_true(
-        "let e=AggregateError([],undefined,{__proto__:{cause:undefined}});!Object.hasOwn(e,'message') && Object.hasOwn(e,'cause') && e.cause===undefined && Reflect.ownKeys(e).join(',')==='cause,errors'",
+        r#"
+            let e = AggregateError([], undefined, {
+                __proto__: {
+                    cause: undefined
+                }
+            });
+            !Object.hasOwn(e, 'message') && Object.hasOwn(e, 'cause') && e.cause === undefined && Reflect
+                .ownKeys(e).join(',') === 'cause,errors'
+        "#,
     );
     assert_true(
-        "let e=AggregateError([],null,{cause:3});e.message==='null' && Reflect.ownKeys(e).join(',')==='message,cause,errors' && delete e.errors && !('errors' in e)",
+        r#"
+            let e = AggregateError([], null, {
+                cause: 3
+            });
+            e.message === 'null' && Reflect.ownKeys(e).join(',') === 'message,cause,errors' && delete e
+                .errors && !('errors' in e)
+        "#,
     );
     for options in ["undefined", "null", "true", "1", "1n", "'text'", "{}"] {
         assert_true(&format!(
@@ -425,10 +445,16 @@ fn constructor_and_instance_descriptors_are_standard() {
         }
     }
     assert_true(
-        "let d=Object.getOwnPropertyDescriptor(AggregateError,'prototype');!d.writable && !d.enumerable && !d.configurable",
+        r#"
+            let d = Object.getOwnPropertyDescriptor(AggregateError, 'prototype');
+            !d.writable && !d.enumerable && !d.configurable
+        "#,
     );
     assert_true(
-        "let d=Object.getOwnPropertyDescriptor(AggregateError([]),'errors');d.writable && !d.enumerable && d.configurable && Array.isArray(d.value) && d.value.length===0",
+        r#"
+            let d = Object.getOwnPropertyDescriptor(AggregateError([]), 'errors');
+            d.writable && !d.enumerable && d.configurable && Array.isArray(d.value) && d.value.length === 0
+        "#,
     );
 }
 

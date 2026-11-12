@@ -153,7 +153,15 @@ fn callbacks_receive_three_arguments_and_fixed_strings_in_position_order() {
         "#,
     );
     assert_true(
-        "let caught=false;try{'aa'.replaceAll('a',()=>Symbol());}catch(e){caught=e instanceof TypeError;}caught",
+        r#"
+            let caught = false;
+            try {
+                'aa'.replaceAll('a', () => Symbol());
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught
+        "#,
     );
 }
 
@@ -498,7 +506,15 @@ fn metadata_intrinsic_retention_and_large_outputs_have_no_default_quota() {
         "#,
     );
     assert_true(
-        "let caught=false;try{new String.prototype.replaceAll();}catch(e){caught=e instanceof TypeError;}caught",
+        r#"
+            let caught = false;
+            try {
+                new String.prototype.replaceAll();
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught
+        "#,
     );
     assert_true(
         r#"

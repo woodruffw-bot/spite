@@ -89,7 +89,12 @@ fn insertion_update_deletion_and_reinsertion_preserve_order() {
         "#,
     );
     assert_true(
-        "let m=new Map();Object.freeze(m);m.set(1,2);m.size===1 && m.delete(1) && m.size===0 && Object.isFrozen(m)",
+        r#"
+            let m = new Map();
+            Object.freeze(m);
+            m.set(1, 2);
+            m.size === 1 && m.delete(1) && m.size === 0 && Object.isFrozen(m)
+        "#,
     );
 }
 
@@ -711,10 +716,26 @@ fn grouping_uses_collection_keys_and_intrinsic_map_and_arrays() {
 #[test]
 fn full_metadata_and_species_and_iterator_prototypes_are_standard() {
     assert_true(
-        "Map.name==='Map' && Map.length===0 && Object.getPrototypeOf(Map)===Function.prototype && Object.getPrototypeOf(Map.prototype)===Object.prototype && Map.prototype.constructor===Map && Object.keys(Map.prototype).length===0 && Object.getOwnPropertyNames(Map.prototype).sort().join(',')==='clear,constructor,delete,entries,forEach,get,getOrInsert,getOrInsertComputed,has,keys,set,size,values' && Object.getOwnPropertySymbols(Map.prototype).length===2 && Object.getOwnPropertyNames(Map).sort().join(',')==='groupBy,length,name,prototype'",
+        r#"
+            Map.name === 'Map' && Map.length === 0 && Object.getPrototypeOf(Map) === Function.prototype &&
+                Object.getPrototypeOf(Map.prototype) === Object.prototype && Map.prototype.constructor ===
+                Map && Object.keys(Map.prototype).length === 0 && Object.getOwnPropertyNames(Map.prototype)
+                .sort().join(',') ===
+                'clear,constructor,delete,entries,forEach,get,getOrInsert,getOrInsertComputed,has,keys,set,size,values' &&
+                Object.getOwnPropertySymbols(Map.prototype).length === 2 && Object.getOwnPropertyNames(Map)
+                .sort().join(',') === 'groupBy,length,name,prototype'
+        "#,
     );
     assert_true(
-        "let size=Object.getOwnPropertyDescriptor(Map.prototype,'size'),species=Object.getOwnPropertyDescriptor(Map,Symbol.species),x={};size.get.name==='get size' && size.get.length===0 && size.set===undefined && !size.enumerable && size.configurable && species.get.name==='get [Symbol.species]' && species.get.call(x)===x && species.get.call(null)===null && species.get.call(7)===7 && Map[Symbol.species]===Map",
+        r#"
+            let size = Object.getOwnPropertyDescriptor(Map.prototype, 'size'),
+                species = Object.getOwnPropertyDescriptor(Map, Symbol.species),
+                x = {};
+            size.get.name === 'get size' && size.get.length === 0 && size.set === undefined && !size
+                .enumerable && size.configurable && species.get.name === 'get [Symbol.species]' && species
+                .get.call(x) === x && species.get.call(null) === null && species.get.call(7) === 7 && Map[
+                    Symbol.species] === Map
+        "#,
     );
     assert_true(
         "let i=new Map().entries(),p=Object.getPrototypeOf(i),d=Object.getOwnPropertyDescriptor(p,'next');Object.getPrototypeOf(p)===Iterator.prototype && Reflect.ownKeys(i).length===0 && Object.getOwnPropertyNames(p).join(',')==='next' && d.value.name==='next' && d.value.length===0 && d.writable && !d.enumerable && d.configurable && Object.prototype.toString.call(i)==='[object Map Iterator]' && Object.prototype.toString.call(new Map())==='[object Map]'",

@@ -19,13 +19,41 @@ fn fixed_constants_and_math_object_have_standard_descriptors_and_tag() {
         ));
     }
     assert_true(
-        "let d=Object.getOwnPropertyDescriptor(globalThis,'Math'),t=Object.getOwnPropertyDescriptor(Math,Symbol.toStringTag);d.value===Math && d.writable && !d.enumerable && d.configurable && t.value==='Math' && !t.writable && !t.enumerable && t.configurable",
+        r#"
+            let d = Object.getOwnPropertyDescriptor(globalThis, 'Math'),
+                t = Object.getOwnPropertyDescriptor(Math, Symbol.toStringTag);
+            d.value === Math && d.writable && !d.enumerable && d.configurable && t.value === 'Math' && !t
+                .writable && !t.enumerable && t.configurable
+        "#,
     );
     assert_true(
-        "'use strict';let caught=false;try{Math.PI=7;}catch(e){caught=e instanceof TypeError;}caught && Math.PI===3.141592653589793",
+        r#"
+            'use strict';
+            let caught = false;
+            try {
+                Math.PI = 7;
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && Math.PI === 3.141592653589793
+        "#,
     );
     assert_true(
-        "let a=false,b=false;try{Math();}catch(e){a=e instanceof TypeError;}try{new Math();}catch(e){b=e instanceof TypeError;}a && b",
+        r#"
+            let a = false,
+                b = false;
+            try {
+                Math();
+            } catch (e) {
+                a = e instanceof TypeError;
+            }
+            try {
+                new Math();
+            } catch (e) {
+                b = e instanceof TypeError;
+            }
+            a && b
+        "#,
     );
 }
 
@@ -64,7 +92,7 @@ fn ceil_floor_and_trunc_retain_signs_at_zero_and_exact_integral_values() {
     assert_true(
         r#"
             Object.is(Math.ceil(-Number.MIN_VALUE), -0) && Object.is(Math.ceil(-0.9), -0) && Math.ceil(
-                0.1) === 1 && Math.floor(-0.1) === -1 && Object.is(Math.floor(Number.MIN_VALUE), 0) &&
+                    0.1) === 1 && Math.floor(-0.1) === -1 && Object.is(Math.floor(Number.MIN_VALUE), 0) &&
                 Object.is(Math.trunc(-0.9), -0) && Object.is(Math.trunc(0.9), 0)
         "#,
     );
@@ -81,7 +109,7 @@ fn round_uses_positive_halfway_ties_and_preserves_negative_zero() {
     assert_true(
         r#"
             Object.is(Math.round(-0.5), -0) && Object.is(Math.round(-0.1), -0) && Object.is(Math.round(-
-                    Number.MIN_VALUE), -0) && Object.is(Math.round(-0), -0) && Object.is(Math.round(0),
+                Number.MIN_VALUE), -0) && Object.is(Math.round(-0), -0) && Object.is(Math.round(0),
                 0) && Math.round(0.5) === 1 && Math.round(-1.5) === -1 && Math.round(1.5) === 2
         "#,
     );

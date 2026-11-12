@@ -7,7 +7,11 @@ use crate::common::assert_true;
 #[test]
 fn items_are_elements_including_single_numbers_and_preserve_identity() {
     assert_true(
-        "let a=Array.of(3);a.length===1 && a[0]===3 && Array.isArray(a) && Object.getPrototypeOf(a)===Array.prototype",
+        r#"
+            let a = Array.of(3);
+            a.length === 1 && a[0] === 3 && Array.isArray(a) && Object.getPrototypeOf(a) === Array
+                .prototype
+        "#,
     );
     assert_true(
         r#"
@@ -83,7 +87,16 @@ fn constructors_receive_one_length_argument_and_their_result_is_used() {
         "#,
     );
     assert_true(
-        "let n,argc;function C(x){n=x;argc=arguments.length;}let a=Array.of.call(C);n===0 && argc===1 && a.length===0",
+        r#"
+            let n, argc;
+
+            function C(x) {
+                n = x;
+                argc = arguments.length;
+            }
+            let a = Array.of.call(C);
+            n === 0 && argc === 1 && a.length === 0
+        "#,
     );
     assert_true(
         r#"

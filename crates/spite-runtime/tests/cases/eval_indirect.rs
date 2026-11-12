@@ -27,7 +27,13 @@ fn indirect_call_forms_use_globals_and_ignore_caller_strictness_and_receivers() 
         ));
     }
     assert_true(
-        "function f(){'use strict';return eval.call(7,'this')===globalThis && eval.apply(7,['this'])===globalThis;}f()",
+        r#"
+            function f() {
+                'use strict';
+                return eval.call(7, 'this') === globalThis && eval.apply(7, ['this']) === globalThis;
+            }
+            f()
+        "#,
     );
     assert_true(
         r#"

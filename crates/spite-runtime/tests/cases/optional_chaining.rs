@@ -18,7 +18,18 @@ fn only_nullish_bases_short_circuit_and_ungrouped_suffixes_skip_keys_and_argumen
         "let calls=0,o={valueOf(){calls++;throw 7;},toString(){calls++;throw 8;},x:9};o?.x===9 && calls===0",
     );
     assert_true(
-        "let gets=0,steps=0,o={get x(){gets++;return undefined;}};let r=o?.x?.[(steps++,7)].z(steps++);r===undefined && gets===1 && steps===0",
+        r#"
+            let gets = 0,
+                steps = 0,
+                o = {
+                    get x() {
+                        gets++;
+                        return undefined;
+                    }
+                };
+            let r = o?.x?.[(steps++, 7)].z(steps++);
+            r === undefined && gets === 1 && steps === 0
+        "#,
     );
 }
 
@@ -99,7 +110,17 @@ fn getters_keys_and_calls_are_ordered_once_with_late_callable_checks() {
         "#,
     );
     assert_true(
-        "let gets=0,steps=0,o={get m(){gets++;return null;}};o.m?.(steps++)===undefined && gets===1 && steps===0",
+        r#"
+            let gets = 0,
+                steps = 0,
+                o = {
+                    get m() {
+                        gets++;
+                        return null;
+                    }
+                };
+            o.m?.(steps++) === undefined && gets === 1 && steps === 0
+        "#,
     );
     assert_true(
         r#"
@@ -144,7 +165,16 @@ fn getters_keys_and_calls_are_ordered_once_with_late_callable_checks() {
 #[test]
 fn only_explicit_optional_steps_guard_later_nullish_values() {
     assert_true(
-        "let o={},caught=false;try{o?.x.y;}catch(e){caught=e instanceof TypeError;}caught && o?.x?.y===undefined",
+        r#"
+            let o = {},
+                caught = false;
+            try {
+                o?.x.y;
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && o?.x?.y === undefined
+        "#,
     );
     assert_true(
         r#"
@@ -198,7 +228,16 @@ fn deletion_keeps_the_final_reference_and_never_reads_its_getter() {
         "let gets=0,o={get a(){gets++;return {get x(){throw 7;}};}};delete o?.a.x && gets===1",
     );
     assert_true(
-        "let n=0,key={[Symbol.toPrimitive](){n++;throw 7;}};delete null?.[key] && delete undefined?.x.y && n===0",
+        r#"
+            let n = 0,
+                key = {
+                    [Symbol.toPrimitive]() {
+                        n++;
+                        throw 7;
+                    }
+                };
+            delete null?.[key] && delete undefined?.x.y && n === 0
+        "#,
     );
     assert_true(
         r#"
@@ -275,7 +314,15 @@ fn unresolvable_and_uninitialized_bases_throw_and_typeof_does_not_hide_them() {
 #[test]
 fn primitive_receivers_spread_newtarget_and_grouped_construction_follow_normal_calls() {
     assert_true(
-        "Object.defineProperty(Number.prototype,'f',{value:function(){'use strict';return this;}});(7)?.f?.()===7",
+        r#"
+            Object.defineProperty(Number.prototype, 'f', {
+                value: function() {
+                    'use strict';
+                    return this;
+                }
+            });
+            (7)?.f?.() === 7
+        "#,
     );
     assert_true(
         r#"

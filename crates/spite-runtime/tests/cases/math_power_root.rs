@@ -39,7 +39,10 @@ fn power_special_values_follow_number_exponentiation() {
         "#,
     );
     assert_true(
-        "Math.pow.call(null,'2','3')===8 && Math.pow(true,null)===1 && Math.pow(-2,3)===-8 && Math.pow(-2,-3)===-0.125",
+        r#"
+            Math.pow.call(null, '2', '3') === 8 && Math.pow(true, null) === 1 && Math.pow(-2, 3) === -8 &&
+                Math.pow(-2, -3) === -0.125
+        "#,
     );
 }
 
@@ -139,7 +142,14 @@ fn sqrt_is_correctly_rounded_and_preserves_zero_and_range_endpoints() {
         "#,
     );
     assert_true(
-        "let good=true;for(let i=-537;i<=511;i++){let power=2**i;if(Math.sqrt(power*power)!==power)good=false;}good",
+        r#"
+            let good = true;
+            for (let i = -537; i <= 511; i++) {
+                let power = 2 ** i;
+                if (Math.sqrt(power * power) !== power) good = false;
+            }
+            good
+        "#,
     );
 }
 
@@ -156,10 +166,10 @@ fn sqrt_converts_once_and_skips_extra_argument_conversion() {
                     }
                 };
             Math.sqrt.call(Symbol(), o, {
-                    valueOf() {
-                        throw 9;
-                    }
-                }) === 2 && calls === 1 && Math.sqrt('9') === 3 && Math.sqrt(true) === 1 && Math.sqrt(
+                valueOf() {
+                    throw 9;
+                }
+            }) === 2 && calls === 1 && Math.sqrt('9') === 3 && Math.sqrt(true) === 1 && Math.sqrt(
                 null) === 0
         "#,
     );

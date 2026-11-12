@@ -28,10 +28,22 @@ fn thirty_two_nested_function_calls_fit_the_supported_native_stack() {
 #[test]
 fn constructor_and_prototype_graph_has_standard_identity_and_descriptors() {
     assert_true(
-        "typeof Function==='function' && Function.name==='Function' && Function.length===1 && Object.getPrototypeOf(Function)===Function.prototype && Object.getPrototypeOf(Function.prototype)===Object.prototype && Function.prototype.constructor===Function && Function.constructor===Function && Function.prototype()===undefined",
+        r#"
+            typeof Function === 'function' && Function.name === 'Function' && Function.length === 1 &&
+                Object.getPrototypeOf(Function) === Function.prototype && Object.getPrototypeOf(Function
+                    .prototype) === Object.prototype && Function.prototype.constructor === Function &&
+                Function.constructor === Function && Function.prototype() === undefined
+        "#,
     );
     assert_true(
-        "let p=Object.getOwnPropertyDescriptor(Function,'prototype'),c=Object.getOwnPropertyDescriptor(Function.prototype,'constructor'),g=Object.getOwnPropertyDescriptor(globalThis,'Function');p.value===Function.prototype && !p.writable && !p.enumerable && !p.configurable && c.value===Function && c.writable && !c.enumerable && c.configurable && g.value===Function && g.writable && !g.enumerable && g.configurable",
+        r#"
+            let p = Object.getOwnPropertyDescriptor(Function, 'prototype'),
+                c = Object.getOwnPropertyDescriptor(Function.prototype, 'constructor'),
+                g = Object.getOwnPropertyDescriptor(globalThis, 'Function');
+            p.value === Function.prototype && !p.writable && !p.enumerable && !p.configurable && c
+                .value === Function && c.writable && !c.enumerable && c.configurable && g.value ===
+                Function && g.writable && !g.enumerable && g.configurable
+        "#,
     );
     for (key, value) in [("name", "'Function'"), ("length", "1")] {
         assert_true(&format!(
@@ -66,7 +78,15 @@ fn branding_and_newtarget_validation_use_real_constructor_metadata() {
         "#,
     );
     assert_true(
-        "let caught=false;try{Reflect.construct(Function,[],()=>0);}catch(e){caught=e instanceof TypeError;}caught",
+        r#"
+            let caught = false;
+            try {
+                Reflect.construct(Function, [], () => 0);
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught
+        "#,
     );
     let mut realm = Realm::default();
     let Value::Object(constructor) = realm.eval("Function").unwrap() else {

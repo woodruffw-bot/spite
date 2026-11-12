@@ -160,7 +160,7 @@ fn short_circuit_closes_once_with_live_return_and_original_receiver_without_extr
                 b = [1, 2, 3].values(),
                 c = [1, 2, 3].values();
             a.every(value => value < 2) === false && a.next().value === 3 && b.some(value => value ===
-                2) === true && b.next().value === 3 && c.find(value => value === 2) === 2 && c.next()
+                    2) === true && b.next().value === 3 && c.find(value => value === 2) === 2 && c.next()
                 .value === 3
         "#,
     );

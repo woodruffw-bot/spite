@@ -151,14 +151,24 @@ fn lengths_follow_the_safe_index_domain_without_eager_large_allocations() {
 fn subclasses_and_primitive_newtarget_prototypes_use_the_captured_intrinsic_fallback() {
     assert_true(
         r#"
-            class Derived extends SharedArrayBuffer{}
-            let a=new Derived(2,{maxByteLength:4});a.grow(4);
-            if(!(a instanceof Derived)||a.byteLength!==4||Object.getPrototypeOf(a)!==Derived.prototype)throw 1;
-            let saved=SharedArrayBuffer,proto=SharedArrayBuffer.prototype;function F(){}let target=F.bind(null);
-            Object.defineProperty(target,'prototype',{value:0});
-            SharedArrayBuffer=null;
-            let b=Reflect.construct(saved,[3],target);
-            Object.getPrototypeOf(b)===proto&&b.byteLength===3
+            class Derived extends SharedArrayBuffer {}
+            let a = new Derived(2, {
+                maxByteLength: 4
+            });
+            a.grow(4);
+            if (!(a instanceof Derived) || a.byteLength !== 4 || Object.getPrototypeOf(a) !== Derived
+                .prototype) throw 1;
+            let saved = SharedArrayBuffer,
+                proto = SharedArrayBuffer.prototype;
+
+            function F() {}
+            let target = F.bind(null);
+            Object.defineProperty(target, 'prototype', {
+                value: 0
+            });
+            SharedArrayBuffer = null;
+            let b = Reflect.construct(saved, [3], target);
+            Object.getPrototypeOf(b) === proto && b.byteLength === 3
         "#,
     );
     assert_true(
@@ -319,15 +329,21 @@ fn shared_data_view_codecs_preserve_endianness_and_cross_sparse_page_boundaries(
 fn shared_typed_arrays_support_iterators_callbacks_raw_moves_and_overlapping_set() {
     assert_true(
         r#"
-            let b=new SharedArrayBuffer(16),a=new Uint8Array(b,0,4);a.set([4,1,3,2]);
-            if([...a].join(',')!=='4,1,3,2')throw 1;
-            if([...a.entries()].map(p=>p.join(':')).join(',')!=='0:4,1:1,2:3,3:2')throw 2;
-            a.reverse();a.sort();
-            if(a.join(',')!=='1,2,3,4'||a.map(x=>x*2).join(',')!=='2,4,6,8'||a.reduce((s,x)=>s+x,0)!==10)throw 3;
-            let sub=a.subarray(1,3);if(sub.buffer!==b||sub.join(',')!=='2,3')throw 4;
-            a.copyWithin(1,0,3);if(a.join(',')!=='1,1,2,3')throw 5;
-            a.set(a.subarray(0,3),1);
-            a.join(',')==='1,1,1,2'&&a.filter(x=>x===1).length===3
+            let b = new SharedArrayBuffer(16),
+                a = new Uint8Array(b, 0, 4);
+            a.set([4, 1, 3, 2]);
+            if ([...a].join(',') !== '4,1,3,2') throw 1;
+            if ([...a.entries()].map(p => p.join(':')).join(',') !== '0:4,1:1,2:3,3:2') throw 2;
+            a.reverse();
+            a.sort();
+            if (a.join(',') !== '1,2,3,4' || a.map(x => x * 2).join(',') !== '2,4,6,8' || a.reduce((s,
+                    x) => s + x, 0) !== 10) throw 3;
+            let sub = a.subarray(1, 3);
+            if (sub.buffer !== b || sub.join(',') !== '2,3') throw 4;
+            a.copyWithin(1, 0, 3);
+            if (a.join(',') !== '1,1,2,3') throw 5;
+            a.set(a.subarray(0, 3), 1);
+            a.join(',') === '1,1,1,2' && a.filter(x => x === 1).length === 3
         "#,
     );
 }
@@ -377,7 +393,7 @@ fn shared_indexed_conversion_observes_growth_and_uint8_text_codecs_use_live_layo
             if (hex.read !== 16 || hex.written !== 8 || a.toHex() !== '0102030405060708') throw 2;
             let base = a.setFromBase64('CQoLDA==');
             base.read === 8 && base.written === 4 && a.subarray(0, 4).toBase64() === 'CQoLDA==' && a
-            .toHex() === '090a0b0c05060708'
+                .toHex() === '090a0b0c05060708'
         "#,
     );
 }

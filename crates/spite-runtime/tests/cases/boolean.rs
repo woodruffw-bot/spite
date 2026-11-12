@@ -48,16 +48,31 @@ fn calls_use_truthiness_without_coercing_objects() {
 #[test]
 fn construction_creates_fresh_boolean_objects_and_bound_calls_preserve_rules() {
     assert_true(
-        "let a=new Boolean, b=new Boolean(false); typeof a==='object' && a!==b && a.valueOf()===false && b.valueOf()===false && a instanceof Boolean && b.constructor===Boolean",
+        r#"
+            let a = new Boolean,
+                b = new Boolean(false);
+            typeof a === 'object' && a !== b && a.valueOf() === false && b.valueOf() === false &&
+                a instanceof Boolean && b.constructor === Boolean
+        "#,
     );
     assert_true(
         "let a=new Boolean(true); a.valueOf()===true && a.toString()==='true' && Boolean.prototype.valueOf()===false && Boolean.prototype.toString()==='false'",
     );
     assert_true(
-        "let B=Boolean.bind({valueOf:()=>true},false); B(true)===false && new B(true).valueOf()===false && new B instanceof Boolean && new B instanceof B",
+        r#"
+            let B = Boolean.bind({
+                valueOf: () => true
+            }, false);
+            B(true) === false && new B(true).valueOf() === false && new B instanceof Boolean &&
+                new B instanceof B
+        "#,
     );
     assert_true(
-        "let B=Boolean.bind(null); B.prototype={}; new B(true).constructor===Boolean && new B(true).valueOf()===true",
+        r#"
+            let B = Boolean.bind(null);
+            B.prototype = {};
+            new B(true).constructor === Boolean && new B(true).valueOf() === true
+        "#,
     );
     assert_true(
         "let o={__proto__:Boolean.prototype}; ({}).toString.call(o)==='[object Object]' && ({}).toString.call(new Boolean)==='[object Boolean]'",
@@ -137,7 +152,13 @@ fn non_strict_receivers_box_fresh_values_while_strict_receivers_stay_primitive()
         "#,
     );
     assert_true(
-        "function strict(){'use strict';return this;} strict.call(true)===true && strict.apply(false)===false",
+        r#"
+            function strict() {
+                'use strict';
+                return this;
+            }
+            strict.call(true) === true && strict.apply(false) === false
+        "#,
     );
     assert_true(
         r#"
@@ -174,13 +195,20 @@ fn non_strict_receivers_box_fresh_values_while_strict_receivers_stay_primitive()
 #[test]
 fn primitive_properties_follow_the_prototype_and_reject_data_writes() {
     assert_true(
-        "Boolean.prototype.extra=7; true.extra===7 && false.extra===7 && delete true.extra && false.extra===7",
+        r#"
+            Boolean.prototype.extra = 7;
+            true.extra === 7 && false.extra === 7 && delete true.extra && false.extra === 7
+        "#,
     );
     assert_true(
         "Boolean.prototype.extra=7; true.extra=9; false.own=1; true.extra===7 && false.own===undefined",
     );
     assert_true(
-        "let b=new Boolean; b.extra=9; b.extra===9 && true.extra===undefined && delete b.extra && b.extra===undefined",
+        r#"
+            let b = new Boolean;
+            b.extra = 9;
+            b.extra === 9 && true.extra === undefined && delete b.extra && b.extra === undefined
+        "#,
     );
     for source in [
         "'use strict'; true.extra=9",

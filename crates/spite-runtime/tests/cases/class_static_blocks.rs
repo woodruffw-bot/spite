@@ -283,7 +283,18 @@ fn instance_fields_are_installed_before_static_blocks_construct_instances() {
         "class C{static{this.instance=new C;}x=7;}C.instance.x===7 && C.instance instanceof C",
     );
     assert_true(
-        "class B{x=1;}class C extends B{static{this.instance=new C;}y=2;}C.instance.x===1 && C.instance.y===2",
+        r#"
+            class B {
+                x = 1;
+            }
+            class C extends B {
+                static {
+                    this.instance = new C;
+                }
+                y = 2;
+            }
+            C.instance.x === 1 && C.instance.y === 2
+        "#,
     );
 }
 

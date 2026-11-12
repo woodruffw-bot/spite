@@ -322,7 +322,15 @@ fn arrays_include_only_present_indices_and_enumerable_custom_properties() {
         "let obj=[,2,3];obj.x=4;let keys=[];for(let k in obj)keys.push(k);keys.join(',')==='1,2,x'",
     );
     assert_true(
-        "let obj=[1,2,3],keys=[];for(let k in obj){keys.push(k);if(k==='0')obj.length=1;}keys.join(',')==='0'",
+        r#"
+            let obj = [1, 2, 3],
+                keys = [];
+            for (let k in obj) {
+                keys.push(k);
+                if (k === '0') obj.length = 1;
+            }
+            keys.join(',') === '0'
+        "#,
     );
 }
 

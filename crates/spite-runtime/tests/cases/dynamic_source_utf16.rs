@@ -10,7 +10,12 @@ fn string_and_identity_escape_literals_preserve_surrogates_and_replacement_chara
         r#"let text='\uD800\uD800\uDC00\uDFFF\uFFFD',body="return '"+text+"';",f=Function(body);f()===text && f.toString()==='function anonymous(\n) {\n'+body+'\n}'"#,
     );
     assert_true(
-        r#"let high='\uD800',low='\uDFFF';Function("return '\\"+high+"';")()===high && Function("return '\\"+low+"';")()===low && Function("return '\uFFFD';")()==='\uFFFD'"#,
+        r#"
+            let high = '\uD800',
+                low = '\uDFFF';
+            Function("return '\\" + high + "';")() === high && Function("return '\\" + low + "';")() ===
+                low && Function("return '\uFFFD';")() === '\uFFFD'
+        "#,
     );
     assert_true(
         r#"let high='\uD800',low='\uDFFF';Function("a='"+high+"'","b='"+low+"'",'return a+b')()===high+low"#,
@@ -23,13 +28,29 @@ fn templates_preserve_cooked_raw_invalid_escapes_and_original_line_endings() {
         r#"let text='\uD800\r\n\uDFFF',body='return `'+text+'`;',f=Function(body);f()==='\uD800\n\uDFFF' && f.toString()==='function anonymous(\n) {\n'+body+'\n}'"#,
     );
     assert_true(
-        r#"let text='\uD800\r\n\uDFFF';Function('tag','return tag`'+text+'${7}\uFFFD`;')(function(s,x){return s[0]==='\uD800\n\uDFFF' && s.raw[0]===s[0] && s[1]==='\uFFFD' && s.raw[1]===s[1] && x===7;})"#,
+        r#"
+            let text = '\uD800\r\n\uDFFF';
+            Function('tag', 'return tag`' + text + '${7}\uFFFD`;')(function(s, x) {
+                return s[0] === '\uD800\n\uDFFF' && s.raw[0] === s[0] && s[1] === '\uFFFD' && s
+                    .raw[1] === s[1] && x === 7;
+            })
+        "#,
     );
     assert_true(
-        r#"let text='\\xZ\uD800';Function('tag','return tag`'+text+'`;')(function(s){return s[0]===undefined && s.raw[0]===text;})"#,
+        r#"
+            let text = '\\xZ\uD800';
+            Function('tag', 'return tag`' + text + '`;')(function(s) {
+                return s[0] === undefined && s.raw[0] === text;
+            })
+        "#,
     );
     assert_true(
-        r#"let text='\\\uD800';Function('tag','return tag`'+text+'`;')(function(s){return s[0]==='\uD800' && s.raw[0]===text;})"#,
+        r#"
+            let text = '\\\uD800';
+            Function('tag', 'return tag`' + text + '`;')(function(s) {
+                return s[0] === '\uD800' && s.raw[0] === text;
+            })
+        "#,
     );
 }
 

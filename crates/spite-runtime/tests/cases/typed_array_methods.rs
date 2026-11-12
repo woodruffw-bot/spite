@@ -163,7 +163,7 @@ fn internal_length_and_kind_ignore_throwing_public_state_overrides() {
             a.at(1) === 2 && a.every(v => v > 0) && a.some(v => v === 2) && a.forEach(() => {
                     count++;
                 }) === undefined && count === 3 && a.find(v => v === 2) === 2 && a.findIndex(v => v ===
-                2) === 1 && a.findLast(v => v !== 2) === 3 && a.findLastIndex(v => v !== 2) === 2 && a
+                    2) === 1 && a.findLast(v => v !== 2) === 3 && a.findLastIndex(v => v !== 2) === 2 && a
                 .includes(2) && a.indexOf(2) === 1 && a.lastIndexOf(2) === 1 && a.join('|') === '1|2|3' &&
                 a.toLocaleString() === '1,2,3' && a.reduce((p, v) => p + v) === 6 && a.reduceRight((p,
                     v) => p + v) === 6 && mapped instanceof Uint16Array && mapped[2] === 4 && kept[0] ===
@@ -256,7 +256,10 @@ fn searches_distinguish_same_value_zero_strict_equality_and_omitted_last_index()
         "#,
     );
     assert_true(
-        "let a=BigInt64Array.of(1n,2n);a.includes(1n) && !a.includes(1) && a.indexOf(1)===-1 && a.lastIndexOf(1)===-1",
+        r#"
+            let a = BigInt64Array.of(1n, 2n);
+            a.includes(1n) && !a.includes(1) && a.indexOf(1) === -1 && a.lastIndexOf(1) === -1
+        "#,
     );
     for method in ["includes", "indexOf", "lastIndexOf"] {
         assert_true(&format!(

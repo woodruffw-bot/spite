@@ -118,7 +118,8 @@ fn atan2_distinguishes_every_zero_and_infinity_quadrant() {
     assert_true(
         r#"
             Math.atan2(1, 1) === Math.PI / 4 && Math.atan2(1, -1) === 3 * Math.PI / 4 && Math.atan2(-1, -
-                1) === -3 * Math.PI / 4 && Math.atan2(-1, 1) === -Math.PI / 4 && Math.atan2(1, 0) === Math
+                    1) === -3 * Math.PI / 4 && Math.atan2(-1, 1) === -Math.PI / 4 && Math.atan2(1, 0) ===
+                Math
                 .PI / 2 && Math.atan2(-1, -0) === -Math.PI / 2
         "#,
     );

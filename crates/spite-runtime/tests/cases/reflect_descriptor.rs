@@ -125,7 +125,11 @@ fn define_returns_boolean_and_descriptor_conversion_still_throws() {
         "#,
     );
     assert_true(
-        "let o={};Object.preventExtensions(o);Reflect.defineProperty(o,'x',{})===false && !Object.hasOwn(o,'x')",
+        r#"
+            let o = {};
+            Object.preventExtensions(o);
+            Reflect.defineProperty(o, 'x', {}) === false && !Object.hasOwn(o, 'x')
+        "#,
     );
     assert_true(
         r#"
@@ -373,7 +377,15 @@ fn own_keys_include_all_key_types_in_property_order_without_values_or_species() 
         "#,
     );
     assert_true(
-        "let o={x:1},a=Reflect.ownKeys(o);delete o.x;o.y=2;a.join(',')==='x' && Reflect.ownKeys(o).join(',')==='y'",
+        r#"
+            let o = {
+                    x: 1
+                },
+                a = Reflect.ownKeys(o);
+            delete o.x;
+            o.y = 2;
+            a.join(',') === 'x' && Reflect.ownKeys(o).join(',') === 'y'
+        "#,
     );
     assert_true(
         r#"

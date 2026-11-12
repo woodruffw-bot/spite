@@ -134,7 +134,18 @@ fn object_keys_and_rest_preserve_receivers_identity_and_live_descriptors() {
         "#,
     );
     assert_true(
-        "Object.defineProperty(Number.prototype,'x',{get:function(){'use strict';return this;}});let {x}=7;x===7",
+        r#"
+            Object.defineProperty(Number.prototype, 'x', {
+                get: function() {
+                    'use strict';
+                    return this;
+                }
+            });
+            let {
+                x
+            } = 7;
+            x === 7
+        "#,
     );
     assert_true(
         "const {0:first,...rest}='abc';first==='a' && rest[1]==='b' && rest[2]==='c' && !('0' in rest)",
@@ -246,7 +257,14 @@ fn three_clause_loops_copy_every_let_name_and_restore_scope_on_all_exits() {
         "#,
     );
     assert_true(
-        "let initial,body;for(let [i=0,f=()=>i]=[];i<1;i++){initial=f;body=()=>i;}initial()===0 && body()===0",
+        r#"
+            let initial, body;
+            for (let [i = 0, f = () => i] = []; i < 1; i++) {
+                initial = f;
+                body = () => i;
+            }
+            initial() === 0 && body() === 0
+        "#,
     );
     assert_true(
         r#"
@@ -265,14 +283,32 @@ fn three_clause_loops_copy_every_let_name_and_restore_scope_on_all_exits() {
     );
     assert_true("let calls=0;for(let {}={};calls<3;calls++){}calls===3");
     assert_true(
-        "let fs=[];for(let [i]=[0];i<3;i++){fs.push(()=>i);continue;}fs[0]()===0 && fs[1]()===1 && fs[2]()===2",
+        r#"
+            let fs = [];
+            for (let [i] = [0]; i < 3; i++) {
+                fs.push(() => i);
+                continue;
+            }
+            fs[0]() === 0 && fs[1]() === 1 && fs[2]() === 2
+        "#,
     );
 }
 
 #[test]
 fn in_and_of_patterns_have_rhs_tdz_fresh_scopes_and_nested_iterator_closing() {
     assert_true(
-        "let fs=[];for(const {x} of [{x:1},{x:2}])fs.push(()=>x);fs[0]()===1 && fs[1]()===2 && typeof x==='undefined'",
+        r#"
+            let fs = [];
+            for (const {
+                    x
+                }
+                of [{
+                    x: 1
+                }, {
+                    x: 2
+                }]) fs.push(() => x);
+            fs[0]() === 1 && fs[1]() === 2 && typeof x === 'undefined'
+        "#,
     );
     assert_true(
         "let fs=[];for(let [x,y=x] of [[1],[2]]){y++;fs.push(()=>x+y);}fs[0]()===3 && fs[1]()===5",
@@ -288,7 +324,16 @@ fn in_and_of_patterns_have_rhs_tdz_fresh_scopes_and_nested_iterator_closing() {
         "#,
     );
     assert_true(
-        "let x=[],result;try{for(let [x] of x) ;}catch(e){result=e instanceof ReferenceError;}result && x.length===0",
+        r#"
+            let x = [],
+                result;
+            try {
+                for (let [x] of x);
+            } catch (e) {
+                result = e instanceof ReferenceError;
+            }
+            result && x.length === 0
+        "#,
     );
     assert_true(
         r#"

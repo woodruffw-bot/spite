@@ -65,7 +65,14 @@ fn defaults_initialize_before_rest_and_rest_remains_in_tdz_during_defaults() {
 #[test]
 fn rest_lists_use_unmapped_arguments_in_non_strict_and_strict_functions() {
     assert_true(
-        "function f(a,...r){a=8;r[0]=9;return arguments[0]===1 && arguments[1]===2 && arguments.length===2;}f(1,2)",
+        r#"
+            function f(a, ...r) {
+                a = 8;
+                r[0] = 9;
+                return arguments[0] === 1 && arguments[1] === 2 && arguments.length === 2;
+            }
+            f(1, 2)
+        "#,
     );
     assert_true(
         "function f(a,...r){arguments[0]=8;arguments[1]=9;return a===1 && r[0]===2;}f(1,2)",
@@ -126,7 +133,8 @@ fn rest_in_arrows_methods_constructors_and_bound_functions() {
         r#"
             let f = (a, ...r) => r.join(',');
             f.bind(null, 1, 2)(3) === '2,3' && f.call(null, 1, 2, 3) === '2,3' && f.apply(null, [1, 2,
-                3]) === '2,3'
+                3
+            ]) === '2,3'
         "#,
     );
 }

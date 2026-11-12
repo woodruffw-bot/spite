@@ -31,17 +31,34 @@ fn global_scope_capture_ignores_the_callers_local_bindings_and_strictness() {
     assert_true("let x=7;function make(){let x=9;return Function('return x');}make()()===7");
     assert_true("let x=7,f;{let x=9;f=Function('return x');}f()===7");
     assert_true(
-        "'use strict';Function('return this')()===globalThis && Function('return this').call(3).valueOf()===3",
+        r#"
+            'use strict';
+            Function('return this')() === globalThis && Function('return this').call(3).valueOf() === 3
+        "#,
     );
     assert_true("let f=Function('\"use strict\";return this');f()===undefined && f.call(3)===3");
     assert_true(
-        "let anonymous=7;Function('return anonymous')()===7 && Function('anonymous','return anonymous')(9)===9",
+        r#"
+            let anonymous = 7;
+            Function('return anonymous')() === 7 && Function('anonymous', 'return anonymous')(9) === 9
+        "#,
     );
     assert_true(
-        "Function('a,a','arguments[0]=7;return a')(1,2)===2 && Function('a,a','arguments[1]=7;return a')(1,2)===7",
+        r#"
+            Function('a,a', 'arguments[0]=7;return a')(1, 2) === 2 && Function('a,a',
+                'arguments[1]=7;return a')(1, 2) === 7
+        "#,
     );
     assert_true(
-        "let caught=false;try{Function('return callerLocal')();}catch(e){caught=e instanceof ReferenceError;}caught",
+        r#"
+            let caught = false;
+            try {
+                Function('return callerLocal')();
+            } catch (e) {
+                caught = e instanceof ReferenceError;
+            }
+            caught
+        "#,
     );
 }
 

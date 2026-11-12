@@ -23,7 +23,12 @@ fn type_error(source: &str) {
 #[test]
 fn data_descriptors_default_preserve_and_reject_attributes_correctly() {
     assert_true(
-        "let o={};Object.defineProperty(o,'x',{value:7})===o && o.x===7 && !o.propertyIsEnumerable('x') && !delete o.x",
+        r#"
+            let o = {};
+            Object.defineProperty(o, 'x', {
+                value: 7
+            }) === o && o.x === 7 && !o.propertyIsEnumerable('x') && !delete o.x
+        "#,
     );
     assert_true(
         r#"
@@ -47,7 +52,16 @@ fn data_descriptors_default_preserve_and_reject_attributes_correctly() {
         "#,
     );
     assert_true(
-        "let o={};Object.defineProperty(o,'x',{value:NaN});Object.defineProperty(o,'x',{value:NaN});Object.is(o.x,NaN)",
+        r#"
+            let o = {};
+            Object.defineProperty(o, 'x', {
+                value: NaN
+            });
+            Object.defineProperty(o, 'x', {
+                value: NaN
+            });
+            Object.is(o.x, NaN)
+        "#,
     );
     type_error(
         "let o={};Object.defineProperty(o,'x',{value:0});Object.defineProperty(o,'x',{value:-0})",
@@ -366,7 +380,16 @@ fn mapped_arguments_follow_live_values_and_detach_only_after_successful_definiti
         "#,
     );
     assert_true(
-        "function f(a){Object.defineProperty(arguments,'0',{get:()=>7});a=4;return arguments[0]===7 && a===4;}f(1)",
+        r#"
+            function f(a) {
+                Object.defineProperty(arguments, '0', {
+                    get: () => 7
+                });
+                a = 4;
+                return arguments[0] === 7 && a === 4;
+            }
+            f(1)
+        "#,
     );
     assert_true(
         r#"

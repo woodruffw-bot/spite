@@ -31,7 +31,8 @@ fn required_zero_nan_and_infinity_results_are_exact() {
     assert_true(
         r#"
             Math.sinh(Infinity) === Infinity && Math.sinh(-Infinity) === -Infinity && Math.cosh(
-                Infinity) === Infinity && Math.cosh(-Infinity) === Infinity && Math.tanh(Infinity) === 1 &&
+                    Infinity) === Infinity && Math.cosh(-Infinity) === Infinity && Math.tanh(Infinity) ===
+                1 &&
                 Math.tanh(-Infinity) === -1
         "#,
     );

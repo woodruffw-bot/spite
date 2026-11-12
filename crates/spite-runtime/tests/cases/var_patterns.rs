@@ -155,7 +155,21 @@ fn pattern_rhs_evaluation_precedes_binding_lookup_while_identifier_rhs_follows_i
         "#,
     );
     assert_true(
-        "var x=1;let object={x:0,[Symbol.unscopables]:{x:true}};with(object)var {a:x}={a:7};x===7 && object.x===0",
+        r#"
+            var x = 1;
+            let object = {
+                x: 0,
+                [Symbol.unscopables]: {
+                    x: true
+                }
+            };
+            with(object) var {
+                a: x
+            } = {
+                a: 7
+            };
+            x === 7 && object.x === 0
+        "#,
     );
 }
 

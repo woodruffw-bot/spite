@@ -90,7 +90,12 @@ fn resolution_identity_requires_the_brand_and_constructor_identity_before_constr
         "#,
     );
     assert_true(
-        "let p=Promise.resolve(7),C={};p.constructor=C;Promise.resolve.call(C,p)===p&&Promise.try.call(C,()=>p)===p",
+        r#"
+            let p = Promise.resolve(7),
+                C = {};
+            p.constructor = C;
+            Promise.resolve.call(C, p) === p && Promise.try.call(C, () => p) === p
+        "#,
     );
     assert_true(
         r#"

@@ -21,7 +21,17 @@ fn reverses_in_place_preserving_length_identity_and_holes() {
 fn empty_and_singleton_ranges_do_not_read_elements_or_write_length() {
     assert_true("let a=Object.freeze([]),b=Object.freeze([1]);a.reverse()===a && b.reverse()===b");
     assert_true(
-        "let o={length:1};Object.defineProperty(o,'0',{get:()=>{throw 7;}});Array.prototype.reverse.call(o)===o",
+        r#"
+            let o = {
+                length: 1
+            };
+            Object.defineProperty(o, '0', {
+                get: () => {
+                    throw 7;
+                }
+            });
+            Array.prototype.reverse.call(o) === o
+        "#,
     );
     assert_true(
         "let a=[1,2,3];Object.defineProperty(a,'1',{get:()=>{throw 7;}});a.reverse();a[0]===3 && a[2]===1",

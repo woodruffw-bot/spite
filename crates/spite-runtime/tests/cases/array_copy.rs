@@ -7,7 +7,11 @@ use crate::common::assert_true;
 #[test]
 fn copies_are_fresh_arrays_with_dense_elements_and_preserved_value_identity() {
     assert_true(
-        "let a=[1,2,3],b=a.toReversed();a!==b && Array.isArray(b) && b.join()==='3,2,1' && a.join()==='1,2,3'",
+        r#"
+            let a = [1, 2, 3],
+                b = a.toReversed();
+            a !== b && Array.isArray(b) && b.join() === '3,2,1' && a.join() === '1,2,3'
+        "#,
     );
     assert_true(
         "let a=[1,2,3],b=a.with(1,7);a!==b && Array.isArray(b) && b.join()==='1,7,3' && a.join()==='1,2,3'",
@@ -15,7 +19,10 @@ fn copies_are_fresh_arrays_with_dense_elements_and_preserved_value_identity() {
     assert_true("let a=[];a.toReversed()!==a && a.toReversed().length===0");
     assert_true("let o={},a=[o];a.toReversed()[0]===o && a.with(0,o)[0]===o && a.with(0,o)!==a");
     assert_true(
-        "let b=[,,].toReversed();b.length===2 && Object.hasOwn(b,'0') && Object.hasOwn(b,'1') && b[0]===undefined",
+        r#"
+            let b = [, , ].toReversed();
+            b.length === 2 && Object.hasOwn(b, '0') && Object.hasOwn(b, '1') && b[0] === undefined
+        "#,
     );
     assert_true(
         r#"
@@ -232,7 +239,16 @@ fn gets_are_directional_and_live_but_output_length_is_snapshotted() {
         "#,
     );
     assert_true(
-        "let a=[1,2];let b=a.with({valueOf:()=>{a.length=0;return 1;}},7);b.length===2 && b[0]===undefined && b[1]===7",
+        r#"
+            let a = [1, 2];
+            let b = a.with({
+                valueOf: () => {
+                    a.length = 0;
+                    return 1;
+                }
+            }, 7);
+            b.length === 2 && b[0] === undefined && b[1] === 7
+        "#,
     );
 }
 
@@ -251,7 +267,7 @@ fn generic_receivers_copy_utf16_units_and_convert_length_before_index() {
                 length: '2.9'
             };
             Array.prototype.toReversed.call(o).join() === '2,1' && Array.prototype.with.call(o, 0, 7)
-            .join() === '7,2'
+                .join() === '7,2'
         "#,
     );
     assert_true(

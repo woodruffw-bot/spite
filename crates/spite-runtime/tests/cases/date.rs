@@ -21,10 +21,18 @@ fn type_error(source: &str) {
 #[test]
 fn timestamp_inputs_clip_preserve_brand_and_distinguish_absent_undefined() {
     assert_true(
-        "let d=new Date; Number.isFinite(d.getTime()) && Number.isInteger(d.getTime()) && Math.abs(d.getTime())<=8640000000000000 && Number.isFinite(Date.now()) && Number.isInteger(Date.now())",
+        r#"
+            let d = new Date;
+            Number.isFinite(d.getTime()) && Number.isInteger(d.getTime()) && Math.abs(d.getTime()) <=
+                8640000000000000 && Number.isFinite(Date.now()) && Number.isInteger(Date.now())
+        "#,
     );
     assert_true(
-        "new Date(null).getTime()===0 && new Date(false).getTime()===0 && new Date(true).getTime()===1 && new Date(1.9).valueOf()===1 && new Date(-1.9).getTime()===-1 && 1/new Date(-0).getTime()===Infinity && 1/new Date(-0.9).getTime()===Infinity",
+        r#"
+            new Date(null).getTime() === 0 && new Date(false).getTime() === 0 && new Date(true)
+            .getTime() === 1 && new Date(1.9).valueOf() === 1 && new Date(-1.9).getTime() === -1 && 1 /
+                new Date(-0).getTime() === Infinity && 1 / new Date(-0.9).getTime() === Infinity
+        "#,
     );
     for value in [
         "undefined",
@@ -173,7 +181,16 @@ fn constructor_converts_before_selecting_newtarget_prototype_and_supports_subcla
         "function C(){} C.prototype=3; Object.getPrototypeOf(Reflect.construct(Date,[0],C))===Date.prototype",
     );
     assert_true(
-        "class D extends Date { #x=3; read(){return this.#x+this.getTime();} } let d=new D(7); d instanceof Date && d instanceof D && d.read()===10",
+        r#"
+            class D extends Date {
+                #x = 3;
+                read() {
+                    return this.#x + this.getTime();
+                }
+            }
+            let d = new D(7);
+            d instanceof Date && d instanceof D && d.read() === 10
+        "#,
     );
     let mut realm = Realm::default();
     let value = realm.eval("class D extends Date {} new D(9)").unwrap();
@@ -439,7 +456,11 @@ fn primitive_conversion_is_generic_validates_hint_without_coercion_and_orders_me
         ));
     }
     assert_true(
-        "let d=new Date(7);d.toString=()=> 'text'; +d===7 && d+1==='text1' && `${d}`==='text' && String(d)==='text'",
+        r#"
+            let d = new Date(7);
+            d.toString = () => 'text'; + d === 7 && d + 1 === 'text1' && `${d}` === 'text' && String(d) ===
+                'text'
+        "#,
     );
     assert_true(
         "String(new Date(NaN))==='Invalid Date' && Number(new Date(NaN))!==Number(new Date(NaN))",

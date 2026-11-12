@@ -115,7 +115,21 @@ fn get_preserves_exact_receivers_and_only_uses_them_for_getters() {
     );
     assert_true("let o={set x(v){throw 7;}};Reflect.get(o,'x')===undefined");
     assert_true(
-        "let o={x:1},key={toString(){delete o.x;Object.setPrototypeOf(o,{x:7});return 'x';}};Reflect.get(o,key)===7",
+        r#"
+            let o = {
+                    x: 1
+                },
+                key = {
+                    toString() {
+                        delete o.x;
+                        Object.setPrototypeOf(o, {
+                            x: 7
+                        });
+                        return 'x';
+                    }
+                };
+            Reflect.get(o, key) === 7
+        "#,
     );
     assert_true(
         r#"
@@ -165,7 +179,21 @@ fn has_checks_own_and_inherited_descriptors_without_getter_calls() {
         "#,
     );
     assert_true(
-        "let o={x:1},key={toString(){delete o.x;Object.setPrototypeOf(o,{x:7});return 'x';}};Reflect.has(o,key)",
+        r#"
+            let o = {
+                    x: 1
+                },
+                key = {
+                    toString() {
+                        delete o.x;
+                        Object.setPrototypeOf(o, {
+                            x: 7
+                        });
+                        return 'x';
+                    }
+                };
+            Reflect.has(o, key)
+        "#,
     );
     assert_true(
         "Reflect.has(Array,'fromAsync') && Reflect.has(Reflect,'set') && Reflect.has(globalThis,'Proxy')",

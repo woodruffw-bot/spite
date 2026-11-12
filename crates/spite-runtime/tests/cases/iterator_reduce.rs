@@ -211,12 +211,20 @@ fn cached_next_and_live_values_preserve_accumulator_identity_without_coercion() 
                 }
             });
             gets === 1 && receiver === i && argc === 0 && result === c && seen[0] === initial && seen[
-                1] === a && seen[2] === 0 && seen[3] === 3 && seen[4] === a && seen[5] === b && seen[6] ===
+                    1] === a && seen[2] === 0 && seen[3] === 3 && seen[4] === a && seen[5] === b && seen[
+                6] ===
                 1 && seen[8] === b && seen[9] === c && seen[10] === 2
         "#,
     );
     assert_true(
-        "let receiver;[1,2].values().reduce(function(memo){receiver=this;return memo;});receiver===globalThis",
+        r#"
+            let receiver;
+            [1, 2].values().reduce(function(memo) {
+                receiver = this;
+                return memo;
+            });
+            receiver === globalThis
+        "#,
     );
     assert_true(
         r#"

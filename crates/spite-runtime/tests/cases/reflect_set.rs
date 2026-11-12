@@ -204,7 +204,14 @@ fn data_and_missing_setter_rejections_are_boolean_even_in_strict_callers() {
 #[test]
 fn setters_receive_exact_receivers_and_return_true_independently_of_their_result() {
     assert_true(
-        "let calls=0;Reflect.set({set matchAll(v){calls++;}},'matchAll',1,String.prototype)===true && calls===1",
+        r#"
+            let calls = 0;
+            Reflect.set({
+                set matchAll(v) {
+                    calls++;
+                }
+            }, 'matchAll', 1, String.prototype) === true && calls === 1
+        "#,
     );
     assert_true(
         r#"
@@ -253,7 +260,20 @@ fn setters_receive_exact_receivers_and_return_true_independently_of_their_result
         "let target={set x(v){return 3;}};Reflect.set(target,'x',1,String.prototype)===true",
     );
     assert_true(
-        "let caught=false,target={set x(v){throw 7;}};try{Reflect.set(target,'x',1,{});}catch(e){caught=e===7;}caught",
+        r#"
+            let caught = false,
+                target = {
+                    set x(v) {
+                        throw 7;
+                    }
+                };
+            try {
+                Reflect.set(target, 'x', 1, {});
+            } catch (e) {
+                caught = e === 7;
+            }
+            caught
+        "#,
     );
 }
 
@@ -331,7 +351,19 @@ fn array_string_and_argument_receivers_use_their_internal_definitions() {
 #[test]
 fn ordinary_assignments_share_checked_setter_and_exotic_paths() {
     assert_true(
-        "let receiver={y:1},p={set x(v){this.y=v;}},o=Object.create(p);o.x=7;o.y===7 && !Object.hasOwn(o,'x')",
+        r#"
+            let receiver = {
+                    y: 1
+                },
+                p = {
+                    set x(v) {
+                        this.y = v;
+                    }
+                },
+                o = Object.create(p);
+            o.x = 7;
+            o.y === 7 && !Object.hasOwn(o, 'x')
+        "#,
     );
     assert_true(
         r#"

@@ -7,10 +7,51 @@ use crate::common::assert_true;
 #[test]
 fn reads_use_the_method_home_prototype_and_calls_use_the_actual_receiver() {
     assert_true(
-        "let p={x:3,m(v){return this.x+v;}},h={x:10,read(){return super.x;},call(){return (super.m)(2);}};Object.setPrototypeOf(h,p);let other={x:100,call:h.call};Object.setPrototypeOf(other,{x:999});h.read()===3 && h.call()===12 && other.call()===102 && h.read.call(other)===3",
+        r#"
+            let p = {
+                    x: 3,
+                    m(v) {
+                        return this.x + v;
+                    }
+                },
+                h = {
+                    x: 10,
+                    read() {
+                        return super.x;
+                    },
+                    call() {
+                        return (super.m)(2);
+                    }
+                };
+            Object.setPrototypeOf(h, p);
+            let other = {
+                x: 100,
+                call: h.call
+            };
+            Object.setPrototypeOf(other, {
+                x: 999
+            });
+            h.read() === 3 && h.call() === 12 && other.call() === 102 && h.read.call(other) === 3
+        "#,
     );
     assert_true(
-        "let p={x:3},h={m(){return super.x;}};Object.setPrototypeOf(h,p);let f=h.m.bind({x:999});f()===3 && (Object.setPrototypeOf(h,{x:7}),f()===7)",
+        r#"
+            let p = {
+                    x: 3
+                },
+                h = {
+                    m() {
+                        return super.x;
+                    }
+                };
+            Object.setPrototypeOf(h, p);
+            let f = h.m.bind({
+                x: 999
+            });
+            f() === 3 && (Object.setPrototypeOf(h, {
+                x: 7
+            }), f() === 7)
+        "#,
     );
     assert_true(
         "let h={m(){return super.toString();}};h.m()==='[object Object]' && Object.setPrototypeOf(h,{toString(){return this;}}).m()===h",
@@ -547,7 +588,21 @@ fn optional_calls_and_tagged_templates_keep_the_super_receiver() {
         "#,
     );
     assert_true(
-        "function F(v){this.x=v;}let p={F},h={m(){return new super.F(7);}};Object.setPrototypeOf(h,p);h.m().x===7",
+        r#"
+            function F(v) {
+                this.x = v;
+            }
+            let p = {
+                    F
+                },
+                h = {
+                    m() {
+                        return new super.F(7);
+                    }
+                };
+            Object.setPrototypeOf(h, p);
+            h.m().x === 7
+        "#,
     );
 }
 
@@ -685,7 +740,21 @@ fn arrows_eval_and_default_parameters_inherit_method_home_and_this() {
         "#,
     );
     assert_true(
-        "let p={m(){return this.x;}},h={x:7,e(){return eval('super.m()');}};Object.setPrototypeOf(h,p);h.e()===7",
+        r#"
+            let p = {
+                    m() {
+                        return this.x;
+                    }
+                },
+                h = {
+                    x: 7,
+                    e() {
+                        return eval('super.m()');
+                    }
+                };
+            Object.setPrototypeOf(h, p);
+            h.e() === 7
+        "#,
     );
     assert_true(
         r#"

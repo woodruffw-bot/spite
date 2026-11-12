@@ -28,7 +28,7 @@ fn canonical_values_preserve_primitive_types_object_and_symbol_identity() {
                 s = new Set([a, b, x, y, 1, 1n, '1', undefined, null, false, true, NaN, 0 / 0, -0, +0]);
             s.size === 13 && s.has(a) && s.has(b) && s.has(x) && s.has(y) && s.has(1) && s.has(1n) && s
                 .has('1') && s.has(undefined) && s.has(null) && s.has(false) && s.has(true) && s.has(
-                NaN) && s.has(0) && !s.has({}) && !s.has(Symbol('x')) && Object.is([...s][12], 0)
+                    NaN) && s.has(0) && !s.has({}) && !s.has(Symbol('x')) && Object.is([...s][12], 0)
         "#,
     );
     assert_true(
@@ -995,10 +995,27 @@ fn combination_results_bypass_public_constructors_add_and_species() {
 #[test]
 fn full_metadata_aliases_species_and_iterator_prototypes_are_standard() {
     assert_true(
-        "Set.name==='Set' && Set.length===0 && Object.getPrototypeOf(Set)===Function.prototype && Object.getPrototypeOf(Set.prototype)===Object.prototype && Set.prototype.constructor===Set && Set.prototype.keys===Set.prototype.values && Set.prototype[Symbol.iterator]===Set.prototype.values && Object.keys(Set.prototype).length===0 && Object.getOwnPropertyNames(Set.prototype).sort().join(',')==='add,clear,constructor,delete,difference,entries,forEach,has,intersection,isDisjointFrom,isSubsetOf,isSupersetOf,keys,size,symmetricDifference,union,values' && Object.getOwnPropertySymbols(Set.prototype).length===2 && Object.getOwnPropertyNames(Set).sort().join(',')==='length,name,prototype'",
+        r#"
+            Set.name === 'Set' && Set.length === 0 && Object.getPrototypeOf(Set) === Function.prototype &&
+                Object.getPrototypeOf(Set.prototype) === Object.prototype && Set.prototype.constructor ===
+                Set && Set.prototype.keys === Set.prototype.values && Set.prototype[Symbol.iterator] ===
+                Set.prototype.values && Object.keys(Set.prototype).length === 0 && Object
+                .getOwnPropertyNames(Set.prototype).sort().join(',') ===
+                'add,clear,constructor,delete,difference,entries,forEach,has,intersection,isDisjointFrom,isSubsetOf,isSupersetOf,keys,size,symmetricDifference,union,values' &&
+                Object.getOwnPropertySymbols(Set.prototype).length === 2 && Object.getOwnPropertyNames(Set)
+                .sort().join(',') === 'length,name,prototype'
+        "#,
     );
     assert_true(
-        "let size=Object.getOwnPropertyDescriptor(Set.prototype,'size'),species=Object.getOwnPropertyDescriptor(Set,Symbol.species),x={};size.get.name==='get size' && size.get.length===0 && size.set===undefined && !size.enumerable && size.configurable && species.get.name==='get [Symbol.species]' && species.get.call(x)===x && species.get.call(null)===null && species.get.call(7)===7 && Set[Symbol.species]===Set",
+        r#"
+            let size = Object.getOwnPropertyDescriptor(Set.prototype, 'size'),
+                species = Object.getOwnPropertyDescriptor(Set, Symbol.species),
+                x = {};
+            size.get.name === 'get size' && size.get.length === 0 && size.set === undefined && !size
+                .enumerable && size.configurable && species.get.name === 'get [Symbol.species]' && species
+                .get.call(x) === x && species.get.call(null) === null && species.get.call(7) === 7 && Set[
+                    Symbol.species] === Set
+        "#,
     );
     assert_true(
         "let i=new Set().values(),p=Object.getPrototypeOf(i);Object.getPrototypeOf(p)===Iterator.prototype && Reflect.ownKeys(i).length===0 && Object.getOwnPropertyNames(p).join(',')==='next' && p.next.name==='next' && p.next.length===0 && Object.prototype.toString.call(i)==='[object Set Iterator]' && Object.prototype.toString.call(new Set())==='[object Set]'",

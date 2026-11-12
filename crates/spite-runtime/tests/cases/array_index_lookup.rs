@@ -86,7 +86,14 @@ fn array_index_lookup_metadata_sparse_reordering_and_symbols() {
         "#,
     );
     assert_true(
-        "let a=[1,2];a.extra=3;a.unshift(0);a.reverse();a.splice(1,1,9,8);a.join(',')==='2,9,8,0'&&a.extra===3",
+        r#"
+            let a = [1, 2];
+            a.extra = 3;
+            a.unshift(0);
+            a.reverse();
+            a.splice(1, 1, 9, 8);
+            a.join(',') === '2,9,8,0' && a.extra === 3
+        "#,
     );
 }
 

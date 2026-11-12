@@ -21,7 +21,18 @@ fn assignments_return_the_original_rhs_and_write_nested_repeated_and_rest_target
     );
     assert_true("let x;[x,x]=[1,2];({a:x,b:x}={a:3,b:4});x===4");
     assert_true(
-        "var eval,arguments;[eval=3,arguments=4]=[];({eval,arguments}={eval:5,arguments:6});eval===5 && arguments===6",
+        r#"
+            var eval, arguments;
+            [eval = 3, arguments = 4] = [];
+            ({
+                eval,
+                arguments
+            } = {
+                eval: 5,
+                arguments: 6
+            });
+            eval === 5 && arguments === 6
+        "#,
     );
     assert_true("let x=1,y=2;[x,y]=[y,x];x===2 && y===1");
     assert_true("let a,b,source=[2];let result=([a]=[b]=source);result===source && a===2 && b===2");
@@ -34,7 +45,14 @@ fn assignments_return_the_original_rhs_and_write_nested_repeated_and_rest_target
     assert_true("let x,n;[x,...{length:n}]=[1,2,3];x===1 && n===2");
     assert_true("let key,value;for([key,value] of [[1,2],[3,4]]) ;key===3 && value===4");
     assert_true(
-        "let first,tail,log=[];for([first,...tail] in {ab:1,cd:2})log.push(first+tail[0]);log.join(',')==='ab,cd'",
+        r#"
+            let first, tail, log = [];
+            for ([first, ...tail] in {
+                    ab: 1,
+                    cd: 2
+                }) log.push(first + tail[0]);
+            log.join(',') === 'ab,cd'
+        "#,
     );
     assert_true(
         r#"
@@ -243,7 +261,24 @@ fn object_rest_resolves_before_live_copy_and_uses_exact_key_exclusion_and_own_da
         "#,
     );
     assert_true(
-        "let object={set x(value){throw 7;}};let result;try{({...object.x}={a:1});}catch(e){result=e===7;}result",
+        r#"
+            let object = {
+                set x(value) {
+                    throw 7;
+                }
+            };
+            let result;
+            try {
+                ({
+                    ...object.x
+                } = {
+                    a: 1
+                });
+            } catch (e) {
+                result = e === 7;
+            }
+            result
+        "#,
     );
 }
 

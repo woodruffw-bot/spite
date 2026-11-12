@@ -32,7 +32,14 @@ fn calls_and_construction_create_distinct_error_instances() {
         ));
     }
     assert_true(
-        "!Error.isError() && !Error.isError(null) && !Error.isError(1) && !Error.isError('Error') && !Error.isError({toString:()=>{throw 1;}})",
+        r#"
+            !Error.isError() && !Error.isError(null) && !Error.isError(1) && !Error.isError('Error') && !
+                Error.isError({
+                    toString: () => {
+                        throw 1;
+                    }
+                })
+        "#,
     );
 }
 
@@ -111,7 +118,10 @@ fn constructors_and_instances_have_only_standard_properties() {
         }
     }
     assert_true(
-        "Error.isError.length===1 && Error.isError.name==='isError' && Error.prototype.toString.length===0 && Error.prototype.toString.name==='toString'",
+        r#"
+            Error.isError.length === 1 && Error.isError.name === 'isError' && Error.prototype.toString
+                .length === 0 && Error.prototype.toString.name === 'toString'
+        "#,
     );
     for source in ["new Error.isError()", "new Error.prototype.toString()"] {
         assert!(matches!(

@@ -233,7 +233,7 @@ fn array_species_validates_constructor_realm_before_reading_species() {
                     a.constructor = constructor;
                     let result = operation[1](a);
                     if (speciesReads !== 1 || calls !== 1 || length !== operation[2] || result.join(
-                        ',') !== operation[3]) throw 1;
+                            ',') !== operation[3]) throw 1;
                 }
                 let speciesReads = 0;
 

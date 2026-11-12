@@ -104,7 +104,8 @@ fn key_reflection_never_gets_values_and_ignores_inherited_properties() {
                 enumerable: true
             });
             Object.values(o).join(',') === '1' && Object.entries(o).length === 1 && Object.entries(o)[0][
-                0] === 'x'
+                0
+            ] === 'x'
         "#,
     );
 }
@@ -229,7 +230,7 @@ fn primitive_wrappers_arrays_and_arguments_expose_their_actual_own_keys() {
                 r = Object.values(text);
             Object.keys(text).join(',') === '0,1' && Object.getOwnPropertyNames(text).join(',') ===
                 '0,1,length' && Object.getOwnPropertySymbols(text).length === 0 && r.length === 2 && r[
-                0] === '\uD83D' && r[1] === '\uDE00'
+                    0] === '\uD83D' && r[1] === '\uDE00'
         "#,
     );
     for value in ["3", "true", "Symbol('x')"] {

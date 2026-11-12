@@ -10,7 +10,7 @@ fn non_string_values_return_unchanged_without_coercion() {
         r#"
             eval() === undefined && eval(undefined) === undefined && eval(null) === null && eval(true) ===
                 true && eval(7) === 7 && Object.is(eval(-0), -0) && Object.is(eval(NaN), NaN) && eval(
-                3n) === 3n
+                    3n) === 3n
         "#,
     );
     assert_true(
@@ -50,7 +50,13 @@ fn intrinsic_metadata_and_construction_match_an_ordinary_builtin() {
         "eval.name==='eval' && eval.length===1 && Object.getPrototypeOf(eval)===Function.prototype && Object.getOwnPropertyNames(eval).join(',')==='length,name' && !('prototype' in eval) && eval.toString()==='function eval() { [native code] }'",
     );
     assert_true(
-        "let d=Object.getOwnPropertyDescriptor(globalThis,'eval'),n=Object.getOwnPropertyDescriptor(eval,'name'),l=Object.getOwnPropertyDescriptor(eval,'length');d.value===eval && d.writable && !d.enumerable && d.configurable && !n.writable && !n.enumerable && n.configurable && !l.writable && !l.enumerable && l.configurable",
+        r#"
+            let d = Object.getOwnPropertyDescriptor(globalThis, 'eval'),
+                n = Object.getOwnPropertyDescriptor(eval, 'name'),
+                l = Object.getOwnPropertyDescriptor(eval, 'length');
+            d.value === eval && d.writable && !d.enumerable && d.configurable && !n.writable && !n
+                .enumerable && n.configurable && !l.writable && !l.enumerable && l.configurable
+        "#,
     );
     assert_true(
         "let flag=0,error;try{new eval(flag++);}catch(e){error=e instanceof TypeError;}error && flag===1",

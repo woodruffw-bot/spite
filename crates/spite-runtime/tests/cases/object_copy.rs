@@ -10,12 +10,12 @@ fn assign_boxes_targets_skips_nullish_sources_and_copies_only_enumerable_own_val
         r#"
             let o = {};
             Object.assign(o) === o && Object.assign(o, null, undefined, true, 1) === o && Object.assign(
-            o, {
-                x: 1
-            }, {
-                x: 2,
-                y: 3
-            }) === o && o.x === 2 && o.y === 3
+                o, {
+                    x: 1
+                }, {
+                    x: 2,
+                    y: 3
+                }) === o && o.x === 2 && o.y === 3
         "#,
     );
     assert_true(
@@ -295,7 +295,10 @@ fn descriptor_results_define_data_properties_even_over_inherited_setters_and_pro
         "#,
     );
     assert_true(
-        "let ds=Object.getOwnPropertyDescriptors(true);ds.constructor===Object && !Object.hasOwn(ds,'valueOf')",
+        r#"
+            let ds = Object.getOwnPropertyDescriptors(true);
+            ds.constructor === Object && !Object.hasOwn(ds, 'valueOf')
+        "#,
     );
     for source in [
         "Object.getOwnPropertyDescriptors()",

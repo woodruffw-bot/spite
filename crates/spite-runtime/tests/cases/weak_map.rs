@@ -71,7 +71,13 @@ fn object_keys_use_identity_without_coercion_and_missing_differs_from_present_un
         "#,
     );
     assert_true(
-        "let key={},m=new WeakMap([[key]]);m.has(key) && m.get(key)===undefined && m.set(key)===m && m.has(key)",
+        r#"
+            let key = {},
+                m = new WeakMap([
+                    [key]
+                ]);
+            m.has(key) && m.get(key) === undefined && m.set(key) === m && m.has(key)
+        "#,
     );
 }
 
@@ -721,16 +727,51 @@ fn invalid_key_constructor_failure_preserves_earlier_entries_and_language_close_
 fn constructor_accepts_mixed_object_and_symbol_entries_without_iterator_close() {
     assert_true(
         r#"
-            let key={},symbol=Symbol('key'),boxed=Object(symbol),escaped,closed=0,n=0,steps=0,flag=0,m;
-            let entries=[[key,7],[symbol,8],[Symbol.iterator,9],[boxed,10]],set=WeakMap.prototype.set;
-            WeakMap.prototype.set=function(k,v){escaped=this;return set.call(this,k,v);};
-            let i={
-                next(){steps++;return n<entries.length?{value:entries[n++]}:{done:true};},
-                return(){closed++;throw 11;}
+            let key = {},
+                symbol = Symbol('key'),
+                boxed = Object(symbol),
+                escaped, closed = 0,
+                n = 0,
+                steps = 0,
+                flag = 0,
+                m;
+            let entries = [
+                    [key, 7],
+                    [symbol, 8],
+                    [Symbol.iterator, 9],
+                    [boxed, 10]
+                ],
+                set = WeakMap.prototype.set;
+            WeakMap.prototype.set = function(k, v) {
+                escaped = this;
+                return set.call(this, k, v);
             };
-            try{m=new WeakMap({[Symbol.iterator](){return i;}});}finally{flag=2;}
-            flag===2 && n===4 && steps===5 && closed===0 && escaped===m &&
-            m.get(key)===7 && m.get(symbol)===8 && m.get(Symbol.iterator)===9 && m.get(boxed)===10
+            let i = {
+                next() {
+                    steps++;
+                    return n < entries.length ? {
+                        value: entries[n++]
+                    } : {
+                        done: true
+                    };
+                },
+                return () {
+                    closed++;
+                    throw 11;
+                }
+            };
+            try {
+                m = new WeakMap({
+                    [Symbol.iterator]() {
+                        return i;
+                    }
+                });
+            } finally {
+                flag = 2;
+            }
+            flag === 2 && n === 4 && steps === 5 && closed === 0 && escaped === m &&
+                m.get(key) === 7 && m.get(symbol) === 8 && m.get(Symbol.iterator) === 9 && m.get(boxed) ===
+                10
         "#,
     );
 }
@@ -768,7 +809,11 @@ fn subclasses_bound_construction_and_nonstandard_prototypes_retain_the_private_s
         "#,
     );
     assert_true(
-        "function C(){}C.prototype=1;Object.getPrototypeOf(Reflect.construct(WeakMap,[],C))===WeakMap.prototype",
+        r#"
+            function C() {}
+            C.prototype = 1;
+            Object.getPrototypeOf(Reflect.construct(WeakMap, [], C)) === WeakMap.prototype
+        "#,
     );
 }
 
@@ -973,13 +1018,28 @@ fn symbol_identity_and_boxed_symbols_remain_separate_from_registered_primitive_k
 fn symbol_upserts_keep_cached_undefined_and_validate_callbacks_before_lookup() {
     assert_true(
         r#"
-            let key=Symbol('cached'),other=Symbol('insert'),m=new WeakMap([[key,undefined]]),calls=0;
-            let value={valueOf(){throw 7;}};
-            m.getOrInsert(key,value)===undefined &&
-            m.getOrInsertComputed(key,()=>{calls++;return 8;})===undefined && calls===0 &&
-            m.getOrInsert(other)===undefined && m.has(other) && m.get(other)===undefined &&
-            m.delete(other) && m.getOrInsertComputed(other,()=>{calls++;return undefined;})===undefined &&
-            calls===1 && m.has(other)
+            let key = Symbol('cached'),
+                other = Symbol('insert'),
+                m = new WeakMap([
+                    [key, undefined]
+                ]),
+                calls = 0;
+            let value = {
+                valueOf() {
+                    throw 7;
+                }
+            };
+            m.getOrInsert(key, value) === undefined &&
+                m.getOrInsertComputed(key, () => {
+                    calls++;
+                    return 8;
+                }) === undefined && calls === 0 &&
+                m.getOrInsert(other) === undefined && m.has(other) && m.get(other) === undefined &&
+                m.delete(other) && m.getOrInsertComputed(other, () => {
+                    calls++;
+                    return undefined;
+                }) === undefined &&
+                calls === 1 && m.has(other)
         "#,
     );
     for callback in ["undefined", "null", "7", "{}", "Symbol()"] {
@@ -988,7 +1048,14 @@ fn symbol_upserts_keep_cached_undefined_and_validate_callbacks_before_lookup() {
         ));
     }
     assert_true(
-        "let key=Symbol('key'),m=new WeakMap([[key,7]]);class C{}m.getOrInsertComputed(key,C)===7 && m.get(key)===7",
+        r#"
+            let key = Symbol('key'),
+                m = new WeakMap([
+                    [key, 7]
+                ]);
+            class C {}
+            m.getOrInsertComputed(key, C) === 7 && m.get(key) === 7
+        "#,
     );
     type_error("class C{}new WeakMap().getOrInsertComputed(Symbol('key'),C)");
 }
@@ -997,17 +1064,29 @@ fn symbol_upserts_keep_cached_undefined_and_validate_callbacks_before_lookup() {
 fn symbol_computed_upserts_pass_the_original_key_and_recheck_after_reentrant_changes() {
     assert_true(
         r#"
-            let key=Symbol('key'),a=Symbol('a'),b=Symbol('b'),other={},value={},calls=0,valid=false;
-            let m=new WeakMap([[a,1],[b,2]]);
-            let result=m.getOrInsertComputed(key,function(k){
+            let key = Symbol('key'),
+                a = Symbol('a'),
+                b = Symbol('b'),
+                other = {},
+                value = {},
+                calls = 0,
+                valid = false;
+            let m = new WeakMap([
+                [a, 1],
+                [b, 2]
+            ]);
+            let result = m.getOrInsertComputed(key, function(k) {
                 'use strict';
                 calls++;
-                valid=this===undefined && arguments.length===1 && k===key;
-                m.set(key,'temporary');m.delete(a);m.delete(b);m.set(other,7);
+                valid = this === undefined && arguments.length === 1 && k === key;
+                m.set(key, 'temporary');
+                m.delete(a);
+                m.delete(b);
+                m.set(other, 7);
                 return value;
             });
-            valid && calls===1 && result===value && m.get(key)===value &&
-            m.get(other)===7 && !m.has(a) && !m.has(b)
+            valid && calls === 1 && result === value && m.get(key) === value &&
+                m.get(other) === 7 && !m.has(a) && !m.has(b)
         "#,
     );
     assert_true(

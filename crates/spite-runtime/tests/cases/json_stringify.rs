@@ -12,7 +12,7 @@ fn primitives_omissions_and_well_formed_utf16_quoting_are_exact() {
                 'false' && JSON.stringify(-0) === '0' && JSON.stringify(NaN) === 'null' && JSON.stringify(
                     Infinity) === 'null' && JSON.stringify(-Infinity) === 'null' && JSON.stringify(
                     undefined) === undefined && JSON.stringify(Symbol()) === undefined && JSON.stringify(
-                () => {}) === undefined
+                    () => {}) === undefined
         "#,
     );
     assert_true(
@@ -205,7 +205,19 @@ fn replacer_callback_holders_root_wrapper_and_returned_values_are_preserved() {
         "Object.defineProperty(Object.prototype,'',{set(){throw 7;}});JSON.stringify(1,(k,v)=>v)==='1'",
     );
     assert_true(
-        "JSON.stringify({a:1},function(k,v){if(k==='a')return {toJSON(){throw 7;},x:2};return v;})==='{\"a\":{\"x\":2}}'",
+        r#"
+            JSON.stringify({
+                a: 1
+            }, function(k, v) {
+                if (k === 'a') return {
+                    toJSON() {
+                        throw 7;
+                    },
+                    x: 2
+                };
+                return v;
+            }) === '{"a":{"x":2}}'
+        "#,
     );
 }
 
@@ -267,7 +279,12 @@ fn replacer_property_lists_convert_deduplicate_and_include_inherited_properties(
         "JSON.stringify([1,2],[])==='[1,2]' && JSON.stringify({a:{a:1,b:2},b:3},['a'])==='{\"a\":{\"a\":1}}'",
     );
     assert_true(
-        "let list=[new Boolean(true),Object(Symbol()),Object(1n),{},undefined];JSON.stringify({a:1},list)==='{}'",
+        r#"
+            let list = [new Boolean(true), Object(Symbol()), Object(1n), {}, undefined];
+            JSON.stringify({
+                a: 1
+            }, list) === '{}'
+        "#,
     );
 }
 
@@ -432,7 +449,7 @@ fn complete_metadata_reflection_and_saved_functions_survive_collection() {
         r#"
             JSON.stringify.name === 'stringify' && JSON.stringify.length === 3 && Object.getPrototypeOf(
                     JSON.stringify) === Function.prototype && !Object.hasOwn(JSON.stringify,
-                'prototype') && Object.getOwnPropertyNames(JSON).length === 4 && Object
+                    'prototype') && Object.getOwnPropertyNames(JSON).length === 4 && Object
                 .getOwnPropertySymbols(JSON).length === 1 && Object.assign({}, JSON).parse === undefined &&
                 Object.keys(JSON).length === 0 && Object.freeze(JSON) === JSON && Object.isFrozen(JSON)
         "#,

@@ -282,7 +282,14 @@ fn sloppy_declarations_enter_the_caller_variable_environment_and_are_deletable()
         "#,
     );
     assert_true(
-        "function f(){var x=3;eval('var x;function g(){return 7;}');return x===3 && !delete x && delete g;}f()",
+        r#"
+            function f() {
+                var x = 3;
+                eval('var x;function g(){return 7;}');
+                return x === 3 && !delete x && delete g;
+            }
+            f()
+        "#,
     );
     assert_true(
         r#"

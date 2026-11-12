@@ -57,7 +57,15 @@ fn sealing_preserves_writable_data_and_freezing_is_shallow() {
         "#,
     );
     assert_true(
-        "let o={x:1};Object.seal(o);o.x=3;o.y=4;o.x===3 && !Object.hasOwn(o,'y') && !delete o.x && Object.seal(o)===o",
+        r#"
+            let o = {
+                x: 1
+            };
+            Object.seal(o);
+            o.x = 3;
+            o.y = 4;
+            o.x === 3 && !Object.hasOwn(o, 'y') && !delete o.x && Object.seal(o) === o
+        "#,
     );
     assert_true(
         r#"

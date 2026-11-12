@@ -62,7 +62,7 @@ fn binary16_rounds_directly_without_a_binary32_intermediate() {
             let mid = 1 + 2 ** -11;
             Math.f16round(mid) === 1 && Math.f16round(mid + Number.EPSILON) === 1 + 2 ** -10 && Math
                 .f16round(mid - Number.EPSILON) === 1 && Math.f16round(Math.fround(mid + Number
-                .EPSILON)) === 1 && Math.f16round(-mid - Number.EPSILON) === -1 - 2 ** -10 && Math
+                    .EPSILON)) === 1 && Math.f16round(-mid - Number.EPSILON) === -1 - 2 ** -10 && Math
                 .f16round(1 + 3 * 2 ** -11) === 1 + 2 ** -9
         "#,
     );

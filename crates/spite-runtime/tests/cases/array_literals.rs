@@ -101,14 +101,24 @@ fn elements_define_own_properties_bypassing_inherited_setters() {
         "#,
     );
     assert_true(
-        "let a=[Object.defineProperty(Array.prototype,'1',{value:9,writable:false,configurable:true}),2];a[1]===2",
+        r#"
+            let a = [Object.defineProperty(Array.prototype, '1', {
+                value: 9,
+                writable: false,
+                configurable: true
+            }), 2];
+            a[1] === 2
+        "#,
     );
 }
 
 #[test]
 fn literal_elements_do_not_infer_anonymous_function_names() {
     assert_true(
-        "let a=[function(){},()=>0,function named(){}];a[0].name==='' && a[1].name==='' && a[2].name==='named'",
+        r#"
+            let a = [function() {}, () => 0, function named() {}];
+            a[0].name === '' && a[1].name === '' && a[2].name === 'named'
+        "#,
     );
     assert_true("let f;let a=[f=()=>1];a[0].name==='f'");
 }

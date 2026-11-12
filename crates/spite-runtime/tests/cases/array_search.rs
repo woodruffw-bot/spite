@@ -10,7 +10,10 @@ use crate::common::assert_true;
 fn equality_handles_nan_zeros_types_and_object_identity_without_coercion() {
     assert_true("[NaN].includes(NaN) && [NaN].indexOf(NaN)===-1 && [NaN].lastIndexOf(NaN)===-1");
     assert_true(
-        "[0].includes(-0) && [-0].includes(0) && Object.is([-0].indexOf(0),0) && Object.is([0].lastIndexOf(-0),0)",
+        r#"
+            [0].includes(-0) && [-0].includes(0) && Object.is([-0].indexOf(0), 0) && Object.is([0]
+                .lastIndexOf(-0), 0)
+        "#,
     );
     assert_true(
         r#"
@@ -123,7 +126,7 @@ fn generic_receivers_use_utf16_indices_and_the_full_safe_integer_length_range() 
                 length: Infinity
             };
             Array.prototype.includes.call(o, 7, -1) && Array.prototype.indexOf.call(o, 7,
-                9007199254740990) === 9007199254740990 && Array.prototype.lastIndexOf.call(o, 7) ===
+                    9007199254740990) === 9007199254740990 && Array.prototype.lastIndexOf.call(o, 7) ===
                 9007199254740990
         "#,
     );
@@ -146,10 +149,30 @@ fn length_is_snapshotted_before_index_coercion_but_property_values_remain_live()
         "let a=[1,2];a.lastIndexOf(7,{valueOf:()=>{a.length=0;Array.prototype[1]=7;return 2;}})===1",
     );
     assert_true(
-        "let a=[1,2,3];Object.defineProperty(a,'0',{get:()=>{delete a[1];a[2]=9;return 1;}});a.indexOf(9)===2",
+        r#"
+            let a = [1, 2, 3];
+            Object.defineProperty(a, '0', {
+                get: () => {
+                    delete a[1];
+                    a[2] = 9;
+                    return 1;
+                }
+            });
+            a.indexOf(9) === 2
+        "#,
     );
     assert_true(
-        "let a=[1,2,3];Object.defineProperty(a,'2',{get:()=>{delete a[1];a[0]=9;return 3;}});a.lastIndexOf(9)===0",
+        r#"
+            let a = [1, 2, 3];
+            Object.defineProperty(a, '2', {
+                get: () => {
+                    delete a[1];
+                    a[0] = 9;
+                    return 3;
+                }
+            });
+            a.lastIndexOf(9) === 0
+        "#,
     );
     for method in METHODS {
         assert_true(&format!(

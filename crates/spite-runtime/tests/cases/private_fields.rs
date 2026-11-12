@@ -7,10 +7,46 @@ use crate::common::assert_true;
 #[test]
 fn fields_support_reads_updates_assignments_and_private_call_receivers() {
     assert_true(
-        "class C{#x;#y=1;#f=function(v){this.#y+=v;return this;};run(){let old=this.#y++;this.#x??=3;this.#x&&=4;this.#x||=9;({v:this.#y}={v:5});return old===1 && this.#x===4 && this.#f(2)===this && this.#y===7;}}new C().run()",
+        r#"
+            class C {
+                #x;
+                #y = 1;
+                #f = function(v) {
+                    this.#y += v;
+                    return this;
+                };
+                run() {
+                    let old = this.#y++;
+                    this.#x ??= 3;
+                    this.#x &&= 4;
+                    this.#x ||= 9;
+                    ({
+                        v: this.#y
+                    } = {
+                        v: 5
+                    });
+                    return old === 1 && this.#x === 4 && this.#f(2) === this && this.#y === 7;
+                }
+            }
+            new C().run()
+        "#,
     );
     assert_true(
-        "class C{#f=function(){this.value=7;};#tag=function(s,v){return this===c && s[0]==='x' && v===8;};run(){return new this.#f().value===7 && this.#tag`x${8}`;}}let c=new C;c.run()",
+        r#"
+            class C {
+                #f = function() {
+                    this.value = 7;
+                };
+                #tag = function(s, v) {
+                    return this === c && s[0] === 'x' && v === 8;
+                };
+                run() {
+                    return new this.#f().value === 7 && this.#tag`x${8}`;
+                }
+            }
+            let c = new C;
+            c.run()
+        "#,
     );
     assert_true(
         "class C{#x=7;read(o){return o?.#x;}call(o){return o?.#x.toString();}}let c=new C;c.read(null)===undefined && c.read(c)===7 && c.call(null)===undefined && c.call(c)==='7'",
@@ -190,7 +226,21 @@ fn heritage_closures_keep_outer_private_names_and_internal_class_binding() {
         "#,
     );
     assert_true(
-        "class Outer{#x=7;make(){return class{read(o){return o.#x;}};}}let o=new Outer,C=o.make();new C().read(o)===7",
+        r#"
+            class Outer {
+                #x = 7;
+                make() {
+                    return class {
+                        read(o) {
+                            return o.#x;
+                        }
+                    };
+                }
+            }
+            let o = new Outer,
+                C = o.make();
+            new C().read(o) === 7
+        "#,
     );
 }
 

@@ -867,7 +867,7 @@ fn floating_stores_round_once_to_the_requested_format() {
             let v = new DataView(new ArrayBuffer(8));
             v.setFloat16(0, 2 ** -25);
             Object.is(v.getFloat16(0), 0) && v.setFloat16(0, -(2 ** -25)) === undefined && Object.is(v
-                    .getFloat16(0), -0) && v.setFloat16(0, 3 * 2 ** -25) === undefined && v.getFloat16(
+                .getFloat16(0), -0) && v.setFloat16(0, 3 * 2 ** -25) === undefined && v.getFloat16(
                 0) === 2 ** -23 && v.setFloat16(0, 65520) === undefined && v.getFloat16(0) === Infinity
         "#,
     );
@@ -877,7 +877,8 @@ fn floating_stores_round_once_to_the_requested_format() {
             v.setFloat32(0, 1 + 2 ** -24);
             v.getFloat32(0) === 1 && v.setFloat32(0, 1 + 3 * 2 ** -24) === undefined && v.getFloat32(0) ===
                 1 + 2 ** -22 && v.setFloat32(0, 2 ** -150) === undefined && Object.is(v.getFloat32(0),
-                0) && v.setFloat64(0, 1 + Number.EPSILON) === undefined && v.getFloat64(0) === 1 + Number
+                    0) && v.setFloat64(0, 1 + Number.EPSILON) === undefined && v.getFloat64(0) === 1 +
+                Number
                 .EPSILON
         "#,
     );

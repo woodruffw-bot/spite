@@ -32,7 +32,12 @@ fn apply_calls_targets_with_exact_receiver_sparse_arguments_and_results() {
         "#,
     );
     assert_true(
-        "function f(){return this;}Reflect.apply(f,null,[])===globalThis && Reflect.apply(f,2,[]).valueOf()===2",
+        r#"
+            function f() {
+                return this;
+            }
+            Reflect.apply(f, null, []) === globalThis && Reflect.apply(f, 2, []).valueOf() === 2
+        "#,
     );
     assert_true(
         r#"
@@ -504,7 +509,7 @@ fn builtin_construction_uses_custom_newtarget_and_intrinsic_fallbacks() {
                 n = Reflect.construct(Number, [], N);
             Object.getPrototypeOf(a) === Array.prototype && Object.getPrototypeOf(s) === String
                 .prototype && Object.getPrototypeOf(b) === Boolean.prototype && Object.getPrototypeOf(
-                n) === Number.prototype
+                    n) === Number.prototype
         "#,
     );
     assert_true(
@@ -532,7 +537,14 @@ fn reflect_metadata_collection_and_large_argument_lists_use_default_limits() {
         ));
     }
     assert_true(
-        "let list={length:5000};Reflect.apply((...args)=>args.length,null,list)===5000 && Reflect.construct(function(){this.length=arguments.length;},list).length===5000",
+        r#"
+            let list = {
+                length: 5000
+            };
+            Reflect.apply((...args) => args.length, null, list) === 5000 && Reflect.construct(function() {
+                this.length = arguments.length;
+            }, list).length === 5000
+        "#,
     );
     let mut realm = Realm::default();
     realm.eval("let apply=Reflect.apply,construct=Reflect.construct;delete Reflect.apply;delete Reflect.construct;delete globalThis.Reflect").unwrap();

@@ -19,6 +19,14 @@ fn private_generator_function_kinds_instantiate_and_keep_early_errors() {
         assert_eq!(realm.eval("after=3"), Ok(Value::Number(3.0)));
     }
     assert_true(
-        "let caught=false;try{eval('class C{#constructor;}');}catch(e){caught=e instanceof SyntaxError;}caught",
+        r#"
+            let caught = false;
+            try {
+                eval('class C{#constructor;}');
+            } catch (e) {
+                caught = e instanceof SyntaxError;
+            }
+            caught
+        "#,
     );
 }

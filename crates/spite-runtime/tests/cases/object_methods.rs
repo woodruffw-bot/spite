@@ -7,7 +7,20 @@ use crate::common::assert_true;
 #[test]
 fn methods_bind_receivers_and_capture_outer_environments_without_a_self_binding() {
     assert_true(
-        "let m=7,o={x:2,m(v=3){return this.x+v+m;}};o.m()===12 && o.m.call({x:4},5)===16 && o.m!==({m(){}}).m",
+        r#"
+            let m = 7,
+                o = {
+                    x: 2,
+                    m(v = 3) {
+                        return this.x + v + m;
+                    }
+                };
+            o.m() === 12 && o.m.call({
+                x: 4
+            }, 5) === 16 && o.m !== ({
+                m() {}
+            }).m
+        "#,
     );
     assert_true(
         "function outer(x){return {m(){return ()=>x+this.y;},y:2};}let o=outer(7),f=o.m();f()===9",
@@ -217,7 +230,16 @@ fn accessor_calls_use_the_original_receiver_and_propagate_abrupt_completion() {
 #[test]
 fn proto_methods_and_accessors_are_ordinary_properties_and_definitions_bypass_setters() {
     assert_true(
-        "let proto={},o={__proto__:proto,__proto__(){return 7;}};Object.getPrototypeOf(o)===proto && o.__proto__()===7",
+        r#"
+            let proto = {},
+                o = {
+                    __proto__: proto,
+                    __proto__() {
+                        return 7;
+                    }
+                };
+            Object.getPrototypeOf(o) === proto && o.__proto__() === 7
+        "#,
     );
     assert_true(
         r#"

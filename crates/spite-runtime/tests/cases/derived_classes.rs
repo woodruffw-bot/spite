@@ -329,7 +329,15 @@ fn arrows_and_direct_eval_inherit_derived_constructor_state() {
         "class B{constructor(x){this.x=x;}}class D extends B{constructor(f=()=>super(7)){f();}}new D().x===7",
     );
     assert_true(
-        "class D extends Object{constructor(){eval('super()');this.target=eval('new.target');}}new D().target===D",
+        r#"
+            class D extends Object {
+                constructor() {
+                    eval('super()');
+                    this.target = eval('new.target');
+                }
+            }
+            new D().target === D
+        "#,
     );
     assert_true("class D extends Object{constructor(){eval('()=>super()')();}}new D instanceof D");
     assert_true(
@@ -461,7 +469,11 @@ fn inherited_methods_and_static_super_keep_the_actual_receiver() {
 #[test]
 fn native_superclasses_initialize_internal_slots_with_the_derived_prototype() {
     assert_true(
-        "class D extends Array{}let d=new D(1,2);Array.isArray(d) && d instanceof D && d.length===2 && d[1]===2",
+        r#"
+            class D extends Array {}
+            let d = new D(1, 2);
+            Array.isArray(d) && d instanceof D && d.length === 2 && d[1] === 2
+        "#,
     );
     assert_true(
         "class D extends Map{}let d=new D([[1,2]]);d instanceof D && d.get(1)===2 && d.size===1",

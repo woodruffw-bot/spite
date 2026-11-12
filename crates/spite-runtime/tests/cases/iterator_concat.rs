@@ -495,10 +495,22 @@ fn helper_brands_prototypes_and_complete_constructor_reflection_are_standard() {
         "let w=Iterator.concat(),p=Object.getPrototypeOf(w),d=Object.getOwnPropertyDescriptor(p,Symbol.toStringTag),keys=Reflect.ownKeys(p);Object.getPrototypeOf(p)===Iterator.prototype && keys.length===3 && keys[0]==='next' && keys[1]==='return' && keys[2]===Symbol.toStringTag && d.value==='Iterator Helper' && !d.writable && !d.enumerable && d.configurable && w instanceof Iterator && Iterator.from(w)===w && Object.prototype.toString.call(w)==='[object Iterator Helper]' && (Object.freeze(p),Object.isFrozen(p))",
     );
     assert_true(
-        "let w=Iterator.concat([7]),next=w.next;Object.setPrototypeOf(w,null);Object.freeze(w);next.call(w).value===7 && next.call(w).done",
+        r#"
+            let w = Iterator.concat([7]),
+                next = w.next;
+            Object.setPrototypeOf(w, null);
+            Object.freeze(w);
+            next.call(w).value === 7 && next.call(w).done
+        "#,
     );
     assert_true(
-        "let d=Object.getOwnPropertyDescriptor(Iterator,'concat');Iterator.concat.name==='concat' && Iterator.concat.length===0 && d.value===Iterator.concat && d.writable && !d.enumerable && d.configurable && Reflect.ownKeys(Iterator).join(',')==='length,name,concat,from,prototype' && Object.keys(Iterator).length===0 && (Object.freeze(Iterator),Object.isFrozen(Iterator))",
+        r#"
+            let d = Object.getOwnPropertyDescriptor(Iterator, 'concat');
+            Iterator.concat.name === 'concat' && Iterator.concat.length === 0 && d.value === Iterator
+                .concat && d.writable && !d.enumerable && d.configurable && Reflect.ownKeys(Iterator).join(
+                    ',') === 'length,name,concat,from,prototype' && Object.keys(Iterator).length === 0 && (
+                    Object.freeze(Iterator), Object.isFrozen(Iterator))
+        "#,
     );
     type_error("new Iterator.concat()");
 }

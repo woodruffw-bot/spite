@@ -197,7 +197,7 @@ fn public_state_iteration_and_constructor_overrides_are_unobserved() {
             };
             let b = a.toSorted();
             Object.getPrototypeOf(b) === prototype && !(b instanceof S) && b.join() === '1,2,12' && a
-            .join() === '12,2,1'
+                .join() === '12,2,1'
         "#,
     );
 }

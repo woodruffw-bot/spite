@@ -20,10 +20,21 @@ fn callbacks_visit_present_elements_in_order_with_three_arguments() {
         "#,
     );
     assert_true(
-        "[1,2,3].every(v=>v>0) && ![1,2,3].every(v=>v<3) && [1,2,3].some(v=>v===2) && ![1,2,3].some(v=>v===9)",
+        r#"
+            [1, 2, 3].every(v => v > 0) && ![1, 2, 3].every(v => v < 3) && [1, 2, 3].some(v => v === 2) &&
+                ![1, 2, 3].some(v => v === 9)
+        "#,
     );
     assert_true(
-        "[,,].every(()=>{throw 7;}) && ![,,].some(()=>{throw 7;}) && [,,].forEach(()=>{throw 7;})===undefined",
+        r#"
+            [, , ].every(() => {
+                throw 7;
+            }) && ![, , ].some(() => {
+                throw 7;
+            }) && [, , ].forEach(() => {
+                throw 7;
+            }) === undefined
+        "#,
     );
     assert_true(
         r#"

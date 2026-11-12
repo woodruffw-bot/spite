@@ -688,7 +688,7 @@ fn subarray_omitted_and_undefined_end_track_growth_while_explicit_end_is_fixed()
                 0 && fixed.buffer === buffer && v.byteOffset === 4 && v[0] === 7;
             buffer.resize(12);
             initial && grown && shrunk && v.join() === '7,0,0,0' && u.join() === '7,0,0,0' && fixed
-            .join() === '7,0,0'
+                .join() === '7,0,0'
         "#,
     );
 }

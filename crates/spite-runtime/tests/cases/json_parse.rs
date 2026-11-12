@@ -145,7 +145,16 @@ fn metadata_nonconstruction_and_intrinsic_retention_are_standard() {
         "Object.getPrototypeOf(JSON)===Object.prototype && Object.prototype.toString.call(JSON)==='[object JSON]' && !Object.hasOwn(JSON,'prototype') && JSON.parse.name==='parse' && JSON.parse.length===2 && !Object.hasOwn(JSON.parse,'prototype')",
     );
     assert_true(
-        "let d=Object.getOwnPropertyDescriptor(JSON,'parse'),n=Object.getOwnPropertyDescriptor(d.value,'name'),l=Object.getOwnPropertyDescriptor(d.value,'length'),t=Object.getOwnPropertyDescriptor(JSON,Symbol.toStringTag),g=Object.getOwnPropertyDescriptor(globalThis,'JSON');d.writable && !d.enumerable && d.configurable && !n.writable && !n.enumerable && n.configurable && !l.writable && !l.enumerable && l.configurable && !t.writable && !t.enumerable && t.configurable && g.writable && !g.enumerable && g.configurable",
+        r#"
+            let d = Object.getOwnPropertyDescriptor(JSON, 'parse'),
+                n = Object.getOwnPropertyDescriptor(d.value, 'name'),
+                l = Object.getOwnPropertyDescriptor(d.value, 'length'),
+                t = Object.getOwnPropertyDescriptor(JSON, Symbol.toStringTag),
+                g = Object.getOwnPropertyDescriptor(globalThis, 'JSON');
+            d.writable && !d.enumerable && d.configurable && !n.writable && !n.enumerable && n
+                .configurable && !l.writable && !l.enumerable && l.configurable && !t.writable && !t
+                .enumerable && t.configurable && g.writable && !g.enumerable && g.configurable
+        "#,
     );
     assert!(matches!(
         Realm::default().eval("new JSON.parse('1')"),

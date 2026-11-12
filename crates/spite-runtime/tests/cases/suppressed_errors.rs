@@ -31,7 +31,7 @@ fn values_are_retained_without_hooks_and_options_are_ignored() {
             let e = SuppressedError();
             Object.hasOwn(e, 'error') && Object.hasOwn(e, 'suppressed') && e.error === undefined && e
                 .suppressed === undefined && !Object.hasOwn(e, 'message') && Reflect.ownKeys(e).join(
-                ',') === 'error,suppressed'
+                    ',') === 'error,suppressed'
         "#,
     );
     assert_true(

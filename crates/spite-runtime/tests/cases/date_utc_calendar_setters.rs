@@ -273,7 +273,10 @@ fn final_clipping_allows_outside_intermediates_and_enormous_components_to_cancel
         "let d=new Date(8640000000000000);Number.isNaN(d.setUTCMonth(8,14)) && Number.isNaN(d.getTime())",
     );
     assert_true(
-        "let d=new Date(-8640000000000000);Number.isNaN(d.setUTCFullYear(-271821,3,19)) && Number.isNaN(d.getTime())",
+        r#"
+            let d = new Date(-8640000000000000);
+            Number.isNaN(d.setUTCFullYear(-271821, 3, 19)) && Number.isNaN(d.getTime())
+        "#,
     );
     assert_true(
         r#"

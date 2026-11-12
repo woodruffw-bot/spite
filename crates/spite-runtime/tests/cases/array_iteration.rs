@@ -23,7 +23,7 @@ fn keys_values_and_entries_are_fresh_iterators_with_dense_results() {
                 b = i.next();
             !a.done && Array.isArray(a.value) && a.value.length === 2 && Object.hasOwn(a.value, '0') &&
                 Object.hasOwn(a.value, '1') && a.value[0] === 0 && a.value[1] === undefined && b.value[
-                0] === 1 && b.value[1] === 7 && i.next().done
+                    0] === 1 && b.value[1] === 7 && i.next().done
         "#,
     );
     assert_true(
@@ -78,7 +78,15 @@ fn construction_is_lazy_and_each_next_reads_live_length() {
         "#,
     );
     assert_true(
-        "let o={0:1,1:2,length:2},i=Array.prototype.values.call(o);i.next().value===1 && (o[1]=7,i.next().value===7)",
+        r#"
+            let o = {
+                    0: 1,
+                    1: 2,
+                    length: 2
+                },
+                i = Array.prototype.values.call(o);
+            i.next().value === 1 && (o[1] = 7, i.next().value === 7)
+        "#,
     );
     assert_true(
         r#"
@@ -307,7 +315,12 @@ fn entries_and_results_use_intrinsic_objects_and_bypass_inherited_setters() {
 #[test]
 fn next_is_branded_but_does_not_require_its_original_prototype() {
     assert_true(
-        "let i=[1].values(),next=i.next;Object.setPrototypeOf(i,null);next.call(i).value===1 && next.call(i).done",
+        r#"
+            let i = [1].values(),
+                next = i.next;
+            Object.setPrototypeOf(i, null);
+            next.call(i).value === 1 && next.call(i).done
+        "#,
     );
     for value in [
         "undefined",

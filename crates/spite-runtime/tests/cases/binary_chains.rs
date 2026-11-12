@@ -35,7 +35,25 @@ fn right_operands_run_before_each_primitive_conversion_and_before_later_terms() 
         "#,
     );
     assert_true(
-        "let n=0,a={valueOf(){return n}};function b(){n=2;return 1}function c(){n=10;return 1}a+b()+c()===4 && n===10",
+        r#"
+            let n = 0,
+                a = {
+                    valueOf() {
+                        return n
+                    }
+                };
+
+            function b() {
+                n = 2;
+                return 1
+            }
+
+            function c() {
+                n = 10;
+                return 1
+            }
+            a + b() + c() === 4 && n === 10
+        "#,
     );
     assert_true(
         r#"

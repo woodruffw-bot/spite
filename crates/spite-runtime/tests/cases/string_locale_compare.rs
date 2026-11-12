@@ -185,7 +185,14 @@ fn reserved_arguments_are_ignored_and_public_normalization_is_not_consulted() {
         "#,
     );
     assert_true(
-        "Object.defineProperty(String.prototype,'normalize',{get(){throw 9;}});'é'.localeCompare('e\\u0301')===0",
+        r#"
+            Object.defineProperty(String.prototype, 'normalize', {
+                get() {
+                    throw 9;
+                }
+            });
+            'é'.localeCompare('e\u0301') === 0
+        "#,
     );
     assert_true(
         "let caught=false;try{'x'.localeCompare('x',(()=>{throw 10;})());}catch(e){caught=e===10;}caught",

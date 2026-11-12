@@ -118,7 +118,16 @@ fn unscopables_uses_live_truthiness_and_inherited_receivers() {
     );
     assert_true("let absent=7,o={get [Symbol.unscopables](){throw 9;}},a;with(o){a=absent;}a===7");
     assert_true(
-        "let values=7,at=8,seen=[];with([1,2]){seen.push(typeof values);seen.push(at);}seen.join(',')==='number,8'",
+        r#"
+            let values = 7,
+                at = 8,
+                seen = [];
+            with([1, 2]) {
+                seen.push(typeof values);
+                seen.push(at);
+            }
+            seen.join(',') === 'number,8'
+        "#,
     );
 }
 
@@ -128,10 +137,41 @@ fn lookup_getters_throw_and_typeof_resolves_only_once() {
         "let x=1,o={x:2,get [Symbol.unscopables](){throw 7;}},a;try{with(o)x;}catch(e){a=e;}a===7 && x===1",
     );
     assert_true(
-        "let o={x:2},u={get x(){throw 8;}},a;o[Symbol.unscopables]=u;try{with(o)typeof x;}catch(e){a=e;}a===8",
+        r#"
+            let o = {
+                    x: 2
+                },
+                u = {
+                    get x() {
+                        throw 8;
+                    }
+                },
+                a;
+            o[Symbol.unscopables] = u;
+            try {
+                with(o) typeof x;
+            } catch (e) {
+                a = e;
+            }
+            a === 8
+        "#,
     );
     assert_true(
-        "let n=0,o={x:2,get [Symbol.unscopables](){n++;return {};}};let a;with(o){a=typeof (x);}a==='number' && n===1",
+        r#"
+            let n = 0,
+                o = {
+                    x: 2,
+                    get [Symbol.unscopables]() {
+                        n++;
+                        return {};
+                    }
+                };
+            let a;
+            with(o) {
+                a = typeof(x);
+            }
+            a === 'number' && n === 1
+        "#,
     );
     assert_true(
         "let o={get [Symbol.unscopables](){throw 7;}},a;with(o){a=typeof missing;}a==='undefined'",
@@ -417,7 +457,17 @@ fn object_conversion_and_all_completion_paths_restore_the_outer_scope() {
     );
     assert_true("let n=0,o={[Symbol.toPrimitive](){n++;throw 7;}},x=1;with(o);n===0 && x===1");
     assert_true(
-        "let a=0;for(let x of [null,undefined]){try{with(x)a=9;}catch(e){if(e instanceof TypeError)a++;}}a===2",
+        r#"
+            let a = 0;
+            for (let x of [null, undefined]) {
+                try {
+                    with(x) a = 9;
+                } catch (e) {
+                    if (e instanceof TypeError) a++;
+                }
+            }
+            a === 2
+        "#,
     );
     assert_true(
         r#"

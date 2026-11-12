@@ -129,7 +129,15 @@ fn removed_elements_are_never_read_and_retained_gets_are_ordered_and_live() {
         "#,
     );
     assert_true(
-        "let a=[0,1,2];Object.defineProperty(a,'0',{get:()=>{throw 7;}});a.toSpliced(0,Infinity,9).join()==='9'",
+        r#"
+            let a = [0, 1, 2];
+            Object.defineProperty(a, '0', {
+                get: () => {
+                    throw 7;
+                }
+            });
+            a.toSpliced(0, Infinity, 9).join() === '9'
+        "#,
     );
     assert_eq!(
         Realm::default().eval(
@@ -199,7 +207,21 @@ fn length_start_and_skip_conversions_precede_reads_and_use_captured_length() {
         "#,
     );
     assert_true(
-        "let log='';[].toSpliced({valueOf:()=>{log+='s';return 0;}},{valueOf:()=>{log+='d';return 0;}});log==='sd'",
+        r#"
+            let log = '';
+            [].toSpliced({
+                valueOf: () => {
+                    log += 's';
+                    return 0;
+                }
+            }, {
+                valueOf: () => {
+                    log += 'd';
+                    return 0;
+                }
+            });
+            log === 'sd'
+        "#,
     );
     for source in [
         "[].toSpliced({valueOf:()=>{throw 7;}})",

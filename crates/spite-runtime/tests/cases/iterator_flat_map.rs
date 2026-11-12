@@ -129,7 +129,7 @@ fn outer_capture_is_eager_and_inner_acquisition_and_steps_are_lazy_and_cached() 
             let eager = log === 'o' && n === 0;
             let a = h.next(7);
             let first = eager && a.value === 0 && !a.done && innerGets === 1 && innerCalls === 1 && n ===
-            1;
+                1;
             let b = h.next(),
                 c = h.next(),
                 d = h.next(),
@@ -145,7 +145,13 @@ fn outer_capture_is_eager_and_inner_acquisition_and_steps_are_lazy_and_cached() 
         "let i=[1,2,3].values(),h=i.flatMap(x=>[x,x]);i.next();h.toArray().join(',')==='2,2,3,3'",
     );
     assert_true(
-        "let context,h=[7].values().flatMap(function(){context=this;return [];});h.next().done && context===globalThis",
+        r#"
+            let context, h = [7].values().flatMap(function() {
+                context = this;
+                return [];
+            });
+            h.next().done && context === globalThis
+        "#,
     );
     assert_true(
         r#"
@@ -789,7 +795,18 @@ fn metadata_and_shared_helper_brand_are_standard() {
         })
     ));
     assert_true(
-        "let h=[7].values().flatMap(x=>[x]),wrong=Object.create(h),caught=false;try{h.next.call(wrong);}catch(e){caught=e instanceof TypeError;}Object.setPrototypeOf(h,null);caught && Iterator.concat().next.call(h).value===7",
+        r#"
+            let h = [7].values().flatMap(x => [x]),
+                wrong = Object.create(h),
+                caught = false;
+            try {
+                h.next.call(wrong);
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            Object.setPrototypeOf(h, null);
+            caught && Iterator.concat().next.call(h).value === 7
+        "#,
     );
 }
 

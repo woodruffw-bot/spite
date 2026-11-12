@@ -9,22 +9,83 @@ use crate::common::assert_true;
 #[test]
 fn functions_arrows_methods_setters_and_constructors_share_pattern_initialization() {
     assert_true(
-        "function f({a:[x=2]=[],...rest}={},[y=3]=[]){return x+y+Object.keys(rest).length;}f()===5 && f({a:[7],z:1},[8])===16",
+        r#"
+            function f({
+                a: [x = 2] = [],
+                ...rest
+            } = {}, [y = 3] = []) {
+                return x + y + Object.keys(rest).length;
+            }
+            f() === 5 && f({
+                a: [7],
+                z: 1
+            }, [8]) === 16
+        "#,
     );
     assert_true(
-        "let f=({x=2},[y=3])=>x+y;f({},[])===5 && f.call(null,{x:7},[8])===15 && f.apply(null,[{},[]])===5 && f.bind(null,{x:1})([])===4",
+        r#"
+            let f = ({
+                x = 2
+            }, [y = 3]) => x + y;
+            f({}, []) === 5 && f.call(null, {
+                x: 7
+            }, [8]) === 15 && f.apply(null, [{},
+                []
+            ]) === 5 && f.bind(null, {
+                x: 1
+            })([]) === 4
+        "#,
     );
     assert_true(
-        "let object={m({x}){return this.y+x;},y:2,set value([x=3]){this.y=x;}};let a=object.m({x:1});object.value=[];a===3 && object.y===3",
+        r#"
+            let object = {
+                m({
+                    x
+                }) {
+                    return this.y + x;
+                },
+                y: 2,
+                set value([x = 3]) {
+                    this.y = x;
+                }
+            };
+            let a = object.m({
+                x: 1
+            });
+            object.value = [];
+            a === 3 && object.y === 3
+        "#,
     );
     assert_true(
-        "function C({x},[y=2]){this.value=x+y;this.target=new.target;}let c=new C({x:3},[]);c.value===5 && c.target===C",
+        r#"
+            function C({
+                x
+            }, [y = 2]) {
+                this.value = x + y;
+                this.target = new.target;
+            }
+            let c = new C({
+                x: 3
+            }, []);
+            c.value === 5 && c.target === C
+        "#,
     );
     assert_true(
         "let x=8;let f=Function('{x=2}', '...[y=3]', 'return x+y;');f({})===5 && f({x:7},8)===15 && f.toString().includes('{x=2}')",
     );
     assert_true(
-        "let log=[];function f({[log.push('key')&&'a']:x=(log.push('default'),2)},[y]){log.push('body');return x+y;}let result=f((log.push('arg1'),{}),(log.push('arg2'),[3]));result===5 && log.join(',')==='arg1,arg2,key,default,body'",
+        r#"
+            let log = [];
+
+            function f({
+                [log.push('key') && 'a']: x = (log.push('default'), 2)
+            }, [y]) {
+                log.push('body');
+                return x + y;
+            }
+            let result = f((log.push('arg1'), {}), (log.push('arg2'), [3]));
+            result === 5 && log.join(',') === 'arg1,arg2,key,default,body'
+        "#,
     );
 }
 
@@ -96,7 +157,19 @@ fn nested_names_begin_in_tdz_and_defaults_name_only_identifier_targets() {
         );
     }
     assert_true(
-        "let result;function f({[typeof y]:x},[y]){}try{f({},[]);}catch(e){result=e instanceof ReferenceError;}result",
+        r#"
+            let result;
+
+            function f({
+                [typeof y]: x
+            }, [y]) {}
+            try {
+                f({}, []);
+            } catch (e) {
+                result = e instanceof ReferenceError;
+            }
+            result
+        "#,
     );
     assert_true("function f([x=2,y=x+1],{z=y}){return x+y+z;}f([],{})===8");
     assert_true("function f({a=()=>1,b=function(){}}){return a.name==='a' && b.name==='b';}f({})");
@@ -121,7 +194,21 @@ fn computed_keys_and_nested_defaults_separate_parameter_closures_from_body_vars(
     assert_true("let saved;function f([x]){var x=9;return()=>x;}saved=f([2]);saved()===9");
     assert_true("let x=7;function f([y=x]){var x=2;return x+y;}f([])===9");
     assert_true(
-        "let saved;function f({[(saved=()=>x,'a')]:x}){function x(){return 3;}return saved()===2 && x()===3;}f({a:2})",
+        r#"
+            let saved;
+
+            function f({
+                [(saved = () => x, 'a')]: x
+            }) {
+                function x() {
+                    return 3;
+                }
+                return saved() === 2 && x() === 3;
+            }
+            f({
+                a: 2
+            })
+        "#,
     );
 }
 

@@ -10,7 +10,17 @@ fn method_values_are_shared_strict_nonconstructible_and_keep_exact_metadata() {
         "class C{#m /*comment*/ (v=7){return [this,v,arguments.length,new.target];}get(){return this.#m;}run(){return this.#m(8);}}let a=new C,b=new C,f=a.get(),r=a.run(),caught=false;try{new f;}catch(e){caught=e instanceof TypeError;}caught && f===b.get() && f.name==='#m' && f.length===0 && f.toString()==='#m /*comment*/ (v=7){return [this,v,arguments.length,new.target];}' && !Object.hasOwn(f,'prototype') && f() [0]===undefined && r[0]===a && r[1]===8 && r[2]===1 && r[3]===undefined",
     );
     assert_true(
-        "class C{#m(a,b,c=1){return a+b;}run(){return this.#m.name==='#m' && this.#m.length===2 && this.#m(3,4)===7;}}new C().run()",
+        r#"
+            class C {
+                #m(a, b, c = 1) {
+                    return a + b;
+                }
+                run() {
+                    return this.#m.name === '#m' && this.#m.length === 2 && this.#m(3, 4) === 7;
+                }
+            }
+            new C().run()
+        "#,
     );
 }
 
@@ -412,7 +422,20 @@ fn super_new_target_and_direct_eval_use_captured_private_method_contexts() {
         "#,
     );
     assert_true(
-        "class C{#m(){return 7;}get #x(){return 8;}run(){return eval('(()=>this.#m()+this.#x)()');}}new C().run()===15",
+        r#"
+            class C {
+                #m() {
+                    return 7;
+                }
+                get #x() {
+                    return 8;
+                }
+                run() {
+                    return eval('(()=>this.#m()+this.#x)()');
+                }
+            }
+            new C().run() === 15
+        "#,
     );
 }
 

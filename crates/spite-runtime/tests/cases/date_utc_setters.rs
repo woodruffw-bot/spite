@@ -75,10 +75,16 @@ fn utc_day_setter_clips_only_after_month_day_and_time_of_day_are_combined() {
         "#,
     );
     assert_true(
-        "let d=new Date(-8640000000000000+1);d.setUTCDate(20.9)===-8640000000000000+1 && d.getUTCMilliseconds()===1",
+        r#"
+            let d = new Date(-8640000000000000 + 1);
+            d.setUTCDate(20.9) === -8640000000000000 + 1 && d.getUTCMilliseconds() === 1
+        "#,
     );
     assert_true(
-        "let d=new Date(8640000000000000-1);d.setUTCDate(12)===8640000000000000-1 && Number.isNaN(d.setUTCDate(13))",
+        r#"
+            let d = new Date(8640000000000000 - 1);
+            d.setUTCDate(12) === 8640000000000000 - 1 && Number.isNaN(d.setUTCDate(13))
+        "#,
     );
 }
 
@@ -194,7 +200,15 @@ fn utc_day_setter_checks_brand_before_coercion_and_can_mutate_frozen_slots() {
         "#,
     );
     assert_true(
-        "let d=new Date(0),count=0;d.setUTCDate(1,count++,{valueOf(){throw 7;}})===0 && count===1 && d.getTime()===0",
+        r#"
+            let d = new Date(0),
+                count = 0;
+            d.setUTCDate(1, count++, {
+                valueOf() {
+                    throw 7;
+                }
+            }) === 0 && count === 1 && d.getTime() === 0
+        "#,
     );
 }
 
@@ -270,7 +284,10 @@ fn negative_and_oversized_components_roll_across_days_and_leap_boundaries() {
         "#,
     );
     assert_true(
-        "let d=new Date(-1);d.setUTCHours(0,0,0,0)===-86400000 && d.toISOString()==='1969-12-31T00:00:00.000Z'",
+        r#"
+            let d = new Date(-1);
+            d.setUTCHours(0, 0, 0, 0) === -86400000 && d.toISOString() === '1969-12-31T00:00:00.000Z'
+        "#,
     );
 }
 

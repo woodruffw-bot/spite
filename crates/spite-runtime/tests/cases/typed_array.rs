@@ -1241,10 +1241,76 @@ fn iterator_alias_and_original_array_to_string_identity_are_preserved() {
         "let p=Object.getPrototypeOf(Uint8Array.prototype),original=Array.prototype.toString;Array.prototype.toString=function(){throw 7;};let a=new Uint8Array([1,2]);a.join=()=>7;p.toString===original && p[Symbol.iterator]===p.values && p.values.name==='values' && p.values.length===0 && a.toString()===7",
     );
     assert_true(
-        "let T=Object.getPrototypeOf(Uint8Array),p=T.prototype;for(let [name,length] of [['from',1],['of',0]]){let d=Object.getOwnPropertyDescriptor(T,name);if(d.value.name!==name || d.value.length!==length || !d.writable || d.enumerable || !d.configurable || Object.hasOwn(d.value,'prototype'))throw 7;}for(let name of ['keys','values','entries']){let d=Object.getOwnPropertyDescriptor(p,name);if(d.value.name!==name || d.value.length!==0 || !d.writable || d.enumerable || !d.configurable || Object.hasOwn(d.value,'prototype'))throw 8;}true",
+        r#"
+            let T = Object.getPrototypeOf(Uint8Array),
+                p = T.prototype;
+            for (let [name, length] of [
+                    ['from', 1],
+                    ['of', 0]
+                ]) {
+                let d = Object.getOwnPropertyDescriptor(T, name);
+                if (d.value.name !== name || d.value.length !== length || !d.writable || d.enumerable || !d
+                    .configurable || Object.hasOwn(d.value, 'prototype')) throw 7;
+            }
+            for (let name of ['keys', 'values', 'entries']) {
+                let d = Object.getOwnPropertyDescriptor(p, name);
+                if (d.value.name !== name || d.value.length !== 0 || !d.writable || d.enumerable || !d
+                    .configurable || Object.hasOwn(d.value, 'prototype')) throw 8;
+            }
+            true
+        "#,
     );
     assert_true(
-        "let p=Object.getPrototypeOf(Uint8Array.prototype),lengths={at:1,copyWithin:2,every:1,fill:1,filter:1,find:1,findIndex:1,findLast:1,findLastIndex:1,forEach:1,includes:1,indexOf:1,join:1,lastIndexOf:1,map:1,reduce:1,reduceRight:1,reverse:0,set:1,slice:2,some:1,sort:1,subarray:2,toLocaleString:0,toReversed:0,toSorted:1,with:2};for(let name of Object.keys(lengths)){let d=Object.getOwnPropertyDescriptor(p,name);if(d.value.name!==name || d.value.length!==lengths[name] || !d.writable || d.enumerable || !d.configurable || Object.hasOwn(d.value,'prototype'))throw 7;}for(let [object,name,length] of [[Uint8Array,'fromBase64',1],[Uint8Array,'fromHex',1],[Uint8Array.prototype,'setFromBase64',1],[Uint8Array.prototype,'setFromHex',1],[Uint8Array.prototype,'toBase64',0],[Uint8Array.prototype,'toHex',0]]){let d=Object.getOwnPropertyDescriptor(object,name);if(d.value.name!==name || d.value.length!==length || !d.writable || d.enumerable || !d.configurable || Object.hasOwn(d.value,'prototype'))throw 8;}true",
+        r#"
+            let p = Object.getPrototypeOf(Uint8Array.prototype),
+                lengths = {
+                    at: 1,
+                    copyWithin: 2,
+                    every: 1,
+                    fill: 1,
+                    filter: 1,
+                    find: 1,
+                    findIndex: 1,
+                    findLast: 1,
+                    findLastIndex: 1,
+                    forEach: 1,
+                    includes: 1,
+                    indexOf: 1,
+                    join: 1,
+                    lastIndexOf: 1,
+                    map: 1,
+                    reduce: 1,
+                    reduceRight: 1,
+                    reverse: 0,
+                    set: 1,
+                    slice: 2,
+                    some: 1,
+                    sort: 1,
+                    subarray: 2,
+                    toLocaleString: 0,
+                    toReversed: 0,
+                    toSorted: 1,
+                    with: 2
+                };
+            for (let name of Object.keys(lengths)) {
+                let d = Object.getOwnPropertyDescriptor(p, name);
+                if (d.value.name !== name || d.value.length !== lengths[name] || !d.writable || d
+                    .enumerable || !d.configurable || Object.hasOwn(d.value, 'prototype')) throw 7;
+            }
+            for (let [object, name, length] of [
+                    [Uint8Array, 'fromBase64', 1],
+                    [Uint8Array, 'fromHex', 1],
+                    [Uint8Array.prototype, 'setFromBase64', 1],
+                    [Uint8Array.prototype, 'setFromHex', 1],
+                    [Uint8Array.prototype, 'toBase64', 0],
+                    [Uint8Array.prototype, 'toHex', 0]
+                ]) {
+                let d = Object.getOwnPropertyDescriptor(object, name);
+                if (d.value.name !== name || d.value.length !== length || !d.writable || d.enumerable || !d
+                    .configurable || Object.hasOwn(d.value, 'prototype')) throw 8;
+            }
+            true
+        "#,
     );
 }
 

@@ -34,7 +34,8 @@ fn objects_and_non_registered_symbols_preserve_identity_without_coercion() {
                 y = Symbol('x'),
                 s = new WeakSet([a, b, x, y, x]);
             s.has(a) && s.has(b) && s.has(x) && s.has(y) && !s.has({}) && !s.has(Symbol('x')) && s.add(
-                a) === s && s.add(x) === s && s.delete(a) && !s.delete(a) && s.delete(x) && !s.delete(x) &&
+                    a) === s && s.add(x) === s && s.delete(a) && !s.delete(a) && s.delete(x) && !s.delete(
+                    x) &&
                 s.has(y) && s.add(a) === s && s.has(a)
         "#,
     );
@@ -216,7 +217,11 @@ fn construction_orders_prototype_adder_and_iterator_and_caches_the_adder() {
         "#,
     );
     assert_true(
-        "function C(){}C.prototype=1;Object.getPrototypeOf(Reflect.construct(WeakSet,[],C))===WeakSet.prototype",
+        r#"
+            function C() {}
+            C.prototype = 1;
+            Object.getPrototypeOf(Reflect.construct(WeakSet, [], C)) === WeakSet.prototype
+        "#,
     );
 }
 
@@ -370,7 +375,17 @@ fn subclasses_bound_construction_and_custom_new_target_keep_the_internal_slot() 
 #[test]
 fn intrinsic_metadata_reflection_and_integrity_are_complete() {
     assert_true(
-        "let c=Object.getOwnPropertyDescriptor(globalThis,'WeakSet'),p=Object.getOwnPropertyDescriptor(WeakSet,'prototype'),t=Object.getOwnPropertyDescriptor(WeakSet.prototype,Symbol.toStringTag);WeakSet.length===0 && WeakSet.name==='WeakSet' && Object.getPrototypeOf(WeakSet)===Function.prototype && Object.getPrototypeOf(WeakSet.prototype)===Object.prototype && WeakSet.prototype.constructor===WeakSet && c.value===WeakSet && c.writable && !c.enumerable && c.configurable && p.value===WeakSet.prototype && !p.writable && !p.enumerable && !p.configurable && t.value==='WeakSet' && !t.writable && !t.enumerable && t.configurable",
+        r#"
+            let c = Object.getOwnPropertyDescriptor(globalThis, 'WeakSet'),
+                p = Object.getOwnPropertyDescriptor(WeakSet, 'prototype'),
+                t = Object.getOwnPropertyDescriptor(WeakSet.prototype, Symbol.toStringTag);
+            WeakSet.length === 0 && WeakSet.name === 'WeakSet' && Object.getPrototypeOf(WeakSet) ===
+                Function.prototype && Object.getPrototypeOf(WeakSet.prototype) === Object.prototype &&
+                WeakSet.prototype.constructor === WeakSet && c.value === WeakSet && c.writable && !c
+                .enumerable && c.configurable && p.value === WeakSet.prototype && !p.writable && !p
+                .enumerable && !p.configurable && t.value === 'WeakSet' && !t.writable && !t.enumerable &&
+                t.configurable
+        "#,
     );
     assert_true(
         "Object.getOwnPropertyNames(WeakSet).join()==='length,name,prototype' && Object.getOwnPropertySymbols(WeakSet).length===0 && Object.getOwnPropertyNames(WeakSet.prototype).join()==='constructor,add,delete,has' && Object.getOwnPropertySymbols(WeakSet.prototype)[0]===Symbol.toStringTag && Reflect.ownKeys(new WeakSet()).length===0 && Object.prototype.toString.call(new WeakSet())==='[object WeakSet]' && Object.keys(WeakSet.prototype).length===0",
@@ -382,7 +397,13 @@ fn intrinsic_metadata_reflection_and_integrity_are_complete() {
         type_error(&format!("new WeakSet.prototype.{method}()"));
     }
     assert_true(
-        "Object.freeze(WeakSet);Object.freeze(WeakSet.prototype);let key={},s=new WeakSet([key]);Object.isFrozen(WeakSet) && Object.isFrozen(WeakSet.prototype) && s.has(key) && s.delete(key)",
+        r#"
+            Object.freeze(WeakSet);
+            Object.freeze(WeakSet.prototype);
+            let key = {},
+                s = new WeakSet([key]);
+            Object.isFrozen(WeakSet) && Object.isFrozen(WeakSet.prototype) && s.has(key) && s.delete(key)
+        "#,
     );
     assert_true(
         "delete WeakSet.prototype[Symbol.toStringTag];Object.prototype.toString.call(new WeakSet())==='[object Object]'",

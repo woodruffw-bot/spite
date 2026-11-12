@@ -74,7 +74,17 @@ fn functional_replacements_receive_exact_arguments_and_return_literal_text() {
     );
     assert_true(r#"'aba'.replace('b',()=>"$$$&$`$'") === "a$$$&$`$'a""#);
     assert_true(
-        "function f(){throw 7;}Object.defineProperty(f,'toString',{get(){throw 8;}});'abc'.replace('x',f)==='abc'",
+        r#"
+            function f() {
+                throw 7;
+            }
+            Object.defineProperty(f, 'toString', {
+                get() {
+                    throw 8;
+                }
+            });
+            'abc'.replace('x', f) === 'abc'
+        "#,
     );
     assert_true(
         r#"
@@ -106,7 +116,15 @@ fn functional_replacements_receive_exact_arguments_and_return_literal_text() {
         "#,
     );
     assert_true(
-        "let caught=false;try{'aba'.replace('b',()=>Symbol());}catch(e){caught=e instanceof TypeError;}caught",
+        r#"
+            let caught = false;
+            try {
+                'aba'.replace('b', () => Symbol());
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught
+        "#,
     );
     assert_true(
         "let caught=false;try{'aba'.replace('b',()=>{throw 7;});}catch(e){caught=e===7;}caught",
@@ -366,7 +384,17 @@ fn fallback_conversions_precede_search_and_callable_replacements_skip_stringific
         "let caught=false;try{'abc'.replace('x',{toString(){throw 7;}});}catch(e){caught=e===7;}caught",
     );
     assert_true(
-        "function f(){return 'X';}Object.defineProperty(f,'toString',{get(){throw 7;}});'abc'.replace('b',f)==='aXc'",
+        r#"
+            function f() {
+                return 'X';
+            }
+            Object.defineProperty(f, 'toString', {
+                get() {
+                    throw 7;
+                }
+            });
+            'abc'.replace('b', f) === 'aXc'
+        "#,
     );
 }
 

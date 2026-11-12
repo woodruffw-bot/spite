@@ -32,7 +32,11 @@ fn fill_preserves_value_identity_and_creates_properties_for_holes() {
         "#,
     );
     assert_true(
-        "let a=[,,];a.fill();Object.hasOwn(a,'0') && Object.hasOwn(a,'1') && a[0]===undefined && a[1]===undefined",
+        r#"
+            let a = [, , ];
+            a.fill();
+            Object.hasOwn(a, '0') && Object.hasOwn(a, '1') && a[0] === undefined && a[1] === undefined
+        "#,
     );
     assert_true("[1,2].fill(7n)[1]===7n && ['x','y'].fill('\\uD800')[0]==='\\uD800'");
 }
@@ -78,7 +82,11 @@ fn copy_within_handles_overlap_in_both_directions_and_preserves_holes() {
         ));
     }
     assert_true(
-        "let a=[0,,2,3];a.copyWithin(1,0,3)===a && a.length===4 && a[0]===0 && a[1]===0 && !(2 in a) && a[3]===2",
+        r#"
+            let a = [0, , 2, 3];
+            a.copyWithin(1, 0, 3) === a && a.length === 4 && a[0] === 0 && a[1] === 0 && !(2 in a) && a[
+                3] === 2
+        "#,
     );
     assert_true(
         "let a=[0,1,,3];a.copyWithin(0,1,3);a[0]===1 && !(1 in a) && !(2 in a) && a[3]===3",
@@ -446,7 +454,15 @@ fn generic_receivers_keep_length_untouched_and_support_safe_integer_indices() {
         "#,
     );
     assert_true(
-        "let a=[1,2];Object.defineProperty(a,'length',{writable:false});a.fill(7);a.copyWithin(0,1);a.join()==='7,7'",
+        r#"
+            let a = [1, 2];
+            Object.defineProperty(a, 'length', {
+                writable: false
+            });
+            a.fill(7);
+            a.copyWithin(0, 1);
+            a.join() === '7,7'
+        "#,
     );
 }
 

@@ -79,7 +79,16 @@ fn invokes_current_methods_with_original_receivers_and_no_arguments() {
         "#,
     );
     assert_true(
-        "let n=0,o={toLocaleString:()=>{n++;return 7;}};[null,undefined,,o].toLocaleString()===',,,7' && n===1",
+        r#"
+            let n = 0,
+                o = {
+                    toLocaleString: () => {
+                        n++;
+                        return 7;
+                    }
+                };
+            [null, undefined, , o].toLocaleString() === ',,,7' && n === 1
+        "#,
     );
 }
 
@@ -144,7 +153,16 @@ fn captured_length_and_live_reads_preserve_mutation_order() {
         "let a=[{toLocaleString:()=>{a.length=0;return 1;}},2,3];a.toLocaleString()==='1,,' && a.length===0",
     );
     assert_true(
-        "let a=[{toLocaleString:()=>{delete a[1];return 1;}},2];Array.prototype[1]=9;a.toLocaleString()==='1,9'",
+        r#"
+            let a = [{
+                toLocaleString: () => {
+                    delete a[1];
+                    return 1;
+                }
+            }, 2];
+            Array.prototype[1] = 9;
+            a.toLocaleString() === '1,9'
+        "#,
     );
     assert_true(
         r#"

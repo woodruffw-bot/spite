@@ -7,7 +7,12 @@ use crate::common::assert_true;
 #[test]
 fn copies_are_shallow_preserve_holes_and_read_inherited_elements() {
     assert_true(
-        "let o={},a=[o,,3,,],b=a.slice();b!==a && b.length===4 && b[0]===o && !(1 in b) && b[2]===3 && !(3 in b)",
+        r#"
+            let o = {},
+                a = [o, , 3, , ],
+                b = a.slice();
+            b !== a && b.length === 4 && b[0] === o && !(1 in b) && b[2] === 3 && !(3 in b)
+        "#,
     );
     assert_true(
         r#"

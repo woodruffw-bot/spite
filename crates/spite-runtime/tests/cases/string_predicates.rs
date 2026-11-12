@@ -34,7 +34,10 @@ fn prefix_suffix_and_substring_search_have_distinct_position_rules() {
         "#,
     );
     assert_true(
-        "'undefined'.includes() && 'undefined'.startsWith() && 'undefined'.endsWith() && 'null'.includes(null)",
+        r#"
+            'undefined'.includes() && 'undefined'.startsWith() && 'undefined'.endsWith() && 'null'
+                .includes(null)
+        "#,
     );
 }
 

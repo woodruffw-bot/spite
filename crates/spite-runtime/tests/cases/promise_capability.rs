@@ -10,7 +10,27 @@ fn capability_executor_has_native_metadata_and_single_initialization() {
         "let saved,r=function(){},j=function(){},p={};function C(executor){saved=executor;if(arguments.length!==1)throw 1;executor(undefined,undefined);executor(r,j);return p}let cap=Promise.withResolvers.call(C);cap.promise===p&&cap.resolve===r&&cap.reject===j&&saved.name===''&&saved.length===2&&Object.getPrototypeOf(saved)===Function.prototype&&Object.getOwnPropertyNames(saved).join(',')==='length,name'&&!Object.hasOwn(saved,'prototype')&&saved.toString()==='function () { [native code] }'",
     );
     assert_true(
-        "let saved;function C(executor){saved=executor;executor(()=>{},()=>{})}Promise.withResolvers.call(C);let caught=0;try{saved(()=>{},()=>{})}catch(e){if(e instanceof TypeError)caught++}try{new saved()}catch(e){if(e instanceof TypeError)caught++}caught===2",
+        r#"
+            let saved;
+
+            function C(executor) {
+                saved = executor;
+                executor(() => {}, () => {})
+            }
+            Promise.withResolvers.call(C);
+            let caught = 0;
+            try {
+                saved(() => {}, () => {})
+            } catch (e) {
+                if (e instanceof TypeError) caught++
+            }
+            try {
+                new saved()
+            } catch (e) {
+                if (e instanceof TypeError) caught++
+            }
+            caught === 2
+        "#,
     );
 }
 

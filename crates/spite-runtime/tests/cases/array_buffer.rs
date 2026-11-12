@@ -369,16 +369,38 @@ fn descriptor_metadata_and_state_matrix() {
 #[test]
 fn intrinsic_edges_function_attributes_and_species_are_standard() {
     assert_true(
-        "let A=ArrayBuffer,p=A.prototype,g=Object.getOwnPropertyDescriptor(globalThis,'ArrayBuffer'),d=Object.getOwnPropertyDescriptor(A,'prototype'),n=Object.getOwnPropertyDescriptor(A,'name'),l=Object.getOwnPropertyDescriptor(A,'length');g.value===A && g.writable && !g.enumerable && g.configurable && d.value===p && !d.writable && !d.enumerable && !d.configurable && A.name==='ArrayBuffer' && A.length===1 && !n.writable && !n.enumerable && n.configurable && !l.writable && !l.enumerable && l.configurable && Object.getPrototypeOf(A)===Function.prototype && Object.getPrototypeOf(p)===Object.prototype && p.constructor===A && Reflect.ownKeys(new A(3)).length===0",
+        r#"
+            let A = ArrayBuffer,
+                p = A.prototype,
+                g = Object.getOwnPropertyDescriptor(globalThis, 'ArrayBuffer'),
+                d = Object.getOwnPropertyDescriptor(A, 'prototype'),
+                n = Object.getOwnPropertyDescriptor(A, 'name'),
+                l = Object.getOwnPropertyDescriptor(A, 'length');
+            g.value === A && g.writable && !g.enumerable && g.configurable && d.value === p && !d
+                .writable && !d.enumerable && !d.configurable && A.name === 'ArrayBuffer' && A.length ===
+                1 && !n.writable && !n.enumerable && n.configurable && !l.writable && !l.enumerable && l
+                .configurable && Object.getPrototypeOf(A) === Function.prototype && Object.getPrototypeOf(
+                    p) === Object.prototype && p.constructor === A && Reflect.ownKeys(new A(3)).length ===
+                0
+        "#,
     );
     assert_true(
-        "let d=Object.getOwnPropertyDescriptor(ArrayBuffer,Symbol.species),o={};d.get.name==='get [Symbol.species]' && d.get.length===0 && d.set===undefined && !d.enumerable && d.configurable && d.get.call(o)===o && d.get.call(null)===null && ArrayBuffer[Symbol.species]===ArrayBuffer && !Object.hasOwn(d.get,'prototype')",
+        r#"
+            let d = Object.getOwnPropertyDescriptor(ArrayBuffer, Symbol.species),
+                o = {};
+            d.get.name === 'get [Symbol.species]' && d.get.length === 0 && d.set === undefined && !d
+                .enumerable && d.configurable && d.get.call(o) === o && d.get.call(null) === null &&
+                ArrayBuffer[Symbol.species] === ArrayBuffer && !Object.hasOwn(d.get, 'prototype')
+        "#,
     );
     assert_true(
         "let d=Object.getOwnPropertyDescriptor(ArrayBuffer.prototype,Symbol.toStringTag);d.value==='ArrayBuffer' && !d.writable && !d.enumerable && d.configurable && Object.prototype.toString.call(new ArrayBuffer(0))==='[object ArrayBuffer]' && Object.prototype.toString.call(ArrayBuffer.prototype)==='[object ArrayBuffer]'",
     );
     assert_true(
-        "let d=Object.getOwnPropertyDescriptor(ArrayBuffer.prototype,'constructor');d.value===ArrayBuffer && d.writable && !d.enumerable && d.configurable",
+        r#"
+            let d = Object.getOwnPropertyDescriptor(ArrayBuffer.prototype, 'constructor');
+            d.value === ArrayBuffer && d.writable && !d.enumerable && d.configurable
+        "#,
     );
     for function in [
         "ArrayBuffer.isView",

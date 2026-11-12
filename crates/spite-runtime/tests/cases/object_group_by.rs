@@ -207,7 +207,14 @@ fn iteration_is_live_and_preserves_cached_next_and_conversion_order() {
         "#,
     );
     assert_true(
-        "let source=[1,2,3],o=Object.groupBy(source,(v,i)=>{source.length=1;return 'x';});o.x.length===1 && o.x[0]===1",
+        r#"
+            let source = [1, 2, 3],
+                o = Object.groupBy(source, (v, i) => {
+                    source.length = 1;
+                    return 'x';
+                });
+            o.x.length === 1 && o.x[0] === 1
+        "#,
     );
     assert_true(
         r#"

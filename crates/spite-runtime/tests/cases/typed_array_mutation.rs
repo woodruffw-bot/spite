@@ -593,7 +593,10 @@ fn fill_clips_shrink_preserves_original_growth_bounds_and_accepts_recovery() {
 #[test]
 fn reverse_preserves_signed_zero_and_uses_numeric_nan_writes_without_touching_the_middle() {
     assert_true(
-        "let a=Float64Array.of(-0,2,0);a.reverse()===a && Object.is(a[0],0) && a[1]===2 && Object.is(a[2],-0)",
+        r#"
+            let a = Float64Array.of(-0, 2, 0);
+            a.reverse() === a && Object.is(a[0], 0) && a[1] === 2 && Object.is(a[2], -0)
+        "#,
     );
     for (name, setter) in [
         ("Float16Array", "setFloat16"),

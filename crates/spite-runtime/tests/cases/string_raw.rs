@@ -159,7 +159,20 @@ fn raw_reads_length_once_and_observes_each_conversion_in_order() {
 #[test]
 fn only_needed_substitutions_are_converted_but_all_arguments_are_evaluated() {
     assert_true(
-        "let n=0,bad={toString:()=>{throw 1;}};String.raw({raw:{0:'A',length:1}},(n++,bad),bad)==='A' && n===1",
+        r#"
+            let n = 0,
+                bad = {
+                    toString: () => {
+                        throw 1;
+                    }
+                };
+            String.raw({
+                raw: {
+                    0: 'A',
+                    length: 1
+                }
+            }, (n++, bad), bad) === 'A' && n === 1
+        "#,
     );
     assert_true("String.raw({raw:{0:'A',1:'B',length:2}},'-',{toString:()=>{throw 1;}})==='A-B'");
     let mut realm = Realm::default();

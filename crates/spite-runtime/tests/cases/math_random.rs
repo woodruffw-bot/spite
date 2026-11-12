@@ -33,7 +33,17 @@ fn distinct_realms_keep_separate_sequences_and_ignore_receiver_and_arguments() {
         .collect();
     assert_ne!(first_values, second_values);
     assert_true(
-        "let x=Math.random.call(Symbol(),{[Symbol.toPrimitive](){throw 7;},valueOf(){throw 8;}},1n);x>=0 && x<1",
+        r#"
+            let x = Math.random.call(Symbol(), {
+                [Symbol.toPrimitive]() {
+                    throw 7;
+                },
+                valueOf() {
+                    throw 8;
+                }
+            }, 1n);
+            x >= 0 && x < 1
+        "#,
     );
 }
 

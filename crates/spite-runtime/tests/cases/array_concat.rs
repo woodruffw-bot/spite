@@ -70,7 +70,10 @@ fn primitive_arguments_are_unboxed_and_receivers_are_boxed_once() {
         "#,
     );
     assert_true(
-        "let b=Array.prototype.concat.call(false);b.length===1 && b[0] instanceof Boolean && b[0].valueOf()===false",
+        r#"
+            let b = Array.prototype.concat.call(false);
+            b.length === 1 && b[0] instanceof Boolean && b[0].valueOf() === false
+        "#,
     );
     assert_true(
         r#"

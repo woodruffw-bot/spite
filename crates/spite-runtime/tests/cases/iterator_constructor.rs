@@ -25,7 +25,12 @@ fn constructor_graph_metadata_and_existing_iterator_inheritance_are_standard() {
         "typeof Iterator==='function' && Iterator.name==='Iterator' && Iterator.length===0 && Object.getPrototypeOf(Iterator)===Function.prototype && Object.getPrototypeOf(Iterator.prototype)===Object.prototype && Iterator.prototype.constructor===Iterator && Iterator.toString()==='function Iterator() { [native code] }'",
     );
     assert_true(
-        "let p=Object.getOwnPropertyDescriptor(Iterator,'prototype'),g=Object.getOwnPropertyDescriptor(globalThis,'Iterator');p.value===Iterator.prototype && !p.writable && !p.enumerable && !p.configurable && g.value===Iterator && g.writable && !g.enumerable && g.configurable",
+        r#"
+            let p = Object.getOwnPropertyDescriptor(Iterator, 'prototype'),
+                g = Object.getOwnPropertyDescriptor(globalThis, 'Iterator');
+            p.value === Iterator.prototype && !p.writable && !p.enumerable && !p.configurable && g
+                .value === Iterator && g.writable && !g.enumerable && g.configurable
+        "#,
     );
     for (key, value) in [("name", "'Iterator'"), ("length", "0")] {
         assert_true(&format!(
@@ -33,10 +38,20 @@ fn constructor_graph_metadata_and_existing_iterator_inheritance_are_standard() {
         ));
     }
     assert_true(
-        "let d=Object.getOwnPropertyDescriptor(Iterator.prototype,'constructor');!Object.hasOwn(d,'value') && !Object.hasOwn(d,'writable') && !d.enumerable && d.configurable && d.get.name==='get constructor' && d.get.length===0 && d.set.name==='set constructor' && d.set.length===1 && !Object.hasOwn(d.get,'prototype') && !Object.hasOwn(d.set,'prototype')",
+        r#"
+            let d = Object.getOwnPropertyDescriptor(Iterator.prototype, 'constructor');
+            !Object.hasOwn(d, 'value') && !Object.hasOwn(d, 'writable') && !d.enumerable && d
+                .configurable && d.get.name === 'get constructor' && d.get.length === 0 && d.set.name ===
+                'set constructor' && d.set.length === 1 && !Object.hasOwn(d.get, 'prototype') && !Object
+                .hasOwn(d.set, 'prototype')
+        "#,
     );
     assert_true(
-        "[].values() instanceof Iterator && 'x'[Symbol.iterator]() instanceof Iterator && (function(){return arguments[Symbol.iterator]() instanceof Iterator;})() && Iterator.prototype[Symbol.iterator]()===Iterator.prototype",
+        r#"
+            [].values() instanceof Iterator && 'x' [Symbol.iterator]() instanceof Iterator && (function() {
+                return arguments[Symbol.iterator]() instanceof Iterator;
+            })() && Iterator.prototype[Symbol.iterator]() === Iterator.prototype
+        "#,
     );
     let mut realm = Realm::default();
     let Value::Object(constructor) = realm.eval("Iterator").unwrap() else {
@@ -153,10 +168,17 @@ fn bound_forwarding_and_prototype_getters_preserve_newtarget_order() {
         "#,
     );
     assert_true(
-        "function F(){}let B=Iterator.bind(null);Object.getPrototypeOf(Reflect.construct(B,[],F))===F.prototype",
+        r#"
+            function F() {}
+            let B = Iterator.bind(null);
+            Object.getPrototypeOf(Reflect.construct(B, [], F)) === F.prototype
+        "#,
     );
     assert_true(
-        "let B=Iterator.bind(null);Object.getPrototypeOf(Reflect.construct(Iterator,[],B))===Iterator.prototype",
+        r#"
+            let B = Iterator.bind(null);
+            Object.getPrototypeOf(Reflect.construct(Iterator, [], B)) === Iterator.prototype
+        "#,
     );
     assert_true(
         r#"

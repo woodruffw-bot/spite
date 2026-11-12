@@ -107,7 +107,20 @@ fn conversion_is_ordered_once_and_symbol_or_abrupt_input_propagates() {
         "#,
     );
     assert_true(
-        "let marker={},caught=false;try{JSON.rawJSON({toString(){throw marker;}});}catch(e){caught=e===marker;}caught",
+        r#"
+            let marker = {},
+                caught = false;
+            try {
+                JSON.rawJSON({
+                    toString() {
+                        throw marker;
+                    }
+                });
+            } catch (e) {
+                caught = e === marker;
+            }
+            caught
+        "#,
     );
     assert!(matches!(
         Realm::default().eval("JSON.rawJSON(Symbol())"),
@@ -117,7 +130,18 @@ fn conversion_is_ordered_once_and_symbol_or_abrupt_input_propagates() {
         })
     ));
     assert_true(
-        "let count=0;JSON.rawJSON({toString(){count++;return '1';},valueOf(){throw 8;}}).rawJSON==='1' && count===1",
+        r#"
+            let count = 0;
+            JSON.rawJSON({
+                toString() {
+                    count++;
+                    return '1';
+                },
+                valueOf() {
+                    throw 8;
+                }
+            }).rawJSON === '1' && count === 1
+        "#,
     );
 }
 
@@ -129,7 +153,7 @@ fn raw_objects_have_null_prototypes_and_exact_frozen_descriptors() {
                 d = Object.getOwnPropertyDescriptor(value, 'rawJSON');
             Object.getPrototypeOf(value) === null && Reflect.ownKeys(value).join(',') === 'rawJSON' && d
                 .value === '1' && !d.writable && d.enumerable && !d.configurable && Object.isFrozen(
-                value) && Object.isSealed(value) && !Object.isExtensible(value) && !Reflect.set(value,
+                    value) && Object.isSealed(value) && !Object.isExtensible(value) && !Reflect.set(value,
                     'rawJSON', '2') && !Reflect.deleteProperty(value, 'rawJSON') && !Reflect
                 .defineProperty(value, 'extra', {
                     value: 1
@@ -170,7 +194,8 @@ fn branding_never_reads_properties_or_coerces_and_cannot_be_inherited_or_copied(
                 .isRawJSON({
                     ...raw
                 }) && !JSON.isRawJSON(Object.assign({}, raw)) && !JSON.isRawJSON([]) && !JSON.isRawJSON(
-                () => {}) && !JSON.isRawJSON(new Number(1)) && !JSON.isRawJSON(null) && !JSON.isRawJSON(
+                    () => {}) && !JSON.isRawJSON(new Number(1)) && !JSON.isRawJSON(null) && !JSON
+                .isRawJSON(
                     undefined) && !JSON.isRawJSON('1') && !JSON.isRawJSON(1n) && !JSON.isRawJSON(Symbol())
         "#,
     );

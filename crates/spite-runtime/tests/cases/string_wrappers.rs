@@ -149,7 +149,15 @@ fn branded_methods_reject_fakes_and_keep_string_data_after_prototype_changes() {
 #[test]
 fn primitive_property_getters_and_setters_preserve_receivers_and_own_index_precedence() {
     assert_true(
-        "Object.defineProperty(String.prototype,'x',{get:function(){'use strict';return this;}});'abc'.x==='abc'",
+        r#"
+            Object.defineProperty(String.prototype, 'x', {
+                get: function() {
+                    'use strict';
+                    return this;
+                }
+            });
+            'abc'.x === 'abc'
+        "#,
     );
     assert_true(
         r#"
@@ -259,10 +267,17 @@ fn wrapper_property_capacity_is_a_host_limit_while_primitive_reads_remain_availa
 #[test]
 fn metadata_rooting_and_array_property_controls_remain_correct() {
     assert_true(
-        "String.name==='String' && String.length===1 && String.prototype.constructor===String && String.prototype.length===0 && String.prototype.toString.length===0 && String.prototype.valueOf.length===0",
+        r#"
+            String.name === 'String' && String.length === 1 && String.prototype.constructor === String &&
+                String.prototype.length === 0 && String.prototype.toString.length === 0 && String.prototype
+                .valueOf.length === 0
+        "#,
     );
     assert_true(
-        "let d=Object.getOwnPropertyDescriptor(String,'prototype');!d.writable && !d.enumerable && !d.configurable",
+        r#"
+            let d = Object.getOwnPropertyDescriptor(String, 'prototype');
+            !d.writable && !d.enumerable && !d.configurable
+        "#,
     );
     type_error("new String.prototype.toString()");
     assert_true(

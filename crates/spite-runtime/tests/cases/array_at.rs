@@ -11,7 +11,7 @@ fn relative_indices_truncate_and_preserve_absence() {
             let a = [1, , 3];
             a.at() === 1 && a.at(undefined) === 1 && a.at(null) === 1 && a.at(NaN) === 1 && a.at(-0) ===
                 1 && a.at(-0.5) === 1 && a.at(-1) === 3 && a.at(-1.9) === 3 && a.at('2') === 3 && a.at(
-                1) === undefined
+                    1) === undefined
         "#,
     );
     assert_true(
@@ -51,7 +51,7 @@ fn generic_receivers_use_utf16_and_the_entire_to_length_range() {
             Array.prototype.at.call(o, -1) === 'last' && Array.prototype.at.call(o, 9007199254740990) ===
                 'last' && Array.prototype.at.call(o, -9007199254740991) === 'first' && Array.prototype.at
                 .call(o, -9007199254740992) === undefined && Array.prototype.at.call(o,
-                9007199254740991) === undefined
+                    9007199254740991) === undefined
         "#,
     );
     for length in ["undefined", "null", "NaN", "-Infinity", "-1", "0.9"] {
@@ -99,7 +99,17 @@ fn length_is_converted_once_before_index_and_get_observes_mutations() {
     );
     assert_true("let n=0;[].at({valueOf:()=>{n++;return 0;}})===undefined && n===1");
     assert_true(
-        "let o={length:1};Object.defineProperty(o,'1',{get:()=>{throw 7;}});Array.prototype.at.call(o,1)===undefined",
+        r#"
+            let o = {
+                length: 1
+            };
+            Object.defineProperty(o, '1', {
+                get: () => {
+                    throw 7;
+                }
+            });
+            Array.prototype.at.call(o, 1) === undefined
+        "#,
     );
 }
 

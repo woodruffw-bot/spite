@@ -377,13 +377,25 @@ fn wrappers_have_own_brands_independent_of_prototypes_and_metadata_is_standard()
         ));
     }
     assert_true(
-        "let w=Iterator.from({next:()=>7}),next=w.next;Object.setPrototypeOf(w,null);Object.freeze(w);next.call(w)===7 && Reflect.ownKeys(w).length===0",
+        r#"
+            let w = Iterator.from({
+                    next: () => 7
+                }),
+                next = w.next;
+            Object.setPrototypeOf(w, null);
+            Object.freeze(w);
+            next.call(w) === 7 && Reflect.ownKeys(w).length === 0
+        "#,
     );
     assert_true(
         "let w=Iterator.from({}),p=Object.getPrototypeOf(w);Reflect.ownKeys(p).join(',')==='next,return' && Object.prototype.toString.call(w)==='[object Iterator]' && (Object.freeze(p),Object.isFrozen(p))",
     );
     assert_true(
-        "let d=Object.getOwnPropertyDescriptor(Iterator,'from');Iterator.from.name==='from' && Iterator.from.length===1 && d.value===Iterator.from && d.writable && !d.enumerable && d.configurable && !Object.hasOwn(Iterator.from,'prototype')",
+        r#"
+            let d = Object.getOwnPropertyDescriptor(Iterator, 'from');
+            Iterator.from.name === 'from' && Iterator.from.length === 1 && d.value === Iterator.from && d
+                .writable && !d.enumerable && d.configurable && !Object.hasOwn(Iterator.from, 'prototype')
+        "#,
     );
     type_error("new Iterator.from()");
 }

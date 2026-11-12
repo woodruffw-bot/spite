@@ -426,7 +426,10 @@ fn complete_array_prototype_supports_reflection_integrity_and_method_deletion() 
         "Array.prototype.splice.name==='splice' && Array.prototype.splice.length===2 && Array.prototype.splice.prototype===undefined",
     );
     assert_true(
-        "let d=Object.getOwnPropertyDescriptor(Array.prototype,'splice');d.writable && !d.enumerable && d.configurable",
+        r#"
+            let d = Object.getOwnPropertyDescriptor(Array.prototype, 'splice');
+            d.writable && !d.enumerable && d.configurable
+        "#,
     );
     assert_true(
         r#"

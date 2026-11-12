@@ -36,8 +36,8 @@ fn extrema_handle_empty_calls_nan_infinity_and_both_zero_orders() {
     assert_true(
         r#"
             Math.max(-Number.MAX_VALUE, Number.MAX_VALUE) === Number.MAX_VALUE && Math.min(Number
-                    .MAX_VALUE, -Number.MAX_VALUE) === -Number.MAX_VALUE && Math.max(-Number.MIN_VALUE,
-                    Number.MIN_VALUE) === Number.MIN_VALUE && Math.min(Number.MIN_VALUE, -Number
+                .MAX_VALUE, -Number.MAX_VALUE) === -Number.MAX_VALUE && Math.max(-Number.MIN_VALUE,
+                Number.MIN_VALUE) === Number.MIN_VALUE && Math.min(Number.MIN_VALUE, -Number
                 .MIN_VALUE) === -Number.MIN_VALUE
         "#,
     );
@@ -128,7 +128,8 @@ fn clz32_counts_bits_after_unsigned_truncation_and_wrapping() {
         r#"
             Math.clz32(1.9) === 31 && Math.clz32(-1.9) === 0 && Math.clz32(4294967296) === 32 && Math
                 .clz32(4294967297) === 31 && Math.clz32(-4294967295) === 31 && Math.clz32(Number
-                .MAX_VALUE) === 32 && Math.clz32(-Number.MAX_VALUE) === 32 && Math.clz32('256') === 23 &&
+                    .MAX_VALUE) === 32 && Math.clz32(-Number.MAX_VALUE) === 32 && Math.clz32('256') ===
+                23 &&
                 Math.clz32(true) === 31
         "#,
     );
@@ -164,7 +165,7 @@ fn imul_returns_exact_signed_modular_products_and_positive_zero() {
     assert_true(
         r#"
             Math.imul(65535, 65535) === -131071 && Math.imul(65536, 65536) === 0 && Math.imul(1073741824,
-                    7) === -1073741824 && Math.imul(-1073741824, 7) === 1073741824 && Math.imul(-1.9,
+                7) === -1073741824 && Math.imul(-1073741824, 7) === 1073741824 && Math.imul(-1.9,
                 7.9) === -7
         "#,
     );

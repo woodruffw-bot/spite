@@ -28,7 +28,7 @@ fn own_strings_and_symbols_follow_the_complete_specification_inventory() {
             let p = Iterator.prototype;
             !Object.hasOwn(p, 'dispose') && !Object.hasOwn(p, 'zip') && !Object.hasOwn(p, 'chunks') && !
                 Object.hasOwn(p, 'includes') && !Object.hasOwn(p, 'join') && !Object.hasOwn(p,
-                'windows') && !Object.hasOwn(p, 'next') && !Object.hasOwn(p, 'return')
+                    'windows') && !Object.hasOwn(p, 'next') && !Object.hasOwn(p, 'return')
         "#,
     );
 }
@@ -126,7 +126,7 @@ fn sealing_preserves_method_writability_and_accessor_identity() {
                 .map.configurable && d.constructor.get === c.get && d.constructor.set === c.set && !d
                 .constructor.configurable && d[Symbol.toStringTag].get === t.get && d[Symbol.toStringTag]
                 .set === t.set && !d[Symbol.toStringTag].configurable && !Reflect.deleteProperty(p,
-                'map') && Reflect.set(p, 'map', 7) && p.map === 7 && !Reflect.defineProperty(p,
+                    'map') && Reflect.set(p, 'map', 7) && p.map === 7 && !Reflect.defineProperty(p,
                     'newProperty', {
                         value: 8
                     }) && f.call([7].values(), x => x).next().value === 7

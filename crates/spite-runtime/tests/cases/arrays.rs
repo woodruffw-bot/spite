@@ -18,7 +18,10 @@ fn constructors_distinguish_lengths_from_single_elements() {
     );
     assert_true("let a=Array(3);a.length===3 && !('0' in a) && !('1' in a) && !('2' in a)");
     assert_true(
-        "let a=new Array(4294967295);a.length===4294967295 && !('4294967294' in a) && Object.is(Array(-0).length,0)",
+        r#"
+            let a = new Array(4294967295);
+            a.length === 4294967295 && !('4294967294' in a) && Object.is(Array(-0).length, 0)
+        "#,
     );
     for value in [
         "undefined",
@@ -37,7 +40,10 @@ fn constructors_distinguish_lengths_from_single_elements() {
         "let o={valueOf:()=>{throw 1;},toString:()=>{throw 2;}},a=new Array(o);a[0]===o && a.length===1",
     );
     assert_true(
-        "let a=Array(1,undefined,3);a.length===3 && a[0]===1 && a[1]===undefined && Object.hasOwn(a,'1') && a[2]===3",
+        r#"
+            let a = Array(1, undefined, 3);
+            a.length === 3 && a[0] === 1 && a[1] === undefined && Object.hasOwn(a, '1') && a[2] === 3
+        "#,
     );
     assert_true(
         "let n=0;function f(){return ++n;}let a=new Array(f(),f());n===2 && a[0]===1 && a[1]===2",
@@ -127,7 +133,11 @@ fn array_brand_survives_prototype_changes_and_rejects_impostors() {
         "let a=Array(2);Object.setPrototypeOf(a,null);Array.isArray(a) && Object.prototype.toString.call(a)==='[object Array]'",
     );
     assert_true(
-        "!Array.isArray(Object.create(Array.prototype)) && !Array.isArray({length:0}) && !Array.isArray(Array) && !Array.isArray()",
+        r#"
+            !Array.isArray(Object.create(Array.prototype)) && !Array.isArray({
+                length: 0
+            }) && !Array.isArray(Array) && !Array.isArray()
+        "#,
     );
     for value in [
         "undefined",
@@ -150,22 +160,41 @@ fn array_brand_survives_prototype_changes_and_rejects_impostors() {
 #[test]
 fn intrinsic_names_lengths_descriptors_and_key_order_are_exact() {
     assert_true(
-        "Array.name==='Array' && Array.length===1 && Array.isArray.name==='isArray' && Array.isArray.length===1 && Array.prototype.constructor===Array && Array.isArray.prototype===undefined",
+        r#"
+            Array.name === 'Array' && Array.length === 1 && Array.isArray.name === 'isArray' && Array
+                .isArray.length === 1 && Array.prototype.constructor === Array && Array.isArray
+                .prototype === undefined
+        "#,
     );
     assert_true(
-        "let d=Object.getOwnPropertyDescriptor(Array,'prototype');d.value===Array.prototype && !d.writable && !d.enumerable && !d.configurable",
+        r#"
+            let d = Object.getOwnPropertyDescriptor(Array, 'prototype');
+            d.value === Array.prototype && !d.writable && !d.enumerable && !d.configurable
+        "#,
     );
     assert_true(
-        "let d=Object.getOwnPropertyDescriptor(Array.prototype,'length');d.value===0 && d.writable && !d.enumerable && !d.configurable",
+        r#"
+            let d = Object.getOwnPropertyDescriptor(Array.prototype, 'length');
+            d.value === 0 && d.writable && !d.enumerable && !d.configurable
+        "#,
     );
     assert_true(
-        "let d=Object.getOwnPropertyDescriptor(Array,'isArray');d.value===Array.isArray && d.writable && !d.enumerable && d.configurable",
+        r#"
+            let d = Object.getOwnPropertyDescriptor(Array, 'isArray');
+            d.value === Array.isArray && d.writable && !d.enumerable && d.configurable
+        "#,
     );
     assert_true(
-        "let d=Object.getOwnPropertyDescriptor(globalThis,'Array');d.value===Array && d.writable && !d.enumerable && d.configurable",
+        r#"
+            let d = Object.getOwnPropertyDescriptor(globalThis, 'Array');
+            d.value === Array && d.writable && !d.enumerable && d.configurable
+        "#,
     );
     assert_true(
-        "let d=Object.getOwnPropertyDescriptor(Array(1,2),'0');d.value===1 && d.writable && d.enumerable && d.configurable",
+        r#"
+            let d = Object.getOwnPropertyDescriptor(Array(1, 2), '0');
+            d.value === 1 && d.writable && d.enumerable && d.configurable
+        "#,
     );
     assert_true(
         "Array.toString()==='function Array() { [native code] }' && Array.isArray.toString()==='function isArray() { [native code] }'",

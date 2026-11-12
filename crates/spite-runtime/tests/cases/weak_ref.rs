@@ -91,23 +91,40 @@ fn construction_requires_new_and_rejects_invalid_targets_without_coercion() {
 fn all_supported_object_kinds_and_nonregistered_symbols_preserve_identity() {
     assert_true(
         r#"
-            let registered=Symbol.for('weak-ref-boxed'),targets=[
-                {},Object.create(null),[],function(){},()=>7,class C{},function(){}.bind(null),
-                new Boolean(false),new Number(0),new String(''),Object(1n),
-                Object(registered),Object(Symbol('boxed')),new Date(0),/x/,
-                new Map(),new Set(),new WeakMap(),new WeakSet(),
-                new ArrayBuffer(0),new DataView(new ArrayBuffer(0)),
-                new Uint8Array(0),new BigInt64Array(0),new Error('x'),
-                [1].values(),(function(){return arguments;})(),this,
-                Symbol(),Symbol('same'),Symbol('same')
-            ];
-            let hostile={get [Symbol.toPrimitive](){throw 7;},valueOf(){throw 8;},toString(){throw 9;}};
-            targets.push(hostile,new WeakRef(hostile));
-            for(let target of targets){
-                let a=new WeakRef(target),b=new WeakRef(target,()=>{throw 10;});
-                if(a===b || a.deref()!==target || b.deref()!==target || a.deref()!==b.deref())throw 11;
+            let registered = Symbol.for('weak-ref-boxed'),
+                targets = [{}, Object.create(null), [], function() {}, () => 7, class C {}, function() {}
+                    .bind(null),
+                    new Boolean(false), new Number(0), new String(''), Object(1n),
+                    Object(registered), Object(Symbol('boxed')), new Date(0), /x/,
+                    new Map(), new Set(), new WeakMap(), new WeakSet(),
+                    new ArrayBuffer(0), new DataView(new ArrayBuffer(0)),
+                    new Uint8Array(0), new BigInt64Array(0), new Error('x'),
+                    [1].values(), (function() {
+                        return arguments;
+                    })(), this,
+                    Symbol(), Symbol('same'), Symbol('same')
+                ];
+            let hostile = {
+                get [Symbol.toPrimitive]() {
+                    throw 7;
+                },
+                valueOf() {
+                    throw 8;
+                },
+                toString() {
+                    throw 9;
+                }
+            };
+            targets.push(hostile, new WeakRef(hostile));
+            for (let target of targets) {
+                let a = new WeakRef(target),
+                    b = new WeakRef(target, () => {
+                        throw 10;
+                    });
+                if (a === b || a.deref() !== target || b.deref() !== target || a.deref() !== b.deref())
+                    throw 11;
             }
-            targets[targets.length-4]!==targets[targets.length-3]
+            targets[targets.length - 4] !== targets[targets.length - 3]
         "#,
     );
     for symbol in WellKnownSymbol::ALL {
@@ -145,11 +162,20 @@ fn target_validation_precedes_new_target_prototype_get() {
     }
     assert_true(
         r#"
-            let log='',target={},prototype=Object.create(WeakRef.prototype);
-            function C(){}let N=C.bind(null);
-            Object.defineProperty(N,'prototype',{get(){log+='p';return prototype;}});
-            let reference=Reflect.construct(WeakRef,[(log+='t',target)],N);
-            log==='tp' && Object.getPrototypeOf(reference)===prototype && reference.deref()===target
+            let log = '',
+                target = {},
+                prototype = Object.create(WeakRef.prototype);
+
+            function C() {}
+            let N = C.bind(null);
+            Object.defineProperty(N, 'prototype', {
+                get() {
+                    log += 'p';
+                    return prototype;
+                }
+            });
+            let reference = Reflect.construct(WeakRef, [(log += 't', target)], N);
+            log === 'tp' && Object.getPrototypeOf(reference) === prototype && reference.deref() === target
         "#,
     );
     type_error("Reflect.construct(WeakRef,[{}],()=>{})");
@@ -159,17 +185,42 @@ fn target_validation_precedes_new_target_prototype_get() {
 fn prototype_getter_abrupts_propagate_and_cannot_change_the_original_target() {
     assert_true(
         r#"
-            let target={},original=target,other={},marker={},calls=0;
-            function C(){}let N=C.bind(null);
-            Object.defineProperty(N,'prototype',{get(){calls++;target=other;throw marker;}});
-            let caught=false;try{Reflect.construct(WeakRef,[target],N);}catch(e){caught=e===marker;}
-            if(!caught || calls!==1 || target!==other)throw 1;
-            Object.defineProperty(C,'prototype',{value:WeakRef.prototype});
-            let M=C.bind(null);
-            Object.defineProperty(M,'prototype',{get(){calls++;target=other;return WeakRef.prototype;}});
-            target=original;
-            let reference=Reflect.construct(WeakRef,[target],M);
-            calls===2 && target===other && reference.deref()===original
+            let target = {},
+                original = target,
+                other = {},
+                marker = {},
+                calls = 0;
+
+            function C() {}
+            let N = C.bind(null);
+            Object.defineProperty(N, 'prototype', {
+                get() {
+                    calls++;
+                    target = other;
+                    throw marker;
+                }
+            });
+            let caught = false;
+            try {
+                Reflect.construct(WeakRef, [target], N);
+            } catch (e) {
+                caught = e === marker;
+            }
+            if (!caught || calls !== 1 || target !== other) throw 1;
+            Object.defineProperty(C, 'prototype', {
+                value: WeakRef.prototype
+            });
+            let M = C.bind(null);
+            Object.defineProperty(M, 'prototype', {
+                get() {
+                    calls++;
+                    target = other;
+                    return WeakRef.prototype;
+                }
+            });
+            target = original;
+            let reference = Reflect.construct(WeakRef, [target], M);
+            calls === 2 && target === other && reference.deref() === original
         "#,
     );
 }
@@ -178,11 +229,17 @@ fn prototype_getter_abrupts_propagate_and_cannot_change_the_original_target() {
 fn subclassing_initializes_only_instances_that_call_the_constructor() {
     assert_true(
         r#"
-            let target={};class Derived extends WeakRef{constructor(value){super(value);this.marker=7;}}
-            let reference=new Derived(target);
+            let target = {};
+            class Derived extends WeakRef {
+                constructor(value) {
+                    super(value);
+                    this.marker = 7;
+                }
+            }
+            let reference = new Derived(target);
             reference instanceof Derived && reference instanceof WeakRef &&
-            Object.getPrototypeOf(reference)===Derived.prototype && reference.marker===7 &&
-            reference.deref()===target && WeakRef.prototype.deref.call(reference)===target
+                Object.getPrototypeOf(reference) === Derived.prototype && reference.marker === 7 &&
+                reference.deref() === target && WeakRef.prototype.deref.call(reference) === target
         "#,
     );
     type_error(
@@ -407,7 +464,8 @@ fn deref_ignores_arguments_and_public_target_properties_and_survives_integrity_c
                 }
             };
             deref.call(reference, hostile) === target && Reflect.apply(deref, reference, [hostile,
-                    hostile]) === target &&
+                    hostile
+                ]) === target &&
                 deref.bind(reference)(hostile) === target && hits === 0 && Object.isFrozen(reference)
         "#,
     );

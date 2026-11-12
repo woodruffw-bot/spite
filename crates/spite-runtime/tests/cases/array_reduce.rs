@@ -131,7 +131,16 @@ fn holes_are_skipped_and_inherited_elements_can_seed_or_update_the_accumulator()
         "let a=[1,2,3];a.reduce((p,v,k)=>{if(k===0){delete a[1];Array.prototype[1]=8;}return p+v;},0)===12",
     );
     assert_true(
-        "let a=[1,2,3];a.reduceRight((p,v,k)=>{if(k===2){delete a[1];Array.prototype[1]=8;}return p+v;},0)===12",
+        r#"
+            let a = [1, 2, 3];
+            a.reduceRight((p, v, k) => {
+                if (k === 2) {
+                    delete a[1];
+                    Array.prototype[1] = 8;
+                }
+                return p + v;
+            }, 0) === 12
+        "#,
     );
 }
 

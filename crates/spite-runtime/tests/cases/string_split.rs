@@ -20,7 +20,7 @@ fn plain_separators_preserve_empty_parts_and_use_nonoverlapping_matches() {
         r#"
             ''.split('').length === 0 && ''.split('x').length === 1 && ''.split('x')[0] === '' && 'abc'
                 .split('abc').join('|') === '|' && 'abc'.split('abcd')[0] === 'abc' && 'abc'.split('x')[
-                0] === 'abc'
+                    0] === 'abc'
         "#,
     );
     assert_true(

@@ -19,7 +19,11 @@ fn shift_returns_the_original_first_value_and_moves_holes_left() {
 fn unshift_moves_elements_right_before_inserting_arguments_in_order() {
     assert_true("let a=[2,3];a.unshift(0,1)===4 && a.join()==='0,1,2,3'");
     assert_true(
-        "let a=[,1,,3];a.unshift(7,8)===6 && a[0]===7 && a[1]===8 && !(2 in a) && a[3]===1 && !(4 in a) && a[5]===3",
+        r#"
+            let a = [, 1, , 3];
+            a.unshift(7, 8) === 6 && a[0] === 7 && a[1] === 8 && !(2 in a) && a[3] === 1 && !(4 in a) && a[
+                5] === 3
+        "#,
     );
     assert_true("let o={valueOf:()=>{throw 7;}},a=[];a.unshift(o,1n)===2 && a[0]===o && a[1]===1n");
     assert_true("let a=[1,2];a.unshift()===2 && a.join()==='1,2'");
@@ -28,10 +32,23 @@ fn unshift_moves_elements_right_before_inserting_arguments_in_order() {
 #[test]
 fn generic_length_conversion_and_zero_argument_paths_still_write_length() {
     assert_true(
-        "let o={0:1,1:2,length:'2.9'};Array.prototype.shift.call(o)===1 && o[0]===2 && !(1 in o) && o.length===1",
+        r#"
+            let o = {
+                0: 1,
+                1: 2,
+                length: '2.9'
+            };
+            Array.prototype.shift.call(o) === 1 && o[0] === 2 && !(1 in o) && o.length === 1
+        "#,
     );
     assert_true(
-        "let o={0:1,length:'1.9'};Array.prototype.unshift.call(o,7)===2 && o[0]===7 && o[1]===1 && o.length===2",
+        r#"
+            let o = {
+                0: 1,
+                length: '1.9'
+            };
+            Array.prototype.unshift.call(o, 7) === 2 && o[0] === 7 && o[1] === 1 && o.length === 2
+        "#,
     );
     assert_true(
         r#"
@@ -71,7 +88,12 @@ fn inherited_values_and_setters_are_observed_and_prototype_properties_survive() 
         "Array.prototype[0]=7;let a=[,1];a.shift()===7 && a[0]===1 && a.length===1 && Array.prototype[0]===7",
     );
     assert_true(
-        "Array.prototype[1]=7;let a=[1,,];a.unshift(9);a[0]===9 && a[1]===1 && a[2]===7 && Array.prototype[1]===7",
+        r#"
+            Array.prototype[1] = 7;
+            let a = [1, , ];
+            a.unshift(9);
+            a[0] === 9 && a[1] === 1 && a[2] === 7 && Array.prototype[1] === 7
+        "#,
     );
     assert_true(
         r#"

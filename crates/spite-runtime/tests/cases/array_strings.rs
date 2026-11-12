@@ -7,7 +7,10 @@ use crate::common::assert_true;
 #[test]
 fn join_preserves_holes_nullish_values_utf16_and_separator_rules() {
     assert_true(
-        "[].join()==='' && [1,2,3].join()==='1,2,3' && [1,2].join(undefined)==='1,2' && [1,2].join(null)==='1null2'",
+        r#"
+            [].join() === '' && [1, 2, 3].join() === '1,2,3' && [1, 2].join(undefined) === '1,2' && [1, 2]
+                .join(null) === '1null2'
+        "#,
     );
     assert_true(
         "[,,].join()===',' && [null,undefined,,3].join('|')==='|||3' && [1,2].join('')==='12'",
@@ -20,7 +23,14 @@ fn join_preserves_holes_nullish_values_utf16_and_separator_rules() {
         "[[1,2],[3],[]].join(';')==='1,2;3;' && String([1,,3])==='1,,3' && +[]===0 && +[2]===2",
     );
     assert_true(
-        "Object.defineProperty(Array.prototype,'1',{value:9,writable:true,configurable:true});[1,,3].join()==='1,9,3'",
+        r#"
+            Object.defineProperty(Array.prototype, '1', {
+                value: 9,
+                writable: true,
+                configurable: true
+            });
+            [1, , 3].join() === '1,9,3'
+        "#,
     );
 }
 

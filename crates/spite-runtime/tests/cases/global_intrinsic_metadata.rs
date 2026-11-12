@@ -434,14 +434,23 @@ fn global_inventory_has_exact_standard_names_and_data_descriptors() {
     insta::assert_snapshot!(names.to_utf8().unwrap(), @"AggregateError,Array,ArrayBuffer,AsyncDisposableStack,Atomics,BigInt,BigInt64Array,BigUint64Array,Boolean,DataView,Date,DisposableStack,Error,EvalError,FinalizationRegistry,Float16Array,Float32Array,Float64Array,Function,Infinity,Int16Array,Int32Array,Int8Array,Iterator,JSON,Map,Math,NaN,Number,Object,Promise,Proxy,RangeError,ReferenceError,Reflect,RegExp,Set,SharedArrayBuffer,String,SuppressedError,Symbol,SyntaxError,TypeError,URIError,Uint16Array,Uint32Array,Uint8Array,Uint8ClampedArray,WeakMap,WeakRef,WeakSet,decodeURI,decodeURIComponent,encodeURI,encodeURIComponent,eval,globalThis,isFinite,isNaN,parseFloat,parseInt,undefined");
     assert_true(
         r#"
-        let names=Object.getOwnPropertyNames(this),keys=Reflect.ownKeys(this),descriptors=Object.getOwnPropertyDescriptors(this);
-        if(names.length!==62 || keys.length!==62 || Object.getOwnPropertySymbols(this).length!==0 || Object.keys(this).length!==0 || Object.getPrototypeOf(this)!==Object.prototype)throw 1;
-        for(let i=0;i<names.length;i++){
-            let name=names[i],d=descriptors[name],fixed=name==='undefined'||name==='NaN'||name==='Infinity';
-            if(keys[i]!==name || !Object.hasOwn(d,'value') || Object.hasOwn(d,'get') || d.enumerable || d.writable===fixed || d.configurable===fixed || !Object.is(d.value,this[name]))throw 2;
-        }
-        !Object.hasOwn(this,'$262') && !('$262' in this) && typeof $262==='undefined' && !Object.hasOwn(this,'console') && !Object.hasOwn(this,'global') && !Object.hasOwn(this,'process')
-    "#,
+            let names = Object.getOwnPropertyNames(this),
+                keys = Reflect.ownKeys(this),
+                descriptors = Object.getOwnPropertyDescriptors(this);
+            if (names.length !== 62 || keys.length !== 62 || Object.getOwnPropertySymbols(this).length !==
+                0 || Object.keys(this).length !== 0 || Object.getPrototypeOf(this) !== Object.prototype)
+                throw 1;
+            for (let i = 0; i < names.length; i++) {
+                let name = names[i],
+                    d = descriptors[name],
+                    fixed = name === 'undefined' || name === 'NaN' || name === 'Infinity';
+                if (keys[i] !== name || !Object.hasOwn(d, 'value') || Object.hasOwn(d, 'get') || d
+                    .enumerable || d.writable === fixed || d.configurable === fixed || !Object.is(d.value,
+                        this[name])) throw 2;
+            }!Object.hasOwn(this, '$262') && !('$262' in this) && typeof $262 === 'undefined' && !Object
+                .hasOwn(this, 'console') && !Object.hasOwn(this, 'global') && !Object.hasOwn(this,
+                    'process')
+        "#,
     );
 }
 
@@ -475,7 +484,7 @@ fn global_own_keys_order_indices_strings_symbols_and_lone_surrogates() {
             let initialOrder = keys[tail] === '4294967295' && keys[tail + 1] === '01' && keys[tail + 2] ===
                 '-0' && keys[tail + 3] === '\uD800' && names[names.length - 1].charCodeAt(0) === 0xD800 &&
                 keys[tail + 4] === first && keys[tail + 5] === second && symbols.length === 2 && symbols[
-                0] === first && symbols[1] === second && g[first] === 3 && Object.keys(g).join(',') ===
+                    0] === first && symbols[1] === second && g[first] === 3 && Object.keys(g).join(',') ===
                 '0,2,10,4294967294,4294967295,01,-0,\uD800';
             delete g[first];
             g[first] = 9;
