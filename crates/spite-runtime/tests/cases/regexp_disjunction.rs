@@ -10,27 +10,51 @@ fn source_order_wins_equal_start_ties_without_preferring_longest_matches() {
         "/a|ab/.exec('ab')[0]==='a' && /ab|a/.exec('ab')[0]==='ab' && /ll|l/.exec('null')[0]==='ll'",
     );
     assert_true(
-        "let r=/a|ab/dg,m=r.exec('ab');m.length===1 && m[0]==='a' && m.index===0 && m.groups===undefined && m.indices.length===1 && m.indices[0].join(',')==='0,1' && m.indices.groups===undefined && r.lastIndex===1",
+        r#"
+            let r = /a|ab/dg,
+                m = r.exec('ab');
+            m.length === 1 && m[0] === 'a' && m.index === 0 && m.groups === undefined && m.indices
+                .length === 1 && m.indices[0].join(',') === '0,1' && m.indices.groups === undefined && r
+                .lastIndex === 1
+        "#,
     );
 }
 
 #[test]
 fn an_earlier_start_wins_over_an_earlier_source_alternative() {
     assert_true(
-        "let m=/2|12/.exec(1.012);m[0]==='12' && m.index===3 && m.input==='1.012' && /z|a/.exec('az')[0]==='a'",
+        r#"
+            let m = /2|12/.exec(1.012);
+            m[0] === '12' && m.index === 3 && m.input === '1.012' && /z|a/.exec('az')[0] === 'a'
+        "#,
     );
     assert_true(
-        "let r=/b|a/y;r.lastIndex=1;let m=r.exec('xab');m[0]==='a' && m.index===1 && r.lastIndex===2 && r.exec('xab')[0]==='b' && r.lastIndex===3 && r.exec('xab')===null && r.lastIndex===0",
+        r#"
+            let r = /b|a/y;
+            r.lastIndex = 1;
+            let m = r.exec('xab');
+            m[0] === 'a' && m.index === 1 && r.lastIndex === 2 && r.exec('xab')[0] === 'b' && r
+                .lastIndex === 3 && r.exec('xab') === null && r.lastIndex === 0
+        "#,
     );
 }
 
 #[test]
 fn empty_alternatives_follow_source_order_and_generic_empty_match_advancement() {
     assert_true(
-        "/|a/.exec('a')[0]==='' && /a|/.exec('a')[0]==='a' && /a|/.exec('ba').index===0 && /a|/.exec('ba')[0]===''",
+        r#"
+            /|a/.exec('a')[0] === '' && /a|/.exec('a')[0] === 'a' && /a|/.exec('ba').index === 0 && /a|/
+                .exec('ba')[0] === ''
+        "#,
     );
     assert_true(
-        "let r=/a|/dg,m=r.exec('a');let n=r.exec('a');m[0]==='a' && n[0]==='' && n.index===1 && n.indices[0].join(',')==='1,1' && r.lastIndex===1",
+        r#"
+            let r = /a|/dg,
+                m = r.exec('a');
+            let n = r.exec('a');
+            m[0] === 'a' && n[0] === '' && n.index === 1 && n.indices[0].join(',') === '1,1' && r
+                .lastIndex === 1
+        "#,
     );
     assert_true(
         "'ab'.match(/|a/g).length===3 && [...'ab'.matchAll(/|a/g)].map(m=>m.index).join(',')==='0,1,2' && 'ab'.replace(/|a/g,'-')==='-a-b-'",

@@ -67,16 +67,38 @@ fn unicode_whitespace_property_results_snapshot() {
 fn unicode_whitespace_properties_aliases_complements_and_unions() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=/\p{{White_Space}}/{mode},b=/\p{{space}}/i{mode},n=/\P{{space}}/i{mode};a.test(' ')&&a.test('\t')&&a.test('\u0085')&&a.test('\u00A0')&&a.test('\u3000')&&b.test('\u2028')&&!a.test('X')&&!b.test('\uFEFF')&&!b.test('\u180E')&&!b.test('\u200B')&&!n.test(' ')&&n.test('😀')&&n.test('\uD800')&&n.test('\uFEFF')"
+            r#"
+                let a = /\p{{White_Space}}/{mode},
+                    b = /\p{{space}}/i{mode},
+                    n = /\P{{space}}/i{mode};
+                a.test(' ') && a.test('\t') && a.test('\u0085') && a.test('\u00A0') && a.test('\u3000') && b
+                    .test('\u2028') && !a.test('X') && !b.test('\uFEFF') && !b.test('\u180E') && !b.test(
+                        '\u200B') && !n.test(' ') && n.test('😀') && n.test('\uD800') && n.test('\uFEFF')
+            "#
         ));
         assert_true(&format!(
-            r"let p=/\p{{White_Space}}/{mode},s=/\s/{mode};p.test('\u0085')&&!s.test('\u0085')&&!p.test('\uFEFF')&&s.test('\uFEFF')"
+            r#"
+                let p = /\p{{White_Space}}/{mode},
+                    s = /\s/{mode};
+                p.test('\u0085') && !s.test('\u0085') && !p.test('\uFEFF') && s.test('\uFEFF')
+            "#
         ));
         assert_true(&format!(
-            r"let a=/[\p{{space}}K]/i{mode},b=/[^\P{{White_Space}}K]/i{mode},c=/[\p{{space}}\P{{White_Space}}]/{mode};a.test('K')&&a.test('k')&&a.test('\u0085')&&!a.test('ſ')&&b.test(' ')&&!b.test('K')&&c.test('😀')&&c.test('A')&&c.test('\uD800')"
+            r#"
+                let a = /[\p{{space}}K]/i{mode},
+                    b = /[^\P{{White_Space}}K]/i{mode},
+                    c = /[\p{{space}}\P{{White_Space}}]/{mode};
+                a.test('K') && a.test('k') && a.test('\u0085') && !a.test('ſ') && b.test(' ') && !b.test(
+                    'K') && c.test('😀') && c.test('A') && c.test('\uD800')
+            "#
         ));
         assert_true(&format!(
-            r"let a=/^\p{{space}}$/{mode},b=/^\P{{space}}$/{mode};a.test('\u0085')&&!a.test(' \n')&&!a.test('')&&a.test('\n')&&b.test('😀')&&!b.test('AA')"
+            r#"
+                let a = /^\p{{space}}$/{mode},
+                    b = /^\P{{space}}$/{mode};
+                a.test('\u0085') && !a.test(' \n') && !a.test('') && a.test('\n') && b.test('😀') && !b.test(
+                    'AA')
+            "#
         ));
     }
 }
@@ -85,13 +107,29 @@ fn unicode_whitespace_properties_aliases_complements_and_unions() {
 fn unicode_whitespace_properties_captures_context_and_pair_starts() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let r=/^(?<x>([\p{{space}}K]))$/dim{mode}g,m=r.exec('x\r\nK\u2028');m.index===3&&m[1]==='K'&&m[2]==='K'&&m.indices.groups.x===m.indices[1]&&m.indices[2][1]===4&&r.lastIndex===4"
+            r#"
+                let r = /^(?<x>([\p{{space}}K]))$/dim{mode}g,
+                    m = r.exec('x\r\nK\u2028');
+                m.index === 3 && m[1] === 'K' && m[2] === 'K' && m.indices.groups.x === m.indices[1] && m
+                    .indices[2][1] === 4 && r.lastIndex === 4
+            "#
         ));
         assert_true(&format!(
-            r"let r=/(?<__proto__>\P{{space}})/d{mode}y;r.lastIndex=1;let m=r.exec('😀\u0085');m.index===0&&m[1]==='😀'&&m.indices[1][1]===2&&r.lastIndex===2&&Object.getPrototypeOf(m.groups)===null&&m.indices.groups.__proto__===m.indices[1]"
+            r#"
+                let r = /(?<__proto__>\P{{space}})/d{mode}y;
+                r.lastIndex = 1;
+                let m = r.exec('😀\u0085');
+                m.index === 0 && m[1] === '😀' && m.indices[1][1] === 2 && r.lastIndex === 2 && Object
+                    .getPrototypeOf(m.groups) === null && m.indices.groups.__proto__ === m.indices[1]
+            "#
         ));
         assert_true(&format!(
-            r"let r=/\p{{space}}/d{mode}g;r.lastIndex=1;let m=r.exec('😀\u0085');m.index===2&&m[0]==='\u0085'&&r.lastIndex===3"
+            r#"
+                let r = /\p{{space}}/d{mode}g;
+                r.lastIndex = 1;
+                let m = r.exec('😀\u0085');
+                m.index === 2 && m[0] === '\u0085' && r.lastIndex === 3
+            "#
         ));
         assert_true(&format!(
             r"let r=/\p{{space}}/{mode}y;r.lastIndex=1;r.exec('😀\u0085')===null&&r.lastIndex===0"
@@ -103,7 +141,11 @@ fn unicode_whitespace_properties_captures_context_and_pair_starts() {
 fn unicode_whitespace_properties_consumers_original_text() {
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let a=[...' 😀\u0085G'.matchAll(/(?<x>\P{{space}})/d{mode}g)];a.length===2&&a[0][1]==='😀'&&a[0].index===1&&a[0].indices[1][1]===3&&a[1][1]==='G'"
+            r#"
+                let a = [...' 😀\u0085G'.matchAll(/(?<x>\P{{space}})/d{mode}g)];
+                a.length === 2 && a[0][1] === '😀' && a[0].index === 1 && a[0].indices[1][1] === 3 && a[1][
+                    1] === 'G'
+            "#
         ));
         assert_true(&format!(
             r"' \u0085😀X'.replace(/(?<x>\p{{White_Space}})/{mode}g,'<$1:$<x>>')==='< : ><\u0085:\u0085>😀X'"
@@ -112,7 +154,14 @@ fn unicode_whitespace_properties_consumers_original_text() {
             r"'😀 \u0085G'.split(/(\p{{space}})/{mode}).join('|')==='😀| ||\u0085|G'&&'😀\u0085'.search(/\p{{space}}/{mode})===2&&' \u0085😀'.match(/\p{{space}}/{mode}g).join('')===' \u0085'"
         ));
         assert_true(&format!(
-            r"let t='';let x=' \t😀 '.replace(/(\p{{space}})/{mode}g,(m,c,p)=>{{t+=p;return '_'}});x==='__😀_'&&t==='014'"
+            r#"
+                let t = '';
+                let x = ' \t😀 '.replace(/(\p{{space}})/{mode}g, (m, c, p) => {{
+                    t += p;
+                    return '_'
+                }});
+                x === '__😀_' && t === '014'
+            "#
         ));
     }
 }
@@ -120,16 +169,62 @@ fn unicode_whitespace_properties_consumers_original_text() {
 #[test]
 fn unicode_whitespace_properties_clones_coercions_and_strict_writes() {
     assert_true(
-        r"let r=/^(?<x>\p{White_Space})$/dmu,c=new RegExp(r,'divy');c.source==='^(?<x>\\p{White_Space})$'&&c.unicodeSets&&!c.unicode&&!c.multiline&&c.exec('\u0085').groups.x==='\u0085'&&c.lastIndex===1",
+        r#"
+            let r = /^(?<x>\p{White_Space})$/dmu,
+                c = new RegExp(r, 'divy');
+            c.source === '^(?<x>\\p{White_Space})$' && c.unicodeSets && !c.unicode && !c.multiline && c
+                .exec('\u0085').groups.x === '\u0085' && c.lastIndex === 1
+        "#,
     );
     assert_true(
-        r"let t='',r=/\P{space}/uy;r.lastIndex={valueOf(){t+='i';return 1}};let m=r.exec({toString(){t+='s';return '😀'}});t==='si'&&m[0]==='😀'&&m.index===0&&r.lastIndex===2",
+        r#"
+            let t = '',
+                r = /\P{space}/uy;
+            r.lastIndex = {
+                valueOf() {
+                    t += 'i';
+                    return 1
+                }
+            };
+            let m = r.exec({
+                toString() {
+                    t += 's';
+                    return '😀'
+                }
+            });
+            t === 'si' && m[0] === '😀' && m.index === 0 && r.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"let r=/\p{space}/vy;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('\u0085')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            let r = /\p{space}/vy;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('\u0085')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/\p{space}/vy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀\u0085')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===1",
+        r#"
+            let r = /\p{space}/vy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀\u0085')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 
@@ -151,12 +246,19 @@ fn unicode_whitespace_properties_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     assert_true(
-        r#"let m=/\p{Script_Extensions=Latin}/u.exec('A');JSON.stringify(m)==='["A"]'&&m.index===0&&m.input==='A'"#,
+        r#"
+            let m = /\p{Script_Extensions=Latin}/u.exec('A');
+            JSON.stringify(m) === '["A"]' && m.index === 0 && m.input === 'A'
+        "#,
     );
     assert_true(r"/[\p{space}&&A]/v.exec('A')===null");
     assert_true(r"/[\p{space}--A]/v.exec('A')===null");
     assert_true(
-        r"let s=String.fromCodePoint(0x20),m=/[\p{space}--A]/v.exec(s);m!==null&&m.length===1&&m[0]===s&&m.index===0&&m.input===s",
+        r#"
+            let s = String.fromCodePoint(0x20),
+                m = /[\p{space}--A]/v.exec(s);
+            m !== null && m.length === 1 && m[0] === s && m.index === 0 && m.input === s
+        "#,
     );
     for source in [r"/\p{space}+b/u.exec('AA')", r"/\p{space}A/v.exec('AA')"] {
         crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);

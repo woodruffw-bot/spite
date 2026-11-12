@@ -97,10 +97,21 @@ fn quantified_zero_spine_consumers_clones_and_gc_keep_both_capture_states() {
 fn syntax_errors_and_unerased_membership_requirements_keep_distinct_failures() {
     assert_true(
         r#"
-        var invalid=['(?i:(?<x>[^\\p{RGI_Emoji}]){0})+','(?i:(\\P{RGI_Emoji})){0}','(([a]){2,1}){0}'],ok=true;
-        for(var source of invalid){var caught=false;try{new RegExp(source,'v')}catch(e){caught=e instanceof SyntaxError}ok=ok&&caught}
-        ok
-    "#,
+            var invalid = ['(?i:(?<x>[^\\p{RGI_Emoji}]){0})+', '(?i:(\\P{RGI_Emoji})){0}',
+                    '(([a]){2,1}){0}'
+                ],
+                ok = true;
+            for (var source of invalid) {
+                var caught = false;
+                try {
+                    new RegExp(source, 'v')
+                } catch (e) {
+                    caught = e instanceof SyntaxError
+                }
+                ok = ok && caught
+            }
+            ok
+        "#,
     );
     for source in [
         r"(?i:([\p{RGI_Emoji}])+)",

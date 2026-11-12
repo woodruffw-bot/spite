@@ -83,13 +83,25 @@ fn outer_and_internal_assertions_filter_sequel_positions_with_explicit_multiline
 #[test]
 fn enclosing_alternative_slots_and_source_order_use_the_complete_match() {
     assert_true(
-        r"let a=/((ab)+(ab))|(b+)/d.exec('ababab');a[1]==='ababab'&&a[2]==='ab'&&a[3]==='ab'&&a[4]===undefined&&a.indices[2][0]===2&&a.indices[3][0]===4",
+        r#"
+            let a = /((ab)+(ab))|(b+)/d.exec('ababab');
+            a[1] === 'ababab' && a[2] === 'ab' && a[3] === 'ab' && a[4] === undefined && a.indices[2][
+                0] === 2 && a.indices[3][0] === 4
+        "#,
     );
     assert_true(
-        r"let a=/(ab)+a|(ab)+ab/d.exec('ababab');a.index===0&&a[0]==='ababa'&&a[1]==='ab'&&a[2]===undefined&&a.indices[1][0]===2",
+        r#"
+            let a = /(ab)+a|(ab)+ab/d.exec('ababab');
+            a.index === 0 && a[0] === 'ababa' && a[1] === 'ab' && a[2] === undefined && a.indices[1][0] ===
+                2
+        "#,
     );
     assert_true(
-        r"let a=/^((ab)+(ab))$/d.exec('ababab');a[1]==='ababab'&&a[2]==='ab'&&a[3]==='ab'&&a.indices[1][1]===6&&a.indices[2][0]===2&&a.indices[3][0]===4&&/^(ab)+ab$/.exec('ababa')===null",
+        r#"
+            let a = /^((ab)+(ab))$/d.exec('ababab');
+            a[1] === 'ababab' && a[2] === 'ab' && a[3] === 'ab' && a.indices[1][1] === 6 && a.indices[2][
+                0] === 2 && a.indices[3][0] === 4 && /^(ab)+ab$/.exec('ababa') === null
+        "#,
     );
 }
 

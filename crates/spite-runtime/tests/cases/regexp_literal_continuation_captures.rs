@@ -7,13 +7,27 @@ use crate::common::assert_true;
 #[test]
 fn prefix_and_suffix_ranges_follow_greedy_lazy_and_source_order() {
     assert_true(
-        "let a=/(a)+(b)/d.exec('aaab'),b=/(a+)(b)/d.exec('aaab');a[0]==='aaab'&&a[1]==='a'&&a[2]==='b'&&a.indices[1][0]===2&&a.indices[2][0]===3&&b[1]==='aaa'&&b.indices[1][1]===3",
+        r#"
+            let a = /(a)+(b)/d.exec('aaab'),
+                b = /(a+)(b)/d.exec('aaab');
+            a[0] === 'aaab' && a[1] === 'a' && a[2] === 'b' && a.indices[1][0] === 2 && a.indices[2][0] ===
+                3 && b[1] === 'aaa' && b.indices[1][1] === 3
+        "#,
     );
     assert_true(
-        "let a=/([ab])*?(ab)/d.exec('abab'),b=/([ab])*(ab)/d.exec('abab');a[0]==='ab'&&a[1]===undefined&&a[2]==='ab'&&a.indices[2][0]===0&&b[0]==='abab'&&b[1]==='b'&&b[2]==='ab'&&b.indices[1][0]===1&&b.indices[2][0]===2",
+        r#"
+            let a = /([ab])*?(ab)/d.exec('abab'),
+                b = /([ab])*(ab)/d.exec('abab');
+            a[0] === 'ab' && a[1] === undefined && a[2] === 'ab' && a.indices[2][0] === 0 && b[0] ===
+                'abab' && b[1] === 'b' && b[2] === 'ab' && b.indices[1][0] === 1 && b.indices[2][0] === 2
+        "#,
     );
     assert_true(
-        "let m=/((a)+)((b)())/d.exec('aaab');m.length===6&&m[1]==='aaa'&&m[2]==='a'&&m[3]==='b'&&m[4]==='b'&&m[5]===''&&m.indices[5][0]===4&&m.indices[5][1]===4",
+        r#"
+            let m = /((a)+)((b)())/d.exec('aaab');
+            m.length === 6 && m[1] === 'aaa' && m[2] === 'a' && m[3] === 'b' && m[4] === 'b' && m[5] ===
+                '' && m.indices[5][0] === 4 && m.indices[5][1] === 4
+        "#,
     );
 }
 

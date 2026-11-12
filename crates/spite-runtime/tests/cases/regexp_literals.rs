@@ -70,13 +70,21 @@ fn literals_preserve_source_flags_escape_spelling_and_utf16_units() {
         r"let r=/a\/b/ig;r.source==='a\\/b' && r.flags==='gi' && r.exec('xA/b')[0]==='A/b'",
     );
     assert_true(
-        r"let r=/\uD800/d,m=r.exec('x\uD800');r.source==='\\uD800' && m.index===1 && m[0]==='\uD800' && m.indices[0][0]===1 && m.indices[0][1]===2",
+        r#"
+            let r = /\uD800/d,
+                m = r.exec('x\uD800');
+            r.source === '\\uD800' && m.index === 1 && m[0] === '\uD800' && m.indices[0][0] === 1 && m
+                .indices[0][1] === 2
+        "#,
     );
     assert_true(
         "let r=/💩/d,m=r.exec('x💩');m[0].length===2 && m.index===1 && m.indices[0][1]===3",
     );
     assert_true(
-        "/(?:)/.source==='(?:)' && /(?<x>a)|(?<x>b)/du.flags==='du' && /[\\q{ab|c}]/v.unicodeSets && /\\p{ASCII}/u.unicode",
+        r#"
+            /(?:)/.source === '(?:)' && /(?<x>a)|(?<x>b)/du.flags === 'du' && /[\q{ab|c}]/v.unicodeSets &&
+                /\p{ASCII}/u.unicode
+        "#,
     );
 }
 

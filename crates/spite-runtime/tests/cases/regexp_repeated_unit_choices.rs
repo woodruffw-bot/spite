@@ -119,13 +119,32 @@ fn decoded_literal_metacharacters_controls_and_surrogates_are_exact() {
 #[test]
 fn alternatives_global_sticky_copies_and_original_source_keep_capture_offsets() {
     assert_true(
-        r"let a=/(a|b)+a|(a|b)+b/d.exec('aba'),b=/(a|b)+a|(a|b)+b/d.exec('ab');a[0]==='aba'&&a[1]==='b'&&a[2]===undefined&&b[1]===undefined&&b[2]==='a'&&b.indices[2][0]===0",
+        r#"
+            let a = /(a|b)+a|(a|b)+b/d.exec('aba'),
+                b = /(a|b)+a|(a|b)+b/d.exec('ab');
+            a[0] === 'aba' && a[1] === 'b' && a[2] === undefined && b[1] === undefined && b[2] === 'a' && b
+                .indices[2][0] === 0
+        "#,
     );
     assert_true(
-        r"let r=/(x)((a|b)+)(y)/dg,copy=new RegExp(r),a=r.exec('xay xababy'),b=r.exec('xay xababy');a.indices[3][0]===1&&b.index===4&&b.indices[2][0]===5&&b.indices[2][1]===9&&b.indices[3][0]===8&&r.lastIndex===10&&copy.source===r.source&&copy.lastIndex===0&&r.exec('xay xababy')===null&&r.lastIndex===0",
+        r#"
+            let r = /(x)((a|b)+)(y)/dg,
+                copy = new RegExp(r),
+                a = r.exec('xay xababy'),
+                b = r.exec('xay xababy');
+            a.indices[3][0] === 1 && b.index === 4 && b.indices[2][0] === 5 && b.indices[2][1] === 9 && b
+                .indices[3][0] === 8 && r.lastIndex === 10 && copy.source === r.source && copy
+                .lastIndex === 0 && r.exec('xay xababy') === null && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/x(a|b)+(y)/dy;r.lastIndex=1;let a=r.exec('yxababy');a.index===1&&a[1]==='b'&&a.indices[1][0]===5&&a.indices[2][0]===6&&r.lastIndex===7&&r.exec('yxababy')===null&&r.lastIndex===0",
+        r#"
+            let r = /x(a|b)+(y)/dy;
+            r.lastIndex = 1;
+            let a = r.exec('yxababy');
+            a.index === 1 && a[1] === 'b' && a.indices[1][0] === 5 && a.indices[2][0] === 6 && r
+                .lastIndex === 7 && r.exec('yxababy') === null && r.lastIndex === 0
+        "#,
     );
 }
 

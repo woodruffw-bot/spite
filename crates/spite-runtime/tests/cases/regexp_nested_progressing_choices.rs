@@ -77,28 +77,64 @@ fn nested_progressing_choice_result_snapshot() {
 #[test]
 fn nested_choice_iteration_retries_restore_counts_named_enclosures_and_source_order() {
     assert_true(
-        r"let a=/(?<all>(?:\k<all>a|b)+)\k<all>/d.exec('abab');a[0]==='abab'&&a.groups.all==='ab'&&a.indices.groups.all===a.indices[1]&&a.indices.groups.all[1]===2",
+        r#"
+            let a = /(?<all>(?:\k<all>a|b)+)\k<all>/d.exec('abab');
+            a[0] === 'abab' && a.groups.all === 'ab' && a.indices.groups.all === a.indices[1] && a.indices
+                .groups.all[1] === 2
+        "#,
     );
     assert_true(
-        r"let a=/(?<x>a)(?:\k<later>b|a)+(?<later>\k<x>)/d.exec('abbaa');a[0]==='abbaa'&&a.groups.x==='a'&&a.groups.later==='a'&&a.indices.groups.x===a.indices[1]&&a.indices.groups.later===a.indices[2]&&a.indices.groups.later[0]===4",
+        r#"
+            let a = /(?<x>a)(?:\k<later>b|a)+(?<later>\k<x>)/d.exec('abbaa');
+            a[0] === 'abbaa' && a.groups.x === 'a' && a.groups.later === 'a' && a.indices.groups.x === a
+                .indices[1] && a.indices.groups.later === a.indices[2] && a.indices.groups.later[0] === 4
+        "#,
     );
     assert_true(
-        r"let a=/(?<all>(?:(?:ab|a))+)b/d.exec('ab'),b=/(?<all>(?:(?:ab|a))+)b/d.exec('abb');a[0]==='ab'&&a.groups.all==='a'&&a.indices.groups.all===a.indices[1]&&a.indices.groups.all[1]===1&&b[0]==='abb'&&b.groups.all==='ab'&&b.indices.groups.all[1]===2",
+        r#"
+            let a = /(?<all>(?:(?:ab|a))+)b/d.exec('ab'),
+                b = /(?<all>(?:(?:ab|a))+)b/d.exec('abb');
+            a[0] === 'ab' && a.groups.all === 'a' && a.indices.groups.all === a.indices[1] && a.indices
+                .groups.all[1] === 1 && b[0] === 'abb' && b.groups.all === 'ab' && b.indices.groups.all[
+                1] === 2
+        "#,
     );
     assert_true(
-        r"let a=/(?<all>(?:(?:a|ab))+)b/d.exec('abb'),b=/(?<all>(?:(?:ab|a))+?)b/d.exec('ababb');a[0]==='ab'&&a.groups.all==='a'&&b[0]==='ababb'&&b.groups.all==='abab'&&b.indices.groups.all[1]===4",
+        r#"
+            let a = /(?<all>(?:(?:a|ab))+)b/d.exec('abb'),
+                b = /(?<all>(?:(?:ab|a))+?)b/d.exec('ababb');
+            a[0] === 'ab' && a.groups.all === 'a' && b[0] === 'ababb' && b.groups.all === 'abab' && b
+                .indices.groups.all[1] === 4
+        "#,
     );
     assert_true(
-        r"let a=/(?<x>a)(?:(?:\k<x>|)b)+\k<x>/d.exec('aaba');a[0]==='aaba'&&a.groups.x==='a'&&a.indices.groups.x===a.indices[1]&&a.indices.groups.x[0]===0&&a.indices.groups.x[1]===1",
+        r#"
+            let a = /(?<x>a)(?:(?:\k<x>|)b)+\k<x>/d.exec('aaba');
+            a[0] === 'aaba' && a.groups.x === 'a' && a.indices.groups.x === a.indices[1] && a.indices
+                .groups.x[0] === 0 && a.indices.groups.x[1] === 1
+        "#,
     );
     assert_true(
-        r"let a=/(?:(?<x>(?:(?:a|)b|c)+)d|(?<x>a+))\k<x>/d.exec('abcdabc');a[0]==='abcdabc'&&a.groups.x==='abc'&&a[2]===undefined&&a.indices.groups.x===a.indices[1]&&a.indices.groups.x[1]===3",
+        r#"
+            let a = /(?:(?<x>(?:(?:a|)b|c)+)d|(?<x>a+))\k<x>/d.exec('abcdabc');
+            a[0] === 'abcdabc' && a.groups.x === 'abc' && a[2] === undefined && a.indices.groups.x === a
+                .indices[1] && a.indices.groups.x[1] === 3
+        "#,
     );
     assert_true(
-        r"let a=/(?<all>(?:(?:a|)b|c)+(?:(?:a|)b|c)+)/d.exec('abc');a[0]==='abc'&&a.groups.all==='abc'&&a.indices.groups.all===a.indices[1]&&a.indices.groups.all[1]===3",
+        r#"
+            let a = /(?<all>(?:(?:a|)b|c)+(?:(?:a|)b|c)+)/d.exec('abc');
+            a[0] === 'abc' && a.groups.all === 'abc' && a.indices.groups.all === a.indices[1] && a.indices
+                .groups.all[1] === 3
+        "#,
     );
     assert_true(
-        r"let a=/(?<all>(?:.b|a)+)c/ds.exec('\uD800bac'),b=/(?<all>(?:(?:^a|b$))+)/dm.exec('q\na');a.groups.all.length===3&&a.groups.all.charCodeAt(0)===0xD800&&a.indices.groups.all[1]===3&&b.index===2&&b.groups.all==='a'",
+        r#"
+            let a = /(?<all>(?:.b|a)+)c/ds.exec('\uD800bac'),
+                b = /(?<all>(?:(?:^a|b$))+)/dm.exec('q\na');
+            a.groups.all.length === 3 && a.groups.all.charCodeAt(0) === 0xD800 && a.indices.groups.all[
+                1] === 3 && b.index === 2 && b.groups.all === 'a'
+        "#,
     );
 }
 

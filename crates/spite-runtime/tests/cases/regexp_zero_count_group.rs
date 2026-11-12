@@ -75,21 +75,30 @@ fn modes_lastindex_and_string_consumers_use_the_empty_match() {
 fn full_syntax_validation_precedes_erasure() {
     assert_true(
         r#"
-        var ok=true, invalid=[
-            ['(?:(?<x>a)\\k<missing>){0}','u'],
-            ['(?:(a)\\2){0}','u'],
-            ['(?:[z-a]){0}','u'],
-            ['(?:[\\p{NotAProperty}]){0}','v'],
-            ['(?:[\\q{ab}&&]){0}','v'],
-            ['(?:(?<x>a)(?<x>b)){0}','u'],
-            ['(?:(?ii:a)){0}','u'],
-            ['(?:(a){2,1}){0}','u'],
-            ['(a){0}','uv'],
-            ['(a){0}','gg']
-        ];
-        for(var pair of invalid){var caught=false;try{new RegExp(pair[0],pair[1])}catch(e){caught=e instanceof SyntaxError}ok=ok&&caught}
-        ok
-    "#,
+            var ok = true,
+                invalid = [
+                    ['(?:(?<x>a)\\k<missing>){0}', 'u'],
+                    ['(?:(a)\\2){0}', 'u'],
+                    ['(?:[z-a]){0}', 'u'],
+                    ['(?:[\\p{NotAProperty}]){0}', 'v'],
+                    ['(?:[\\q{ab}&&]){0}', 'v'],
+                    ['(?:(?<x>a)(?<x>b)){0}', 'u'],
+                    ['(?:(?ii:a)){0}', 'u'],
+                    ['(?:(a){2,1}){0}', 'u'],
+                    ['(a){0}', 'uv'],
+                    ['(a){0}', 'gg']
+                ];
+            for (var pair of invalid) {
+                var caught = false;
+                try {
+                    new RegExp(pair[0], pair[1])
+                } catch (e) {
+                    caught = e instanceof SyntaxError
+                }
+                ok = ok && caught
+            }
+            ok
+        "#,
     );
 }
 

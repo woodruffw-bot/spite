@@ -122,7 +122,13 @@ fn grouped_anchor_bodies_compose_with_branch_and_outer_capture_prefixes() {
 #[test]
 fn original_source_pinned_flags_and_generic_consumers_preserve_captures() {
     assert_true(
-        "let r=new RegExp('^((µ)+(x))$','di'),copy=new RegExp(r),m=copy.exec('ΜΜX');copy.source===r.source&&r.source==='^((µ)+(x))$'&&m[1]==='ΜΜX'&&m[2]==='Μ'&&m[3]==='X'&&m.indices[3][0]===2&&/^(ſ+x)$/i.exec('ssx')===null",
+        r#"
+            let r = new RegExp('^((µ)+(x))$', 'di'),
+                copy = new RegExp(r),
+                m = copy.exec('ΜΜX');
+            copy.source === r.source && r.source === '^((µ)+(x))$' && m[1] === 'ΜΜX' && m[2] === 'Μ' && m[
+                3] === 'X' && m.indices[3][0] === 2 && /^(ſ+x)$/i.exec('ssx') === null
+        "#,
     );
     assert_true(
         r"let m=/^((.)+\uD800)$/sd.exec('a\n\uD800');m[1]==='a\n\uD800'&&m[2]==='\n'&&m.indices[2][0]===1",
@@ -131,10 +137,26 @@ fn original_source_pinned_flags_and_generic_consumers_preserve_captures() {
         "'aaab'.replace(/^((a)+(b))$/,'$1-$2-$3')==='aaab-a-b'&&'aaab'.split(/^(a+b)$/).join(',')===',aaab,'",
     );
     assert_true(
-        r"let r=/^(a+b)$/mg,m=[...'aaab\naab'.matchAll(r)];m.length===2&&m[0][1]==='aaab'&&m[1][1]==='aab'&&m[1].index===5&&r.lastIndex===0",
+        r#"
+            let r = /^(a+b)$/mg,
+                m = [...'aaab\naab'.matchAll(r)];
+            m.length === 2 && m[0][1] === 'aaab' && m[1][1] === 'aab' && m[1].index === 5 && r
+                .lastIndex === 0
+        "#,
     );
     assert_true(
-        "let calls=0;Object.defineProperty(Array.prototype,'1',{set(){calls++},configurable:true});let m=/^((a)*())$/d.exec('');calls===0&&m[1]===''&&m[2]===undefined&&Object.hasOwn(m,'2')&&Object.hasOwn(m.indices,'2')&&m.indices[2]===undefined",
+        r#"
+            let calls = 0;
+            Object.defineProperty(Array.prototype, '1', {
+                set() {
+                    calls++
+                },
+                configurable: true
+            });
+            let m = /^((a)*())$/d.exec('');
+            calls === 0 && m[1] === '' && m[2] === undefined && Object.hasOwn(m, '2') && Object.hasOwn(m
+                .indices, '2') && m.indices[2] === undefined
+        "#,
     );
 }
 

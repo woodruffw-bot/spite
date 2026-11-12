@@ -33,13 +33,26 @@ fn repeated_continuations_choices_and_assertions_reuse_complete_body_semantics()
 #[test]
 fn captures_indices_and_unselected_alternative_slots_preserve_source_order() {
     assert_true(
-        "let m=/(?:(a)+(b))/d.exec('aaab');m.length===3&&m[1]==='a'&&m[2]==='b'&&m.indices[1][0]===2&&m.indices[2][0]===3&&m.groups===undefined",
+        r#"
+            let m = /(?:(a)+(b))/d.exec('aaab');
+            m.length === 3 && m[1] === 'a' && m[2] === 'b' && m.indices[1][0] === 2 && m.indices[2][0] ===
+                3 && m.groups === undefined
+        "#,
     );
     assert_true(
-        "let m=/(?:(x)|(a)+(b)|(y))/d.exec('aaab');m.length===5&&m[1]===undefined&&m[2]==='a'&&m[3]==='b'&&m[4]===undefined&&Object.hasOwn(m,'1')&&Object.hasOwn(m.indices,'4')&&m.indices[3][1]===4",
+        r#"
+            let m = /(?:(x)|(a)+(b)|(y))/d.exec('aaab');
+            m.length === 5 && m[1] === undefined && m[2] === 'a' && m[3] === 'b' && m[4] === undefined &&
+                Object.hasOwn(m, '1') && Object.hasOwn(m.indices, '4') && m.indices[3][1] === 4
+        "#,
     );
     assert_true(
-        "let a=/(?:(a)*())/d.exec(''),b=/(?:(a*)())/d.exec('');a[1]===undefined&&a[2]===''&&a.indices[2][0]===0&&b[1]===''&&b.indices[1][1]===0",
+        r#"
+            let a = /(?:(a)*())/d.exec(''),
+                b = /(?:(a*)())/d.exec('');
+            a[1] === undefined && a[2] === '' && a.indices[2][0] === 0 && b[1] === '' && b.indices[1][
+                1] === 0
+        "#,
     );
 }
 
@@ -87,7 +100,23 @@ fn original_source_flags_and_constructor_copying_survive_unwrapping() {
     );
     assert_true("let r=/(?:)/;r.source==='(?:)'&&r.exec('x')[0]===''&&r.exec('x').length===1");
     assert_true(
-        "let calls=[];let pattern={toString(){calls.push('pattern');return '(?:a+b)'}},flags={toString(){calls.push('flags');return 'g'}};let r=new RegExp(pattern,flags);r.source==='(?:a+b)'&&calls.join(',')==='pattern,flags'&&r.test('ab')",
+        r#"
+            let calls = [];
+            let pattern = {
+                    toString() {
+                        calls.push('pattern');
+                        return '(?:a+b)'
+                    }
+                },
+                flags = {
+                    toString() {
+                        calls.push('flags');
+                        return 'g'
+                    }
+                };
+            let r = new RegExp(pattern, flags);
+            r.source === '(?:a+b)' && calls.join(',') === 'pattern,flags' && r.test('ab')
+        "#,
     );
 }
 

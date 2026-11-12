@@ -10,7 +10,10 @@ fn earliest_positions_and_source_order_ties_precede_match_length() {
         "/[ab]|a[ab]/.exec('ab')[0]==='a'&&/a[ab]|[ab]/.exec('ab')[0]==='ab'&&/xx|[ab]/.exec('axxx').index===0",
     );
     assert_true(
-        "/[]|a/.exec('a')[0]==='a'&&/[^]|a/.exec('a')[0]==='a'&&/()|([a])/.exec('a')[0]===''&&/([a])|()/.exec('a')[0]==='a'",
+        r#"
+            /[]|a/.exec('a')[0] === 'a' && /[^]|a/.exec('a')[0] === 'a' && /()|([a])/.exec('a')[0] ===
+                '' && /([a])|()/.exec('a')[0] === 'a'
+        "#,
     );
 }
 

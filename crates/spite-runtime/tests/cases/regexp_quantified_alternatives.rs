@@ -6,7 +6,11 @@ use spite_runtime::{Realm, Value};
 #[test]
 fn earliest_positions_and_source_order_keep_per_branch_repetition_order() {
     assert_true(
-        "/a|a+/.exec('aaa')[0]==='a'&&/a+|a/.exec('aaa')[0]==='aaa'&&/a+?|a+/.exec('aaa')[0]==='a'&&/[ab]*ab|[ab]*?ab/.exec('abab')[0]==='abab'&&/[ab]*?ab|[ab]*ab/.exec('abab')[0]==='ab'",
+        r#"
+            /a|a+/.exec('aaa')[0] === 'a' && /a+|a/.exec('aaa')[0] === 'aaa' && /a+?|a+/.exec('aaa')[0] ===
+                'a' && /[ab]*ab|[ab]*?ab/.exec('abab')[0] === 'abab' && /[ab]*?ab|[ab]*ab/.exec('abab')[
+                0] === 'ab'
+        "#,
     );
     assert_true(
         "/([x])|[ab]+/.exec('aaax').index===0&&/a*|([b])/.exec('b')[0]===''&&/[]+|a/.exec('a')[0]==='a'",

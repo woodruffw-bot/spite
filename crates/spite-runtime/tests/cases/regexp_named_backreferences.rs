@@ -125,19 +125,46 @@ fn native_consumers_and_copies_share_reference_results_and_original_source() {
         r"'qaa'.replace(/(?<x>a)\k<x>/,'<$<x>>')==='q<a>'&&'qaa'.split(/(?<x>a)\k<x>/).join(',')==='q,a,'&&'qaa'.search(/(?<x>a)\k<x>/)===1",
     );
     assert_true(
-        r"let seen;'qAa'.replace(/(?<x>a)\k<x>/i,(whole,x,index,input,groups)=>{seen=[whole,x,index,input,groups.x];return 'z'});seen.join(',')==='Aa,A,1,qAa,A'",
+        r#"
+            let seen;
+            'qAa'.replace(/(?<x>a)\k<x>/i, (whole, x, index, input, groups) => {
+                seen = [whole, x, index, input, groups.x];
+                return 'z'
+            });
+            seen.join(',') === 'Aa,A,1,qAa,A'
+        "#,
     );
     assert_true(
-        r"let r=/(?<x>a)\k<x>/dg,a=[...'qaa aa'.matchAll(r)];a.length===2&&a[0].index===1&&a[1].index===4&&a[1].indices.groups.x===a[1].indices[1]&&r.lastIndex===0",
+        r#"
+            let r = /(?<x>a)\k<x>/dg,
+                a = [...'qaa aa'.matchAll(r)];
+            a.length === 2 && a[0].index === 1 && a[1].index === 4 && a[1].indices.groups.x === a[1]
+                .indices[1] && r.lastIndex === 0
+        "#,
     );
     assert_true(
         r"let r=/(?<x>)\k<x>/g,a=r.exec('q');a[0]===''&&r.lastIndex===0&&[...'q'.matchAll(r)].length===2",
     );
     assert_true(
-        r"let r=/(?<\u0078>a)\k<\u{78}>/dg;Object.defineProperty(r,'source',{get(){throw 7}});let copy=new RegExp(r);copy.source==='(?<\\u0078>a)\\k<\\u{78}>'&&copy.exec('aa').groups.x==='a'&&copy.lastIndex===2&&r.lastIndex===0",
+        r#"
+            let r = /(?<\u0078>a)\k<\u{78}>/dg;
+            Object.defineProperty(r, 'source', {
+                get() {
+                    throw 7
+                }
+            });
+            let copy = new RegExp(r);
+            copy.source === '(?<\\u0078>a)\\k<\\u{78}>' && copy.exec('aa').groups.x === 'a' && copy
+                .lastIndex === 2 && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/(?<x>a)\k<x>/gy;r.lastIndex=1;let a=r.exec('qaa');a.index===1&&r.lastIndex===3&&r.exec('qaa')===null&&r.lastIndex===0",
+        r#"
+            let r = /(?<x>a)\k<x>/gy;
+            r.lastIndex = 1;
+            let a = r.exec('qaa');
+            a.index === 1 && r.lastIndex === 3 && r.exec('qaa') === null && r.lastIndex === 0
+        "#,
     );
 }
 

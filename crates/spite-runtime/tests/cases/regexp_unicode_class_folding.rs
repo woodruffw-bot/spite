@@ -186,7 +186,11 @@ fn unicode_class_folding_metadata_clones_coercions_and_strict_writes() {
 #[test]
 fn unicode_class_folding_opted_work_and_unproved_syntax() {
     assert_true(
-        r"let m=/[\q{ab}]/iv.exec('ab');m.length===1 && m[0]==='ab' && m.index===0 && m.input==='ab' && m.groups===undefined && /[\q{ab}]/iv.exec('AB')[0]==='AB'",
+        r#"
+            let m = /[\q{ab}]/iv.exec('ab');
+            m.length === 1 && m[0] === 'ab' && m.index === 0 && m.input === 'ab' && m.groups ===
+                undefined && /[\q{ab}]/iv.exec('AB')[0] === 'AB'
+        "#,
     );
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -204,11 +208,18 @@ fn unicode_class_folding_opted_work_and_unproved_syntax() {
         Ok(Value::Boolean(true))
     );
     assert_true(
-        r#"let m=/[\p{Script_Extensions=Latin}]/iv.exec('a');JSON.stringify(m)==='["a"]'&&m.index===0&&m.input==='a'"#,
+        r#"
+            let m = /[\p{Script_Extensions=Latin}]/iv.exec('a');
+            JSON.stringify(m) === '["a"]' && m.index === 0 && m.input === 'a'
+        "#,
     );
     assert_true(r"/[a&&b]/iv.exec('a')===null");
     assert_true(
-        r"let m=/[[a]]/iv.exec('a');m!==null&&m.length===1&&m[0]==='a'&&m.index===0&&m.input==='a'&&/[[a]]/iv.test('A')&&!/[[a]]/iv.test('b')",
+        r#"
+            let m = /[[a]]/iv.exec('a');
+            m !== null && m.length === 1 && m[0] === 'a' && m.index === 0 && m.input === 'a' && /[[a]]/iv
+                .test('A') && !/[[a]]/iv.test('b')
+        "#,
     );
     for source in [
         r"/([a])+b/iu.exec('a')",

@@ -53,15 +53,23 @@ fn compositional_choices_select_first_successful_empty_arm_with_original_duplica
 fn compositional_impossible_arms_and_nested_assertions_preserve_source_flags_and_last_index() {
     assert_true(
         r#"
-        var patterns=[
-            '(?<outside>(?!(?<slot>[\\p{RGI_Emoji}]*))|(?<!(?<zero>[\\p{RGI_Emoji}]{0})))+',
-            '(?!(?<=(?<skip>(?![\\p{RGI_Emoji}]*))|(?<empty>[\\p{RGI_Emoji}]{0})))',
-            '(?im-s:(?=(?<outside>(?!(?<slot>[\\p{RGI_Emoji}]*))|(?<!(?<zero>[\\p{RGI_Emoji}]{0}))))){2,3}'
-        ],ok=true;
-        for(var pattern of patterns)for(var flags of ['dv','dgv','dgyv','dgimsv'])for(var input of ['','ab','A😀!','a\r\nb'])for(var start=0;start<=input.length+1;start++){
-            var r=new RegExp(pattern,flags);r.lastIndex=start;ok=ok&&r.exec(input)===null&&r.source===pattern&&r.hasIndices&&r.unicodeSets&&r.lastIndex===(r.global||r.sticky?0:start);
-        }ok
-    "#,
+            var patterns = [
+                    '(?<outside>(?!(?<slot>[\\p{RGI_Emoji}]*))|(?<!(?<zero>[\\p{RGI_Emoji}]{0})))+',
+                    '(?!(?<=(?<skip>(?![\\p{RGI_Emoji}]*))|(?<empty>[\\p{RGI_Emoji}]{0})))',
+                    '(?im-s:(?=(?<outside>(?!(?<slot>[\\p{RGI_Emoji}]*))|(?<!(?<zero>[\\p{RGI_Emoji}]{0}))))){2,3}'
+                ],
+                ok = true;
+            for (var pattern of patterns)
+                for (var flags of ['dv', 'dgv', 'dgyv', 'dgimsv'])
+                    for (var input of ['', 'ab', 'A😀!', 'a\r\nb'])
+                        for (var start = 0; start <= input.length + 1; start++) {
+                            var r = new RegExp(pattern, flags);
+                            r.lastIndex = start;
+                            ok = ok && r.exec(input) === null && r.source === pattern && r.hasIndices && r
+                                .unicodeSets && r.lastIndex === (r.global || r.sticky ? 0 : start);
+                        }
+            ok
+        "#,
     );
 }
 

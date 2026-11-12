@@ -130,19 +130,54 @@ fn root_nullable_capture_layouts_keep_zero_branch_point_and_undefined_slots() {
 #[test]
 fn root_nullable_ranges_keep_utf16_folding_names_and_original_source() {
     assert_true(
-        r"var r=/(?<before>)(?<part>[\q{😀}])(?<after>)|(?<empty>)/dvgy;r.lastIndex=1;var m=r.exec('😀😀!');m[0]==='😀'&&m.index===0&&m.groups.before===''&&m.groups.part==='😀'&&m.groups.after===''&&m.groups.empty===undefined&&m.indices.groups.before[0]===0&&m.indices.groups.after[0]===2&&r.lastIndex===2",
+        r#"
+            var r = /(?<before>)(?<part>[\q{😀}])(?<after>)|(?<empty>)/dvgy;
+            r.lastIndex = 1;
+            var m = r.exec('😀😀!');
+            m[0] === '😀' && m.index === 0 && m.groups.before === '' && m.groups.part === '😀' && m.groups
+                .after === '' && m.groups.empty === undefined && m.indices.groups.before[0] === 0 && m
+                .indices.groups.after[0] === 2 && r.lastIndex === 2
+        "#,
     );
     assert_true(
-        r"var r=/(?<empty>)|(?<before>)(?<part>[\q{😀}])(?<after>)/dvgy;r.lastIndex=1;var m=r.exec('😀😀!');m[0]===''&&m.index===0&&m.groups.empty===''&&m.groups.before===undefined&&m.groups.part===undefined&&m.groups.after===undefined&&m.indices.groups.empty[0]===0&&r.lastIndex===0",
+        r#"
+            var r = /(?<empty>)|(?<before>)(?<part>[\q{😀}])(?<after>)/dvgy;
+            r.lastIndex = 1;
+            var m = r.exec('😀😀!');
+            m[0] === '' && m.index === 0 && m.groups.empty === '' && m.groups.before === undefined && m
+                .groups.part === undefined && m.groups.after === undefined && m.indices.groups.empty[0] ===
+                0 && r.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"var r=/(?<\u{1D49C}>[\q{s|k}])|(?<empty>)/dvgi;var m=r.exec('ſK'),n=r.exec('ſK');m.groups.𝒜==='ſ'&&n.groups.𝒜==='K'&&n.groups.empty===undefined&&n.indices.groups.𝒜[0]===1&&r.source.indexOf('1D49C')!==-1",
+        r#"
+            var r = /(?<\u{1D49C}>[\q{s|k}])|(?<empty>)/dvgi;
+            var m = r.exec('ſK'),
+                n = r.exec('ſK');
+            m.groups.𝒜 === 'ſ' && n.groups.𝒜 === 'K' && n.groups.empty === undefined && n.indices.groups
+                .𝒜[0] === 1 && r.source.indexOf('1D49C') !== -1
+        "#,
     );
     assert_true(
-        r"var m=/[^\q{ab}&&a]|/dv.exec('\ud800');m[0]==='\ud800'&&m.length===1&&m.indices[0][1]===1&&m.groups===undefined",
+        r#"
+            var m = /[^\q{ab}&&a]|/dv.exec('\ud800');
+            m[0] === '\ud800' && m.length === 1 && m.indices[0][1] === 1 && m.groups === undefined
+        "#,
     );
     assert_true(
-        r"var r=/(?<empty>)|(?<part>[\q{a}])/vg;Object.defineProperty(r,'lastIndex',{writable:false});var caught=false;try{r.exec('a')}catch(e){caught=e instanceof TypeError}caught&&r.lastIndex===0",
+        r#"
+            var r = /(?<empty>)|(?<part>[\q{a}])/vg;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            var caught = false;
+            try {
+                r.exec('a')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 0
+        "#,
     );
 }
 

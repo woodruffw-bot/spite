@@ -120,16 +120,33 @@ fn whole_reference_body_retries_keep_original_named_ranges_and_aliases() {
 #[test]
 fn repeated_reference_body_consumers_and_empty_targets_keep_source() {
     assert_true(
-        r"let r=/(?<x>a)(?<last>\k<x>\k<x>)+/dg,a=[...'aaaaa aaa'.matchAll(r)];a.length===2&&a[0][0]==='aaaaa'&&a[1][0]==='aaa'&&a[0].groups.last==='aa'&&a[0].indices.groups.last===a[0].indices[2]&&a[0].indices[2][0]===3&&r.lastIndex===0",
+        r#"
+            let r = /(?<x>a)(?<last>\k<x>\k<x>)+/dg,
+                a = [...'aaaaa aaa'.matchAll(r)];
+            a.length === 2 && a[0][0] === 'aaaaa' && a[1][0] === 'aaa' && a[0].groups.last === 'aa' && a[0]
+                .indices.groups.last === a[0].indices[2] && a[0].indices[2][0] === 3 && r.lastIndex === 0
+        "#,
     );
     assert_true(
         r"'qaaaaa'.replace(/(?<x>a)(?<last>\k<x>\k<x>)+/,'<$<last>>')==='q<aa>'&&'qaaaaa'.search(/(a)(?:\1\1)+/)===1&&'qaaaaaZ'.split(/(a)(\1\1)+/).join(',')==='q,a,aa,Z'",
     );
     assert_true(
-        r"let r=/(?<x>a)(?<last>\k<x>\k<x>)+/dy;r.lastIndex=1;let copy=new RegExp(r),a=r.exec('qaaaaa');a[0]==='aaaaa'&&a.indices[2][0]===4&&r.lastIndex===6&&r.exec('qaaaaa')===null&&r.lastIndex===0&&copy.source===r.source&&copy.lastIndex===0",
+        r#"
+            let r = /(?<x>a)(?<last>\k<x>\k<x>)+/dy;
+            r.lastIndex = 1;
+            let copy = new RegExp(r),
+                a = r.exec('qaaaaa');
+            a[0] === 'aaaaa' && a.indices[2][0] === 4 && r.lastIndex === 6 && r.exec('qaaaaa') === null &&
+                r.lastIndex === 0 && copy.source === r.source && copy.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let a=[...'q'.matchAll(/(?<x>)(?<last>\k<x>\k<x>)*/dg)],b=/(?<self>\k<self>\k<self>)+/d.exec('q');a.length===2&&a[0].groups.last===undefined&&a[1].index===1&&b.groups.self===''&&b.indices.groups.self===b.indices[1]",
+        r#"
+            let a = [...'q'.matchAll(/(?<x>)(?<last>\k<x>\k<x>)*/dg)],
+                b = /(?<self>\k<self>\k<self>)+/d.exec('q');
+            a.length === 2 && a[0].groups.last === undefined && a[1].index === 1 && b.groups.self === '' &&
+                b.indices.groups.self === b.indices[1]
+        "#,
     );
 }
 

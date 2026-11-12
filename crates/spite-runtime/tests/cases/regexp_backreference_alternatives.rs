@@ -113,16 +113,32 @@ fn branch_order_and_failed_capture_resets_preserve_undefined_slots_and_indices_a
 #[test]
 fn consumers_and_stateful_exec_keep_source_order_and_empty_branch_advancement() {
     assert_true(
-        r"let r=/(?<x>a)\k<x>|(?<y>b)\k<y>/dgi,a=[...'aa bB aa'.matchAll(r)];a.length===3&&a[1].index===3&&a[1].groups.x===undefined&&a[1].groups.y==='b'&&a[1].indices.groups.y===a[1].indices[2]&&r.lastIndex===0",
+        r#"
+            let r = /(?<x>a)\k<x>|(?<y>b)\k<y>/dgi,
+                a = [...'aa bB aa'.matchAll(r)];
+            a.length === 3 && a[1].index === 3 && a[1].groups.x === undefined && a[1].groups.y === 'b' &&
+                a[1].indices.groups.y === a[1].indices[2] && r.lastIndex === 0
+        "#,
     );
     assert_true(
         r"'bb'.replace(/(?<x>a)\k<x>|(?<y>b)\k<y>/,'<$<x>,$<y>>')==='<,b>'&&'qbb'.search(/(a)\1|(b)\2/)===1&&'qbbz'.split(/(a)\1|(b)\2/).join(',')==='q,,b,z'",
     );
     assert_true(
-        r"let r=/(?<x>a)\k<x>|(?<y>b)\k<y>/dy;r.lastIndex=1;let a=r.exec('qbb');a.index===1&&a.groups.y==='b'&&r.lastIndex===3&&r.exec('qbb')===null&&r.lastIndex===0",
+        r#"
+            let r = /(?<x>a)\k<x>|(?<y>b)\k<y>/dy;
+            r.lastIndex = 1;
+            let a = r.exec('qbb');
+            a.index === 1 && a.groups.y === 'b' && r.lastIndex === 3 && r.exec('qbb') === null && r
+                .lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/(?<x>a)\k<x>|/dg,a=[...'qa'.matchAll(r)];a.length===3&&a[0].index===0&&a[2].index===2&&a[0].groups.x===undefined&&r.lastIndex===0",
+        r#"
+            let r = /(?<x>a)\k<x>|/dg,
+                a = [...'qa'.matchAll(r)];
+            a.length === 3 && a[0].index === 0 && a[2].index === 2 && a[0].groups.x === undefined && r
+                .lastIndex === 0
+        "#,
     );
 }
 

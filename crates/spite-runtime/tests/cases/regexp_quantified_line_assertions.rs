@@ -57,13 +57,24 @@ fn assertion_only_prefixes_filter_starts_without_losing_empty_captures() {
 #[test]
 fn consuming_line_continuations_keep_source_order_and_exact_crlf_positions() {
     assert_true(
-        r"let a=/(a)+($)(\n)(^)(b)/dm.exec('xaaa\nb');a.index===1&&a[0]==='aaa\nb'&&a[1]==='a'&&a[2]===''&&a[3]==='\n'&&a[4]===''&&a[5]==='b'&&a.indices[1][0]===3&&a.indices[4][0]===5",
+        r#"
+            let a = /(a)+($)(\n)(^)(b)/dm.exec('xaaa\nb');
+            a.index === 1 && a[0] === 'aaa\nb' && a[1] === 'a' && a[2] === '' && a[3] === '\n' && a[4] ===
+                '' && a[5] === 'b' && a.indices[1][0] === 3 && a.indices[4][0] === 5
+        "#,
     );
     assert_true(
-        r"let a=/(a)+($)(\r)($)(\n)/dm.exec('aaa\r\n');a[2]===''&&a[4]===''&&a.indices[2][0]===3&&a.indices[4][0]===4&&a.indices[5][1]===5",
+        r#"
+            let a = /(a)+($)(\r)($)(\n)/dm.exec('aaa\r\n');
+            a[2] === '' && a[4] === '' && a.indices[2][0] === 3 && a.indices[4][0] === 4 && a.indices[5][
+                1] === 5
+        "#,
     );
     assert_true(
-        r"let a=/(a)+($)(\u2028)(^)(b)/dm.exec('aa\u2028b');a[3]==='\u2028'&&a[4]===''&&a[5]==='b'&&a.indices[5][0]===3",
+        r#"
+            let a = /(a)+($)(\u2028)(^)(b)/dm.exec('aa\u2028b');
+            a[3] === '\u2028' && a[4] === '' && a[5] === 'b' && a.indices[5][0] === 3
+        "#,
     );
 }
 

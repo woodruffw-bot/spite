@@ -9,13 +9,24 @@ use crate::common::assert_true;
 fn single_character_q_classes_keep_original_source_names_and_independent_capture_ranges() {
     assert_true(
         r#"
-        var ok=true;
-        for(var state of ['','g','gy'])for(var atom of ['[\\q{a|😀}]','[[\\q{a|😀}]--[b]]','[[\\q{a|😀}]&&[a😀]]','[x\\q{a|😀}]']){
-            var source='(?<outside>(?=(?<run>'+atom+')))',r=new RegExp(source,'d'+state+'v'),m=r.exec('😀a');
-            ok=ok&&m.index===0&&m[0]===''&&m.groups.outside===''&&m.groups.run==='😀'&&m.indices.groups.outside[0]===0&&m.indices.groups.outside[1]===0&&m.indices.groups.run[0]===0&&m.indices.groups.run[1]===2&&r.lastIndex===0&&r.source===source;
-            var copy=new RegExp(r);ok=ok&&copy.source===source&&copy.flags===r.flags&&copy.exec('a').groups.run==='a';
-        }ok
-    "#,
+            var ok = true;
+            for (var state of ['', 'g', 'gy'])
+                for (var atom of ['[\\q{a|😀}]', '[[\\q{a|😀}]--[b]]', '[[\\q{a|😀}]&&[a😀]]',
+                        '[x\\q{a|😀}]'
+                    ]) {
+                    var source = '(?<outside>(?=(?<run>' + atom + ')))',
+                        r = new RegExp(source, 'd' + state + 'v'),
+                        m = r.exec('😀a');
+                    ok = ok && m.index === 0 && m[0] === '' && m.groups.outside === '' && m.groups.run ===
+                        '😀' && m.indices.groups.outside[0] === 0 && m.indices.groups.outside[1] === 0 && m
+                        .indices.groups.run[0] === 0 && m.indices.groups.run[1] === 2 && r.lastIndex ===
+                        0 && r.source === source;
+                    var copy = new RegExp(r);
+                    ok = ok && copy.source === source && copy.flags === r.flags && copy.exec('a').groups
+                        .run === 'a';
+                }
+            ok
+        "#,
     );
 }
 
@@ -80,13 +91,29 @@ fn single_character_q_lookahead_string_consumers_copies_and_collection_keep_orig
 fn word_q_classes_keep_original_polarity_source_and_named_capture_ranges() {
     assert_true(
         r#"
-        var ok=true;
-        for(var state of ['','g','gy'])for(var row of [['\\b[\\q{a|b}]\\b','ab a!',3,'a'],['\\b[\\q{a|b}]\\B','ab!',0,'a'],['\\B[\\q{a|😀}]\\B','😀😀',0,'😀']]){
-            var source='(?<outside>(?=(?<run>'+row[0]+')))',r=new RegExp(source,'d'+state+'v');r.lastIndex=row[2];var m=r.exec(row[1]);
-            ok=ok&&m.index===row[2]&&m[0]===''&&m.groups.outside===''&&m.groups.run===row[3]&&m.indices.groups.outside[0]===row[2]&&m.indices.groups.outside[1]===row[2]&&m.indices.groups.run[0]===row[2]&&m.indices.groups.run[1]===row[2]+row[3].length&&r.lastIndex===row[2]&&r.source===source;
-            var copy=new RegExp(r);copy.lastIndex=row[2];ok=ok&&copy.source===source&&copy.flags===r.flags&&copy.exec(row[1]).groups.run===row[3];
-        }ok
-    "#,
+            var ok = true;
+            for (var state of ['', 'g', 'gy'])
+                for (var row of [
+                        ['\\b[\\q{a|b}]\\b', 'ab a!', 3, 'a'],
+                        ['\\b[\\q{a|b}]\\B', 'ab!', 0, 'a'],
+                        ['\\B[\\q{a|😀}]\\B', '😀😀', 0, '😀']
+                    ]) {
+                    var source = '(?<outside>(?=(?<run>' + row[0] + ')))',
+                        r = new RegExp(source, 'd' + state + 'v');
+                    r.lastIndex = row[2];
+                    var m = r.exec(row[1]);
+                    ok = ok && m.index === row[2] && m[0] === '' && m.groups.outside === '' && m.groups
+                        .run === row[3] && m.indices.groups.outside[0] === row[2] && m.indices.groups
+                        .outside[1] === row[2] && m.indices.groups.run[0] === row[2] && m.indices.groups
+                        .run[1] === row[2] + row[3].length && r.lastIndex === row[2] && r.source ===
+                        source;
+                    var copy = new RegExp(r);
+                    copy.lastIndex = row[2];
+                    ok = ok && copy.source === source && copy.flags === r.flags && copy.exec(row[1]).groups
+                        .run === row[3];
+                }
+            ok
+        "#,
     );
 }
 
@@ -465,13 +492,31 @@ fn word_lookahead_search_uses_complete_unicode_candidates_and_initial_pair_rewin
 fn bare_atoms_capture_one_character_and_preserve_original_source_and_names() {
     assert_true(
         r#"
-        var ok=true;
-        for(var mode of ['u','v'])for(var state of ['','g','gy'])for(var row of [['a','a'],['[a-z]','a'],['\\d','2'],['.','😀'],['\\u{1F600}','😀'],['\\uD83D\\uDE00','😀'],['\\uD800','\ud800']]){
-            var source='(?<outside>(?=(?<run>'+row[0]+')))',r=new RegExp(source,'d'+state+mode),m=r.exec(row[1]);
-            ok=ok&&m!==null&&m.index===0&&m[0]===''&&m.groups.outside===''&&m.groups.run===row[1]&&m.indices.groups.outside[0]===0&&m.indices.groups.outside[1]===0&&m.indices.groups.run[0]===0&&m.indices.groups.run[1]===row[1].length&&r.source===source&&r.lastIndex===0;
-            var copy=new RegExp(r);ok=ok&&copy.source===source&&copy.flags===r.flags&&copy.exec(row[1]).groups.run===row[1];
-        }ok
-    "#,
+            var ok = true;
+            for (var mode of ['u', 'v'])
+                for (var state of ['', 'g', 'gy'])
+                    for (var row of [
+                            ['a', 'a'],
+                            ['[a-z]', 'a'],
+                            ['\\d', '2'],
+                            ['.', '😀'],
+                            ['\\u{1F600}', '😀'],
+                            ['\\uD83D\\uDE00', '😀'],
+                            ['\\uD800', '\ud800']
+                        ]) {
+                        var source = '(?<outside>(?=(?<run>' + row[0] + ')))',
+                            r = new RegExp(source, 'd' + state + mode),
+                            m = r.exec(row[1]);
+                        ok = ok && m !== null && m.index === 0 && m[0] === '' && m.groups.outside === '' &&
+                            m.groups.run === row[1] && m.indices.groups.outside[0] === 0 && m.indices
+                            .groups.outside[1] === 0 && m.indices.groups.run[0] === 0 && m.indices.groups
+                            .run[1] === row[1].length && r.source === source && r.lastIndex === 0;
+                        var copy = new RegExp(r);
+                        ok = ok && copy.source === source && copy.flags === r.flags && copy.exec(row[1])
+                            .groups.run === row[1];
+                    }
+            ok
+        "#,
     );
 }
 
@@ -522,12 +567,26 @@ fn bare_atom_string_consumers_progress_over_complete_input_characters() {
 fn bare_word_atoms_keep_polarity_source_and_independent_named_ranges() {
     assert_true(
         r#"
-        var ok=true;
-        for(var mode of ['u','v'])for(var state of ['','g','gy'])for(var row of [['\\ba\\B','aaa'],['\\Ba\\B','aaaa'],['\\b[a-z]\\b','!a!']]){
-            var source='(?<outside>(?=(?<run>'+row[0]+')))',r=new RegExp(source,'d'+state+mode);r.lastIndex=row[0]==='\\ba\\B'?0:1;var m=r.exec(row[1]),point=row[0]==='\\ba\\B'?0:1;
-            ok=ok&&m.index===point&&m[0]===''&&m.groups.outside===''&&m.groups.run==='a'&&m.indices.groups.outside[0]===point&&m.indices.groups.outside[1]===point&&m.indices.groups.run[0]===point&&m.indices.groups.run[1]===point+1&&r.source===source&&r.lastIndex===point;
-        }ok
-    "#,
+            var ok = true;
+            for (var mode of ['u', 'v'])
+                for (var state of ['', 'g', 'gy'])
+                    for (var row of [
+                            ['\\ba\\B', 'aaa'],
+                            ['\\Ba\\B', 'aaaa'],
+                            ['\\b[a-z]\\b', '!a!']
+                        ]) {
+                        var source = '(?<outside>(?=(?<run>' + row[0] + ')))',
+                            r = new RegExp(source, 'd' + state + mode);
+                        r.lastIndex = row[0] === '\\ba\\B' ? 0 : 1;
+                        var m = r.exec(row[1]),
+                            point = row[0] === '\\ba\\B' ? 0 : 1;
+                        ok = ok && m.index === point && m[0] === '' && m.groups.outside === '' && m.groups
+                            .run === 'a' && m.indices.groups.outside[0] === point && m.indices.groups
+                            .outside[1] === point && m.indices.groups.run[0] === point && m.indices.groups
+                            .run[1] === point + 1 && r.source === source && r.lastIndex === point;
+                    }
+            ok
+        "#,
     );
 }
 
@@ -607,13 +666,31 @@ fn bare_word_atom_dot_search_excludes_interior_surrogates_and_rewinds_initial_pa
 fn scalar_v_sets_keep_original_source_and_named_independent_capture_ranges() {
     assert_true(
         r#"
-        var ok=true;
-        for(var state of ['','g','gy'])for(var row of [['[[a-z]--[aeiou]]','!ab',2,'b'],['[[a-z]&&[ab]]','!ab',1,'a'],['[[a][b]]','!ab',1,'a'],['[[😀a]--[a]]','!😀a',1,'😀'],['[^[a-z]]','😀abc',0,'😀']]){
-            var source='(?<outside>(?=(?<run>'+row[0]+')))',r=new RegExp(source,'d'+state+'v');r.lastIndex=row[2];var m=r.exec(row[1]);
-            ok=ok&&m.index===row[2]&&m[0]===''&&m.groups.outside===''&&m.groups.run===row[3]&&m.indices.groups.outside[0]===row[2]&&m.indices.groups.outside[1]===row[2]&&m.indices.groups.run[0]===row[2]&&m.indices.groups.run[1]===row[2]+row[3].length&&r.lastIndex===row[2]&&r.source===source;
-            var copy=new RegExp(r);copy.lastIndex=row[2];ok=ok&&copy.source===source&&copy.flags===r.flags&&copy.exec(row[1]).groups.run===row[3];
-        }ok
-    "#,
+            var ok = true;
+            for (var state of ['', 'g', 'gy'])
+                for (var row of [
+                        ['[[a-z]--[aeiou]]', '!ab', 2, 'b'],
+                        ['[[a-z]&&[ab]]', '!ab', 1, 'a'],
+                        ['[[a][b]]', '!ab', 1, 'a'],
+                        ['[[😀a]--[a]]', '!😀a', 1, '😀'],
+                        ['[^[a-z]]', '😀abc', 0, '😀']
+                    ]) {
+                    var source = '(?<outside>(?=(?<run>' + row[0] + ')))',
+                        r = new RegExp(source, 'd' + state + 'v');
+                    r.lastIndex = row[2];
+                    var m = r.exec(row[1]);
+                    ok = ok && m.index === row[2] && m[0] === '' && m.groups.outside === '' && m.groups
+                        .run === row[3] && m.indices.groups.outside[0] === row[2] && m.indices.groups
+                        .outside[1] === row[2] && m.indices.groups.run[0] === row[2] && m.indices.groups
+                        .run[1] === row[2] + row[3].length && r.lastIndex === row[2] && r.source ===
+                        source;
+                    var copy = new RegExp(r);
+                    copy.lastIndex = row[2];
+                    ok = ok && copy.source === source && copy.flags === r.flags && copy.exec(row[1]).groups
+                        .run === row[3];
+                }
+            ok
+        "#,
     );
 }
 
@@ -675,13 +752,28 @@ fn scalar_v_set_string_consumers_copies_and_collection_keep_original_operand_ext
 fn word_scalar_v_sets_keep_original_polarity_source_and_named_independent_ranges() {
     assert_true(
         r#"
-        var ok=true;
-        for(var state of ['','g','gy'])for(var row of [['\\b[[a-z]--[aeiou]]\\b','ab b!',3,'b'],['\\B[[a-z]--[aeiou]]\\b','ab!',1,'b'],['\\b[[a-z]--[aeiou]]\\B','bb!',0,'b']]){
-            var source='(?<outside>(?=(?<run>'+row[0]+')))',r=new RegExp(source,'d'+state+'v');r.lastIndex=row[2];var m=r.exec(row[1]);
-            ok=ok&&m.index===row[2]&&m[0]===''&&m.groups.outside===''&&m.groups.run===row[3]&&m.indices.groups.outside[0]===row[2]&&m.indices.groups.outside[1]===row[2]&&m.indices.groups.run[0]===row[2]&&m.indices.groups.run[1]===row[2]+1&&r.lastIndex===row[2]&&r.source===source;
-            var copy=new RegExp(r);copy.lastIndex=row[2];ok=ok&&copy.source===source&&copy.flags===r.flags&&copy.exec(row[1]).groups.run===row[3];
-        }ok
-    "#,
+            var ok = true;
+            for (var state of ['', 'g', 'gy'])
+                for (var row of [
+                        ['\\b[[a-z]--[aeiou]]\\b', 'ab b!', 3, 'b'],
+                        ['\\B[[a-z]--[aeiou]]\\b', 'ab!', 1, 'b'],
+                        ['\\b[[a-z]--[aeiou]]\\B', 'bb!', 0, 'b']
+                    ]) {
+                    var source = '(?<outside>(?=(?<run>' + row[0] + ')))',
+                        r = new RegExp(source, 'd' + state + 'v');
+                    r.lastIndex = row[2];
+                    var m = r.exec(row[1]);
+                    ok = ok && m.index === row[2] && m[0] === '' && m.groups.outside === '' && m.groups
+                        .run === row[3] && m.indices.groups.outside[0] === row[2] && m.indices.groups
+                        .outside[1] === row[2] && m.indices.groups.run[0] === row[2] && m.indices.groups
+                        .run[1] === row[2] + 1 && r.lastIndex === row[2] && r.source === source;
+                    var copy = new RegExp(r);
+                    copy.lastIndex = row[2];
+                    ok = ok && copy.source === source && copy.flags === r.flags && copy.exec(row[1]).groups
+                        .run === row[3];
+                }
+            ok
+        "#,
     );
 }
 
@@ -744,13 +836,30 @@ fn word_scalar_v_set_search_preserves_complete_candidates_and_initial_pair_rewin
 fn character_result_classes_keep_original_source_and_named_independent_capture_ranges() {
     assert_true(
         r#"
-        var ok=true;
-        for(var state of ['','g','gy'])for(var row of [['[\\q{a|ab|}&&\\p{Any}]','!a',1,'a'],['[[\\q{ab}&&a]b]','!b',1,'b'],['[^\\q{ab}&&a]','😀',0,'😀'],['[[\\q{😀x|😀}&&\\p{Any}]a]','!😀a',1,'😀']]){
-            var source='(?<outside>(?=(?<run>'+row[0]+')))',r=new RegExp(source,'d'+state+'v');r.lastIndex=row[2];var m=r.exec(row[1]);
-            ok=ok&&m.index===row[2]&&m[0]===''&&m.groups.outside===''&&m.groups.run===row[3]&&m.indices.groups.outside[0]===row[2]&&m.indices.groups.outside[1]===row[2]&&m.indices.groups.run[0]===row[2]&&m.indices.groups.run[1]===row[2]+row[3].length&&r.lastIndex===row[2]&&r.source===source;
-            var copy=new RegExp(r);copy.lastIndex=row[2];ok=ok&&copy.source===source&&copy.flags===r.flags&&copy.exec(row[1]).groups.run===row[3];
-        }ok
-    "#,
+            var ok = true;
+            for (var state of ['', 'g', 'gy'])
+                for (var row of [
+                        ['[\\q{a|ab|}&&\\p{Any}]', '!a', 1, 'a'],
+                        ['[[\\q{ab}&&a]b]', '!b', 1, 'b'],
+                        ['[^\\q{ab}&&a]', '😀', 0, '😀'],
+                        ['[[\\q{😀x|😀}&&\\p{Any}]a]', '!😀a', 1, '😀']
+                    ]) {
+                    var source = '(?<outside>(?=(?<run>' + row[0] + ')))',
+                        r = new RegExp(source, 'd' + state + 'v');
+                    r.lastIndex = row[2];
+                    var m = r.exec(row[1]);
+                    ok = ok && m.index === row[2] && m[0] === '' && m.groups.outside === '' && m.groups
+                        .run === row[3] && m.indices.groups.outside[0] === row[2] && m.indices.groups
+                        .outside[1] === row[2] && m.indices.groups.run[0] === row[2] && m.indices.groups
+                        .run[1] === row[2] + row[3].length && r.lastIndex === row[2] && r.source ===
+                        source;
+                    var copy = new RegExp(r);
+                    copy.lastIndex = row[2];
+                    ok = ok && copy.source === source && copy.flags === r.flags && copy.exec(row[1]).groups
+                        .run === row[3];
+                }
+            ok
+        "#,
     );
 }
 
@@ -809,13 +918,28 @@ fn character_result_class_consumers_copies_and_collection_keep_original_extents(
 fn word_character_result_classes_keep_original_polarity_source_and_named_independent_ranges() {
     assert_true(
         r#"
-        var ok=true;
-        for(var state of ['','g','gy'])for(var row of [['\\b[\\q{b|c|bc|}&&\\p{Any}]\\b','ab b!',3,'b'],['\\B[\\q{b|c|bc|}&&\\p{Any}]\\b','ab!',1,'b'],['\\b[\\q{b|c|bc|}&&\\p{Any}]\\B','bb!',0,'b']]){
-            var source='(?<outside>(?=(?<run>'+row[0]+')))',r=new RegExp(source,'d'+state+'v');r.lastIndex=row[2];var m=r.exec(row[1]);
-            ok=ok&&m.index===row[2]&&m[0]===''&&m.groups.outside===''&&m.groups.run===row[3]&&m.indices.groups.outside[0]===row[2]&&m.indices.groups.outside[1]===row[2]&&m.indices.groups.run[0]===row[2]&&m.indices.groups.run[1]===row[2]+1&&r.lastIndex===row[2]&&r.source===source;
-            var copy=new RegExp(r);copy.lastIndex=row[2];ok=ok&&copy.source===source&&copy.flags===r.flags&&copy.exec(row[1]).groups.run===row[3];
-        }ok
-    "#,
+            var ok = true;
+            for (var state of ['', 'g', 'gy'])
+                for (var row of [
+                        ['\\b[\\q{b|c|bc|}&&\\p{Any}]\\b', 'ab b!', 3, 'b'],
+                        ['\\B[\\q{b|c|bc|}&&\\p{Any}]\\b', 'ab!', 1, 'b'],
+                        ['\\b[\\q{b|c|bc|}&&\\p{Any}]\\B', 'bb!', 0, 'b']
+                    ]) {
+                    var source = '(?<outside>(?=(?<run>' + row[0] + ')))',
+                        r = new RegExp(source, 'd' + state + 'v');
+                    r.lastIndex = row[2];
+                    var m = r.exec(row[1]);
+                    ok = ok && m.index === row[2] && m[0] === '' && m.groups.outside === '' && m.groups
+                        .run === row[3] && m.indices.groups.outside[0] === row[2] && m.indices.groups
+                        .outside[1] === row[2] && m.indices.groups.run[0] === row[2] && m.indices.groups
+                        .run[1] === row[2] + 1 && r.lastIndex === row[2] && r.source === source;
+                    var copy = new RegExp(r);
+                    copy.lastIndex = row[2];
+                    ok = ok && copy.source === source && copy.flags === r.flags && copy.exec(row[1]).groups
+                        .run === row[3];
+                }
+            ok
+        "#,
     );
 }
 

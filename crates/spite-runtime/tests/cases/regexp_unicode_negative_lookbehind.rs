@@ -282,13 +282,26 @@ fn negative_word_predecessor_search_retains_complete_characters_and_initial_pair
 fn negative_q_class_predecessors_keep_original_source_and_named_undefined_slots() {
     assert_true(
         r#"
-        var ok=true;
-        for(var state of ['','g','gy'])for(var atom of ['[\\q{a|b}]','[[\\q{a|b}]--[x]]','[[\\q{a|b}]&&[ab]]','[x\\q{a|b}]']){
-            var source='(?<outside>(?<!(?<run>'+atom+')))',r=new RegExp(source,'d'+state+'v');r.lastIndex=1;var m=r.exec('!'),point=state===''?0:1;
-            ok=ok&&m.index===point&&m[0]===''&&m.groups.outside===''&&m.groups.run===undefined&&m.indices.groups.outside[0]===point&&m.indices.groups.outside[1]===point&&m.indices.groups.run===undefined&&Object.hasOwn(m.groups,'run')&&Object.hasOwn(m.indices.groups,'run')&&r.lastIndex===1&&r.source===source;
-            var copy=new RegExp(r);ok=ok&&copy.source===source&&copy.flags===r.flags&&copy.exec('!').groups.run===undefined;
-        }ok
-    "#,
+            var ok = true;
+            for (var state of ['', 'g', 'gy'])
+                for (var atom of ['[\\q{a|b}]', '[[\\q{a|b}]--[x]]', '[[\\q{a|b}]&&[ab]]',
+                    '[x\\q{a|b}]']) {
+                    var source = '(?<outside>(?<!(?<run>' + atom + ')))',
+                        r = new RegExp(source, 'd' + state + 'v');
+                    r.lastIndex = 1;
+                    var m = r.exec('!'),
+                        point = state === '' ? 0 : 1;
+                    ok = ok && m.index === point && m[0] === '' && m.groups.outside === '' && m.groups
+                        .run === undefined && m.indices.groups.outside[0] === point && m.indices.groups
+                        .outside[1] === point && m.indices.groups.run === undefined && Object.hasOwn(m
+                            .groups, 'run') && Object.hasOwn(m.indices.groups, 'run') && r.lastIndex ===
+                        1 && r.source === source;
+                    var copy = new RegExp(r);
+                    ok = ok && copy.source === source && copy.flags === r.flags && copy.exec('!').groups
+                        .run === undefined;
+                }
+            ok
+        "#,
     );
 }
 
@@ -363,13 +376,30 @@ fn negative_q_class_predecessor_string_consumers_copies_and_collection_keep_unde
 fn negative_word_q_class_predecessors_keep_original_polarity_source_and_undefined_slots() {
     assert_true(
         r#"
-        var ok=true;
-        for(var state of ['','g','gy'])for(var row of [['\\b[\\q{a|b}]\\b','aa'],['\\b[\\q{a|b}]\\B','a!'],['\\B[\\q{a|b}]\\B','a!'],['\\B[\\q{a|b}]\\b','aa']]){
-            var source='(?<outside>(?<!(?<run>'+row[0]+')))',r=new RegExp(source,'d'+state+'v');r.lastIndex=1;var m=r.exec(row[1]),point=state===''?0:1;
-            ok=ok&&m.index===point&&m[0]===''&&m.groups.outside===''&&m.groups.run===undefined&&m.indices.groups.outside[0]===point&&m.indices.groups.outside[1]===point&&m.indices.groups.run===undefined&&Object.hasOwn(m.groups,'run')&&Object.hasOwn(m.indices.groups,'run')&&r.lastIndex===1&&r.source===source;
-            var copy=new RegExp(r);ok=ok&&copy.source===source&&copy.flags===r.flags&&copy.exec('').groups.run===undefined;
-        }ok
-    "#,
+            var ok = true;
+            for (var state of ['', 'g', 'gy'])
+                for (var row of [
+                        ['\\b[\\q{a|b}]\\b', 'aa'],
+                        ['\\b[\\q{a|b}]\\B', 'a!'],
+                        ['\\B[\\q{a|b}]\\B', 'a!'],
+                        ['\\B[\\q{a|b}]\\b', 'aa']
+                    ]) {
+                    var source = '(?<outside>(?<!(?<run>' + row[0] + ')))',
+                        r = new RegExp(source, 'd' + state + 'v');
+                    r.lastIndex = 1;
+                    var m = r.exec(row[1]),
+                        point = state === '' ? 0 : 1;
+                    ok = ok && m.index === point && m[0] === '' && m.groups.outside === '' && m.groups
+                        .run === undefined && m.indices.groups.outside[0] === point && m.indices.groups
+                        .outside[1] === point && m.indices.groups.run === undefined && Object.hasOwn(m
+                            .groups, 'run') && Object.hasOwn(m.indices.groups, 'run') && r.lastIndex ===
+                        1 && r.source === source;
+                    var copy = new RegExp(r);
+                    ok = ok && copy.source === source && copy.flags === r.flags && copy.exec('').groups
+                        .run === undefined;
+                }
+            ok
+        "#,
     );
 }
 
@@ -457,13 +487,27 @@ fn negative_word_q_class_predecessor_search_keeps_complete_candidates_and_initia
 fn negative_scalar_v_set_predecessors_keep_original_source_and_named_undefined_slots() {
     assert_true(
         r#"
-        var ok=true;
-        for(var state of ['','g','gy'])for(var atom of ['[[a-z]&&[ab]]','[[[a-z]&&[ab]]--[x]]','[[[a-z]&&[ab]]&&[ab]]','[[a][b]]']){
-            var source='(?<outside>(?<!(?<run>'+atom+')))',r=new RegExp(source,'d'+state+'v');r.lastIndex=1;var m=r.exec('!'),point=state===''?0:1;
-            ok=ok&&m.index===point&&m[0]===''&&m.groups.outside===''&&m.groups.run===undefined&&m.indices.groups.outside[0]===point&&m.indices.groups.outside[1]===point&&m.indices.groups.run===undefined&&Object.hasOwn(m.groups,'run')&&Object.hasOwn(m.indices.groups,'run')&&r.lastIndex===1&&r.source===source;
-            var copy=new RegExp(r);ok=ok&&copy.source===source&&copy.flags===r.flags&&copy.exec('!').groups.run===undefined;
-        }ok
-    "#,
+            var ok = true;
+            for (var state of ['', 'g', 'gy'])
+                for (var atom of ['[[a-z]&&[ab]]', '[[[a-z]&&[ab]]--[x]]', '[[[a-z]&&[ab]]&&[ab]]',
+                        '[[a][b]]'
+                    ]) {
+                    var source = '(?<outside>(?<!(?<run>' + atom + ')))',
+                        r = new RegExp(source, 'd' + state + 'v');
+                    r.lastIndex = 1;
+                    var m = r.exec('!'),
+                        point = state === '' ? 0 : 1;
+                    ok = ok && m.index === point && m[0] === '' && m.groups.outside === '' && m.groups
+                        .run === undefined && m.indices.groups.outside[0] === point && m.indices.groups
+                        .outside[1] === point && m.indices.groups.run === undefined && Object.hasOwn(m
+                            .groups, 'run') && Object.hasOwn(m.indices.groups, 'run') && r.lastIndex ===
+                        1 && r.source === source;
+                    var copy = new RegExp(r);
+                    ok = ok && copy.source === source && copy.flags === r.flags && copy.exec('!').groups
+                        .run === undefined;
+                }
+            ok
+        "#,
     );
 }
 
@@ -538,13 +582,30 @@ fn negative_scalar_v_set_predecessor_string_consumers_copies_and_collection_keep
 fn negative_word_scalar_v_set_predecessors_keep_original_polarity_source_and_undefined_slots() {
     assert_true(
         r#"
-        var ok=true;
-        for(var state of ['','g','gy'])for(var row of [['\\b[[a-z]&&[ab]]\\b','aa'],['\\b[[a-z]&&[ab]]\\B','a!'],['\\B[[a-z]&&[ab]]\\B','a!'],['\\B[[a-z]&&[ab]]\\b','aa']]){
-            var source='(?<outside>(?<!(?<run>'+row[0]+')))',r=new RegExp(source,'d'+state+'v');r.lastIndex=1;var m=r.exec(row[1]),point=state===''?0:1;
-            ok=ok&&m.index===point&&m[0]===''&&m.groups.outside===''&&m.groups.run===undefined&&m.indices.groups.outside[0]===point&&m.indices.groups.outside[1]===point&&m.indices.groups.run===undefined&&Object.hasOwn(m.groups,'run')&&Object.hasOwn(m.indices.groups,'run')&&r.lastIndex===1&&r.source===source;
-            var copy=new RegExp(r);ok=ok&&copy.source===source&&copy.flags===r.flags&&copy.exec('').groups.run===undefined;
-        }ok
-    "#,
+            var ok = true;
+            for (var state of ['', 'g', 'gy'])
+                for (var row of [
+                        ['\\b[[a-z]&&[ab]]\\b', 'aa'],
+                        ['\\b[[a-z]&&[ab]]\\B', 'a!'],
+                        ['\\B[[a-z]&&[ab]]\\B', 'a!'],
+                        ['\\B[[a-z]&&[ab]]\\b', 'aa']
+                    ]) {
+                    var source = '(?<outside>(?<!(?<run>' + row[0] + ')))',
+                        r = new RegExp(source, 'd' + state + 'v');
+                    r.lastIndex = 1;
+                    var m = r.exec(row[1]),
+                        point = state === '' ? 0 : 1;
+                    ok = ok && m.index === point && m[0] === '' && m.groups.outside === '' && m.groups
+                        .run === undefined && m.indices.groups.outside[0] === point && m.indices.groups
+                        .outside[1] === point && m.indices.groups.run === undefined && Object.hasOwn(m
+                            .groups, 'run') && Object.hasOwn(m.indices.groups, 'run') && r.lastIndex ===
+                        1 && r.source === source;
+                    var copy = new RegExp(r);
+                    ok = ok && copy.source === source && copy.flags === r.flags && copy.exec('').groups
+                        .run === undefined;
+                }
+            ok
+        "#,
     );
 }
 
@@ -634,13 +695,27 @@ fn negative_word_scalar_v_set_predecessor_search_keeps_complete_candidates_and_i
 fn negative_character_result_predecessors_keep_original_source_and_named_undefined_slots() {
     assert_true(
         r#"
-        var ok=true;
-        for(var state of ['','g','gy'])for(var atom of ['[\\q{a|b|ab|}&&\\p{Any}]','[[\\q{a|b|ab|}&&\\p{Any}]--[x]]','[[\\q{a|b|ab|}&&\\p{Any}]&&[ab]]','[[\\q{ab}&&a]ab]']){
-            var source='(?<outside>(?<!(?<run>'+atom+')))',r=new RegExp(source,'d'+state+'v');r.lastIndex=1;var m=r.exec('!'),point=state===''?0:1;
-            ok=ok&&m.index===point&&m[0]===''&&m.groups.outside===''&&m.groups.run===undefined&&m.indices.groups.outside[0]===point&&m.indices.groups.outside[1]===point&&m.indices.groups.run===undefined&&Object.hasOwn(m.groups,'run')&&Object.hasOwn(m.indices.groups,'run')&&r.lastIndex===1&&r.source===source;
-            var copy=new RegExp(r);ok=ok&&copy.source===source&&copy.flags===r.flags&&copy.exec('!').groups.run===undefined;
-        }ok
-    "#,
+            var ok = true;
+            for (var state of ['', 'g', 'gy'])
+                for (var atom of ['[\\q{a|b|ab|}&&\\p{Any}]', '[[\\q{a|b|ab|}&&\\p{Any}]--[x]]',
+                        '[[\\q{a|b|ab|}&&\\p{Any}]&&[ab]]', '[[\\q{ab}&&a]ab]'
+                    ]) {
+                    var source = '(?<outside>(?<!(?<run>' + atom + ')))',
+                        r = new RegExp(source, 'd' + state + 'v');
+                    r.lastIndex = 1;
+                    var m = r.exec('!'),
+                        point = state === '' ? 0 : 1;
+                    ok = ok && m.index === point && m[0] === '' && m.groups.outside === '' && m.groups
+                        .run === undefined && m.indices.groups.outside[0] === point && m.indices.groups
+                        .outside[1] === point && m.indices.groups.run === undefined && Object.hasOwn(m
+                            .groups, 'run') && Object.hasOwn(m.indices.groups, 'run') && r.lastIndex ===
+                        1 && r.source === source;
+                    var copy = new RegExp(r);
+                    ok = ok && copy.source === source && copy.flags === r.flags && copy.exec('!').groups
+                        .run === undefined;
+                }
+            ok
+        "#,
     );
 }
 
@@ -716,13 +791,30 @@ fn negative_character_result_predecessor_string_consumers_copies_and_collection_
 fn negative_word_character_result_predecessors_keep_original_polarity_source_and_undefined_slots() {
     assert_true(
         r#"
-        var ok=true;
-        for(var state of ['','g','gy'])for(var row of [['\\b[\\q{a|b|ab|}&&\\p{Any}]\\b','aa'],['\\b[\\q{a|b|ab|}&&\\p{Any}]\\B','a!'],['\\B[\\q{a|b|ab|}&&\\p{Any}]\\B','a!'],['\\B[\\q{a|b|ab|}&&\\p{Any}]\\b','aa']]){
-            var source='(?<outside>(?<!(?<run>'+row[0]+')))',r=new RegExp(source,'d'+state+'v');r.lastIndex=1;var m=r.exec(row[1]),point=state===''?0:1;
-            ok=ok&&m.index===point&&m[0]===''&&m.groups.outside===''&&m.groups.run===undefined&&m.indices.groups.outside[0]===point&&m.indices.groups.outside[1]===point&&m.indices.groups.run===undefined&&Object.hasOwn(m.groups,'run')&&Object.hasOwn(m.indices.groups,'run')&&r.lastIndex===1&&r.source===source;
-            var copy=new RegExp(r);ok=ok&&copy.source===source&&copy.flags===r.flags&&copy.exec('').groups.run===undefined;
-        }ok
-    "#,
+            var ok = true;
+            for (var state of ['', 'g', 'gy'])
+                for (var row of [
+                        ['\\b[\\q{a|b|ab|}&&\\p{Any}]\\b', 'aa'],
+                        ['\\b[\\q{a|b|ab|}&&\\p{Any}]\\B', 'a!'],
+                        ['\\B[\\q{a|b|ab|}&&\\p{Any}]\\B', 'a!'],
+                        ['\\B[\\q{a|b|ab|}&&\\p{Any}]\\b', 'aa']
+                    ]) {
+                    var source = '(?<outside>(?<!(?<run>' + row[0] + ')))',
+                        r = new RegExp(source, 'd' + state + 'v');
+                    r.lastIndex = 1;
+                    var m = r.exec(row[1]),
+                        point = state === '' ? 0 : 1;
+                    ok = ok && m.index === point && m[0] === '' && m.groups.outside === '' && m.groups
+                        .run === undefined && m.indices.groups.outside[0] === point && m.indices.groups
+                        .outside[1] === point && m.indices.groups.run === undefined && Object.hasOwn(m
+                            .groups, 'run') && Object.hasOwn(m.indices.groups, 'run') && r.lastIndex ===
+                        1 && r.source === source;
+                    var copy = new RegExp(r);
+                    ok = ok && copy.source === source && copy.flags === r.flags && copy.exec('').groups
+                        .run === undefined;
+                }
+            ok
+        "#,
     );
 }
 

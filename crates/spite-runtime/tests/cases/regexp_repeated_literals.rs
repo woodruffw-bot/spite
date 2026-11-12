@@ -76,13 +76,25 @@ fn nested_groups_capture_last_iteration_and_zero_iterations_leave_undefined() {
 #[test]
 fn source_order_alternatives_keep_whole_branch_and_iteration_capture_offsets() {
     assert_true(
-        r"let a=/((ab){2,3})|(ab)+?/d.exec('abababab');a[0]==='ababab'&&a[1]==='ababab'&&a[2]==='ab'&&a[3]===undefined&&a.indices[1][0]===0&&a.indices[2][0]===4&&a.indices[3]===undefined",
+        r#"
+            let a = /((ab){2,3})|(ab)+?/d.exec('abababab');
+            a[0] === 'ababab' && a[1] === 'ababab' && a[2] === 'ab' && a[3] === undefined && a.indices[1][
+                0] === 0 && a.indices[2][0] === 4 && a.indices[3] === undefined
+        "#,
     );
     assert_true(
-        r"let a=/((ab){2,3})|(ab)+?/d.exec('xab');a.index===1&&a[1]===undefined&&a[2]===undefined&&a[3]==='ab'&&a.indices[3][0]===1",
+        r#"
+            let a = /((ab){2,3})|(ab)+?/d.exec('xab');
+            a.index === 1 && a[1] === undefined && a[2] === undefined && a[3] === 'ab' && a.indices[3][
+                0] === 1
+        "#,
     );
     assert_true(
-        r"let a=/(ab)*|(ab)+/d.exec('xabab'),b=/(ab)+|x/d.exec('xabab');a[0]===''&&a[1]===undefined&&a[2]===undefined&&b[0]==='x'&&b[1]===undefined",
+        r#"
+            let a = /(ab)*|(ab)+/d.exec('xabab'),
+                b = /(ab)+|x/d.exec('xabab');
+            a[0] === '' && a[1] === undefined && a[2] === undefined && b[0] === 'x' && b[1] === undefined
+        "#,
     );
 }
 

@@ -5,23 +5,41 @@ use crate::common::assert_true;
 #[test]
 fn source_order_selects_capture_participation_even_for_identical_matches() {
     assert_true(
-        "let m=/a|(a)/d.exec('a');m.length===2 && m[1]===undefined && Object.hasOwn(m,'1') && m.indices[1]===undefined && Object.hasOwn(m.indices,'1')",
+        r#"
+            let m = /a|(a)/d.exec('a');
+            m.length === 2 && m[1] === undefined && Object.hasOwn(m, '1') && m.indices[1] === undefined &&
+                Object.hasOwn(m.indices, '1')
+        "#,
     );
     assert_true(
         "let m=/(a)|a/d.exec('a');m.length===2 && m[1]==='a' && m.indices[1].join(',')==='0,1'",
     );
     assert_true(
-        "let m=/(a)|(ab)/.exec('ab');m[0]==='a' && m[1]==='a' && m[2]===undefined && /(ab)|(a)/.exec('ab')[1]==='ab'",
+        r#"
+            let m = /(a)|(ab)/.exec('ab');
+            m[0] === 'a' && m[1] === 'a' && m[2] === undefined && /(ab)|(a)/.exec('ab')[1] === 'ab'
+        "#,
     );
 }
 
 #[test]
 fn selected_groups_keep_global_source_order_and_relative_utf16_ranges() {
     assert_true(
-        "let m=/((a)())|c(d)/d.exec('xcd');m.length===5 && m[0]==='cd' && m.index===1 && m[1]===undefined && m[2]===undefined && m[3]===undefined && m[4]==='d' && m.indices.length===5 && m.indices[0].join(',')==='1,3' && m.indices[1]===undefined && m.indices[2]===undefined && m.indices[3]===undefined && m.indices[4].join(',')==='2,3'",
+        r#"
+            let m = /((a)())|c(d)/d.exec('xcd');
+            m.length === 5 && m[0] === 'cd' && m.index === 1 && m[1] === undefined && m[2] === undefined &&
+                m[3] === undefined && m[4] === 'd' && m.indices.length === 5 && m.indices[0].join(',') ===
+                '1,3' && m.indices[1] === undefined && m.indices[2] === undefined && m.indices[3] ===
+                undefined && m.indices[4].join(',') === '2,3'
+        "#,
     );
     assert_true(
-        "let m=/((a)())|c(d)/d.exec('xa');m[1]==='a' && m[2]==='a' && m[3]==='' && m[4]===undefined && m.indices[1].join(',')==='1,2' && m.indices[3].join(',')==='2,2' && m.indices[4]===undefined && m.groups===undefined && m.indices.groups===undefined",
+        r#"
+            let m = /((a)())|c(d)/d.exec('xa');
+            m[1] === 'a' && m[2] === 'a' && m[3] === '' && m[4] === undefined && m.indices[1].join(',') ===
+                '1,2' && m.indices[3].join(',') === '2,2' && m.indices[4] === undefined && m.groups ===
+                undefined && m.indices.groups === undefined
+        "#,
     );
 }
 

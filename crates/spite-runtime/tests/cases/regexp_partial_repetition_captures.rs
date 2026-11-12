@@ -7,13 +7,26 @@ use crate::common::assert_true;
 #[test]
 fn partial_enclosing_prefix_and_sequel_captures_keep_source_order() {
     assert_true(
-        r"let a=/((x)(ab)+)(c)/d.exec('xababc');a.length===5&&a[1]==='xabab'&&a[2]==='x'&&a[3]==='ab'&&a[4]==='c'&&a.indices[1][1]===5&&a.indices[3][0]===3&&a.indices[4][0]===5",
+        r#"
+            let a = /((x)(ab)+)(c)/d.exec('xababc');
+            a.length === 5 && a[1] === 'xabab' && a[2] === 'x' && a[3] === 'ab' && a[4] === 'c' && a
+                .indices[1][1] === 5 && a.indices[3][0] === 3 && a.indices[4][0] === 5
+        "#,
     );
     assert_true(
-        r"let a=/(x)((ab)+(c))/d.exec('xababc');a[1]==='x'&&a[2]==='ababc'&&a[3]==='ab'&&a[4]==='c'&&a.indices[2][0]===1&&a.indices[2][1]===6&&a.indices[3][0]===3",
+        r#"
+            let a = /(x)((ab)+(c))/d.exec('xababc');
+            a[1] === 'x' && a[2] === 'ababc' && a[3] === 'ab' && a[4] === 'c' && a.indices[2][0] === 1 && a
+                .indices[2][1] === 6 && a.indices[3][0] === 3
+        "#,
     );
     assert_true(
-        r"let a=/(())((ab)+)()c()/d.exec('ababc');a.length===7&&a[1]===''&&a[2]===''&&a[3]==='abab'&&a[4]==='ab'&&a[5]===''&&a[6]===''&&a.indices[1][0]===0&&a.indices[5][0]===4&&a.indices[6][0]===5",
+        r#"
+            let a = /(())((ab)+)()c()/d.exec('ababc');
+            a.length === 7 && a[1] === '' && a[2] === '' && a[3] === 'abab' && a[4] === 'ab' && a[5] ===
+                '' && a[6] === '' && a.indices[1][0] === 0 && a.indices[5][0] === 4 && a.indices[6][0] ===
+                5
+        "#,
     );
 }
 

@@ -7,13 +7,26 @@ use crate::common::assert_true;
 #[test]
 fn fixed_choices_preserve_source_ordered_capture_positions() {
     assert_true(
-        r"let a=/(x(a|b)y)(c|d)/d.exec('qxbyd');a.index===1&&a[0]==='xbyd'&&a[1]==='xby'&&a[2]==='b'&&a[3]==='d'&&a.indices[1][0]===1&&a.indices[1][1]===4&&a.indices[2][0]===2&&a.indices[3][0]===4",
+        r#"
+            let a = /(x(a|b)y)(c|d)/d.exec('qxbyd');
+            a.index === 1 && a[0] === 'xbyd' && a[1] === 'xby' && a[2] === 'b' && a[3] === 'd' && a
+                .indices[1][0] === 1 && a.indices[1][1] === 4 && a.indices[2][0] === 2 && a.indices[3][
+                0] === 4
+        "#,
     );
     assert_true(
-        r"let a=/(?:(a|b))()((?:c|d))/d.exec('bd');a.length===4&&a[1]==='b'&&a[2]===''&&a[3]==='d'&&a.indices[2][0]===1&&a.indices[2][1]===1&&a.indices[1]!==a.indices[3]",
+        r#"
+            let a = /(?:(a|b))()((?:c|d))/d.exec('bd');
+            a.length === 4 && a[1] === 'b' && a[2] === '' && a[3] === 'd' && a.indices[2][0] === 1 && a
+                .indices[2][1] === 1 && a.indices[1] !== a.indices[3]
+        "#,
     );
     assert_true(
-        r"let a=/((a|b))((c|d))/d.exec('ac');a[1]==='a'&&a[2]==='a'&&a[3]==='c'&&a[4]==='c'&&a.indices[1]!==a.indices[2]&&a.indices[1][0]===0&&a.indices[3][0]===1",
+        r#"
+            let a = /((a|b))((c|d))/d.exec('ac');
+            a[1] === 'a' && a[2] === 'a' && a[3] === 'c' && a[4] === 'c' && a.indices[1] !== a.indices[
+                2] && a.indices[1][0] === 0 && a.indices[3][0] === 1
+        "#,
     );
 }
 
@@ -106,13 +119,32 @@ fn greedy_lazy_bounds_and_assertions_keep_candidate_order() {
 #[test]
 fn alternatives_and_state_keep_branch_capture_offsets_and_original_source() {
     assert_true(
-        r"let a=/(x(a|b))|(x(c|d))/d.exec('xd'),b=/(x(a|b))|(x(c|d))/d.exec('xa');a[1]===undefined&&a[2]===undefined&&a[3]==='xd'&&a[4]==='d'&&a.indices[4][0]===1&&b[1]==='xa'&&b[2]==='a'&&b[3]===undefined&&b[4]===undefined",
+        r#"
+            let a = /(x(a|b))|(x(c|d))/d.exec('xd'),
+                b = /(x(a|b))|(x(c|d))/d.exec('xa');
+            a[1] === undefined && a[2] === undefined && a[3] === 'xd' && a[4] === 'd' && a.indices[4][
+                0] === 1 && b[1] === 'xa' && b[2] === 'a' && b[3] === undefined && b[4] === undefined
+        "#,
     );
     assert_true(
-        r"let r=/x(a|b)y/dg,copy=new RegExp(r),a=r.exec('xay xby'),b=r.exec('xay xby');a.indices[1][0]===1&&b.index===4&&b.indices[1][0]===5&&r.lastIndex===7&&copy.source==='x(a|b)y'&&copy.lastIndex===0&&r.exec('xay xby')===null&&r.lastIndex===0",
+        r#"
+            let r = /x(a|b)y/dg,
+                copy = new RegExp(r),
+                a = r.exec('xay xby'),
+                b = r.exec('xay xby');
+            a.indices[1][0] === 1 && b.index === 4 && b.indices[1][0] === 5 && r.lastIndex === 7 && copy
+                .source === 'x(a|b)y' && copy.lastIndex === 0 && r.exec('xay xby') === null && r
+                .lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/(x(a|b))+/dy;r.lastIndex=1;let a=r.exec('qxaxb');a.index===1&&a[1]==='xb'&&a[2]==='b'&&a.indices[2][0]===4&&r.lastIndex===5&&r.exec('qxaxb')===null&&r.lastIndex===0",
+        r#"
+            let r = /(x(a|b))+/dy;
+            r.lastIndex = 1;
+            let a = r.exec('qxaxb');
+            a.index === 1 && a[1] === 'xb' && a[2] === 'b' && a.indices[2][0] === 4 && r.lastIndex === 5 &&
+                r.exec('qxaxb') === null && r.lastIndex === 0
+        "#,
     );
 }
 

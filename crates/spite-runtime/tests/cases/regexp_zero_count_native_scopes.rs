@@ -195,7 +195,17 @@ fn explicit_zero_scope_work_aborts_before_last_index_and_handlers() {
 #[test]
 fn syntax_validation_and_unlowered_children_nonzero_choices_and_unicode_stay_separate() {
     assert_true(
-        r"let n=0;for(let p of ['(a|{0}','(?<x>)(?<x>){0}','(?:(a){0}){2,1}']){try{new RegExp(p)}catch(e){if(e instanceof SyntaxError)n++}}n===3",
+        r#"
+            let n = 0;
+            for (let p of ['(a|{0}', '(?<x>)(?<x>){0}', '(?:(a){0}){2,1}']) {
+                try {
+                    new RegExp(p)
+                } catch (e) {
+                    if (e instanceof SyntaxError) n++
+                }
+            }
+            n === 3
+        "#,
     );
     for source in [
         r"/(?<=(|a){1})b/.exec('b')",

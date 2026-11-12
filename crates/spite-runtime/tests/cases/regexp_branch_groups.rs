@@ -7,13 +7,26 @@ use crate::common::assert_true;
 #[test]
 fn wrapped_branches_preserve_earliest_starts_source_order_and_repetition_order() {
     assert_true(
-        "let a=/(a+b)|x/.exec('xaaab'),b=/x|(a+b)/.exec('aaabx');a[0]==='x'&&a[1]===undefined&&b[0]==='aaab'&&b[1]==='aaab'",
+        r#"
+            let a = /(a+b)|x/.exec('xaaab'),
+                b = /x|(a+b)/.exec('aaabx');
+            a[0] === 'x' && a[1] === undefined && b[0] === 'aaab' && b[1] === 'aaab'
+        "#,
     );
     assert_true(
-        "let a=/(a+?aa)|(a+aa)/.exec('aaaa'),b=/(a+aa)|(a+?aa)/.exec('aaaa');a[0]==='aaa'&&a[1]==='aaa'&&a[2]===undefined&&b[0]==='aaaa'&&b[1]==='aaaa'&&b[2]===undefined",
+        r#"
+            let a = /(a+?aa)|(a+aa)/.exec('aaaa'),
+                b = /(a+aa)|(a+?aa)/.exec('aaaa');
+            a[0] === 'aaa' && a[1] === 'aaa' && a[2] === undefined && b[0] === 'aaaa' && b[1] === 'aaaa' &&
+                b[2] === undefined
+        "#,
     );
     assert_true(
-        "let m=/((a)+b)|(b+)/d.exec('aaab');m.length===4&&m[1]==='aaab'&&m[2]==='a'&&m[3]===undefined&&m.indices[1][1]===4&&m.indices[2][0]===2",
+        r#"
+            let m = /((a)+b)|(b+)/d.exec('aaab');
+            m.length === 4 && m[1] === 'aaab' && m[2] === 'a' && m[3] === undefined && m.indices[1][1] ===
+                4 && m.indices[2][0] === 2
+        "#,
     );
 }
 

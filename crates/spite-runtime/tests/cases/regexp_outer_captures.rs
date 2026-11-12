@@ -34,10 +34,20 @@ fn whole_match_captures_precede_inner_repetition_and_suffix_captures() {
 #[test]
 fn choices_preserve_source_order_and_own_undefined_inner_slots() {
     assert_true(
-        "let m=/((x)|(a)+(b)|(y))/d.exec('aaab');m.length===6&&m[1]==='aaab'&&m[2]===undefined&&m[3]==='a'&&m[4]==='b'&&m[5]===undefined&&Object.hasOwn(m,'2')&&Object.hasOwn(m.indices,'5')&&m.indices[4][1]===4",
+        r#"
+            let m = /((x)|(a)+(b)|(y))/d.exec('aaab');
+            m.length === 6 && m[1] === 'aaab' && m[2] === undefined && m[3] === 'a' && m[4] === 'b' && m[
+                5] === undefined && Object.hasOwn(m, '2') && Object.hasOwn(m.indices, '5') && m.indices[4][
+                    1
+                ] === 4
+        "#,
     );
     assert_true(
-        "let a=/(a+|b)/.exec('baa'),b=/((a+?)|(aa))/.exec('aaa');a[1]==='b'&&b[1]==='a'&&b[2]==='a'&&b[3]===undefined",
+        r#"
+            let a = /(a+|b)/.exec('baa'),
+                b = /((a+?)|(aa))/.exec('aaa');
+            a[1] === 'b' && b[1] === 'a' && b[2] === 'a' && b[3] === undefined
+        "#,
     );
     assert_true(
         "let m=/((a)|(b))/.exec('b');m[1]==='b'&&m[2]===undefined&&m[3]==='b'&&m.groups===undefined",
@@ -114,7 +124,10 @@ fn original_source_flags_pinned_case_and_utf16_captures_are_preserved() {
         "let r=new RegExp('(?:(a+b))','gi'),c=new RegExp(r);r.source==='(?:(a+b))'&&r.toString()==='/(?:(a+b))/gi'&&c.source===r.source&&c!==r&&RegExp(r)===r&&c.exec('AAAB')[1]==='AAAB'",
     );
     assert_true(
-        r"let m=/((.)+\uD800)/sd.exec('a\n\uD800');m[1]==='a\n\uD800'&&m[2]==='\n'&&m.indices[1][1]===3&&m.indices[2][0]===1",
+        r#"
+            let m = /((.)+\uD800)/sd.exec('a\n\uD800');
+            m[1] === 'a\n\uD800' && m[2] === '\n' && m.indices[1][1] === 3 && m.indices[2][0] === 1
+        "#,
     );
     assert_true(
         "let m=/((µ)+(x))/i.exec('ΜΜX');m[1]==='ΜΜX'&&m[2]==='Μ'&&m[3]==='X'&&/(ſ+x)/i.exec('ssx')===null",

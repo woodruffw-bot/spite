@@ -7,10 +7,22 @@ use crate::common::assert_true;
 #[test]
 fn groups_preserve_original_source_and_produce_no_captures() {
     assert_true(
-        "let r=/(?:a(?:b)c)/dig,m=r.exec('xABCy');r.source==='(?:a(?:b)c)' && r.flags==='dgi' && m.length===1 && m[0]==='ABC' && m.index===1 && m.groups===undefined && m.indices.length===1 && m.indices[0][0]===1 && m.indices[0][1]===4 && m.indices.groups===undefined && r.lastIndex===4",
+        r#"
+            let r = /(?:a(?:b)c)/dig,
+                m = r.exec('xABCy');
+            r.source === '(?:a(?:b)c)' && r.flags === 'dgi' && m.length === 1 && m[0] === 'ABC' && m
+                .index === 1 && m.groups === undefined && m.indices.length === 1 && m.indices[0][0] ===
+                1 && m.indices[0][1] === 4 && m.indices.groups === undefined && r.lastIndex === 4
+        "#,
     );
     assert_true(
-        "let r=new RegExp('(?:a)(?:b)','y');r.lastIndex=1;let m=r.exec('xab');m[0]==='ab' && m.index===1 && r.lastIndex===3 && r.exec('xab')===null && r.lastIndex===0",
+        r#"
+            let r = new RegExp('(?:a)(?:b)', 'y');
+            r.lastIndex = 1;
+            let m = r.exec('xab');
+            m[0] === 'ab' && m.index === 1 && r.lastIndex === 3 && r.exec('xab') === null && r
+                .lastIndex === 0
+        "#,
     );
     assert_true(
         r"let r=/(?:\uD83D)(?:\uDCA9)/d,m=r.exec('x💩');m.index===1 && m.indices[0][1]===3 && m[0]==='💩'",

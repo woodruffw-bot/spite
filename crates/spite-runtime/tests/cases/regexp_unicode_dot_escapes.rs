@@ -252,10 +252,17 @@ fn unicode_dot_escapes_opted_work_preserves_state_and_pending_completion() {
 #[test]
 fn unicode_dot_escapes_unproved_syntax_matches_reference_results() {
     assert_true(
-        r"let m=/[\q{ab}]/v.exec('ab');m.length===1 && m[0]==='ab' && m.index===0 && m.input==='ab' && m.groups===undefined && /[\q{ab}]/v.exec('AB')===null",
+        r#"
+            let m = /[\q{ab}]/v.exec('ab');
+            m.length === 1 && m[0] === 'ab' && m.index === 0 && m.input === 'ab' && m.groups ===
+                undefined && /[\q{ab}]/v.exec('AB') === null
+        "#,
     );
     assert_true(
-        r#"let m=/\p{Script_Extensions=Latin}/u.exec('a');JSON.stringify(m)==='["a"]'&&m.index===0&&m.input==='a'"#,
+        r#"
+            let m = /\p{Script_Extensions=Latin}/u.exec('a');
+            JSON.stringify(m) === '["a"]' && m.index === 0 && m.input === 'a'
+        "#,
     );
     for source in [
         r"/(.)+b/iu.exec('a')",

@@ -189,7 +189,10 @@ fn unicode_character_folding_opted_work_and_unproved_syntax() {
         Ok(Value::Boolean(true))
     );
     assert_true(
-        r#"let m=/\p{Script_Extensions=Latin}/iv.exec('a');JSON.stringify(m)==='["a"]'&&m.index===0&&m.input==='a'"#,
+        r#"
+            let m = /\p{Script_Extensions=Latin}/iv.exec('a');
+            JSON.stringify(m) === '["a"]' && m.index === 0 && m.input === 'a'
+        "#,
     );
     for source in [
         r"/([a])+b/iu.exec('a')",

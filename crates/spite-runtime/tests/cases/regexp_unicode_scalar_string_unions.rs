@@ -35,13 +35,25 @@ fn ranges_and_character_escapes_share_longest_priority_and_assertion_fallback() 
 #[test]
 fn property_folding_complements_and_whitespace_retain_their_distinct_sets() {
     assert_true(
-        r"let r=/[\P{ASCII}\q{ab}]/iv;r.exec('ab')[0]==='ab' && r.exec('😀')[0]==='😀' && r.exec('K')===null && r.exec('ſ')===null && r.exec('A')===null && /[\P{ASCII}\q{ab}]/v.exec('K')[0]==='K' && /[\q{ab}\p{ASCII}]/iv.exec('K')[0]==='K'",
+        r#"
+            let r = /[\P{ASCII}\q{ab}]/iv;
+            r.exec('ab')[0] === 'ab' && r.exec('😀')[0] === '😀' && r.exec('K') === null && r.exec('ſ') ===
+                null && r.exec('A') === null && /[\P{ASCII}\q{ab}]/v.exec('K')[0] === 'K' &&
+                /[\q{ab}\p{ASCII}]/iv.exec('K')[0] === 'K'
+        "#,
     );
     assert_true(
-        r"/[\p{Script=Greek}\q{ab}]/iv.exec('µ')[0]==='µ' && !/[\p{Script=Greek}\q{ab}]/v.test('µ') && /[\p{Script=Greek}\q{ab}]/v.exec('μ')[0]==='μ' && /[\p{Script=Greek}\q{ab}]/iv.exec('AB')[0]==='AB'",
+        r#"
+            /[\p{Script=Greek}\q{ab}]/iv.exec('µ')[0] === 'µ' && !/[\p{Script=Greek}\q{ab}]/v.test('µ') &&
+                /[\p{Script=Greek}\q{ab}]/v.exec('μ')[0] === 'μ' && /[\p{Script=Greek}\q{ab}]/iv.exec(
+                'AB')[0] === 'AB'
+        "#,
     );
     assert_true(
-        r"/[\q{ab}\s]/v.exec('\uFEFF')[0]==='\uFEFF' && !/[\q{ab}\p{White_Space}]/v.test('\uFEFF') && !/[\q{ab}\s]/v.test('\u0085') && /[\q{ab}\p{White_Space}]/v.exec('\u0085')[0]==='\u0085'",
+        r#"
+            /[\q{ab}\s]/v.exec('\uFEFF')[0] === '\uFEFF' && !/[\q{ab}\p{White_Space}]/v.test('\uFEFF') && !
+                /[\q{ab}\s]/v.test('\u0085') && /[\q{ab}\p{White_Space}]/v.exec('\u0085')[0] === '\u0085'
+        "#,
     );
 }
 

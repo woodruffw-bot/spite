@@ -202,7 +202,11 @@ fn unicode_atom_captures_clones_coercions_and_strict_writes() {
 #[test]
 fn unicode_atom_captures_opted_work_and_unproved_syntax() {
     assert_true(
-        r"let m=/(?:[\q{a\)b}])/iv.exec('a)b');m.length===1 && m[0]==='a)b' && m.index===0 && m.input==='a)b' && m.groups===undefined",
+        r#"
+            let m = /(?:[\q{a\)b}])/iv.exec('a)b');
+            m.length === 1 && m[0] === 'a)b' && m.index === 0 && m.input === 'a)b' && m.groups ===
+                undefined
+        "#,
     );
     let mut realm = Realm::new(Limits {
         max_steps: Some(30000),
@@ -220,13 +224,23 @@ fn unicode_atom_captures_opted_work_and_unproved_syntax() {
         Ok(Value::Boolean(true))
     );
     assert_true(
-        r#"let m=/([\p{Script_Extensions=Latin}])/iu.exec('a');JSON.stringify(m)==='["a","a"]'&&m.index===0&&m.input==='a'"#,
+        r#"
+            let m = /([\p{Script_Extensions=Latin}])/iu.exec('a');
+            JSON.stringify(m) === '["a","a"]' && m.index === 0 && m.input === 'a'
+        "#,
     );
     assert_true(
-        r"let m=/(?:[[a]])/iv.exec('a');m!==null&&m.length===1&&m[0]==='a'&&m.index===0&&m.input==='a'&&m.groups===undefined",
+        r#"
+            let m = /(?:[[a]])/iv.exec('a');
+            m !== null && m.length === 1 && m[0] === 'a' && m.index === 0 && m.input === 'a' && m
+                .groups === undefined
+        "#,
     );
     assert_true(
-        r#"let m=/(?=([a]))/iv.exec('a');JSON.stringify(m)==='["","a"]'&&m.index===0&&m.input==='a'&&m.indices===undefined"#,
+        r#"
+            let m = /(?=([a]))/iv.exec('a');
+            JSON.stringify(m) === '["","a"]' && m.index === 0 && m.input === 'a' && m.indices === undefined
+        "#,
     );
     for source in [
         r"/([a])+b/iu.exec('a')",

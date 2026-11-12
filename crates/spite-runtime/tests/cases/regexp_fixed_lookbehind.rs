@@ -88,19 +88,38 @@ fn fixed_lookbehind_result_snapshot() {
 #[test]
 fn fixed_lookbehind_keeps_outside_ranges_named_aliases_and_source_order_retries() {
     assert_true(
-        r"let a=/(?<=a)(?<x>b)\k<x>/d.exec('abb');a[0]==='bb'&&a.index===1&&a.groups.x==='b'&&a.indices.groups.x===a.indices[1]&&a.indices[1][0]===1&&a.indices[1][1]===2",
+        r#"
+            let a = /(?<=a)(?<x>b)\k<x>/d.exec('abb');
+            a[0] === 'bb' && a.index === 1 && a.groups.x === 'b' && a.indices.groups.x === a.indices[1] &&
+                a.indices[1][0] === 1 && a.indices[1][1] === 2
+        "#,
     );
     assert_true(
-        r"let a=/(?:(?<x>a)(?<!a)|(?<x>a)(?<=a))\k<x>/d.exec('aa');a[0]==='aa'&&a[1]===undefined&&a[2]==='a'&&a.groups.x==='a'&&a.indices[1]===undefined&&a.indices.groups.x===a.indices[2]",
+        r#"
+            let a = /(?:(?<x>a)(?<!a)|(?<x>a)(?<=a))\k<x>/d.exec('aa');
+            a[0] === 'aa' && a[1] === undefined && a[2] === 'a' && a.groups.x === 'a' && a.indices[1] ===
+                undefined && a.indices.groups.x === a.indices[2]
+        "#,
     );
     assert_true(
-        r"let a=/((?<=a)){2}b\1/d.exec('ab'),b=/((?<=a))*b\1/d.exec('ab');a[1]===''&&a.indices[1][0]===1&&a.indices[1][1]===1&&b[1]===undefined&&b.indices[1]===undefined",
+        r#"
+            let a = /((?<=a)){2}b\1/d.exec('ab'),
+                b = /((?<=a))*b\1/d.exec('ab');
+            a[1] === '' && a.indices[1][0] === 1 && a.indices[1][1] === 1 && b[1] === undefined && b
+                .indices[1] === undefined
+        "#,
     );
     assert_true(
-        r"/(?<=a\b)b/.exec('ab')===null&&/(?<=a\B)b/.exec('ab').index===1&&/(?<=^a)b/m.exec('q\nab').index===3&&/(?<=a$)/m.exec('a\nb').index===1",
+        r#"
+            /(?<=a\b)b/.exec('ab') === null && /(?<=a\B)b/.exec('ab').index === 1 && /(?<=^a)b/m.exec(
+                'q\nab').index === 3 && /(?<=a$)/m.exec('a\nb').index === 1
+        "#,
     );
     assert_true(
-        r"let a=/(?=(?<x>a(?<=a)b))\k<x>/d.exec('ab');a[0]==='ab'&&a.groups.x==='ab'&&a.indices.groups.x[1]===2",
+        r#"
+            let a = /(?=(?<x>a(?<=a)b))\k<x>/d.exec('ab');
+            a[0] === 'ab' && a.groups.x === 'ab' && a.indices.groups.x[1] === 2
+        "#,
     );
 }
 

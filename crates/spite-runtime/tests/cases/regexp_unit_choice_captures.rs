@@ -82,13 +82,34 @@ fn greedy_lazy_bounded_and_asserted_endpoints_preserve_iteration_ranges() {
 #[test]
 fn alternatives_global_sticky_and_copies_preserve_wrapper_layouts_and_source() {
     assert_true(
-        r"let a=/((a|b))+a|((a|b))+b/d.exec('aba'),b=/((a|b))+a|((a|b))+b/d.exec('ab');a[1]==='b'&&a[2]==='b'&&a[3]===undefined&&a[4]===undefined&&b[1]===undefined&&b[2]===undefined&&b[3]==='a'&&b[4]==='a'&&b.indices[3][0]===0&&b.indices[4][0]===0",
+        r#"
+            let a = /((a|b))+a|((a|b))+b/d.exec('aba'),
+                b = /((a|b))+a|((a|b))+b/d.exec('ab');
+            a[1] === 'b' && a[2] === 'b' && a[3] === undefined && a[4] === undefined && b[1] ===
+                undefined && b[2] === undefined && b[3] === 'a' && b[4] === 'a' && b.indices[3][0] === 0 &&
+                b.indices[4][0] === 0
+        "#,
     );
     assert_true(
-        r"let r=/(x)(((a|b))+)(y)/dg,copy=new RegExp(r),a=r.exec('xay xababy'),b=r.exec('xay xababy');a.indices[3][0]===1&&a.indices[4][0]===1&&b.index===4&&b.indices[2][0]===5&&b.indices[3][0]===8&&b.indices[4][0]===8&&r.lastIndex===10&&copy.source===r.source&&copy.lastIndex===0",
+        r#"
+            let r = /(x)(((a|b))+)(y)/dg,
+                copy = new RegExp(r),
+                a = r.exec('xay xababy'),
+                b = r.exec('xay xababy');
+            a.indices[3][0] === 1 && a.indices[4][0] === 1 && b.index === 4 && b.indices[2][0] === 5 && b
+                .indices[3][0] === 8 && b.indices[4][0] === 8 && r.lastIndex === 10 && copy.source === r
+                .source && copy.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let r=/x((a|b))+(y)/dy;r.lastIndex=1;let a=r.exec('yxababy');a.index===1&&a[1]==='b'&&a[2]==='b'&&a.indices[1][0]===5&&a.indices[2][0]===5&&a.indices[3][0]===6&&r.lastIndex===7&&r.exec('yxababy')===null&&r.lastIndex===0",
+        r#"
+            let r = /x((a|b))+(y)/dy;
+            r.lastIndex = 1;
+            let a = r.exec('yxababy');
+            a.index === 1 && a[1] === 'b' && a[2] === 'b' && a.indices[1][0] === 5 && a.indices[2][0] ===
+                5 && a.indices[3][0] === 6 && r.lastIndex === 7 && r.exec('yxababy') === null && r
+                .lastIndex === 0
+        "#,
     );
 }
 

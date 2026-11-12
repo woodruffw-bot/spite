@@ -329,10 +329,46 @@ fn invalid_flags_and_patterns_are_catchable_syntax_errors_after_ordered_coercion
         ));
     }
     assert_true(
-        "let t='';try{RegExp({toString(){t+='p';return '(';}},{toString(){t+='f';return 'z';}});}catch(e){t+=e instanceof SyntaxError;}t==='pftrue'",
+        r#"
+            let t = '';
+            try {
+                RegExp({
+                    toString() {
+                        t += 'p';
+                        return '(';
+                    }
+                }, {
+                    toString() {
+                        t += 'f';
+                        return 'z';
+                    }
+                });
+            } catch (e) {
+                t += e instanceof SyntaxError;
+            }
+            t === 'pftrue'
+        "#,
     );
     assert_true(
-        "let t='';try{RegExp({toString(){t+='p';throw 7;}},{toString(){t+='f';throw 8;}});}catch(e){t+=e;}t==='p7'",
+        r#"
+            let t = '';
+            try {
+                RegExp({
+                    toString() {
+                        t += 'p';
+                        throw 7;
+                    }
+                }, {
+                    toString() {
+                        t += 'f';
+                        throw 8;
+                    }
+                });
+            } catch (e) {
+                t += e;
+            }
+            t === 'p7'
+        "#,
     );
     assert_true(
         "let ok=false;try{RegExp(Symbol(),{toString(){throw 7;}});}catch(e){ok=e instanceof TypeError;}ok",

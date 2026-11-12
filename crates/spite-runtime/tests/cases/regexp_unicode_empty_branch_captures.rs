@@ -44,13 +44,37 @@ fn empty_capture_utf16_ranges_names_source_and_sticky_state_remain_original() {
         ));
     }
     assert_true(
-        r"let source='(?<each>[\\q{s|k}]|(?<\\u{1D49C}>)){3}',r=new RegExp(source,'div'),m=r.exec('ſK');r.source===source && m[0]==='ſK' && m.groups['𝒜']==='' && m.indices.groups['𝒜']===m.indices[2] && m.indices[2][0]===2",
+        r#"
+            let source = '(?<each>[\\q{s|k}]|(?<\\u{1D49C}>)){3}',
+                r = new RegExp(source, 'div'),
+                m = r.exec('ſK');
+            r.source === source && m[0] === 'ſK' && m.groups['𝒜'] === '' && m.indices.groups['𝒜'] === m
+                .indices[2] && m.indices[2][0] === 2
+        "#,
     );
     assert_true(
-        r"let m=/(?<each>(?<part>[\q{\uD800a|\uD800}&&\p{Any}])|(?<empty>)){3}/dv.exec('\uD800\uD800a');m[0].length===2 && m.groups.part===undefined && m.groups.empty==='' && m.indices.groups.empty[0]===2",
+        r#"
+            let m = /(?<each>(?<part>[\q{\uD800a|\uD800}&&\p{Any}])|(?<empty>)){3}/dv.exec(
+            '\uD800\uD800a');
+            m[0].length === 2 && m.groups.part === undefined && m.groups.empty === '' && m.indices.groups
+                .empty[0] === 2
+        "#,
     );
     assert_true(
-        r"let r=/(?:[\q{ab}&&a]|(?<empty>))+/dvy;r.lastIndex=1;Object.defineProperty(r,'lastIndex',{writable:false});let caught=false;try{r.exec('😀')}catch(e){caught=e instanceof TypeError}caught && r.lastIndex===1",
+        r#"
+            let r = /(?:[\q{ab}&&a]|(?<empty>))+/dvy;
+            r.lastIndex = 1;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            let caught = false;
+            try {
+                r.exec('😀')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            caught && r.lastIndex === 1
+        "#,
     );
 }
 

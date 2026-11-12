@@ -111,13 +111,32 @@ fn inner_prefix_and_outer_assertions_use_complete_multiline_and_word_neighbors()
 #[test]
 fn enclosing_alternatives_global_sticky_and_original_source_preserve_complete_ranges() {
     assert_true(
-        r"let a=/((x)(ab)+(c))|(ab)+/d.exec('xababc');a[1]==='xababc'&&a[2]==='x'&&a[3]==='ab'&&a[4]==='c'&&a[5]===undefined&&a.indices[3][0]===3&&a.indices[4][0]===5",
+        r#"
+            let a = /((x)(ab)+(c))|(ab)+/d.exec('xababc');
+            a[1] === 'xababc' && a[2] === 'x' && a[3] === 'ab' && a[4] === 'c' && a[5] === undefined && a
+                .indices[3][0] === 3 && a.indices[4][0] === 5
+        "#,
     );
     assert_true(
-        r"let r=/(x)(ab)+(c)/dg,a=r.exec('xabc xababc'),b=r.exec('xabc xababc');a.index===0&&a.indices[3][0]===3&&b.index===5&&b.indices[2][0]===8&&b.indices[3][0]===10&&r.lastIndex===11&&r.exec('xabc xababc')===null&&r.lastIndex===0",
+        r#"
+            let r = /(x)(ab)+(c)/dg,
+                a = r.exec('xabc xababc'),
+                b = r.exec('xabc xababc');
+            a.index === 0 && a.indices[3][0] === 3 && b.index === 5 && b.indices[2][0] === 8 && b.indices[
+                    3][0] === 10 && r.lastIndex === 11 && r.exec('xabc xababc') === null && r.lastIndex ===
+                0
+        "#,
     );
     assert_true(
-        r"let r=/x(ab)+(c)/dy,copy=new RegExp(r);r.lastIndex=1;let a=r.exec('yxababc'),ok=a.index===1&&a.indices[1][0]===4&&a.indices[2][0]===6&&r.lastIndex===7;ok&&r.exec('yxababc')===null&&r.lastIndex===0&&copy.lastIndex===0&&copy.source===r.source",
+        r#"
+            let r = /x(ab)+(c)/dy,
+                copy = new RegExp(r);
+            r.lastIndex = 1;
+            let a = r.exec('yxababc'),
+                ok = a.index === 1 && a.indices[1][0] === 4 && a.indices[2][0] === 6 && r.lastIndex === 7;
+            ok && r.exec('yxababc') === null && r.lastIndex === 0 && copy.lastIndex === 0 && copy
+                .source === r.source
+        "#,
     );
 }
 

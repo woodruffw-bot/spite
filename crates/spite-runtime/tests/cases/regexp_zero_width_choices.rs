@@ -86,28 +86,54 @@ fn pure_zero_width_choice_result_snapshot() {
 #[test]
 fn pure_zero_choices_keep_source_order_names_and_restore_partial_failed_arms() {
     assert_true(
-        r"/^(^|$)+$/.test('')&&/(^|$)+/.test('a')&&/(^|$)*/.test('')&&/($|^)+/.test('')&&/(\b|\B){2}/.test('')",
+        r#"
+            /^(^|$)+$/.test('') && /(^|$)+/.test('a') && /(^|$)*/.test('') && /($|^)+/.test('') &&
+                /(\b|\B){2}/.test('')
+        "#,
     );
     assert_true(
-        r"let a=/(?:(?<x>)|(?<x>)){2}a\k<x>/d.exec('qa');a.index===1&&a[1]===''&&a[2]===undefined&&a.groups.x===''&&a.indices.groups.x===a.indices[1]&&a.indices[1][0]===1",
+        r#"
+            let a = /(?:(?<x>)|(?<x>)){2}a\k<x>/d.exec('qa');
+            a.index === 1 && a[1] === '' && a[2] === undefined && a.groups.x === '' && a.indices.groups
+                .x === a.indices[1] && a.indices[1][0] === 1
+        "#,
     );
     assert_true(
-        r"let a=/(?:(?<x>)|(?<x>))*a\k<x>/d.exec('qa');a[1]===undefined&&a[2]===undefined&&a.groups.x===undefined&&a.indices.groups.x===undefined",
+        r#"
+            let a = /(?:(?<x>)|(?<x>))*a\k<x>/d.exec('qa');
+            a[1] === undefined && a[2] === undefined && a.groups.x === undefined && a.indices.groups.x ===
+                undefined
+        "#,
     );
     assert_true(
-        r"let a=/(?:(^)(\B)|(\b)){2}a/d.exec('a');a[1]===undefined&&a[2]===undefined&&a[3]===''&&a.indices[1]===undefined&&a.indices[3][0]===0",
+        r#"
+            let a = /(?:(^)(\B)|(\b)){2}a/d.exec('a');
+            a[1] === undefined && a[2] === undefined && a[3] === '' && a.indices[1] === undefined && a
+                .indices[3][0] === 0
+        "#,
     );
     assert_true(
-        r"let a=/((^)|()){2}a/d.exec('qa'),b=/((^)|())?a/d.exec('qa');a[1]===''&&a[2]===undefined&&a[3]===''&&b[1]===undefined&&b[3]===undefined",
+        r#"
+            let a = /((^)|()){2}a/d.exec('qa'),
+                b = /((^)|())?a/d.exec('qa');
+            a[1] === '' && a[2] === undefined && a[3] === '' && b[1] === undefined && b[3] === undefined
+        "#,
     );
     assert_true(
         r"let a=/(?!(?:()|()){2}q)a/d.exec('a');a[1]===undefined&&a[2]===undefined&&a.indices[1]===undefined",
     );
     assert_true(
-        r"let a=/(?:(?:()|()){2}){3}a/d.exec('qa'),b=/(?:(?:()|())?){2}a/d.exec('qa');a[1]===''&&a[2]===undefined&&b[1]===undefined&&b[2]===undefined",
+        r#"
+            let a = /(?:(?:()|()){2}){3}a/d.exec('qa'),
+                b = /(?:(?:()|())?){2}a/d.exec('qa');
+            a[1] === '' && a[2] === undefined && b[1] === undefined && b[2] === undefined
+        "#,
     );
     assert_true(
-        r"let a=/(?<=(a))(?:()|()){2}b/d.exec('ab');a.index===1&&a[1]==='a'&&a.indices[1][0]===0&&a[2]===''&&a[3]===undefined",
+        r#"
+            let a = /(?<=(a))(?:()|()){2}b/d.exec('ab');
+            a.index === 1 && a[1] === 'a' && a.indices[1][0] === 0 && a[2] === '' && a[3] === undefined
+        "#,
     );
 }
 

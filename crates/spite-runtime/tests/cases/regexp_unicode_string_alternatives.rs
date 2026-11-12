@@ -8,10 +8,20 @@ use crate::common::assert_true;
 #[test]
 fn earliest_position_uses_longest_member_regardless_of_source_order() {
     assert_true(
-        r"let a=/[\q{a|ab|abc}]/dv.exec('xabc!'),b=/[\q{abc|ab|a}]/v.exec('ab!');a.index===1 && a[0]==='abc' && a.indices[0][0]===1 && a.indices[0][1]===4 && b[0]==='ab'",
+        r#"
+            let a = /[\q{a|ab|abc}]/dv.exec('xabc!'),
+                b = /[\q{abc|ab|a}]/v.exec('ab!');
+            a.index === 1 && a[0] === 'abc' && a.indices[0][0] === 1 && a.indices[0][1] === 4 && b[0] ===
+                'ab'
+        "#,
     );
     assert_true(
-        r"let a=/[\q{|a|ab|abc|ab|}]/v.exec('abc!'),b=/[\q{ab|a|}]/v.exec('xab');a[0]==='abc' && b.index===0 && b[0]==='' && !/[\q{ab|cd}]/v.test('ac') && /[\q{ab|cd}]/v.exec('acdab')[0]==='cd'",
+        r#"
+            let a = /[\q{|a|ab|abc|ab|}]/v.exec('abc!'),
+                b = /[\q{ab|a|}]/v.exec('xab');
+            a[0] === 'abc' && b.index === 0 && b[0] === '' && !/[\q{ab|cd}]/v.test('ac') && /[\q{ab|cd}]/v
+                .exec('acdab')[0] === 'cd'
+        "#,
     );
     assert_true(r"/[\q{a\|b|a}]/v.exec('xa|b')[0]==='a|b' && /[\q{\]\}|a}]/v.exec(']}')[0]===']}'");
 }

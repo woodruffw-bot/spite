@@ -9,17 +9,26 @@ use crate::common::assert_true;
 fn impossible_sequences_keep_original_source_flags_names_and_last_index_rules() {
     assert_true(
         r#"
-        var patterns=[
-            '(?!(?<x>[\\p{RGI_Emoji}]{0}))',
-            '[\\p{RGI_Emoji}]+(?<!(?<x>a{0}))(?<tail>b)',
-            '(?<prefix>a|ab)*(?!(?=(?<ahead>\\uD800{0}))(?<=(?<behind>\\uDC00{0})))(?<suffix>[\\p{RGI_Emoji}]+)',
-            '(?<before>\\p{RGI_Emoji})+(?!(?<zero>(?<erased>\\k<later>){0}))(?<later>c)'
-        ],ok=true;
-        for(var pattern of patterns)for(var flags of ['dv','dgv','dgyv','dgimsv'])for(var input of ['','ab','A😀!','a\r\nb'])for(var start=0;start<=input.length+1;start++){
-            var r=new RegExp(pattern,flags);r.lastIndex=start;var m=r.exec(input);
-            ok=ok&&m===null&&r.source===pattern&&r.hasIndices&&r.unicodeSets&&r.lastIndex===(r.global||r.sticky?0:start)&&r.test(input)===false;
-        }ok
-    "#,
+            var patterns = [
+                    '(?!(?<x>[\\p{RGI_Emoji}]{0}))',
+                    '[\\p{RGI_Emoji}]+(?<!(?<x>a{0}))(?<tail>b)',
+                    '(?<prefix>a|ab)*(?!(?=(?<ahead>\\uD800{0}))(?<=(?<behind>\\uDC00{0})))(?<suffix>[\\p{RGI_Emoji}]+)',
+                    '(?<before>\\p{RGI_Emoji})+(?!(?<zero>(?<erased>\\k<later>){0}))(?<later>c)'
+                ],
+                ok = true;
+            for (var pattern of patterns)
+                for (var flags of ['dv', 'dgv', 'dgyv', 'dgimsv'])
+                    for (var input of ['', 'ab', 'A😀!', 'a\r\nb'])
+                        for (var start = 0; start <= input.length + 1; start++) {
+                            var r = new RegExp(pattern, flags);
+                            r.lastIndex = start;
+                            var m = r.exec(input);
+                            ok = ok && m === null && r.source === pattern && r.hasIndices && r
+                                .unicodeSets && r.lastIndex === (r.global || r.sticky ? 0 : start) && r
+                                .test(input) === false;
+                        }
+            ok
+        "#,
     );
 }
 

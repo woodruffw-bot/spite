@@ -115,16 +115,31 @@ fn nested_failure_restores_prior_names_and_enclosing_capture_slots() {
 #[test]
 fn nested_consumers_and_empty_choices_keep_source_order_and_original_text() {
     assert_true(
-        r"let r=/(?:(?:(?<x>a)|(?<x>ab))|(?<x>b))\k<x>/dg,a=[...'abab bb'.matchAll(r)];a.length===2&&a[0].groups.x==='ab'&&a[1].groups.x==='b'&&a[0].indices.groups.x===a[0].indices[2]&&r.lastIndex===0",
+        r#"
+            let r = /(?:(?:(?<x>a)|(?<x>ab))|(?<x>b))\k<x>/dg,
+                a = [...'abab bb'.matchAll(r)];
+            a.length === 2 && a[0].groups.x === 'ab' && a[1].groups.x === 'b' && a[0].indices.groups.x ===
+                a[0].indices[2] && r.lastIndex === 0
+        "#,
     );
     assert_true(
         r"'qabab'.replace(/(?:(?:(?<x>a)|(?<x>ab))|(?<x>b))\k<x>/,'<$<x>>')==='q<ab>'&&'qabab'.search(/(?:(a|ab)|b)\1/)===1&&'qababz'.split(/(?:(?:(a)|(ab))|(b))\1\2\3/).join(',')==='q,,ab,,z'",
     );
     assert_true(
-        r"let r=/(?:(?:(?<x>a)|(?<x>b))|(?<x>c))\k<x>/dy;r.lastIndex=1;let copy=new RegExp(r),a=r.exec('qcc');a.groups.x==='c'&&r.lastIndex===3&&r.exec('qcc')===null&&r.lastIndex===0&&copy.source===r.source&&copy.lastIndex===0",
+        r#"
+            let r = /(?:(?:(?<x>a)|(?<x>b))|(?<x>c))\k<x>/dy;
+            r.lastIndex = 1;
+            let copy = new RegExp(r),
+                a = r.exec('qcc');
+            a.groups.x === 'c' && r.lastIndex === 3 && r.exec('qcc') === null && r.lastIndex === 0 && copy
+                .source === r.source && copy.lastIndex === 0
+        "#,
     );
     assert_true(
-        r"let a=[...'q'.matchAll(/(?:(?:(?<x>a)|)|(?<x>b))\k<x>/dg)];a.length===2&&a[0].index===0&&a[1].index===1&&a[0].groups.x===undefined",
+        r#"
+            let a = [...'q'.matchAll(/(?:(?:(?<x>a)|)|(?<x>b))\k<x>/dg)];
+            a.length === 2 && a[0].index === 0 && a[1].index === 1 && a[0].groups.x === undefined
+        "#,
     );
 }
 

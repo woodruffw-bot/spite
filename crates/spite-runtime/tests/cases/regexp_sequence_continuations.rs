@@ -35,10 +35,21 @@ fn fixed_sets_constrain_greedy_lazy_repetitions_at_the_earliest_start() {
 #[test]
 fn fixed_continuation_groups_keep_repeated_and_static_capture_source_order() {
     assert_true(
-        "let m=/((a)+)(([b])())/d.exec('xaaab');m.index===1&&m.length===6&&m[1]==='aaa'&&m[2]==='a'&&m[3]==='b'&&m[4]==='b'&&m[5]===''&&m.indices[1][1]===4&&m.indices[2][0]===3&&m.indices[4][0]===4&&m.indices[5][0]===5",
+        r#"
+            let m = /((a)+)(([b])())/d.exec('xaaab');
+            m.index === 1 && m.length === 6 && m[1] === 'aaa' && m[2] === 'a' && m[3] === 'b' && m[4] ===
+                'b' && m[5] === '' && m.indices[1][1] === 4 && m.indices[2][0] === 3 && m.indices[4][0] ===
+                4 && m.indices[5][0] === 5
+        "#,
     );
     assert_true(
-        "let a=/([x])([ab])*?([ab][ab])()/d.exec('xaabab'),b=/([x])([ab])*([ab][ab])()/d.exec('xaabab');a[0]==='xaa'&&a[1]==='x'&&a[2]===undefined&&a[3]==='aa'&&a.indices[4][0]===3&&b[0]==='xaabab'&&b[2]==='b'&&b[3]==='ab'&&b.indices[2][0]===3&&b.indices[3][0]===4",
+        r#"
+            let a = /([x])([ab])*?([ab][ab])()/d.exec('xaabab'),
+                b = /([x])([ab])*([ab][ab])()/d.exec('xaabab');
+            a[0] === 'xaa' && a[1] === 'x' && a[2] === undefined && a[3] === 'aa' && a.indices[4][0] ===
+                3 && b[0] === 'xaabab' && b[2] === 'b' && b[3] === 'ab' && b.indices[2][0] === 3 && b
+                .indices[3][0] === 4
+        "#,
     );
 }
 

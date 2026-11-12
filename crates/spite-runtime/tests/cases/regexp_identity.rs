@@ -7,7 +7,11 @@ use crate::common::assert_true;
 #[test]
 fn escaped_punctuation_and_whitespace_match_as_original_literal_characters() {
     assert_true(
-        r"let r=/\!\#\%\&\,\:\;\<\=\>\@\`\~/dg,m=r.exec('x!#%&,:;<=>@`~');m[0]==='!#%&,:;<=>@`~' && m.index===1 && m.indices[0][1]===14 && r.lastIndex===14",
+        r#"
+            let r = /\!\#\%\&\,\:\;\<\=\>\@\`\~/dg,
+                m = r.exec('x!#%&,:;<=>@`~');
+            m[0] === '!#%&,:;<=>@`~' && m.index === 1 && m.indices[0][1] === 14 && r.lastIndex === 14
+        "#,
     );
     assert_true(r"/(?:\!)(?:\ )/.exec('x! ')[0]==='! ' && /\$\-\/\\/.exec('x$-/\\')[0]==='$-/\\'");
     assert_true(

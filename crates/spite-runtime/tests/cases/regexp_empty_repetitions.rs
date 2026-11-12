@@ -56,13 +56,27 @@ fn mandatory_assertions_use_complete_input_while_zero_minimum_skips_failed_bodie
 #[test]
 fn enclosing_alternative_captures_and_source_order_preserve_empty_participation() {
     assert_true(
-        r"let a=/(()*)|a+/d.exec('aaa'),b=/a+|(()*)/d.exec('aaa');a[0]===''&&a[1]===''&&a[2]===undefined&&b[0]==='aaa'&&b[1]===undefined&&b[2]===undefined",
+        r#"
+            let a = /(()*)|a+/d.exec('aaa'),
+                b = /a+|(()*)/d.exec('aaa');
+            a[0] === '' && a[1] === '' && a[2] === undefined && b[0] === 'aaa' && b[1] === undefined && b[
+                2] === undefined
+        "#,
     );
     assert_true(
-        r"let a=/((($){2}))|(a)/d.exec('a'),b=/((($){2}))|(a)/d.exec('');a[0]==='a'&&a[1]===undefined&&a[4]==='a'&&b[0]===''&&b[1]===''&&b[2]===''&&b[3]===''&&b[4]===undefined",
+        r#"
+            let a = /((($){2}))|(a)/d.exec('a'),
+                b = /((($){2}))|(a)/d.exec('');
+            a[0] === 'a' && a[1] === undefined && a[4] === 'a' && b[0] === '' && b[1] === '' && b[2] ===
+                '' && b[3] === '' && b[4] === undefined
+        "#,
     );
     assert_true(
-        r"let a=/^((())+)$/d.exec('');a.length===4&&a[1]===''&&a[2]===''&&a[3]===''&&a.indices[1][0]===0&&a.indices[2]!==a.indices[3]",
+        r#"
+            let a = /^((())+)$/d.exec('');
+            a.length === 4 && a[1] === '' && a[2] === '' && a[3] === '' && a.indices[1][0] === 0 && a
+                .indices[2] !== a.indices[3]
+        "#,
     );
 }
 
