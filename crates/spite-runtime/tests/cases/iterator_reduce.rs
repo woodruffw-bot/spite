@@ -1,10 +1,8 @@
 //! Direct iterator reduction and initial-value presence (27.1.3.3.9).
 
-use crate::common;
-use common::REALM_ENTRIES;
+use crate::common::{REALM_ENTRIES, assert_true};
 use spite_runtime::{Error, ExceptionKind, Limits, Realm, Value};
-
-use crate::common::assert_true;
+use test_case::test_case;
 
 #[test]
 fn initial_value_presence_controls_first_value_and_callback_index() {
@@ -269,64 +267,161 @@ fn cached_next_and_live_values_preserve_accumulator_identity_without_coercion() 
     }
 }
 
-#[test]
-fn reducer_throws_close_once_and_preserve_the_incoming_error_over_close_errors() {
-    for initial in ["", ",0"] {
-        for ret in ["return {};", "return 7;", "throw 8;"] {
-            assert_true(&format!(
-                "let sentinel={{}},closed=0,calls=0,receiver,argc,i={{next:()=>({{done:false,value:7}}),return:function(){{'use strict';closed++;receiver=this;argc=arguments.length;{ret}}}}},caught=false;try{{Iterator.prototype.reduce.call(i,()=>{{calls++;throw sentinel;}}{initial});}}catch(e){{caught=e===sentinel;}}caught && closed===1 && calls===1 && receiver===i && argc===0"
-            ));
-        }
-        assert_true(&format!(
-            "let sentinel={{}},closed=0,i={{next:()=>({{done:false,value:7}}),get return(){{closed++;throw 8;}}}},caught=false;try{{Iterator.prototype.reduce.call(i,()=>{{throw sentinel;}}{initial});}}catch(e){{caught=e===sentinel;}}caught && closed===1"
-        ));
-    }
+#[test_case("", "return {};"; "object_return_without_initial")]
+#[test_case("", "return 7;"; "primitive_return_without_initial")]
+#[test_case("", "throw 8;"; "throwing_return_without_initial")]
+#[test_case(", 0", "return {};"; "object_return_with_initial")]
+#[test_case(", 0", "return 7;"; "primitive_return_with_initial")]
+#[test_case(", 0", "throw 8;"; "throwing_return_with_initial")]
+fn reducer_errors_close_once_and_preserve_the_incoming_error(initial: &str, return_action: &str) {
+    assert_true(&format!(
+        r#"
+            let sentinel = {{}},
+                closed = 0,
+                calls = 0,
+                receiver,
+                argc,
+                iterator = {{
+                    next: () => ({{ done: false, value: 7 }}),
+                    return: function() {{
+                        'use strict';
+                        closed++;
+                        receiver = this;
+                        argc = arguments.length;
+                        {return_action}
+                    }}
+                }},
+                caught = false;
+            try {{
+                Iterator.prototype.reduce.call(iterator, () => {{
+                    calls++;
+                    throw sentinel;
+                }}{initial});
+            }} catch (error) {{
+                caught = error === sentinel;
+            }}
+            caught && closed === 1 && calls === 1 && receiver === iterator && argc === 0
+        "#
+    ));
 }
 
-#[test]
-fn acquisition_and_both_initial_and_later_step_errors_do_not_close() {
-    for initial in ["", ",0"] {
-        for next in [
-            "()=>{throw 7;}",
-            "()=>7",
-            "()=>({get done(){throw 7;}})",
-            "()=>({done:false,get value(){throw 7;}})",
-            "7",
-        ] {
-            assert_true(&format!(
-                "let closed=0,calls=0,i={{next:{next},return(){{closed++;throw 8;}}}},caught=false;try{{Iterator.prototype.reduce.call(i,()=>{{calls++;}}{initial});}}catch(e){{caught=e===7 || e instanceof TypeError;}}caught && closed===0 && calls===0"
-            ));
-        }
-        assert_true(&format!(
-            "let closed=0,i={{get next(){{throw 7;}},return(){{closed++;return {{}};}}}},caught=false;try{{Iterator.prototype.reduce.call(i,()=>0{initial});}}catch(e){{caught=e===7;}}caught && closed===0"
-        ));
-        assert_true(&format!(
-            r#"
-                let n = 0,
-                    closed = 0,
-                    i = {{
-                        next() {{
-                            if (n++ === 0) return {{
-                                done: false,
-                                value: 7
-                            }};
-                            throw 8;
-                        }},
-                        return () {{
-                            closed++;
-                            return {{}};
-                        }}
+#[test_case(""; "without_initial")]
+#[test_case(", 0"; "with_initial")]
+fn return_getter_errors_do_not_replace_the_reducer_error(initial: &str) {
+    assert_true(&format!(
+        r#"
+            let sentinel = {{}},
+                closed = 0,
+                iterator = {{
+                    next: () => ({{ done: false, value: 7 }}),
+                    get return() {{
+                        closed++;
+                        throw 8;
+                    }}
+                }},
+                caught = false;
+            try {{
+                Iterator.prototype.reduce.call(iterator, () => {{
+                    throw sentinel;
+                }}{initial});
+            }} catch (error) {{
+                caught = error === sentinel;
+            }}
+            caught && closed === 1
+        "#
+    ));
+}
+
+#[test_case("", "()=>{throw 7;}"; "throwing_next_without_initial")]
+#[test_case("", "()=>7"; "primitive_step_without_initial")]
+#[test_case("", "()=>({get done(){throw 7;}})"; "throwing_done_without_initial")]
+#[test_case("", "()=>({done:false,get value(){throw 7;}})"; "throwing_value_without_initial")]
+#[test_case("", "7"; "non_callable_next_without_initial")]
+#[test_case(", 0", "()=>{throw 7;}"; "throwing_next_with_initial")]
+#[test_case(", 0", "()=>7"; "primitive_step_with_initial")]
+#[test_case(", 0", "()=>({get done(){throw 7;}})"; "throwing_done_with_initial")]
+#[test_case(", 0", "()=>({done:false,get value(){throw 7;}})"; "throwing_value_with_initial")]
+#[test_case(", 0", "7"; "non_callable_next_with_initial")]
+fn next_acquisition_and_step_errors_do_not_close(initial: &str, next_source: &str) {
+    assert_true(&format!(
+        r#"
+            let closed = 0,
+                calls = 0,
+                iterator = {{
+                    next: {next_source},
+                    return() {{
+                        closed++;
+                        throw 8;
+                    }}
+                }},
+                caught = false;
+            try {{
+                Iterator.prototype.reduce.call(iterator, () => {{
+                    calls++;
+                }}{initial});
+            }} catch (error) {{
+                caught = error === 7 || error instanceof TypeError;
+            }}
+            caught && closed === 0 && calls === 0
+        "#
+    ));
+}
+
+#[test_case(""; "without_initial")]
+#[test_case(", 0"; "with_initial")]
+fn next_getter_errors_do_not_close(initial: &str) {
+    assert_true(&format!(
+        r#"
+            let closed = 0,
+                iterator = {{
+                    get next() {{
+                        throw 7;
                     }},
-                    caught = false;
-                try {{
-                    Iterator.prototype.reduce.call(i, memo => memo{initial});
-                }} catch (e) {{
-                    caught = e === 8;
-                }}
-                caught && closed === 0
-            "#
-        ));
-    }
+                    return() {{
+                        closed++;
+                        return {{}};
+                    }}
+                }},
+                caught = false;
+            try {{
+                Iterator.prototype.reduce.call(iterator, () => 0{initial});
+            }} catch (error) {{
+                caught = error === 7;
+            }}
+            caught && closed === 0
+        "#
+    ));
+}
+
+#[test_case(""; "without_initial")]
+#[test_case(", 0"; "with_initial")]
+fn later_step_errors_do_not_close(initial: &str) {
+    assert_true(&format!(
+        r#"
+            let n = 0,
+                closed = 0,
+                iterator = {{
+                    next() {{
+                        if (n++ === 0) return {{
+                            done: false,
+                            value: 7
+                        }};
+                        throw 8;
+                    }},
+                    return() {{
+                        closed++;
+                        return {{}};
+                    }}
+                }},
+                caught = false;
+            try {{
+                Iterator.prototype.reduce.call(iterator, memo => memo{initial});
+            }} catch (error) {{
+                caught = error === 8;
+            }}
+            caught && closed === 0
+        "#
+    ));
 }
 
 #[test]
