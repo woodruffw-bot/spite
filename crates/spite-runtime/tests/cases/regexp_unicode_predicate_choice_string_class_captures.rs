@@ -1,23 +1,43 @@
 //! Required predicate choices preserve conditional lexical captures.
+use crate::common::assert_true_in;
 use crate::common::eval_string;
 use crate::common::regexp_captures::assert_no_match;
 use crate::common::regexp_captures::{MatchExpectation, assert_named_captures};
 use crate::common::regexp_matches::DESCRIBE_MATCH;
 use spite_core::JsString;
-use spite_runtime::{Realm, Value};
+use spite_runtime::Realm;
 use test_case::test_case;
 #[test]
-fn matching_controls_and_string_consumers() {
+fn capture_metadata_survives_collection() {
     let mut realm = Realm::default();
-    realm.eval(r"var r=/(?<b>(?<w>\b)|(?<nw>\B))(?<c>[\q{a|ab}])+(?<a>(?<end>$)|())/dvg,clone=new RegExp(r),m=r.exec('ababa')").unwrap();
+    realm
+        .eval(
+            r#"
+                var regexp = /(?<b>(?<w>\b)|(?<nw>\B))(?<c>[\q{a|ab}])+(?<a>(?<end>$)|())/dvg,
+                    copy = new RegExp(regexp),
+                    match = regexp.exec('ababa')
+            "#,
+        )
+        .unwrap();
     realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval(r#"
-        var n = clone.exec('a!');
-        m[0] === 'ababa' && m.groups.w === '' && m.groups.nw === undefined && m.groups.c === 'a' && m
-            .groups.end === '' && m.indices.groups.c === m.indices[4] && m.indices[4][0] === 4 && n
-            .groups.end === undefined && n.groups.a === '' && clone.source === r.source && clone
-            .lastIndex === 1 && r.lastIndex === 5
-    "#),Ok(Value::Boolean(true)));
+    assert_true_in(
+        &mut realm,
+        r#"
+            var copiedMatch = copy.exec("a!");
+            match[0] === "ababa" &&
+                match.groups.w === "" &&
+                match.groups.nw === undefined &&
+                match.groups.c === "a" &&
+                match.groups.end === "" &&
+                match.indices.groups.c === match.indices[4] &&
+                match.indices[4][0] === 4 &&
+                copiedMatch.groups.end === undefined &&
+                copiedMatch.groups.a === "" &&
+                copy.source === regexp.source &&
+                copy.lastIndex === 1 &&
+                regexp.lastIndex === 5;
+        "#,
+    );
 }
 
 #[test]

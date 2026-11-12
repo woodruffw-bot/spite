@@ -1,25 +1,47 @@
 //! Required predicate choices preserve conditional lexical captures.
 use crate::common::assert_true;
+use crate::common::assert_true_in;
 use crate::common::eval_string;
 use crate::common::regexp_captures::assert_no_match;
 use crate::common::regexp_captures::{MatchExpectation, assert_named_captures};
 use crate::common::regexp_matches::DESCRIBE_MATCH;
 use spite_core::JsString;
-use spite_runtime::{Realm, Value};
+use spite_runtime::Realm;
 use test_case::test_case;
 #[test]
-fn matching_controls_and_string_consumers() {
+fn capture_metadata_survives_collection() {
     let mut realm = Realm::default();
-    realm.eval(r"var r=/(?<b>(?<s>^)|(?<w>\b))(?<c>[\q{a|ab}])(?<a>(?<end>$)|(?<nw>\B))/dvg,clone=new RegExp(r),m=r.exec('ab!aa')").unwrap();
+    realm
+        .eval(
+            r#"
+                var regexp = /(?<b>(?<s>^)|(?<w>\b))(?<c>[\q{a|ab}])(?<a>(?<end>$)|(?<nw>\B))/dvg,
+                    copy = new RegExp(regexp),
+                    match = regexp.exec('ab!aa')
+            "#,
+        )
+        .unwrap();
     realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval(r#"
-        var n = clone.exec('ab');
-        m[0] === 'a' && m.groups.s === '' && m.groups.w === undefined && m.groups.c === 'a' && m.groups
-            .end === undefined && m.groups.nw === '' && m.indices.groups.c === m.indices[4] && m
-            .indices[4][0] === 0 && m.indices[4][1] === 1 && n.groups.c === 'ab' && n.groups.end ===
-            '' && n.groups.nw === undefined && clone.source === r.source && clone.lastIndex === 2 && r
-            .lastIndex === 1
-    "#),Ok(Value::Boolean(true)));
+    assert_true_in(
+        &mut realm,
+        r#"
+            var copiedMatch = copy.exec("ab");
+            match[0] === "a" &&
+                match.groups.s === "" &&
+                match.groups.w === undefined &&
+                match.groups.c === "a" &&
+                match.groups.end === undefined &&
+                match.groups.nw === "" &&
+                match.indices.groups.c === match.indices[4] &&
+                match.indices[4][0] === 0 &&
+                match.indices[4][1] === 1 &&
+                copiedMatch.groups.c === "ab" &&
+                copiedMatch.groups.end === "" &&
+                copiedMatch.groups.nw === undefined &&
+                copy.source === regexp.source &&
+                copy.lastIndex === 2 &&
+                regexp.lastIndex === 1;
+        "#,
+    );
 }
 
 #[test]

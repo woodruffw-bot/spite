@@ -1,32 +1,63 @@
 //! Required predicate choices preserve conditional lexical captures.
 use crate::common::assert_true;
+use crate::common::assert_true_in;
 use crate::common::eval_string;
 use crate::common::regexp_captures::assert_no_match;
 use crate::common::regexp_captures::{MatchExpectation, assert_named_captures};
 use crate::common::regexp_matches::DESCRIBE_MATCH;
 use spite_core::JsString;
-use spite_runtime::{Realm, Value};
+use spite_runtime::Realm;
 use test_case::test_case;
 #[test]
-fn matching_controls_and_string_consumers() {
+fn capture_metadata_survives_collection() {
     let mut realm = Realm::default();
-    realm.eval(r"var r=/(?<ob>(?<os>^)|(?<ow>\b))(?<bp>)(?<enclosing>(?:(?<outer>(?<nested>(?<b>(?<s>^)|(?<w>\b))(?<c>[\q{a|ab}])(?<a>(?<end>$)|(?<nw>\B))|(?<fallback>(?<wb>\b)|(?<nwb>\B))(?<empty>)))??))(?<ep>)(?<oa>(?<oe>$)|(?<onw>\B))/dvg,clone=new RegExp(r),m=r.exec('ab!aa')").unwrap();
+    realm.eval(r#"
+        var regexp =
+            /(?<ob>(?<os>^)|(?<ow>\b))(?<bp>)(?<enclosing>(?:(?<outer>(?<nested>(?<b>(?<s>^)|(?<w>\b))(?<c>[\q{a|ab}])(?<a>(?<end>$)|(?<nw>\B))|(?<fallback>(?<wb>\b)|(?<nwb>\B))(?<empty>)))??))(?<ep>)(?<oa>(?<oe>$)|(?<onw>\B))/dvg,
+            copy = new RegExp(regexp),
+            match = regexp.exec('ab!aa')
+    "#).unwrap();
     realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval(r#"
-        var n = clone.exec('ab');
-        r.lastIndex = 0;
-        var p = r.exec('');
-        m[0] === 'a' && m.groups.enclosing === 'a' && m.groups.outer === 'a' && m.groups.nested ===
-            'a' && m.groups.os === '' && m.groups.ow === undefined && m.groups.c === 'a' && m.groups
-            .fallback === undefined && m.indices.groups.c === m.indices[11] && m.indices[11][0] ===
-            0 && m.indices[11][1] === 1 && n.groups.c === 'ab' && n.groups.outer === 'ab' && n.groups
-            .nested === 'ab' && n.groups.enclosing === 'ab' && clone.source === r.source && clone
-            .lastIndex === 2 && p[0] === '' && p.groups.enclosing === '' && p.indices.groups
-            .enclosing === p.indices[5] && p.indices[5][0] === 0 && p.indices[5][1] === 0 && Array
-            .from(p).slice(6, 19).every(v => v === undefined) && p.indices.slice(6, 19).every(v =>
-                v === undefined) && p.groups.outer === undefined && p.groups.nested === undefined && p
-            .groups.c === undefined && p.groups.os === '' && p.groups.oe === '' && r.lastIndex === 0
-    "#),Ok(Value::Boolean(true)));
+    assert_true_in(
+        &mut realm,
+        r#"
+            var copiedMatch = copy.exec("ab");
+            regexp.lastIndex = 0;
+            var p = regexp.exec("");
+            match[0] === "a" &&
+                match.groups.enclosing === "a" &&
+                match.groups.outer === "a" &&
+                match.groups.nested === "a" &&
+                match.groups.os === "" &&
+                match.groups.ow === undefined &&
+                match.groups.c === "a" &&
+                match.groups.fallback === undefined &&
+                match.indices.groups.c === match.indices[11] &&
+                match.indices[11][0] === 0 &&
+                match.indices[11][1] === 1 &&
+                copiedMatch.groups.c === "ab" &&
+                copiedMatch.groups.outer === "ab" &&
+                copiedMatch.groups.nested === "ab" &&
+                copiedMatch.groups.enclosing === "ab" &&
+                copy.source === regexp.source &&
+                copy.lastIndex === 2 &&
+                p[0] === "" &&
+                p.groups.enclosing === "" &&
+                p.indices.groups.enclosing === p.indices[5] &&
+                p.indices[5][0] === 0 &&
+                p.indices[5][1] === 0 &&
+                Array.from(p)
+                    .slice(6, 19)
+                    .every((v) => v === undefined) &&
+                p.indices.slice(6, 19).every((v) => v === undefined) &&
+                p.groups.outer === undefined &&
+                p.groups.nested === undefined &&
+                p.groups.c === undefined &&
+                p.groups.os === "" &&
+                p.groups.oe === "" &&
+                regexp.lastIndex === 0;
+        "#,
+    );
 }
 
 #[test]

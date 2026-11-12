@@ -1,25 +1,48 @@
 //! Required predicate choices preserve conditional lexical captures.
 use crate::common::assert_true;
+use crate::common::assert_true_in;
 use crate::common::eval_string;
 use crate::common::regexp_captures::assert_no_match;
 use crate::common::regexp_captures::{MatchExpectation, assert_named_captures};
 use crate::common::regexp_matches::DESCRIBE_MATCH;
 use spite_core::JsString;
-use spite_runtime::{Realm, Value};
+use spite_runtime::Realm;
 use test_case::test_case;
 #[test]
-fn matching_controls_and_string_consumers() {
+fn capture_metadata_survives_collection() {
     let mut realm = Realm::default();
-    realm.eval(r"var r=/(?<root>(?<scope>(?<c>[\q{a|ab}])+?)??|(?<e>)){0}/dvg,clone=new RegExp(r),m=r.exec('ab')").unwrap();
+    realm
+        .eval(
+            r#"
+                var regexp = /(?<root>(?<scope>(?<c>[\q{a|ab}])+?)??|(?<e>)){0}/dvg,
+                    copy = new RegExp(regexp),
+                    match = regexp.exec('ab')
+            "#,
+        )
+        .unwrap();
     realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval(r#"
-        var n = clone.exec('ab');
-        m[0] === '' && n[0] === '' && Array.from(m).slice(1).every(v => v === undefined) && m.indices
-            .slice(1).every(v => v === undefined) && m.groups.root === undefined && m.groups.scope ===
-            undefined && m.groups.c === undefined && m.groups.e === undefined && Object.hasOwn(m
-                .groups, 'scope') && Object.hasOwn(m.indices.groups, 'scope') && clone.source === r
-            .source && clone.flags === r.flags && r.lastIndex === 0 && clone.lastIndex === 0
-    "#),Ok(Value::Boolean(true)));
+    assert_true_in(
+        &mut realm,
+        r#"
+            var copiedMatch = copy.exec("ab");
+            match[0] === "" &&
+                copiedMatch[0] === "" &&
+                Array.from(match)
+                    .slice(1)
+                    .every((v) => v === undefined) &&
+                match.indices.slice(1).every((v) => v === undefined) &&
+                match.groups.root === undefined &&
+                match.groups.scope === undefined &&
+                match.groups.c === undefined &&
+                match.groups.e === undefined &&
+                Object.hasOwn(match.groups, "scope") &&
+                Object.hasOwn(match.indices.groups, "scope") &&
+                copy.source === regexp.source &&
+                copy.flags === regexp.flags &&
+                regexp.lastIndex === 0 &&
+                copy.lastIndex === 0;
+        "#,
+    );
 }
 
 #[test]

@@ -1,36 +1,71 @@
 //! Required predicate choices preserve conditional lexical captures.
 use crate::common::assert_true;
+use crate::common::assert_true_in;
 use crate::common::eval_string;
 use crate::common::regexp_captures::assert_no_match;
 use crate::common::regexp_captures::{MatchExpectation, assert_named_captures};
 use crate::common::regexp_matches::DESCRIBE_MATCH;
 use spite_core::JsString;
-use spite_runtime::{Realm, Value};
+use spite_runtime::Realm;
 use test_case::test_case;
 #[test]
-fn matching_controls_and_string_consumers() {
+fn capture_metadata_survives_collection() {
     let mut realm = Realm::default();
-    realm.eval(r"var r=/(?<ob>(?<os>^)|(?<ow>\b))(?<bp>)(?<enclosing>(?:(?<outer>(?<nested>(?<b>(?<s>^)|(?<w>\b))(?<c>[\q{a|ab}]){0}(?<a>(?<end>$)|(?<nw>\B))|(?<fallback>(?<wb>\b)|(?<nwb>\B))(?<empty>))){0}))(?<ep>)(?<oa>(?<oe>$)|(?<onw>\B))/dvg,clone=new RegExp(r),m=r.exec('ab!aa')").unwrap();
+    realm.eval(r#"
+        var regexp =
+            /(?<ob>(?<os>^)|(?<ow>\b))(?<bp>)(?<enclosing>(?:(?<outer>(?<nested>(?<b>(?<s>^)|(?<w>\b))(?<c>[\q{a|ab}]){0}(?<a>(?<end>$)|(?<nw>\B))|(?<fallback>(?<wb>\b)|(?<nwb>\B))(?<empty>))){0}))(?<ep>)(?<oa>(?<oe>$)|(?<onw>\B))/dvg,
+            copy = new RegExp(regexp),
+            match = regexp.exec('ab!aa')
+    "#).unwrap();
     realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval(r#"
-        var n = clone.exec('ab');
-        r.lastIndex = 0;
-        var z = r.exec('');
-        r.lastIndex = 0;
-        var p = r.exec('!');
-        m[0] === '' && m.index === 5 && m.groups.enclosing === '' && m.groups.outer === undefined && m
-            .groups.nested === undefined && m.groups.c === undefined && m.groups.os === undefined && m
-            .groups.ow === '' && m.groups.oe === '' && m.groups.onw === undefined && m.indices.groups
-            .enclosing === m.indices[5] && m.indices[5][0] === 5 && m.indices[5][1] === 5 && Array
-            .from(m).slice(6, 19).every(v => v === undefined) && m.indices.slice(6, 19).every(v =>
-                v === undefined) && n[0] === '' && n.index === 2 && n.groups.enclosing === '' && n
-            .groups.outer === undefined && n.groups.nested === undefined && clone.source === r
-            .source && clone.lastIndex === 2 && z[0] === '' && z.groups.enclosing === '' && z.groups
-            .outer === undefined && z.groups.nested === undefined && z.groups.os === '' && z.groups
-            .oe === '' && p[0] === '' && p.index === 0 && p.groups.enclosing === '' && p.groups
-            .outer === undefined && p.groups.nested === undefined && p.groups.os === '' && p.groups
-            .onw === '' && r.lastIndex === 0
-    "#),Ok(Value::Boolean(true)));
+    assert_true_in(
+        &mut realm,
+        r#"
+            var copiedMatch = copy.exec("ab");
+            regexp.lastIndex = 0;
+            var z = regexp.exec("");
+            regexp.lastIndex = 0;
+            var p = regexp.exec("!");
+            match[0] === "" &&
+                match.index === 5 &&
+                match.groups.enclosing === "" &&
+                match.groups.outer === undefined &&
+                match.groups.nested === undefined &&
+                match.groups.c === undefined &&
+                match.groups.os === undefined &&
+                match.groups.ow === "" &&
+                match.groups.oe === "" &&
+                match.groups.onw === undefined &&
+                match.indices.groups.enclosing === match.indices[5] &&
+                match.indices[5][0] === 5 &&
+                match.indices[5][1] === 5 &&
+                Array.from(match)
+                    .slice(6, 19)
+                    .every((v) => v === undefined) &&
+                match.indices.slice(6, 19).every((v) => v === undefined) &&
+                copiedMatch[0] === "" &&
+                copiedMatch.index === 2 &&
+                copiedMatch.groups.enclosing === "" &&
+                copiedMatch.groups.outer === undefined &&
+                copiedMatch.groups.nested === undefined &&
+                copy.source === regexp.source &&
+                copy.lastIndex === 2 &&
+                z[0] === "" &&
+                z.groups.enclosing === "" &&
+                z.groups.outer === undefined &&
+                z.groups.nested === undefined &&
+                z.groups.os === "" &&
+                z.groups.oe === "" &&
+                p[0] === "" &&
+                p.index === 0 &&
+                p.groups.enclosing === "" &&
+                p.groups.outer === undefined &&
+                p.groups.nested === undefined &&
+                p.groups.os === "" &&
+                p.groups.onw === "" &&
+                regexp.lastIndex === 0;
+        "#,
+    );
 }
 
 #[test]

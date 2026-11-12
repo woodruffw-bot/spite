@@ -1,30 +1,58 @@
 //! Required predicate choices preserve conditional lexical captures.
 use crate::common::assert_true;
+use crate::common::assert_true_in;
 use crate::common::eval_string;
 use crate::common::regexp_captures::assert_no_match;
 use crate::common::regexp_captures::{MatchExpectation, assert_named_captures};
 use crate::common::regexp_matches::DESCRIBE_MATCH;
 use spite_core::JsString;
-use spite_runtime::{Realm, Value};
+use spite_runtime::Realm;
 use test_case::test_case;
 #[test]
-fn matching_controls_and_string_consumers() {
+fn capture_metadata_survives_collection() {
     let mut realm = Realm::default();
-    realm.eval(r"var r=/(?<enclosing>(?:(?<outer>(?<b>(?<s>^)|(?<w>\b))(?<c>[\q{a|ab}])(?<a>(?<end>$)|(?<nw>\B))|(?<fallback>(?<wb>\b)|(?<nwb>\B))(?<empty>))?))/dvg,clone=new RegExp(r),m=r.exec('ab!aa')").unwrap();
+    realm.eval(r#"
+        var regexp =
+            /(?<enclosing>(?:(?<outer>(?<b>(?<s>^)|(?<w>\b))(?<c>[\q{a|ab}])(?<a>(?<end>$)|(?<nw>\B))|(?<fallback>(?<wb>\b)|(?<nwb>\B))(?<empty>))?))/dvg,
+            copy = new RegExp(regexp),
+            match = regexp.exec('ab!aa')
+    "#).unwrap();
     realm.collect(usize::MAX).unwrap();
-    assert_eq!(realm.eval(r#"
-        var n = clone.exec('ab'),
-            p = r.exec('!');
-        m[0] === 'a' && m.groups.enclosing === 'a' && m.groups.outer === 'a' && m.groups.s === '' && m
-            .groups.w === undefined && m.groups.c === 'a' && m.groups.fallback === undefined && m
-            .indices.groups.c === m.indices[6] && m.indices[6][0] === 0 && m.indices[6][1] === 1 && n
-            .groups.c === 'ab' && n.groups.enclosing === 'ab' && clone.source === r.source && clone
-            .lastIndex === 2 && p[0] === '' && p.index === 1 && p.groups.enclosing === '' && p.indices
-            .groups.enclosing === p.indices[1] && p.indices[1][0] === 1 && p.indices[1][1] === 1 &&
-            Array.from(p).slice(2).every(v => v === undefined) && p.indices.slice(2).every(v => v ===
-                undefined) && p.groups.outer === undefined && p.groups.fallback === undefined && p
-            .groups.empty === undefined && r.lastIndex === 1
-    "#),Ok(Value::Boolean(true)));
+    assert_true_in(
+        &mut realm,
+        r#"
+            var copiedMatch = copy.exec("ab"),
+                p = regexp.exec("!");
+            match[0] === "a" &&
+                match.groups.enclosing === "a" &&
+                match.groups.outer === "a" &&
+                match.groups.s === "" &&
+                match.groups.w === undefined &&
+                match.groups.c === "a" &&
+                match.groups.fallback === undefined &&
+                match.indices.groups.c === match.indices[6] &&
+                match.indices[6][0] === 0 &&
+                match.indices[6][1] === 1 &&
+                copiedMatch.groups.c === "ab" &&
+                copiedMatch.groups.enclosing === "ab" &&
+                copy.source === regexp.source &&
+                copy.lastIndex === 2 &&
+                p[0] === "" &&
+                p.index === 1 &&
+                p.groups.enclosing === "" &&
+                p.indices.groups.enclosing === p.indices[1] &&
+                p.indices[1][0] === 1 &&
+                p.indices[1][1] === 1 &&
+                Array.from(p)
+                    .slice(2)
+                    .every((v) => v === undefined) &&
+                p.indices.slice(2).every((v) => v === undefined) &&
+                p.groups.outer === undefined &&
+                p.groups.fallback === undefined &&
+                p.groups.empty === undefined &&
+                regexp.lastIndex === 1;
+        "#,
+    );
 }
 
 #[test]
