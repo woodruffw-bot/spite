@@ -1,5 +1,6 @@
 //! ASCII/Any property unions inside flat Unicode classes.
 use crate::common::assert_true;
+use crate::common::regexp_matches::last_index_cases;
 use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
@@ -23,7 +24,7 @@ fn unicode_class_property_results_snapshot() {
         for flags in ["dug", "diug", "divg", "divmy"] {
             for input in ["aSkſK😀\n", "\r\n\u{2028}\u{2029}", "A\nſ\n😀", ""] {
                 let input = JsString::from(input);
-                for start in [0, 1, 2, input.len(), input.len() + 1] {
+                for start in last_index_cases(input.len()) {
                     let script = format!(
                         r#"
                             let r = new RegExp({pattern:?}, '{flags}');

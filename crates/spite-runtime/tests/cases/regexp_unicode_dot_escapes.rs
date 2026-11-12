@@ -4,6 +4,7 @@ use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
 use crate::common::assert_true;
+use crate::common::regexp_matches::last_index_cases;
 
 #[test]
 fn unicode_dot_and_escape_results_snapshot() {
@@ -18,7 +19,7 @@ fn unicode_dot_and_escape_results_snapshot() {
     for pattern in [".", r"\d", r"\D", r"\s", r"\S", r"\w", r"\W"] {
         for flags in ["dug", "duy", "dusy", "dvg", "dvy", "dvsy"] {
             for input in &inputs {
-                for start in [0, 1, 2, input.len(), input.len() + 1] {
+                for start in last_index_cases(input.len()) {
                     let p = JsString::from(pattern);
                     let script = format!(
                         r#"

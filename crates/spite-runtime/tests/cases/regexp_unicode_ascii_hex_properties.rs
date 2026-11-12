@@ -4,6 +4,7 @@ use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
 use crate::common::assert_true;
+use crate::common::regexp_matches::last_index_cases;
 
 #[test]
 fn unicode_ascii_hex_property_results_snapshot() {
@@ -26,7 +27,7 @@ fn unicode_ascii_hex_property_results_snapshot() {
                 "",
             ] {
                 let input = JsString::from(input);
-                for start in [0, 1, 2, input.len(), input.len() + 1] {
+                for start in last_index_cases(input.len()) {
                     let script = format!(
                         r#"
                             let r = new RegExp({pattern:?}, '{flags}');

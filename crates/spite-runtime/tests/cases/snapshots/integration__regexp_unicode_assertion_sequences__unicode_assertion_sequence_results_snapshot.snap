@@ -15,7 +15,6 @@ expression: rows
 "(?<x>^^)" flags="dug" input="\ud83d\ude00" lastIndex=0 => {"matches":["",""],"index":0,"input":"😀","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>^^)"}
 "(?<x>^^)" flags="dug" input="\ud83d\ude00" lastIndex=1 => {"matches":["",""],"index":0,"input":"😀","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>^^)"}
 "(?<x>^^)" flags="dug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>^^)" flags="dug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>^^)" flags="dug" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>^^)" flags="dug" input="A\ud800\u000a\udc00B" lastIndex=0 => {"matches":["",""],"index":0,"input":"A\ud800\n\udc00B","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>^^)"}
 "(?<x>^^)" flags="dug" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -25,8 +24,6 @@ expression: rows
 "(?<x>^^)" flags="dug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>^^)"}
 "(?<x>^^)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>^^)" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>^^)" flags="dug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>^^)"}
-"(?<x>^^)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>^^)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":0,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>^^)"}
 "(?<x>^^)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>^^)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -40,7 +37,6 @@ expression: rows
 "(?<x>^^)" flags="diug" input="\ud83d\ude00" lastIndex=0 => {"matches":["",""],"index":0,"input":"😀","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>^^)"}
 "(?<x>^^)" flags="diug" input="\ud83d\ude00" lastIndex=1 => {"matches":["",""],"index":0,"input":"😀","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>^^)"}
 "(?<x>^^)" flags="diug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>^^)" flags="diug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>^^)" flags="diug" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>^^)" flags="diug" input="A\ud800\u000a\udc00B" lastIndex=0 => {"matches":["",""],"index":0,"input":"A\ud800\n\udc00B","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>^^)"}
 "(?<x>^^)" flags="diug" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -50,8 +46,6 @@ expression: rows
 "(?<x>^^)" flags="diug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>^^)"}
 "(?<x>^^)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>^^)" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>^^)" flags="diug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>^^)"}
-"(?<x>^^)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>^^)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":0,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>^^)"}
 "(?<x>^^)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>^^)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -65,7 +59,6 @@ expression: rows
 "(?<x>^^)" flags="divg" input="\ud83d\ude00" lastIndex=0 => {"matches":["",""],"index":0,"input":"😀","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>^^)"}
 "(?<x>^^)" flags="divg" input="\ud83d\ude00" lastIndex=1 => {"matches":["",""],"index":0,"input":"😀","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>^^)"}
 "(?<x>^^)" flags="divg" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>^^)" flags="divg" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>^^)" flags="divg" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>^^)" flags="divg" input="A\ud800\u000a\udc00B" lastIndex=0 => {"matches":["",""],"index":0,"input":"A\ud800\n\udc00B","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>^^)"}
 "(?<x>^^)" flags="divg" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -75,8 +68,6 @@ expression: rows
 "(?<x>^^)" flags="divg" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>^^)"}
 "(?<x>^^)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>^^)" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>^^)" flags="divg" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>^^)"}
-"(?<x>^^)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>^^)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":0,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>^^)"}
 "(?<x>^^)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>^^)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -90,7 +81,6 @@ expression: rows
 "(?<x>^^)" flags="divmy" input="\ud83d\ude00" lastIndex=0 => {"matches":["",""],"index":0,"input":"😀","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>^^)"}
 "(?<x>^^)" flags="divmy" input="\ud83d\ude00" lastIndex=1 => {"matches":["",""],"index":0,"input":"😀","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>^^)"}
 "(?<x>^^)" flags="divmy" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>^^)" flags="divmy" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>^^)" flags="divmy" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>^^)" flags="divmy" input="A\ud800\u000a\udc00B" lastIndex=0 => {"matches":["",""],"index":0,"input":"A\ud800\n\udc00B","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>^^)"}
 "(?<x>^^)" flags="divmy" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -100,8 +90,6 @@ expression: rows
 "(?<x>^^)" flags="divmy" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>^^)"}
 "(?<x>^^)" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>^^)" flags="divmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>^^)" flags="divmy" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>^^)"}
-"(?<x>^^)" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$$)" flags="dug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":10,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[10,10],[10,10]],"indexGroups":{"x":[10,10]},"lastIndex":10,"source":"(?<x>$$)"}
 "(?<x>$$)" flags="dug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":10,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[10,10],[10,10]],"indexGroups":{"x":[10,10]},"lastIndex":10,"source":"(?<x>$$)"}
 "(?<x>$$)" flags="dug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":10,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[10,10],[10,10]],"indexGroups":{"x":[10,10]},"lastIndex":10,"source":"(?<x>$$)"}
@@ -115,7 +103,6 @@ expression: rows
 "(?<x>$$)" flags="dug" input="\ud83d\ude00" lastIndex=0 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>$$)"}
 "(?<x>$$)" flags="dug" input="\ud83d\ude00" lastIndex=1 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>$$)"}
 "(?<x>$$)" flags="dug" input="\ud83d\ude00" lastIndex=2 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>$$)"}
-"(?<x>$$)" flags="dug" input="\ud83d\ude00" lastIndex=2 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>$$)"}
 "(?<x>$$)" flags="dug" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>$$)" flags="dug" input="A\ud800\u000a\udc00B" lastIndex=0 => {"matches":["",""],"index":5,"input":"A\ud800\n\udc00B","groups":{"x":""},"indices":[[5,5],[5,5]],"indexGroups":{"x":[5,5]},"lastIndex":5,"source":"(?<x>$$)"}
 "(?<x>$$)" flags="dug" input="A\ud800\u000a\udc00B" lastIndex=1 => {"matches":["",""],"index":5,"input":"A\ud800\n\udc00B","groups":{"x":""},"indices":[[5,5],[5,5]],"indexGroups":{"x":[5,5]},"lastIndex":5,"source":"(?<x>$$)"}
@@ -125,8 +112,6 @@ expression: rows
 "(?<x>$$)" flags="dug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>$$)"}
 "(?<x>$$)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$$)" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>$$)" flags="dug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>$$)"}
-"(?<x>$$)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$$)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":10,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[10,10],[10,10]],"indexGroups":{"x":[10,10]},"lastIndex":10,"source":"(?<x>$$)"}
 "(?<x>$$)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":10,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[10,10],[10,10]],"indexGroups":{"x":[10,10]},"lastIndex":10,"source":"(?<x>$$)"}
 "(?<x>$$)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":10,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[10,10],[10,10]],"indexGroups":{"x":[10,10]},"lastIndex":10,"source":"(?<x>$$)"}
@@ -140,7 +125,6 @@ expression: rows
 "(?<x>$$)" flags="diug" input="\ud83d\ude00" lastIndex=0 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>$$)"}
 "(?<x>$$)" flags="diug" input="\ud83d\ude00" lastIndex=1 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>$$)"}
 "(?<x>$$)" flags="diug" input="\ud83d\ude00" lastIndex=2 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>$$)"}
-"(?<x>$$)" flags="diug" input="\ud83d\ude00" lastIndex=2 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>$$)"}
 "(?<x>$$)" flags="diug" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>$$)" flags="diug" input="A\ud800\u000a\udc00B" lastIndex=0 => {"matches":["",""],"index":5,"input":"A\ud800\n\udc00B","groups":{"x":""},"indices":[[5,5],[5,5]],"indexGroups":{"x":[5,5]},"lastIndex":5,"source":"(?<x>$$)"}
 "(?<x>$$)" flags="diug" input="A\ud800\u000a\udc00B" lastIndex=1 => {"matches":["",""],"index":5,"input":"A\ud800\n\udc00B","groups":{"x":""},"indices":[[5,5],[5,5]],"indexGroups":{"x":[5,5]},"lastIndex":5,"source":"(?<x>$$)"}
@@ -150,8 +134,6 @@ expression: rows
 "(?<x>$$)" flags="diug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>$$)"}
 "(?<x>$$)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$$)" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>$$)" flags="diug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>$$)"}
-"(?<x>$$)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$$)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":10,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[10,10],[10,10]],"indexGroups":{"x":[10,10]},"lastIndex":10,"source":"(?<x>$$)"}
 "(?<x>$$)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":10,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[10,10],[10,10]],"indexGroups":{"x":[10,10]},"lastIndex":10,"source":"(?<x>$$)"}
 "(?<x>$$)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":10,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[10,10],[10,10]],"indexGroups":{"x":[10,10]},"lastIndex":10,"source":"(?<x>$$)"}
@@ -165,7 +147,6 @@ expression: rows
 "(?<x>$$)" flags="divg" input="\ud83d\ude00" lastIndex=0 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>$$)"}
 "(?<x>$$)" flags="divg" input="\ud83d\ude00" lastIndex=1 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>$$)"}
 "(?<x>$$)" flags="divg" input="\ud83d\ude00" lastIndex=2 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>$$)"}
-"(?<x>$$)" flags="divg" input="\ud83d\ude00" lastIndex=2 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>$$)"}
 "(?<x>$$)" flags="divg" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>$$)" flags="divg" input="A\ud800\u000a\udc00B" lastIndex=0 => {"matches":["",""],"index":5,"input":"A\ud800\n\udc00B","groups":{"x":""},"indices":[[5,5],[5,5]],"indexGroups":{"x":[5,5]},"lastIndex":5,"source":"(?<x>$$)"}
 "(?<x>$$)" flags="divg" input="A\ud800\u000a\udc00B" lastIndex=1 => {"matches":["",""],"index":5,"input":"A\ud800\n\udc00B","groups":{"x":""},"indices":[[5,5],[5,5]],"indexGroups":{"x":[5,5]},"lastIndex":5,"source":"(?<x>$$)"}
@@ -175,8 +156,6 @@ expression: rows
 "(?<x>$$)" flags="divg" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>$$)"}
 "(?<x>$$)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$$)" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>$$)" flags="divg" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>$$)"}
-"(?<x>$$)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$$)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$$)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$$)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -190,7 +169,6 @@ expression: rows
 "(?<x>$$)" flags="divmy" input="\ud83d\ude00" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$$)" flags="divmy" input="\ud83d\ude00" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$$)" flags="divmy" input="\ud83d\ude00" lastIndex=2 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>$$)"}
-"(?<x>$$)" flags="divmy" input="\ud83d\ude00" lastIndex=2 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>$$)"}
 "(?<x>$$)" flags="divmy" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>$$)" flags="divmy" input="A\ud800\u000a\udc00B" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$$)" flags="divmy" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -200,8 +178,6 @@ expression: rows
 "(?<x>$$)" flags="divmy" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>$$)"}
 "(?<x>$$)" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$$)" flags="divmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>$$)" flags="divmy" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>$$)"}
-"(?<x>$$)" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="dug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="dug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="dug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -215,7 +191,6 @@ expression: rows
 "(?<x>$^)" flags="dug" input="\ud83d\ude00" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="dug" input="\ud83d\ude00" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="dug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>$^)" flags="dug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="dug" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="dug" input="A\ud800\u000a\udc00B" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="dug" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -225,8 +200,6 @@ expression: rows
 "(?<x>$^)" flags="dug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>$^)"}
 "(?<x>$^)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>$^)" flags="dug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>$^)"}
-"(?<x>$^)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -240,7 +213,6 @@ expression: rows
 "(?<x>$^)" flags="diug" input="\ud83d\ude00" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="diug" input="\ud83d\ude00" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="diug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>$^)" flags="diug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="diug" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="diug" input="A\ud800\u000a\udc00B" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="diug" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -250,8 +222,6 @@ expression: rows
 "(?<x>$^)" flags="diug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>$^)"}
 "(?<x>$^)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>$^)" flags="diug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>$^)"}
-"(?<x>$^)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -265,7 +235,6 @@ expression: rows
 "(?<x>$^)" flags="divg" input="\ud83d\ude00" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="divg" input="\ud83d\ude00" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="divg" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>$^)" flags="divg" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="divg" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="divg" input="A\ud800\u000a\udc00B" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="divg" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -275,8 +244,6 @@ expression: rows
 "(?<x>$^)" flags="divg" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>$^)"}
 "(?<x>$^)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>$^)" flags="divg" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>$^)"}
-"(?<x>$^)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -290,7 +257,6 @@ expression: rows
 "(?<x>$^)" flags="divmy" input="\ud83d\ude00" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="divmy" input="\ud83d\ude00" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="divmy" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>$^)" flags="divmy" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="divmy" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="divmy" input="A\ud800\u000a\udc00B" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="divmy" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -300,8 +266,6 @@ expression: rows
 "(?<x>$^)" flags="divmy" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>$^)"}
 "(?<x>$^)" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$^)" flags="divmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>$^)" flags="divmy" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>$^)"}
-"(?<x>$^)" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cb)" flags="dug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":0,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\b\\b)"}
 "(?<x>\u005cb\u005cb)" flags="dug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":1,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>\\b\\b)"}
 "(?<x>\u005cb\u005cb)" flags="dug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":1,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>\\b\\b)"}
@@ -315,7 +279,6 @@ expression: rows
 "(?<x>\u005cb\u005cb)" flags="dug" input="\ud83d\ude00" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cb)" flags="dug" input="\ud83d\ude00" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cb)" flags="dug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb\u005cb)" flags="dug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cb)" flags="dug" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cb)" flags="dug" input="A\ud800\u000a\udc00B" lastIndex=0 => {"matches":["",""],"index":0,"input":"A\ud800\n\udc00B","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\b\\b)"}
 "(?<x>\u005cb\u005cb)" flags="dug" input="A\ud800\u000a\udc00B" lastIndex=1 => {"matches":["",""],"index":1,"input":"A\ud800\n\udc00B","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>\\b\\b)"}
@@ -325,8 +288,6 @@ expression: rows
 "(?<x>\u005cb\u005cb)" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cb)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cb)" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb\u005cb)" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb\u005cb)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cb)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":0,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\b\\b)"}
 "(?<x>\u005cb\u005cb)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":1,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>\\b\\b)"}
 "(?<x>\u005cb\u005cb)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":1,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>\\b\\b)"}
@@ -340,7 +301,6 @@ expression: rows
 "(?<x>\u005cb\u005cb)" flags="diug" input="\ud83d\ude00" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cb)" flags="diug" input="\ud83d\ude00" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cb)" flags="diug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb\u005cb)" flags="diug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cb)" flags="diug" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cb)" flags="diug" input="A\ud800\u000a\udc00B" lastIndex=0 => {"matches":["",""],"index":0,"input":"A\ud800\n\udc00B","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\b\\b)"}
 "(?<x>\u005cb\u005cb)" flags="diug" input="A\ud800\u000a\udc00B" lastIndex=1 => {"matches":["",""],"index":1,"input":"A\ud800\n\udc00B","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>\\b\\b)"}
@@ -350,8 +310,6 @@ expression: rows
 "(?<x>\u005cb\u005cb)" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cb)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cb)" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb\u005cb)" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb\u005cb)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cb)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":0,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\b\\b)"}
 "(?<x>\u005cb\u005cb)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":1,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>\\b\\b)"}
 "(?<x>\u005cb\u005cb)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":1,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>\\b\\b)"}
@@ -365,7 +323,6 @@ expression: rows
 "(?<x>\u005cb\u005cb)" flags="divg" input="\ud83d\ude00" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cb)" flags="divg" input="\ud83d\ude00" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cb)" flags="divg" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb\u005cb)" flags="divg" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cb)" flags="divg" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cb)" flags="divg" input="A\ud800\u000a\udc00B" lastIndex=0 => {"matches":["",""],"index":0,"input":"A\ud800\n\udc00B","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\b\\b)"}
 "(?<x>\u005cb\u005cb)" flags="divg" input="A\ud800\u000a\udc00B" lastIndex=1 => {"matches":["",""],"index":1,"input":"A\ud800\n\udc00B","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>\\b\\b)"}
@@ -375,8 +332,6 @@ expression: rows
 "(?<x>\u005cb\u005cb)" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cb)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cb)" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb\u005cb)" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb\u005cb)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cb)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":0,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\b\\b)"}
 "(?<x>\u005cb\u005cb)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":1,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>\\b\\b)"}
 "(?<x>\u005cb\u005cb)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":1,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>\\b\\b)"}
@@ -390,7 +345,6 @@ expression: rows
 "(?<x>\u005cb\u005cb)" flags="divmy" input="\ud83d\ude00" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cb)" flags="divmy" input="\ud83d\ude00" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cb)" flags="divmy" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb\u005cb)" flags="divmy" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cb)" flags="divmy" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cb)" flags="divmy" input="A\ud800\u000a\udc00B" lastIndex=0 => {"matches":["",""],"index":0,"input":"A\ud800\n\udc00B","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\b\\b)"}
 "(?<x>\u005cb\u005cb)" flags="divmy" input="A\ud800\u000a\udc00B" lastIndex=1 => {"matches":["",""],"index":1,"input":"A\ud800\n\udc00B","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>\\b\\b)"}
@@ -400,8 +354,6 @@ expression: rows
 "(?<x>\u005cb\u005cb)" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cb)" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cb)" flags="divmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb\u005cb)" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb\u005cb)" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB\u005cB)" flags="dug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":6,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[6,6],[6,6]],"indexGroups":{"x":[6,6]},"lastIndex":6,"source":"(?<x>\\B\\B)"}
 "(?<x>\u005cB\u005cB)" flags="dug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":6,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[6,6],[6,6]],"indexGroups":{"x":[6,6]},"lastIndex":6,"source":"(?<x>\\B\\B)"}
 "(?<x>\u005cB\u005cB)" flags="dug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":6,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[6,6],[6,6]],"indexGroups":{"x":[6,6]},"lastIndex":6,"source":"(?<x>\\B\\B)"}
@@ -415,7 +367,6 @@ expression: rows
 "(?<x>\u005cB\u005cB)" flags="dug" input="\ud83d\ude00" lastIndex=0 => {"matches":["",""],"index":0,"input":"😀","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B\\B)"}
 "(?<x>\u005cB\u005cB)" flags="dug" input="\ud83d\ude00" lastIndex=1 => {"matches":["",""],"index":0,"input":"😀","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B\\B)"}
 "(?<x>\u005cB\u005cB)" flags="dug" input="\ud83d\ude00" lastIndex=2 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>\\B\\B)"}
-"(?<x>\u005cB\u005cB)" flags="dug" input="\ud83d\ude00" lastIndex=2 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>\\B\\B)"}
 "(?<x>\u005cB\u005cB)" flags="dug" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB\u005cB)" flags="dug" input="A\ud800\u000a\udc00B" lastIndex=0 => {"matches":["",""],"index":2,"input":"A\ud800\n\udc00B","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>\\B\\B)"}
 "(?<x>\u005cB\u005cB)" flags="dug" input="A\ud800\u000a\udc00B" lastIndex=1 => {"matches":["",""],"index":2,"input":"A\ud800\n\udc00B","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>\\B\\B)"}
@@ -425,8 +376,6 @@ expression: rows
 "(?<x>\u005cB\u005cB)" flags="dug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B\\B)"}
 "(?<x>\u005cB\u005cB)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB\u005cB)" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cB\u005cB)" flags="dug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B\\B)"}
-"(?<x>\u005cB\u005cB)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB\u005cB)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":6,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[6,6],[6,6]],"indexGroups":{"x":[6,6]},"lastIndex":6,"source":"(?<x>\\B\\B)"}
 "(?<x>\u005cB\u005cB)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":6,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[6,6],[6,6]],"indexGroups":{"x":[6,6]},"lastIndex":6,"source":"(?<x>\\B\\B)"}
 "(?<x>\u005cB\u005cB)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":6,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[6,6],[6,6]],"indexGroups":{"x":[6,6]},"lastIndex":6,"source":"(?<x>\\B\\B)"}
@@ -440,7 +389,6 @@ expression: rows
 "(?<x>\u005cB\u005cB)" flags="diug" input="\ud83d\ude00" lastIndex=0 => {"matches":["",""],"index":0,"input":"😀","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B\\B)"}
 "(?<x>\u005cB\u005cB)" flags="diug" input="\ud83d\ude00" lastIndex=1 => {"matches":["",""],"index":0,"input":"😀","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B\\B)"}
 "(?<x>\u005cB\u005cB)" flags="diug" input="\ud83d\ude00" lastIndex=2 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>\\B\\B)"}
-"(?<x>\u005cB\u005cB)" flags="diug" input="\ud83d\ude00" lastIndex=2 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>\\B\\B)"}
 "(?<x>\u005cB\u005cB)" flags="diug" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB\u005cB)" flags="diug" input="A\ud800\u000a\udc00B" lastIndex=0 => {"matches":["",""],"index":2,"input":"A\ud800\n\udc00B","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>\\B\\B)"}
 "(?<x>\u005cB\u005cB)" flags="diug" input="A\ud800\u000a\udc00B" lastIndex=1 => {"matches":["",""],"index":2,"input":"A\ud800\n\udc00B","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>\\B\\B)"}
@@ -450,8 +398,6 @@ expression: rows
 "(?<x>\u005cB\u005cB)" flags="diug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B\\B)"}
 "(?<x>\u005cB\u005cB)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB\u005cB)" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cB\u005cB)" flags="diug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B\\B)"}
-"(?<x>\u005cB\u005cB)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB\u005cB)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":6,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[6,6],[6,6]],"indexGroups":{"x":[6,6]},"lastIndex":6,"source":"(?<x>\\B\\B)"}
 "(?<x>\u005cB\u005cB)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":6,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[6,6],[6,6]],"indexGroups":{"x":[6,6]},"lastIndex":6,"source":"(?<x>\\B\\B)"}
 "(?<x>\u005cB\u005cB)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":6,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[6,6],[6,6]],"indexGroups":{"x":[6,6]},"lastIndex":6,"source":"(?<x>\\B\\B)"}
@@ -465,7 +411,6 @@ expression: rows
 "(?<x>\u005cB\u005cB)" flags="divg" input="\ud83d\ude00" lastIndex=0 => {"matches":["",""],"index":0,"input":"😀","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B\\B)"}
 "(?<x>\u005cB\u005cB)" flags="divg" input="\ud83d\ude00" lastIndex=1 => {"matches":["",""],"index":0,"input":"😀","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B\\B)"}
 "(?<x>\u005cB\u005cB)" flags="divg" input="\ud83d\ude00" lastIndex=2 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>\\B\\B)"}
-"(?<x>\u005cB\u005cB)" flags="divg" input="\ud83d\ude00" lastIndex=2 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>\\B\\B)"}
 "(?<x>\u005cB\u005cB)" flags="divg" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB\u005cB)" flags="divg" input="A\ud800\u000a\udc00B" lastIndex=0 => {"matches":["",""],"index":2,"input":"A\ud800\n\udc00B","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>\\B\\B)"}
 "(?<x>\u005cB\u005cB)" flags="divg" input="A\ud800\u000a\udc00B" lastIndex=1 => {"matches":["",""],"index":2,"input":"A\ud800\n\udc00B","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>\\B\\B)"}
@@ -475,8 +420,6 @@ expression: rows
 "(?<x>\u005cB\u005cB)" flags="divg" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B\\B)"}
 "(?<x>\u005cB\u005cB)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB\u005cB)" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cB\u005cB)" flags="divg" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B\\B)"}
-"(?<x>\u005cB\u005cB)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB\u005cB)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB\u005cB)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB\u005cB)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -490,7 +433,6 @@ expression: rows
 "(?<x>\u005cB\u005cB)" flags="divmy" input="\ud83d\ude00" lastIndex=0 => {"matches":["",""],"index":0,"input":"😀","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B\\B)"}
 "(?<x>\u005cB\u005cB)" flags="divmy" input="\ud83d\ude00" lastIndex=1 => {"matches":["",""],"index":0,"input":"😀","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B\\B)"}
 "(?<x>\u005cB\u005cB)" flags="divmy" input="\ud83d\ude00" lastIndex=2 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>\\B\\B)"}
-"(?<x>\u005cB\u005cB)" flags="divmy" input="\ud83d\ude00" lastIndex=2 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>\\B\\B)"}
 "(?<x>\u005cB\u005cB)" flags="divmy" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB\u005cB)" flags="divmy" input="A\ud800\u000a\udc00B" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB\u005cB)" flags="divmy" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -500,8 +442,6 @@ expression: rows
 "(?<x>\u005cB\u005cB)" flags="divmy" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B\\B)"}
 "(?<x>\u005cB\u005cB)" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB\u005cB)" flags="divmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cB\u005cB)" flags="divmy" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B\\B)"}
-"(?<x>\u005cB\u005cB)" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="dug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="dug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="dug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -515,7 +455,6 @@ expression: rows
 "(?<x>\u005cb\u005cB)" flags="dug" input="\ud83d\ude00" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="dug" input="\ud83d\ude00" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="dug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb\u005cB)" flags="dug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="dug" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="dug" input="A\ud800\u000a\udc00B" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="dug" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -525,8 +464,6 @@ expression: rows
 "(?<x>\u005cb\u005cB)" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb\u005cB)" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb\u005cB)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -540,7 +477,6 @@ expression: rows
 "(?<x>\u005cb\u005cB)" flags="diug" input="\ud83d\ude00" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="diug" input="\ud83d\ude00" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="diug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb\u005cB)" flags="diug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="diug" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="diug" input="A\ud800\u000a\udc00B" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="diug" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -550,8 +486,6 @@ expression: rows
 "(?<x>\u005cb\u005cB)" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb\u005cB)" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb\u005cB)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -565,7 +499,6 @@ expression: rows
 "(?<x>\u005cb\u005cB)" flags="divg" input="\ud83d\ude00" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="divg" input="\ud83d\ude00" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="divg" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb\u005cB)" flags="divg" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="divg" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="divg" input="A\ud800\u000a\udc00B" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="divg" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -575,8 +508,6 @@ expression: rows
 "(?<x>\u005cb\u005cB)" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb\u005cB)" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb\u005cB)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -590,7 +521,6 @@ expression: rows
 "(?<x>\u005cb\u005cB)" flags="divmy" input="\ud83d\ude00" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="divmy" input="\ud83d\ude00" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="divmy" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb\u005cB)" flags="divmy" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="divmy" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="divmy" input="A\ud800\u000a\udc00B" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="divmy" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -600,8 +530,6 @@ expression: rows
 "(?<x>\u005cb\u005cB)" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb\u005cB)" flags="divmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb\u005cB)" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb\u005cB)" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB^)" flags="dug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB^)" flags="dug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB^)" flags="dug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -615,7 +543,6 @@ expression: rows
 "(?<x>\u005cB^)" flags="dug" input="\ud83d\ude00" lastIndex=0 => {"matches":["",""],"index":0,"input":"😀","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B^)"}
 "(?<x>\u005cB^)" flags="dug" input="\ud83d\ude00" lastIndex=1 => {"matches":["",""],"index":0,"input":"😀","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B^)"}
 "(?<x>\u005cB^)" flags="dug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cB^)" flags="dug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB^)" flags="dug" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB^)" flags="dug" input="A\ud800\u000a\udc00B" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB^)" flags="dug" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -625,8 +552,6 @@ expression: rows
 "(?<x>\u005cB^)" flags="dug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B^)"}
 "(?<x>\u005cB^)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB^)" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cB^)" flags="dug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B^)"}
-"(?<x>\u005cB^)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB^)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB^)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB^)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -640,7 +565,6 @@ expression: rows
 "(?<x>\u005cB^)" flags="diug" input="\ud83d\ude00" lastIndex=0 => {"matches":["",""],"index":0,"input":"😀","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B^)"}
 "(?<x>\u005cB^)" flags="diug" input="\ud83d\ude00" lastIndex=1 => {"matches":["",""],"index":0,"input":"😀","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B^)"}
 "(?<x>\u005cB^)" flags="diug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cB^)" flags="diug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB^)" flags="diug" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB^)" flags="diug" input="A\ud800\u000a\udc00B" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB^)" flags="diug" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -650,8 +574,6 @@ expression: rows
 "(?<x>\u005cB^)" flags="diug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B^)"}
 "(?<x>\u005cB^)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB^)" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cB^)" flags="diug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B^)"}
-"(?<x>\u005cB^)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB^)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB^)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB^)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -665,7 +587,6 @@ expression: rows
 "(?<x>\u005cB^)" flags="divg" input="\ud83d\ude00" lastIndex=0 => {"matches":["",""],"index":0,"input":"😀","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B^)"}
 "(?<x>\u005cB^)" flags="divg" input="\ud83d\ude00" lastIndex=1 => {"matches":["",""],"index":0,"input":"😀","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B^)"}
 "(?<x>\u005cB^)" flags="divg" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cB^)" flags="divg" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB^)" flags="divg" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB^)" flags="divg" input="A\ud800\u000a\udc00B" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB^)" flags="divg" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -675,8 +596,6 @@ expression: rows
 "(?<x>\u005cB^)" flags="divg" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B^)"}
 "(?<x>\u005cB^)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB^)" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cB^)" flags="divg" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B^)"}
-"(?<x>\u005cB^)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB^)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB^)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB^)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -690,7 +609,6 @@ expression: rows
 "(?<x>\u005cB^)" flags="divmy" input="\ud83d\ude00" lastIndex=0 => {"matches":["",""],"index":0,"input":"😀","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B^)"}
 "(?<x>\u005cB^)" flags="divmy" input="\ud83d\ude00" lastIndex=1 => {"matches":["",""],"index":0,"input":"😀","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B^)"}
 "(?<x>\u005cB^)" flags="divmy" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cB^)" flags="divmy" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB^)" flags="divmy" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB^)" flags="divmy" input="A\ud800\u000a\udc00B" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB^)" flags="divmy" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -700,8 +618,6 @@ expression: rows
 "(?<x>\u005cB^)" flags="divmy" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B^)"}
 "(?<x>\u005cB^)" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB^)" flags="divmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cB^)" flags="divmy" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B^)"}
-"(?<x>\u005cB^)" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cB)" flags="dug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":10,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[10,10],[10,10]],"indexGroups":{"x":[10,10]},"lastIndex":10,"source":"(?<x>$\\B)"}
 "(?<x>$\u005cB)" flags="dug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":10,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[10,10],[10,10]],"indexGroups":{"x":[10,10]},"lastIndex":10,"source":"(?<x>$\\B)"}
 "(?<x>$\u005cB)" flags="dug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":10,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[10,10],[10,10]],"indexGroups":{"x":[10,10]},"lastIndex":10,"source":"(?<x>$\\B)"}
@@ -715,7 +631,6 @@ expression: rows
 "(?<x>$\u005cB)" flags="dug" input="\ud83d\ude00" lastIndex=0 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>$\\B)"}
 "(?<x>$\u005cB)" flags="dug" input="\ud83d\ude00" lastIndex=1 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>$\\B)"}
 "(?<x>$\u005cB)" flags="dug" input="\ud83d\ude00" lastIndex=2 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>$\\B)"}
-"(?<x>$\u005cB)" flags="dug" input="\ud83d\ude00" lastIndex=2 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>$\\B)"}
 "(?<x>$\u005cB)" flags="dug" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cB)" flags="dug" input="A\ud800\u000a\udc00B" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cB)" flags="dug" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -725,8 +640,6 @@ expression: rows
 "(?<x>$\u005cB)" flags="dug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>$\\B)"}
 "(?<x>$\u005cB)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cB)" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>$\u005cB)" flags="dug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>$\\B)"}
-"(?<x>$\u005cB)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cB)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":10,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[10,10],[10,10]],"indexGroups":{"x":[10,10]},"lastIndex":10,"source":"(?<x>$\\B)"}
 "(?<x>$\u005cB)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":10,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[10,10],[10,10]],"indexGroups":{"x":[10,10]},"lastIndex":10,"source":"(?<x>$\\B)"}
 "(?<x>$\u005cB)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":10,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[10,10],[10,10]],"indexGroups":{"x":[10,10]},"lastIndex":10,"source":"(?<x>$\\B)"}
@@ -740,7 +653,6 @@ expression: rows
 "(?<x>$\u005cB)" flags="diug" input="\ud83d\ude00" lastIndex=0 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>$\\B)"}
 "(?<x>$\u005cB)" flags="diug" input="\ud83d\ude00" lastIndex=1 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>$\\B)"}
 "(?<x>$\u005cB)" flags="diug" input="\ud83d\ude00" lastIndex=2 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>$\\B)"}
-"(?<x>$\u005cB)" flags="diug" input="\ud83d\ude00" lastIndex=2 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>$\\B)"}
 "(?<x>$\u005cB)" flags="diug" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cB)" flags="diug" input="A\ud800\u000a\udc00B" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cB)" flags="diug" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -750,8 +662,6 @@ expression: rows
 "(?<x>$\u005cB)" flags="diug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>$\\B)"}
 "(?<x>$\u005cB)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cB)" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>$\u005cB)" flags="diug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>$\\B)"}
-"(?<x>$\u005cB)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cB)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":10,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[10,10],[10,10]],"indexGroups":{"x":[10,10]},"lastIndex":10,"source":"(?<x>$\\B)"}
 "(?<x>$\u005cB)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":10,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[10,10],[10,10]],"indexGroups":{"x":[10,10]},"lastIndex":10,"source":"(?<x>$\\B)"}
 "(?<x>$\u005cB)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":10,"input":"A😀B a_ſK\n","groups":{"x":""},"indices":[[10,10],[10,10]],"indexGroups":{"x":[10,10]},"lastIndex":10,"source":"(?<x>$\\B)"}
@@ -765,7 +675,6 @@ expression: rows
 "(?<x>$\u005cB)" flags="divg" input="\ud83d\ude00" lastIndex=0 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>$\\B)"}
 "(?<x>$\u005cB)" flags="divg" input="\ud83d\ude00" lastIndex=1 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>$\\B)"}
 "(?<x>$\u005cB)" flags="divg" input="\ud83d\ude00" lastIndex=2 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>$\\B)"}
-"(?<x>$\u005cB)" flags="divg" input="\ud83d\ude00" lastIndex=2 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>$\\B)"}
 "(?<x>$\u005cB)" flags="divg" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cB)" flags="divg" input="A\ud800\u000a\udc00B" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cB)" flags="divg" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -775,8 +684,6 @@ expression: rows
 "(?<x>$\u005cB)" flags="divg" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>$\\B)"}
 "(?<x>$\u005cB)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cB)" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>$\u005cB)" flags="divg" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>$\\B)"}
-"(?<x>$\u005cB)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cB)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cB)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cB)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -790,7 +697,6 @@ expression: rows
 "(?<x>$\u005cB)" flags="divmy" input="\ud83d\ude00" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cB)" flags="divmy" input="\ud83d\ude00" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cB)" flags="divmy" input="\ud83d\ude00" lastIndex=2 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>$\\B)"}
-"(?<x>$\u005cB)" flags="divmy" input="\ud83d\ude00" lastIndex=2 => {"matches":["",""],"index":2,"input":"😀","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>$\\B)"}
 "(?<x>$\u005cB)" flags="divmy" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cB)" flags="divmy" input="A\ud800\u000a\udc00B" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cB)" flags="divmy" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -800,8 +706,6 @@ expression: rows
 "(?<x>$\u005cB)" flags="divmy" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>$\\B)"}
 "(?<x>$\u005cB)" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cB)" flags="divmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>$\u005cB)" flags="divmy" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>$\\B)"}
-"(?<x>$\u005cB)" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="dug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="dug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="dug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -815,7 +719,6 @@ expression: rows
 "(?<x>\u005cb^$\u005cb)" flags="dug" input="\ud83d\ude00" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="dug" input="\ud83d\ude00" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="dug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb^$\u005cb)" flags="dug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="dug" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="dug" input="A\ud800\u000a\udc00B" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="dug" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -825,8 +728,6 @@ expression: rows
 "(?<x>\u005cb^$\u005cb)" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb^$\u005cb)" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb^$\u005cb)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -840,7 +741,6 @@ expression: rows
 "(?<x>\u005cb^$\u005cb)" flags="diug" input="\ud83d\ude00" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="diug" input="\ud83d\ude00" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="diug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb^$\u005cb)" flags="diug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="diug" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="diug" input="A\ud800\u000a\udc00B" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="diug" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -850,8 +750,6 @@ expression: rows
 "(?<x>\u005cb^$\u005cb)" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb^$\u005cb)" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb^$\u005cb)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -865,7 +763,6 @@ expression: rows
 "(?<x>\u005cb^$\u005cb)" flags="divg" input="\ud83d\ude00" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="divg" input="\ud83d\ude00" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="divg" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb^$\u005cb)" flags="divg" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="divg" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="divg" input="A\ud800\u000a\udc00B" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="divg" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -875,8 +772,6 @@ expression: rows
 "(?<x>\u005cb^$\u005cb)" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb^$\u005cb)" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb^$\u005cb)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -890,7 +785,6 @@ expression: rows
 "(?<x>\u005cb^$\u005cb)" flags="divmy" input="\ud83d\ude00" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="divmy" input="\ud83d\ude00" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="divmy" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb^$\u005cb)" flags="divmy" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="divmy" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="divmy" input="A\ud800\u000a\udc00B" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="divmy" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -900,8 +794,6 @@ expression: rows
 "(?<x>\u005cb^$\u005cb)" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cb^$\u005cb)" flags="divmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb^$\u005cb)" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cb^$\u005cb)" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="dug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="dug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="dug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -915,7 +807,6 @@ expression: rows
 "(?<x>\u005cB$^\u005cB)" flags="dug" input="\ud83d\ude00" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="dug" input="\ud83d\ude00" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="dug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cB$^\u005cB)" flags="dug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="dug" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="dug" input="A\ud800\u000a\udc00B" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="dug" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -925,8 +816,6 @@ expression: rows
 "(?<x>\u005cB$^\u005cB)" flags="dug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B$^\\B)"}
 "(?<x>\u005cB$^\u005cB)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cB$^\u005cB)" flags="dug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B$^\\B)"}
-"(?<x>\u005cB$^\u005cB)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -940,7 +829,6 @@ expression: rows
 "(?<x>\u005cB$^\u005cB)" flags="diug" input="\ud83d\ude00" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="diug" input="\ud83d\ude00" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="diug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cB$^\u005cB)" flags="diug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="diug" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="diug" input="A\ud800\u000a\udc00B" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="diug" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -950,8 +838,6 @@ expression: rows
 "(?<x>\u005cB$^\u005cB)" flags="diug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B$^\\B)"}
 "(?<x>\u005cB$^\u005cB)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cB$^\u005cB)" flags="diug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B$^\\B)"}
-"(?<x>\u005cB$^\u005cB)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -965,7 +851,6 @@ expression: rows
 "(?<x>\u005cB$^\u005cB)" flags="divg" input="\ud83d\ude00" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="divg" input="\ud83d\ude00" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="divg" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cB$^\u005cB)" flags="divg" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="divg" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="divg" input="A\ud800\u000a\udc00B" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="divg" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -975,8 +860,6 @@ expression: rows
 "(?<x>\u005cB$^\u005cB)" flags="divg" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B$^\\B)"}
 "(?<x>\u005cB$^\u005cB)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cB$^\u005cB)" flags="divg" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B$^\\B)"}
-"(?<x>\u005cB$^\u005cB)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -990,7 +873,6 @@ expression: rows
 "(?<x>\u005cB$^\u005cB)" flags="divmy" input="\ud83d\ude00" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="divmy" input="\ud83d\ude00" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="divmy" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cB$^\u005cB)" flags="divmy" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="divmy" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="divmy" input="A\ud800\u000a\udc00B" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="divmy" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -1000,8 +882,6 @@ expression: rows
 "(?<x>\u005cB$^\u005cB)" flags="divmy" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B$^\\B)"}
 "(?<x>\u005cB$^\u005cB)" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cB$^\u005cB)" flags="divmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cB$^\u005cB)" flags="divmy" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\B$^\\B)"}
-"(?<x>\u005cB$^\u005cB)" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="dug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="dug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="dug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -1015,7 +895,6 @@ expression: rows
 "(?<x>^\u005cb\u005cB$)" flags="dug" input="\ud83d\ude00" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="dug" input="\ud83d\ude00" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="dug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>^\u005cb\u005cB$)" flags="dug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="dug" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="dug" input="A\ud800\u000a\udc00B" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="dug" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -1025,8 +904,6 @@ expression: rows
 "(?<x>^\u005cb\u005cB$)" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>^\u005cb\u005cB$)" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>^\u005cb\u005cB$)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -1040,7 +917,6 @@ expression: rows
 "(?<x>^\u005cb\u005cB$)" flags="diug" input="\ud83d\ude00" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="diug" input="\ud83d\ude00" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="diug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>^\u005cb\u005cB$)" flags="diug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="diug" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="diug" input="A\ud800\u000a\udc00B" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="diug" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -1050,8 +926,6 @@ expression: rows
 "(?<x>^\u005cb\u005cB$)" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>^\u005cb\u005cB$)" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>^\u005cb\u005cB$)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -1065,7 +939,6 @@ expression: rows
 "(?<x>^\u005cb\u005cB$)" flags="divg" input="\ud83d\ude00" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="divg" input="\ud83d\ude00" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="divg" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>^\u005cb\u005cB$)" flags="divg" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="divg" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="divg" input="A\ud800\u000a\udc00B" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="divg" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -1075,8 +948,6 @@ expression: rows
 "(?<x>^\u005cb\u005cB$)" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>^\u005cb\u005cB$)" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>^\u005cb\u005cB$)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -1090,7 +961,6 @@ expression: rows
 "(?<x>^\u005cb\u005cB$)" flags="divmy" input="\ud83d\ude00" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="divmy" input="\ud83d\ude00" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="divmy" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>^\u005cb\u005cB$)" flags="divmy" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="divmy" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="divmy" input="A\ud800\u000a\udc00B" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="divmy" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -1100,8 +970,6 @@ expression: rows
 "(?<x>^\u005cb\u005cB$)" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>^\u005cb\u005cB$)" flags="divmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>^\u005cb\u005cB$)" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>^\u005cb\u005cB$)" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="dug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="dug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="dug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -1115,7 +983,6 @@ expression: rows
 "(?<x>$\u005cb^)" flags="dug" input="\ud83d\ude00" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="dug" input="\ud83d\ude00" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="dug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>$\u005cb^)" flags="dug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="dug" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="dug" input="A\ud800\u000a\udc00B" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="dug" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -1125,8 +992,6 @@ expression: rows
 "(?<x>$\u005cb^)" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>$\u005cb^)" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>$\u005cb^)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="diug" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -1140,7 +1005,6 @@ expression: rows
 "(?<x>$\u005cb^)" flags="diug" input="\ud83d\ude00" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="diug" input="\ud83d\ude00" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="diug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>$\u005cb^)" flags="diug" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="diug" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="diug" input="A\ud800\u000a\udc00B" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="diug" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -1150,8 +1014,6 @@ expression: rows
 "(?<x>$\u005cb^)" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>$\u005cb^)" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>$\u005cb^)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="divg" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -1165,7 +1027,6 @@ expression: rows
 "(?<x>$\u005cb^)" flags="divg" input="\ud83d\ude00" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="divg" input="\ud83d\ude00" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="divg" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>$\u005cb^)" flags="divg" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="divg" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="divg" input="A\ud800\u000a\udc00B" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="divg" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -1175,8 +1036,6 @@ expression: rows
 "(?<x>$\u005cb^)" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>$\u005cb^)" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>$\u005cb^)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="divmy" input="A\ud83d\ude00B a_\u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -1190,7 +1049,6 @@ expression: rows
 "(?<x>$\u005cb^)" flags="divmy" input="\ud83d\ude00" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="divmy" input="\ud83d\ude00" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="divmy" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>$\u005cb^)" flags="divmy" input="\ud83d\ude00" lastIndex=2 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="divmy" input="\ud83d\ude00" lastIndex=3 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="divmy" input="A\ud800\u000a\udc00B" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="divmy" input="A\ud800\u000a\udc00B" lastIndex=1 => {"match":null,"lastIndex":0}
@@ -1200,5 +1058,3 @@ expression: rows
 "(?<x>$\u005cb^)" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>$\u005cb^)" flags="divmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>$\u005cb^)" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>$\u005cb^)" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}

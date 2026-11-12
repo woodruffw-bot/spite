@@ -1,5 +1,6 @@
 //! Unicode dot and character escapes with i (22.2.2.7.3, 22.2.2.9).
 use crate::common::assert_true;
+use crate::common::regexp_matches::last_index_cases;
 use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
@@ -18,7 +19,7 @@ fn unicode_character_folding_results_snapshot() {
             let pattern = JsString::from(format!("{left}{body}{right}").as_str());
             for flags in ["diug", "diumy", "diumsg", "divg", "divmy", "divmsg"] {
                 for input in &inputs {
-                    for start in [0, 1, 2, input.len(), input.len() + 1] {
+                    for start in last_index_cases(input.len()) {
                         let script = format!(
                             r#"
                                 let r = new RegExp({pattern:?}, '{flags}');

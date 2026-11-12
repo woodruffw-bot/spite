@@ -25,8 +25,6 @@ expression: rows
 "(?<x>a+)" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>a+)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a+)" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a+)" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>a+)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a+)" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aaa","aaa"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aaa"},"indices":[[0,3],[0,3]],"indexGroups":{"x":[0,3]},"lastIndex":3,"source":"(?<x>a+)"}
 "(?<x>a+)" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","aa"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[1,3],[1,3]],"indexGroups":{"x":[1,3]},"lastIndex":3,"source":"(?<x>a+)"}
 "(?<x>a+)" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["a","a"],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":"a"},"indices":[[2,3],[2,3]],"indexGroups":{"x":[2,3]},"lastIndex":3,"source":"(?<x>a+)"}
@@ -50,8 +48,6 @@ expression: rows
 "(?<x>a+)" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>a+)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a+)" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a+)" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>a+)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a+)" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aaa","aaa"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aaa"},"indices":[[0,3],[0,3]],"indexGroups":{"x":[0,3]},"lastIndex":3,"source":"(?<x>a+)"}
 "(?<x>a+)" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","aa"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[1,3],[1,3]],"indexGroups":{"x":[1,3]},"lastIndex":3,"source":"(?<x>a+)"}
 "(?<x>a+)" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["a","a"],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":"a"},"indices":[[2,3],[2,3]],"indexGroups":{"x":[2,3]},"lastIndex":3,"source":"(?<x>a+)"}
@@ -75,8 +71,6 @@ expression: rows
 "(?<x>a+)" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>a+)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a+)" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a+)" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>a+)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a+)" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aaa","aaa"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aaa"},"indices":[[0,3],[0,3]],"indexGroups":{"x":[0,3]},"lastIndex":3,"source":"(?<x>a+)"}
 "(?<x>a+)" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","aa"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[1,3],[1,3]],"indexGroups":{"x":[1,3]},"lastIndex":3,"source":"(?<x>a+)"}
 "(?<x>a+)" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["a","a"],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":"a"},"indices":[[2,3],[2,3]],"indexGroups":{"x":[2,3]},"lastIndex":3,"source":"(?<x>a+)"}
@@ -100,8 +94,6 @@ expression: rows
 "(?<x>a+)" flags="divy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>a+)" flags="divy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a+)" flags="divy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a+)" flags="divy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>a+)" flags="divy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a+)" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aaa","aaa"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aaa"},"indices":[[0,3],[0,3]],"indexGroups":{"x":[0,3]},"lastIndex":3,"source":"(?<x>a+)"}
 "(?<x>a+)" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","aa"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[1,3],[1,3]],"indexGroups":{"x":[1,3]},"lastIndex":3,"source":"(?<x>a+)"}
 "(?<x>a+)" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["a","a"],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":"a"},"indices":[[2,3],[2,3]],"indexGroups":{"x":[2,3]},"lastIndex":3,"source":"(?<x>a+)"}
@@ -125,8 +117,6 @@ expression: rows
 "(?<x>a+)" flags="dsug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>a+)" flags="dsug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a+)" flags="dsug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a+)" flags="dsug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>a+)" flags="dsug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a+)" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aaa","aaa"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aaa"},"indices":[[0,3],[0,3]],"indexGroups":{"x":[0,3]},"lastIndex":3,"source":"(?<x>a+)"}
 "(?<x>a+)" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","aa"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[1,3],[1,3]],"indexGroups":{"x":[1,3]},"lastIndex":3,"source":"(?<x>a+)"}
 "(?<x>a+)" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["a","a"],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":"a"},"indices":[[2,3],[2,3]],"indexGroups":{"x":[2,3]},"lastIndex":3,"source":"(?<x>a+)"}
@@ -150,8 +140,6 @@ expression: rows
 "(?<x>a+)" flags="disvy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>a+)" flags="disvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a+)" flags="disvy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a+)" flags="disvy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>a+)" flags="disvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a*?)" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a*?)"}
 "(?<x>a*?)" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>a*?)"}
 "(?<x>a*?)" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>a*?)"}
@@ -175,8 +163,6 @@ expression: rows
 "(?<x>a*?)" flags="dug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a*?)"}
 "(?<x>a*?)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a*?)" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a*?)" flags="dug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a*?)"}
-"(?<x>a*?)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a*?)" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a*?)"}
 "(?<x>a*?)" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>a*?)"}
 "(?<x>a*?)" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>a*?)"}
@@ -200,8 +186,6 @@ expression: rows
 "(?<x>a*?)" flags="diug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a*?)"}
 "(?<x>a*?)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a*?)" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a*?)" flags="diug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a*?)"}
-"(?<x>a*?)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a*?)" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a*?)"}
 "(?<x>a*?)" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>a*?)"}
 "(?<x>a*?)" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>a*?)"}
@@ -225,8 +209,6 @@ expression: rows
 "(?<x>a*?)" flags="divg" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a*?)"}
 "(?<x>a*?)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a*?)" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a*?)" flags="divg" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a*?)"}
-"(?<x>a*?)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a*?)" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a*?)"}
 "(?<x>a*?)" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>a*?)"}
 "(?<x>a*?)" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>a*?)"}
@@ -250,8 +232,6 @@ expression: rows
 "(?<x>a*?)" flags="divy" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a*?)"}
 "(?<x>a*?)" flags="divy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a*?)" flags="divy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a*?)" flags="divy" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a*?)"}
-"(?<x>a*?)" flags="divy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a*?)" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a*?)"}
 "(?<x>a*?)" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>a*?)"}
 "(?<x>a*?)" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>a*?)"}
@@ -275,8 +255,6 @@ expression: rows
 "(?<x>a*?)" flags="dsug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a*?)"}
 "(?<x>a*?)" flags="dsug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a*?)" flags="dsug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a*?)" flags="dsug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a*?)"}
-"(?<x>a*?)" flags="dsug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a*?)" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a*?)"}
 "(?<x>a*?)" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>a*?)"}
 "(?<x>a*?)" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>a*?)"}
@@ -300,8 +278,6 @@ expression: rows
 "(?<x>a*?)" flags="disvy" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a*?)"}
 "(?<x>a*?)" flags="disvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a*?)" flags="disvy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a*?)" flags="disvy" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a*?)"}
-"(?<x>a*?)" flags="disvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a??)" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a??)"}
 "(?<x>a??)" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>a??)"}
 "(?<x>a??)" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>a??)"}
@@ -325,8 +301,6 @@ expression: rows
 "(?<x>a??)" flags="dug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a??)"}
 "(?<x>a??)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a??)" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a??)" flags="dug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a??)"}
-"(?<x>a??)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a??)" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a??)"}
 "(?<x>a??)" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>a??)"}
 "(?<x>a??)" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>a??)"}
@@ -350,8 +324,6 @@ expression: rows
 "(?<x>a??)" flags="diug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a??)"}
 "(?<x>a??)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a??)" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a??)" flags="diug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a??)"}
-"(?<x>a??)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a??)" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a??)"}
 "(?<x>a??)" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>a??)"}
 "(?<x>a??)" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>a??)"}
@@ -375,8 +347,6 @@ expression: rows
 "(?<x>a??)" flags="divg" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a??)"}
 "(?<x>a??)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a??)" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a??)" flags="divg" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a??)"}
-"(?<x>a??)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a??)" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a??)"}
 "(?<x>a??)" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>a??)"}
 "(?<x>a??)" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>a??)"}
@@ -400,8 +370,6 @@ expression: rows
 "(?<x>a??)" flags="divy" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a??)"}
 "(?<x>a??)" flags="divy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a??)" flags="divy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a??)" flags="divy" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a??)"}
-"(?<x>a??)" flags="divy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a??)" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a??)"}
 "(?<x>a??)" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>a??)"}
 "(?<x>a??)" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>a??)"}
@@ -425,8 +393,6 @@ expression: rows
 "(?<x>a??)" flags="dsug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a??)"}
 "(?<x>a??)" flags="dsug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a??)" flags="dsug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a??)" flags="dsug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a??)"}
-"(?<x>a??)" flags="dsug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a??)" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a??)"}
 "(?<x>a??)" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>a??)"}
 "(?<x>a??)" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>a??)"}
@@ -450,8 +416,6 @@ expression: rows
 "(?<x>a??)" flags="disvy" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a??)"}
 "(?<x>a??)" flags="disvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a??)" flags="disvy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a??)" flags="disvy" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a??)"}
-"(?<x>a??)" flags="disvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{2,3})" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aaa","aaa"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aaa"},"indices":[[0,3],[0,3]],"indexGroups":{"x":[0,3]},"lastIndex":3,"source":"(?<x>a{2,3})"}
 "(?<x>a{2,3})" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","aa"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[1,3],[1,3]],"indexGroups":{"x":[1,3]},"lastIndex":3,"source":"(?<x>a{2,3})"}
 "(?<x>a{2,3})" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -475,8 +439,6 @@ expression: rows
 "(?<x>a{2,3})" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>a{2,3})" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{2,3})" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a{2,3})" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>a{2,3})" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{2,3})" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aaa","aaa"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aaa"},"indices":[[0,3],[0,3]],"indexGroups":{"x":[0,3]},"lastIndex":3,"source":"(?<x>a{2,3})"}
 "(?<x>a{2,3})" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","aa"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[1,3],[1,3]],"indexGroups":{"x":[1,3]},"lastIndex":3,"source":"(?<x>a{2,3})"}
 "(?<x>a{2,3})" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["AA","AA"],"index":4,"input":"aaa AA1 ſK\n","groups":{"x":"AA"},"indices":[[4,6],[4,6]],"indexGroups":{"x":[4,6]},"lastIndex":6,"source":"(?<x>a{2,3})"}
@@ -500,8 +462,6 @@ expression: rows
 "(?<x>a{2,3})" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>a{2,3})" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{2,3})" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a{2,3})" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>a{2,3})" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{2,3})" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aaa","aaa"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aaa"},"indices":[[0,3],[0,3]],"indexGroups":{"x":[0,3]},"lastIndex":3,"source":"(?<x>a{2,3})"}
 "(?<x>a{2,3})" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","aa"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[1,3],[1,3]],"indexGroups":{"x":[1,3]},"lastIndex":3,"source":"(?<x>a{2,3})"}
 "(?<x>a{2,3})" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["AA","AA"],"index":4,"input":"aaa AA1 ſK\n","groups":{"x":"AA"},"indices":[[4,6],[4,6]],"indexGroups":{"x":[4,6]},"lastIndex":6,"source":"(?<x>a{2,3})"}
@@ -525,8 +485,6 @@ expression: rows
 "(?<x>a{2,3})" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>a{2,3})" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{2,3})" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a{2,3})" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>a{2,3})" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{2,3})" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aaa","aaa"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aaa"},"indices":[[0,3],[0,3]],"indexGroups":{"x":[0,3]},"lastIndex":3,"source":"(?<x>a{2,3})"}
 "(?<x>a{2,3})" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","aa"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[1,3],[1,3]],"indexGroups":{"x":[1,3]},"lastIndex":3,"source":"(?<x>a{2,3})"}
 "(?<x>a{2,3})" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -550,8 +508,6 @@ expression: rows
 "(?<x>a{2,3})" flags="divy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>a{2,3})" flags="divy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{2,3})" flags="divy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a{2,3})" flags="divy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>a{2,3})" flags="divy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{2,3})" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aaa","aaa"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aaa"},"indices":[[0,3],[0,3]],"indexGroups":{"x":[0,3]},"lastIndex":3,"source":"(?<x>a{2,3})"}
 "(?<x>a{2,3})" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","aa"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[1,3],[1,3]],"indexGroups":{"x":[1,3]},"lastIndex":3,"source":"(?<x>a{2,3})"}
 "(?<x>a{2,3})" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -575,8 +531,6 @@ expression: rows
 "(?<x>a{2,3})" flags="dsug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>a{2,3})" flags="dsug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{2,3})" flags="dsug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a{2,3})" flags="dsug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>a{2,3})" flags="dsug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{2,3})" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aaa","aaa"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aaa"},"indices":[[0,3],[0,3]],"indexGroups":{"x":[0,3]},"lastIndex":3,"source":"(?<x>a{2,3})"}
 "(?<x>a{2,3})" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","aa"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[1,3],[1,3]],"indexGroups":{"x":[1,3]},"lastIndex":3,"source":"(?<x>a{2,3})"}
 "(?<x>a{2,3})" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -600,8 +554,6 @@ expression: rows
 "(?<x>a{2,3})" flags="disvy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>a{2,3})" flags="disvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{2,3})" flags="disvy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a{2,3})" flags="disvy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>a{2,3})" flags="disvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{002,03}?)" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aa","aa"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[0,2],[0,2]],"indexGroups":{"x":[0,2]},"lastIndex":2,"source":"(?<x>a{002,03}?)"}
 "(?<x>a{002,03}?)" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","aa"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[1,3],[1,3]],"indexGroups":{"x":[1,3]},"lastIndex":3,"source":"(?<x>a{002,03}?)"}
 "(?<x>a{002,03}?)" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -625,8 +577,6 @@ expression: rows
 "(?<x>a{002,03}?)" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>a{002,03}?)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{002,03}?)" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a{002,03}?)" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>a{002,03}?)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{002,03}?)" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aa","aa"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[0,2],[0,2]],"indexGroups":{"x":[0,2]},"lastIndex":2,"source":"(?<x>a{002,03}?)"}
 "(?<x>a{002,03}?)" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","aa"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[1,3],[1,3]],"indexGroups":{"x":[1,3]},"lastIndex":3,"source":"(?<x>a{002,03}?)"}
 "(?<x>a{002,03}?)" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["AA","AA"],"index":4,"input":"aaa AA1 ſK\n","groups":{"x":"AA"},"indices":[[4,6],[4,6]],"indexGroups":{"x":[4,6]},"lastIndex":6,"source":"(?<x>a{002,03}?)"}
@@ -650,8 +600,6 @@ expression: rows
 "(?<x>a{002,03}?)" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>a{002,03}?)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{002,03}?)" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a{002,03}?)" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>a{002,03}?)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{002,03}?)" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aa","aa"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[0,2],[0,2]],"indexGroups":{"x":[0,2]},"lastIndex":2,"source":"(?<x>a{002,03}?)"}
 "(?<x>a{002,03}?)" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","aa"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[1,3],[1,3]],"indexGroups":{"x":[1,3]},"lastIndex":3,"source":"(?<x>a{002,03}?)"}
 "(?<x>a{002,03}?)" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["AA","AA"],"index":4,"input":"aaa AA1 ſK\n","groups":{"x":"AA"},"indices":[[4,6],[4,6]],"indexGroups":{"x":[4,6]},"lastIndex":6,"source":"(?<x>a{002,03}?)"}
@@ -675,8 +623,6 @@ expression: rows
 "(?<x>a{002,03}?)" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>a{002,03}?)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{002,03}?)" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a{002,03}?)" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>a{002,03}?)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{002,03}?)" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aa","aa"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[0,2],[0,2]],"indexGroups":{"x":[0,2]},"lastIndex":2,"source":"(?<x>a{002,03}?)"}
 "(?<x>a{002,03}?)" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","aa"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[1,3],[1,3]],"indexGroups":{"x":[1,3]},"lastIndex":3,"source":"(?<x>a{002,03}?)"}
 "(?<x>a{002,03}?)" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -700,8 +646,6 @@ expression: rows
 "(?<x>a{002,03}?)" flags="divy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>a{002,03}?)" flags="divy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{002,03}?)" flags="divy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a{002,03}?)" flags="divy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>a{002,03}?)" flags="divy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{002,03}?)" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aa","aa"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[0,2],[0,2]],"indexGroups":{"x":[0,2]},"lastIndex":2,"source":"(?<x>a{002,03}?)"}
 "(?<x>a{002,03}?)" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","aa"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[1,3],[1,3]],"indexGroups":{"x":[1,3]},"lastIndex":3,"source":"(?<x>a{002,03}?)"}
 "(?<x>a{002,03}?)" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -725,8 +669,6 @@ expression: rows
 "(?<x>a{002,03}?)" flags="dsug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>a{002,03}?)" flags="dsug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{002,03}?)" flags="dsug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a{002,03}?)" flags="dsug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>a{002,03}?)" flags="dsug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{002,03}?)" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aa","aa"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[0,2],[0,2]],"indexGroups":{"x":[0,2]},"lastIndex":2,"source":"(?<x>a{002,03}?)"}
 "(?<x>a{002,03}?)" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","aa"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[1,3],[1,3]],"indexGroups":{"x":[1,3]},"lastIndex":3,"source":"(?<x>a{002,03}?)"}
 "(?<x>a{002,03}?)" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -750,8 +692,6 @@ expression: rows
 "(?<x>a{002,03}?)" flags="disvy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>a{002,03}?)" flags="disvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{002,03}?)" flags="disvy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a{002,03}?)" flags="disvy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>a{002,03}?)" flags="disvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>.+)" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aaa AA1 ſK","aaa AA1 ſK"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aaa AA1 ſK"},"indices":[[0,10],[0,10]],"indexGroups":{"x":[0,10]},"lastIndex":10,"source":"(?<x>.+)"}
 "(?<x>.+)" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa AA1 ſK","aa AA1 ſK"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa AA1 ſK"},"indices":[[1,10],[1,10]],"indexGroups":{"x":[1,10]},"lastIndex":10,"source":"(?<x>.+)"}
 "(?<x>.+)" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["a AA1 ſK","a AA1 ſK"],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":"a AA1 ſK"},"indices":[[2,10],[2,10]],"indexGroups":{"x":[2,10]},"lastIndex":10,"source":"(?<x>.+)"}
@@ -775,8 +715,6 @@ expression: rows
 "(?<x>.+)" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>.+)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>.+)" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>.+)" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>.+)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>.+)" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aaa AA1 ſK","aaa AA1 ſK"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aaa AA1 ſK"},"indices":[[0,10],[0,10]],"indexGroups":{"x":[0,10]},"lastIndex":10,"source":"(?<x>.+)"}
 "(?<x>.+)" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa AA1 ſK","aa AA1 ſK"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa AA1 ſK"},"indices":[[1,10],[1,10]],"indexGroups":{"x":[1,10]},"lastIndex":10,"source":"(?<x>.+)"}
 "(?<x>.+)" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["a AA1 ſK","a AA1 ſK"],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":"a AA1 ſK"},"indices":[[2,10],[2,10]],"indexGroups":{"x":[2,10]},"lastIndex":10,"source":"(?<x>.+)"}
@@ -800,8 +738,6 @@ expression: rows
 "(?<x>.+)" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>.+)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>.+)" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>.+)" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>.+)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>.+)" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aaa AA1 ſK","aaa AA1 ſK"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aaa AA1 ſK"},"indices":[[0,10],[0,10]],"indexGroups":{"x":[0,10]},"lastIndex":10,"source":"(?<x>.+)"}
 "(?<x>.+)" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa AA1 ſK","aa AA1 ſK"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa AA1 ſK"},"indices":[[1,10],[1,10]],"indexGroups":{"x":[1,10]},"lastIndex":10,"source":"(?<x>.+)"}
 "(?<x>.+)" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["a AA1 ſK","a AA1 ſK"],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":"a AA1 ſK"},"indices":[[2,10],[2,10]],"indexGroups":{"x":[2,10]},"lastIndex":10,"source":"(?<x>.+)"}
@@ -825,8 +761,6 @@ expression: rows
 "(?<x>.+)" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>.+)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>.+)" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>.+)" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>.+)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>.+)" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aaa AA1 ſK","aaa AA1 ſK"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aaa AA1 ſK"},"indices":[[0,10],[0,10]],"indexGroups":{"x":[0,10]},"lastIndex":10,"source":"(?<x>.+)"}
 "(?<x>.+)" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa AA1 ſK","aa AA1 ſK"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa AA1 ſK"},"indices":[[1,10],[1,10]],"indexGroups":{"x":[1,10]},"lastIndex":10,"source":"(?<x>.+)"}
 "(?<x>.+)" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["a AA1 ſK","a AA1 ſK"],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":"a AA1 ſK"},"indices":[[2,10],[2,10]],"indexGroups":{"x":[2,10]},"lastIndex":10,"source":"(?<x>.+)"}
@@ -850,8 +784,6 @@ expression: rows
 "(?<x>.+)" flags="divy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>.+)" flags="divy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>.+)" flags="divy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>.+)" flags="divy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>.+)" flags="divy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>.+)" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aaa AA1 ſK\n","aaa AA1 ſK\n"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aaa AA1 ſK\n"},"indices":[[0,11],[0,11]],"indexGroups":{"x":[0,11]},"lastIndex":11,"source":"(?<x>.+)"}
 "(?<x>.+)" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa AA1 ſK\n","aa AA1 ſK\n"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa AA1 ſK\n"},"indices":[[1,11],[1,11]],"indexGroups":{"x":[1,11]},"lastIndex":11,"source":"(?<x>.+)"}
 "(?<x>.+)" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["a AA1 ſK\n","a AA1 ſK\n"],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":"a AA1 ſK\n"},"indices":[[2,11],[2,11]],"indexGroups":{"x":[2,11]},"lastIndex":11,"source":"(?<x>.+)"}
@@ -875,8 +807,6 @@ expression: rows
 "(?<x>.+)" flags="dsug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>.+)" flags="dsug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>.+)" flags="dsug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>.+)" flags="dsug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>.+)" flags="dsug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>.+)" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aaa AA1 ſK\n","aaa AA1 ſK\n"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aaa AA1 ſK\n"},"indices":[[0,11],[0,11]],"indexGroups":{"x":[0,11]},"lastIndex":11,"source":"(?<x>.+)"}
 "(?<x>.+)" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa AA1 ſK\n","aa AA1 ſK\n"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa AA1 ſK\n"},"indices":[[1,11],[1,11]],"indexGroups":{"x":[1,11]},"lastIndex":11,"source":"(?<x>.+)"}
 "(?<x>.+)" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["a AA1 ſK\n","a AA1 ſK\n"],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":"a AA1 ſK\n"},"indices":[[2,11],[2,11]],"indexGroups":{"x":[2,11]},"lastIndex":11,"source":"(?<x>.+)"}
@@ -900,8 +830,6 @@ expression: rows
 "(?<x>.+)" flags="disvy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>.+)" flags="disvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>.+)" flags="disvy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>.+)" flags="disvy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>.+)" flags="disvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cD{1,2})" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aa","aa"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[0,2],[0,2]],"indexGroups":{"x":[0,2]},"lastIndex":2,"source":"(?<x>\\D{1,2})"}
 "(?<x>\u005cD{1,2})" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","aa"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[1,3],[1,3]],"indexGroups":{"x":[1,3]},"lastIndex":3,"source":"(?<x>\\D{1,2})"}
 "(?<x>\u005cD{1,2})" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["a ","a "],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":"a "},"indices":[[2,4],[2,4]],"indexGroups":{"x":[2,4]},"lastIndex":4,"source":"(?<x>\\D{1,2})"}
@@ -925,8 +853,6 @@ expression: rows
 "(?<x>\u005cD{1,2})" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cD{1,2})" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cD{1,2})" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cD{1,2})" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cD{1,2})" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cD{1,2})" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aa","aa"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[0,2],[0,2]],"indexGroups":{"x":[0,2]},"lastIndex":2,"source":"(?<x>\\D{1,2})"}
 "(?<x>\u005cD{1,2})" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","aa"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[1,3],[1,3]],"indexGroups":{"x":[1,3]},"lastIndex":3,"source":"(?<x>\\D{1,2})"}
 "(?<x>\u005cD{1,2})" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["a ","a "],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":"a "},"indices":[[2,4],[2,4]],"indexGroups":{"x":[2,4]},"lastIndex":4,"source":"(?<x>\\D{1,2})"}
@@ -950,8 +876,6 @@ expression: rows
 "(?<x>\u005cD{1,2})" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cD{1,2})" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cD{1,2})" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cD{1,2})" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cD{1,2})" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cD{1,2})" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aa","aa"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[0,2],[0,2]],"indexGroups":{"x":[0,2]},"lastIndex":2,"source":"(?<x>\\D{1,2})"}
 "(?<x>\u005cD{1,2})" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","aa"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[1,3],[1,3]],"indexGroups":{"x":[1,3]},"lastIndex":3,"source":"(?<x>\\D{1,2})"}
 "(?<x>\u005cD{1,2})" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["a ","a "],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":"a "},"indices":[[2,4],[2,4]],"indexGroups":{"x":[2,4]},"lastIndex":4,"source":"(?<x>\\D{1,2})"}
@@ -975,8 +899,6 @@ expression: rows
 "(?<x>\u005cD{1,2})" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cD{1,2})" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cD{1,2})" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cD{1,2})" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cD{1,2})" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cD{1,2})" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aa","aa"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[0,2],[0,2]],"indexGroups":{"x":[0,2]},"lastIndex":2,"source":"(?<x>\\D{1,2})"}
 "(?<x>\u005cD{1,2})" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","aa"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[1,3],[1,3]],"indexGroups":{"x":[1,3]},"lastIndex":3,"source":"(?<x>\\D{1,2})"}
 "(?<x>\u005cD{1,2})" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["a ","a "],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":"a "},"indices":[[2,4],[2,4]],"indexGroups":{"x":[2,4]},"lastIndex":4,"source":"(?<x>\\D{1,2})"}
@@ -1000,8 +922,6 @@ expression: rows
 "(?<x>\u005cD{1,2})" flags="divy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cD{1,2})" flags="divy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cD{1,2})" flags="divy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cD{1,2})" flags="divy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cD{1,2})" flags="divy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cD{1,2})" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aa","aa"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[0,2],[0,2]],"indexGroups":{"x":[0,2]},"lastIndex":2,"source":"(?<x>\\D{1,2})"}
 "(?<x>\u005cD{1,2})" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","aa"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[1,3],[1,3]],"indexGroups":{"x":[1,3]},"lastIndex":3,"source":"(?<x>\\D{1,2})"}
 "(?<x>\u005cD{1,2})" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["a ","a "],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":"a "},"indices":[[2,4],[2,4]],"indexGroups":{"x":[2,4]},"lastIndex":4,"source":"(?<x>\\D{1,2})"}
@@ -1025,8 +945,6 @@ expression: rows
 "(?<x>\u005cD{1,2})" flags="dsug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cD{1,2})" flags="dsug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cD{1,2})" flags="dsug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cD{1,2})" flags="dsug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cD{1,2})" flags="dsug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cD{1,2})" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aa","aa"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[0,2],[0,2]],"indexGroups":{"x":[0,2]},"lastIndex":2,"source":"(?<x>\\D{1,2})"}
 "(?<x>\u005cD{1,2})" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","aa"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[1,3],[1,3]],"indexGroups":{"x":[1,3]},"lastIndex":3,"source":"(?<x>\\D{1,2})"}
 "(?<x>\u005cD{1,2})" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["a ","a "],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":"a "},"indices":[[2,4],[2,4]],"indexGroups":{"x":[2,4]},"lastIndex":4,"source":"(?<x>\\D{1,2})"}
@@ -1050,8 +968,6 @@ expression: rows
 "(?<x>\u005cD{1,2})" flags="disvy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cD{1,2})" flags="disvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cD{1,2})" flags="disvy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cD{1,2})" flags="disvy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cD{1,2})" flags="disvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cW+)" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":[" "," "],"index":3,"input":"aaa AA1 ſK\n","groups":{"x":" "},"indices":[[3,4],[3,4]],"indexGroups":{"x":[3,4]},"lastIndex":4,"source":"(?<x>\\W+)"}
 "(?<x>\u005cW+)" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":[" "," "],"index":3,"input":"aaa AA1 ſK\n","groups":{"x":" "},"indices":[[3,4],[3,4]],"indexGroups":{"x":[3,4]},"lastIndex":4,"source":"(?<x>\\W+)"}
 "(?<x>\u005cW+)" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":[" "," "],"index":3,"input":"aaa AA1 ſK\n","groups":{"x":" "},"indices":[[3,4],[3,4]],"indexGroups":{"x":[3,4]},"lastIndex":4,"source":"(?<x>\\W+)"}
@@ -1075,8 +991,6 @@ expression: rows
 "(?<x>\u005cW+)" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cW+)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cW+)" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cW+)" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cW+)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cW+)" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":[" "," "],"index":3,"input":"aaa AA1 ſK\n","groups":{"x":" "},"indices":[[3,4],[3,4]],"indexGroups":{"x":[3,4]},"lastIndex":4,"source":"(?<x>\\W+)"}
 "(?<x>\u005cW+)" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":[" "," "],"index":3,"input":"aaa AA1 ſK\n","groups":{"x":" "},"indices":[[3,4],[3,4]],"indexGroups":{"x":[3,4]},"lastIndex":4,"source":"(?<x>\\W+)"}
 "(?<x>\u005cW+)" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":[" "," "],"index":3,"input":"aaa AA1 ſK\n","groups":{"x":" "},"indices":[[3,4],[3,4]],"indexGroups":{"x":[3,4]},"lastIndex":4,"source":"(?<x>\\W+)"}
@@ -1100,8 +1014,6 @@ expression: rows
 "(?<x>\u005cW+)" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cW+)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cW+)" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cW+)" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cW+)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cW+)" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":[" "," "],"index":3,"input":"aaa AA1 ſK\n","groups":{"x":" "},"indices":[[3,4],[3,4]],"indexGroups":{"x":[3,4]},"lastIndex":4,"source":"(?<x>\\W+)"}
 "(?<x>\u005cW+)" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":[" "," "],"index":3,"input":"aaa AA1 ſK\n","groups":{"x":" "},"indices":[[3,4],[3,4]],"indexGroups":{"x":[3,4]},"lastIndex":4,"source":"(?<x>\\W+)"}
 "(?<x>\u005cW+)" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":[" "," "],"index":3,"input":"aaa AA1 ſK\n","groups":{"x":" "},"indices":[[3,4],[3,4]],"indexGroups":{"x":[3,4]},"lastIndex":4,"source":"(?<x>\\W+)"}
@@ -1125,8 +1037,6 @@ expression: rows
 "(?<x>\u005cW+)" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cW+)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cW+)" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cW+)" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cW+)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cW+)" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cW+)" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cW+)" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -1150,8 +1060,6 @@ expression: rows
 "(?<x>\u005cW+)" flags="divy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cW+)" flags="divy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cW+)" flags="divy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cW+)" flags="divy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cW+)" flags="divy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cW+)" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":[" "," "],"index":3,"input":"aaa AA1 ſK\n","groups":{"x":" "},"indices":[[3,4],[3,4]],"indexGroups":{"x":[3,4]},"lastIndex":4,"source":"(?<x>\\W+)"}
 "(?<x>\u005cW+)" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":[" "," "],"index":3,"input":"aaa AA1 ſK\n","groups":{"x":" "},"indices":[[3,4],[3,4]],"indexGroups":{"x":[3,4]},"lastIndex":4,"source":"(?<x>\\W+)"}
 "(?<x>\u005cW+)" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":[" "," "],"index":3,"input":"aaa AA1 ſK\n","groups":{"x":" "},"indices":[[3,4],[3,4]],"indexGroups":{"x":[3,4]},"lastIndex":4,"source":"(?<x>\\W+)"}
@@ -1175,8 +1083,6 @@ expression: rows
 "(?<x>\u005cW+)" flags="dsug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cW+)" flags="dsug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cW+)" flags="dsug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cW+)" flags="dsug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cW+)" flags="dsug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cW+)" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cW+)" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cW+)" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -1200,8 +1106,6 @@ expression: rows
 "(?<x>\u005cW+)" flags="disvy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cW+)" flags="disvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cW+)" flags="disvy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cW+)" flags="disvy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cW+)" flags="disvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{Join_C}+)" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{Join_C}+)" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{Join_C}+)" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -1225,8 +1129,6 @@ expression: rows
 "(?<x>\u005cp{Join_C}+)" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{Join_C}+)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{Join_C}+)" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cp{Join_C}+)" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cp{Join_C}+)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{Join_C}+)" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{Join_C}+)" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{Join_C}+)" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -1250,8 +1152,6 @@ expression: rows
 "(?<x>\u005cp{Join_C}+)" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{Join_C}+)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{Join_C}+)" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cp{Join_C}+)" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cp{Join_C}+)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{Join_C}+)" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{Join_C}+)" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{Join_C}+)" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -1275,8 +1175,6 @@ expression: rows
 "(?<x>\u005cp{Join_C}+)" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{Join_C}+)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{Join_C}+)" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cp{Join_C}+)" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cp{Join_C}+)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{Join_C}+)" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{Join_C}+)" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{Join_C}+)" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -1300,8 +1198,6 @@ expression: rows
 "(?<x>\u005cp{Join_C}+)" flags="divy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{Join_C}+)" flags="divy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{Join_C}+)" flags="divy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cp{Join_C}+)" flags="divy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cp{Join_C}+)" flags="divy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{Join_C}+)" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{Join_C}+)" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{Join_C}+)" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -1325,8 +1221,6 @@ expression: rows
 "(?<x>\u005cp{Join_C}+)" flags="dsug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{Join_C}+)" flags="dsug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{Join_C}+)" flags="dsug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cp{Join_C}+)" flags="dsug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cp{Join_C}+)" flags="dsug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{Join_C}+)" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{Join_C}+)" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{Join_C}+)" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -1350,8 +1244,6 @@ expression: rows
 "(?<x>\u005cp{Join_C}+)" flags="disvy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{Join_C}+)" flags="disvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{Join_C}+)" flags="disvy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cp{Join_C}+)" flags="disvy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cp{Join_C}+)" flags="disvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{NChar}{1,2})" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{NChar}{1,2})" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{NChar}{1,2})" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -1375,8 +1267,6 @@ expression: rows
 "(?<x>\u005cp{NChar}{1,2})" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{NChar}{1,2})" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{NChar}{1,2})" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cp{NChar}{1,2})" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cp{NChar}{1,2})" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{NChar}{1,2})" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{NChar}{1,2})" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{NChar}{1,2})" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -1400,8 +1290,6 @@ expression: rows
 "(?<x>\u005cp{NChar}{1,2})" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{NChar}{1,2})" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{NChar}{1,2})" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cp{NChar}{1,2})" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cp{NChar}{1,2})" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{NChar}{1,2})" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{NChar}{1,2})" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{NChar}{1,2})" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -1425,8 +1313,6 @@ expression: rows
 "(?<x>\u005cp{NChar}{1,2})" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{NChar}{1,2})" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{NChar}{1,2})" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cp{NChar}{1,2})" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cp{NChar}{1,2})" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{NChar}{1,2})" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{NChar}{1,2})" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{NChar}{1,2})" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -1450,8 +1336,6 @@ expression: rows
 "(?<x>\u005cp{NChar}{1,2})" flags="divy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{NChar}{1,2})" flags="divy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{NChar}{1,2})" flags="divy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cp{NChar}{1,2})" flags="divy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cp{NChar}{1,2})" flags="divy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{NChar}{1,2})" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{NChar}{1,2})" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{NChar}{1,2})" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -1475,8 +1359,6 @@ expression: rows
 "(?<x>\u005cp{NChar}{1,2})" flags="dsug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{NChar}{1,2})" flags="dsug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{NChar}{1,2})" flags="dsug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cp{NChar}{1,2})" flags="dsug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cp{NChar}{1,2})" flags="dsug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{NChar}{1,2})" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{NChar}{1,2})" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{NChar}{1,2})" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -1500,8 +1382,6 @@ expression: rows
 "(?<x>\u005cp{NChar}{1,2})" flags="disvy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{NChar}{1,2})" flags="disvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cp{NChar}{1,2})" flags="disvy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cp{NChar}{1,2})" flags="disvy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>\u005cp{NChar}{1,2})" flags="disvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cu{61}?)" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["a","a"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"a"},"indices":[[0,1],[0,1]],"indexGroups":{"x":[0,1]},"lastIndex":1,"source":"(?<x>\\u{61}?)"}
 "(?<x>\u005cu{61}?)" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["a","a"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"a"},"indices":[[1,2],[1,2]],"indexGroups":{"x":[1,2]},"lastIndex":2,"source":"(?<x>\\u{61}?)"}
 "(?<x>\u005cu{61}?)" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["a","a"],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":"a"},"indices":[[2,3],[2,3]],"indexGroups":{"x":[2,3]},"lastIndex":3,"source":"(?<x>\\u{61}?)"}
@@ -1525,8 +1405,6 @@ expression: rows
 "(?<x>\u005cu{61}?)" flags="dug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\u{61}?)"}
 "(?<x>\u005cu{61}?)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cu{61}?)" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cu{61}?)" flags="dug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\u{61}?)"}
-"(?<x>\u005cu{61}?)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cu{61}?)" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["a","a"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"a"},"indices":[[0,1],[0,1]],"indexGroups":{"x":[0,1]},"lastIndex":1,"source":"(?<x>\\u{61}?)"}
 "(?<x>\u005cu{61}?)" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["a","a"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"a"},"indices":[[1,2],[1,2]],"indexGroups":{"x":[1,2]},"lastIndex":2,"source":"(?<x>\\u{61}?)"}
 "(?<x>\u005cu{61}?)" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["a","a"],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":"a"},"indices":[[2,3],[2,3]],"indexGroups":{"x":[2,3]},"lastIndex":3,"source":"(?<x>\\u{61}?)"}
@@ -1550,8 +1428,6 @@ expression: rows
 "(?<x>\u005cu{61}?)" flags="diug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\u{61}?)"}
 "(?<x>\u005cu{61}?)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cu{61}?)" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cu{61}?)" flags="diug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\u{61}?)"}
-"(?<x>\u005cu{61}?)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cu{61}?)" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["a","a"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"a"},"indices":[[0,1],[0,1]],"indexGroups":{"x":[0,1]},"lastIndex":1,"source":"(?<x>\\u{61}?)"}
 "(?<x>\u005cu{61}?)" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["a","a"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"a"},"indices":[[1,2],[1,2]],"indexGroups":{"x":[1,2]},"lastIndex":2,"source":"(?<x>\\u{61}?)"}
 "(?<x>\u005cu{61}?)" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["a","a"],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":"a"},"indices":[[2,3],[2,3]],"indexGroups":{"x":[2,3]},"lastIndex":3,"source":"(?<x>\\u{61}?)"}
@@ -1575,8 +1451,6 @@ expression: rows
 "(?<x>\u005cu{61}?)" flags="divg" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\u{61}?)"}
 "(?<x>\u005cu{61}?)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cu{61}?)" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cu{61}?)" flags="divg" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\u{61}?)"}
-"(?<x>\u005cu{61}?)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cu{61}?)" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["a","a"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"a"},"indices":[[0,1],[0,1]],"indexGroups":{"x":[0,1]},"lastIndex":1,"source":"(?<x>\\u{61}?)"}
 "(?<x>\u005cu{61}?)" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["a","a"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"a"},"indices":[[1,2],[1,2]],"indexGroups":{"x":[1,2]},"lastIndex":2,"source":"(?<x>\\u{61}?)"}
 "(?<x>\u005cu{61}?)" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["a","a"],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":"a"},"indices":[[2,3],[2,3]],"indexGroups":{"x":[2,3]},"lastIndex":3,"source":"(?<x>\\u{61}?)"}
@@ -1600,8 +1474,6 @@ expression: rows
 "(?<x>\u005cu{61}?)" flags="divy" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\u{61}?)"}
 "(?<x>\u005cu{61}?)" flags="divy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cu{61}?)" flags="divy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cu{61}?)" flags="divy" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\u{61}?)"}
-"(?<x>\u005cu{61}?)" flags="divy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cu{61}?)" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["a","a"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"a"},"indices":[[0,1],[0,1]],"indexGroups":{"x":[0,1]},"lastIndex":1,"source":"(?<x>\\u{61}?)"}
 "(?<x>\u005cu{61}?)" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["a","a"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"a"},"indices":[[1,2],[1,2]],"indexGroups":{"x":[1,2]},"lastIndex":2,"source":"(?<x>\\u{61}?)"}
 "(?<x>\u005cu{61}?)" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["a","a"],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":"a"},"indices":[[2,3],[2,3]],"indexGroups":{"x":[2,3]},"lastIndex":3,"source":"(?<x>\\u{61}?)"}
@@ -1625,8 +1497,6 @@ expression: rows
 "(?<x>\u005cu{61}?)" flags="dsug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\u{61}?)"}
 "(?<x>\u005cu{61}?)" flags="dsug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cu{61}?)" flags="dsug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cu{61}?)" flags="dsug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\u{61}?)"}
-"(?<x>\u005cu{61}?)" flags="dsug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cu{61}?)" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["a","a"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"a"},"indices":[[0,1],[0,1]],"indexGroups":{"x":[0,1]},"lastIndex":1,"source":"(?<x>\\u{61}?)"}
 "(?<x>\u005cu{61}?)" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["a","a"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"a"},"indices":[[1,2],[1,2]],"indexGroups":{"x":[1,2]},"lastIndex":2,"source":"(?<x>\\u{61}?)"}
 "(?<x>\u005cu{61}?)" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["a","a"],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":"a"},"indices":[[2,3],[2,3]],"indexGroups":{"x":[2,3]},"lastIndex":3,"source":"(?<x>\\u{61}?)"}
@@ -1650,8 +1520,6 @@ expression: rows
 "(?<x>\u005cu{61}?)" flags="disvy" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\u{61}?)"}
 "(?<x>\u005cu{61}?)" flags="disvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005cu{61}?)" flags="disvy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005cu{61}?)" flags="disvy" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\u{61}?)"}
-"(?<x>\u005cu{61}?)" flags="disvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005c??)" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\??)"}
 "(?<x>\u005c??)" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>\\??)"}
 "(?<x>\u005c??)" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>\\??)"}
@@ -1675,8 +1543,6 @@ expression: rows
 "(?<x>\u005c??)" flags="dug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\??)"}
 "(?<x>\u005c??)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005c??)" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005c??)" flags="dug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\??)"}
-"(?<x>\u005c??)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005c??)" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\??)"}
 "(?<x>\u005c??)" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>\\??)"}
 "(?<x>\u005c??)" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>\\??)"}
@@ -1700,8 +1566,6 @@ expression: rows
 "(?<x>\u005c??)" flags="diug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\??)"}
 "(?<x>\u005c??)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005c??)" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005c??)" flags="diug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\??)"}
-"(?<x>\u005c??)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005c??)" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\??)"}
 "(?<x>\u005c??)" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>\\??)"}
 "(?<x>\u005c??)" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>\\??)"}
@@ -1725,8 +1589,6 @@ expression: rows
 "(?<x>\u005c??)" flags="divg" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\??)"}
 "(?<x>\u005c??)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005c??)" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005c??)" flags="divg" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\??)"}
-"(?<x>\u005c??)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005c??)" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\??)"}
 "(?<x>\u005c??)" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>\\??)"}
 "(?<x>\u005c??)" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>\\??)"}
@@ -1750,8 +1612,6 @@ expression: rows
 "(?<x>\u005c??)" flags="divy" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\??)"}
 "(?<x>\u005c??)" flags="divy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005c??)" flags="divy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005c??)" flags="divy" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\??)"}
-"(?<x>\u005c??)" flags="divy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005c??)" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\??)"}
 "(?<x>\u005c??)" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>\\??)"}
 "(?<x>\u005c??)" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>\\??)"}
@@ -1775,8 +1635,6 @@ expression: rows
 "(?<x>\u005c??)" flags="dsug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\??)"}
 "(?<x>\u005c??)" flags="dsug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005c??)" flags="dsug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005c??)" flags="dsug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\??)"}
-"(?<x>\u005c??)" flags="dsug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005c??)" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\??)"}
 "(?<x>\u005c??)" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>\\??)"}
 "(?<x>\u005c??)" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>\\??)"}
@@ -1800,8 +1658,6 @@ expression: rows
 "(?<x>\u005c??)" flags="disvy" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\??)"}
 "(?<x>\u005c??)" flags="disvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>\u005c??)" flags="disvy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>\u005c??)" flags="disvy" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>\\??)"}
-"(?<x>\u005c??)" flags="disvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{0,0})" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a{0,0})"}
 "(?<x>a{0,0})" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>a{0,0})"}
 "(?<x>a{0,0})" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>a{0,0})"}
@@ -1825,8 +1681,6 @@ expression: rows
 "(?<x>a{0,0})" flags="dug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a{0,0})"}
 "(?<x>a{0,0})" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{0,0})" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a{0,0})" flags="dug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a{0,0})"}
-"(?<x>a{0,0})" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{0,0})" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a{0,0})"}
 "(?<x>a{0,0})" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>a{0,0})"}
 "(?<x>a{0,0})" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>a{0,0})"}
@@ -1850,8 +1704,6 @@ expression: rows
 "(?<x>a{0,0})" flags="diug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a{0,0})"}
 "(?<x>a{0,0})" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{0,0})" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a{0,0})" flags="diug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a{0,0})"}
-"(?<x>a{0,0})" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{0,0})" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a{0,0})"}
 "(?<x>a{0,0})" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>a{0,0})"}
 "(?<x>a{0,0})" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>a{0,0})"}
@@ -1875,8 +1727,6 @@ expression: rows
 "(?<x>a{0,0})" flags="divg" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a{0,0})"}
 "(?<x>a{0,0})" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{0,0})" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a{0,0})" flags="divg" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a{0,0})"}
-"(?<x>a{0,0})" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{0,0})" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a{0,0})"}
 "(?<x>a{0,0})" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>a{0,0})"}
 "(?<x>a{0,0})" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>a{0,0})"}
@@ -1900,8 +1750,6 @@ expression: rows
 "(?<x>a{0,0})" flags="divy" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a{0,0})"}
 "(?<x>a{0,0})" flags="divy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{0,0})" flags="divy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a{0,0})" flags="divy" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a{0,0})"}
-"(?<x>a{0,0})" flags="divy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{0,0})" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a{0,0})"}
 "(?<x>a{0,0})" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>a{0,0})"}
 "(?<x>a{0,0})" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>a{0,0})"}
@@ -1925,8 +1773,6 @@ expression: rows
 "(?<x>a{0,0})" flags="dsug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a{0,0})"}
 "(?<x>a{0,0})" flags="dsug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{0,0})" flags="dsug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a{0,0})" flags="dsug" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a{0,0})"}
-"(?<x>a{0,0})" flags="dsug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{0,0})" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["",""],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a{0,0})"}
 "(?<x>a{0,0})" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["",""],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[1,1],[1,1]],"indexGroups":{"x":[1,1]},"lastIndex":1,"source":"(?<x>a{0,0})"}
 "(?<x>a{0,0})" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["",""],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":""},"indices":[[2,2],[2,2]],"indexGroups":{"x":[2,2]},"lastIndex":2,"source":"(?<x>a{0,0})"}
@@ -1950,8 +1796,6 @@ expression: rows
 "(?<x>a{0,0})" flags="disvy" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a{0,0})"}
 "(?<x>a{0,0})" flags="disvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>a{0,0})" flags="disvy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>a{0,0})" flags="disvy" input="" lastIndex=0 => {"matches":["",""],"index":0,"input":"","groups":{"x":""},"indices":[[0,0],[0,0]],"indexGroups":{"x":[0,0]},"lastIndex":0,"source":"(?<x>a{0,0})"}
-"(?<x>a{0,0})" flags="disvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>[a\u017f\u212a]+)" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aaa","aaa"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aaa"},"indices":[[0,3],[0,3]],"indexGroups":{"x":[0,3]},"lastIndex":3,"source":"(?<x>[aſK]+)"}
 "(?<x>[a\u017f\u212a]+)" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","aa"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[1,3],[1,3]],"indexGroups":{"x":[1,3]},"lastIndex":3,"source":"(?<x>[aſK]+)"}
 "(?<x>[a\u017f\u212a]+)" flags="dug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["a","a"],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":"a"},"indices":[[2,3],[2,3]],"indexGroups":{"x":[2,3]},"lastIndex":3,"source":"(?<x>[aſK]+)"}
@@ -1975,8 +1819,6 @@ expression: rows
 "(?<x>[a\u017f\u212a]+)" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>[a\u017f\u212a]+)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>[a\u017f\u212a]+)" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>[a\u017f\u212a]+)" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>[a\u017f\u212a]+)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>[a\u017f\u212a]+)" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aaa","aaa"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aaa"},"indices":[[0,3],[0,3]],"indexGroups":{"x":[0,3]},"lastIndex":3,"source":"(?<x>[aſK]+)"}
 "(?<x>[a\u017f\u212a]+)" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","aa"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[1,3],[1,3]],"indexGroups":{"x":[1,3]},"lastIndex":3,"source":"(?<x>[aſK]+)"}
 "(?<x>[a\u017f\u212a]+)" flags="diug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["a","a"],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":"a"},"indices":[[2,3],[2,3]],"indexGroups":{"x":[2,3]},"lastIndex":3,"source":"(?<x>[aſK]+)"}
@@ -2000,8 +1842,6 @@ expression: rows
 "(?<x>[a\u017f\u212a]+)" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>[a\u017f\u212a]+)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>[a\u017f\u212a]+)" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>[a\u017f\u212a]+)" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>[a\u017f\u212a]+)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>[a\u017f\u212a]+)" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aaa","aaa"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aaa"},"indices":[[0,3],[0,3]],"indexGroups":{"x":[0,3]},"lastIndex":3,"source":"(?<x>[aſK]+)"}
 "(?<x>[a\u017f\u212a]+)" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","aa"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[1,3],[1,3]],"indexGroups":{"x":[1,3]},"lastIndex":3,"source":"(?<x>[aſK]+)"}
 "(?<x>[a\u017f\u212a]+)" flags="divg" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["a","a"],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":"a"},"indices":[[2,3],[2,3]],"indexGroups":{"x":[2,3]},"lastIndex":3,"source":"(?<x>[aſK]+)"}
@@ -2025,8 +1865,6 @@ expression: rows
 "(?<x>[a\u017f\u212a]+)" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>[a\u017f\u212a]+)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>[a\u017f\u212a]+)" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>[a\u017f\u212a]+)" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>[a\u017f\u212a]+)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>[a\u017f\u212a]+)" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aaa","aaa"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aaa"},"indices":[[0,3],[0,3]],"indexGroups":{"x":[0,3]},"lastIndex":3,"source":"(?<x>[aſK]+)"}
 "(?<x>[a\u017f\u212a]+)" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","aa"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[1,3],[1,3]],"indexGroups":{"x":[1,3]},"lastIndex":3,"source":"(?<x>[aſK]+)"}
 "(?<x>[a\u017f\u212a]+)" flags="divy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["a","a"],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":"a"},"indices":[[2,3],[2,3]],"indexGroups":{"x":[2,3]},"lastIndex":3,"source":"(?<x>[aſK]+)"}
@@ -2050,8 +1888,6 @@ expression: rows
 "(?<x>[a\u017f\u212a]+)" flags="divy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>[a\u017f\u212a]+)" flags="divy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>[a\u017f\u212a]+)" flags="divy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>[a\u017f\u212a]+)" flags="divy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>[a\u017f\u212a]+)" flags="divy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>[a\u017f\u212a]+)" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aaa","aaa"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aaa"},"indices":[[0,3],[0,3]],"indexGroups":{"x":[0,3]},"lastIndex":3,"source":"(?<x>[aſK]+)"}
 "(?<x>[a\u017f\u212a]+)" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","aa"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[1,3],[1,3]],"indexGroups":{"x":[1,3]},"lastIndex":3,"source":"(?<x>[aſK]+)"}
 "(?<x>[a\u017f\u212a]+)" flags="dsug" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["a","a"],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":"a"},"indices":[[2,3],[2,3]],"indexGroups":{"x":[2,3]},"lastIndex":3,"source":"(?<x>[aſK]+)"}
@@ -2075,8 +1911,6 @@ expression: rows
 "(?<x>[a\u017f\u212a]+)" flags="dsug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>[a\u017f\u212a]+)" flags="dsug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>[a\u017f\u212a]+)" flags="dsug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>[a\u017f\u212a]+)" flags="dsug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>[a\u017f\u212a]+)" flags="dsug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>[a\u017f\u212a]+)" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=0 => {"matches":["aaa","aaa"],"index":0,"input":"aaa AA1 ſK\n","groups":{"x":"aaa"},"indices":[[0,3],[0,3]],"indexGroups":{"x":[0,3]},"lastIndex":3,"source":"(?<x>[aſK]+)"}
 "(?<x>[a\u017f\u212a]+)" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","aa"],"index":1,"input":"aaa AA1 ſK\n","groups":{"x":"aa"},"indices":[[1,3],[1,3]],"indexGroups":{"x":[1,3]},"lastIndex":3,"source":"(?<x>[aſK]+)"}
 "(?<x>[a\u017f\u212a]+)" flags="disvy" input="aaa AA1 \u017f\u212a\u000a" lastIndex=2 => {"matches":["a","a"],"index":2,"input":"aaa AA1 ſK\n","groups":{"x":"a"},"indices":[[2,3],[2,3]],"indexGroups":{"x":[2,3]},"lastIndex":3,"source":"(?<x>[aſK]+)"}
@@ -2100,5 +1934,3 @@ expression: rows
 "(?<x>[a\u017f\u212a]+)" flags="disvy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(?<x>[a\u017f\u212a]+)" flags="disvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(?<x>[a\u017f\u212a]+)" flags="disvy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(?<x>[a\u017f\u212a]+)" flags="disvy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(?<x>[a\u017f\u212a]+)" flags="disvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}

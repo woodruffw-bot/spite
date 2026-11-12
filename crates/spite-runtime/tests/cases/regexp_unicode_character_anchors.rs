@@ -1,5 +1,6 @@
 //! Case-sensitive Unicode single-atom boundary assertions (22.2.2.4).
 use crate::common::assert_true;
+use crate::common::regexp_matches::last_index_cases;
 use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
@@ -19,7 +20,7 @@ fn unicode_character_assertion_results_snapshot() {
             "dug", "duy", "dmug", "dusy", "dmusy", "dvg", "dvy", "dmvg", "dvsy", "dmvsy",
         ] {
             for input in &inputs {
-                for start in [0, 1, 2, input.len(), input.len() + 1] {
+                for start in last_index_cases(input.len()) {
                     let p = JsString::from(pattern);
                     let script = format!(
                         r#"

@@ -4,6 +4,7 @@ use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
 
 use crate::common::assert_true;
+use crate::common::regexp_matches::last_index_cases;
 
 #[test]
 fn unicode_property_dot_results_snapshot() {
@@ -25,7 +26,7 @@ fn unicode_property_dot_results_snapshot() {
                 JsString::from("一\n😀\u{200c}X"),
                 JsString::from_code_units(vec![0xd800, 0x61, 0xdc00, 0xa, 0x62]),
             ] {
-                for start in [0, 1, 2, input.len(), input.len() + 1] {
+                for start in last_index_cases(input.len()) {
                     let source = format!(
                         r#"
                             let r = new RegExp({pattern:?}, '{flags}');

@@ -3,6 +3,17 @@
 //! The report keeps capture slots, UTF-16 ranges, named aliases, and group
 //! prototype checks visible as separate fields. Undefined slots use a sentinel.
 
+/// Starting offsets for match-result matrices, including the UTF-16 end boundary.
+///
+/// Short inputs can make the end or past-end offset coincide with 0, 1, or 2.
+/// Each distinct offset is evaluated once.
+pub fn last_index_cases(input_length: usize) -> Vec<usize> {
+    let mut indices = vec![0, 1, 2, input_length, input_length + 1];
+    indices.sort_unstable();
+    indices.dedup();
+    indices
+}
+
 pub const DESCRIBE_MATCH: &str = r#"
 function describeMatch(match) {
     if (match === null) return null;

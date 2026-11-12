@@ -1,5 +1,6 @@
 //! Complete-character Unicode class unions, ranges and inversion (22.2.2.9).
 use crate::common::assert_true;
+use crate::common::regexp_matches::last_index_cases;
 use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
@@ -35,7 +36,7 @@ fn unicode_class_results_snapshot() {
     ] {
         for flags in ["dug", "duy", "dmusy", "dvg", "dvy", "dmvsy"] {
             for input in &inputs {
-                for start in [0, 1, 2, input.len(), input.len() + 1] {
+                for start in last_index_cases(input.len()) {
                     let p = JsString::from(pattern);
                     let script = format!(
                         r#"

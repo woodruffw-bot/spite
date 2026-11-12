@@ -1,5 +1,6 @@
 //! Outside word predicates compose with proved one-character alternatives.
 use crate::common::assert_true;
+use crate::common::regexp_matches::last_index_cases;
 use spite_core::JsString;
 use spite_runtime::{Realm, Value};
 use std::fmt::Write;
@@ -33,7 +34,7 @@ fn unicode_repeated_atom_noncapturing_branch_words_results_snapshot() {
                 JsString::from_code_units(vec![0x61, 0xd800, 0x61, 0xdc00]),
                 JsString::from(""),
             ] {
-                for start in [0, 1, 2, input.len(), input.len() + 1] {
+                for start in last_index_cases(input.len()) {
                     let script = format!(
                         r#"
                             let r = new RegExp({pattern:?}, '{flags}');

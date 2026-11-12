@@ -25,8 +25,6 @@ expression: rows
 "^(A)(b)$" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "^(A)(b)$" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(A)(b)$" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"^(A)(b)$" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"^(A)(b)$" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(A)(b)$" flags="dumg" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=0 => {"matches":["Ab","A","b"],"index":0,"input":"Ab\naB\r\nAb AB ","indices":[[0,2],[0,1],[1,2]],"lastIndex":2,"source":"^(A)(b)$"}
 "^(A)(b)$" flags="dumg" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=1 => {"matches":["Ab","A","b"],"index":7,"input":"Ab\naB\r\nAb AB ","indices":[[7,9],[7,8],[8,9]],"lastIndex":9,"source":"^(A)(b)$"}
 "^(A)(b)$" flags="dumg" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=2 => {"matches":["Ab","A","b"],"index":7,"input":"Ab\naB\r\nAb AB ","indices":[[7,9],[7,8],[8,9]],"lastIndex":9,"source":"^(A)(b)$"}
@@ -50,8 +48,6 @@ expression: rows
 "^(A)(b)$" flags="dumg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "^(A)(b)$" flags="dumg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(A)(b)$" flags="dumg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"^(A)(b)$" flags="dumg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"^(A)(b)$" flags="dumg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(A)(b)$" flags="dvy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=0 => {"match":null,"lastIndex":0}
 "^(A)(b)$" flags="dvy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(A)(b)$" flags="dvy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -75,8 +71,6 @@ expression: rows
 "^(A)(b)$" flags="dvy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "^(A)(b)$" flags="dvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(A)(b)$" flags="dvy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"^(A)(b)$" flags="dvy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"^(A)(b)$" flags="dvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(A)(b)$" flags="dvmy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=0 => {"matches":["Ab","A","b"],"index":0,"input":"Ab\naB\r\nAb AB ","indices":[[0,2],[0,1],[1,2]],"lastIndex":2,"source":"^(A)(b)$"}
 "^(A)(b)$" flags="dvmy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(A)(b)$" flags="dvmy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -100,8 +94,6 @@ expression: rows
 "^(A)(b)$" flags="dvmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "^(A)(b)$" flags="dvmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(A)(b)$" flags="dvmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"^(A)(b)$" flags="dvmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"^(A)(b)$" flags="dvmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "((^A(b)$))" flags="dug" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=0 => {"match":null,"lastIndex":0}
 "((^A(b)$))" flags="dug" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=1 => {"match":null,"lastIndex":0}
 "((^A(b)$))" flags="dug" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -125,8 +117,6 @@ expression: rows
 "((^A(b)$))" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "((^A(b)$))" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "((^A(b)$))" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"((^A(b)$))" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"((^A(b)$))" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "((^A(b)$))" flags="dumg" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=0 => {"matches":["Ab","Ab","Ab","b"],"index":0,"input":"Ab\naB\r\nAb AB ","indices":[[0,2],[0,2],[0,2],[1,2]],"lastIndex":2,"source":"((^A(b)$))"}
 "((^A(b)$))" flags="dumg" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=1 => {"matches":["Ab","Ab","Ab","b"],"index":7,"input":"Ab\naB\r\nAb AB ","indices":[[7,9],[7,9],[7,9],[8,9]],"lastIndex":9,"source":"((^A(b)$))"}
 "((^A(b)$))" flags="dumg" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=2 => {"matches":["Ab","Ab","Ab","b"],"index":7,"input":"Ab\naB\r\nAb AB ","indices":[[7,9],[7,9],[7,9],[8,9]],"lastIndex":9,"source":"((^A(b)$))"}
@@ -150,8 +140,6 @@ expression: rows
 "((^A(b)$))" flags="dumg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "((^A(b)$))" flags="dumg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "((^A(b)$))" flags="dumg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"((^A(b)$))" flags="dumg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"((^A(b)$))" flags="dumg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "((^A(b)$))" flags="dvy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=0 => {"match":null,"lastIndex":0}
 "((^A(b)$))" flags="dvy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=1 => {"match":null,"lastIndex":0}
 "((^A(b)$))" flags="dvy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -175,8 +163,6 @@ expression: rows
 "((^A(b)$))" flags="dvy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "((^A(b)$))" flags="dvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "((^A(b)$))" flags="dvy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"((^A(b)$))" flags="dvy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"((^A(b)$))" flags="dvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "((^A(b)$))" flags="dvmy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=0 => {"matches":["Ab","Ab","Ab","b"],"index":0,"input":"Ab\naB\r\nAb AB ","indices":[[0,2],[0,2],[0,2],[1,2]],"lastIndex":2,"source":"((^A(b)$))"}
 "((^A(b)$))" flags="dvmy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=1 => {"match":null,"lastIndex":0}
 "((^A(b)$))" flags="dvmy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -200,8 +186,6 @@ expression: rows
 "((^A(b)$))" flags="dvmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "((^A(b)$))" flags="dvmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "((^A(b)$))" flags="dvmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"((^A(b)$))" flags="dvmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"((^A(b)$))" flags="dvmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(Ab$)" flags="dug" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=0 => {"match":null,"lastIndex":0}
 "(Ab$)" flags="dug" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=1 => {"match":null,"lastIndex":0}
 "(Ab$)" flags="dug" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -225,8 +209,6 @@ expression: rows
 "(Ab$)" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(Ab$)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(Ab$)" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(Ab$)" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(Ab$)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(Ab$)" flags="dumg" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=0 => {"matches":["Ab","Ab"],"index":0,"input":"Ab\naB\r\nAb AB ","indices":[[0,2],[0,2]],"lastIndex":2,"source":"(Ab$)"}
 "(Ab$)" flags="dumg" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=1 => {"matches":["Ab","Ab"],"index":7,"input":"Ab\naB\r\nAb AB ","indices":[[7,9],[7,9]],"lastIndex":9,"source":"(Ab$)"}
 "(Ab$)" flags="dumg" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=2 => {"matches":["Ab","Ab"],"index":7,"input":"Ab\naB\r\nAb AB ","indices":[[7,9],[7,9]],"lastIndex":9,"source":"(Ab$)"}
@@ -250,8 +232,6 @@ expression: rows
 "(Ab$)" flags="dumg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(Ab$)" flags="dumg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(Ab$)" flags="dumg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(Ab$)" flags="dumg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(Ab$)" flags="dumg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(Ab$)" flags="dvy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=0 => {"match":null,"lastIndex":0}
 "(Ab$)" flags="dvy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=1 => {"match":null,"lastIndex":0}
 "(Ab$)" flags="dvy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -275,8 +255,6 @@ expression: rows
 "(Ab$)" flags="dvy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(Ab$)" flags="dvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(Ab$)" flags="dvy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(Ab$)" flags="dvy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(Ab$)" flags="dvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(Ab$)" flags="dvmy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=0 => {"matches":["Ab","Ab"],"index":0,"input":"Ab\naB\r\nAb AB ","indices":[[0,2],[0,2]],"lastIndex":2,"source":"(Ab$)"}
 "(Ab$)" flags="dvmy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=1 => {"match":null,"lastIndex":0}
 "(Ab$)" flags="dvmy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -300,8 +278,6 @@ expression: rows
 "(Ab$)" flags="dvmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(Ab$)" flags="dvmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(Ab$)" flags="dvmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(Ab$)" flags="dvmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(Ab$)" flags="dvmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^A(b)" flags="dug" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=0 => {"matches":["Ab","b"],"index":0,"input":"Ab\naB\r\nAb AB ","indices":[[0,2],[1,2]],"lastIndex":2,"source":"^A(b)"}
 "^A(b)" flags="dug" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=1 => {"match":null,"lastIndex":0}
 "^A(b)" flags="dug" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -325,8 +301,6 @@ expression: rows
 "^A(b)" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "^A(b)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^A(b)" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"^A(b)" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"^A(b)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^A(b)" flags="dumg" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=0 => {"matches":["Ab","b"],"index":0,"input":"Ab\naB\r\nAb AB ","indices":[[0,2],[1,2]],"lastIndex":2,"source":"^A(b)"}
 "^A(b)" flags="dumg" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=1 => {"matches":["Ab","b"],"index":7,"input":"Ab\naB\r\nAb AB ","indices":[[7,9],[8,9]],"lastIndex":9,"source":"^A(b)"}
 "^A(b)" flags="dumg" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=2 => {"matches":["Ab","b"],"index":7,"input":"Ab\naB\r\nAb AB ","indices":[[7,9],[8,9]],"lastIndex":9,"source":"^A(b)"}
@@ -350,8 +324,6 @@ expression: rows
 "^A(b)" flags="dumg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "^A(b)" flags="dumg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^A(b)" flags="dumg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"^A(b)" flags="dumg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"^A(b)" flags="dumg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^A(b)" flags="dvy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=0 => {"matches":["Ab","b"],"index":0,"input":"Ab\naB\r\nAb AB ","indices":[[0,2],[1,2]],"lastIndex":2,"source":"^A(b)"}
 "^A(b)" flags="dvy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=1 => {"match":null,"lastIndex":0}
 "^A(b)" flags="dvy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -375,8 +347,6 @@ expression: rows
 "^A(b)" flags="dvy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "^A(b)" flags="dvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^A(b)" flags="dvy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"^A(b)" flags="dvy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"^A(b)" flags="dvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^A(b)" flags="dvmy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=0 => {"matches":["Ab","b"],"index":0,"input":"Ab\naB\r\nAb AB ","indices":[[0,2],[1,2]],"lastIndex":2,"source":"^A(b)"}
 "^A(b)" flags="dvmy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=1 => {"match":null,"lastIndex":0}
 "^A(b)" flags="dvmy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -400,8 +370,6 @@ expression: rows
 "^A(b)" flags="dvmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "^A(b)" flags="dvmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^A(b)" flags="dvmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"^A(b)" flags="dvmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"^A(b)" flags="dvmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(\u005cu{10400})(\u005cu{10428})$" flags="dug" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=0 => {"match":null,"lastIndex":0}
 "^(\u005cu{10400})(\u005cu{10428})$" flags="dug" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(\u005cu{10400})(\u005cu{10428})$" flags="dug" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -425,8 +393,6 @@ expression: rows
 "^(\u005cu{10400})(\u005cu{10428})$" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "^(\u005cu{10400})(\u005cu{10428})$" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(\u005cu{10400})(\u005cu{10428})$" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"^(\u005cu{10400})(\u005cu{10428})$" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"^(\u005cu{10400})(\u005cu{10428})$" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(\u005cu{10400})(\u005cu{10428})$" flags="dumg" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=0 => {"match":null,"lastIndex":0}
 "^(\u005cu{10400})(\u005cu{10428})$" flags="dumg" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(\u005cu{10400})(\u005cu{10428})$" flags="dumg" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -450,8 +416,6 @@ expression: rows
 "^(\u005cu{10400})(\u005cu{10428})$" flags="dumg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "^(\u005cu{10400})(\u005cu{10428})$" flags="dumg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(\u005cu{10400})(\u005cu{10428})$" flags="dumg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"^(\u005cu{10400})(\u005cu{10428})$" flags="dumg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"^(\u005cu{10400})(\u005cu{10428})$" flags="dumg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(\u005cu{10400})(\u005cu{10428})$" flags="dvy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=0 => {"match":null,"lastIndex":0}
 "^(\u005cu{10400})(\u005cu{10428})$" flags="dvy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(\u005cu{10400})(\u005cu{10428})$" flags="dvy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -475,8 +439,6 @@ expression: rows
 "^(\u005cu{10400})(\u005cu{10428})$" flags="dvy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "^(\u005cu{10400})(\u005cu{10428})$" flags="dvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(\u005cu{10400})(\u005cu{10428})$" flags="dvy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"^(\u005cu{10400})(\u005cu{10428})$" flags="dvy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"^(\u005cu{10400})(\u005cu{10428})$" flags="dvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(\u005cu{10400})(\u005cu{10428})$" flags="dvmy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=0 => {"match":null,"lastIndex":0}
 "^(\u005cu{10400})(\u005cu{10428})$" flags="dvmy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(\u005cu{10400})(\u005cu{10428})$" flags="dvmy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -500,8 +462,6 @@ expression: rows
 "^(\u005cu{10400})(\u005cu{10428})$" flags="dvmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "^(\u005cu{10400})(\u005cu{10428})$" flags="dvmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(\u005cu{10400})(\u005cu{10428})$" flags="dvmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"^(\u005cu{10400})(\u005cu{10428})$" flags="dvmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"^(\u005cu{10400})(\u005cu{10428})$" flags="dvmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(\u005c$)(A)\u005c$$" flags="dug" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=0 => {"match":null,"lastIndex":0}
 "^(\u005c$)(A)\u005c$$" flags="dug" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(\u005c$)(A)\u005c$$" flags="dug" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -525,8 +485,6 @@ expression: rows
 "^(\u005c$)(A)\u005c$$" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "^(\u005c$)(A)\u005c$$" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(\u005c$)(A)\u005c$$" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"^(\u005c$)(A)\u005c$$" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"^(\u005c$)(A)\u005c$$" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(\u005c$)(A)\u005c$$" flags="dumg" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=0 => {"match":null,"lastIndex":0}
 "^(\u005c$)(A)\u005c$$" flags="dumg" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(\u005c$)(A)\u005c$$" flags="dumg" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -550,8 +508,6 @@ expression: rows
 "^(\u005c$)(A)\u005c$$" flags="dumg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "^(\u005c$)(A)\u005c$$" flags="dumg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(\u005c$)(A)\u005c$$" flags="dumg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"^(\u005c$)(A)\u005c$$" flags="dumg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"^(\u005c$)(A)\u005c$$" flags="dumg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(\u005c$)(A)\u005c$$" flags="dvy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=0 => {"match":null,"lastIndex":0}
 "^(\u005c$)(A)\u005c$$" flags="dvy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(\u005c$)(A)\u005c$$" flags="dvy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -575,8 +531,6 @@ expression: rows
 "^(\u005c$)(A)\u005c$$" flags="dvy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "^(\u005c$)(A)\u005c$$" flags="dvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(\u005c$)(A)\u005c$$" flags="dvy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"^(\u005c$)(A)\u005c$$" flags="dvy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"^(\u005c$)(A)\u005c$$" flags="dvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(\u005c$)(A)\u005c$$" flags="dvmy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=0 => {"match":null,"lastIndex":0}
 "^(\u005c$)(A)\u005c$$" flags="dvmy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(\u005c$)(A)\u005c$$" flags="dvmy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -600,8 +554,6 @@ expression: rows
 "^(\u005c$)(A)\u005c$$" flags="dvmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "^(\u005c$)(A)\u005c$$" flags="dvmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(\u005c$)(A)\u005c$$" flags="dvmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"^(\u005c$)(A)\u005c$$" flags="dvmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"^(\u005c$)(A)\u005c$$" flags="dvmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(())A(b)$" flags="dug" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=0 => {"match":null,"lastIndex":0}
 "^(())A(b)$" flags="dug" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(())A(b)$" flags="dug" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -625,8 +577,6 @@ expression: rows
 "^(())A(b)$" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "^(())A(b)$" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(())A(b)$" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"^(())A(b)$" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"^(())A(b)$" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(())A(b)$" flags="dumg" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=0 => {"matches":["Ab","","","b"],"index":0,"input":"Ab\naB\r\nAb AB ","indices":[[0,2],[0,0],[0,0],[1,2]],"lastIndex":2,"source":"^(())A(b)$"}
 "^(())A(b)$" flags="dumg" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=1 => {"matches":["Ab","","","b"],"index":7,"input":"Ab\naB\r\nAb AB ","indices":[[7,9],[7,7],[7,7],[8,9]],"lastIndex":9,"source":"^(())A(b)$"}
 "^(())A(b)$" flags="dumg" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=2 => {"matches":["Ab","","","b"],"index":7,"input":"Ab\naB\r\nAb AB ","indices":[[7,9],[7,7],[7,7],[8,9]],"lastIndex":9,"source":"^(())A(b)$"}
@@ -650,8 +600,6 @@ expression: rows
 "^(())A(b)$" flags="dumg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "^(())A(b)$" flags="dumg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(())A(b)$" flags="dumg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"^(())A(b)$" flags="dumg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"^(())A(b)$" flags="dumg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(())A(b)$" flags="dvy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=0 => {"match":null,"lastIndex":0}
 "^(())A(b)$" flags="dvy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(())A(b)$" flags="dvy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -675,8 +623,6 @@ expression: rows
 "^(())A(b)$" flags="dvy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "^(())A(b)$" flags="dvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(())A(b)$" flags="dvy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"^(())A(b)$" flags="dvy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"^(())A(b)$" flags="dvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(())A(b)$" flags="dvmy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=0 => {"matches":["Ab","","","b"],"index":0,"input":"Ab\naB\r\nAb AB ","indices":[[0,2],[0,0],[0,0],[1,2]],"lastIndex":2,"source":"^(())A(b)$"}
 "^(())A(b)$" flags="dvmy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(())A(b)$" flags="dvmy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -700,8 +646,6 @@ expression: rows
 "^(())A(b)$" flags="dvmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "^(())A(b)$" flags="dvmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(())A(b)$" flags="dvmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"^(())A(b)$" flags="dvmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"^(())A(b)$" flags="dvmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(?<x>A)(?<y>b)$" flags="dug" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=0 => {"match":null,"lastIndex":0}
 "^(?<x>A)(?<y>b)$" flags="dug" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(?<x>A)(?<y>b)$" flags="dug" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -725,8 +669,6 @@ expression: rows
 "^(?<x>A)(?<y>b)$" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "^(?<x>A)(?<y>b)$" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(?<x>A)(?<y>b)$" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"^(?<x>A)(?<y>b)$" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"^(?<x>A)(?<y>b)$" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(?<x>A)(?<y>b)$" flags="dumg" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=0 => {"matches":["Ab","A","b"],"index":0,"input":"Ab\naB\r\nAb AB ","groups":{"x":"A","y":"b"},"indices":[[0,2],[0,1],[1,2]],"indexGroups":{"x":[0,1],"y":[1,2]},"lastIndex":2,"source":"^(?<x>A)(?<y>b)$"}
 "^(?<x>A)(?<y>b)$" flags="dumg" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=1 => {"matches":["Ab","A","b"],"index":7,"input":"Ab\naB\r\nAb AB ","groups":{"x":"A","y":"b"},"indices":[[7,9],[7,8],[8,9]],"indexGroups":{"x":[7,8],"y":[8,9]},"lastIndex":9,"source":"^(?<x>A)(?<y>b)$"}
 "^(?<x>A)(?<y>b)$" flags="dumg" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=2 => {"matches":["Ab","A","b"],"index":7,"input":"Ab\naB\r\nAb AB ","groups":{"x":"A","y":"b"},"indices":[[7,9],[7,8],[8,9]],"indexGroups":{"x":[7,8],"y":[8,9]},"lastIndex":9,"source":"^(?<x>A)(?<y>b)$"}
@@ -750,8 +692,6 @@ expression: rows
 "^(?<x>A)(?<y>b)$" flags="dumg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "^(?<x>A)(?<y>b)$" flags="dumg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(?<x>A)(?<y>b)$" flags="dumg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"^(?<x>A)(?<y>b)$" flags="dumg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"^(?<x>A)(?<y>b)$" flags="dumg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(?<x>A)(?<y>b)$" flags="dvy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=0 => {"match":null,"lastIndex":0}
 "^(?<x>A)(?<y>b)$" flags="dvy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(?<x>A)(?<y>b)$" flags="dvy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -775,8 +715,6 @@ expression: rows
 "^(?<x>A)(?<y>b)$" flags="dvy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "^(?<x>A)(?<y>b)$" flags="dvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(?<x>A)(?<y>b)$" flags="dvy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"^(?<x>A)(?<y>b)$" flags="dvy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"^(?<x>A)(?<y>b)$" flags="dvy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(?<x>A)(?<y>b)$" flags="dvmy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=0 => {"matches":["Ab","A","b"],"index":0,"input":"Ab\naB\r\nAb AB ","groups":{"x":"A","y":"b"},"indices":[[0,2],[0,1],[1,2]],"indexGroups":{"x":[0,1],"y":[1,2]},"lastIndex":2,"source":"^(?<x>A)(?<y>b)$"}
 "^(?<x>A)(?<y>b)$" flags="dvmy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(?<x>A)(?<y>b)$" flags="dvmy" input="Ab\u000aaB\u000d\u000aAb\u2028AB\u2029" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -800,5 +738,3 @@ expression: rows
 "^(?<x>A)(?<y>b)$" flags="dvmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "^(?<x>A)(?<y>b)$" flags="dvmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^(?<x>A)(?<y>b)$" flags="dvmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"^(?<x>A)(?<y>b)$" flags="dvmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"^(?<x>A)(?<y>b)$" flags="dvmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}

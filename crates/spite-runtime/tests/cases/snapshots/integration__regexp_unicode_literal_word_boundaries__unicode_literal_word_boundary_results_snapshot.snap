@@ -25,8 +25,6 @@ expression: rows
 "\u005cb(?<x>a)(a)\u005cb" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a)(a)\u005cb" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a)(a)\u005cb" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>a)(a)\u005cb" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>a)(a)\u005cb" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a)(a)\u005cb" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"matches":["aa","a","a"],"index":4,"input":"aaa aa as ſK\n","groups":{"x":"a"},"indices":[[4,6],[4,5],[5,6]],"indexGroups":{"x":[4,5]},"lastIndex":6,"source":"\\b(?<x>a)(a)\\b"}
 "\u005cb(?<x>a)(a)\u005cb" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","a","a"],"index":4,"input":"aaa aa as ſK\n","groups":{"x":"a"},"indices":[[4,6],[4,5],[5,6]],"indexGroups":{"x":[4,5]},"lastIndex":6,"source":"\\b(?<x>a)(a)\\b"}
 "\u005cb(?<x>a)(a)\u005cb" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"matches":["aa","a","a"],"index":4,"input":"aaa aa as ſK\n","groups":{"x":"a"},"indices":[[4,6],[4,5],[5,6]],"indexGroups":{"x":[4,5]},"lastIndex":6,"source":"\\b(?<x>a)(a)\\b"}
@@ -50,8 +48,6 @@ expression: rows
 "\u005cb(?<x>a)(a)\u005cb" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a)(a)\u005cb" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a)(a)\u005cb" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>a)(a)\u005cb" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>a)(a)\u005cb" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a)(a)\u005cb" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"matches":["aa","a","a"],"index":4,"input":"aaa aa as ſK\n","groups":{"x":"a"},"indices":[[4,6],[4,5],[5,6]],"indexGroups":{"x":[4,5]},"lastIndex":6,"source":"\\b(?<x>a)(a)\\b"}
 "\u005cb(?<x>a)(a)\u005cb" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","a","a"],"index":4,"input":"aaa aa as ſK\n","groups":{"x":"a"},"indices":[[4,6],[4,5],[5,6]],"indexGroups":{"x":[4,5]},"lastIndex":6,"source":"\\b(?<x>a)(a)\\b"}
 "\u005cb(?<x>a)(a)\u005cb" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"matches":["aa","a","a"],"index":4,"input":"aaa aa as ſK\n","groups":{"x":"a"},"indices":[[4,6],[4,5],[5,6]],"indexGroups":{"x":[4,5]},"lastIndex":6,"source":"\\b(?<x>a)(a)\\b"}
@@ -75,8 +71,6 @@ expression: rows
 "\u005cb(?<x>a)(a)\u005cb" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a)(a)\u005cb" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a)(a)\u005cb" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>a)(a)\u005cb" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>a)(a)\u005cb" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a)(a)\u005cb" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a)(a)\u005cb" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a)(a)\u005cb" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -100,8 +94,6 @@ expression: rows
 "\u005cb(?<x>a)(a)\u005cb" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a)(a)\u005cb" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a)(a)\u005cb" flags="divmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>a)(a)\u005cb" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>a)(a)\u005cb" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>a)(a)\u005cb" flags="dug" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"matches":["aa","a","a"],"index":1,"input":"aaa aa as ſK\n","groups":{"x":"a"},"indices":[[1,3],[1,2],[2,3]],"indexGroups":{"x":[1,2]},"lastIndex":3,"source":"\\B(?<x>a)(a)\\b"}
 "\u005cB(?<x>a)(a)\u005cb" flags="dug" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","a","a"],"index":1,"input":"aaa aa as ſK\n","groups":{"x":"a"},"indices":[[1,3],[1,2],[2,3]],"indexGroups":{"x":[1,2]},"lastIndex":3,"source":"\\B(?<x>a)(a)\\b"}
 "\u005cB(?<x>a)(a)\u005cb" flags="dug" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -125,8 +117,6 @@ expression: rows
 "\u005cB(?<x>a)(a)\u005cb" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>a)(a)\u005cb" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>a)(a)\u005cb" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cB(?<x>a)(a)\u005cb" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cB(?<x>a)(a)\u005cb" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>a)(a)\u005cb" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"matches":["aa","a","a"],"index":1,"input":"aaa aa as ſK\n","groups":{"x":"a"},"indices":[[1,3],[1,2],[2,3]],"indexGroups":{"x":[1,2]},"lastIndex":3,"source":"\\B(?<x>a)(a)\\b"}
 "\u005cB(?<x>a)(a)\u005cb" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","a","a"],"index":1,"input":"aaa aa as ſK\n","groups":{"x":"a"},"indices":[[1,3],[1,2],[2,3]],"indexGroups":{"x":[1,2]},"lastIndex":3,"source":"\\B(?<x>a)(a)\\b"}
 "\u005cB(?<x>a)(a)\u005cb" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -150,8 +140,6 @@ expression: rows
 "\u005cB(?<x>a)(a)\u005cb" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>a)(a)\u005cb" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>a)(a)\u005cb" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cB(?<x>a)(a)\u005cb" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cB(?<x>a)(a)\u005cb" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>a)(a)\u005cb" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"matches":["aa","a","a"],"index":1,"input":"aaa aa as ſK\n","groups":{"x":"a"},"indices":[[1,3],[1,2],[2,3]],"indexGroups":{"x":[1,2]},"lastIndex":3,"source":"\\B(?<x>a)(a)\\b"}
 "\u005cB(?<x>a)(a)\u005cb" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","a","a"],"index":1,"input":"aaa aa as ſK\n","groups":{"x":"a"},"indices":[[1,3],[1,2],[2,3]],"indexGroups":{"x":[1,2]},"lastIndex":3,"source":"\\B(?<x>a)(a)\\b"}
 "\u005cB(?<x>a)(a)\u005cb" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -175,8 +163,6 @@ expression: rows
 "\u005cB(?<x>a)(a)\u005cb" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>a)(a)\u005cb" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>a)(a)\u005cb" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cB(?<x>a)(a)\u005cb" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cB(?<x>a)(a)\u005cb" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>a)(a)\u005cb" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>a)(a)\u005cb" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"matches":["aa","a","a"],"index":1,"input":"aaa aa as ſK\n","groups":{"x":"a"},"indices":[[1,3],[1,2],[2,3]],"indexGroups":{"x":[1,2]},"lastIndex":3,"source":"\\B(?<x>a)(a)\\b"}
 "\u005cB(?<x>a)(a)\u005cb" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -200,8 +186,6 @@ expression: rows
 "\u005cB(?<x>a)(a)\u005cb" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>a)(a)\u005cb" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>a)(a)\u005cb" flags="divmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cB(?<x>a)(a)\u005cb" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cB(?<x>a)(a)\u005cb" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a())(a)\u005cB" flags="dug" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"matches":["aa","a","","a"],"index":0,"input":"aaa aa as ſK\n","groups":{"x":"a"},"indices":[[0,2],[0,1],[1,1],[1,2]],"indexGroups":{"x":[0,1]},"lastIndex":2,"source":"\\b(?<x>a())(a)\\B"}
 "\u005cb(?<x>a())(a)\u005cB" flags="dug" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a())(a)\u005cB" flags="dug" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -225,8 +209,6 @@ expression: rows
 "\u005cb(?<x>a())(a)\u005cB" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a())(a)\u005cB" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a())(a)\u005cB" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>a())(a)\u005cB" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>a())(a)\u005cB" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a())(a)\u005cB" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"matches":["aa","a","","a"],"index":0,"input":"aaa aa as ſK\n","groups":{"x":"a"},"indices":[[0,2],[0,1],[1,1],[1,2]],"indexGroups":{"x":[0,1]},"lastIndex":2,"source":"\\b(?<x>a())(a)\\B"}
 "\u005cb(?<x>a())(a)\u005cB" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a())(a)\u005cB" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -250,8 +232,6 @@ expression: rows
 "\u005cb(?<x>a())(a)\u005cB" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a())(a)\u005cB" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a())(a)\u005cB" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>a())(a)\u005cB" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>a())(a)\u005cB" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a())(a)\u005cB" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"matches":["aa","a","","a"],"index":0,"input":"aaa aa as ſK\n","groups":{"x":"a"},"indices":[[0,2],[0,1],[1,1],[1,2]],"indexGroups":{"x":[0,1]},"lastIndex":2,"source":"\\b(?<x>a())(a)\\B"}
 "\u005cb(?<x>a())(a)\u005cB" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a())(a)\u005cB" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -275,8 +255,6 @@ expression: rows
 "\u005cb(?<x>a())(a)\u005cB" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a())(a)\u005cB" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a())(a)\u005cB" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>a())(a)\u005cB" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>a())(a)\u005cB" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a())(a)\u005cB" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"matches":["aa","a","","a"],"index":0,"input":"aaa aa as ſK\n","groups":{"x":"a"},"indices":[[0,2],[0,1],[1,1],[1,2]],"indexGroups":{"x":[0,1]},"lastIndex":2,"source":"\\b(?<x>a())(a)\\B"}
 "\u005cb(?<x>a())(a)\u005cB" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a())(a)\u005cB" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -300,8 +278,6 @@ expression: rows
 "\u005cb(?<x>a())(a)\u005cB" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a())(a)\u005cB" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a())(a)\u005cB" flags="divmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>a())(a)\u005cB" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>a())(a)\u005cB" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "((\u005cb(?<x>a)(s)\u005cb))" flags="dug" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"matches":["as","as","as","a","s"],"index":7,"input":"aaa aa as ſK\n","groups":{"x":"a"},"indices":[[7,9],[7,9],[7,9],[7,8],[8,9]],"indexGroups":{"x":[7,8]},"lastIndex":9,"source":"((\\b(?<x>a)(s)\\b))"}
 "((\u005cb(?<x>a)(s)\u005cb))" flags="dug" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"matches":["as","as","as","a","s"],"index":7,"input":"aaa aa as ſK\n","groups":{"x":"a"},"indices":[[7,9],[7,9],[7,9],[7,8],[8,9]],"indexGroups":{"x":[7,8]},"lastIndex":9,"source":"((\\b(?<x>a)(s)\\b))"}
 "((\u005cb(?<x>a)(s)\u005cb))" flags="dug" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"matches":["as","as","as","a","s"],"index":7,"input":"aaa aa as ſK\n","groups":{"x":"a"},"indices":[[7,9],[7,9],[7,9],[7,8],[8,9]],"indexGroups":{"x":[7,8]},"lastIndex":9,"source":"((\\b(?<x>a)(s)\\b))"}
@@ -325,8 +301,6 @@ expression: rows
 "((\u005cb(?<x>a)(s)\u005cb))" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "((\u005cb(?<x>a)(s)\u005cb))" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "((\u005cb(?<x>a)(s)\u005cb))" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"((\u005cb(?<x>a)(s)\u005cb))" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"((\u005cb(?<x>a)(s)\u005cb))" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "((\u005cb(?<x>a)(s)\u005cb))" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"matches":["as","as","as","a","s"],"index":7,"input":"aaa aa as ſK\n","groups":{"x":"a"},"indices":[[7,9],[7,9],[7,9],[7,8],[8,9]],"indexGroups":{"x":[7,8]},"lastIndex":9,"source":"((\\b(?<x>a)(s)\\b))"}
 "((\u005cb(?<x>a)(s)\u005cb))" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"matches":["as","as","as","a","s"],"index":7,"input":"aaa aa as ſK\n","groups":{"x":"a"},"indices":[[7,9],[7,9],[7,9],[7,8],[8,9]],"indexGroups":{"x":[7,8]},"lastIndex":9,"source":"((\\b(?<x>a)(s)\\b))"}
 "((\u005cb(?<x>a)(s)\u005cb))" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"matches":["as","as","as","a","s"],"index":7,"input":"aaa aa as ſK\n","groups":{"x":"a"},"indices":[[7,9],[7,9],[7,9],[7,8],[8,9]],"indexGroups":{"x":[7,8]},"lastIndex":9,"source":"((\\b(?<x>a)(s)\\b))"}
@@ -350,8 +324,6 @@ expression: rows
 "((\u005cb(?<x>a)(s)\u005cb))" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "((\u005cb(?<x>a)(s)\u005cb))" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "((\u005cb(?<x>a)(s)\u005cb))" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"((\u005cb(?<x>a)(s)\u005cb))" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"((\u005cb(?<x>a)(s)\u005cb))" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "((\u005cb(?<x>a)(s)\u005cb))" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"matches":["as","as","as","a","s"],"index":7,"input":"aaa aa as ſK\n","groups":{"x":"a"},"indices":[[7,9],[7,9],[7,9],[7,8],[8,9]],"indexGroups":{"x":[7,8]},"lastIndex":9,"source":"((\\b(?<x>a)(s)\\b))"}
 "((\u005cb(?<x>a)(s)\u005cb))" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"matches":["as","as","as","a","s"],"index":7,"input":"aaa aa as ſK\n","groups":{"x":"a"},"indices":[[7,9],[7,9],[7,9],[7,8],[8,9]],"indexGroups":{"x":[7,8]},"lastIndex":9,"source":"((\\b(?<x>a)(s)\\b))"}
 "((\u005cb(?<x>a)(s)\u005cb))" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"matches":["as","as","as","a","s"],"index":7,"input":"aaa aa as ſK\n","groups":{"x":"a"},"indices":[[7,9],[7,9],[7,9],[7,8],[8,9]],"indexGroups":{"x":[7,8]},"lastIndex":9,"source":"((\\b(?<x>a)(s)\\b))"}
@@ -375,8 +347,6 @@ expression: rows
 "((\u005cb(?<x>a)(s)\u005cb))" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "((\u005cb(?<x>a)(s)\u005cb))" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "((\u005cb(?<x>a)(s)\u005cb))" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"((\u005cb(?<x>a)(s)\u005cb))" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"((\u005cb(?<x>a)(s)\u005cb))" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "((\u005cb(?<x>a)(s)\u005cb))" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "((\u005cb(?<x>a)(s)\u005cb))" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "((\u005cb(?<x>a)(s)\u005cb))" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -400,8 +370,6 @@ expression: rows
 "((\u005cb(?<x>a)(s)\u005cb))" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "((\u005cb(?<x>a)(s)\u005cb))" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "((\u005cb(?<x>a)(s)\u005cb))" flags="divmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"((\u005cb(?<x>a)(s)\u005cb))" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"((\u005cb(?<x>a)(s)\u005cb))" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u017f)(\u212a)\u005cb" flags="dug" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u017f)(\u212a)\u005cb" flags="dug" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u017f)(\u212a)\u005cb" flags="dug" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -425,8 +393,6 @@ expression: rows
 "\u005cb(?<x>\u017f)(\u212a)\u005cb" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u017f)(\u212a)\u005cb" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u017f)(\u212a)\u005cb" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>\u017f)(\u212a)\u005cb" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>\u017f)(\u212a)\u005cb" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u017f)(\u212a)\u005cb" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"matches":["ſK","ſ","K"],"index":10,"input":"aaa aa as ſK\n","groups":{"x":"ſ"},"indices":[[10,12],[10,11],[11,12]],"indexGroups":{"x":[10,11]},"lastIndex":12,"source":"\\b(?<x>ſ)(K)\\b"}
 "\u005cb(?<x>\u017f)(\u212a)\u005cb" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"matches":["ſK","ſ","K"],"index":10,"input":"aaa aa as ſK\n","groups":{"x":"ſ"},"indices":[[10,12],[10,11],[11,12]],"indexGroups":{"x":[10,11]},"lastIndex":12,"source":"\\b(?<x>ſ)(K)\\b"}
 "\u005cb(?<x>\u017f)(\u212a)\u005cb" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"matches":["ſK","ſ","K"],"index":10,"input":"aaa aa as ſK\n","groups":{"x":"ſ"},"indices":[[10,12],[10,11],[11,12]],"indexGroups":{"x":[10,11]},"lastIndex":12,"source":"\\b(?<x>ſ)(K)\\b"}
@@ -450,8 +416,6 @@ expression: rows
 "\u005cb(?<x>\u017f)(\u212a)\u005cb" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u017f)(\u212a)\u005cb" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u017f)(\u212a)\u005cb" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>\u017f)(\u212a)\u005cb" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>\u017f)(\u212a)\u005cb" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u017f)(\u212a)\u005cb" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"matches":["ſK","ſ","K"],"index":10,"input":"aaa aa as ſK\n","groups":{"x":"ſ"},"indices":[[10,12],[10,11],[11,12]],"indexGroups":{"x":[10,11]},"lastIndex":12,"source":"\\b(?<x>ſ)(K)\\b"}
 "\u005cb(?<x>\u017f)(\u212a)\u005cb" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"matches":["ſK","ſ","K"],"index":10,"input":"aaa aa as ſK\n","groups":{"x":"ſ"},"indices":[[10,12],[10,11],[11,12]],"indexGroups":{"x":[10,11]},"lastIndex":12,"source":"\\b(?<x>ſ)(K)\\b"}
 "\u005cb(?<x>\u017f)(\u212a)\u005cb" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"matches":["ſK","ſ","K"],"index":10,"input":"aaa aa as ſK\n","groups":{"x":"ſ"},"indices":[[10,12],[10,11],[11,12]],"indexGroups":{"x":[10,11]},"lastIndex":12,"source":"\\b(?<x>ſ)(K)\\b"}
@@ -475,8 +439,6 @@ expression: rows
 "\u005cb(?<x>\u017f)(\u212a)\u005cb" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u017f)(\u212a)\u005cb" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u017f)(\u212a)\u005cb" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>\u017f)(\u212a)\u005cb" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>\u017f)(\u212a)\u005cb" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u017f)(\u212a)\u005cb" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u017f)(\u212a)\u005cb" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u017f)(\u212a)\u005cb" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -500,8 +462,6 @@ expression: rows
 "\u005cb(?<x>\u017f)(\u212a)\u005cb" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u017f)(\u212a)\u005cb" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u017f)(\u212a)\u005cb" flags="divmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>\u017f)(\u212a)\u005cb" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>\u017f)(\u212a)\u005cb" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^\u005cb(?<x>a)(a)\u005cb$" flags="dug" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "^\u005cb(?<x>a)(a)\u005cb$" flags="dug" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "^\u005cb(?<x>a)(a)\u005cb$" flags="dug" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -525,8 +485,6 @@ expression: rows
 "^\u005cb(?<x>a)(a)\u005cb$" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "^\u005cb(?<x>a)(a)\u005cb$" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^\u005cb(?<x>a)(a)\u005cb$" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"^\u005cb(?<x>a)(a)\u005cb$" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"^\u005cb(?<x>a)(a)\u005cb$" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^\u005cb(?<x>a)(a)\u005cb$" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "^\u005cb(?<x>a)(a)\u005cb$" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "^\u005cb(?<x>a)(a)\u005cb$" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -550,8 +508,6 @@ expression: rows
 "^\u005cb(?<x>a)(a)\u005cb$" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "^\u005cb(?<x>a)(a)\u005cb$" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^\u005cb(?<x>a)(a)\u005cb$" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"^\u005cb(?<x>a)(a)\u005cb$" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"^\u005cb(?<x>a)(a)\u005cb$" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^\u005cb(?<x>a)(a)\u005cb$" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "^\u005cb(?<x>a)(a)\u005cb$" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "^\u005cb(?<x>a)(a)\u005cb$" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -575,8 +531,6 @@ expression: rows
 "^\u005cb(?<x>a)(a)\u005cb$" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "^\u005cb(?<x>a)(a)\u005cb$" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^\u005cb(?<x>a)(a)\u005cb$" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"^\u005cb(?<x>a)(a)\u005cb$" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"^\u005cb(?<x>a)(a)\u005cb$" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^\u005cb(?<x>a)(a)\u005cb$" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "^\u005cb(?<x>a)(a)\u005cb$" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "^\u005cb(?<x>a)(a)\u005cb$" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -600,8 +554,6 @@ expression: rows
 "^\u005cb(?<x>a)(a)\u005cb$" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "^\u005cb(?<x>a)(a)\u005cb$" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "^\u005cb(?<x>a)(a)\u005cb$" flags="divmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"^\u005cb(?<x>a)(a)\u005cb$" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"^\u005cb(?<x>a)(a)\u005cb$" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>\u005cu{1f600})(a)\u005cb" flags="dug" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>\u005cu{1f600})(a)\u005cb" flags="dug" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>\u005cu{1f600})(a)\u005cb" flags="dug" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -625,8 +577,6 @@ expression: rows
 "\u005cB(?<x>\u005cu{1f600})(a)\u005cb" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>\u005cu{1f600})(a)\u005cb" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>\u005cu{1f600})(a)\u005cb" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cB(?<x>\u005cu{1f600})(a)\u005cb" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cB(?<x>\u005cu{1f600})(a)\u005cb" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>\u005cu{1f600})(a)\u005cb" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>\u005cu{1f600})(a)\u005cb" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>\u005cu{1f600})(a)\u005cb" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -650,8 +600,6 @@ expression: rows
 "\u005cB(?<x>\u005cu{1f600})(a)\u005cb" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>\u005cu{1f600})(a)\u005cb" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>\u005cu{1f600})(a)\u005cb" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cB(?<x>\u005cu{1f600})(a)\u005cb" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cB(?<x>\u005cu{1f600})(a)\u005cb" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>\u005cu{1f600})(a)\u005cb" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>\u005cu{1f600})(a)\u005cb" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>\u005cu{1f600})(a)\u005cb" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -675,8 +623,6 @@ expression: rows
 "\u005cB(?<x>\u005cu{1f600})(a)\u005cb" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>\u005cu{1f600})(a)\u005cb" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>\u005cu{1f600})(a)\u005cb" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cB(?<x>\u005cu{1f600})(a)\u005cb" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cB(?<x>\u005cu{1f600})(a)\u005cb" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>\u005cu{1f600})(a)\u005cb" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>\u005cu{1f600})(a)\u005cb" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>\u005cu{1f600})(a)\u005cb" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -700,8 +646,6 @@ expression: rows
 "\u005cB(?<x>\u005cu{1f600})(a)\u005cb" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>\u005cu{1f600})(a)\u005cb" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>\u005cu{1f600})(a)\u005cb" flags="divmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cB(?<x>\u005cu{1f600})(a)\u005cb" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cB(?<x>\u005cu{1f600})(a)\u005cb" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a)(\u005cu{1f600})\u005cB" flags="dug" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a)(\u005cu{1f600})\u005cB" flags="dug" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a)(\u005cu{1f600})\u005cB" flags="dug" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -725,8 +669,6 @@ expression: rows
 "\u005cb(?<x>a)(\u005cu{1f600})\u005cB" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a)(\u005cu{1f600})\u005cB" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a)(\u005cu{1f600})\u005cB" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>a)(\u005cu{1f600})\u005cB" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>a)(\u005cu{1f600})\u005cB" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a)(\u005cu{1f600})\u005cB" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a)(\u005cu{1f600})\u005cB" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a)(\u005cu{1f600})\u005cB" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -750,8 +692,6 @@ expression: rows
 "\u005cb(?<x>a)(\u005cu{1f600})\u005cB" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a)(\u005cu{1f600})\u005cB" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a)(\u005cu{1f600})\u005cB" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>a)(\u005cu{1f600})\u005cB" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>a)(\u005cu{1f600})\u005cB" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a)(\u005cu{1f600})\u005cB" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a)(\u005cu{1f600})\u005cB" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a)(\u005cu{1f600})\u005cB" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -775,8 +715,6 @@ expression: rows
 "\u005cb(?<x>a)(\u005cu{1f600})\u005cB" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a)(\u005cu{1f600})\u005cB" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a)(\u005cu{1f600})\u005cB" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>a)(\u005cu{1f600})\u005cB" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>a)(\u005cu{1f600})\u005cB" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a)(\u005cu{1f600})\u005cB" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a)(\u005cu{1f600})\u005cB" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a)(\u005cu{1f600})\u005cB" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -800,8 +738,6 @@ expression: rows
 "\u005cb(?<x>a)(\u005cu{1f600})\u005cB" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a)(\u005cu{1f600})\u005cB" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>a)(\u005cu{1f600})\u005cB" flags="divmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>a)(\u005cu{1f600})\u005cB" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>a)(\u005cu{1f600})\u005cB" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u005cuD800)(a)\u005cb" flags="dug" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u005cuD800)(a)\u005cb" flags="dug" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u005cuD800)(a)\u005cb" flags="dug" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -825,8 +761,6 @@ expression: rows
 "\u005cb(?<x>\u005cuD800)(a)\u005cb" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u005cuD800)(a)\u005cb" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u005cuD800)(a)\u005cb" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>\u005cuD800)(a)\u005cb" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>\u005cuD800)(a)\u005cb" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u005cuD800)(a)\u005cb" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u005cuD800)(a)\u005cb" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u005cuD800)(a)\u005cb" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -850,8 +784,6 @@ expression: rows
 "\u005cb(?<x>\u005cuD800)(a)\u005cb" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u005cuD800)(a)\u005cb" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u005cuD800)(a)\u005cb" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>\u005cuD800)(a)\u005cb" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>\u005cuD800)(a)\u005cb" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u005cuD800)(a)\u005cb" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u005cuD800)(a)\u005cb" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u005cuD800)(a)\u005cb" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -875,8 +807,6 @@ expression: rows
 "\u005cb(?<x>\u005cuD800)(a)\u005cb" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u005cuD800)(a)\u005cb" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u005cuD800)(a)\u005cb" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>\u005cuD800)(a)\u005cb" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>\u005cuD800)(a)\u005cb" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u005cuD800)(a)\u005cb" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u005cuD800)(a)\u005cb" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u005cuD800)(a)\u005cb" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -900,8 +830,6 @@ expression: rows
 "\u005cb(?<x>\u005cuD800)(a)\u005cb" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u005cuD800)(a)\u005cb" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>\u005cuD800)(a)\u005cb" flags="divmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>\u005cuD800)(a)\u005cb" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>\u005cuD800)(a)\u005cb" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>(a)b)\u005cb" flags="dug" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>(a)b)\u005cb" flags="dug" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>(a)b)\u005cb" flags="dug" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -925,8 +853,6 @@ expression: rows
 "\u005cb(?<x>(a)b)\u005cb" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>(a)b)\u005cb" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>(a)b)\u005cb" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>(a)b)\u005cb" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>(a)b)\u005cb" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>(a)b)\u005cb" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>(a)b)\u005cb" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>(a)b)\u005cb" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -950,8 +876,6 @@ expression: rows
 "\u005cb(?<x>(a)b)\u005cb" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>(a)b)\u005cb" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>(a)b)\u005cb" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>(a)b)\u005cb" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>(a)b)\u005cb" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>(a)b)\u005cb" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>(a)b)\u005cb" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>(a)b)\u005cb" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -975,8 +899,6 @@ expression: rows
 "\u005cb(?<x>(a)b)\u005cb" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>(a)b)\u005cb" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>(a)b)\u005cb" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>(a)b)\u005cb" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>(a)b)\u005cb" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>(a)b)\u005cb" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>(a)b)\u005cb" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>(a)b)\u005cb" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -1000,8 +922,6 @@ expression: rows
 "\u005cb(?<x>(a)b)\u005cb" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>(a)b)\u005cb" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cb(?<x>(a)b)\u005cb" flags="divmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>(a)b)\u005cb" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cb(?<x>(a)b)\u005cb" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>a)(a)\u005cB" flags="dug" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>a)(a)\u005cB" flags="dug" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>a)(a)\u005cB" flags="dug" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -1025,8 +945,6 @@ expression: rows
 "\u005cB(?<x>a)(a)\u005cB" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>a)(a)\u005cB" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>a)(a)\u005cB" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cB(?<x>a)(a)\u005cB" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cB(?<x>a)(a)\u005cB" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>a)(a)\u005cB" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>a)(a)\u005cB" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>a)(a)\u005cB" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -1050,8 +968,6 @@ expression: rows
 "\u005cB(?<x>a)(a)\u005cB" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>a)(a)\u005cB" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>a)(a)\u005cB" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cB(?<x>a)(a)\u005cB" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cB(?<x>a)(a)\u005cB" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>a)(a)\u005cB" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>a)(a)\u005cB" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>a)(a)\u005cB" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -1075,8 +991,6 @@ expression: rows
 "\u005cB(?<x>a)(a)\u005cB" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>a)(a)\u005cB" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>a)(a)\u005cB" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cB(?<x>a)(a)\u005cB" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cB(?<x>a)(a)\u005cB" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>a)(a)\u005cB" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>a)(a)\u005cB" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>a)(a)\u005cB" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -1100,8 +1014,6 @@ expression: rows
 "\u005cB(?<x>a)(a)\u005cB" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>a)(a)\u005cB" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "\u005cB(?<x>a)(a)\u005cB" flags="divmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"\u005cB(?<x>a)(a)\u005cB" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"\u005cB(?<x>a)(a)\u005cB" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(\u005cb(?<x>a)(a)\u005cb$)" flags="dug" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(\u005cb(?<x>a)(a)\u005cb$)" flags="dug" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(\u005cb(?<x>a)(a)\u005cb$)" flags="dug" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -1125,8 +1037,6 @@ expression: rows
 "(\u005cb(?<x>a)(a)\u005cb$)" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(\u005cb(?<x>a)(a)\u005cb$)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(\u005cb(?<x>a)(a)\u005cb$)" flags="dug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(\u005cb(?<x>a)(a)\u005cb$)" flags="dug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(\u005cb(?<x>a)(a)\u005cb$)" flags="dug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(\u005cb(?<x>a)(a)\u005cb$)" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(\u005cb(?<x>a)(a)\u005cb$)" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(\u005cb(?<x>a)(a)\u005cb$)" flags="diug" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -1150,8 +1060,6 @@ expression: rows
 "(\u005cb(?<x>a)(a)\u005cb$)" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(\u005cb(?<x>a)(a)\u005cb$)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(\u005cb(?<x>a)(a)\u005cb$)" flags="diug" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(\u005cb(?<x>a)(a)\u005cb$)" flags="diug" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(\u005cb(?<x>a)(a)\u005cb$)" flags="diug" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(\u005cb(?<x>a)(a)\u005cb$)" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(\u005cb(?<x>a)(a)\u005cb$)" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(\u005cb(?<x>a)(a)\u005cb$)" flags="divg" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -1175,8 +1083,6 @@ expression: rows
 "(\u005cb(?<x>a)(a)\u005cb$)" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(\u005cb(?<x>a)(a)\u005cb$)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(\u005cb(?<x>a)(a)\u005cb$)" flags="divg" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(\u005cb(?<x>a)(a)\u005cb$)" flags="divg" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(\u005cb(?<x>a)(a)\u005cb$)" flags="divg" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(\u005cb(?<x>a)(a)\u005cb$)" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=0 => {"match":null,"lastIndex":0}
 "(\u005cb(?<x>a)(a)\u005cb$)" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=1 => {"match":null,"lastIndex":0}
 "(\u005cb(?<x>a)(a)\u005cb$)" flags="divmy" input="aaa aa as \u017f\u212a\u000a" lastIndex=2 => {"match":null,"lastIndex":0}
@@ -1200,5 +1106,3 @@ expression: rows
 "(\u005cb(?<x>a)(a)\u005cb$)" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
 "(\u005cb(?<x>a)(a)\u005cb$)" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
 "(\u005cb(?<x>a)(a)\u005cb$)" flags="divmy" input="" lastIndex=2 => {"match":null,"lastIndex":0}
-"(\u005cb(?<x>a)(a)\u005cb$)" flags="divmy" input="" lastIndex=0 => {"match":null,"lastIndex":0}
-"(\u005cb(?<x>a)(a)\u005cb$)" flags="divmy" input="" lastIndex=1 => {"match":null,"lastIndex":0}
