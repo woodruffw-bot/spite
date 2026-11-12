@@ -153,7 +153,11 @@ fn unicode_ids_trinary_operator_properties_consumers_original_text() {
             r"'\u2FF3\u2FF2😀X'.replace(/(?<x>\p{{IDS_Trinary_Operator}})/{mode}g,'<$1:$<x>>')==='<\u2FF3:\u2FF3><\u2FF2:\u2FF2>😀X'"
         ));
         assert_true(&format!(
-            r"'😀\u2FF3\u2FF2G'.split(/(\p{{IDST}})/{mode}).join('|')==='😀|\u2FF3||\u2FF2|G'&&'😀\u2FF2'.search(/\p{{IDST}}/{mode})===2&&'\u2FF3\u2FF2😀'.match(/\p{{IDST}}/{mode}g).join('')==='\u2FF3\u2FF2'"
+            r#"
+                '😀\u2FF3\u2FF2G'.split(/(\p{{IDST}})/{mode}).join('|') === '😀|\u2FF3||\u2FF2|G' &&
+                    '😀\u2FF2'.search(/\p{{IDST}}/{mode}) === 2 && '\u2FF3\u2FF2😀'.match(
+                        /\p{{IDST}}/{mode}g).join('') === '\u2FF3\u2FF2'
+            "#
         ));
         assert_true(&format!(
             r#"

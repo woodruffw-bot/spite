@@ -482,7 +482,11 @@ fn unicode_latin_script_consumers_preserve_original_text() {
             r"'ABμ'.replace(/(?<x>\p{{sc=Latn}})/{mode}g,'<$1:$<x>>')==='<A:A><B:B>μ'"
         ));
         assert_true(&format!(
-            r"'μABμ'.split(/(\p{{Script=Latin}})/{mode}).join('|')==='μ|A||B|μ'&&'μ😀A'.search(/\p{{sc=Latn}}/{mode})===3&&'ABμ'.match(/\p{{Script=Latn}}/{mode}g).join('')==='AB'"
+            r#"
+                'μABμ'.split(/(\p{{Script=Latin}})/{mode}).join('|') === 'μ|A||B|μ' && 'μ😀A'.search(
+                    /\p{{sc=Latn}}/{mode}) === 3 && 'ABμ'.match(
+                    /\p{{Script=Latn}}/{mode}g).join('') === 'AB'
+            "#
         ));
         assert_true(&format!(
             r#"

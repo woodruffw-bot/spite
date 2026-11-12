@@ -175,7 +175,20 @@ fn mutations_use_the_original_length_and_live_source_presence() {
         "let a=[1,2,3];let b=a.slice({valueOf(){a.length=1;return 0;}},{valueOf(){a[3]=4;return 99;}});b.length===3 && b[0]===1 && !(1 in b) && !(2 in b)",
     );
     assert_true(
-        "let a=[1,2,3],log='';Object.defineProperty(a,'0',{get(){log+='a';delete a[1];a[2]=9;return 7;}});let b=a.slice();b.length===3 && b[0]===7 && !(1 in b) && b[2]===9 && log==='a'",
+        r#"
+            let a = [1, 2, 3],
+                log = '';
+            Object.defineProperty(a, '0', {
+                get() {
+                    log += 'a';
+                    delete a[1];
+                    a[2] = 9;
+                    return 7;
+                }
+            });
+            let b = a.slice();
+            b.length === 3 && b[0] === 7 && !(1 in b) && b[2] === 9 && log === 'a'
+        "#,
     );
     assert_true(
         "let a=[1,,3];function C(){a[1]=9;delete a[2];}a.constructor={[Symbol.species]:C};let b=a.slice();b.length===3 && b[0]===1 && b[1]===9 && !(2 in b)",

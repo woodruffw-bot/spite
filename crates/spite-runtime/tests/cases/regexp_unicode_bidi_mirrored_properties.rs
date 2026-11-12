@@ -155,7 +155,11 @@ fn unicode_bidi_mirrored_properties_consumers_original_text() {
             r"'\u0029\u0028😀X'.replace(/(?<x>\p{{Bidi_Mirrored}})/{mode}g,'<$1:$<x>>')==='<\u0029:\u0029><\u0028:\u0028>😀X'"
         ));
         assert_true(&format!(
-            r"'😀\u0029\u0028G'.split(/(\p{{Bidi_M}})/{mode}).join('|')==='😀|\u0029||\u0028|G'&&'😀\u0028'.search(/\p{{Bidi_M}}/{mode})===2&&'\u0029\u0028😀'.match(/\p{{Bidi_M}}/{mode}g).join('')==='\u0029\u0028'"
+            r#"
+                '😀\u0029\u0028G'.split(/(\p{{Bidi_M}})/{mode}).join('|') === '😀|\u0029||\u0028|G' &&
+                    '😀\u0028'.search(/\p{{Bidi_M}}/{mode}) === 2 && '\u0029\u0028😀'.match(
+                        /\p{{Bidi_M}}/{mode}g).join('') === '\u0029\u0028'
+            "#
         ));
         assert_true(&format!(
             r#"

@@ -153,7 +153,12 @@ fn unicode_emoji_modifier_properties_consumers_original_text() {
             r"'\u{{1F3FF}}\u{{1F3FB}}😀X'.replace(/(?<x>\p{{Emoji_Modifier}})/{mode}g,'<$1:$<x>>')==='<\u{{1F3FF}}:\u{{1F3FF}}><\u{{1F3FB}}:\u{{1F3FB}}>😀X'"
         ));
         assert_true(&format!(
-            r"'😀\u{{1F3FF}}\u{{1F3FB}}G'.split(/(\p{{EMod}})/{mode}).join('|')==='😀|\u{{1F3FF}}||\u{{1F3FB}}|G'&&'😀\u{{1F3FB}}'.search(/\p{{EMod}}/{mode})===2&&'\u{{1F3FF}}\u{{1F3FB}}😀'.match(/\p{{EMod}}/{mode}g).join('')==='\u{{1F3FF}}\u{{1F3FB}}'"
+            r#"
+                '😀\u{{1F3FF}}\u{{1F3FB}}G'.split(/(\p{{EMod}})/{mode}).join('|') ===
+                    '😀|\u{{1F3FF}}||\u{{1F3FB}}|G' && '😀\u{{1F3FB}}'.search(/\p{{EMod}}/{mode}) === 2 &&
+                    '\u{{1F3FF}}\u{{1F3FB}}😀'.match(/\p{{EMod}}/{mode}g).join('') ===
+                    '\u{{1F3FF}}\u{{1F3FB}}'
+            "#
         ));
         assert_true(&format!(
             r#"

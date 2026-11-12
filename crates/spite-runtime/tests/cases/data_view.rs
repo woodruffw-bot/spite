@@ -536,7 +536,22 @@ fn descriptor_and_resizable_state_matrix() {
 #[test]
 fn intrinsic_function_properties_and_constructibility_follow_the_specification() {
     assert_true(
-        "let D=DataView,p=D.prototype,g=Object.getOwnPropertyDescriptor(globalThis,'DataView'),d=Object.getOwnPropertyDescriptor(D,'prototype'),c=Object.getOwnPropertyDescriptor(p,'constructor'),t=Object.getOwnPropertyDescriptor(p,Symbol.toStringTag);g.value===D && g.writable && !g.enumerable && g.configurable && D.name==='DataView' && D.length===1 && d.value===p && !d.writable && !d.enumerable && !d.configurable && c.value===D && c.writable && !c.enumerable && c.configurable && Object.getPrototypeOf(D)===Function.prototype && Object.getPrototypeOf(p)===Object.prototype && t.value==='DataView' && !t.writable && !t.enumerable && t.configurable && Object.prototype.toString.call(new D(new ArrayBuffer(0)))==='[object DataView]' && Object.prototype.toString.call(p)==='[object DataView]' && Reflect.ownKeys(new D(new ArrayBuffer(0))).length===0 && !Object.hasOwn(D,Symbol.species)",
+        r#"
+            let D = DataView,
+                p = D.prototype,
+                g = Object.getOwnPropertyDescriptor(globalThis, 'DataView'),
+                d = Object.getOwnPropertyDescriptor(D, 'prototype'),
+                c = Object.getOwnPropertyDescriptor(p, 'constructor'),
+                t = Object.getOwnPropertyDescriptor(p, Symbol.toStringTag);
+            g.value === D && g.writable && !g.enumerable && g.configurable && D.name === 'DataView' && D
+                .length === 1 && d.value === p && !d.writable && !d.enumerable && !d.configurable && c
+                .value === D && c.writable && !c.enumerable && c.configurable && Object.getPrototypeOf(
+                D) === Function.prototype && Object.getPrototypeOf(p) === Object.prototype && t.value ===
+                'DataView' && !t.writable && !t.enumerable && t.configurable && Object.prototype.toString
+                .call(new D(new ArrayBuffer(0))) === '[object DataView]' && Object.prototype.toString.call(
+                    p) === '[object DataView]' && Reflect.ownKeys(new D(new ArrayBuffer(0))).length ===
+                0 && !Object.hasOwn(D, Symbol.species)
+        "#,
     );
     for (suffix, _) in TYPES {
         for prefix in ["get", "set"] {

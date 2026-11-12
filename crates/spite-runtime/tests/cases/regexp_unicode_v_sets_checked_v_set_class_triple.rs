@@ -98,7 +98,11 @@ fn checked_v_set_class_triple_state_context_and_consumers() {
         "#,
     );
     assert_true(
-        r"'aaac aaac'.replace(/(?<whole>([[a]][[a]][[c]]))/vg,'<$1:$<whole>>')==='a<aac:aac> a<aac:aac>'&&'aaac'.split(/([[a]][[a]][[c]])/v).join('|')==='a|aac|'&&'aaac'.match(/[[a]][[a]][[c]]/v)[0]==='aac'",
+        r#"
+            'aaac aaac'.replace(/(?<whole>([[a]][[a]][[c]]))/vg, '<$1:$<whole>>') ===
+                'a<aac:aac> a<aac:aac>' && 'aaac'.split(/([[a]][[a]][[c]])/v).join('|') === 'a|aac|' &&
+                'aaac'.match(/[[a]][[a]][[c]]/v)[0] === 'aac'
+        "#,
     );
     assert_true(
         r#"

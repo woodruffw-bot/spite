@@ -226,7 +226,11 @@ fn empty_lookbehind_reference_consumers_keep_last_index_empty_advancement_and_ca
         "#,
     );
     assert_true(
-        r"'qa a'.replace(/(?<=(?:((?<x>)\k<x>){2}){2})a/g,'<$<x>>')==='q<> <>'&&'qa'.search(/(?<=((()\3){2}){2})a/)===1&&'qa a'.split(/(?<=((()\3){2}){2})a/).join('|')==='q|||| ||||'",
+        r#"
+            'qa a'.replace(/(?<=(?:((?<x>)\k<x>){2}){2})a/g, '<$<x>>') === 'q<> <>' && 'qa'.search(
+                    /(?<=((()\3){2}){2})a/) === 1 && 'qa a'.split(/(?<=((()\3){2}){2})a/).join('|') ===
+                'q|||| ||||'
+        "#,
     );
 }
 

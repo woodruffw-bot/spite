@@ -153,7 +153,11 @@ fn unicode_pattern_white_space_properties_consumers_original_text() {
             r"'\u200f\u200e😀X'.replace(/(?<x>\p{{Pattern_White_Space}})/{mode}g,'<$1:$<x>>')==='<\u200f:\u200f><\u200e:\u200e>😀X'"
         ));
         assert_true(&format!(
-            r"'😀\u200f\u200eG'.split(/(\p{{Pat_WS}})/{mode}).join('|')==='😀|\u200f||\u200e|G'&&'😀\u200e'.search(/\p{{Pat_WS}}/{mode})===2&&'\u200f\u200e😀'.match(/\p{{Pat_WS}}/{mode}g).join('')==='\u200f\u200e'"
+            r#"
+                '😀\u200f\u200eG'.split(/(\p{{Pat_WS}})/{mode}).join('|') === '😀|\u200f||\u200e|G' &&
+                    '😀\u200e'.search(/\p{{Pat_WS}}/{mode}) === 2 && '\u200f\u200e😀'.match(
+                        /\p{{Pat_WS}}/{mode}g).join('') === '\u200f\u200e'
+            "#
         ));
         assert_true(&format!(
             r#"

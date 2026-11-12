@@ -47,7 +47,11 @@ fn non_string_values_return_unchanged_without_coercion() {
 #[test]
 fn intrinsic_metadata_and_construction_match_an_ordinary_builtin() {
     assert_true(
-        "eval.name==='eval' && eval.length===1 && Object.getPrototypeOf(eval)===Function.prototype && Object.getOwnPropertyNames(eval).join(',')==='length,name' && !('prototype' in eval) && eval.toString()==='function eval() { [native code] }'",
+        r#"
+            eval.name === 'eval' && eval.length === 1 && Object.getPrototypeOf(eval) === Function
+                .prototype && Object.getOwnPropertyNames(eval).join(',') === 'length,name' && !(
+                    'prototype' in eval) && eval.toString() === 'function eval() { [native code] }'
+        "#,
     );
     assert_true(
         r#"

@@ -169,7 +169,11 @@ fn zero_scope_consumers_keep_last_index_empty_advancement_and_callback_slots() {
         "#,
     );
     assert_true(
-        r"'qb b'.replace(/(?<=(?:(?<x>)|(?<x>a)){0})b/g,'<$<x>>')==='q<> <>'&&'qb'.search(/(?<=((?=a)\1){0})b/)===1&&'qb b'.split(/(?<=((?=a)\1){0})b/).join('|')==='q|| ||'",
+        r#"
+            'qb b'.replace(/(?<=(?:(?<x>)|(?<x>a)){0})b/g, '<$<x>>') === 'q<> <>' && 'qb'.search(
+                    /(?<=((?=a)\1){0})b/) === 1 && 'qb b'.split(/(?<=((?=a)\1){0})b/).join('|') ===
+                'q|| ||'
+        "#,
     );
 }
 

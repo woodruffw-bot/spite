@@ -156,7 +156,11 @@ fn sequence_lookbehind_consumers_global_sticky_and_callbacks_keep_input_position
         "#,
     );
     assert_true(
-        r"'ababcqababc'.replace(/(?<=(?<x>(?:ab){2}))c/g,'<$<x>>')==='abab<abab>qabab<abab>'&&'ababcqababc'.search(/(?<=(?:ab){2})c/)===4&&'ababcqababc'.split(/(?<=(?:ab){2})c/).join('|')==='abab|qabab|'",
+        r#"
+            'ababcqababc'.replace(/(?<=(?<x>(?:ab){2}))c/g, '<$<x>>') === 'abab<abab>qabab<abab>' &&
+                'ababcqababc'.search(/(?<=(?:ab){2})c/) === 4 && 'ababcqababc'.split(/(?<=(?:ab){2})c/)
+                .join('|') === 'abab|qabab|'
+        "#,
     );
 }
 

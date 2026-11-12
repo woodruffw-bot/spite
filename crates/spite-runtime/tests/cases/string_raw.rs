@@ -8,7 +8,29 @@ use crate::common::assert_true;
 #[test]
 fn raw_interleaves_available_substitutions_with_utf16_literals() {
     assert_true(
-        "String.raw({raw:{0:'A',1:'B',2:'C',length:3}},1,2)==='A1B2C' && String.raw({raw:{0:'A',1:'B',2:'C',length:3}})==='ABC' && String.raw({raw:{0:'A',1:'B',length:2}},undefined)==='AundefinedB'",
+        r#"
+            String.raw({
+                raw: {
+                    0: 'A',
+                    1: 'B',
+                    2: 'C',
+                    length: 3
+                }
+            }, 1, 2) === 'A1B2C' && String.raw({
+                raw: {
+                    0: 'A',
+                    1: 'B',
+                    2: 'C',
+                    length: 3
+                }
+            }) === 'ABC' && String.raw({
+                raw: {
+                    0: 'A',
+                    1: 'B',
+                    length: 2
+                }
+            }, undefined) === 'AundefinedB'
+        "#,
     );
     assert_true(
         "String.raw({raw:{length:3,1:'B'}},'?')==='undefined?Bundefined' && String.raw({raw:Object.create({0:'A'},{length:{value:1}})})==='A'",

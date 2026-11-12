@@ -82,7 +82,7 @@ fn unicode_soft_dotted_properties_aliases_complements_and_unions() {
                 p.test('K') && n.test('K') && !x.test('K') &&
                     '\u{{49}}\u{{4a}}\u{{69}}\u{{6a}}\u{{12e}}\u{{12f}}\u{{197}}\u{{248}}\u{{249}}\u{{268}}\u{{29d}}\u{{37f}}\u{{3f3}}\u{{406}}\u{{408}}\u{{456}}\u{{458}}\u{{1e2c}}\u{{1e2d}}\u{{1eca}}\u{{1ecb}}\u{{a7b2}}'
                     .split('').every(c => p.test(c) && n.test(c) === ('{mode}' === 'u') && x.test(
-                        c) ===
+                            c) ===
                         ('{mode}' === 'v'))
             "#
         ));
@@ -190,7 +190,11 @@ fn unicode_soft_dotted_properties_consumers_original_text() {
             r"'\u006A\u0069😀X'.replace(/(?<x>\p{{Soft_Dotted}})/{mode}g,'<$1:$<x>>')==='<\u006A:\u006A><\u0069:\u0069>😀X'"
         ));
         assert_true(&format!(
-            r"'😀\u006A\u0069G'.split(/(\p{{SD}})/{mode}).join('|')==='😀|\u006A||\u0069|G'&&'😀\u0069'.search(/\p{{SD}}/{mode})===2&&'\u006A\u0069😀'.match(/\p{{SD}}/{mode}g).join('')==='\u006A\u0069'"
+            r#"
+                '😀\u006A\u0069G'.split(/(\p{{SD}})/{mode}).join('|') === '😀|\u006A||\u0069|G' &&
+                    '😀\u0069'.search(/\p{{SD}}/{mode}) === 2 && '\u006A\u0069😀'.match(
+                        /\p{{SD}}/{mode}g).join('') === '\u006A\u0069'
+            "#
         ));
         assert_true(&format!(
             r#"

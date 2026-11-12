@@ -419,7 +419,11 @@ fn unicode_greek_script_consumers_preserve_original_text() {
             r"'ΑΒA'.replace(/(?<x>\p{{sc=Grek}})/{mode}g,'<$1:$<x>>')==='<Α:Α><Β:Β>A'"
         ));
         assert_true(&format!(
-            r"'AΑΒA'.split(/(\p{{Script=Greek}})/{mode}).join('|')==='A|Α||Β|A'&&'A😀Α'.search(/\p{{sc=Grek}}/{mode})===3&&'ΑΒA'.match(/\p{{Script=Grek}}/{mode}g).join('')==='ΑΒ'"
+            r#"
+                'AΑΒA'.split(/(\p{{Script=Greek}})/{mode}).join('|') === 'A|Α||Β|A' && 'A😀Α'.search(
+                    /\p{{sc=Grek}}/{mode}) === 3 && 'ΑΒA'.match(
+                    /\p{{Script=Grek}}/{mode}g).join('') === 'ΑΒ'
+            "#
         ));
         assert_true(&format!(
             r#"

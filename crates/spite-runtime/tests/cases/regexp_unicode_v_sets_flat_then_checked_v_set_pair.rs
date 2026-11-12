@@ -74,7 +74,10 @@ fn flat_then_checked_v_set_pair_state_context_and_consumers() {
         "#,
     );
     assert_true(
-        r"'aac aac'.replace(/(?<whole>([a][c--b]))/vg,'<$1:$<whole>>')==='a<ac:ac> a<ac:ac>'&&'aac'.split(/([a][c--b])/v).join('|')==='a|ac|'&&'aac'.match(/[a][c--b]/v)[0]==='ac'",
+        r#"
+            'aac aac'.replace(/(?<whole>([a][c--b]))/vg, '<$1:$<whole>>') === 'a<ac:ac> a<ac:ac>' && 'aac'
+                .split(/([a][c--b])/v).join('|') === 'a|ac|' && 'aac'.match(/[a][c--b]/v)[0] === 'ac'
+        "#,
     );
     assert_true(
         r#"

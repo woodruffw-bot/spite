@@ -161,7 +161,11 @@ fn parsing_converts_once_with_string_hint_and_propagates_abrupt_completions() {
         Ok(Value::Number(0.0))
     );
     assert_true(
-        "Number.isNaN(Date.parse('Wed, 01 Jan 1970 00:00:00 GMT')) && Number.isNaN(Date.parse('Wed, 31 Apr 2024 00:00:00 GMT')) && Number.isNaN(Date.parse('Thu, 01 Jan 1970 00:00:00 UTC'))",
+        r#"
+            Number.isNaN(Date.parse('Wed, 01 Jan 1970 00:00:00 GMT')) && Number.isNaN(Date.parse(
+                'Wed, 31 Apr 2024 00:00:00 GMT')) && Number.isNaN(Date.parse(
+                'Thu, 01 Jan 1970 00:00:00 UTC'))
+        "#,
     );
 }
 

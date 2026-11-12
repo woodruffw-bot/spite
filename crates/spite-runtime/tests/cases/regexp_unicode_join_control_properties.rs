@@ -153,7 +153,11 @@ fn unicode_join_control_properties_consumers_original_text() {
             r"'\u200d\u200c😀X'.replace(/(?<x>\p{{Join_Control}})/{mode}g,'<$1:$<x>>')==='<\u200d:\u200d><\u200c:\u200c>😀X'"
         ));
         assert_true(&format!(
-            r"'😀\u200d\u200cG'.split(/(\p{{Join_C}})/{mode}).join('|')==='😀|\u200d||\u200c|G'&&'😀\u200c'.search(/\p{{Join_C}}/{mode})===2&&'\u200d\u200c😀'.match(/\p{{Join_C}}/{mode}g).join('')==='\u200d\u200c'"
+            r#"
+                '😀\u200d\u200cG'.split(/(\p{{Join_C}})/{mode}).join('|') === '😀|\u200d||\u200c|G' &&
+                    '😀\u200c'.search(/\p{{Join_C}}/{mode}) === 2 && '\u200d\u200c😀'.match(
+                        /\p{{Join_C}}/{mode}g).join('') === '\u200d\u200c'
+            "#
         ));
         assert_true(&format!(
             r#"

@@ -153,7 +153,11 @@ fn unicode_ids_binary_operator_properties_consumers_original_text() {
             r"'\u2FF4\u2FF0😀X'.replace(/(?<x>\p{{IDS_Binary_Operator}})/{mode}g,'<$1:$<x>>')==='<\u2FF4:\u2FF4><\u2FF0:\u2FF0>😀X'"
         ));
         assert_true(&format!(
-            r"'😀\u2FF4\u2FF0G'.split(/(\p{{IDSB}})/{mode}).join('|')==='😀|\u2FF4||\u2FF0|G'&&'😀\u2FF0'.search(/\p{{IDSB}}/{mode})===2&&'\u2FF4\u2FF0😀'.match(/\p{{IDSB}}/{mode}g).join('')==='\u2FF4\u2FF0'"
+            r#"
+                '😀\u2FF4\u2FF0G'.split(/(\p{{IDSB}})/{mode}).join('|') === '😀|\u2FF4||\u2FF0|G' &&
+                    '😀\u2FF0'.search(/\p{{IDSB}}/{mode}) === 2 && '\u2FF4\u2FF0😀'.match(
+                        /\p{{IDSB}}/{mode}g).join('') === '\u2FF4\u2FF0'
+            "#
         ));
         assert_true(&format!(
             r#"

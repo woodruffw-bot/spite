@@ -167,7 +167,11 @@ fn unicode_emoji_modifier_base_properties_consumers_original_text() {
             r"'\u270A\u261D😀X'.replace(/(?<x>\p{{Emoji_Modifier_Base}})/{mode}g,'<$1:$<x>>')==='<\u270A:\u270A><\u261D:\u261D>😀X'"
         ));
         assert_true(&format!(
-            r"'😀\u270A\u261DG'.split(/(\p{{EBase}})/{mode}).join('|')==='😀|\u270A||\u261D|G'&&'😀\u261D'.search(/\p{{EBase}}/{mode})===2&&'\u270A\u261D😀'.match(/\p{{EBase}}/{mode}g).join('')==='\u270A\u261D'"
+            r#"
+                '😀\u270A\u261DG'.split(/(\p{{EBase}})/{mode}).join('|') === '😀|\u270A||\u261D|G' &&
+                    '😀\u261D'.search(/\p{{EBase}}/{mode}) === 2 && '\u270A\u261D😀'.match(
+                        /\p{{EBase}}/{mode}g).join('') === '\u270A\u261D'
+            "#
         ));
         assert_true(&format!(
             r#"

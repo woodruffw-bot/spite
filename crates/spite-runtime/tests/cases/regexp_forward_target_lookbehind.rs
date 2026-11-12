@@ -143,7 +143,11 @@ fn consumers_sticky_global_zero_counts_and_callbacks_preserve_right_capture_posi
         "#,
     );
     assert_true(
-        r"'aaaab'.replace(/(?<=(?<y>\k<x>(?<x>a)){2})b/,'<$<y>>')==='aaaa<aa>'&&'aaaab'.search(/(?<=(\2(a)){2})b/)===4&&'aaaab'.split(/(?<=(\2(a)){2})b/).join('|')==='aaaa|aa|a|'",
+        r#"
+            'aaaab'.replace(/(?<=(?<y>\k<x>(?<x>a)){2})b/, '<$<y>>') === 'aaaa<aa>' && 'aaaab'.search(
+                    /(?<=(\2(a)){2})b/) === 4 && 'aaaab'.split(/(?<=(\2(a)){2})b/).join('|') ===
+                'aaaa|aa|a|'
+        "#,
     );
 }
 

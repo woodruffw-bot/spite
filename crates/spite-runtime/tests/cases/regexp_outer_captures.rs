@@ -121,7 +121,12 @@ fn global_sticky_state_and_strict_lastindex_writes_preserve_complete_ranges() {
 #[test]
 fn original_source_flags_pinned_case_and_utf16_captures_are_preserved() {
     assert_true(
-        "let r=new RegExp('(?:(a+b))','gi'),c=new RegExp(r);r.source==='(?:(a+b))'&&r.toString()==='/(?:(a+b))/gi'&&c.source===r.source&&c!==r&&RegExp(r)===r&&c.exec('AAAB')[1]==='AAAB'",
+        r#"
+            let r = new RegExp('(?:(a+b))', 'gi'),
+                c = new RegExp(r);
+            r.source === '(?:(a+b))' && r.toString() === '/(?:(a+b))/gi' && c.source === r.source && c !==
+                r && RegExp(r) === r && c.exec('AAAB')[1] === 'AAAB'
+        "#,
     );
     assert_true(
         r#"

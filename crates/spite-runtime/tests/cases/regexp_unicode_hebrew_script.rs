@@ -417,7 +417,11 @@ fn unicode_hebrew_script_consumers_preserve_original_text() {
             r"'אבA'.replace(/(?<x>\p{{sc=Hebr}})/{mode}g,'<$1:$<x>>')==='<א:א><ב:ב>A'"
         ));
         assert_true(&format!(
-            r"'AאבA'.split(/(\p{{Script=Hebrew}})/{mode}).join('|')==='A|א||ב|A'&&'A😀א'.search(/\p{{sc=Hebr}}/{mode})===3&&'אבA'.match(/\p{{Script=Hebr}}/{mode}g).join('')==='אב'"
+            r#"
+                'AאבA'.split(/(\p{{Script=Hebrew}})/{mode}).join('|') === 'A|א||ב|A' && 'A😀א'.search(
+                    /\p{{sc=Hebr}}/{mode}) === 3 && 'אבA'.match(
+                    /\p{{Script=Hebr}}/{mode}g).join('') === 'אב'
+            "#
         ));
         assert_true(&format!(
             r#"

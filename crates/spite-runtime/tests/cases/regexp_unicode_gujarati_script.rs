@@ -125,7 +125,11 @@ fn unicode_gujarati_script_consumers_preserve_original_text() {
             r"'કખA'.replace(/(?<x>\p{{sc=Gujr}})/{mode}g,'<$1:$<x>>')==='<ક:ક><ખ:ખ>A'"
         ));
         assert_true(&format!(
-            r"'AકખA'.split(/(\p{{Script=Gujarati}})/{mode}).join('|')==='A|ક||ખ|A'&&'A😀ક'.search(/\p{{sc=Gujr}}/{mode})===3&&'કખA'.match(/\p{{Script=Gujr}}/{mode}g).join('')==='કખ'"
+            r#"
+                'AકખA'.split(/(\p{{Script=Gujarati}})/{mode}).join('|') === 'A|ક||ખ|A' && 'A😀ક'
+                    .search(/\p{{sc=Gujr}}/{mode}) === 3 && 'કખA'.match(
+                        /\p{{Script=Gujr}}/{mode}g).join('') === 'કખ'
+            "#
         ));
         assert_true(&format!(
             r#"

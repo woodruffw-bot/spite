@@ -165,7 +165,11 @@ fn unicode_default_ignorable_properties_consumers_original_text() {
             r"'\u200D\u200C😀X'.replace(/(?<x>\p{{Default_Ignorable_Code_Point}})/{mode}g,'<$1:$<x>>')==='<\u200D:\u200D><\u200C:\u200C>😀X'"
         ));
         assert_true(&format!(
-            r"'😀\u200D\u200CG'.split(/(\p{{DI}})/{mode}).join('|')==='😀|\u200D||\u200C|G'&&'😀\u200C'.search(/\p{{DI}}/{mode})===2&&'\u200D\u200C😀'.match(/\p{{DI}}/{mode}g).join('')==='\u200D\u200C'"
+            r#"
+                '😀\u200D\u200CG'.split(/(\p{{DI}})/{mode}).join('|') === '😀|\u200D||\u200C|G' &&
+                    '😀\u200C'.search(/\p{{DI}}/{mode}) === 2 && '\u200D\u200C😀'.match(
+                        /\p{{DI}}/{mode}g).join('') === '\u200D\u200C'
+            "#
         ));
         assert_true(&format!(
             r#"

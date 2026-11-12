@@ -191,7 +191,12 @@ fn unicode_changes_casemapped_properties_consumers_original_text() {
             r"'\u0062\u0061\uDB40\uDC01\u200D'.replace(/(?<x>\p{{Changes_When_Casemapped}})/{mode}g,'<$1:$<x>>')==='<\u0062:\u0062><\u0061:\u0061>\uDB40\uDC01\u200D'"
         ));
         assert_true(&format!(
-            r"'\uDB40\uDC01\u0062\u0061\u200D'.split(/(\p{{CWCM}})/{mode}).join('|')==='\uDB40\uDC01|\u0062||\u0061|\u200D'&&'\uDB40\uDC01\u0061'.search(/\p{{CWCM}}/{mode})===2&&'\u0062\u0061\uDB40\uDC01'.match(/\p{{CWCM}}/{mode}g).join('')==='\u0062\u0061'"
+            r#"
+                '\uDB40\uDC01\u0062\u0061\u200D'.split(/(\p{{CWCM}})/{mode}).join('|') ===
+                    '\uDB40\uDC01|\u0062||\u0061|\u200D' && '\uDB40\uDC01\u0061'.search(
+                        /\p{{CWCM}}/{mode}) === 2 && '\u0062\u0061\uDB40\uDC01'.match(
+                        /\p{{CWCM}}/{mode}g).join('') === '\u0062\u0061'
+            "#
         ));
         assert_true(&format!(
             r#"

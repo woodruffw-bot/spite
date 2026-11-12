@@ -37,7 +37,42 @@ fn yielded_undefined_is_dense_while_literal_elisions_remain_holes() {
 #[test]
 fn spread_is_exhausted_before_the_next_source_element_evaluates() {
     assert_true(
-        "let log='',i=0;function item(){log+='e';return 0;}let source={get [Symbol.iterator](){log+='g';return function(){log+='i';return {next(){log+='n';return ++i===3?{done:true}:{get done(){log+='d';return false;},get value(){log+='v';return i;}};}};};}};let a=[item(),...source,item()];a.join(',')==='0,1,2,0' && log==='egindvndvne'",
+        r#"
+            let log = '',
+                i = 0;
+
+            function item() {
+                log += 'e';
+                return 0;
+            }
+            let source = {
+                get [Symbol.iterator]() {
+                    log += 'g';
+                    return function() {
+                        log += 'i';
+                        return {
+                            next() {
+                                log += 'n';
+                                return ++i === 3 ? {
+                                    done: true
+                                } : {
+                                    get done() {
+                                        log += 'd';
+                                        return false;
+                                    },
+                                    get value() {
+                                        log += 'v';
+                                        return i;
+                                    }
+                                };
+                            }
+                        };
+                    };
+                }
+            };
+            let a = [item(), ...source, item()];
+            a.join(',') === '0,1,2,0' && log === 'egindvndvne'
+        "#,
     );
     assert_true(
         "let source=[1,2],i=0;Object.defineProperty(source,'0',{get(){if(i++===0)source.push(3);return 1;}});let a=[...source];a.join(',')==='1,2,3'",

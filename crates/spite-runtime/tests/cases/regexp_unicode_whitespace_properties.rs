@@ -151,7 +151,11 @@ fn unicode_whitespace_properties_consumers_original_text() {
             r"' \u0085😀X'.replace(/(?<x>\p{{White_Space}})/{mode}g,'<$1:$<x>>')==='< : ><\u0085:\u0085>😀X'"
         ));
         assert_true(&format!(
-            r"'😀 \u0085G'.split(/(\p{{space}})/{mode}).join('|')==='😀| ||\u0085|G'&&'😀\u0085'.search(/\p{{space}}/{mode})===2&&' \u0085😀'.match(/\p{{space}}/{mode}g).join('')===' \u0085'"
+            r#"
+                '😀 \u0085G'.split(/(\p{{space}})/{mode}).join('|') === '😀| ||\u0085|G' && '😀\u0085'
+                    .search(/\p{{space}}/{mode}) === 2 && ' \u0085😀'.match(
+                        /\p{{space}}/{mode}g).join('') === ' \u0085'
+            "#
         ));
         assert_true(&format!(
             r#"

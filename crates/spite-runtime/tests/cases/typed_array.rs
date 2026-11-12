@@ -838,10 +838,44 @@ fn array_like_construction_reads_length_once_then_gets_and_converts_each_live_in
 #[test]
 fn factories_validate_constructor_and_mapper_before_source_hooks() {
     assert_true(
-        "let hits=0,caught=false,source={get [Symbol.iterator](){hits++;throw 7;},get length(){hits++;throw 8;}};try{Uint8Array.from.call(()=>{},source,null);}catch(e){caught=e instanceof TypeError;}caught && hits===0",
+        r#"
+            let hits = 0,
+                caught = false,
+                source = {
+                    get [Symbol.iterator]() {
+                        hits++;
+                        throw 7;
+                    },
+                    get length() {
+                        hits++;
+                        throw 8;
+                    }
+                };
+            try {
+                Uint8Array.from.call(() => {}, source, null);
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && hits === 0
+        "#,
     );
     assert_true(
-        "let hits=0,caught=false,source={get [Symbol.iterator](){hits++;throw 7;}};try{Uint8Array.from(source,7);}catch(e){caught=e instanceof TypeError;}caught && hits===0",
+        r#"
+            let hits = 0,
+                caught = false,
+                source = {
+                    get [Symbol.iterator]() {
+                        hits++;
+                        throw 7;
+                    }
+                };
+            try {
+                Uint8Array.from(source, 7);
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && hits === 0
+        "#,
     );
     exception("Uint8Array.of.call(()=>{},1)", ExceptionKind::TypeError);
     for source in ["null", "undefined"] {
@@ -1556,7 +1590,16 @@ fn iterable_lists_do_not_use_argument_quotas_and_opted_in_host_limits_remain_unc
 #[test]
 fn uint8_encoding_wrappers_execute_and_report_language_syntax_errors() {
     assert_true(
-        "let a=Uint8Array.fromBase64('AQI='),b=Uint8Array.fromHex('0304'),c=new Uint8Array(2),x=c.setFromBase64('BQY='),y=c.setFromHex('0708');a.toBase64()==='AQI=' && a.toHex()==='0102' && b.toBase64()==='AwQ=' && b.toHex()==='0304' && x.read===4 && x.written===2 && y.read===4 && y.written===2 && c.toHex()==='0708'",
+        r#"
+            let a = Uint8Array.fromBase64('AQI='),
+                b = Uint8Array.fromHex('0304'),
+                c = new Uint8Array(2),
+                x = c.setFromBase64('BQY='),
+                y = c.setFromHex('0708');
+            a.toBase64() === 'AQI=' && a.toHex() === '0102' && b.toBase64() === 'AwQ=' && b.toHex() ===
+                '0304' && x.read === 4 && x.written === 2 && y.read === 4 && y.written === 2 && c
+            .toHex() === '0708'
+        "#,
     );
     for expression in [
         "Uint8Array.fromBase64('!')",

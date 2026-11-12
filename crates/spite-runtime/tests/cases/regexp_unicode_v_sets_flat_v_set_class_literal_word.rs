@@ -91,7 +91,10 @@ fn flat_v_set_class_literal_word_state_context_and_consumers() {
         "#,
     );
     assert_true(
-        r#"'aaa! aaa!'.replace(/(?<whole>(\B[a]a\b))/vg,'<$1:$<whole>>')==='a<aa:aa>! a<aa:aa>!'&&'aaa!'.split(/(\B[a]a\b)/v).join('|')==='a|aa|!'&&'aaa!'.match(/\B[a]a\b/v)[0]==='aa'"#,
+        r#"
+            'aaa! aaa!'.replace(/(?<whole>(\B[a]a\b))/vg, '<$1:$<whole>>') === 'a<aa:aa>! a<aa:aa>!' &&
+                'aaa!'.split(/(\B[a]a\b)/v).join('|') === 'a|aa|!' && 'aaa!'.match(/\B[a]a\b/v)[0] === 'aa'
+        "#,
     );
     assert_true(
         r#"

@@ -186,7 +186,11 @@ fn escapes_flags_surrogates_and_adjacent_empty_groups_keep_exact_units() {
 #[test]
 fn consumers_callbacks_and_intrinsic_arrays_observe_fixed_choice_captures() {
     assert_true(
-        r"'qxbyz'.replace(/(x((?:[^z]|[^z])|(?:b|b))y)/,'<$1,$2>')==='q<xby,b>z'&&'qxbyz'.split(/(x((?:[^z]|[^z])|(?:b|b))y)/).join(',')==='q,xby,b,z'&&'qxby'.search(/x((?:[^z]|[^z])|(?:b|b))y/)===1",
+        r#"
+            'qxbyz'.replace(/(x((?:[^z]|[^z])|(?:b|b))y)/, '<$1,$2>') === 'q<xby,b>z' && 'qxbyz'.split(
+                /(x((?:[^z]|[^z])|(?:b|b))y)/).join(',') === 'q,xby,b,z' && 'qxby'.search(
+                /x((?:[^z]|[^z])|(?:b|b))y/) === 1
+        "#,
     );
     assert_true(
         r#"

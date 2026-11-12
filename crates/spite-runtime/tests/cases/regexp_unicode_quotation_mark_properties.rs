@@ -153,7 +153,11 @@ fn unicode_quotation_mark_properties_consumers_original_text() {
             r"'\u201d\u201c😀X'.replace(/(?<x>\p{{Quotation_Mark}})/{mode}g,'<$1:$<x>>')==='<\u201d:\u201d><\u201c:\u201c>😀X'"
         ));
         assert_true(&format!(
-            r"'😀\u201d\u201cG'.split(/(\p{{QMark}})/{mode}).join('|')==='😀|\u201d||\u201c|G'&&'😀\u201c'.search(/\p{{QMark}}/{mode})===2&&'\u201d\u201c😀'.match(/\p{{QMark}}/{mode}g).join('')==='\u201d\u201c'"
+            r#"
+                '😀\u201d\u201cG'.split(/(\p{{QMark}})/{mode}).join('|') === '😀|\u201d||\u201c|G' &&
+                    '😀\u201c'.search(/\p{{QMark}}/{mode}) === 2 && '\u201d\u201c😀'.match(
+                        /\p{{QMark}}/{mode}g).join('') === '\u201d\u201c'
+            "#
         ));
         assert_true(&format!(
             r#"

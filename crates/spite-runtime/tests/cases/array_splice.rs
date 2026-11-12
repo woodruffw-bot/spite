@@ -248,29 +248,135 @@ fn generic_receivers_use_live_gets_and_ordered_setters() {
 #[test]
 fn species_gets_delete_count_and_finishes_its_length_before_source_moves() {
     assert_true(
-        "let a=[0,1,2],target={length:99},n,argc;function C(x){n=x;argc=arguments.length;return target;}a.constructor={[Symbol.species]:C};let b=a.splice(1,1,7);b===target && b[0]===1 && b.length===1 && n===1 && argc===1 && a.join(',')==='0,7,2'",
+        r#"
+            let a = [0, 1, 2],
+                target = {
+                    length: 99
+                },
+                n, argc;
+
+            function C(x) {
+                n = x;
+                argc = arguments.length;
+                return target;
+            }
+            a.constructor = {
+                [Symbol.species]: C
+            };
+            let b = a.splice(1, 1, 7);
+            b === target && b[0] === 1 && b.length === 1 && n === 1 && argc === 1 && a.join(',') ===
+                '0,7,2'
+        "#,
     );
     assert_true(
-        "let a=[0,1,2],target={set length(x){a[2]=8;}};function C(){return target;}a.constructor={[Symbol.species]:C};let b=a.splice(1,1);b===target && b[0]===1 && a.join(',')==='0,8'",
+        r#"
+            let a = [0, 1, 2],
+                target = {
+                    set length(x) {
+                        a[2] = 8;
+                    }
+                };
+
+            function C() {
+                return target;
+            }
+            a.constructor = {
+                [Symbol.species]: C
+            };
+            let b = a.splice(1, 1);
+            b === target && b[0] === 1 && a.join(',') === '0,8'
+        "#,
     );
     assert_true(
         "let a=[0,1,2,3];function C(){return a;}a.constructor={[Symbol.species]:C};let b=a.splice(1,2);b===a && a.length===2 && a[0]===1 && !(1 in a)",
     );
     assert_true(
-        "let a=[0,,2],target={0:9,length:99};function C(){return target;}a.constructor={[Symbol.species]:C};a.splice(1,1)===target && target[0]===9 && target.length===1 && a.join(',')==='0,2'",
+        r#"
+            let a = [0, , 2],
+                target = {
+                    0: 9,
+                    length: 99
+                };
+
+            function C() {
+                return target;
+            }
+            a.constructor = {
+                [Symbol.species]: C
+            };
+            a.splice(1, 1) === target && target[0] === 9 && target.length === 1 && a.join(',') === '0,2'
+        "#,
     );
 }
 
 #[test]
 fn result_definitions_bypass_setters_and_fail_before_source_mutation() {
     assert_true(
-        "let writes=0,target=Object.create({set 0(x){writes++;}}),a=[0,1,2];function C(){return target;}a.constructor={[Symbol.species]:C};let b=a.splice(1,1);b[0]===1 && Object.hasOwn(b,'0') && writes===0 && a.join(',')==='0,2'",
+        r#"
+            let writes = 0,
+                target = Object.create({
+                    set 0(x) {
+                        writes++;
+                    }
+                }),
+                a = [0, 1, 2];
+
+            function C() {
+                return target;
+            }
+            a.constructor = {
+                [Symbol.species]: C
+            };
+            let b = a.splice(1, 1);
+            b[0] === 1 && Object.hasOwn(b, '0') && writes === 0 && a.join(',') === '0,2'
+        "#,
     );
     assert_true(
-        "let a=[0,1,2],target={};Object.defineProperty(target,'1',{value:9});function C(){return target;}a.constructor={[Symbol.species]:C};let caught=false;try{a.splice(0,2);}catch(e){caught=e instanceof TypeError;}caught && target[0]===0 && target[1]===9 && a.join(',')==='0,1,2'",
+        r#"
+            let a = [0, 1, 2],
+                target = {};
+            Object.defineProperty(target, '1', {
+                value: 9
+            });
+
+            function C() {
+                return target;
+            }
+            a.constructor = {
+                [Symbol.species]: C
+            };
+            let caught = false;
+            try {
+                a.splice(0, 2);
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && target[0] === 0 && target[1] === 9 && a.join(',') === '0,1,2'
+        "#,
     );
     assert_true(
-        "let a=[0,1,2],target={set length(x){throw 7;}};function C(){return target;}a.constructor={[Symbol.species]:C};let caught=false;try{a.splice(1,1);}catch(e){caught=e===7;}caught && target[0]===1 && a.join(',')==='0,1,2'",
+        r#"
+            let a = [0, 1, 2],
+                target = {
+                    set length(x) {
+                        throw 7;
+                    }
+                };
+
+            function C() {
+                return target;
+            }
+            a.constructor = {
+                [Symbol.species]: C
+            };
+            let caught = false;
+            try {
+                a.splice(1, 1);
+            } catch (e) {
+                caught = e === 7;
+            }
+            caught && target[0] === 1 && a.join(',') === '0,1,2'
+        "#,
     );
 }
 

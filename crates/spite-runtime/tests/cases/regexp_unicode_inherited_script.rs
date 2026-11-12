@@ -556,7 +556,11 @@ fn unicode_inherited_script_consumers_preserve_original_text() {
             r"'̀́A'.replace(/(?<x>\p{{sc=Zinh}})/{mode}g,'<$1:$<x>>')==='<̀:̀><́:́>A'"
         ));
         assert_true(&format!(
-            r"'À́A'.split(/(\p{{Script=Inherited}})/{mode}).join('|')==='A|̀||́|A'&&'A😀̀'.search(/\p{{sc=Zinh}}/{mode})===3&&'̀́A'.match(/\p{{Script=Zinh}}/{mode}g).join('')==='̀́'"
+            r#"
+                'À́A'.split(/(\p{{Script=Inherited}})/{mode}).join('|') === 'A|̀||́|A' && 'A😀̀'
+                    .search(/\p{{sc=Zinh}}/{mode}) === 3 && '̀́A'.match(
+                        /\p{{Script=Zinh}}/{mode}g).join('') === '̀́'
+            "#
         ));
         assert_true(&format!(
             r#"

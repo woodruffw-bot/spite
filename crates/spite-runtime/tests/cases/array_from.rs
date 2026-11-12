@@ -106,7 +106,23 @@ fn mapper_validation_precedes_iterator_lookup_and_nullish_source_errors() {
     }
     assert_true("let a=Array.from({length:1,0:7,[Symbol.iterator]:null});a[0]===7 && a.length===1");
     assert_true(
-        "let reads=0,o={get length(){reads++;return 1;},[Symbol.iterator]:7};let caught=false;try{Array.from(o);}catch(e){caught=e instanceof TypeError;}caught && reads===0",
+        r#"
+            let reads = 0,
+                o = {
+                    get length() {
+                        reads++;
+                        return 1;
+                    },
+                    [Symbol.iterator]: 7
+                };
+            let caught = false;
+            try {
+                Array.from(o);
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && reads === 0
+        "#,
     );
 }
 
@@ -508,10 +524,67 @@ fn iterator_step_failures_and_final_length_failures_do_not_close() {
 #[test]
 fn definitions_bypass_setters_preserve_partial_effects_and_can_alias_source() {
     assert_true(
-        "let setter=0,target=Object.create({set 0(v){setter++;}});Object.defineProperty(target,'1',{value:7,writable:false,configurable:true});function C(){return target;}let a=Array.from.call(C,{length:2,0:4,1:5});a===target && a[0]===4 && a[1]===5 && a.length===2 && setter===0 && Object.getOwnPropertyDescriptor(a,'1').writable",
+        r#"
+            let setter = 0,
+                target = Object.create({
+                    set 0(v) {
+                        setter++;
+                    }
+                });
+            Object.defineProperty(target, '1', {
+                value: 7,
+                writable: false,
+                configurable: true
+            });
+
+            function C() {
+                return target;
+            }
+            let a = Array.from.call(C, {
+                length: 2,
+                0: 4,
+                1: 5
+            });
+            a === target && a[0] === 4 && a[1] === 5 && a.length === 2 && setter === 0 && Object
+                .getOwnPropertyDescriptor(a, '1').writable
+        "#,
     );
     assert_true(
-        "let target={},closed=0;Object.defineProperty(target,'1',{value:9,configurable:false});function C(){return target;}let i={next(){return {value:7};},return(){closed++;return {};}};let caught=false;try{Array.from.call(C,{[Symbol.iterator](){return i;}});}catch(e){caught=e instanceof TypeError;}caught && closed===1 && target[0]===7 && target[1]===9 && !Object.hasOwn(target,'length')",
+        r#"
+            let target = {},
+                closed = 0;
+            Object.defineProperty(target, '1', {
+                value: 9,
+                configurable: false
+            });
+
+            function C() {
+                return target;
+            }
+            let i = {
+                next() {
+                    return {
+                        value: 7
+                    };
+                },
+                return () {
+                    closed++;
+                    return {};
+                }
+            };
+            let caught = false;
+            try {
+                Array.from.call(C, {
+                    [Symbol.iterator]() {
+                        return i;
+                    }
+                });
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && closed === 1 && target[0] === 7 && target[1] === 9 && !Object.hasOwn(target,
+                'length')
+        "#,
     );
     assert_true(
         "let source=[1,2];function C(){return source;}let a=Array.from.call(C,source,(v,i)=>v+i);a===source && source.join(',')==='1,3'",

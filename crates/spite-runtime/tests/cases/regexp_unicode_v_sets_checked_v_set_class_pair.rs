@@ -68,7 +68,11 @@ fn checked_v_set_class_pair_state_context_and_consumers() {
         "#,
     );
     assert_true(
-        r"'aac aac'.replace(/(?<whole>([a--b][[c]]))/vg,'<$1:$<whole>>')==='a<ac:ac> a<ac:ac>'&&'aac'.split(/([a--b][[c]])/v).join('|')==='a|ac|'&&'aac'.match(/[a--b][[c]]/v)[0]==='ac'",
+        r#"
+            'aac aac'.replace(/(?<whole>([a--b][[c]]))/vg, '<$1:$<whole>>') === 'a<ac:ac> a<ac:ac>' &&
+                'aac'.split(/([a--b][[c]])/v).join('|') === 'a|ac|' && 'aac'.match(/[a--b][[c]]/v)[0] ===
+                'ac'
+        "#,
     );
     assert_true(
         r#"

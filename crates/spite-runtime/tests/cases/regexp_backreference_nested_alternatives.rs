@@ -123,7 +123,11 @@ fn nested_consumers_and_empty_choices_keep_source_order_and_original_text() {
         "#,
     );
     assert_true(
-        r"'qabab'.replace(/(?:(?:(?<x>a)|(?<x>ab))|(?<x>b))\k<x>/,'<$<x>>')==='q<ab>'&&'qabab'.search(/(?:(a|ab)|b)\1/)===1&&'qababz'.split(/(?:(?:(a)|(ab))|(b))\1\2\3/).join(',')==='q,,ab,,z'",
+        r#"
+            'qabab'.replace(/(?:(?:(?<x>a)|(?<x>ab))|(?<x>b))\k<x>/, '<$<x>>') === 'q<ab>' && 'qabab'
+                .search(/(?:(a|ab)|b)\1/) === 1 && 'qababz'.split(/(?:(?:(a)|(ab))|(b))\1\2\3/).join(
+                ',') === 'q,,ab,,z'
+        "#,
     );
     assert_true(
         r#"

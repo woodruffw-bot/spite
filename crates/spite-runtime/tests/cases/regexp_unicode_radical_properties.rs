@@ -153,7 +153,11 @@ fn unicode_radical_properties_consumers_original_text() {
             r"'\u2FD5\u2E80😀X'.replace(/(?<x>\p{{Radical}})/{mode}g,'<$1:$<x>>')==='<\u2FD5:\u2FD5><\u2E80:\u2E80>😀X'"
         ));
         assert_true(&format!(
-            r"'😀\u2FD5\u2E80G'.split(/(\p{{Radical}})/{mode}).join('|')==='😀|\u2FD5||\u2E80|G'&&'😀\u2E80'.search(/\p{{Radical}}/{mode})===2&&'\u2FD5\u2E80😀'.match(/\p{{Radical}}/{mode}g).join('')==='\u2FD5\u2E80'"
+            r#"
+                '😀\u2FD5\u2E80G'.split(/(\p{{Radical}})/{mode}).join('|') ===
+                    '😀|\u2FD5||\u2E80|G' && '😀\u2E80'.search(/\p{{Radical}}/{mode}) === 2 &&
+                    '\u2FD5\u2E80😀'.match(/\p{{Radical}}/{mode}g).join('') === '\u2FD5\u2E80'
+            "#
         ));
         assert_true(&format!(
             r#"

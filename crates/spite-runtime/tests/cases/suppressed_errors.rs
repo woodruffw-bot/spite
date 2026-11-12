@@ -139,7 +139,14 @@ fn instance_fields_bypass_inherited_setters_and_have_standard_descriptors() {
 #[test]
 fn calls_bound_construction_and_subclasses_preserve_the_error_brand() {
     assert_true(
-        "let F=SuppressedError.bind({},1,2,'bound'),e=new F,f=SuppressedError.call(null,3,4,'call');e instanceof SuppressedError&&e instanceof Error&&Error.isError(e)&&e.toString()==='SuppressedError: bound'&&e.error===1&&e.suppressed===2&&f.error===3&&f.suppressed===4&&f.message==='call'",
+        r#"
+            let F = SuppressedError.bind({}, 1, 2, 'bound'),
+                e = new F,
+                f = SuppressedError.call(null, 3, 4, 'call');
+            e instanceof SuppressedError && e instanceof Error && Error.isError(e) && e.toString() ===
+                'SuppressedError: bound' && e.error === 1 && e.suppressed === 2 && f.error === 3 && f
+                .suppressed === 4 && f.message === 'call'
+        "#,
     );
     assert_true(
         "class S extends SuppressedError{}let e=new S(1,2,'sub');Object.getPrototypeOf(e)===S.prototype&&e instanceof S&&Error.isError(e)&&e.error===1&&e.suppressed===2&&e.toString()==='SuppressedError: sub'&&!Error.isError(SuppressedError.prototype)&&Object.prototype.toString.call(SuppressedError.prototype)==='[object Object]'&&Object.prototype.toString.call(e)==='[object Error]'",

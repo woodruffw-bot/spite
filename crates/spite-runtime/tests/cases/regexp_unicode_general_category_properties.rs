@@ -3777,7 +3777,11 @@ fn unicode_general_category_consumers_preserve_original_text() {
             r"'AB\u0378'.replace(/(?<x>\p{{Letter}})/{mode}g,'<$1:$<x>>')==='<A:A><B:B>\u0378'"
         ));
         assert_true(&format!(
-            r"'\u0378AB\u0378'.split(/(\p{{General_Category=Letter}})/{mode}).join('|')==='\u0378|A||B|\u0378'&&'\u0378😀A'.search(/\p{{L}}/{mode})===3&&'AB\u0378'.match(/\p{{L}}/{mode}g).join('')==='AB'"
+            r#"
+                '\u0378AB\u0378'.split(/(\p{{General_Category=Letter}})/{mode}).join('|') ===
+                    '\u0378|A||B|\u0378' && '\u0378😀A'.search(/\p{{L}}/{mode}) === 3 && 'AB\u0378'
+                    .match(/\p{{L}}/{mode}g).join('') === 'AB'
+            "#
         ));
         assert_true(&format!(
             r#"

@@ -175,7 +175,11 @@ fn unicode_repeated_atom_start_consumers_and_empty_advance() {
             r"'AA\naa'.replace(/^(?<x>a+)/im{mode}g,'<$1:$<x>>')==='<AA:AA>\n<aa:aa>'"
         ));
         assert_true(&format!(
-            r"'B\naaa\nBB\naa'.split(/^(a+)/m{mode}).join('|')==='B\n|aaa|\nBB\n|aa|'&&'B\naaa'.search(/^a+/m{mode})===2&&'aa\naaaa'.match(/^a+/gm{mode}).join(',')==='aa,aaaa'"
+            r#"
+                'B\naaa\nBB\naa'.split(/^(a+)/m{mode}).join('|') === 'B\n|aaa|\nBB\n|aa|' &&
+                    'B\naaa'.search(/^a+/m{mode}) === 2 && 'aa\naaaa'.match(
+                        /^a+/gm{mode}).join(',') === 'aa,aaaa'
+            "#
         ));
         assert_true(&format!(
             r#"

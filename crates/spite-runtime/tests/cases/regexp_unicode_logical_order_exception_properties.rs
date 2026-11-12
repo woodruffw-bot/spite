@@ -153,7 +153,11 @@ fn unicode_logical_order_exception_properties_consumers_original_text() {
             r"'\u0e41\u0e40😀X'.replace(/(?<x>\p{{Logical_Order_Exception}})/{mode}g,'<$1:$<x>>')==='<\u0e41:\u0e41><\u0e40:\u0e40>😀X'"
         ));
         assert_true(&format!(
-            r"'😀\u0e41\u0e40G'.split(/(\p{{LOE}})/{mode}).join('|')==='😀|\u0e41||\u0e40|G'&&'😀\u0e40'.search(/\p{{LOE}}/{mode})===2&&'\u0e41\u0e40😀'.match(/\p{{LOE}}/{mode}g).join('')==='\u0e41\u0e40'"
+            r#"
+                '😀\u0e41\u0e40G'.split(/(\p{{LOE}})/{mode}).join('|') === '😀|\u0e41||\u0e40|G' &&
+                    '😀\u0e40'.search(/\p{{LOE}}/{mode}) === 2 && '\u0e41\u0e40😀'.match(
+                        /\p{{LOE}}/{mode}g).join('') === '\u0e41\u0e40'
+            "#
         ));
         assert_true(&format!(
             r#"

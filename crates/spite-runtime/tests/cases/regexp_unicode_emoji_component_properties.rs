@@ -165,7 +165,11 @@ fn unicode_emoji_component_properties_consumers_original_text() {
             r"'\uFE0F\u200D😀X'.replace(/(?<x>\p{{Emoji_Component}})/{mode}g,'<$1:$<x>>')==='<\uFE0F:\uFE0F><\u200D:\u200D>😀X'"
         ));
         assert_true(&format!(
-            r"'😀\uFE0F\u200DG'.split(/(\p{{EComp}})/{mode}).join('|')==='😀|\uFE0F||\u200D|G'&&'😀\u200D'.search(/\p{{EComp}}/{mode})===2&&'\uFE0F\u200D😀'.match(/\p{{EComp}}/{mode}g).join('')==='\uFE0F\u200D'"
+            r#"
+                '😀\uFE0F\u200DG'.split(/(\p{{EComp}})/{mode}).join('|') === '😀|\uFE0F||\u200D|G' &&
+                    '😀\u200D'.search(/\p{{EComp}}/{mode}) === 2 && '\uFE0F\u200D😀'.match(
+                        /\p{{EComp}}/{mode}g).join('') === '\uFE0F\u200D'
+            "#
         ));
         assert_true(&format!(
             r#"

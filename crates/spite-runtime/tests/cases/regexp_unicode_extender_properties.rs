@@ -153,7 +153,11 @@ fn unicode_extender_properties_consumers_original_text() {
             r"'\u02D0\u00B7😀X'.replace(/(?<x>\p{{Extender}})/{mode}g,'<$1:$<x>>')==='<\u02D0:\u02D0><\u00B7:\u00B7>😀X'"
         ));
         assert_true(&format!(
-            r"'😀\u02D0\u00B7G'.split(/(\p{{Ext}})/{mode}).join('|')==='😀|\u02D0||\u00B7|G'&&'😀\u00B7'.search(/\p{{Ext}}/{mode})===2&&'\u02D0\u00B7😀'.match(/\p{{Ext}}/{mode}g).join('')==='\u02D0\u00B7'"
+            r#"
+                '😀\u02D0\u00B7G'.split(/(\p{{Ext}})/{mode}).join('|') === '😀|\u02D0||\u00B7|G' &&
+                    '😀\u00B7'.search(/\p{{Ext}}/{mode}) === 2 && '\u02D0\u00B7😀'.match(
+                        /\p{{Ext}}/{mode}g).join('') === '\u02D0\u00B7'
+            "#
         ));
         assert_true(&format!(
             r#"

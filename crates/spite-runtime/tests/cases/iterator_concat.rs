@@ -330,19 +330,101 @@ fn step_and_opening_errors_complete_without_closing_and_never_resume_again() {
 #[test]
 fn return_closes_only_the_yielded_source_once_with_zero_arguments() {
     assert_true(
-        "let opens=0,closed=0,receiver,argc,i={next:()=>({value:7,done:false}),return:function(){'use strict';closed++;receiver=this;argc=arguments.length;return {get done(){throw 8;},get value(){throw 9;}};}},a={[Symbol.iterator](){opens++;return i;}},b={[Symbol.iterator](){throw 10;}},w=Iterator.concat(a,b),first=w.next(),last=w.return(99);first.value===7 && !first.done && last.done && last.value===undefined && receiver===i && argc===0 && opens===1 && closed===1 && w.next().done && w.return().done && closed===1",
+        r#"
+            let opens = 0,
+                closed = 0,
+                receiver, argc, i = {
+                    next: () => ({
+                        value: 7,
+                        done: false
+                    }),
+                    return: function() {
+                        'use strict';
+                        closed++;
+                        receiver = this;
+                        argc = arguments.length;
+                        return {
+                            get done() {
+                                throw 8;
+                            },
+                            get value() {
+                                throw 9;
+                            }
+                        };
+                    }
+                },
+                a = {
+                    [Symbol.iterator]() {
+                        opens++;
+                        return i;
+                    }
+                },
+                b = {
+                    [Symbol.iterator]() {
+                        throw 10;
+                    }
+                },
+                w = Iterator.concat(a, b),
+                first = w.next(),
+                last = w.return(99);
+            first.value === 7 && !first.done && last.done && last.value === undefined && receiver === i &&
+                argc === 0 && opens === 1 && closed === 1 && w.next().done && w.return().done && closed ===
+                1
+        "#,
     );
     assert_true(
         "let calls=0,a={[Symbol.iterator](){calls++;throw 7;}},w=Iterator.concat(a);w.return(99).done && w.next().done && w.return().done && calls===0",
     );
     assert_true(
-        "let opened=0,{proxy,revoke}=Proxy.revocable(function(){opened++;throw 7},{});revoke();let w=Iterator.concat({[Symbol.iterator]:proxy}),result=w.return(99);result.done&&result.value===undefined&&w.next().done&&opened===0",
+        r#"
+            let opened = 0,
+                {
+                    proxy,
+                    revoke
+                } = Proxy.revocable(function() {
+                    opened++;
+                    throw 7
+                }, {});
+            revoke();
+            let w = Iterator.concat({
+                    [Symbol.iterator]: proxy
+                }),
+                result = w.return(99);
+            result.done && result.value === undefined && w.next().done && opened === 0
+        "#,
     );
     assert_true(
         "let closed=0,w=Iterator.concat({[Symbol.iterator]:()=>({next:()=>({done:true}),return:()=>{closed++;throw 7;}})});w.next().done && w.return().done && closed===0",
     );
     assert_true(
-        "let closed='',a={[Symbol.iterator]:()=>({next:()=>({done:true}),return:()=>{closed+='a';throw 7;}})},b={[Symbol.iterator]:()=>({next:()=>({done:false,value:8}),return:()=>{closed+='b';return {};}})},w=Iterator.concat(a,b);w.next().value===8 && w.return().done && closed==='b'",
+        r#"
+            let closed = '',
+                a = {
+                    [Symbol.iterator]: () => ({
+                        next: () => ({
+                            done: true
+                        }),
+                        return: () => {
+                            closed += 'a';
+                            throw 7;
+                        }
+                    })
+                },
+                b = {
+                    [Symbol.iterator]: () => ({
+                        next: () => ({
+                            done: false,
+                            value: 8
+                        }),
+                        return: () => {
+                            closed += 'b';
+                            return {};
+                        }
+                    })
+                },
+                w = Iterator.concat(a, b);
+            w.next().value === 8 && w.return().done && closed === 'b'
+        "#,
     );
 }
 
@@ -492,7 +574,17 @@ fn helper_brands_prototypes_and_complete_constructor_reflection_are_standard() {
         ));
     }
     assert_true(
-        "let w=Iterator.concat(),p=Object.getPrototypeOf(w),d=Object.getOwnPropertyDescriptor(p,Symbol.toStringTag),keys=Reflect.ownKeys(p);Object.getPrototypeOf(p)===Iterator.prototype && keys.length===3 && keys[0]==='next' && keys[1]==='return' && keys[2]===Symbol.toStringTag && d.value==='Iterator Helper' && !d.writable && !d.enumerable && d.configurable && w instanceof Iterator && Iterator.from(w)===w && Object.prototype.toString.call(w)==='[object Iterator Helper]' && (Object.freeze(p),Object.isFrozen(p))",
+        r#"
+            let w = Iterator.concat(),
+                p = Object.getPrototypeOf(w),
+                d = Object.getOwnPropertyDescriptor(p, Symbol.toStringTag),
+                keys = Reflect.ownKeys(p);
+            Object.getPrototypeOf(p) === Iterator.prototype && keys.length === 3 && keys[0] === 'next' &&
+                keys[1] === 'return' && keys[2] === Symbol.toStringTag && d.value === 'Iterator Helper' &&
+                !d.writable && !d.enumerable && d.configurable && w instanceof Iterator && Iterator.from(
+                w) === w && Object.prototype.toString.call(w) === '[object Iterator Helper]' && (Object
+                    .freeze(p), Object.isFrozen(p))
+        "#,
     );
     assert_true(
         r#"

@@ -156,7 +156,11 @@ fn nested_loop_consumers_sticky_counts_and_zero_advancement() {
         "#,
     );
     assert_true(
-        r"'qaabccdZ'.replace(/(?<all>(?:(?:a|aa)+b|c)+)d/,'<$<all>>')==='q<aabcc>Z'&&'qaabccdZ'.search(/((?:(?:a|aa)+b|c)+)d/)===1&&'qaabccdZ'.split(/((?:(?:a|aa)+b|c)+)d/).join(',')==='q,aabcc,Z'",
+        r#"
+            'qaabccdZ'.replace(/(?<all>(?:(?:a|aa)+b|c)+)d/, '<$<all>>') === 'q<aabcc>Z' && 'qaabccdZ'
+                .search(/((?:(?:a|aa)+b|c)+)d/) === 1 && 'qaabccdZ'.split(/((?:(?:a|aa)+b|c)+)d/).join(
+                ',') === 'q,aabcc,Z'
+        "#,
     );
     assert_true(
         r#"

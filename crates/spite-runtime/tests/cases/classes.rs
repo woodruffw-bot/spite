@@ -529,7 +529,11 @@ fn accessors_merge_and_method_keys_preserve_symbols_and_utf16() {
 #[test]
 fn source_stringification_retains_complete_class_and_method_source() {
     assert_true(
-        "let source='class C /*comment*/ { constructor(x=1) { this.x=x; } m() { return 7; } }',C=eval('('+source+')');C.toString()===source && C.prototype.m.toString()==='m() { return 7; }'",
+        r#"
+            let source = 'class C /*comment*/ { constructor(x=1) { this.x=x; } m() { return 7; } }',
+                C = eval('(' + source + ')');
+            C.toString() === source && C.prototype.m.toString() === 'm() { return 7; }'
+        "#,
     );
     assert_true("let source='class /*x*/ {}',C=eval('('+source+')');C.toString()===source");
     assert_true(

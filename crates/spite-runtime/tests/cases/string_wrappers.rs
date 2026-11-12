@@ -139,7 +139,12 @@ fn branded_methods_reject_fakes_and_keep_string_data_after_prototype_changes() {
         }
     }
     assert_true(
-        "let s=Object('abc');Object.setPrototypeOf(s,null);String.prototype.valueOf.call(s)==='abc' && Object.prototype.toString.call(s)==='[object String]' && s.length===3",
+        r#"
+            let s = Object('abc');
+            Object.setPrototypeOf(s, null);
+            String.prototype.valueOf.call(s) === 'abc' && Object.prototype.toString.call(s) ===
+                '[object String]' && s.length === 3
+        "#,
     );
     assert_true(
         "Object.prototype.toString.call(String.prototype)==='[object String]' && Object.prototype.toString.call(Object.create(String.prototype))==='[object Object]'",

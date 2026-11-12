@@ -288,10 +288,22 @@ fn dynamic_functions_are_ordinary_constructors_with_fresh_identity_and_newtarget
 #[test]
 fn metadata_and_tostring_preserve_exact_standard_source() {
     assert_true(
-        "let f=Function('a /* parameter */','return a // body');f.toString()==='function anonymous(a /* parameter */\\n) {\\nreturn a // body\\n}' && Function().toString()==='function anonymous(\\n) {\\n\\n}'",
+        r#"
+            let f = Function('a /* parameter */', 'return a // body');
+            f.toString() === 'function anonymous(a /* parameter */\n) {\nreturn a // body\n}' && Function()
+                .toString() === 'function anonymous(\n) {\n\n}'
+        "#,
     );
     assert_true(
-        "let f=Function('a','return a'),n=Object.getOwnPropertyDescriptor(f,'name'),l=Object.getOwnPropertyDescriptor(f,'length'),p=Object.getOwnPropertyDescriptor(f,'prototype');n.value==='anonymous' && !n.writable && !n.enumerable && n.configurable && l.value===1 && !l.writable && !l.enumerable && l.configurable && p.value.constructor===f && p.writable && !p.enumerable && !p.configurable && Object.getPrototypeOf(f)===Function.prototype",
+        r#"
+            let f = Function('a', 'return a'),
+                n = Object.getOwnPropertyDescriptor(f, 'name'),
+                l = Object.getOwnPropertyDescriptor(f, 'length'),
+                p = Object.getOwnPropertyDescriptor(f, 'prototype');
+            n.value === 'anonymous' && !n.writable && !n.enumerable && n.configurable && l.value === 1 && !
+                l.writable && !l.enumerable && l.configurable && p.value.constructor === f && p.writable &&
+                !p.enumerable && !p.configurable && Object.getPrototypeOf(f) === Function.prototype
+        "#,
     );
     assert_true(
         "let f=Function('return 7'),s=f.toString();Object.defineProperty(f,'name',{get(){throw 1;}});f.toString()===s && f()===7",

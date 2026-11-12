@@ -135,7 +135,11 @@ fn checked_v_set_class_sequence_state_context_and_consumers() {
         "#,
     );
     assert_true(
-        r"'aaaab! aaaab!'.replace(/(?<whole>(\B[[a]][[a]][[a]][[b]]\b))/vg,'<$1:$<whole>>')==='a<aaab:aaab>! a<aaab:aaab>!'&&'aaaab!'.split(/(\B[[a]][[a]][[a]][[b]]\b)/v).join('|')==='a|aaab|!'&&'aaaab!'.match(/\B[[a]][[a]][[a]][[b]]\b/v)[0]==='aaab'",
+        r#"
+            'aaaab! aaaab!'.replace(/(?<whole>(\B[[a]][[a]][[a]][[b]]\b))/vg, '<$1:$<whole>>') ===
+                'a<aaab:aaab>! a<aaab:aaab>!' && 'aaaab!'.split(/(\B[[a]][[a]][[a]][[b]]\b)/v).join(
+                '|') === 'a|aaab|!' && 'aaaab!'.match(/\B[[a]][[a]][[a]][[b]]\b/v)[0] === 'aaab'
+        "#,
     );
     assert_true(
         r#"

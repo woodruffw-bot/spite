@@ -161,7 +161,23 @@ fn computed_names_convert_once_before_later_properties_without_running_bodies() 
 #[test]
 fn accessor_pairs_merge_and_data_redefinitions_replace_them_in_source_order() {
     assert_true(
-        "let o={get x(){return this.v;},set x(value){this.v=value;},get x(){return this.v+1;}};o.x=7;let d=Object.getOwnPropertyDescriptor(o,'x');o.x===8 && typeof d.set==='function' && typeof d.get==='function' && Object.keys(o).join(',')==='x,v'",
+        r#"
+            let o = {
+                get x() {
+                    return this.v;
+                },
+                set x(value) {
+                    this.v = value;
+                },
+                get x() {
+                    return this.v + 1;
+                }
+            };
+            o.x = 7;
+            let d = Object.getOwnPropertyDescriptor(o, 'x');
+            o.x === 8 && typeof d.set === 'function' && typeof d.get === 'function' && Object.keys(o).join(
+                ',') === 'x,v'
+        "#,
     );
     assert_true("let o={set x(v){this.v=v;},get x(){return this.v;}};o.x=8;o.x===8");
     assert_true(

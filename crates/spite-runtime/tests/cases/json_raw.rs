@@ -38,7 +38,10 @@ fn valid_primitive_text_is_preserved_without_number_rounding() {
     );
     assert_true("let text='\"'+'a'.repeat(100000)+'\"';JSON.rawJSON(text).rawJSON===text");
     assert_true(
-        r#"JSON.rawJSON('"\\uD800"').rawJSON==='"\\uD800"' && JSON.rawJSON('"'+ '\uDC00' +'"').rawJSON==='"'+ '\uDC00' +'"' && JSON.rawJSON('"\\u0061"').rawJSON==='"\\u0061"'"#,
+        r#"
+            JSON.rawJSON('"\\uD800"').rawJSON === '"\\uD800"' && JSON.rawJSON('"' + '\uDC00' + '"')
+                .rawJSON === '"' + '\uDC00' + '"' && JSON.rawJSON('"\\u0061"').rawJSON === '"\\u0061"'
+        "#,
     );
 }
 
@@ -87,7 +90,19 @@ fn invalid_text_containers_and_surrounding_whitespace_throw_syntaxerror() {
         );
     }
     assert_true(
-        "let C=SyntaxError;globalThis.SyntaxError=function(){throw 7;};let caught=false;try{JSON.rawJSON(' ');}catch(e){caught=e instanceof C && e.constructor===C;}caught",
+        r#"
+            let C = SyntaxError;
+            globalThis.SyntaxError = function() {
+                throw 7;
+            };
+            let caught = false;
+            try {
+                JSON.rawJSON(' ');
+            } catch (e) {
+                caught = e instanceof C && e.constructor === C;
+            }
+            caught
+        "#,
     );
 }
 

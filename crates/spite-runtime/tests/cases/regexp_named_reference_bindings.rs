@@ -118,7 +118,11 @@ fn consumers_and_sticky_copies_keep_original_sources_and_named_results() {
         "#,
     );
     assert_true(
-        r"'bb'.replace(/(?<x>a)\k<x>|(?<x>b)\k<x>/,'<$<x>>')==='<b>'&&'qbb'.search(/(?<x>a)\k<x>|(?<x>b)\k<x>/)===1&&'qbbz'.split(/(?<x>a)\k<x>|(?<x>b)\k<x>/).join(',')==='q,,b,z'",
+        r#"
+            'bb'.replace(/(?<x>a)\k<x>|(?<x>b)\k<x>/, '<$<x>>') === '<b>' && 'qbb'.search(
+                /(?<x>a)\k<x>|(?<x>b)\k<x>/) === 1 && 'qbbz'.split(/(?<x>a)\k<x>|(?<x>b)\k<x>/).join(
+                ',') === 'q,,b,z'
+        "#,
     );
     assert_true(
         r#"

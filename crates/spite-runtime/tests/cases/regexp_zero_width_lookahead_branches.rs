@@ -161,7 +161,10 @@ fn zero_width_branch_consumers_empty_global_sticky_results_and_callbacks_keep_sl
         "#,
     );
     assert_true(
-        r"'ab'.replace(/(?:(?=(?<x>a))|(?=(?<x>b))){2}/g,'<$<x>>')==='<a>a<b>b'&&'ab'.search(/(?:(?=(a))|(?=(b))){2}/)===0&&'ab'.split(/(?:(?=(a))|(?=(b))){2}/).length===4",
+        r#"
+            'ab'.replace(/(?:(?=(?<x>a))|(?=(?<x>b))){2}/g, '<$<x>>') === '<a>a<b>b' && 'ab'.search(
+                /(?:(?=(a))|(?=(b))){2}/) === 0 && 'ab'.split(/(?:(?=(a))|(?=(b))){2}/).length === 4
+        "#,
     );
 }
 

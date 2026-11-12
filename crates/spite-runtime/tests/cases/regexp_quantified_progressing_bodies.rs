@@ -152,7 +152,10 @@ fn string_consumers_sticky_counts_and_zero_advancement_preserve_inner_quantifier
         "#,
     );
     assert_true(
-        r"'qaabccdZ'.replace(/(?<all>(?:a+b|c)+)d/,'<$<all>>')==='q<aabcc>Z'&&'qaabccdZ'.search(/((?:a+b|c)+)d/)===1&&'qaabccdZ'.split(/((?:a+b|c)+)d/).join(',')==='q,aabcc,Z'",
+        r#"
+            'qaabccdZ'.replace(/(?<all>(?:a+b|c)+)d/, '<$<all>>') === 'q<aabcc>Z' && 'qaabccdZ'.search(
+                /((?:a+b|c)+)d/) === 1 && 'qaabccdZ'.split(/((?:a+b|c)+)d/).join(',') === 'q,aabcc,Z'
+        "#,
     );
     assert_true(
         r#"

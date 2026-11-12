@@ -1018,7 +1018,14 @@ fn full_metadata_aliases_species_and_iterator_prototypes_are_standard() {
         "#,
     );
     assert_true(
-        "let i=new Set().values(),p=Object.getPrototypeOf(i);Object.getPrototypeOf(p)===Iterator.prototype && Reflect.ownKeys(i).length===0 && Object.getOwnPropertyNames(p).join(',')==='next' && p.next.name==='next' && p.next.length===0 && Object.prototype.toString.call(i)==='[object Set Iterator]' && Object.prototype.toString.call(new Set())==='[object Set]'",
+        r#"
+            let i = new Set().values(),
+                p = Object.getPrototypeOf(i);
+            Object.getPrototypeOf(p) === Iterator.prototype && Reflect.ownKeys(i).length === 0 && Object
+                .getOwnPropertyNames(p).join(',') === 'next' && p.next.name === 'next' && p.next.length ===
+                0 && Object.prototype.toString.call(i) === '[object Set Iterator]' && Object.prototype
+                .toString.call(new Set()) === '[object Set]'
+        "#,
     );
     for (name, length) in [
         ("add", 1),

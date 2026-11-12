@@ -149,7 +149,11 @@ fn nested_progressing_choices_consumers_sticky_counts_and_zero_advancement_keep_
         "#,
     );
     assert_true(
-        r"'qabccdZ'.replace(/(?<all>(?:(?:a|)b|c)+)d/,'<$<all>>')==='q<abcc>Z'&&'qabccdZ'.search(/((?:(?:a|)b|c)+)d/)===1&&'qabccdZ'.split(/((?:(?:a|)b|c)+)d/).join(',')==='q,abcc,Z'",
+        r#"
+            'qabccdZ'.replace(/(?<all>(?:(?:a|)b|c)+)d/, '<$<all>>') === 'q<abcc>Z' && 'qabccdZ'.search(
+                    /((?:(?:a|)b|c)+)d/) === 1 && 'qabccdZ'.split(/((?:(?:a|)b|c)+)d/).join(',') ===
+                'q,abcc,Z'
+        "#,
     );
     assert_true(
         r#"

@@ -437,7 +437,11 @@ fn unicode_arabic_script_consumers_preserve_original_text() {
             r"'ابA'.replace(/(?<x>\p{{sc=Arab}})/{mode}g,'<$1:$<x>>')==='<ا:ا><ب:ب>A'"
         ));
         assert_true(&format!(
-            r"'AابA'.split(/(\p{{Script=Arabic}})/{mode}).join('|')==='A|ا||ب|A'&&'A😀ا'.search(/\p{{sc=Arab}}/{mode})===3&&'ابA'.match(/\p{{Script=Arab}}/{mode}g).join('')==='اب'"
+            r#"
+                'AابA'.split(/(\p{{Script=Arabic}})/{mode}).join('|') === 'A|ا||ب|A' && 'A😀ا'.search(
+                    /\p{{sc=Arab}}/{mode}) === 3 && 'ابA'.match(
+                    /\p{{Script=Arab}}/{mode}g).join('') === 'اب'
+            "#
         ));
         assert_true(&format!(
             r#"

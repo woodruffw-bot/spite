@@ -140,7 +140,11 @@ fn empty_sibling_consumers_and_zero_iterations_keep_original_sources() {
         "#,
     );
     assert_true(
-        r"'qaaaa'.replace(/(?<x>a)(?<last>(?<before>)\k<x>(?<after>))+/,'<$<last>>')==='q<a>'&&'qaaaa'.search(/(a)(()\1())+/)===1&&'qaaaaZ'.split(/(a)(()\1())+/).join(',')==='q,a,a,,,Z'",
+        r#"
+            'qaaaa'.replace(/(?<x>a)(?<last>(?<before>)\k<x>(?<after>))+/, '<$<last>>') === 'q<a>' &&
+                'qaaaa'.search(/(a)(()\1())+/) === 1 && 'qaaaaZ'.split(/(a)(()\1())+/).join(',') ===
+                'q,a,a,,,Z'
+        "#,
     );
     assert_true(
         r#"

@@ -142,7 +142,11 @@ fn local_reference_consumers_and_following_captures_keep_original_numbering() {
         "#,
     );
     assert_true(
-        r"'qabaabaab'.replace(/(?<x>a)(?<y>b)(?<last>(?<piece>\k<x>)\k<piece>\k<y>)+/,'<$<last>:$<piece>>')==='q<aab:a>'&&'qabaabaab'.search(/(a)(b)((\1)\4\2)+/)===1&&'qabaabaabZ'.split(/(a)(b)((\1)\4\2)+/).join(',')==='q,a,b,aab,a,Z'",
+        r#"
+            'qabaabaab'.replace(/(?<x>a)(?<y>b)(?<last>(?<piece>\k<x>)\k<piece>\k<y>)+/,
+                    '<$<last>:$<piece>>') === 'q<aab:a>' && 'qabaabaab'.search(/(a)(b)((\1)\4\2)+/) ===
+                1 && 'qabaabaabZ'.split(/(a)(b)((\1)\4\2)+/).join(',') === 'q,a,b,aab,a,Z'
+        "#,
     );
     assert_true(
         r#"

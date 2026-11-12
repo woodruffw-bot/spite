@@ -77,19 +77,111 @@ fn assignments_return_the_original_rhs_and_write_nested_repeated_and_rest_target
 #[test]
 fn reference_evaluation_precedes_source_reads_but_edition17_key_conversion_waits_for_put() {
     assert_true(
-        "let log=[],object={},key={[Symbol.toPrimitive](){log.push('convert');return 'x';}},source={get a(){log.push('get');return undefined;}};function target(){log.push('target');return object;}function rhs(){log.push('rhs');return source;}({a:target()[key]=(log.push('default'),7)}=rhs());object.x===7 && log.join(',')==='rhs,target,get,default,convert'",
+        r#"
+            let log = [],
+                object = {},
+                key = {
+                    [Symbol.toPrimitive]() {
+                        log.push('convert');
+                        return 'x';
+                    }
+                },
+                source = {
+                    get a() {
+                        log.push('get');
+                        return undefined;
+                    }
+                };
+
+            function target() {
+                log.push('target');
+                return object;
+            }
+
+            function rhs() {
+                log.push('rhs');
+                return source;
+            }({
+                a: target()[key] = (log.push('default'), 7)
+            } = rhs());
+            object.x === 7 && log.join(',') === 'rhs,target,get,default,convert'
+        "#,
     );
     assert_true(
-        "let log=[],object={},targetKey={[Symbol.toPrimitive](){log.push('target-key');return 'x';}},sourceKey={[Symbol.toPrimitive](){log.push('source-key');return 'a';}},source={get a(){log.push('get');return 7;}};({[sourceKey]:object[targetKey]}=source);object.x===7 && log.join(',')==='source-key,get,target-key'",
+        r#"
+            let log = [],
+                object = {},
+                targetKey = {
+                    [Symbol.toPrimitive]() {
+                        log.push('target-key');
+                        return 'x';
+                    }
+                },
+                sourceKey = {
+                    [Symbol.toPrimitive]() {
+                        log.push('source-key');
+                        return 'a';
+                    }
+                },
+                source = {
+                    get a() {
+                        log.push('get');
+                        return 7;
+                    }
+                };
+            ({
+                [sourceKey]: object[targetKey]
+            } = source);
+            object.x === 7 && log.join(',') === 'source-key,get,target-key'
+        "#,
     );
     assert_true(
-        "let key='x',object={},targetKey={[Symbol.toPrimitive](){return key;}},source={get a(){key='y';return 7;}};({a:object[targetKey]}=source);object.y===7 && !('x' in object)",
+        r#"
+            let key = 'x',
+                object = {},
+                targetKey = {
+                    [Symbol.toPrimitive]() {
+                        return key;
+                    }
+                },
+                source = {
+                    get a() {
+                        key = 'y';
+                        return 7;
+                    }
+                };
+            ({
+                a: object[targetKey]
+            } = source);
+            object.y === 7 && !('x' in object)
+        "#,
     );
     assert_true(
         "let log=[],source={get a(){log.push('get');return 7;}},result;try{({a:null.x}=source);}catch(e){result=e instanceof TypeError;}result && log.join(',')==='get'",
     );
     assert_true(
-        "let log=[],object={},source={get a(){log.push('get');return {b:7};}};function target(){log.push('target');return object;}({a:{b:target().x}}=source);object.x===7 && log.join(',')==='get,target'",
+        r#"
+            let log = [],
+                object = {},
+                source = {
+                    get a() {
+                        log.push('get');
+                        return {
+                            b: 7
+                        };
+                    }
+                };
+
+            function target() {
+                log.push('target');
+                return object;
+            }({
+                a: {
+                    b: target().x
+                }
+            } = source);
+            object.x === 7 && log.join(',') === 'get,target'
+        "#,
     );
 }
 

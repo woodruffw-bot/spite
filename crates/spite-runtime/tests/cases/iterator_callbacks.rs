@@ -190,10 +190,42 @@ fn mapping_preserves_all_return_types_and_filtering_retains_original_values_with
         ));
     }
     assert_true(
-        "let seen=[],h=[0,1,2,3,4].values().filter((value,index)=>{seen.push(index);return index%2;});h.next().value===1 && h.next().value===3 && h.next().done && seen.join(',')==='0,1,2,3,4'",
+        r#"
+            let seen = [],
+                h = [0, 1, 2, 3, 4].values().filter((value, index) => {
+                    seen.push(index);
+                    return index % 2;
+                });
+            h.next().value === 1 && h.next().value === 3 && h.next().done && seen.join(',') === '0,1,2,3,4'
+        "#,
     );
     assert_true(
-        "let original={x:1},replacement={},slot=original,n=0;let h=Iterator.prototype.filter.call({next:()=>({done:n++>0,value:slot})},value=>{value.x=2;slot=replacement;return {valueOf(){throw 7;},toString(){throw 8;}};});h.next().value===original && original.x===2 && h.next().done && slot===replacement",
+        r#"
+            let original = {
+                    x: 1
+                },
+                replacement = {},
+                slot = original,
+                n = 0;
+            let h = Iterator.prototype.filter.call({
+                next: () => ({
+                    done: n++ > 0,
+                    value: slot
+                })
+            }, value => {
+                value.x = 2;
+                slot = replacement;
+                return {
+                    valueOf() {
+                        throw 7;
+                    },
+                    toString() {
+                        throw 8;
+                    }
+                };
+            });
+            h.next().value === original && original.x === 2 && h.next().done && slot === replacement
+        "#,
     );
     assert_true(
         "let n=0,h=Iterator.prototype.filter.call({next:()=>({done:n===7,value:n++})},(value,index)=>[undefined,null,false,0,NaN,0n,''][index]);h.next().done",

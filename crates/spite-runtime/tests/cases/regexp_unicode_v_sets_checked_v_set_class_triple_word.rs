@@ -125,7 +125,11 @@ fn checked_v_set_class_triple_word_state_context_and_consumers() {
         "#,
     );
     assert_true(
-        r"'aaaa! aaaa!'.replace(/(?<whole>(\B[[a]][[a]][[a]]\b))/vg,'<$1:$<whole>>')==='a<aaa:aaa>! a<aaa:aaa>!'&&'aaaa!'.split(/(\B[[a]][[a]][[a]]\b)/v).join('|')==='a|aaa|!'&&'aaaa!'.match(/\B[[a]][[a]][[a]]\b/v)[0]==='aaa'",
+        r#"
+            'aaaa! aaaa!'.replace(/(?<whole>(\B[[a]][[a]][[a]]\b))/vg, '<$1:$<whole>>') ===
+                'a<aaa:aaa>! a<aaa:aaa>!' && 'aaaa!'.split(/(\B[[a]][[a]][[a]]\b)/v).join('|') ===
+                'a|aaa|!' && 'aaaa!'.match(/\B[[a]][[a]][[a]]\b/v)[0] === 'aaa'
+        "#,
     );
     assert_true(
         r#"

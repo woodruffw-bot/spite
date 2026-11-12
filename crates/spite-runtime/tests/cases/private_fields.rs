@@ -49,7 +49,20 @@ fn fields_support_reads_updates_assignments_and_private_call_receivers() {
         "#,
     );
     assert_true(
-        "class C{#x=7;read(o){return o?.#x;}call(o){return o?.#x.toString();}}let c=new C;c.read(null)===undefined && c.read(c)===7 && c.call(null)===undefined && c.call(c)==='7'",
+        r#"
+            class C {
+                #x = 7;
+                read(o) {
+                    return o?.#x;
+                }
+                call(o) {
+                    return o?.#x.toString();
+                }
+            }
+            let c = new C;
+            c.read(null) === undefined && c.read(c) === 7 && c.call(null) === undefined && c.call(c) ===
+                '7'
+        "#,
     );
 }
 
@@ -169,7 +182,27 @@ fn private_fields_do_not_appear_in_properties_or_obey_extensibility() {
 #[test]
 fn static_private_fields_and_blocks_follow_source_order() {
     assert_true(
-        "let log='';class C{static before=(log+='A',#x in this);static{log+=#x in this?'X':'B';}static #x=(log+='C',7);static{log+=#x in this?'D':'Y';this.read=()=>this.#x;}static after=(log+='E',this.#x);static has(o){return #x in o;}}class D extends C{}log==='ABCDE' && !C.before && C.after===7 && C.read()===7 && C.has(C) && !C.has(D) && !C.has(new C)",
+        r#"
+            let log = '';
+            class C {
+                static before = (log += 'A', #x in this);
+                static {
+                    log += #x in this ? 'X' : 'B';
+                }
+                static #x = (log += 'C', 7);
+                static {
+                    log += #x in this ? 'D' : 'Y';
+                    this.read = () => this.#x;
+                }
+                static after = (log += 'E', this.#x);
+                static has(o) {
+                    return #x in o;
+                }
+            }
+            class D extends C {}
+            log === 'ABCDE' && !C.before && C.after === 7 && C.read() === 7 && C.has(C) && !C.has(D) && !C
+                .has(new C)
+        "#,
     );
     assert_true(
         "let saved,caught=false;try{class C{static{saved=this;this.#x;}static #x=7;}}catch(e){caught=e instanceof TypeError;}caught && typeof saved==='function'",

@@ -22,7 +22,12 @@ fn type_error(source: &str) {
 #[test]
 fn constructor_graph_metadata_and_existing_iterator_inheritance_are_standard() {
     assert_true(
-        "typeof Iterator==='function' && Iterator.name==='Iterator' && Iterator.length===0 && Object.getPrototypeOf(Iterator)===Function.prototype && Object.getPrototypeOf(Iterator.prototype)===Object.prototype && Iterator.prototype.constructor===Iterator && Iterator.toString()==='function Iterator() { [native code] }'",
+        r#"
+            typeof Iterator === 'function' && Iterator.name === 'Iterator' && Iterator.length === 0 &&
+                Object.getPrototypeOf(Iterator) === Function.prototype && Object.getPrototypeOf(Iterator
+                    .prototype) === Object.prototype && Iterator.prototype.constructor === Iterator &&
+                Iterator.toString() === 'function Iterator() { [native code] }'
+        "#,
     );
     assert_true(
         r#"

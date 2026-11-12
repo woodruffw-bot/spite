@@ -186,7 +186,12 @@ fn unicode_emoji_properties_consumers_original_text() {
             r"'\u00AE\u00A9\uDB40\uDC01\u200D'.replace(/(?<x>\p{{Emoji}})/{mode}g,'<$1:$<x>>')==='<\u00AE:\u00AE><\u00A9:\u00A9>\uDB40\uDC01\u200D'"
         ));
         assert_true(&format!(
-            r"'\uDB40\uDC01\u00AE\u00A9\u200D'.split(/(\p{{Emoji}})/{mode}).join('|')==='\uDB40\uDC01|\u00AE||\u00A9|\u200D'&&'\uDB40\uDC01\u00A9'.search(/\p{{Emoji}}/{mode})===2&&'\u00AE\u00A9\uDB40\uDC01'.match(/\p{{Emoji}}/{mode}g).join('')==='\u00AE\u00A9'"
+            r#"
+                '\uDB40\uDC01\u00AE\u00A9\u200D'.split(/(\p{{Emoji}})/{mode}).join('|') ===
+                    '\uDB40\uDC01|\u00AE||\u00A9|\u200D' && '\uDB40\uDC01\u00A9'.search(
+                        /\p{{Emoji}}/{mode}) === 2 && '\u00AE\u00A9\uDB40\uDC01'.match(
+                        /\p{{Emoji}}/{mode}g).join('') === '\u00AE\u00A9'
+            "#
         ));
         assert_true(&format!(
             r#"

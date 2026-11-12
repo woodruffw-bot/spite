@@ -19,10 +19,16 @@ fn string_searches_replace_only_the_first_match_and_preserve_utf16_units() {
         "'anullb'.replace(null,7)==='a7b' && 'undefinedx'.replace(undefined,true)==='truex' && 'a1b1'.replace(1n,undefined)==='aundefinedb1'",
     );
     assert_true(
-        "String.prototype.replace.call(1231,1,'x')==='x231' && String.prototype.replace.call(false,'a','X')==='fXlse' && String.prototype.replace.call(123n,2,'X')==='1X3'",
+        r#"
+            String.prototype.replace.call(1231, 1, 'x') === 'x231' && String.prototype.replace.call(false,
+                'a', 'X') === 'fXlse' && String.prototype.replace.call(123n, 2, 'X') === '1X3'
+        "#,
     );
     assert_true(
-        "'A\\uD834\\uDF06B'.replace('\\uDF06','\\uD800')==='A\\uD834\\uD800B' && 'A\\uD834\\uDF06B'.replace('\\uD834\\uDF06','X')==='AXB' && 'a\\uD800b'.replace('\\uD800','\\uDC00')==='a\\uDC00b'",
+        r#"
+            'A\uD834\uDF06B'.replace('\uDF06', '\uD800') === 'A\uD834\uD800B' && 'A\uD834\uDF06B'.replace(
+                '\uD834\uDF06', 'X') === 'AXB' && 'a\uD800b'.replace('\uD800', '\uDC00') === 'a\uDC00b'
+        "#,
     );
 }
 

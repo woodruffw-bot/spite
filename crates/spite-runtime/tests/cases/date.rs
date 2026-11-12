@@ -334,7 +334,12 @@ fn iso_and_json_serialization_preserve_expanded_years_and_invalid_dates() {
         ));
     }
     assert_true(
-        "let d=new Date(NaN); d.toJSON()===null && JSON.stringify(d)==='null' && d.toString()==='Invalid Date' && d.toDateString()==='Invalid Date' && d.toTimeString()==='Invalid Date' && d.toUTCString()==='Invalid Date'",
+        r#"
+            let d = new Date(NaN);
+            d.toJSON() === null && JSON.stringify(d) === 'null' && d.toString() === 'Invalid Date' && d
+                .toDateString() === 'Invalid Date' && d.toTimeString() === 'Invalid Date' && d
+                .toUTCString() === 'Invalid Date'
+        "#,
     );
     assert!(matches!(
         Realm::default().eval("new Date(NaN).toISOString()"),

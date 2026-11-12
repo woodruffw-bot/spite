@@ -139,7 +139,11 @@ fn middle_capture_consumers_and_empty_iterations_keep_original_numbering() {
         "#,
     );
     assert_true(
-        r"'qababab'.replace(/(?<x>a)(?<y>b)(?<last>\k<x>(?<mid>)\k<y>)+/,'<$<last>:$<mid>>')==='q<ab:>'&&'qababab'.search(/(a)(b)(\1()\2)+/)===1&&'qabababZ'.split(/(a)(b)(\1()\2)+/).join(',')==='q,a,b,ab,,Z'",
+        r#"
+            'qababab'.replace(/(?<x>a)(?<y>b)(?<last>\k<x>(?<mid>)\k<y>)+/, '<$<last>:$<mid>>') ===
+                'q<ab:>' && 'qababab'.search(/(a)(b)(\1()\2)+/) === 1 && 'qabababZ'.split(
+                    /(a)(b)(\1()\2)+/).join(',') === 'q,a,b,ab,,Z'
+        "#,
     );
     assert_true(
         r#"

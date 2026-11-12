@@ -8,7 +8,18 @@ use crate::common::assert_true;
 #[test]
 fn default_patterns_flags_metadata_and_lastindex_have_standard_descriptors() {
     assert_true(
-        "let a=RegExp(),b=new RegExp(undefined,undefined),c=RegExp('', 'ysgdim'),d=Object.getOwnPropertyDescriptor(c,'lastIndex');a!==b && a.source==='(?:)' && a.flags==='' && c.flags==='dgimsy' && c.dotAll && c.global && c.hasIndices && c.ignoreCase && c.multiline && c.sticky && !c.unicode && !c.unicodeSets && d.value===0 && 1/d.value===Infinity && d.writable && !d.enumerable && !d.configurable && Object.getOwnPropertyNames(c).join(',')==='lastIndex' && Object.getPrototypeOf(c)===RegExp.prototype && c instanceof RegExp && c.toString()==='/(?:)/dgimsy'",
+        r#"
+            let a = RegExp(),
+                b = new RegExp(undefined, undefined),
+                c = RegExp('', 'ysgdim'),
+                d = Object.getOwnPropertyDescriptor(c, 'lastIndex');
+            a !== b && a.source === '(?:)' && a.flags === '' && c.flags === 'dgimsy' && c.dotAll && c
+                .global && c.hasIndices && c.ignoreCase && c.multiline && c.sticky && !c.unicode && !c
+                .unicodeSets && d.value === 0 && 1 / d.value === Infinity && d.writable && !d.enumerable &&
+                !d.configurable && Object.getOwnPropertyNames(c).join(',') === 'lastIndex' && Object
+                .getPrototypeOf(c) === RegExp.prototype && c instanceof RegExp && c.toString() ===
+                '/(?:)/dgimsy'
+        "#,
     );
     for flag in ["d", "g", "i", "m", "s", "u", "v", "y"] {
         assert_true(&format!(
@@ -411,10 +422,27 @@ fn source_getters_escape_delimiters_terminators_and_preserve_surrogates() {
 #[test]
 fn isregexp_and_object_tag_use_own_native_brands_after_symbol_overrides() {
     assert_true(
-        "let r=new RegExp('a');r[Symbol.match]=undefined;let caught=false;try{'a'.includes(r);}catch(e){caught=e instanceof TypeError;}caught && Object.prototype.toString.call(r)==='[object RegExp]' && Object.prototype.toString.call(Object.create(r))==='[object Object]' && Object.prototype.toString.call(RegExp.prototype)==='[object Object]'",
+        r#"
+            let r = new RegExp('a');
+            r[Symbol.match] = undefined;
+            let caught = false;
+            try {
+                'a'.includes(r);
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && Object.prototype.toString.call(r) === '[object RegExp]' && Object.prototype.toString
+                .call(Object.create(r)) === '[object Object]' && Object.prototype.toString.call(RegExp
+                    .prototype) === '[object Object]'
+        "#,
     );
     assert_true(
-        "let r=new RegExp('a');r[Symbol.match]=false;!''.includes(r) && Object.prototype.toString.call(r)==='[object RegExp]' && (r[Symbol.toStringTag]='custom',Object.prototype.toString.call(r)==='[object custom]')",
+        r#"
+            let r = new RegExp('a');
+            r[Symbol.match] = false;
+            !''.includes(r) && Object.prototype.toString.call(r) === '[object RegExp]' && (r[Symbol
+                .toStringTag] = 'custom', Object.prototype.toString.call(r) === '[object custom]')
+        "#,
     );
     assert_true(
         "let r=new RegExp('a');r[Symbol.toStringTag]=7;Object.prototype.toString.call(r)==='[object RegExp]'",
@@ -486,7 +514,21 @@ fn lastindex_and_native_getters_ignore_inherited_setters_and_public_forgeries() 
         "#,
     );
     assert_true(
-        "let r=new RegExp('a','g'),get=Object.getOwnPropertyDescriptor(RegExp.prototype,'global').get;Object.defineProperty(r,'global',{value:false});Object.defineProperty(r,'source',{value:'forged'});Object.defineProperty(r,'flags',{value:'z'});get.call(r) && RegExp.prototype.toString.call(r)==='/forged/z' && new RegExp(r).source==='a' && new RegExp(r).global",
+        r#"
+            let r = new RegExp('a', 'g'),
+                get = Object.getOwnPropertyDescriptor(RegExp.prototype, 'global').get;
+            Object.defineProperty(r, 'global', {
+                value: false
+            });
+            Object.defineProperty(r, 'source', {
+                value: 'forged'
+            });
+            Object.defineProperty(r, 'flags', {
+                value: 'z'
+            });
+            get.call(r) && RegExp.prototype.toString.call(r) === '/forged/z' && new RegExp(r).source ===
+                'a' && new RegExp(r).global
+        "#,
     );
     assert_true(
         r#"

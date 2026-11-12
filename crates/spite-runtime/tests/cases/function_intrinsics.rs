@@ -51,7 +51,11 @@ fn constructor_and_prototype_graph_has_standard_identity_and_descriptors() {
         ));
     }
     assert_true(
-        "Function.toString()==='function Function() { [native code] }' && Object.prototype.toString.call(Function)==='[object Function]' && Function.prototype.name==='' && Function.prototype.length===0",
+        r#"
+            Function.toString() === 'function Function() { [native code] }' && Object.prototype.toString
+                .call(Function) === '[object Function]' && Function.prototype.name === '' && Function
+                .prototype.length === 0
+        "#,
     );
     assert_true(
         "let caught=false;try{new Function.prototype();}catch(e){caught=e instanceof TypeError;}caught",

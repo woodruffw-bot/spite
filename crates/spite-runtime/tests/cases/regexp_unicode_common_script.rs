@@ -475,7 +475,11 @@ fn unicode_common_script_consumers_preserve_original_text() {
             r"'01A'.replace(/(?<x>\p{{sc=Zyyy}})/{mode}g,'<$1:$<x>>')==='<0:0><1:1>A'"
         ));
         assert_true(&format!(
-            r"'A01A'.split(/(\p{{Script=Common}})/{mode}).join('|')==='A|0||1|A'&&'Aא0'.search(/\p{{sc=Zyyy}}/{mode})===2&&'01A'.match(/\p{{Script=Zyyy}}/{mode}g).join('')==='01'"
+            r#"
+                'A01A'.split(/(\p{{Script=Common}})/{mode}).join('|') === 'A|0||1|A' && 'Aא0'.search(
+                    /\p{{sc=Zyyy}}/{mode}) === 2 && '01A'.match(
+                    /\p{{Script=Zyyy}}/{mode}g).join('') === '01'
+            "#
         ));
         assert_true(&format!(
             r#"

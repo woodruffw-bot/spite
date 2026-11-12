@@ -426,7 +426,11 @@ fn unicode_devanagari_script_consumers_preserve_original_text() {
             r"'कखA'.replace(/(?<x>\p{{sc=Deva}})/{mode}g,'<$1:$<x>>')==='<क:क><ख:ख>A'"
         ));
         assert_true(&format!(
-            r"'AकखA'.split(/(\p{{Script=Devanagari}})/{mode}).join('|')==='A|क||ख|A'&&'A😀क'.search(/\p{{sc=Deva}}/{mode})===3&&'कखA'.match(/\p{{Script=Deva}}/{mode}g).join('')==='कख'"
+            r#"
+                'AकखA'.split(/(\p{{Script=Devanagari}})/{mode}).join('|') === 'A|क||ख|A' && 'A😀क'
+                    .search(/\p{{sc=Deva}}/{mode}) === 3 && 'कखA'.match(
+                        /\p{{Script=Deva}}/{mode}g).join('') === 'कख'
+            "#
         ));
         assert_true(&format!(
             r#"

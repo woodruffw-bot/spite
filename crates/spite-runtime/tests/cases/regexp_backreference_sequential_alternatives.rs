@@ -137,7 +137,11 @@ fn consumers_and_empty_choices_keep_order_and_original_sources() {
         "#,
     );
     assert_true(
-        r"'qabab'.replace(/(?:(?<x>a)|(?<x>ab))(?:(?<y>c)|)\k<x>\k<y>/,'<$<x>:$<y>>')==='q<ab:>'&&'qabab'.search(/(a|ab)(c|)\1\2/)===1&&'qababz'.split(/(a|ab)(c|)\1\2/).join(',')==='q,ab,,z'",
+        r#"
+            'qabab'.replace(/(?:(?<x>a)|(?<x>ab))(?:(?<y>c)|)\k<x>\k<y>/, '<$<x>:$<y>>') === 'q<ab:>' &&
+                'qabab'.search(/(a|ab)(c|)\1\2/) === 1 && 'qababz'.split(/(a|ab)(c|)\1\2/).join(',') ===
+                'q,ab,,z'
+        "#,
     );
     assert_true(
         r#"

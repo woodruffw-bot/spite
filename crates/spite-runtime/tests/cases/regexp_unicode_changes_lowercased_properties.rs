@@ -195,7 +195,12 @@ fn unicode_changes_lowercased_properties_consumers_original_text() {
             r"'\u0042\u0041\uDB40\uDC01\u200D'.replace(/(?<x>\p{{Changes_When_Lowercased}})/{mode}g,'<$1:$<x>>')==='<\u0042:\u0042><\u0041:\u0041>\uDB40\uDC01\u200D'"
         ));
         assert_true(&format!(
-            r"'\uDB40\uDC01\u0042\u0041\u200D'.split(/(\p{{CWL}})/{mode}).join('|')==='\uDB40\uDC01|\u0042||\u0041|\u200D'&&'\uDB40\uDC01\u0041'.search(/\p{{CWL}}/{mode})===2&&'\u0042\u0041\uDB40\uDC01'.match(/\p{{CWL}}/{mode}g).join('')==='\u0042\u0041'"
+            r#"
+                '\uDB40\uDC01\u0042\u0041\u200D'.split(/(\p{{CWL}})/{mode}).join('|') ===
+                    '\uDB40\uDC01|\u0042||\u0041|\u200D' && '\uDB40\uDC01\u0041'.search(
+                        /\p{{CWL}}/{mode}) === 2 && '\u0042\u0041\uDB40\uDC01'.match(
+                        /\p{{CWL}}/{mode}g).join('') === '\u0042\u0041'
+            "#
         ));
         assert_true(&format!(
             r#"

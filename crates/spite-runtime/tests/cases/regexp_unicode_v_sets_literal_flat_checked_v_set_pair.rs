@@ -124,7 +124,11 @@ fn literal_flat_checked_v_set_pair_state_context_and_consumers() {
         "#,
     );
     assert_true(
-        r#"'😀cab ccab'.replace(/(?<whole>(c[a][[b]]\b))/vg,'<$1:$<whole>>')==='😀<cab:cab> c<cab:cab>'&&'😀cabx'.split(/(c[a][[b]])/v).join('|')==='😀|cab|x'&&'ccab'.match(/c[a][[b]]/v)[0]==='cab'"#,
+        r#"
+            '😀cab ccab'.replace(/(?<whole>(c[a][[b]]\b))/vg, '<$1:$<whole>>') ===
+                '😀<cab:cab> c<cab:cab>' && '😀cabx'.split(/(c[a][[b]])/v).join('|') === '😀|cab|x' &&
+                'ccab'.match(/c[a][[b]]/v)[0] === 'cab'
+        "#,
     );
     assert_true(
         r#"

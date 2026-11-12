@@ -171,7 +171,11 @@ fn consumers_callbacks_sticky_global_and_empty_advancement() {
         "#,
     );
     assert_true(
-        r"'aaaaab'.replace(/(?<x>a)(?<=(?<y>a\k<x>){2})b/,'<$<y>>')==='aaaa<aa>'&&'aaaaab'.search(/(a)(?<=(a\1){2})b/)===4&&'aaaaab'.split(/(a)(?<=(a\1){2})b/).join('|')==='aaaa|a|aa|'",
+        r#"
+            'aaaaab'.replace(/(?<x>a)(?<=(?<y>a\k<x>){2})b/, '<$<y>>') === 'aaaa<aa>' && 'aaaaab'.search(
+                    /(a)(?<=(a\1){2})b/) === 4 && 'aaaaab'.split(/(a)(?<=(a\1){2})b/).join('|') ===
+                'aaaa|a|aa|'
+        "#,
     );
 }
 

@@ -165,7 +165,11 @@ fn unicode_deprecated_properties_consumers_original_text() {
             r"'\u17A3\u0673😀X'.replace(/(?<x>\p{{Deprecated}})/{mode}g,'<$1:$<x>>')==='<\u17A3:\u17A3><\u0673:\u0673>😀X'"
         ));
         assert_true(&format!(
-            r"'😀\u17A3\u0673G'.split(/(\p{{Dep}})/{mode}).join('|')==='😀|\u17A3||\u0673|G'&&'😀\u0673'.search(/\p{{Dep}}/{mode})===2&&'\u17A3\u0673😀'.match(/\p{{Dep}}/{mode}g).join('')==='\u17A3\u0673'"
+            r#"
+                '😀\u17A3\u0673G'.split(/(\p{{Dep}})/{mode}).join('|') === '😀|\u17A3||\u0673|G' &&
+                    '😀\u0673'.search(/\p{{Dep}}/{mode}) === 2 && '\u17A3\u0673😀'.match(
+                        /\p{{Dep}}/{mode}g).join('') === '\u17A3\u0673'
+            "#
         ));
         assert_true(&format!(
             r#"

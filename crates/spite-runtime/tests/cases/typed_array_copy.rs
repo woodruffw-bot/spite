@@ -427,11 +427,51 @@ fn slice_skips_source_revalidation_for_zero_count_and_validates_species_before_p
         ));
     }
     assert_true(
-        "let a=Uint8Array.of(1,2,3),target,count,caught=false;function C(n){count=n;a.buffer.transfer();target=Uint8Array.of(7,8);return target;}a.constructor={[Symbol.species]:C};try{a.slice(0,2);}catch(e){caught=e instanceof TypeError;}caught && count===2 && target.join()==='7,8'",
+        r#"
+            let a = Uint8Array.of(1, 2, 3),
+                target, count, caught = false;
+
+            function C(n) {
+                count = n;
+                a.buffer.transfer();
+                target = Uint8Array.of(7, 8);
+                return target;
+            }
+            a.constructor = {
+                [Symbol.species]: C
+            };
+            try {
+                a.slice(0, 2);
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && count === 2 && target.join() === '7,8'
+        "#,
     );
     assert_eq!(Realm::default().eval("let a=Uint8Array.of(1,2,3);function C(){throw 7;}a.constructor={[Symbol.species]:C};a.slice({valueOf(){a.buffer.transfer();return 0;}},2)"),Err(Error::Thrown(Value::Number(7.0))));
     assert_true(
-        "let buffer=new ArrayBuffer(3,{maxByteLength:6}),a=new Uint8Array(buffer,0,3),target,caught=false;function C(n){buffer.resize(1);target=Uint8Array.of(7,8);return target;}a.constructor={[Symbol.species]:C};try{a.slice(0,2);}catch(e){caught=e instanceof TypeError;}caught && target.join()==='7,8'",
+        r#"
+            let buffer = new ArrayBuffer(3, {
+                    maxByteLength: 6
+                }),
+                a = new Uint8Array(buffer, 0, 3),
+                target, caught = false;
+
+            function C(n) {
+                buffer.resize(1);
+                target = Uint8Array.of(7, 8);
+                return target;
+            }
+            a.constructor = {
+                [Symbol.species]: C
+            };
+            try {
+                a.slice(0, 2);
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && target.join() === '7,8'
+        "#,
     );
 }
 
@@ -495,10 +535,37 @@ fn same_kind_slice_preserves_nan_bits_source_offset_and_independence() {
 #[test]
 fn different_kind_slice_uses_live_numeric_reads_when_species_aliases_the_source() {
     assert_true(
-        "let little=new Uint8Array(Uint16Array.of(1).buffer)[0]===1,buffer=new ArrayBuffer(8),a=new Uint8Array(buffer,0,4);a[0]=1;a[1]=2;a[2]=3;a[3]=4;function C(){return new Uint16Array(buffer);}a.constructor={[Symbol.species]:C};let b=a.slice(0,4);b.join()===(little?'1,0,0,0':'1,1,0,1')",
+        r#"
+            let little = new Uint8Array(Uint16Array.of(1).buffer)[0] === 1,
+                buffer = new ArrayBuffer(8),
+                a = new Uint8Array(buffer, 0, 4);
+            a[0] = 1;
+            a[1] = 2;
+            a[2] = 3;
+            a[3] = 4;
+
+            function C() {
+                return new Uint16Array(buffer);
+            }
+            a.constructor = {
+                [Symbol.species]: C
+            };
+            let b = a.slice(0, 4);
+            b.join() === (little ? '1,0,0,0' : '1,1,0,1')
+        "#,
     );
     assert_true(
-        "let a=Float64Array.of(-1,0.5,1.5,255.5,NaN);function C(n){return new Uint8ClampedArray(n+1);}a.constructor={[Symbol.species]:C};a.slice().join()==='0,0,2,255,0,0'",
+        r#"
+            let a = Float64Array.of(-1, 0.5, 1.5, 255.5, NaN);
+
+            function C(n) {
+                return new Uint8ClampedArray(n + 1);
+            }
+            a.constructor = {
+                [Symbol.species]: C
+            };
+            a.slice().join() === '0,0,2,255,0,0'
+        "#,
     );
 }
 
@@ -735,7 +802,13 @@ fn intrinsic_copies_use_numeric_nan_writes_and_preserve_source_payloads() {
         ));
     }
     assert_true(
-        "let a=Float64Array.of(-0,2,0),r=a.toReversed(),w=a.with(1,-0);Object.is(r[0],0) && Object.is(r[2],-0) && Object.is(w[0],-0) && Object.is(w[1],-0) && Object.is(w[2],0) && a[1]===2",
+        r#"
+            let a = Float64Array.of(-0, 2, 0),
+                r = a.toReversed(),
+                w = a.with(1, -0);
+            Object.is(r[0], 0) && Object.is(r[2], -0) && Object.is(w[0], -0) && Object.is(w[1], -0) &&
+                Object.is(w[2], 0) && a[1] === 2
+        "#,
     );
 }
 

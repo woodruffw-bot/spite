@@ -175,7 +175,11 @@ fn unicode_noncharacter_properties_consumers_original_text() {
             r"'\uffff\ufdd0😀X'.replace(/(?<x>\p{{Noncharacter_Code_Point}})/{mode}g,'<$1:$<x>>')==='<\uffff:\uffff><\ufdd0:\ufdd0>😀X'"
         ));
         assert_true(&format!(
-            r"'😀\uffff\ufdd0G'.split(/(\p{{NChar}})/{mode}).join('|')==='😀|\uffff||\ufdd0|G'&&'😀\ufdd0'.search(/\p{{NChar}}/{mode})===2&&'\uffff\ufdd0😀'.match(/\p{{NChar}}/{mode}g).join('')==='\uffff\ufdd0'"
+            r#"
+                '😀\uffff\ufdd0G'.split(/(\p{{NChar}})/{mode}).join('|') === '😀|\uffff||\ufdd0|G' &&
+                    '😀\ufdd0'.search(/\p{{NChar}}/{mode}) === 2 && '\uffff\ufdd0😀'.match(
+                        /\p{{NChar}}/{mode}g).join('') === '\uffff\ufdd0'
+            "#
         ));
         assert_true(&format!(
             r#"

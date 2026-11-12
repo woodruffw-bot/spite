@@ -166,7 +166,11 @@ fn unicode_variation_selector_properties_consumers_original_text() {
             r"'\ufe01\ufe00😀X'.replace(/(?<x>\p{{Variation_Selector}})/{mode}g,'<$1:$<x>>')==='<\ufe01:\ufe01><\ufe00:\ufe00>😀X'"
         ));
         assert_true(&format!(
-            r"'😀\ufe01\ufe00G'.split(/(\p{{VS}})/{mode}).join('|')==='😀|\ufe01||\ufe00|G'&&'😀\ufe00'.search(/\p{{VS}}/{mode})===2&&'\ufe01\ufe00😀'.match(/\p{{VS}}/{mode}g).join('')==='\ufe01\ufe00'"
+            r#"
+                '😀\ufe01\ufe00G'.split(/(\p{{VS}})/{mode}).join('|') === '😀|\ufe01||\ufe00|G' &&
+                    '😀\ufe00'.search(/\p{{VS}}/{mode}) === 2 && '\ufe01\ufe00😀'.match(
+                        /\p{{VS}}/{mode}g).join('') === '\ufe01\ufe00'
+            "#
         ));
         assert_true(&format!(
             r#"

@@ -186,7 +186,12 @@ fn unicode_extended_pictographic_properties_consumers_original_text() {
             r"'\u00AE\u00A9\uDB40\uDC01\u200D'.replace(/(?<x>\p{{Extended_Pictographic}})/{mode}g,'<$1:$<x>>')==='<\u00AE:\u00AE><\u00A9:\u00A9>\uDB40\uDC01\u200D'"
         ));
         assert_true(&format!(
-            r"'\uDB40\uDC01\u00AE\u00A9\u200D'.split(/(\p{{ExtPict}})/{mode}).join('|')==='\uDB40\uDC01|\u00AE||\u00A9|\u200D'&&'\uDB40\uDC01\u00A9'.search(/\p{{ExtPict}}/{mode})===2&&'\u00AE\u00A9\uDB40\uDC01'.match(/\p{{ExtPict}}/{mode}g).join('')==='\u00AE\u00A9'"
+            r#"
+                '\uDB40\uDC01\u00AE\u00A9\u200D'.split(/(\p{{ExtPict}})/{mode}).join('|') ===
+                    '\uDB40\uDC01|\u00AE||\u00A9|\u200D' && '\uDB40\uDC01\u00A9'.search(
+                        /\p{{ExtPict}}/{mode}) === 2 && '\u00AE\u00A9\uDB40\uDC01'.match(
+                        /\p{{ExtPict}}/{mode}g).join('') === '\u00AE\u00A9'
+            "#
         ));
         assert_true(&format!(
             r#"

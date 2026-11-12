@@ -738,7 +738,16 @@ fn full_metadata_and_species_and_iterator_prototypes_are_standard() {
         "#,
     );
     assert_true(
-        "let i=new Map().entries(),p=Object.getPrototypeOf(i),d=Object.getOwnPropertyDescriptor(p,'next');Object.getPrototypeOf(p)===Iterator.prototype && Reflect.ownKeys(i).length===0 && Object.getOwnPropertyNames(p).join(',')==='next' && d.value.name==='next' && d.value.length===0 && d.writable && !d.enumerable && d.configurable && Object.prototype.toString.call(i)==='[object Map Iterator]' && Object.prototype.toString.call(new Map())==='[object Map]'",
+        r#"
+            let i = new Map().entries(),
+                p = Object.getPrototypeOf(i),
+                d = Object.getOwnPropertyDescriptor(p, 'next');
+            Object.getPrototypeOf(p) === Iterator.prototype && Reflect.ownKeys(i).length === 0 && Object
+                .getOwnPropertyNames(p).join(',') === 'next' && d.value.name === 'next' && d.value
+                .length === 0 && d.writable && !d.enumerable && d.configurable && Object.prototype.toString
+                .call(i) === '[object Map Iterator]' && Object.prototype.toString.call(new Map()) ===
+                '[object Map]'
+        "#,
     );
     for (name, length) in [
         ("clear", 0),

@@ -31,7 +31,10 @@ fn plain_separators_preserve_empty_parts_and_use_nonoverlapping_matches() {
         "#,
     );
     assert_true(
-        "String.prototype.split.call(1001,0).join('|')==='1||1' && String.prototype.split.call(false,'a').join('|')==='f|lse' && String.prototype.split.call(123n,2).join('|')==='1|3'",
+        r#"
+            String.prototype.split.call(1001, 0).join('|') === '1||1' && String.prototype.split.call(false,
+                'a').join('|') === 'f|lse' && String.prototype.split.call(123n, 2).join('|') === '1|3'
+        "#,
     );
     assert_true(
         r#"

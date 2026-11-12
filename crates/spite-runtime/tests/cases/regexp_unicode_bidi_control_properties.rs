@@ -153,7 +153,11 @@ fn unicode_bidi_control_properties_consumers_original_text() {
             r"'\u200f\u200e😀X'.replace(/(?<x>\p{{Bidi_Control}})/{mode}g,'<$1:$<x>>')==='<\u200f:\u200f><\u200e:\u200e>😀X'"
         ));
         assert_true(&format!(
-            r"'😀\u200f\u200eG'.split(/(\p{{Bidi_C}})/{mode}).join('|')==='😀|\u200f||\u200e|G'&&'😀\u200e'.search(/\p{{Bidi_C}}/{mode})===2&&'\u200f\u200e😀'.match(/\p{{Bidi_C}}/{mode}g).join('')==='\u200f\u200e'"
+            r#"
+                '😀\u200f\u200eG'.split(/(\p{{Bidi_C}})/{mode}).join('|') === '😀|\u200f||\u200e|G' &&
+                    '😀\u200e'.search(/\p{{Bidi_C}}/{mode}) === 2 && '\u200f\u200e😀'.match(
+                        /\p{{Bidi_C}}/{mode}g).join('') === '\u200f\u200e'
+            "#
         ));
         assert_true(&format!(
             r#"

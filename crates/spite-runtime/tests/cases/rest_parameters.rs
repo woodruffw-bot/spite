@@ -142,13 +142,34 @@ fn rest_in_arrows_methods_constructors_and_bound_functions() {
 #[test]
 fn length_source_and_property_attributes_include_rest_semantics() {
     assert_true(
-        "let a=(...r)=>r,b=(x,...r)=>r,c=(x,y=1,...r)=>r,d=(x=1,...r)=>r;function f(x,y,...r){}let o={m(x,...r){}};a.length===0 && b.length===1 && c.length===1 && d.length===0 && f.length===2 && o.m.length===1 && f.bind(null,1).length===1",
+        r#"
+            let a = (...r) => r,
+                b = (x, ...r) => r,
+                c = (x, y = 1, ...r) => r,
+                d = (x = 1, ...r) => r;
+
+            function f(x, y, ...r) {}
+            let o = {
+                m(x, ...r) {}
+            };
+            a.length === 0 && b.length === 1 && c.length === 1 && d.length === 0 && f.length === 2 && o.m
+                .length === 1 && f.bind(null, 1).length === 1
+        "#,
     );
     assert_true(
         "let f = (a, /*rest*/ ...r) => r;f.toString()==='(a, /*rest*/ ...r) => r' && f.name==='f' && !Object.getOwnPropertyDescriptor(f,'length').writable && Object.getOwnPropertyDescriptor(f,'length').configurable",
     );
     assert_true(
-        "function f(...r){return r;}let a=f(7),d=Object.getOwnPropertyDescriptor(a,'0'),l=Object.getOwnPropertyDescriptor(a,'length');d.value===7 && d.writable && d.enumerable && d.configurable && l.value===1 && l.writable && !l.enumerable && !l.configurable",
+        r#"
+            function f(...r) {
+                return r;
+            }
+            let a = f(7),
+                d = Object.getOwnPropertyDescriptor(a, '0'),
+                l = Object.getOwnPropertyDescriptor(a, 'length');
+            d.value === 7 && d.writable && d.enumerable && d.configurable && l.value === 1 && l.writable &&
+                !l.enumerable && !l.configurable
+        "#,
     );
 }
 

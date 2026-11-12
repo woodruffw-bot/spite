@@ -116,7 +116,10 @@ fn flat_v_set_class_literal_state_context_and_consumers() {
         "#,
     );
     assert_true(
-        r#"'aaab! aaab!'.replace(/(?<whole>([a]b))/vg,'<$1:$<whole>>')==='aa<ab:ab>! aa<ab:ab>!'&&'aaab!'.split(/([a]b)/v).join('|')==='aa|ab|!'&&'aaab!'.match(/[a]b/v)[0]==='ab'"#,
+        r#"
+            'aaab! aaab!'.replace(/(?<whole>([a]b))/vg, '<$1:$<whole>>') === 'aa<ab:ab>! aa<ab:ab>!' &&
+                'aaab!'.split(/([a]b)/v).join('|') === 'aa|ab|!' && 'aaab!'.match(/[a]b/v)[0] === 'ab'
+        "#,
     );
     assert_true(
         r#"

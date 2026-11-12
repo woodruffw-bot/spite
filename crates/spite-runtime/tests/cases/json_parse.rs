@@ -83,7 +83,26 @@ fn duplicates_proto_names_and_setters_obey_json_data_property_semantics() {
 #[test]
 fn input_conversion_precedes_syntax_and_noncallable_revivers_are_ignored() {
     assert_true(
-        "let calls=0,text={[Symbol.toPrimitive](hint){calls++;if(hint!=='string')throw 7;return '1';}},reviver={get call(){throw 8;},toString(){throw 9;}};JSON.parse.call(Symbol(),text,reviver)===1 && calls===1 && JSON.parse(7,7)===7 && JSON.parse(7n,false)===7 && JSON.parse(null)===null",
+        r#"
+            let calls = 0,
+                text = {
+                    [Symbol.toPrimitive](hint) {
+                        calls++;
+                        if (hint !== 'string') throw 7;
+                        return '1';
+                    }
+                },
+                reviver = {
+                    get call() {
+                        throw 8;
+                    },
+                    toString() {
+                        throw 9;
+                    }
+                };
+            JSON.parse.call(Symbol(), text, reviver) === 1 && calls === 1 && JSON.parse(7, 7) === 7 && JSON
+                .parse(7n, false) === 7 && JSON.parse(null) === null
+        "#,
     );
     assert_true(
         "let marker={},caught=false;try{JSON.parse({toString(){throw marker;}});}catch(e){caught=e===marker;}caught",
@@ -142,7 +161,11 @@ fn invalid_json_throws_intrinsic_syntaxerror() {
 #[test]
 fn metadata_nonconstruction_and_intrinsic_retention_are_standard() {
     assert_true(
-        "Object.getPrototypeOf(JSON)===Object.prototype && Object.prototype.toString.call(JSON)==='[object JSON]' && !Object.hasOwn(JSON,'prototype') && JSON.parse.name==='parse' && JSON.parse.length===2 && !Object.hasOwn(JSON.parse,'prototype')",
+        r#"
+            Object.getPrototypeOf(JSON) === Object.prototype && Object.prototype.toString.call(JSON) ===
+                '[object JSON]' && !Object.hasOwn(JSON, 'prototype') && JSON.parse.name === 'parse' && JSON
+                .parse.length === 2 && !Object.hasOwn(JSON.parse, 'prototype')
+        "#,
     );
     assert_true(
         r#"

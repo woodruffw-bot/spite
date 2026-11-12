@@ -394,7 +394,12 @@ fn intrinsic_edges_function_attributes_and_species_are_standard() {
         "#,
     );
     assert_true(
-        "let d=Object.getOwnPropertyDescriptor(ArrayBuffer.prototype,Symbol.toStringTag);d.value==='ArrayBuffer' && !d.writable && !d.enumerable && d.configurable && Object.prototype.toString.call(new ArrayBuffer(0))==='[object ArrayBuffer]' && Object.prototype.toString.call(ArrayBuffer.prototype)==='[object ArrayBuffer]'",
+        r#"
+            let d = Object.getOwnPropertyDescriptor(ArrayBuffer.prototype, Symbol.toStringTag);
+            d.value === 'ArrayBuffer' && !d.writable && !d.enumerable && d.configurable && Object.prototype
+                .toString.call(new ArrayBuffer(0)) === '[object ArrayBuffer]' && Object.prototype.toString
+                .call(ArrayBuffer.prototype) === '[object ArrayBuffer]'
+        "#,
     );
     assert_true(
         r#"

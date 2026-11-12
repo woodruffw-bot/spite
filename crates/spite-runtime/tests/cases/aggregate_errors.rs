@@ -360,7 +360,15 @@ fn errors_are_an_intrinsic_dense_copy_without_value_conversion_or_species() {
 #[test]
 fn calls_construction_causes_and_descriptors_follow_the_error_family() {
     assert_true(
-        "let a=AggregateError([1],'detail',{cause:7}),b=new AggregateError([2],'detail');a!==b && a instanceof AggregateError && a instanceof Error && Error.isError(a) && a.toString()==='AggregateError: detail' && a.cause===7 && b.errors[0]===2 && AggregateError([]).errors.length===0",
+        r#"
+            let a = AggregateError([1], 'detail', {
+                    cause: 7
+                }),
+                b = new AggregateError([2], 'detail');
+            a !== b && a instanceof AggregateError && a instanceof Error && Error.isError(a) && a
+                .toString() === 'AggregateError: detail' && a.cause === 7 && b.errors[0] === 2 &&
+                AggregateError([]).errors.length === 0
+        "#,
     );
 }
 
@@ -376,7 +384,14 @@ fn constructor_and_instance_descriptors_are_standard() {
         "#,
     );
     assert_true(
-        "Object.getPrototypeOf(AggregateError)===Error && Object.getPrototypeOf(AggregateError.prototype)===Error.prototype && AggregateError.prototype.constructor===AggregateError && AggregateError.prototype.name==='AggregateError' && AggregateError.prototype.message==='' && !('errors' in AggregateError.prototype) && !Error.isError(AggregateError.prototype) && ({}).toString.call(AggregateError.prototype)==='[object Object]' && ({}).toString.call(AggregateError([]))==='[object Error]'",
+        r#"
+            Object.getPrototypeOf(AggregateError) === Error && Object.getPrototypeOf(AggregateError
+                    .prototype) === Error.prototype && AggregateError.prototype.constructor ===
+                AggregateError && AggregateError.prototype.name === 'AggregateError' && AggregateError
+                .prototype.message === '' && !('errors' in AggregateError.prototype) && !Error.isError(
+                    AggregateError.prototype) && ({}).toString.call(AggregateError.prototype) ===
+                '[object Object]' && ({}).toString.call(AggregateError([])) === '[object Error]'
+        "#,
     );
     assert_true(
         r#"

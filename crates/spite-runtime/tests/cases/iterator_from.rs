@@ -388,7 +388,12 @@ fn wrappers_have_own_brands_independent_of_prototypes_and_metadata_is_standard()
         "#,
     );
     assert_true(
-        "let w=Iterator.from({}),p=Object.getPrototypeOf(w);Reflect.ownKeys(p).join(',')==='next,return' && Object.prototype.toString.call(w)==='[object Iterator]' && (Object.freeze(p),Object.isFrozen(p))",
+        r#"
+            let w = Iterator.from({}),
+                p = Object.getPrototypeOf(w);
+            Reflect.ownKeys(p).join(',') === 'next,return' && Object.prototype.toString.call(w) ===
+                '[object Iterator]' && (Object.freeze(p), Object.isFrozen(p))
+        "#,
     );
     assert_true(
         r#"

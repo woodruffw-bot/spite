@@ -173,7 +173,11 @@ fn counted_lookbehind_consumers_global_sticky_and_callbacks_use_leftmost_capture
         "#,
     );
     assert_true(
-        r"'abcqbac'.replace(/(?<=(?<x>[ab]){2})c/g,'<$<x>>')==='ab<a>qba<b>'&&'abcqbac'.search(/(?<=([ab]){2})c/)===2&&'abcqbac'.split(/(?<=([ab]){2})c/).join('|')==='ab|a|qba|b|'",
+        r#"
+            'abcqbac'.replace(/(?<=(?<x>[ab]){2})c/g, '<$<x>>') === 'ab<a>qba<b>' && 'abcqbac'.search(
+                    /(?<=([ab]){2})c/) === 2 && 'abcqbac'.split(/(?<=([ab]){2})c/).join('|') ===
+                'ab|a|qba|b|'
+        "#,
     );
 }
 

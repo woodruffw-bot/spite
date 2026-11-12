@@ -152,7 +152,11 @@ fn repeated_character_consumers_preserve_partial_indices_and_final_values() {
         "#,
     );
     assert_true(
-        r"'qabaabbbb'.replace(/(?<x>a)(?<y>b)(?<last>(?<piece>[ab])\k<piece>\k<y>)+/,'<$<last>:$<piece>>')==='q<bbb:b>'&&'qabaabbbb'.search(/(a)(b)(([ab])\4\2)+/)===1&&'qabaabbbbZ'.split(/(a)(b)(([ab])\4\2)+/).join(',')==='q,a,b,bbb,b,Z'",
+        r#"
+            'qabaabbbb'.replace(/(?<x>a)(?<y>b)(?<last>(?<piece>[ab])\k<piece>\k<y>)+/,
+                    '<$<last>:$<piece>>') === 'q<bbb:b>' && 'qabaabbbb'.search(/(a)(b)(([ab])\4\2)+/) ===
+                1 && 'qabaabbbbZ'.split(/(a)(b)(([ab])\4\2)+/).join(',') === 'q,a,b,bbb,b,Z'
+        "#,
     );
     assert_true(
         r#"

@@ -177,7 +177,12 @@ fn wrapper_brands_survive_prototype_changes_and_do_not_coerce_impostors() {
         "#,
     );
     assert_true(
-        "let a=Object(7n);Object.setPrototypeOf(a,null);BigInt.prototype.valueOf.call(a)===7n && BigInt.prototype.toString.call(a)==='7' && Object.prototype.toString.call(a)==='[object Object]'",
+        r#"
+            let a = Object(7n);
+            Object.setPrototypeOf(a, null);
+            BigInt.prototype.valueOf.call(a) === 7n && BigInt.prototype.toString.call(a) === '7' && Object
+                .prototype.toString.call(a) === '[object Object]'
+        "#,
     );
     for input in [
         "BigInt.prototype",
@@ -293,10 +298,18 @@ fn non_strict_calls_box_bigints_and_strict_accessors_keep_primitive_receivers() 
 #[test]
 fn observable_tags_and_ordinary_coercions_use_the_exposed_prototype() {
     assert_true(
-        "Object.prototype.toString.call(7n)==='[object BigInt]' && Object.prototype.toString.call(Object(7n))==='[object BigInt]' && Object.prototype.toString.call(BigInt.prototype)==='[object BigInt]'",
+        r#"
+            Object.prototype.toString.call(7n) === '[object BigInt]' && Object.prototype.toString.call(
+                    Object(7n)) === '[object BigInt]' && Object.prototype.toString.call(BigInt
+                .prototype) === '[object BigInt]'
+        "#,
     );
     assert_true(
-        "delete BigInt.prototype[Symbol.toStringTag];Object.prototype.toString.call(7n)==='[object Object]' && Object.prototype.toString.call(Object(7n))==='[object Object]'",
+        r#"
+            delete BigInt.prototype[Symbol.toStringTag];
+            Object.prototype.toString.call(7n) === '[object Object]' && Object.prototype.toString.call(
+                Object(7n)) === '[object Object]'
+        "#,
     );
     assert_true(
         "let calls=0;Object.defineProperty(BigInt.prototype,Symbol.toStringTag,{get(){'use strict';calls++;if(typeof this!=='object' || this.valueOf()!==7n)throw 8;return 'Tag';}});Object.prototype.toString.call(7n)==='[object Tag]' && calls===1",
@@ -324,7 +337,11 @@ fn intrinsics_have_standard_descriptors_and_survive_collection() {
         "#,
     );
     assert_true(
-        "Object.getOwnPropertyNames(BigInt.prototype).sort().join(',')==='constructor,toLocaleString,toString,valueOf' && Object.freeze(BigInt.prototype)===BigInt.prototype && Object.isFrozen(BigInt.prototype)",
+        r#"
+            Object.getOwnPropertyNames(BigInt.prototype).sort().join(',') ===
+                'constructor,toLocaleString,toString,valueOf' && Object.freeze(BigInt.prototype) === BigInt
+                .prototype && Object.isFrozen(BigInt.prototype)
+        "#,
     );
     let mut realm = Realm::default();
     realm

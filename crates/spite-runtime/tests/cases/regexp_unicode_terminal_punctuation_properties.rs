@@ -155,7 +155,11 @@ fn unicode_terminal_punctuation_properties_consumers_original_text() {
             r"'\u003F\u0021😀X'.replace(/(?<x>\p{{Terminal_Punctuation}})/{mode}g,'<$1:$<x>>')==='<\u003F:\u003F><\u0021:\u0021>😀X'"
         ));
         assert_true(&format!(
-            r"'😀\u003F\u0021G'.split(/(\p{{Term}})/{mode}).join('|')==='😀|\u003F||\u0021|G'&&'😀\u0021'.search(/\p{{Term}}/{mode})===2&&'\u003F\u0021😀'.match(/\p{{Term}}/{mode}g).join('')==='\u003F\u0021'"
+            r#"
+                '😀\u003F\u0021G'.split(/(\p{{Term}})/{mode}).join('|') === '😀|\u003F||\u0021|G' &&
+                    '😀\u0021'.search(/\p{{Term}}/{mode}) === 2 && '\u003F\u0021😀'.match(
+                        /\p{{Term}}/{mode}g).join('') === '\u003F\u0021'
+            "#
         ));
         assert_true(&format!(
             r#"

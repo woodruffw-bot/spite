@@ -526,7 +526,14 @@ fn builtin_construction_uses_custom_newtarget_and_intrinsic_fallbacks() {
 #[test]
 fn reflect_metadata_collection_and_large_argument_lists_use_default_limits() {
     assert_true(
-        "let d=Object.getOwnPropertyDescriptor(globalThis,'Reflect'),t=Object.getOwnPropertyDescriptor(Reflect,Symbol.toStringTag);typeof Reflect==='object' && d.value===Reflect && d.writable && !d.enumerable && d.configurable && Object.getPrototypeOf(Reflect)===Object.prototype && Reflect.toString()==='[object Reflect]' && t.value==='Reflect' && !t.writable && !t.enumerable && t.configurable",
+        r#"
+            let d = Object.getOwnPropertyDescriptor(globalThis, 'Reflect'),
+                t = Object.getOwnPropertyDescriptor(Reflect, Symbol.toStringTag);
+            typeof Reflect === 'object' && d.value === Reflect && d.writable && !d.enumerable && d
+                .configurable && Object.getPrototypeOf(Reflect) === Object.prototype && Reflect
+            .toString() === '[object Reflect]' && t.value === 'Reflect' && !t.writable && !t.enumerable &&
+                t.configurable
+        "#,
     );
     for (method, length) in [("apply", 3), ("construct", 2)] {
         assert_true(&format!(

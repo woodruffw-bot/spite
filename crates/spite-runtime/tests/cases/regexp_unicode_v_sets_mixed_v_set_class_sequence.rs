@@ -137,7 +137,11 @@ fn mixed_v_set_class_sequence_state_context_and_consumers() {
         "#,
     );
     assert_true(
-        r"'aaab! aaab!'.replace(/(?<whole>(\B[a][[a]][b]\b))/vg,'<$1:$<whole>>')==='a<aab:aab>! a<aab:aab>!'&&'aaab!'.split(/(\B[a][[a]][b]\b)/v).join('|')==='a|aab|!'&&'aaab!'.match(/\B[a][[a]][b]\b/v)[0]==='aab'",
+        r#"
+            'aaab! aaab!'.replace(/(?<whole>(\B[a][[a]][b]\b))/vg, '<$1:$<whole>>') ===
+                'a<aab:aab>! a<aab:aab>!' && 'aaab!'.split(/(\B[a][[a]][b]\b)/v).join('|') === 'a|aab|!' &&
+                'aaab!'.match(/\B[a][[a]][b]\b/v)[0] === 'aab'
+        "#,
     );
     assert_true(
         r#"

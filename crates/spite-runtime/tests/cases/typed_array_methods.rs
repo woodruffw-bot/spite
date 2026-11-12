@@ -1075,10 +1075,35 @@ fn species_validation_rejects_wrong_brands_short_or_outside_results_without_late
 #[test]
 fn species_can_alias_source_and_map_writes_are_observed_by_later_callbacks() {
     assert_true(
-        "let a=Uint8Array.of(1,2,3);function C(){return a;}a.constructor={[Symbol.species]:C};let b=a.map((v,i)=>i===0?9:a[i-1]+v);b===a && a[0]===9 && a[1]===11 && a[2]===14",
+        r#"
+            let a = Uint8Array.of(1, 2, 3);
+
+            function C() {
+                return a;
+            }
+            a.constructor = {
+                [Symbol.species]: C
+            };
+            let b = a.map((v, i) => i === 0 ? 9 : a[i - 1] + v);
+            b === a && a[0] === 9 && a[1] === 11 && a[2] === 14
+        "#,
     );
     assert_true(
-        "let a=Uint8Array.of(1,2,3),count;function C(n){count=n;a[0]=9;return a;}a.constructor={[Symbol.species]:C};let b=a.filter(v=>v>1);b===a && count===2 && a.length===3 && a[0]===2 && a[1]===3 && a[2]===3",
+        r#"
+            let a = Uint8Array.of(1, 2, 3),
+                count;
+
+            function C(n) {
+                count = n;
+                a[0] = 9;
+                return a;
+            }
+            a.constructor = {
+                [Symbol.species]: C
+            };
+            let b = a.filter(v => v > 1);
+            b === a && count === 2 && a.length === 3 && a[0] === 2 && a[1] === 3 && a[2] === 3
+        "#,
     );
 }
 
@@ -1088,10 +1113,43 @@ fn source_invalidation_during_species_does_not_trigger_another_source_validation
         "let a=Uint8Array.of(1,2,3),log='';function C(n){a.buffer.transfer();return new Uint8Array(n);}a.constructor={[Symbol.species]:C};let b=a.map((v,i)=>{log+=String(v)+';';return i+1;});a.length===0 && b[0]===1 && b[2]===3 && log==='undefined;undefined;undefined;'",
     );
     assert_true(
-        "let a=BigInt64Array.of(1n,2n,3n);function C(n){a.buffer.transfer();return new BigInt64Array(n);}a.constructor={[Symbol.species]:C};let b=a.filter(()=>true);a.length===0 && b.length===3 && b[0]===1n && b[2]===3n",
+        r#"
+            let a = BigInt64Array.of(1n, 2n, 3n);
+
+            function C(n) {
+                a.buffer.transfer();
+                return new BigInt64Array(n);
+            }
+            a.constructor = {
+                [Symbol.species]: C
+            };
+            let b = a.filter(() => true);
+            a.length === 0 && b.length === 3 && b[0] === 1n && b[2] === 3n
+        "#,
     );
     assert_true(
-        "let a=BigInt64Array.of(1n,2n),hits=0,caught=false;function C(n){a.buffer.transfer();return new BigInt64Array(n);}a.constructor={[Symbol.species]:C};try{a.map(v=>{hits++;return v;});}catch(e){caught=e instanceof TypeError;}caught && hits===1 && a.length===0",
+        r#"
+            let a = BigInt64Array.of(1n, 2n),
+                hits = 0,
+                caught = false;
+
+            function C(n) {
+                a.buffer.transfer();
+                return new BigInt64Array(n);
+            }
+            a.constructor = {
+                [Symbol.species]: C
+            };
+            try {
+                a.map(v => {
+                    hits++;
+                    return v;
+                });
+            } catch (e) {
+                caught = e instanceof TypeError;
+            }
+            caught && hits === 1 && a.length === 0
+        "#,
     );
 }
 

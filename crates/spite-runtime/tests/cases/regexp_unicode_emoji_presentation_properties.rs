@@ -166,7 +166,12 @@ fn unicode_emoji_presentation_properties_consumers_original_text() {
             r"'\u23F3\u231A\uDB40\uDC01X'.replace(/(?<x>\p{{Emoji_Presentation}})/{mode}g,'<$1:$<x>>')==='<\u23F3:\u23F3><\u231A:\u231A>\uDB40\uDC01X'"
         ));
         assert_true(&format!(
-            r"'\uDB40\uDC01\u23F3\u231AG'.split(/(\p{{EPres}})/{mode}).join('|')==='\uDB40\uDC01|\u23F3||\u231A|G'&&'\uDB40\uDC01\u231A'.search(/\p{{EPres}}/{mode})===2&&'\u23F3\u231A\uDB40\uDC01'.match(/\p{{EPres}}/{mode}g).join('')==='\u23F3\u231A'"
+            r#"
+                '\uDB40\uDC01\u23F3\u231AG'.split(/(\p{{EPres}})/{mode}).join('|') ===
+                    '\uDB40\uDC01|\u23F3||\u231A|G' && '\uDB40\uDC01\u231A'.search(
+                        /\p{{EPres}}/{mode}) === 2 && '\u23F3\u231A\uDB40\uDC01'.match(
+                        /\p{{EPres}}/{mode}g).join('') === '\u23F3\u231A'
+            "#
         ));
         assert_true(&format!(
             r#"

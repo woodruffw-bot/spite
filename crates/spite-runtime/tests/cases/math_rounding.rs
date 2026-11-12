@@ -9,7 +9,13 @@ use crate::common::assert_true;
 #[test]
 fn fixed_constants_and_math_object_have_standard_descriptors_and_tag() {
     assert_true(
-        "typeof Math==='object' && Object.getPrototypeOf(Math)===Object.prototype && Math.toString()==='[object Math]' && Math.E===2.718281828459045 && Math.LN10===2.302585092994046 && Math.LN2===0.6931471805599453 && Math.LOG10E===0.4342944819032518 && Math.LOG2E===1.4426950408889634 && Math.PI===3.141592653589793 && Math.SQRT1_2===0.7071067811865476 && Math.SQRT2===1.4142135623730951",
+        r#"
+            typeof Math === 'object' && Object.getPrototypeOf(Math) === Object.prototype && Math
+            .toString() === '[object Math]' && Math.E === 2.718281828459045 && Math.LN10 ===
+                2.302585092994046 && Math.LN2 === 0.6931471805599453 && Math.LOG10E ===
+                0.4342944819032518 && Math.LOG2E === 1.4426950408889634 && Math.PI === 3.141592653589793 &&
+                Math.SQRT1_2 === 0.7071067811865476 && Math.SQRT2 === 1.4142135623730951
+        "#,
     );
     for name in [
         "E", "LN10", "LN2", "LOG10E", "LOG2E", "PI", "SQRT1_2", "SQRT2",

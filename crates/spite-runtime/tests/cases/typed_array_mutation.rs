@@ -386,7 +386,29 @@ fn distinct_same_kind_set_preserves_raw_bytes_offsets_and_unwritten_target_regio
 #[test]
 fn raw_moves_cross_page_boundaries_and_zero_source_bytes_overwrite_old_targets() {
     assert_true(
-        "let a=new Uint8Array(4110);a[4088]=98;a[4089]=1;a[4090]=2;a[4091]=3;a[4093]=4;a[4094]=5;a[4095]=6;a[4097]=7;a[4098]=8;a[4099]=9;a[4101]=99;a[4102]=99;a[4103]=99;a[4104]=99;a[4105]=97;a.copyWithin(4093,4089,4101);let first=new Uint8Array(a.buffer,4093,12).join()==='1,2,3,0,4,5,6,0,7,8,9,0';a.copyWithin(4089,4093,4105);first && new Uint8Array(a.buffer,4089,12).join()==='1,2,3,0,4,5,6,0,7,8,9,0' && a[4088]===98 && a[4105]===97",
+        r#"
+            let a = new Uint8Array(4110);
+            a[4088] = 98;
+            a[4089] = 1;
+            a[4090] = 2;
+            a[4091] = 3;
+            a[4093] = 4;
+            a[4094] = 5;
+            a[4095] = 6;
+            a[4097] = 7;
+            a[4098] = 8;
+            a[4099] = 9;
+            a[4101] = 99;
+            a[4102] = 99;
+            a[4103] = 99;
+            a[4104] = 99;
+            a[4105] = 97;
+            a.copyWithin(4093, 4089, 4101);
+            let first = new Uint8Array(a.buffer, 4093, 12).join() === '1,2,3,0,4,5,6,0,7,8,9,0';
+            a.copyWithin(4089, 4093, 4105);
+            first && new Uint8Array(a.buffer, 4089, 12).join() === '1,2,3,0,4,5,6,0,7,8,9,0' && a[4088] ===
+                98 && a[4105] === 97
+        "#,
     );
 }
 
@@ -711,7 +733,25 @@ fn set_array_like_length_and_typed_source_validation_precede_range_and_content_e
         Err(Error::Thrown(Value::Number(7.0)))
     );
     assert_true(
-        "let log='',caught=false;try{new Uint8Array(1).set({get length(){log+='l';return 2;},get 0(){log+='g';throw 7;}},0);}catch(e){caught=e instanceof RangeError;}caught && log==='l'",
+        r#"
+            let log = '',
+                caught = false;
+            try {
+                new Uint8Array(1).set({
+                    get length() {
+                        log += 'l';
+                        return 2;
+                    },
+                    get 0() {
+                        log += 'g';
+                        throw 7;
+                    }
+                }, 0);
+            } catch (e) {
+                caught = e instanceof RangeError;
+            }
+            caught && log === 'l'
+        "#,
     );
     assert_true(
         "let log='',caught=false;try{new Uint8Array(0).set({get length(){log+='l';return 0;}},Infinity);}catch(e){caught=e instanceof RangeError;}caught && log==='l'",
@@ -745,20 +785,61 @@ fn set_array_like_length_and_typed_source_validation_precede_range_and_content_e
         ExceptionKind::TypeError,
     );
     assert_true(
-        "let target=new Uint8Array(4),buffer=new ArrayBuffer(4,{maxByteLength:8}),source=new Uint8Array(buffer);source[0]=7;source[1]=8;target.set(source,{valueOf(){buffer.resize(2);return 1;}})===undefined && target.join()==='0,7,8,0'",
+        r#"
+            let target = new Uint8Array(4),
+                buffer = new ArrayBuffer(4, {
+                    maxByteLength: 8
+                }),
+                source = new Uint8Array(buffer);
+            source[0] = 7;
+            source[1] = 8;
+            target.set(source, {
+                valueOf() {
+                    buffer.resize(2);
+                    return 1;
+                }
+            }) === undefined && target.join() === '0,7,8,0'
+        "#,
     );
 }
 
 #[test]
 fn same_buffer_typed_set_snapshots_source_values_even_when_element_widths_differ() {
     assert_true(
-        "let buffer=new ArrayBuffer(8),source=new Uint8Array(buffer,0,4),target=new Uint16Array(buffer);source[0]=1;source[1]=2;source[2]=3;source[3]=4;target.set(source)===undefined && target[0]===1 && target[1]===2 && target[2]===3 && target[3]===4",
+        r#"
+            let buffer = new ArrayBuffer(8),
+                source = new Uint8Array(buffer, 0, 4),
+                target = new Uint16Array(buffer);
+            source[0] = 1;
+            source[1] = 2;
+            source[2] = 3;
+            source[3] = 4;
+            target.set(source) === undefined && target[0] === 1 && target[1] === 2 && target[2] === 3 &&
+                target[3] === 4
+        "#,
     );
     assert_true(
-        "let buffer=new ArrayBuffer(8),source=new Uint16Array(buffer),target=new Uint8Array(buffer,2,4);source[0]=257;source[1]=514;source[2]=771;source[3]=1028;target.set(source)===undefined && target.join()==='1,2,3,4'",
+        r#"
+            let buffer = new ArrayBuffer(8),
+                source = new Uint16Array(buffer),
+                target = new Uint8Array(buffer, 2, 4);
+            source[0] = 257;
+            source[1] = 514;
+            source[2] = 771;
+            source[3] = 1028;
+            target.set(source) === undefined && target.join() === '1,2,3,4'
+        "#,
     );
     assert_true(
-        "let buffer=new ArrayBuffer(32),source=new Uint8Array(buffer,24,2),target=new Float64Array(buffer,0,2);source[0]=255;source[1]=128;target.set(source)===undefined && target[0]===255 && target[1]===128 && source[0]===255 && source[1]===128",
+        r#"
+            let buffer = new ArrayBuffer(32),
+                source = new Uint8Array(buffer, 24, 2),
+                target = new Float64Array(buffer, 0, 2);
+            source[0] = 255;
+            source[1] = 128;
+            target.set(source) === undefined && target[0] === 255 && target[1] === 128 && source[0] ===
+                255 && source[1] === 128
+        "#,
     );
     assert_true(
         "let a=Uint8Array.of(1,2,3,4),source=new Uint8Array(a.buffer,0,3);a.set(source,1)===undefined && a.join()==='1,1,2,3'",

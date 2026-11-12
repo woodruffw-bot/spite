@@ -388,7 +388,14 @@ fn intrinsic_metadata_reflection_and_integrity_are_complete() {
         "#,
     );
     assert_true(
-        "Object.getOwnPropertyNames(WeakSet).join()==='length,name,prototype' && Object.getOwnPropertySymbols(WeakSet).length===0 && Object.getOwnPropertyNames(WeakSet.prototype).join()==='constructor,add,delete,has' && Object.getOwnPropertySymbols(WeakSet.prototype)[0]===Symbol.toStringTag && Reflect.ownKeys(new WeakSet()).length===0 && Object.prototype.toString.call(new WeakSet())==='[object WeakSet]' && Object.keys(WeakSet.prototype).length===0",
+        r#"
+            Object.getOwnPropertyNames(WeakSet).join() === 'length,name,prototype' && Object
+                .getOwnPropertySymbols(WeakSet).length === 0 && Object.getOwnPropertyNames(WeakSet
+                    .prototype).join() === 'constructor,add,delete,has' && Object.getOwnPropertySymbols(
+                    WeakSet.prototype)[0] === Symbol.toStringTag && Reflect.ownKeys(new WeakSet())
+                .length === 0 && Object.prototype.toString.call(new WeakSet()) === '[object WeakSet]' &&
+                Object.keys(WeakSet.prototype).length === 0
+        "#,
     );
     for method in ["add", "delete", "has"] {
         assert_true(&format!(

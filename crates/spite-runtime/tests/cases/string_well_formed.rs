@@ -108,7 +108,13 @@ fn generic_receivers_use_string_hint_and_ignore_arguments_after_evaluation() {
         ));
     }
     assert_true(
-        "String.prototype.isWellFormed.call(123n) && String.prototype.toWellFormed.call(true)==='true' && String.prototype.toWellFormed.call({toString:()=>({}),valueOf:()=>123})==='123'",
+        r#"
+            String.prototype.isWellFormed.call(123n) && String.prototype.toWellFormed.call(true) ===
+                'true' && String.prototype.toWellFormed.call({
+                    toString: () => ({}),
+                    valueOf: () => 123
+                }) === '123'
+        "#,
     );
     assert_true(
         r#"

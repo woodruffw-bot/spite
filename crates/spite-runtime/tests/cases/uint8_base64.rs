@@ -878,7 +878,17 @@ fn options_and_encoding_use_internal_state_and_never_public_index_or_string_help
 #[test]
 fn syntax_errors_commit_only_complete_prefixes_and_capacity_can_ignore_a_malformed_suffix() {
     assert_true(
-        "let bytes=Uint8Array.of(90,91,170,170,170,170,170,170,92),a=new Uint8Array(bytes.buffer,2,6),caught=false;try{a.setFromBase64('Zm9vZg==x');}catch(e){caught=e instanceof SyntaxError;}caught && bytes.join()==='90,91,102,111,111,170,170,170,92'",
+        r#"
+            let bytes = Uint8Array.of(90, 91, 170, 170, 170, 170, 170, 170, 92),
+                a = new Uint8Array(bytes.buffer, 2, 6),
+                caught = false;
+            try {
+                a.setFromBase64('Zm9vZg==x');
+            } catch (e) {
+                caught = e instanceof SyntaxError;
+            }
+            caught && bytes.join() === '90,91,102,111,111,170,170,170,92'
+        "#,
     );
     assert_true(
         "let a=new Uint8Array(3),r=a.setFromBase64('Zm9vZg==x');r.read===4 && r.written===3 && a.join()==='102,111,111'",

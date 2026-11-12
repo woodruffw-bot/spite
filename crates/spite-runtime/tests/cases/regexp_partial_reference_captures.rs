@@ -143,7 +143,11 @@ fn partial_capture_consumers_and_external_following_references_keep_ranges() {
         "#,
     );
     assert_true(
-        r"'qababab'.replace(/(?<x>a)(?<y>b)(?<last>(?<piece>\k<x>)\k<y>)+/,'<$<last>:$<piece>>')==='q<ab:a>'&&'qababab'.search(/(a)(b)((\1)\2)+/)===1&&'qabababZ'.split(/(a)(b)((\1)\2)+/).join(',')==='q,a,b,ab,a,Z'",
+        r#"
+            'qababab'.replace(/(?<x>a)(?<y>b)(?<last>(?<piece>\k<x>)\k<y>)+/, '<$<last>:$<piece>>') ===
+                'q<ab:a>' && 'qababab'.search(/(a)(b)((\1)\2)+/) === 1 && 'qabababZ'.split(
+                    /(a)(b)((\1)\2)+/).join(',') === 'q,a,b,ab,a,Z'
+        "#,
     );
     assert_true(
         r#"

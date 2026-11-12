@@ -195,7 +195,11 @@ fn unicode_changes_nfkc_casefolded_properties_consumers_original_text() {
             r"'\u0042\u0041😀\u0021'.replace(/(?<x>\p{{Changes_When_NFKC_Casefolded}})/{mode}g,'<$1:$<x>>')==='<\u0042:\u0042><\u0041:\u0041>😀\u0021'"
         ));
         assert_true(&format!(
-            r"'😀\u0042\u0041\u0021'.split(/(\p{{CWKCF}})/{mode}).join('|')==='😀|\u0042||\u0041|\u0021'&&'😀\u0041'.search(/\p{{CWKCF}}/{mode})===2&&'\u0042\u0041😀'.match(/\p{{CWKCF}}/{mode}g).join('')==='\u0042\u0041'"
+            r#"
+                '😀\u0042\u0041\u0021'.split(/(\p{{CWKCF}})/{mode}).join('|') ===
+                    '😀|\u0042||\u0041|\u0021' && '😀\u0041'.search(/\p{{CWKCF}}/{mode}) === 2 &&
+                    '\u0042\u0041😀'.match(/\p{{CWKCF}}/{mode}g).join('') === '\u0042\u0041'
+            "#
         ));
         assert_true(&format!(
             r#"

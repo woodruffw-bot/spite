@@ -121,7 +121,11 @@ fn literal_checked_v_set_pair_word_state_context_and_consumers() {
         "#,
     );
     assert_true(
-        r"'aaaa! aaaa!'.replace(/(?<whole>(\Ba[[a]][[a]]\b))/vg,'<$1:$<whole>>')==='a<aaa:aaa>! a<aaa:aaa>!'&&'aaaa!'.split(/(\Ba[[a]][[a]]\b)/v).join('|')==='a|aaa|!'&&'aaaa!'.match(/\Ba[[a]][[a]]\b/v)[0]==='aaa'",
+        r#"
+            'aaaa! aaaa!'.replace(/(?<whole>(\Ba[[a]][[a]]\b))/vg, '<$1:$<whole>>') ===
+                'a<aaa:aaa>! a<aaa:aaa>!' && 'aaaa!'.split(/(\Ba[[a]][[a]]\b)/v).join('|') === 'a|aaa|!' &&
+                'aaaa!'.match(/\Ba[[a]][[a]]\b/v)[0] === 'aaa'
+        "#,
     );
     assert_true(
         r#"

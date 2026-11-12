@@ -189,7 +189,12 @@ fn unicode_math_properties_consumers_original_text() {
             r"'\u00D7\u002B\uDB40\uDC01\u200D'.replace(/(?<x>\p{{Math}})/{mode}g,'<$1:$<x>>')==='<\u00D7:\u00D7><\u002B:\u002B>\uDB40\uDC01\u200D'"
         ));
         assert_true(&format!(
-            r"'\uDB40\uDC01\u00D7\u002B\u200D'.split(/(\p{{Math}})/{mode}).join('|')==='\uDB40\uDC01|\u00D7||\u002B|\u200D'&&'\uDB40\uDC01\u002B'.search(/\p{{Math}}/{mode})===2&&'\u00D7\u002B\uDB40\uDC01'.match(/\p{{Math}}/{mode}g).join('')==='\u00D7\u002B'"
+            r#"
+                '\uDB40\uDC01\u00D7\u002B\u200D'.split(/(\p{{Math}})/{mode}).join('|') ===
+                    '\uDB40\uDC01|\u00D7||\u002B|\u200D' && '\uDB40\uDC01\u002B'.search(
+                        /\p{{Math}}/{mode}) === 2 && '\u00D7\u002B\uDB40\uDC01'.match(
+                        /\p{{Math}}/{mode}g).join('') === '\u00D7\u002B'
+            "#
         ));
         assert_true(&format!(
             r#"

@@ -153,7 +153,11 @@ fn unicode_ideographic_properties_consumers_original_text() {
             r"'\u4E8C\u4E00😀X'.replace(/(?<x>\p{{Ideographic}})/{mode}g,'<$1:$<x>>')==='<\u4E8C:\u4E8C><\u4E00:\u4E00>😀X'"
         ));
         assert_true(&format!(
-            r"'😀\u4E8C\u4E00G'.split(/(\p{{Ideo}})/{mode}).join('|')==='😀|\u4E8C||\u4E00|G'&&'😀\u4E00'.search(/\p{{Ideo}}/{mode})===2&&'\u4E8C\u4E00😀'.match(/\p{{Ideo}}/{mode}g).join('')==='\u4E8C\u4E00'"
+            r#"
+                '😀\u4E8C\u4E00G'.split(/(\p{{Ideo}})/{mode}).join('|') === '😀|\u4E8C||\u4E00|G' &&
+                    '😀\u4E00'.search(/\p{{Ideo}}/{mode}) === 2 && '\u4E8C\u4E00😀'.match(
+                        /\p{{Ideo}}/{mode}g).join('') === '\u4E8C\u4E00'
+            "#
         ));
         assert_true(&format!(
             r#"

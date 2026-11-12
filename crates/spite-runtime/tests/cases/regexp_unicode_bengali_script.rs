@@ -144,7 +144,11 @@ fn unicode_bengali_script_consumers_preserve_original_text() {
             r"'কখA'.replace(/(?<x>\p{{sc=Beng}})/{mode}g,'<$1:$<x>>')==='<ক:ক><খ:খ>A'"
         ));
         assert_true(&format!(
-            r"'AকখA'.split(/(\p{{Script=Bengali}})/{mode}).join('|')==='A|ক||খ|A'&&'A😀ক'.search(/\p{{sc=Beng}}/{mode})===3&&'কখA'.match(/\p{{Script=Beng}}/{mode}g).join('')==='কখ'"
+            r#"
+                'AকখA'.split(/(\p{{Script=Bengali}})/{mode}).join('|') === 'A|ক||খ|A' && 'A😀ক'
+                    .search(/\p{{sc=Beng}}/{mode}) === 3 && 'কখA'.match(
+                        /\p{{Script=Beng}}/{mode}g).join('') === 'কখ'
+            "#
         ));
         assert_true(&format!(
             r#"

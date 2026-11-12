@@ -153,7 +153,11 @@ fn unicode_regional_indicator_properties_consumers_original_text() {
             r"'\u{{1F1FF}}\u{{1F1E6}}😀X'.replace(/(?<x>\p{{Regional_Indicator}})/{mode}g,'<$1:$<x>>')==='<\u{{1F1FF}}:\u{{1F1FF}}><\u{{1F1E6}}:\u{{1F1E6}}>😀X'"
         ));
         assert_true(&format!(
-            r"'😀\u{{1F1FF}}\u{{1F1E6}}G'.split(/(\p{{RI}})/{mode}).join('|')==='😀|\u{{1F1FF}}||\u{{1F1E6}}|G'&&'😀\u{{1F1E6}}'.search(/\p{{RI}}/{mode})===2&&'\u{{1F1FF}}\u{{1F1E6}}😀'.match(/\p{{RI}}/{mode}g).join('')==='\u{{1F1FF}}\u{{1F1E6}}'"
+            r#"
+                '😀\u{{1F1FF}}\u{{1F1E6}}G'.split(/(\p{{RI}})/{mode}).join('|') ===
+                    '😀|\u{{1F1FF}}||\u{{1F1E6}}|G' && '😀\u{{1F1E6}}'.search(/\p{{RI}}/{mode}) === 2 &&
+                    '\u{{1F1FF}}\u{{1F1E6}}😀'.match(/\p{{RI}}/{mode}g).join('') === '\u{{1F1FF}}\u{{1F1E6}}'
+            "#
         ));
         assert_true(&format!(
             r#"

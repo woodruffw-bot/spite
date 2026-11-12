@@ -142,7 +142,11 @@ fn decoded_characters_flags_words_and_surrogates_remain_exact() {
 #[test]
 fn generic_consumers_intrinsic_arrays_and_callbacks_keep_inner_wrapper_values() {
     assert_true(
-        r"'xababy'.replace(/(x)(((a|b))+)(y)/,'<$1,$2,$3,$4,$5>')==='<x,abab,b,b,y>'&&'qxababyz'.split(/(x)(((a|b))+)(y)/).join(',')==='q,x,abab,b,b,y,z'&&'qxababy'.search(/x((a|b))+y/)===1",
+        r#"
+            'xababy'.replace(/(x)(((a|b))+)(y)/, '<$1,$2,$3,$4,$5>') === '<x,abab,b,b,y>' && 'qxababyz'
+                .split(/(x)(((a|b))+)(y)/).join(',') === 'q,x,abab,b,b,y,z' && 'qxababy'.search(
+                    /x((a|b))+y/) === 1
+        "#,
     );
     assert_true(
         r#"

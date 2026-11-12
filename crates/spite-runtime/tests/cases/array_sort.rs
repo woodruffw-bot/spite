@@ -181,7 +181,19 @@ fn reads_finish_before_comparisons_and_source_length_is_captured_once() {
         ));
     }
     assert_true(
-        "let a=[3,2,1];Object.defineProperty(a,'0',{get:()=>{delete a[1];a[3]=9;return 3;},set:()=>{}});let b=a.toSorted();b.length===3 && b[0]===1 && b[1]===3 && b[2]===undefined && a.length===4",
+        r#"
+            let a = [3, 2, 1];
+            Object.defineProperty(a, '0', {
+                get: () => {
+                    delete a[1];
+                    a[3] = 9;
+                    return 3;
+                },
+                set: () => {}
+            });
+            let b = a.toSorted();
+            b.length === 3 && b[0] === 1 && b[1] === 3 && b[2] === undefined && a.length === 4
+        "#,
     );
     assert_true(
         "let a=[3,2,1];Object.defineProperty(a,'0',{get:()=>{delete a[1];return 3;},set:()=>{}});a.sort();a[1]===3 && !Object.hasOwn(a,'2')",

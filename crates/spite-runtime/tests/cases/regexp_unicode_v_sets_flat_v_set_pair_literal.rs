@@ -126,7 +126,11 @@ fn flat_v_set_pair_literal_state_context_and_consumers() {
         "#,
     );
     assert_true(
-        r#"'😀abc aabc'.replace(/(?<whole>([a][b]c\b))/vg,'<$1:$<whole>>')==='😀<abc:abc> a<abc:abc>'&&'😀abcx'.split(/([a][b]c)/v).join('|')==='😀|abc|x'&&'aabc'.match(/[a][b]c/v)[0]==='abc'"#,
+        r#"
+            '😀abc aabc'.replace(/(?<whole>([a][b]c\b))/vg, '<$1:$<whole>>') ===
+                '😀<abc:abc> a<abc:abc>' && '😀abcx'.split(/([a][b]c)/v).join('|') === '😀|abc|x' && 'aabc'
+                .match(/[a][b]c/v)[0] === 'abc'
+        "#,
     );
     assert_true(
         r#"

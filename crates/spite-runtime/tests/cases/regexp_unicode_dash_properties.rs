@@ -164,7 +164,11 @@ fn unicode_dash_properties_consumers_original_text() {
             r"'\u2011\u2010😀X'.replace(/(?<x>\p{{Dash}})/{mode}g,'<$1:$<x>>')==='<\u2011:\u2011><\u2010:\u2010>😀X'"
         ));
         assert_true(&format!(
-            r"'😀\u2011\u2010G'.split(/(\p{{Dash}})/{mode}).join('|')==='😀|\u2011||\u2010|G'&&'😀\u2010'.search(/\p{{Dash}}/{mode})===2&&'\u2011\u2010😀'.match(/\p{{Dash}}/{mode}g).join('')==='\u2011\u2010'"
+            r#"
+                '😀\u2011\u2010G'.split(/(\p{{Dash}})/{mode}).join('|') === '😀|\u2011||\u2010|G' &&
+                    '😀\u2010'.search(/\p{{Dash}}/{mode}) === 2 && '\u2011\u2010😀'.match(
+                        /\p{{Dash}}/{mode}g).join('') === '\u2011\u2010'
+            "#
         ));
         assert_true(&format!(
             r#"

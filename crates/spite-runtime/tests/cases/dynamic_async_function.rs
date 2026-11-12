@@ -161,7 +161,24 @@ fn generated_source_preserves_utf16_literals_and_comment_code_points() {
 #[test]
 fn syntax_errors_throw_synchronously_and_async_source_overhead_obeys_opt_in_limits() {
     assert_true(
-        "let AF=(async function(){}).constructor,caught=0;for(const args of [['await','return 1'],['a,a','\"use strict\"'],['a=1','\"use strict\"'],['a) {}','return 1'],['a','return a; } evil(); {']]){try{AF(...args)}catch(e){if(e instanceof SyntaxError)caught++}}caught===5",
+        r#"
+            let AF = (async function() {}).constructor,
+                caught = 0;
+            for (const args of [
+                    ['await', 'return 1'],
+                    ['a,a', '"use strict"'],
+                    ['a=1', '"use strict"'],
+                    ['a) {}', 'return 1'],
+                    ['a', 'return a; } evil(); {']
+                ]) {
+                try {
+                    AF(...args)
+                } catch (e) {
+                    if (e instanceof SyntaxError) caught++
+                }
+            }
+            caught === 5
+        "#,
     );
     for limits in [
         Limits {

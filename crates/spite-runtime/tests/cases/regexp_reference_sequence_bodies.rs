@@ -124,7 +124,11 @@ fn reference_sequence_consumers_and_empty_targets_keep_original_sources() {
         "#,
     );
     assert_true(
-        r"'qababab'.replace(/(?<x>a)(?<y>b)(?:\k<x>\k<y>)+/,'<$<x>:$<y>>')==='q<a:b>'&&'qababab'.search(/(a)(b)(?:\1\2)+/)===1&&'qabababZ'.split(/(a)(b)(?:\1\2)+/).join(',')==='q,a,b,Z'",
+        r#"
+            'qababab'.replace(/(?<x>a)(?<y>b)(?:\k<x>\k<y>)+/, '<$<x>:$<y>>') === 'q<a:b>' && 'qababab'
+                .search(/(a)(b)(?:\1\2)+/) === 1 && 'qabababZ'.split(/(a)(b)(?:\1\2)+/).join(',') ===
+                'q,a,b,Z'
+        "#,
     );
     assert_true(
         r#"

@@ -206,7 +206,12 @@ fn to_string_falls_back_to_intrinsic_object_tag_and_accepts_generic_receivers() 
         "let a=[1];a.join=null;Object.prototype.toString=()=>{throw 7;};a.toString()==='[object Array]'",
     );
     assert_true(
-        "Array.prototype.toString.call({join:7})==='[object Object]' && Array.prototype.toString.call('x')==='[object String]' && Array.prototype.toString.call(3)==='[object Number]'",
+        r#"
+            Array.prototype.toString.call({
+                    join: 7
+                }) === '[object Object]' && Array.prototype.toString.call('x') === '[object String]' &&
+                Array.prototype.toString.call(3) === '[object Number]'
+        "#,
     );
     assert_true(
         "let a=[];Object.setPrototypeOf(a,null);Array.prototype.toString.call(a)==='[object Array]'",

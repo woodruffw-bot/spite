@@ -373,13 +373,34 @@ fn static_hex_rejects_non_ascii_code_units_prefixes_separators_and_whitespace() 
 #[test]
 fn setters_write_only_complete_valid_pairs_before_a_language_syntax_error() {
     assert_true(
-        "let a=Uint8Array.of(170,171,172,173),caught=false;try{a.setFromHex('0102x3');}catch(e){caught=e instanceof SyntaxError;}caught && a[0]===1 && a[1]===2 && a[2]===172 && a[3]===173",
+        r#"
+            let a = Uint8Array.of(170, 171, 172, 173),
+                caught = false;
+            try {
+                a.setFromHex('0102x3');
+            } catch (e) {
+                caught = e instanceof SyntaxError;
+            }
+            caught && a[0] === 1 && a[1] === 2 && a[2] === 172 && a[3] === 173
+        "#,
     );
     assert_true(
         "let a=Uint8Array.of(170,171),caught=false;try{a.setFromHex('012');}catch(e){caught=e instanceof SyntaxError;}caught && a[0]===170 && a[1]===171",
     );
     assert_true(
-        "let a=Uint8Array.of(170,171),caught=false,finallyRan=false;try{a.setFromHex('01zz');}catch(e){caught=e instanceof SyntaxError;}finally{finallyRan=true;}caught && finallyRan && a[0]===1 && a[1]===171",
+        r#"
+            let a = Uint8Array.of(170, 171),
+                caught = false,
+                finallyRan = false;
+            try {
+                a.setFromHex('01zz');
+            } catch (e) {
+                caught = e instanceof SyntaxError;
+            } finally {
+                finallyRan = true;
+            }
+            caught && finallyRan && a[0] === 1 && a[1] === 171
+        "#,
     );
 }
 

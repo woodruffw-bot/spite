@@ -234,7 +234,10 @@ fn descriptors_nonconstruction_and_intrinsic_retention_are_standard() {
 #[test]
 fn large_default_inputs_work_and_opted_in_host_aborts_bypass_cleanup() {
     assert_true(
-        "'é'.repeat(10000).localeCompare('e\\u0301'.repeat(10000))===0 && ('x'+'\\u0301\\u0323'.repeat(5000)).localeCompare('x'+'\\u0323'.repeat(5000)+'\\u0301'.repeat(5000))===0",
+        r#"
+            'é'.repeat(10000).localeCompare('e\u0301'.repeat(10000)) === 0 && ('x' + '\u0301\u0323'.repeat(
+                5000)).localeCompare('x' + '\u0323'.repeat(5000) + '\u0301'.repeat(5000)) === 0
+        "#,
     );
     let mut realm = Realm::new(Limits {
         max_steps: Some(5000),

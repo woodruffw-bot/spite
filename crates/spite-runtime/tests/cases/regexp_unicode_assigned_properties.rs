@@ -150,7 +150,11 @@ fn unicode_assigned_properties_consumers_original_text() {
             r"'AB\u0378'.replace(/(?<x>\p{{Assigned}})/{mode}g,'<$1:$<x>>')==='<A:A><B:B>\u0378'"
         ));
         assert_true(&format!(
-            r"'\u0378AB\u0378'.split(/(\p{{Assigned}})/{mode}).join('|')==='\u0378|A||B|\u0378'&&'\u0378😀'.search(/\p{{Assigned}}/{mode})===1&&'AB\u0378'.match(/\p{{Assigned}}/{mode}g).join('')==='AB'"
+            r#"
+                '\u0378AB\u0378'.split(/(\p{{Assigned}})/{mode}).join('|') === '\u0378|A||B|\u0378' &&
+                    '\u0378😀'.search(/\p{{Assigned}}/{mode}) === 1 && 'AB\u0378'.match(
+                        /\p{{Assigned}}/{mode}g).join('') === 'AB'
+            "#
         ));
         assert_true(&format!(
             r#"

@@ -96,7 +96,13 @@ fn global_sticky_state_and_strict_lastindex_writes_remain_ordered() {
 #[test]
 fn original_source_flags_and_constructor_copying_survive_unwrapping() {
     assert_true(
-        "let r=new RegExp('(?:(?:a+b))','gi'),c=new RegExp(r),f=RegExp(r);r.source==='(?:(?:a+b))'&&r.toString()==='/(?:(?:a+b))/gi'&&c.source===r.source&&c!==r&&f===r&&c.exec('AAAB')[0]==='AAAB'",
+        r#"
+            let r = new RegExp('(?:(?:a+b))', 'gi'),
+                c = new RegExp(r),
+                f = RegExp(r);
+            r.source === '(?:(?:a+b))' && r.toString() === '/(?:(?:a+b))/gi' && c.source === r.source &&
+                c !== r && f === r && c.exec('AAAB')[0] === 'AAAB'
+        "#,
     );
     assert_true("let r=/(?:)/;r.source==='(?:)'&&r.exec('x')[0]===''&&r.exec('x').length===1");
     assert_true(

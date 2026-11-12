@@ -165,7 +165,12 @@ fn unicode_id_continue_properties_consumers_original_text() {
             r"'\u0042\u0041\uDB40\uDC01\u0021'.replace(/(?<x>\p{{ID_Continue}})/{mode}g,'<$1:$<x>>')==='<\u0042:\u0042><\u0041:\u0041>\uDB40\uDC01\u0021'"
         ));
         assert_true(&format!(
-            r"'\uDB40\uDC01\u0042\u0041\u0021'.split(/(\p{{IDC}})/{mode}).join('|')==='\uDB40\uDC01|\u0042||\u0041|\u0021'&&'\uDB40\uDC01\u0041'.search(/\p{{IDC}}/{mode})===2&&'\u0042\u0041\uDB40\uDC01'.match(/\p{{IDC}}/{mode}g).join('')==='\u0042\u0041'"
+            r#"
+                '\uDB40\uDC01\u0042\u0041\u0021'.split(/(\p{{IDC}})/{mode}).join('|') ===
+                    '\uDB40\uDC01|\u0042||\u0041|\u0021' && '\uDB40\uDC01\u0041'.search(
+                        /\p{{IDC}}/{mode}) === 2 && '\u0042\u0041\uDB40\uDC01'.match(
+                        /\p{{IDC}}/{mode}g).join('') === '\u0042\u0041'
+            "#
         ));
         assert_true(&format!(
             r#"

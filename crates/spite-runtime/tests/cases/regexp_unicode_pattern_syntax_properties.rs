@@ -152,7 +152,11 @@ fn unicode_pattern_syntax_properties_consumers_original_text() {
             r"'\u0022\u0021😀X'.replace(/(?<x>\p{{Pattern_Syntax}})/{mode}g,'<$1:$<x>>')==='<\u0022:\u0022><\u0021:\u0021>😀X'"
         ));
         assert_true(&format!(
-            r"'😀\u0022\u0021G'.split(/(\p{{Pat_Syn}})/{mode}).join('|')==='😀|\u0022||\u0021|G'&&'😀\u0021'.search(/\p{{Pat_Syn}}/{mode})===2&&'\u0022\u0021😀'.match(/\p{{Pat_Syn}}/{mode}g).join('')==='\u0022\u0021'"
+            r#"
+                '😀\u0022\u0021G'.split(/(\p{{Pat_Syn}})/{mode}).join('|') ===
+                    '😀|\u0022||\u0021|G' && '😀\u0021'.search(/\p{{Pat_Syn}}/{mode}) === 2 &&
+                    '\u0022\u0021😀'.match(/\p{{Pat_Syn}}/{mode}g).join('') === '\u0022\u0021'
+            "#
         ));
         assert_true(&format!(
             r#"

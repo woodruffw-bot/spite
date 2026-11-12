@@ -87,7 +87,10 @@ fn checked_literal_v_set_state_context_and_consumers() {
         "#,
     );
     assert_true(
-        r"'😀ca cca'.replace(/(?<whole>(c[[a]]))/vg,'<$1:$<whole>>')==='😀<ca:ca> c<ca:ca>'&&'😀cax'.split(/(c[[a]])/v).join('|')==='😀|ca|x'&&'ccca'.match(/c[a--b]/v)[0]==='ca'",
+        r#"
+            '😀ca cca'.replace(/(?<whole>(c[[a]]))/vg, '<$1:$<whole>>') === '😀<ca:ca> c<ca:ca>' && '😀cax'
+                .split(/(c[[a]])/v).join('|') === '😀|ca|x' && 'ccca'.match(/c[a--b]/v)[0] === 'ca'
+        "#,
     );
     assert_true(
         r#"

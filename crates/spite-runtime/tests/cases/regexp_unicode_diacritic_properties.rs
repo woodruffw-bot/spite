@@ -189,7 +189,11 @@ fn unicode_diacritic_properties_consumers_original_text() {
             r"'\u0301\u0300😀X'.replace(/(?<x>\p{{Diacritic}})/{mode}g,'<$1:$<x>>')==='<\u0301:\u0301><\u0300:\u0300>😀X'"
         ));
         assert_true(&format!(
-            r"'😀\u0301\u0300G'.split(/(\p{{Dia}})/{mode}).join('|')==='😀|\u0301||\u0300|G'&&'😀\u0300'.search(/\p{{Dia}}/{mode})===2&&'\u0301\u0300😀'.match(/\p{{Dia}}/{mode}g).join('')==='\u0301\u0300'"
+            r#"
+                '😀\u0301\u0300G'.split(/(\p{{Dia}})/{mode}).join('|') === '😀|\u0301||\u0300|G' &&
+                    '😀\u0300'.search(/\p{{Dia}}/{mode}) === 2 && '\u0301\u0300😀'.match(
+                        /\p{{Dia}}/{mode}g).join('') === '\u0301\u0300'
+            "#
         ));
         assert_true(&format!(
             r#"

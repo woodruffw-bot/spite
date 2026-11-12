@@ -715,7 +715,10 @@ fn recursive_creation_conversions_and_fallback_methods_use_native_stack_guards()
 fn full_string_property_inventory_supports_reflection_copying_and_integrity() {
     // All edition-17 prototype names, excluding optional Annex B additions.
     assert_true(
-        "Object.getOwnPropertyNames(String.prototype).sort().join(',')==='at,charAt,charCodeAt,codePointAt,concat,constructor,endsWith,includes,indexOf,isWellFormed,lastIndexOf,length,localeCompare,match,matchAll,normalize,padEnd,padStart,repeat,replace,replaceAll,search,slice,split,startsWith,substring,toLocaleLowerCase,toLocaleUpperCase,toLowerCase,toString,toUpperCase,toWellFormed,trim,trimEnd,trimStart,valueOf'",
+        r#"
+            Object.getOwnPropertyNames(String.prototype).sort().join(',') ===
+                'at,charAt,charCodeAt,codePointAt,concat,constructor,endsWith,includes,indexOf,isWellFormed,lastIndexOf,length,localeCompare,match,matchAll,normalize,padEnd,padStart,repeat,replace,replaceAll,search,slice,split,startsWith,substring,toLocaleLowerCase,toLocaleUpperCase,toLowerCase,toString,toUpperCase,toWellFormed,trim,trimEnd,trimStart,valueOf'
+        "#,
     );
     assert_true(
         r#"

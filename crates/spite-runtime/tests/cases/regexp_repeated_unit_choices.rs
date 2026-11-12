@@ -151,7 +151,10 @@ fn alternatives_global_sticky_copies_and_original_source_keep_capture_offsets() 
 #[test]
 fn generic_consumers_intrinsic_arrays_and_callback_arguments_keep_choices() {
     assert_true(
-        r"'xababy'.replace(/(x)((a|b)+)(y)/,'<$1,$2,$3,$4>')==='<x,abab,b,y>'&&'qxababyz'.split(/(x)((a|b)+)(y)/).join(',')==='q,x,abab,b,y,z'&&'qxababy'.search(/x(a|b)+y/)===1",
+        r#"
+            'xababy'.replace(/(x)((a|b)+)(y)/, '<$1,$2,$3,$4>') === '<x,abab,b,y>' && 'qxababyz'.split(
+                /(x)((a|b)+)(y)/).join(',') === 'q,x,abab,b,y,z' && 'qxababy'.search(/x(a|b)+y/) === 1
+        "#,
     );
     assert_true(
         r#"

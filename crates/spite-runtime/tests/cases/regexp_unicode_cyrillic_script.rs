@@ -377,7 +377,11 @@ fn unicode_cyrillic_script_consumers_preserve_original_text() {
             r"'АБA'.replace(/(?<x>\p{{sc=Cyrl}})/{mode}g,'<$1:$<x>>')==='<А:А><Б:Б>A'"
         ));
         assert_true(&format!(
-            r"'AАБA'.split(/(\p{{Script=Cyrillic}})/{mode}).join('|')==='A|А||Б|A'&&'A😀А'.search(/\p{{sc=Cyrl}}/{mode})===3&&'АБA'.match(/\p{{Script=Cyrl}}/{mode}g).join('')==='АБ'"
+            r#"
+                'AАБA'.split(/(\p{{Script=Cyrillic}})/{mode}).join('|') === 'A|А||Б|A' && 'A😀А'
+                    .search(/\p{{sc=Cyrl}}/{mode}) === 3 && 'АБA'.match(
+                        /\p{{Script=Cyrl}}/{mode}g).join('') === 'АБ'
+            "#
         ));
         assert_true(&format!(
             r#"

@@ -651,7 +651,24 @@ fn species_can_return_the_source_and_later_items_observe_its_mutations() {
         "let a=[7];function C(){return a;}a.constructor={[Symbol.species]:C};a[Symbol.isConcatSpreadable]=false;a.concat()===a && a[0]===a && a.length===1",
     );
     assert_true(
-        "let a=[1,2];function C(){return a;}a.constructor={[Symbol.species]:C};let o={get [Symbol.isConcatSpreadable](){a.length=1;return false;}};a.concat(o,a)===a && a.length===6 && a[0]===1 && !(1 in a) && a[2]===o && a[3]===1 && !(4 in a) && a[5]===o",
+        r#"
+            let a = [1, 2];
+
+            function C() {
+                return a;
+            }
+            a.constructor = {
+                [Symbol.species]: C
+            };
+            let o = {
+                get [Symbol.isConcatSpreadable]() {
+                    a.length = 1;
+                    return false;
+                }
+            };
+            a.concat(o, a) === a && a.length === 6 && a[0] === 1 && !(1 in a) && a[2] === o && a[3] ===
+                1 && !(4 in a) && a[5] === o
+        "#,
     );
 }
 

@@ -24,7 +24,12 @@ fn reserved_escapes_keep_their_original_spelling_only_for_decodeuri() {
         ));
     }
     assert_true(
-        "decodeURI('http%3a%2f%2fexample.com%2f%C3%A9%3fkey%3dvalue%23x')==='http%3a%2f%2fexample.com%2fé%3fkey%3dvalue%23x' && decodeURIComponent('http%3a%2f%2fexample.com%2f%C3%A9%3fkey%3dvalue%23x')==='http://example.com/é?key=value#x'",
+        r#"
+            decodeURI('http%3a%2f%2fexample.com%2f%C3%A9%3fkey%3dvalue%23x') ===
+                'http%3a%2f%2fexample.com%2fé%3fkey%3dvalue%23x' && decodeURIComponent(
+                    'http%3a%2f%2fexample.com%2f%C3%A9%3fkey%3dvalue%23x') ===
+                'http://example.com/é?key=value#x'
+        "#,
     );
 }
 

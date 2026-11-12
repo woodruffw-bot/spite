@@ -125,7 +125,11 @@ fn unicode_gurmukhi_script_consumers_preserve_original_text() {
             r"'ਕਖA'.replace(/(?<x>\p{{sc=Guru}})/{mode}g,'<$1:$<x>>')==='<ਕ:ਕ><ਖ:ਖ>A'"
         ));
         assert_true(&format!(
-            r"'AਕਖA'.split(/(\p{{Script=Gurmukhi}})/{mode}).join('|')==='A|ਕ||ਖ|A'&&'A😀ਕ'.search(/\p{{sc=Guru}}/{mode})===3&&'ਕਖA'.match(/\p{{Script=Guru}}/{mode}g).join('')==='ਕਖ'"
+            r#"
+                'AਕਖA'.split(/(\p{{Script=Gurmukhi}})/{mode}).join('|') === 'A|ਕ||ਖ|A' && 'A😀ਕ'
+                    .search(/\p{{sc=Guru}}/{mode}) === 3 && 'ਕਖA'.match(
+                        /\p{{Script=Guru}}/{mode}g).join('') === 'ਕਖ'
+            "#
         ));
         assert_true(&format!(
             r#"
