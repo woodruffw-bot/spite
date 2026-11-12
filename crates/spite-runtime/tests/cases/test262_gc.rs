@@ -1,5 +1,7 @@
 //! Collection requests run between executions, with rooted responses and jobs.
 
+use crate::common::assert_true_in;
+use crate::common::drain_promise_jobs;
 use spite_runtime::{Error, FinalizationCleanupOutcome, PromiseJobOutcome, Realm, Value};
 
 fn host() -> Realm {
@@ -7,25 +9,13 @@ fn host() -> Realm {
     realm.install_test262_host().unwrap();
     realm
 }
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
 
 #[test]
 fn an_empty_collection_queue_is_inert_without_installing_host_globals() {
     let mut realm = Realm::default();
     assert!(!realm.has_requested_gc());
     assert_eq!(realm.run_requested_gc(0), Ok(false));
-    check(&mut realm, "typeof $262==='undefined'");
+    assert_true_in(&mut realm, "typeof $262==='undefined'");
 }
 
 #[test]
@@ -37,19 +27,19 @@ fn responses_are_fresh_intrinsic_promises_and_callbacks_follow_collection() {
         let p=$262.gc(),q=$262.gc(),fresh=p!==q&&Object.getPrototypeOf(p)===NativePromise.prototype;
         p.then(v=>events.push(v===undefined?'first':'wrong'));q.then(()=>events.push('second'));
     "#).unwrap();
-    check(&mut realm, "fresh&&events.length===0");
+    assert_true_in(&mut realm, "fresh&&events.length===0");
     assert!(realm.has_requested_gc());
     assert_eq!(realm.run_requested_gc(usize::MAX), Ok(true));
     assert!(!realm.has_requested_gc());
-    check(&mut realm, "events.length===0");
-    drain(&mut realm);
-    check(&mut realm, "events.join(',')==='first,second'");
+    assert_true_in(&mut realm, "events.length===0");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "events.join(',')==='first,second'");
 }
 
 #[test]
 fn kept_objects_and_symbols_survive_current_execution_and_retire_at_the_checkpoint() {
     let mut realm = host();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let objectWeak,symbolWeak;
@@ -58,7 +48,7 @@ fn kept_objects_and_symbols_survive_current_execution_and_retire_at_the_checkpoi
         "#,
     );
     assert_eq!(realm.run_requested_gc(usize::MAX), Ok(true));
-    check(
+    assert_true_in(
         &mut realm,
         "objectWeak.deref()===undefined&&symbolWeak.deref()===undefined",
     );
@@ -79,7 +69,7 @@ fn refused_collection_preserves_pending_requests_without_rejecting_javascript_pr
         realm.run_next_promise_job(),
         Ok(PromiseJobOutcome::NoJob)
     ));
-    check(&mut realm, "settled===false");
+    assert_true_in(&mut realm, "settled===false");
 }
 
 #[test]
@@ -99,12 +89,12 @@ fn finalization_callbacks_wait_for_a_separate_cleanup_job() {
         )
         .unwrap();
     realm.run_requested_gc(usize::MAX).unwrap();
-    check(&mut realm, "finalized.length===0");
+    assert_true_in(&mut realm, "finalized.length===0");
     assert!(matches!(
         realm.run_finalization_cleanup_job(),
         Ok(FinalizationCleanupOutcome::Completed)
     ));
-    check(&mut realm, "finalized.join(',')==='7'");
+    assert_true_in(&mut realm, "finalized.join(',')==='7'");
 }
 
 #[test]
@@ -126,11 +116,11 @@ fn suspended_async_contexts_survive_collection_and_release_completed_captures() 
         )
         .unwrap();
     realm.run_requested_gc(usize::MAX).unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===true");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===true");
     realm.eval("$262.gc()").unwrap();
     realm.run_requested_gc(usize::MAX).unwrap();
-    check(&mut realm, "weak.deref()===undefined");
+    assert_true_in(&mut realm, "weak.deref()===undefined");
 }
 
 #[test]
@@ -156,13 +146,13 @@ fn suspended_generators_retain_locals_until_completion_without_collecting_on_the
         )
         .unwrap();
     realm.run_requested_gc(usize::MAX).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "weak.deref()!==undefined&&iterator.next().value===7",
     );
     realm.eval("$262.gc()").unwrap();
     realm.run_requested_gc(usize::MAX).unwrap();
-    check(&mut realm, "weak.deref()===undefined");
+    assert_true_in(&mut realm, "weak.deref()===undefined");
 }
 
 #[test]

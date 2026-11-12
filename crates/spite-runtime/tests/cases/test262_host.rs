@@ -1,5 +1,6 @@
 //! Explicit host capabilities invoke native detachment, without public hooks.
 
+use crate::common::assert_true_in;
 use spite_runtime::{Error, ExceptionKind, Limits, PromiseJobOutcome, Realm, Value};
 
 fn host() -> Realm {
@@ -8,14 +9,10 @@ fn host() -> Realm {
     realm
 }
 
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-
 #[test]
 fn forwarded_call_errors_use_the_forwarding_realm_until_the_callee_enters_its_own() {
     let mut realm = host();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             // 10.5.12, 20.2.3.1/3, 28.1.1: a revoked Proxy has no callee context.
@@ -59,7 +56,7 @@ fn forwarded_call_errors_use_the_forwarding_realm_until_the_callee_enters_its_ow
 #[test]
 fn proxy_errors_distinguish_operation_realms_from_foreign_trap_realms() {
     let mut realm = host();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             // 10.5: invariant and revocation errors belong to the operation's
@@ -136,9 +133,9 @@ fn proxy_errors_distinguish_operation_realms_from_foreign_trap_realms() {
 #[test]
 fn host_installation_is_explicit_with_the_current_global_and_native_method_metadata() {
     let mut realm = Realm::default();
-    check(&mut realm, "typeof $262==='undefined'");
+    assert_true_in(&mut realm, "typeof $262==='undefined'");
     realm.install_test262_host().unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
         let method=$262.detachArrayBuffer,nonconstructor=false;
@@ -153,7 +150,7 @@ fn host_installation_is_explicit_with_the_current_global_and_native_method_metad
 #[test]
 fn detachment_invalidates_fixed_and_tracking_views_without_copying_or_public_transfer_hooks() {
     let mut realm = host();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let b = new ArrayBuffer(16, {
@@ -190,7 +187,7 @@ fn detachment_invalidates_fixed_and_tracking_views_without_copying_or_public_tra
 #[test]
 fn buffer_brands_and_detach_keys_are_checked_without_coercion_or_traps() {
     let mut realm = host();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let calls = 0,
@@ -231,7 +228,7 @@ fn buffer_brands_and_detach_keys_are_checked_without_coercion_or_traps() {
 #[test]
 fn repeated_detachment_ignores_this_and_extra_arguments_but_checks_keys_each_time() {
     let mut realm = host();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let b=new ArrayBuffer(8),detach=$262.detachArrayBuffer,calls=0,typed=false;
@@ -256,7 +253,7 @@ fn unavailable_facilities_report_host_errors_on_access_and_bypass_language_clean
             matches!(error, Error::Unsupported { .. }),
             "{member}: {error}"
         );
-        check(&mut realm, "caught===0&&finalized===0&&disposed===0");
+        assert_true_in(&mut realm, "caught===0&&finalized===0&&disposed===0");
     }
 }
 
@@ -268,7 +265,7 @@ fn saved_native_methods_do_not_retain_the_host_object_after_global_deletion() {
         .unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "let b=new ArrayBuffer(8);detach(b);weakHost.deref()===undefined&&b.detached",
     );
@@ -291,13 +288,13 @@ fn installing_over_a_restricted_global_returns_a_language_error() {
         ),
         "{error}"
     );
-    check(&mut realm, "$262===7");
+    assert_true_in(&mut realm, "$262===7");
 }
 
 #[test]
 fn scripts_use_the_global_environment_and_restore_strict_callers_and_local_bindings() {
     let mut realm = host();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             var count = 1;
@@ -324,7 +321,7 @@ fn scripts_use_the_global_environment_and_restore_strict_callers_and_local_bindi
 #[test]
 fn script_parse_and_runtime_errors_are_catchable_without_inheriting_eval_privileges() {
     let mut realm = host();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let marker={},same=false,errors=0;globalThis.eval=()=>{throw 'public eval'};
@@ -343,7 +340,7 @@ fn script_parse_and_runtime_errors_are_catchable_without_inheriting_eval_privile
 #[test]
 fn script_source_preserves_utf16_and_requires_a_string_without_coercion() {
     let mut realm = host();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
         let lone=String.fromCharCode(0xd800),source="(function(){return '"+lone+"'})",method=$262.evalScript(source),calls=0,errors=0;
@@ -417,7 +414,7 @@ fn jobs_created_by_global_scripts_keep_their_context_after_caller_restoration() 
             PromiseJobOutcome::Reported(error) => panic!("{error}"),
         }
     }
-    check(
+    assert_true_in(
         &mut realm,
         "results.includes('true,undefined')&&results.includes(7)",
     );
@@ -446,7 +443,7 @@ fn script_host_failures_restore_context_and_bypass_caller_cleanup() {
         )
         .unwrap_err();
     assert!(matches!(error, Error::Unsupported { .. }), "{error}");
-    check(
+    assert_true_in(
         &mut realm,
         "entered===1&&caught===0&&finalized===0&&disposed===0",
     );
@@ -480,7 +477,7 @@ fn nested_script_calls_share_the_current_work_allowance() {
         )
         .unwrap_err();
     assert!(matches!(error, Error::Limit { .. }), "{error}");
-    check(&mut realm, "entered&&caught===0&&finalized===0");
+    assert_true_in(&mut realm, "entered&&caught===0&&finalized===0");
 }
 
 fn next_agent_report(realm: &mut Realm) -> Result<spite_core::JsString, Error> {
@@ -504,7 +501,7 @@ fn next_agent_report(realm: &mut Realm) -> Result<spite_core::JsString, Error> {
 fn isolated_workers_report_lossless_strings_and_run_gc_and_promise_jobs() {
     use spite_core::JsString;
     let mut realm = host();
-    check(
+    assert_true_in(
         &mut realm,
         "$262.agent.getReport()===null&&typeof $262.agent==='object'&&$262.agent.start.length===1",
     );
@@ -542,7 +539,7 @@ fn isolated_workers_report_lossless_strings_and_run_gc_and_promise_jobs() {
     assert_eq!(reports[4], JsString::from("outer"));
     assert_eq!(reports[5], JsString::from("jobs"));
     realm.finish_test262_agents().unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "parentOnly===11&&Object.prototype.parentMarker===99&&$262.agent.getReport()===null",
     );
@@ -566,7 +563,7 @@ fn worker_retirement_stops_program_loops_sleeps_and_infinite_waits() {
     }
     realm.finish_test262_agents().unwrap();
     realm.finish_test262_agents().unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let now = $262.agent.monotonicNow(),
@@ -623,7 +620,7 @@ fn broadcasts_share_live_backing_with_receiving_intrinsics_and_full_bigint_value
             .eval(&format!("$262.agent.start({source:?})"))
             .unwrap();
     }
-    check(
+    assert_true_in(
         &mut realm,
         "$262.agent.broadcast(buffer,{valueOf(){calls++;return 2n**80n+7n}})===undefined&&calls===1",
     );
@@ -634,7 +631,7 @@ fn broadcasts_share_live_backing_with_receiving_intrinsics_and_full_bigint_value
         );
     }
     realm.finish_test262_agents().unwrap();
-    check(&mut realm, "buffer.byteLength===16&&a[0]===2");
+    assert_true_in(&mut realm, "buffer.byteLength===16&&a[0]===2");
 }
 
 #[test]
@@ -664,13 +661,13 @@ fn broadcast_retrieval_acknowledges_before_callbacks_and_preserves_repeated_deli
     assert_eq!(next_agent_report(&mut realm).unwrap(), "first:1".into());
     assert_eq!(next_agent_report(&mut realm).unwrap(), "second:-2".into());
     realm.finish_test262_agents().unwrap();
-    check(&mut realm, "a[0]===37");
+    assert_true_in(&mut realm, "a[0]===37");
 }
 
 #[test]
 fn broadcast_validation_precedes_value_hooks_and_rejects_proxy_brands() {
     let mut realm = host();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let buffer = new SharedArrayBuffer(8),
@@ -697,7 +694,7 @@ fn broadcast_validation_precedes_value_hooks_and_rejects_proxy_brands() {
             caught === 4 && calls === 0 && traps === 0
         "#,
     );
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let reason = {},
@@ -742,7 +739,7 @@ fn broadcast_workers_keep_gc_roots_and_resume_foreign_async_notifications() {
     assert_eq!(realm.eval("Atomics.notify(a,0)"), Ok(Value::Number(1.0)));
     assert_eq!(next_agent_report(&mut realm).unwrap(), "ok".into());
     realm.finish_test262_agents().unwrap();
-    check(&mut realm, "Atomics.notify(a,0)===0");
+    assert_true_in(&mut realm, "Atomics.notify(a,0)===0");
 }
 
 fn drain_host_jobs(realm: &mut Realm) {
@@ -758,7 +755,7 @@ fn drain_host_jobs(realm: &mut Realm) {
 #[test]
 fn child_realms_have_independent_globals_intrinsics_and_native_host_metadata() {
     let mut realm = host();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
         let create=$262.createRealm,r=create.call(7,'ignored'),s=r.createRealm();
@@ -781,7 +778,7 @@ fn child_realms_have_independent_globals_intrinsics_and_native_host_metadata() {
 #[test]
 fn child_creation_restores_strict_callers_and_distinct_module_script_referrers() {
     let mut realm = host();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             function strictCaller() {
@@ -842,7 +839,7 @@ fn child_functions_keep_private_intrinsics_and_templates_until_their_last_root_i
     "#).unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             (()=>{let d=inspect({x:7},'x'),a=keep(),b=keep(),g=weak.deref();
@@ -853,13 +850,13 @@ fn child_functions_keep_private_intrinsics_and_templates_until_their_last_root_i
     realm.eval("inspect=undefined;keep=undefined;").unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(&mut realm, "weak.deref()===undefined");
+    assert_true_in(&mut realm, "weak.deref()===undefined");
 }
 
 #[test]
 fn child_realms_share_agent_symbols_atomic_backings_and_promise_jobs() {
     let mut realm = host();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             var r = $262.createRealm(),
@@ -890,7 +887,7 @@ fn child_realms_share_agent_symbols_atomic_backings_and_promise_jobs() {
         "#,
     );
     drain_host_jobs(&mut realm);
-    check(
+    assert_true_in(
         &mut realm,
         "values.includes(13) && values.includes(true) && r.global.seen && Object.getPrototypeOf([])===Array.prototype",
     );
@@ -910,13 +907,13 @@ fn child_bootstrap_heap_failure_restores_parent_and_bypasses_language_cleanup() 
         realm.run_next_promise_job().unwrap(),
         PromiseJobOutcome::NoJob
     ));
-    check(
+    assert_true_in(
         &mut realm,
         "caught===0 && finalized===0 && $262.global===globalThis",
     );
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "Object.getPrototypeOf((()=>[])())===Array.prototype",
     );
@@ -943,7 +940,7 @@ fn child_bootstrap_keeps_the_two_mebibyte_guard_at_deep_source_calls() {
         assert!(successes>=2);
         let depth=guarded_depth.expect("native-stack guard");
         assert!(matches!(realm.eval(&format!("let caught=0,finalized=0;try{{descend({depth});}}catch(e){{caught++;}}finally{{finalized++;}}")),Err(Error::Limit{..})));
-        check(&mut realm,"caught===0 && finalized===0 && Object.getPrototypeOf((()=>[])())===Array.prototype");
+        assert_true_in(&mut realm,"caught===0 && finalized===0 && Object.getPrototypeOf((()=>[])())===Array.prototype");
     }).unwrap().join().unwrap();
 }
 

@@ -1,21 +1,9 @@
 //! Real source throw completions after Await and expression continuation.
 
 use crate::common::UnavailableHostRealm;
-use spite_runtime::{Error, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
+use crate::common::assert_true_in;
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, PromiseJobOutcome, Realm};
 
 #[test]
 fn throw_await_waits_for_fulfillment_and_preserves_await_rejection_reasons() {
@@ -31,18 +19,18 @@ fn throw_await_waits_for_fulfillment_and_preserves_await_rejection_reasons() {
             "#,
         )
         .unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "reason===undefined&&rejected===undefined&&later===0",
     );
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "reason===undefined&&rejected===marker&&later===0",
     );
     realm.eval("state.release(value)").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "reason===value&&rejected===marker&&later===0");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "reason===value&&rejected===marker&&later===0");
 }
 
 #[test]
@@ -76,9 +64,9 @@ fn awaited_throw_disposes_resources_in_reverse_and_preserves_suppression_chains(
             "#,
         )
         .unwrap();
-    check(&mut realm, "events.length===0&&reason===undefined");
-    drain(&mut realm);
-    check(
+    assert_true_in(&mut realm, "events.length===0&&reason===undefined");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             events.join(',') === 'b,a' && reason instanceof SuppressedError && reason.error === first &&
@@ -101,8 +89,8 @@ fn completed_throw_expressions_reject_raw_thenables_and_preserve_symbol_identity
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "first===thenable&&second===symbol&&calls===0");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "first===thenable&&second===symbol&&calls===0");
 }
 
 #[test]
@@ -130,7 +118,7 @@ fn host_failure_in_resumed_throw_operands_bypasses_rejection_and_releases_cached
     assert!(reported);
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "disposed===0&&!caught&&state.weak.deref()===undefined&&read()===resource",
     );

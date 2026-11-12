@@ -1,21 +1,9 @@
 //! Lexical BlockStatement suspension, disposal and collection.
 
 use crate::common::UnavailableHostRealm;
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
+use crate::common::assert_true_in;
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm};
 
 #[test]
 fn nested_block_bindings_keep_their_scopes_and_var_bindings_target_the_function() {
@@ -49,10 +37,10 @@ fn nested_block_bindings_keep_their_scopes_and_var_bindings_target_the_function(
             "#,
         )
         .unwrap();
-    check(&mut realm, "events.length===0&&result===undefined");
+    assert_true_in(&mut realm, "events.length===0&&result===undefined");
     realm.eval("state.release(7)").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "events.join(',')==='12,7,1'&&result===7");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "events.join(',')==='12,7,1'&&result===7");
 }
 
 #[test]
@@ -86,9 +74,9 @@ fn block_instantiation_preserves_tdz_and_strict_block_function_hoisting() {
             "#,
         )
         .unwrap();
-    check(&mut realm, "before==='function'&&tdz&&result===undefined");
-    drain(&mut realm);
-    check(&mut realm, "result===6&&outside==='undefined'");
+    assert_true_in(&mut realm, "before==='function'&&tdz&&result===undefined");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===6&&outside==='undefined'");
 }
 
 #[test]
@@ -135,10 +123,10 @@ fn normal_block_exit_disposes_before_parent_statements_and_root_disposal() {
             "#,
         )
         .unwrap();
-    check(&mut realm, "events.length===0&&result===undefined");
+    assert_true_in(&mut realm, "events.length===0&&result===undefined");
     realm.eval("state.release(0)").unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "events.join(',')==='b,after-inner,a,after-outer,root'&&result===7",
     );
@@ -164,9 +152,9 @@ fn returns_throws_and_rejected_awaits_unwind_all_blocks_with_ordered_suppression
             f().then(value=>{result=value},value=>{reason=value});
         "#.replace("TAIL",tail);
         realm.eval(&source).unwrap();
-        drain(&mut realm);
-        check(&mut realm, "events.join(',')==='b,a,root'&&later===0");
-        check(
+        drain_promise_jobs(&mut realm);
+        assert_true_in(&mut realm, "events.join(',')==='b,a,root'&&later===0");
+        assert_true_in(
             &mut realm,
             match mode {
                 0 => "result===7&&reason===undefined",
@@ -218,21 +206,21 @@ fn exited_block_bindings_are_collectible_while_the_function_remains_suspended() 
         .unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "state.weak.deref()!==undefined&&result===undefined",
     );
     realm.eval("state.releaseFirst(0)").unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "state.weak.deref()===undefined&&result===undefined",
     );
     realm.eval("state.releaseSecond(0)").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===7");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===7");
 }
 
 #[test]
@@ -260,8 +248,8 @@ fn class_private_eval_this_and_arguments_survive_nested_block_awaits() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===13");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===13");
 }
 
 #[test]
@@ -308,7 +296,7 @@ fn host_abort_clears_all_block_disposers_without_running_them_even_at_budget_zer
         assert!(reported);
         realm.clear_kept_objects().unwrap();
         realm.collect(usize::MAX).unwrap();
-        check(
+        assert_true_in(
             &mut realm,
             "disposed===0&&!caught&&read()===inner&&state.weaks.every(value=>value.deref()===undefined)",
         );

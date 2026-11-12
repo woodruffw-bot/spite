@@ -1,19 +1,10 @@
 //! Promise.any fulfillment, ordered intrinsic AggregateErrors and guarded rejections.
 
 use crate::common::UnavailableHostRealm;
-use spite_runtime::{Error, PromiseJobOutcome, Realm, Value};
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, Realm, Value};
 
 use crate::common::assert_true;
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => {}
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
 
 #[test]
 fn first_fulfillment_wins_without_waiting_for_pending_inputs() {
@@ -31,10 +22,10 @@ fn first_fulfillment_wins_without_waiting_for_pending_inputs() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(realm.eval("result"), Ok(Value::Number(2.0)));
     realm.eval("cap.reject(3)").unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(realm.eval("result"), Ok(Value::Number(2.0)));
 }
 
@@ -59,10 +50,10 @@ fn exhausted_rejections_and_empty_input_create_ordered_branded_aggregate_errors(
             "#,
         )
         .unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(realm.eval("result===undefined&&empty instanceof AggregateError&&Error.isError(empty)&&empty.errors.length===0"),Ok(Value::Boolean(true)));
     realm.eval("first.reject(reason)").unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(realm.eval(r#"
         let d = Object.getOwnPropertyDescriptor(result, 'errors');
         result instanceof AggregateError && Error.isError(result) && Object.getPrototypeOf(result) ===
@@ -169,7 +160,7 @@ fn aggregate_error_and_error_array_allocation_bypass_public_constructors_and_ite
             "#,
         )
         .unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(realm.eval(r#"
         result instanceof intrinsic && Error.isError(result) && Object.getPrototypeOf(result) ===
             intrinsic.prototype && Object.getPrototypeOf(result.errors) === arrayProto && result.errors
@@ -181,7 +172,7 @@ fn aggregate_error_and_error_array_allocation_bypass_public_constructors_and_ite
 fn pending_reason_lists_and_completed_errors_trace_object_and_symbol_values() {
     let mut realm = Realm::default();
     realm.eval("let state=(()=>{let value={},symbol=Symbol(),cap=Promise.withResolvers();return{any:Promise.any([Promise.reject(value),Promise.reject(symbol),cap.promise]),finish:cap.reject,object:new WeakRef(value),symbol:new WeakRef(symbol)}})()").unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
     assert_eq!(
@@ -189,7 +180,7 @@ fn pending_reason_lists_and_completed_errors_trace_object_and_symbol_values() {
         Ok(Value::Boolean(true))
     );
     realm.eval("state.finish(3)").unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
     assert_eq!(

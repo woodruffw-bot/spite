@@ -1,21 +1,9 @@
 //! Conditional statement suspension and selection of awaited branches.
 
 use crate::common::UnavailableHostRealm;
-use spite_runtime::{PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
+use crate::common::assert_true_in;
+use crate::common::drain_promise_jobs;
+use spite_runtime::Realm;
 
 #[test]
 fn awaited_conditions_select_one_suspended_branch_before_parent_execution_continues() {
@@ -53,10 +41,10 @@ fn awaited_conditions_select_one_suspended_branch_before_parent_execution_contin
                 "#,
             )
             .unwrap();
-        check(&mut realm, "events.join(',')==='start'&&result===undefined");
+        assert_true_in(&mut realm, "events.join(',')==='start'&&result===undefined");
         realm.eval(&format!("state.release({condition})")).unwrap();
-        drain(&mut realm);
-        check(
+        drain_promise_jobs(&mut realm);
+        assert_true_in(
             &mut realm,
             &format!("events.join(',')==='{expected}'&&result==='{expected}'"),
         );
@@ -103,8 +91,8 @@ fn nested_else_if_paths_keep_block_scope_tdz_and_hoisted_functions() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "before==='function'&&tdz&&result===11&&outside==='undefined'&&root===1",
     );
@@ -135,8 +123,8 @@ fn unselected_awaits_and_remaining_unsupported_forms_are_never_evaluated() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===7");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===7");
 }
 
 #[test]
@@ -193,9 +181,9 @@ fn selected_abrupt_branches_and_rejected_conditions_unwind_the_correct_resources
         .replace("CONDITION", condition)
         .replace("TAIL", tail);
         realm.eval(&source).unwrap();
-        drain(&mut realm);
-        check(&mut realm, "otherwise===0&&later===0");
-        check(
+        drain_promise_jobs(&mut realm);
+        assert_true_in(&mut realm, "otherwise===0&&later===0");
+        assert_true_in(
             &mut realm,
             match mode {
                 0 => "result===7&&reason===undefined&&events.join(',')==='b,a,root'",
@@ -224,8 +212,8 @@ fn var_branches_do_not_add_a_scope_and_keep_mapped_parameter_references() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===14");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===14");
 }
 
 #[test]
@@ -251,8 +239,8 @@ fn private_eval_this_and_arguments_survive_a_condition_and_selected_branch() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===11");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===11");
 }
 
 #[test]
@@ -288,24 +276,24 @@ fn exited_branch_environments_are_collectible_during_a_later_root_await() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "state.weak.deref()!==undefined&&result===undefined",
     );
     realm.eval("state.releaseFirst(0)").unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "state.weak.deref()===undefined&&result===undefined",
     );
     realm.eval("state.releaseSecond(0)").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===7");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===7");
 }
 
 #[test]
@@ -338,6 +326,6 @@ fn completed_condition_values_use_boolean_truthiness_without_primitive_conversio
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===3&&conversions===0");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===3&&conversions===0");
 }

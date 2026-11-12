@@ -1,26 +1,10 @@
 //! Suspended ChainEvaluation and retained final References (13.3.10).
 
 use crate::common::UnavailableHostRealm;
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
-
-fn collect(realm: &mut Realm) {
-    realm.clear_kept_objects().unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
+use crate::common::assert_true_in;
+use crate::common::checkpoint_and_collect;
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm};
 
 #[test]
 fn optional_nullish_steps_skip_awaited_keys_arguments_and_the_entire_ungrouped_suffix() {
@@ -42,8 +26,8 @@ fn optional_nullish_steps_skip_awaited_keys_arguments_and_the_entire_ungrouped_s
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "operand===0&&result.length===5&&result.every(value=>value===undefined)",
     );
@@ -89,9 +73,9 @@ fn optional_awaited_bases_and_keys_convert_and_read_once_before_later_steps() {
             "#,
         )
         .unwrap();
-    check(&mut realm, "events.join(',')==='base'&&result===undefined");
-    drain(&mut realm);
-    check(
+    assert_true_in(&mut realm, "events.join(',')==='base'&&result===undefined");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result===7&&events.join(',')==='base,key,coerce:string,get'",
     );
@@ -141,8 +125,8 @@ fn awaited_optional_member_bases_and_parenthesized_calls_and_tags_preserve_refer
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "first===17&&second===18&&third===19&&fourth===21",
     );
@@ -193,12 +177,12 @@ fn optional_calls_save_the_callee_before_awaited_spread_and_defer_callability_un
             "#,
         )
         .unwrap();
-    check(&mut realm, "gets===1&&effects===1&&result===undefined");
+    assert_true_in(&mut realm, "gets===1&&effects===1&&result===undefined");
     realm
         .eval("Object.defineProperty(object,'method',{value(){throw 9}})")
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result===true&&failed===true&&skipped===undefined&&effects===1&&gets===1&&receiver===object",
     );
@@ -259,8 +243,8 @@ fn deleting_optional_awaited_properties_avoids_getters_and_preserves_nullish_key
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             first === true && second === true && third === true && gets === 0 && keys === 0 && coerced ===
@@ -335,9 +319,9 @@ fn optional_eval_is_indirect_and_private_super_using_and_dynamic_contexts_resume
             "#,
         )
         .unwrap();
-    check(&mut realm, "flag===1&&evalResult===undefined");
-    drain(&mut realm);
-    check(
+    assert_true_in(&mut realm, "flag===1&&evalResult===undefined");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             evalResult === 'global' && privateResult === 17 && superResult === 28 && oldDone &&
@@ -411,8 +395,8 @@ fn optional_keys_and_calls_trace_bases_receivers_and_earlier_arguments_then_rele
             "#,
         )
         .unwrap();
-    collect(&mut realm);
-    check(
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             baseWeak.deref() !== undefined && receiverWeak.deref() !== undefined && argumentWeak
@@ -420,9 +404,9 @@ fn optional_keys_and_calls_trace_bases_receivers_and_earlier_arguments_then_rele
         "#,
     );
     realm.eval("release('x')").unwrap();
-    drain(&mut realm);
-    collect(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             baseWeak.deref() === undefined && receiverWeak.deref() === undefined && argumentWeak
@@ -431,8 +415,8 @@ fn optional_keys_and_calls_trace_bases_receivers_and_earlier_arguments_then_rele
         "#,
     );
     realm.eval("releaseSecond(0)").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "first===7&&last===8");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "first===7&&last===8");
 }
 
 #[test]
@@ -474,7 +458,7 @@ fn optional_call_argument_limits_and_host_aborts_skip_handlers_and_resource_clea
         }
     }
     assert!(reported);
-    check(
+    assert_true_in(
         &mut realm,
         "effects===3&&called===0&&disposed===0&&finalized===0&&!caught",
     );
@@ -515,8 +499,8 @@ fn optional_call_argument_limits_and_host_aborts_skip_handlers_and_resource_clea
             }
         }
         assert!(reported);
-        collect(&mut realm);
-        check(
+        checkpoint_and_collect(&mut realm);
+        assert_true_in(
             &mut realm,
             "called===0&&disposed===0&&finalized===0&&!caught&&state.weak.deref()===undefined",
         );

@@ -1,26 +1,10 @@
 //! Awaited while/do-while control, completions and per-iteration blocks.
 
 use crate::common::UnavailableHostRealm;
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
-
-fn collect(realm: &mut Realm) {
-    realm.clear_kept_objects().unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
+use crate::common::assert_true_in;
+use crate::common::checkpoint_and_collect;
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm};
 
 #[test]
 fn while_conditions_and_bodies_await_once_in_order_for_each_iteration() {
@@ -45,12 +29,12 @@ fn while_conditions_and_bodies_await_once_in_order_for_each_iteration() {
             "#,
         )
         .unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "tests===1&&events.length===0&&result===undefined",
     );
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "tests===4&&events.join(',')==='1,end1,2,end2,3,end3'&&result===7",
     );
@@ -69,12 +53,12 @@ fn while_skips_a_false_body_and_do_while_runs_its_body_before_the_first_test() {
             "#,
         )
         .unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "events.join(',')==='body'&&first===undefined&&second===undefined",
     );
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "events.join(',')==='body'&&first===1&&second===2",
     );
@@ -116,8 +100,8 @@ fn break_and_continue_wait_for_finalizers_and_dispose_body_resources_before_cont
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result===3&&events.join(',')==='finally0,end0,dispose0,body1,finally1,end1,dispose1,finally2,end2,dispose2'",
     );
@@ -149,9 +133,9 @@ fn do_while_continue_runs_the_test_and_block_closures_keep_distinct_iteration_bi
             "#,
         )
         .unwrap();
-    check(&mut realm, "tests===0&&result===undefined");
-    drain(&mut realm);
-    check(&mut realm, "tests===2&&result==='0,1,2'");
+    assert_true_in(&mut realm, "tests===0&&result===undefined");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "tests===2&&result==='0,1,2'");
 }
 
 #[test]
@@ -198,8 +182,8 @@ fn rejected_conditions_and_body_throws_reach_outer_catches_without_retesting() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "reason===marker&&thrown===marker&&body===0&&tests===0&&finalized===1&&first===7&&second===8",
     );
@@ -246,28 +230,28 @@ fn loop_values_survive_suspended_retests_and_forward_until_the_parent_replaces_t
             "#,
         )
         .unwrap();
-    collect(&mut realm);
-    check(
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "tests===2&&state.weak.deref()!==undefined&&result===undefined",
     );
     realm.eval("state.releaseFirst(false)").unwrap();
-    drain(&mut realm);
-    collect(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "tests===2&&state.weak.deref()!==undefined&&result===undefined",
     );
     realm.eval("state.releaseSecond(0)").unwrap();
-    drain(&mut realm);
-    collect(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "state.weak.deref()===undefined&&result===undefined",
     );
     realm.eval("state.releaseThird(0)").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===7");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===7");
 }
 
 #[test]
@@ -302,8 +286,8 @@ fn loop_bodies_preserve_private_eval_arguments_and_var_parameter_aliases() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===22&&alias===0");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===22&&alias===0");
 }
 
 #[test]
@@ -359,8 +343,8 @@ fn host_failures_in_loop_bodies_bypass_finally_and_release_resources_at_budget_z
             }
         }
         assert!(reported);
-        collect(&mut realm);
-        check(
+        checkpoint_and_collect(&mut realm);
+        assert_true_in(
             &mut realm,
             "disposed===0&&finalized===0&&!caught&&read()===resource&&state.weak.deref()===undefined",
         );

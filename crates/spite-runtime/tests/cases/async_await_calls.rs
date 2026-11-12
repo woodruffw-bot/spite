@@ -1,20 +1,8 @@
 //! Awaited call targets/arguments retain lookup, receiver and invocation order.
 
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
+use crate::common::assert_true_in;
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm};
 
 #[test]
 fn callee_lookup_and_arguments_run_once_in_order_and_method_replacement_does_not_change_the_target()
@@ -55,13 +43,13 @@ fn callee_lookup_and_arguments_run_once_in_order_and_method_replacement_does_not
             "#,
         )
         .unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "events.join(',')==='get,first'&&result===undefined",
     );
     realm.eval("state.release(2)").unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result===6&&events.join(',')==='get,first,last,call'",
     );
@@ -82,11 +70,11 @@ fn member_references_keep_receivers_while_comma_and_awaited_callee_values_do_not
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===undefined");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===undefined");
     realm.eval("state.release(9)").unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result[0][0]===obj&&result[1][0]===undefined&&result[2][0]===undefined&&result.every(value=>value[1]===9)",
     );
@@ -143,10 +131,10 @@ fn member_references_keep_receivers_while_comma_and_awaited_callee_values_do_not
             .unwrap();
         realm.clear_kept_objects().unwrap();
         realm.collect(usize::MAX).unwrap();
-        check(&mut realm, "events.join(',')==='get'&&result===undefined");
+        assert_true_in(&mut realm, "events.join(',')==='get'&&result===undefined");
         realm.eval("state.release(5)").unwrap();
-        drain(&mut realm);
-        check(
+        drain_promise_jobs(&mut realm);
+        assert_true_in(
             &mut realm,
             "result===12&&receiver===selected&&events.join(',')==='get,call'",
         );
@@ -188,8 +176,8 @@ fn direct_eval_with_awaited_arguments_keeps_original_identity_variables_and_priv
         )
         .unwrap();
     realm.eval("state.release('value=7;value')").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result.join(',')==='7,7'&&privateResult===12");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result.join(',')==='7,7'&&privateResult===12");
 
     let mut realm = Realm::default();
     realm.eval(r#"
@@ -203,8 +191,8 @@ fn direct_eval_with_awaited_arguments_keeps_original_identity_variables_and_priv
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
     realm.eval("state.release('marker=7;marker')").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result.join(',')==='7,7'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result.join(',')==='7,7'");
 }
 
 #[test]
@@ -219,8 +207,8 @@ fn awaited_eval_callee_is_an_indirect_value_call() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===99");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===99");
 }
 
 #[test]
@@ -235,8 +223,8 @@ fn awaited_spread_uses_sync_iteration_and_does_not_await_yielded_arguments() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result.length===4&&result[0]===1&&result[1]===2&&result[2]===3&&result[3]===promise",
     );
@@ -252,14 +240,14 @@ fn noncallable_targets_evaluate_arguments_but_lookup_failures_skip_them() {
         async function g(){return bad.method(await (operand++))}
         f().catch(error=>{reason=error});g().catch(error=>{lookupReason=error});
     "#).unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "events.join(',')==='first'&&reason===undefined&&lookupReason===marker&&operand===0",
     );
     realm.eval("state.release(2)").unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "reason instanceof TypeError&&events.join(',')==='first,last'",
     );
@@ -302,15 +290,15 @@ fn pending_call_frames_trace_receivers_and_earlier_arguments_and_release_them_af
         .unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "state.receiver.deref()!==undefined&&state.argument.deref()!==undefined&&result===undefined",
     );
     realm.eval("state.release(5)").unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "result===12&&state.receiver.deref()===undefined&&state.argument.deref()===undefined",
     );
@@ -368,5 +356,5 @@ fn resumed_argument_limit_failure_skips_invocation_rejection_and_resource_cleanu
         }
     }
     assert!(reported);
-    check(&mut realm, "!called&&!caught&&disposed===0");
+    assert_true_in(&mut realm, "!called&&!caught&&disposed===0");
 }

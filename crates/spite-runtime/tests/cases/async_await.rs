@@ -1,21 +1,9 @@
 //! Source Await continuation timing, contexts and cleanup.
 
 use crate::common::UnavailableHostRealm;
-use spite_runtime::{Error, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
+use crate::common::assert_true_in;
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, PromiseJobOutcome, Realm};
 
 #[test]
 fn direct_await_yields_once_and_resumes_each_statement_without_replay() {
@@ -40,19 +28,19 @@ fn direct_await_yields_once_and_resumes_each_statement_without_replay() {
             "#,
         )
         .unwrap();
-    check(&mut realm, "events.join(',')==='a,outside'");
+    assert_true_in(&mut realm, "events.join(',')==='a,outside'");
     assert!(matches!(
         realm.run_next_promise_job().unwrap(),
         PromiseJobOutcome::Completed
     ));
-    check(&mut realm, "events.join(',')==='a,outside,b'");
+    assert_true_in(&mut realm, "events.join(',')==='a,outside,b'");
     assert!(matches!(
         realm.run_next_promise_job().unwrap(),
         PromiseJobOutcome::Completed
     ));
-    check(&mut realm, "events.join(',')==='a,outside,b,c'");
-    drain(&mut realm);
-    check(&mut realm, "events.join(',')==='a,outside,b,c,3'");
+    assert_true_in(&mut realm, "events.join(',')==='a,outside,b,c'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "events.join(',')==='a,outside,b,c,3'");
 }
 
 #[test]
@@ -72,8 +60,8 @@ fn return_await_and_concise_arrows_forward_fulfillment_and_rejection() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "seen.length===6&&seen.every(v=>v)");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "seen.length===6&&seen.every(v=>v)");
 }
 
 #[test]
@@ -91,8 +79,8 @@ fn native_await_ignores_public_then_species_and_replaced_promise_names() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===7");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===7");
 }
 
 #[test]
@@ -103,15 +91,15 @@ fn unreachable_await_is_skipped_and_assignment_defaults_suspend() {
             "let result;async function f(){if(false)await missing;return 3}f().then(v=>{result=v})",
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===3");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===3");
     realm
         .eval("let flag=0,completed=false;async function g(){let x;return ([x=await (flag=1)]=[])}")
         .unwrap();
     realm.eval("try{g().then(v=>{completed=Array.isArray(v)&&v.length===0})}catch(e){flag=2}finally{flag=3}").unwrap();
-    check(&mut realm, "flag===3&&!completed");
-    drain(&mut realm);
-    check(&mut realm, "flag===3&&completed");
+    assert_true_in(&mut realm, "flag===3&&!completed");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "flag===3&&completed");
 }
 
 #[test]
@@ -125,11 +113,11 @@ fn resumed_functions_preserve_arguments_this_eval_and_lexical_arrow_context() {
         ordinary.call(receiver,2).then(v=>{results.push(v[0]===receiver&&v[1]===4&&v[2]===4&&v[3]===4)});
         maker.call(receiver,11)().then(v=>{results.push(v[0]===receiver&&v[1]===11&&v[2]===undefined)});
     "#).unwrap();
-    drain(&mut realm);
-    check(&mut realm, "results.length===0");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "results.length===0");
     realm.eval("state.release(0)").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "results.length===2&&results.every(v=>v)");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "results.length===2&&results.every(v=>v)");
 }
 
 #[test]
@@ -154,11 +142,11 @@ fn methods_private_names_super_and_dynamic_functions_resume_in_their_own_context
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "results.length===0");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "results.length===0");
     realm.eval("state.release(0)").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "results.length===3&&results.every(v=>v)");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "results.length===3&&results.every(v=>v)");
 }
 
 #[test]
@@ -190,15 +178,15 @@ fn pending_frames_keep_used_parameters_and_release_unrelated_callers_and_complet
         .unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "state.used.deref()!==undefined&&state.unused.deref()===undefined&&seen===undefined",
     );
     realm.eval("state.release(0)").unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(&mut realm, "seen===9&&state.used.deref()===undefined");
+    assert_true_in(&mut realm, "seen===9&&state.used.deref()===undefined");
 }
 
 #[test]
@@ -230,11 +218,11 @@ fn using_resources_survive_suspension_and_dispose_after_return_or_rejection() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "events.join(',')==='start'&&result===undefined");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "events.join(',')==='start'&&result===undefined");
     realm.eval("state.release(0)").unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "events.join(',')==='start,end,dispose'&&result===7",
     );
@@ -258,8 +246,8 @@ fn using_resources_survive_suspension_and_dispose_after_return_or_rejection() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "suppressed instanceof SuppressedError&&suppressed.error===cleanup&&suppressed.suppressed===original",
     );
@@ -274,12 +262,12 @@ fn promise_resolve_getter_failure_rejects_without_suspending_and_runs_lexical_cl
         async function f(){using resource={[Symbol.dispose](){events.push('dispose')}};return await input}
         f().catch(e=>{reason=e});events.push('outside');
     "#).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "events.join(',')==='get,dispose,outside'&&reason===undefined",
     );
-    drain(&mut realm);
-    check(&mut realm, "reason===marker");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "reason===marker");
 }
 
 #[test]
@@ -319,7 +307,7 @@ fn resumed_host_failures_skip_rejection_and_disposal_and_release_cached_methods_
             .unwrap();
         realm.clear_kept_objects().unwrap();
         realm.collect(usize::MAX).unwrap();
-        check(&mut realm, "weak.deref()!==undefined");
+        assert_true_in(&mut realm, "weak.deref()!==undefined");
         let mut reported = false;
         loop {
             match realm.run_next_promise_job().unwrap() {
@@ -337,7 +325,7 @@ fn resumed_host_failures_skip_rejection_and_disposal_and_release_cached_methods_
         assert!(reported);
         realm.clear_kept_objects().unwrap();
         realm.collect(usize::MAX).unwrap();
-        check(
+        assert_true_in(
             &mut realm,
             "disposed===0&&flag===0&&read()===resource&&weak.deref()===undefined",
         );
@@ -370,7 +358,7 @@ fn lexical_initializers_resume_in_list_order_and_keep_later_bindings_in_the_tdz(
             "#,
         )
         .unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let caught = 0;
@@ -383,8 +371,8 @@ fn lexical_initializers_resume_in_list_order_and_keep_later_bindings_in_the_tdz(
         "#,
     );
     realm.eval("state.release(7)").unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result.join(',')==='7,8,8,8'&&read().join(',')==='7,8'&&events.join(',')==='second'",
     );
@@ -425,8 +413,8 @@ fn awaited_binding_patterns_initialize_defaults_and_close_iterators() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "closed===1&&result.join(',')==='5,6'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "closed===1&&result.join(',')==='5,6'");
 }
 
 #[test]
@@ -450,8 +438,8 @@ fn awaited_function_values_keep_their_names_and_pattern_defaults_still_infer_nam
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result.join(',')==='ordinary,,factory'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result.join(',')==='ordinary,,factory'");
 }
 
 #[test]
@@ -487,18 +475,18 @@ fn awaited_using_initializers_register_before_binding_and_dispose_only_initializ
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "events.length===0&&!done");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "events.length===0&&!done");
     realm.eval("state.release(second)").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "events.join(',')==='body,second,first'&&done");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "events.join(',')==='body,second,first'&&done");
     realm.eval(r#"
         let marker={},reason;
         async function rejected(){using a=first,b=await Promise.reject(marker);events.push('unreachable')}
         rejected().catch(error=>{reason=error});
     "#).unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "reason===marker&&events.join(',')==='body,second,first,first'",
     );
@@ -528,8 +516,8 @@ fn lexical_and_using_initializers_preserve_rejection_and_suppression_identity() 
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "reason instanceof SuppressedError&&reason.error===cleanup&&reason.suppressed===original",
     );
@@ -559,13 +547,13 @@ fn var_initializers_preserve_hoisting_declarator_order_and_absent_initializer_va
             "#,
         )
         .unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "read()===undefined&&result===undefined&&events.join(',')==='operand'",
     );
     realm.eval("state.release(7)").unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "read()===7&&result.join(',')==='7,7'&&events.join(',')==='operand'",
     );
@@ -599,8 +587,8 @@ fn awaited_var_assignment_updates_the_original_sloppy_parameter_and_arguments_ma
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
     realm.eval("state.release(9)").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result.join(',')==='9,9'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result.join(',')==='9,9'");
 }
 
 #[test]
@@ -637,8 +625,8 @@ fn awaited_var_patterns_initialize_after_the_rhs_and_preserve_function_naming_ru
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "closed===1&&result.join(',')==='5,6,ordinary,'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "closed===1&&result.join(',')==='5,6,ordinary,'");
 }
 
 #[test]
@@ -664,6 +652,6 @@ fn awaited_var_rejection_disposes_previously_registered_resources() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "reason===marker&&disposed===1");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "reason===marker&&disposed===1");
 }

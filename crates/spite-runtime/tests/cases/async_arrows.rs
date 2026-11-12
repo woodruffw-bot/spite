@@ -2,17 +2,8 @@
 
 use crate::common::UnavailableHostRealm;
 use crate::common::assert_true;
-use spite_runtime::{Error, PromiseJobOutcome, Realm, Value};
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => {}
-            PromiseJobOutcome::Reported(e) => panic!("{e}"),
-        }
-    }
-}
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, Realm, Value};
 
 #[test]
 fn async_arrows_have_standard_metadata_source_and_no_construction_capability() {
@@ -63,7 +54,7 @@ fn expression_and_block_bodies_return_fresh_promises_and_reject_language_failure
             "#,
         )
         .unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(
         realm.eval("seen.join(',')"),
         Ok(Value::String("2,4,throw,empty,params,7".into()))
@@ -74,7 +65,7 @@ fn expression_and_block_bodies_return_fresh_promises_and_reject_language_failure
 fn this_arguments_newtarget_and_super_remain_lexical_across_binding_and_jobs() {
     let mut realm = Realm::default();
     realm.eval("let values=[];function Parent(x){this.x=x;this.fn=async()=>[this,arguments[0],new.target]}let p=new Parent(9),fn=p.fn.bind({x:0});fn().then(a=>{if(a[0]!==p||a[1]!==9||a[2]!==Parent)throw 1;values.push('lexical')});class Base{m(){return this.x}}class Derived extends Base{m(){return async()=>super.m()}}let d=new Derived();d.x=7;d.m().call({x:0}).then(v=>{if(v!==7)throw 2;values.push('super')});let async=x=>x,await=8;if(async(await/2)!==4)throw 3").unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(
         realm.eval("values.join(',')"),
         Ok(Value::String("lexical,super".into()))
@@ -113,7 +104,7 @@ fn captured_objects_and_symbols_survive_collection_and_release_with_the_closure(
 fn dynamic_source_can_create_async_arrows_and_host_failures_bypass_rejection() {
     let mut realm = Realm::with_unavailable_host();
     realm.eval("let AF=(async function(){}).constructor,result;AF('return async x=>x+1')().then(fn=>fn(4)).then(v=>{result=v})").unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(realm.eval("result"), Ok(Value::Number(5.0)));
     realm
         .eval("let flag=0,f=async()=>spiteUnavailableHost()")

@@ -1,19 +1,13 @@
 //! Generator function objects, lazy native bodies and initial/completed resumes.
 
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-fn collect(realm: &mut Realm) {
-    realm.clear_kept_objects().unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
+use crate::common::assert_true_in;
+use crate::common::checkpoint_and_collect;
+use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm};
 
 #[test]
 fn constructor_function_and_generator_prototypes_have_standard_metadata() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
         function*g(x,y=1){}let GF=g.constructor,FP=Object.getPrototypeOf(g),GP=FP.prototype;
@@ -30,14 +24,14 @@ fn constructor_function_and_generator_prototypes_have_standard_metadata() {
 fn parameters_initialize_at_call_and_bodies_wait_until_first_next() {
     let mut realm = Realm::default();
     realm.eval("let events=[];function*g(x=(events.push('parameter'),7)){events.push('body');return x}let iterator=g();").unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             events.join(',') === 'parameter' && iterator[Symbol.iterator]() === iterator &&
                 iterator instanceof Iterator && iterator instanceof g
         "#,
     );
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let first = iterator.next(99),
@@ -46,13 +40,13 @@ fn parameters_initialize_at_call_and_bodies_wait_until_first_next() {
                 ',') === 'parameter,body'
         "#,
     );
-    check(&mut realm, "(function*(){7})().next().value===undefined");
+    assert_true_in(&mut realm, "(function*(){7})().next().value===undefined");
 }
 
 #[test]
 fn parameter_errors_are_synchronous_and_close_binding_iterators_before_creation() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let reason = {},
@@ -105,7 +99,7 @@ fn parameter_errors_are_synchronous_and_close_binding_iterators_before_creation(
 #[test]
 fn mapped_arguments_this_and_new_target_keep_the_original_call_context() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             function* a(x) {
@@ -140,7 +134,7 @@ fn mapped_arguments_this_and_new_target_keep_the_original_call_context() {
 #[test]
 fn return_and_throw_before_start_skip_the_body_and_completed_resumes_keep_identity() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let body = 0,
@@ -183,7 +177,7 @@ fn return_and_throw_before_start_skip_the_body_and_completed_resumes_keep_identi
 #[test]
 fn prototype_methods_reject_incompatible_receivers_and_all_reentrant_resumes() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let GP = Object.getPrototypeOf(function*() {}).prototype,
@@ -219,7 +213,7 @@ fn prototype_methods_reject_incompatible_receivers_and_all_reentrant_resumes() {
 #[test]
 fn generator_methods_keep_live_home_objects_private_brands_and_receivers() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let object = {
@@ -264,7 +258,7 @@ fn generator_methods_keep_live_home_objects_private_brands_and_receivers() {
 #[test]
 fn dynamic_construction_uses_global_scope_standard_source_and_ordered_new_target_lookup() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
         let GF=(function*(){}).constructor,events=[],custom={},target=new Proxy(function(){},{get(object,key){if(key==='prototype'){events.push('prototype');return custom}return Reflect.get(object,key)}});
@@ -281,7 +275,7 @@ fn dynamic_construction_uses_global_scope_standard_source_and_ordered_new_target
 #[test]
 fn native_body_completions_run_finalizers_and_resource_disposal_once() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let reason = {},
@@ -362,17 +356,17 @@ fn host_aborts_complete_generators_release_captures_and_skip_javascript_cleanup(
             "#,
         )
         .unwrap();
-    collect(&mut resumed);
-    check(
+    checkpoint_and_collect(&mut resumed);
+    assert_true_in(
         &mut resumed,
         "before===1&&operand===1&&disposed===0&&finalized===0&&caught===0&&weak.deref()!==undefined",
     );
-    check(
+    assert_true_in(
         &mut resumed,
         "iterator.next().done&&disposed===1&&finalized===1&&caught===0",
     );
-    collect(&mut resumed);
-    check(&mut resumed, "weak.deref()===undefined");
+    checkpoint_and_collect(&mut resumed);
+    assert_true_in(&mut resumed, "weak.deref()===undefined");
     let mut delegated = Realm::default();
     delegated.reserve_unsupported_global("unsupportedHost");
     delegated
@@ -407,8 +401,8 @@ fn host_aborts_complete_generators_release_captures_and_skip_javascript_cleanup(
             "#,
         )
         .unwrap();
-    collect(&mut delegated);
-    check(
+    checkpoint_and_collect(&mut delegated);
+    assert_true_in(
         &mut delegated,
         r#"
             before === 1 && operand === 1 && disposed === 1 && finalized === 1 && caught === 1 && iterator
@@ -435,8 +429,8 @@ fn host_aborts_complete_generators_release_captures_and_skip_javascript_cleanup(
         } else {
             assert!(matches!(error, Error::Unsupported { .. }), "{error}");
         }
-        collect(&mut realm);
-        check(
+        checkpoint_and_collect(&mut realm);
+        assert_true_in(
             &mut realm,
             r#"
                 before === 1 && operand === 0 && disposed === 0 && finalized === 0 && caught === 0 && iterator
@@ -467,14 +461,14 @@ fn suspended_start_retains_the_callee_and_environment_then_releases_them_on_comp
             "#,
         )
         .unwrap();
-    collect(&mut realm);
-    check(
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "weak.deref()!==undefined&&calleeWeak.deref()!==undefined",
     );
-    check(&mut realm, "iterator.next().value===7");
-    collect(&mut realm);
-    check(
+    assert_true_in(&mut realm, "iterator.next().value===7");
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "weak.deref()===undefined&&calleeWeak.deref()===undefined",
     );
@@ -515,7 +509,7 @@ fn synchronous_and_async_consumers_observe_completion_and_early_return_without_b
             PromiseJobOutcome::Reported(error) => panic!("{error}"),
         }
     }
-    check(
+    assert_true_in(
         &mut realm,
         "values.length===0&&skipped.next().done&&direct.length===0&&from.length===0&&result===0&&count===3",
     );

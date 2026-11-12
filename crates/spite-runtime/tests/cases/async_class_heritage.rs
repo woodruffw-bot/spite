@@ -1,21 +1,9 @@
 //! ClassDeclaration heritage and computed-name continuations (15.7.14).
 
+use crate::common::assert_true_in;
+use crate::common::drain_promise_jobs;
 use spite_runtime::object::PromiseState;
 use spite_runtime::{Error, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
 
 #[test]
 fn heritage_waits_without_replaying_effects_and_preserves_internal_class_tdz() {
@@ -35,14 +23,14 @@ fn heritage_waits_without_replaying_effects_and_preserves_internal_class_tdz() {
             "#,
         )
         .unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "events.join(',')==='heritage'&&(()=>{try{read()}catch(e){return e instanceof ReferenceError}})()&&(()=>{try{outerRead()}catch(e){return e instanceof ReferenceError}})()",
     );
     realm.collect(usize::MAX).unwrap();
     realm.eval("release(Object)").unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "events.length===1&&result[1]===7&&result[0]===result[2]&&result[3]===99&&read()===result[0]",
     );
@@ -80,8 +68,8 @@ fn resumed_heritage_validates_superclass_and_reads_its_prototype_once() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "seen.length===6&&seen.every(Boolean)&&events.join(',')==='prototype,key,key,static,static'",
     );
@@ -111,8 +99,8 @@ fn heritage_closures_keep_outer_private_names_before_body_shadowing() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result.join(',')==='9,7'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result.join(',')==='9,7'");
 }
 
 #[test]
@@ -132,8 +120,8 @@ fn heritage_rejection_restores_scope_and_sloppy_context_before_catch_and_finally
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result===9&&events.length===3&&events.every(Boolean)&&heritageSloppy===7",
     );
@@ -142,7 +130,7 @@ fn heritage_rejection_restores_scope_and_sloppy_context_before_catch_and_finally
 #[test]
 fn yielded_heritage_handles_resume_throw_and_return_with_context_cleanup() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let events = [],
@@ -197,13 +185,13 @@ fn module_default_class_awaits_heritage_before_static_initialization_and_naming(
         realm.inspect_object(&promise).unwrap().promise_state(),
         Some(PromiseState::Pending)
     ));
-    check(&mut realm, "observed.length===0");
-    drain(&mut realm);
+    assert_true_in(&mut realm, "observed.length===0");
+    drain_promise_jobs(&mut realm);
     assert!(matches!(
         realm.inspect_object(&promise).unwrap().promise_state(),
         Some(PromiseState::Fulfilled(Value::Undefined))
     ));
-    check(&mut realm, "observed.join(',')==='default,body'");
+    assert_true_in(&mut realm, "observed.join(',')==='default,body'");
 }
 
 #[test]
@@ -230,7 +218,7 @@ fn heritage_host_failure_skips_language_handlers_and_restores_embedding_context(
         realm.run_next_promise_job(),
         Ok(PromiseJobOutcome::Reported(Error::Unsupported { .. }))
     ));
-    check(&mut realm, "flag===0&&(heritageEmbeddingSloppy=7)===7");
+    assert_true_in(&mut realm, "flag===0&&(heritageEmbeddingSloppy=7)===7");
 }
 
 #[test]
@@ -269,9 +257,9 @@ fn computed_names_preserve_order_and_defer_static_elements_until_all_keys_finish
             "#,
         )
         .unwrap();
-    check(&mut realm, "events.join(',')==='base,key:first'");
-    drain(&mut realm);
-    check(
+    assert_true_in(&mut realm, "events.join(',')==='base,key:first'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             events.join(',') === 'base,key:first,then,convert:string,key:last,static:first,static:block' &&
@@ -306,17 +294,17 @@ fn partial_definition_traces_symbol_fields_private_methods_and_static_captures()
         .unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(&mut realm, "weak.deref()!==undefined&&events.length===0");
+    assert_true_in(&mut realm, "weak.deref()!==undefined&&events.length===0");
     realm.eval("release('m')").unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "new result().m()===2&&new result()[weak.deref()]===1&&events.join(',')==='5,3'",
     );
     realm.eval("result=null").unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(&mut realm, "weak.deref()===undefined");
+    assert_true_in(&mut realm, "weak.deref()===undefined");
 }
 
 #[test]
@@ -336,8 +324,8 @@ fn rejected_or_throwing_computed_keys_restore_context_and_skip_static_initializa
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "events.length===6&&events.every(Boolean)&&computedSloppy===7",
     );
@@ -346,7 +334,7 @@ fn rejected_or_throwing_computed_keys_restore_context_and_skip_static_initializa
 #[test]
 fn yielded_computed_names_preserve_tdz_and_clean_up_on_generator_return_or_throw() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let read, events = [],
@@ -410,13 +398,13 @@ fn module_default_computed_names_finish_before_static_initialization_and_body_en
     let Value::Object(promise) = promise else {
         panic!("evaluation promise")
     };
-    check(&mut realm, "observed.length===0");
-    drain(&mut realm);
+    assert_true_in(&mut realm, "observed.length===0");
+    drain_promise_jobs(&mut realm);
     assert!(matches!(
         realm.inspect_object(&promise).unwrap().promise_state(),
         Some(PromiseState::Fulfilled(Value::Undefined))
     ));
-    check(&mut realm, "observed.join(',')==='default,7,body'");
+    assert_true_in(&mut realm, "observed.join(',')==='default,7,body'");
 }
 
 #[test]
@@ -425,14 +413,14 @@ fn computed_name_host_failure_releases_partial_definition_without_language_clean
     realm.eval("let weak,flag=0;async function f(){let key=Symbol();weak=new WeakRef(key);try{class C{[key]=1;[(key=null,await 0,import('unavailable'))](){}}}catch{flag=1}finally{flag=2}}let pending=f()").unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(&mut realm, "weak.deref()!==undefined&&flag===0");
+    assert_true_in(&mut realm, "weak.deref()!==undefined&&flag===0");
     assert!(matches!(
         realm.run_next_promise_job(),
         Ok(PromiseJobOutcome::Reported(Error::Unsupported { .. }))
     ));
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "weak.deref()===undefined&&flag===0&&(computedEmbeddingSloppy=7)===7",
     );

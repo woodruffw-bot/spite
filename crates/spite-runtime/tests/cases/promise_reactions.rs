@@ -1,18 +1,9 @@
 //! Promise reaction scheduling, species and traced captures (27.2.5.4).
 
+use crate::common::drain_promise_jobs;
 use spite_runtime::{Error, PromiseJobOutcome, Realm, Value};
 
 use crate::common::assert_true;
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => {}
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
 
 #[test]
 fn pending_reactions_run_asynchronously_in_registration_order_and_append_children() {
@@ -78,13 +69,13 @@ fn absent_handlers_propagate_values_and_reasons_and_catch_recovers() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(
         realm.eval("seen.join(',')"),
         Ok(Value::String("r,9,3".into()))
     );
     realm.eval("let caught=false;Promise.resolve(1).then(class C{}).catch(e=>{caught=e instanceof TypeError});").unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(realm.eval("caught"), Ok(Value::Boolean(true)));
 }
 
@@ -155,7 +146,7 @@ fn branding_precedes_hooks_and_species_construction_can_settle_the_parent() {
         ),
         Ok(Value::Boolean(true))
     );
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(realm.eval("log"), Ok(Value::String("schr8".into())));
 }
 
@@ -173,7 +164,7 @@ fn child_self_resolution_rejects_and_custom_resolver_throws_are_reported() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(realm.eval("caught"), Ok(Value::Boolean(true)));
     realm
         .eval(
@@ -242,7 +233,7 @@ fn pending_and_queued_reaction_captures_survive_collection_and_release_after_exe
         .unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
     assert_eq!(
@@ -288,7 +279,7 @@ fn queued_reaction_arguments_keep_weak_map_keys_and_values_alive_until_execution
                 "{settle} {key}"
             );
             realm.clear_kept_objects().unwrap();
-            drain(&mut realm);
+            drain_promise_jobs(&mut realm);
             assert_eq!(realm.eval("observed"), Ok(Value::Boolean(true)));
             realm.clear_kept_objects().unwrap();
             realm.collect(usize::MAX).unwrap();
@@ -310,6 +301,6 @@ fn default_realms_accept_large_reaction_lists_without_automatic_execution() {
         ),
         Ok(Value::Number(0.0))
     );
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(realm.eval("calls"), Ok(Value::Number(5000.0)));
 }

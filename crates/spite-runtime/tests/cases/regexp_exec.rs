@@ -1,13 +1,9 @@
 //! Ordinary-mode native RegExpBuiltinExec and its generic consumers.
 
+use crate::common::assert_true;
 use spite_core::JsString;
 use spite_runtime::{Error, Limits, Realm, Value};
 use std::fmt::Write;
-
-fn check(source: &str) {
-    let mut realm = Realm::default();
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
 
 #[test]
 fn native_literal_results_and_lastindex_snapshot() {
@@ -101,7 +97,7 @@ fn native_literal_results_and_lastindex_snapshot() {
 
 #[test]
 fn lastindex_is_converted_after_input_even_without_global_or_sticky_flags() {
-    check(
+    assert_true(
         r#"
             let r = new RegExp('a'),
                 t = '';
@@ -120,7 +116,7 @@ fn lastindex_is_converted_after_input_even_without_global_or_sticky_flags() {
             t === 'si' && m.index === 1 && typeof r.lastIndex === 'object'
         "#,
     );
-    check(
+    assert_true(
         r#"
             let r = new RegExp('a'),
                 t = '';
@@ -145,7 +141,7 @@ fn lastindex_is_converted_after_input_even_without_global_or_sticky_flags() {
         "#,
     );
     for index in ["Symbol()", "1n"] {
-        check(&format!(
+        assert_true(&format!(
             r#"
                 let r = new RegExp('a');
                 r.lastIndex = {index};
@@ -159,7 +155,7 @@ fn lastindex_is_converted_after_input_even_without_global_or_sticky_flags() {
             "#
         ));
     }
-    check(
+    assert_true(
         r#"
             let r = new RegExp('a', 'g'),
                 t = '';
@@ -179,7 +175,7 @@ fn lastindex_is_converted_after_input_even_without_global_or_sticky_flags() {
             t === 'si' && m.index === 1 && r.lastIndex === 2
         "#,
     );
-    check(
+    assert_true(
         r#"
             let r = new RegExp('a', 'g');
             let m = r.exec({
@@ -203,7 +199,7 @@ fn lastindex_writes_are_strict_on_success_failure_and_past_end() {
         ("g", "a", 2),
         ("y", "a", 2),
     ] {
-        check(&format!(
+        assert_true(&format!(
             r#"
                 let r = new RegExp('a', '{flags}');
                 r.lastIndex = {index};
@@ -220,7 +216,7 @@ fn lastindex_writes_are_strict_on_success_failure_and_past_end() {
             "#
         ));
     }
-    check(
+    assert_true(
         r#"
             let r = new RegExp('a');
             r.lastIndex = 7;
@@ -228,7 +224,7 @@ fn lastindex_writes_are_strict_on_success_failure_and_past_end() {
             r.exec('ba').index === 1 && r.exec('b') === null && r.lastIndex === 7
         "#,
     );
-    check(
+    assert_true(
         r#"
             let r = new RegExp('', 'g');
             Object.freeze(r);
@@ -241,7 +237,7 @@ fn lastindex_writes_are_strict_on_success_failure_and_past_end() {
             caught
         "#,
     );
-    check(
+    assert_true(
         r#"
             let r = new RegExp('a', 'g');
             r.lastIndex = {
@@ -263,7 +259,7 @@ fn lastindex_writes_are_strict_on_success_failure_and_past_end() {
 
 #[test]
 fn results_and_indices_are_intrinsic_arrays_with_own_data_properties() {
-    check(
+    assert_true(
         r#"
             let AP = Array.prototype;
             for (let k of ['0', 'index', 'input', 'groups', 'indices']) Object.defineProperty(AP, k, {
@@ -290,7 +286,7 @@ fn results_and_indices_are_intrinsic_arrays_with_own_data_properties() {
                 .ownKeys(m.indices).join(',') === '0,length,groups'
         "#,
     );
-    check(
+    assert_true(
         r#"
             let r = new RegExp('a', 'd'),
                 a = r.exec('a'),
@@ -304,7 +300,7 @@ fn results_and_indices_are_intrinsic_arrays_with_own_data_properties() {
 
 #[test]
 fn matching_uses_original_slots_and_noncallable_exec_falls_back_to_native() {
-    check(
+    assert_true(
         r#"
             let r = new RegExp('a', 'gi');
             for (let k of ['source', 'flags', 'global', 'sticky', 'ignoreCase', 'hasIndices']) Object
@@ -320,7 +316,7 @@ fn matching_uses_original_slots_and_noncallable_exec_falls_back_to_native() {
         "#,
     );
     for exec in ["undefined", "null", "7", "{}"] {
-        check(&format!(
+        assert_true(&format!(
             r#"
                 let r = new RegExp('a');
                 r.exec = {exec};
@@ -329,7 +325,7 @@ fn matching_uses_original_slots_and_noncallable_exec_falls_back_to_native() {
             "#
         ));
     }
-    check(
+    assert_true(
         r#"
             let r = new RegExp('a');
             r.exec = function(s) {
@@ -346,7 +342,7 @@ fn matching_uses_original_slots_and_noncallable_exec_falls_back_to_native() {
 
 #[test]
 fn ordinary_matching_preserves_surrogate_units_and_exact_utf16_indices() {
-    check(
+    assert_true(
         r#"
             let s = '\uD800\uDC00',
                 r = new RegExp('\\uDC00', 'dg'),
@@ -355,7 +351,7 @@ fn ordinary_matching_preserves_surrogate_units_and_exact_utf16_indices() {
                 1] === 2 && r.lastIndex === 2
         "#,
     );
-    check(
+    assert_true(
         r#"
             let s = '\uD800\uDC00',
                 r = new RegExp('\\uD800', 'dy');
@@ -365,7 +361,7 @@ fn ordinary_matching_preserves_surrogate_units_and_exact_utf16_indices() {
                 .lastIndex === 0
         "#,
     );
-    check(
+    assert_true(
         r#"
             let r = new RegExp('\\uD800\\uDC00', 'd'),
                 m = r.exec('x\uD800\uDC00');
@@ -376,23 +372,23 @@ fn ordinary_matching_preserves_surrogate_units_and_exact_utf16_indices() {
 
 #[test]
 fn generic_match_search_replace_split_and_matchall_use_native_literal_execution() {
-    check(
+    assert_true(
         r#"
             let r = new RegExp('a', 'g'),
                 m = 'baac'.match(r);
             m.join(',') === 'a,a' && r.lastIndex === 0 && 'bbb'.match(r) === null && r.lastIndex === 0
         "#,
     );
-    check(
+    assert_true(
         "let r=new RegExp('');r.lastIndex=-0;'ba'.search(r)===0 && Object.is(r.lastIndex,-0) && 'ba'.match(r)[0]===''",
     );
-    check(
+    assert_true(
         "'aba'.replace(new RegExp('a','g'),'[$&]')==='[a]b[a]' && 'aba'.replace(new RegExp('a'),(m,i,s)=>m+i+s)==='a0ababa'",
     );
-    check(
+    assert_true(
         "'a,b,'.split(new RegExp(',')).join('|')==='a|b|' && 'ab'.split(new RegExp('')).join('|')==='a|b' && ''.split(new RegExp('')).length===0",
     );
-    check(
+    assert_true(
         r#"
             let r = new RegExp('a', 'g');
             r.lastIndex = 1;
@@ -400,7 +396,7 @@ fn generic_match_search_replace_split_and_matchall_use_native_literal_execution(
             a.length === 2 && a[0].index === 1 && a[1].index === 2 && r.lastIndex === 1
         "#,
     );
-    check(
+    assert_true(
         r#"
             let m = [...'ab'.matchAll('')];
             m.length === 3 && m[0].index === 0 && m[1].index === 1 && m[2].index === 2 && 'ab'.match('')[
@@ -425,7 +421,9 @@ fn unsupported_patterns_remain_host_failures_after_ordered_coercions() {
         );
         crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), &program);
     }
-    check("let r=new RegExp('a(a|b)','g');r.lastIndex=2;r.exec('a')===null && r.lastIndex===0");
+    assert_true(
+        "let r=new RegExp('a(a|b)','g');r.lastIndex=2;r.exec('a')===null && r.lastIndex===0",
+    );
 }
 
 #[test]
@@ -464,7 +462,7 @@ fn shared_backend_copies_captures_and_unicode_indices_survive_collection() {
         realm.eval("copy.lastIndex=1;copy.exec('!aaa').groups.run==='aaa'&&r.lastIndex===0"),
         Ok(Value::Boolean(true))
     );
-    check(
+    assert_true(
         r#"
             var input = 'a'.repeat(20000) + '!',
                 r = /(?<run>a+)/dgu,

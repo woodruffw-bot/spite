@@ -1,23 +1,10 @@
 //! Suspended var Array BindingInitialization and pre-step References (14.3.2).
 
 use crate::common::UnavailableHostRealm;
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
-fn collect(realm: &mut Realm) {
-    realm.clear_kept_objects().unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
+use crate::common::assert_true_in;
+use crate::common::checkpoint_and_collect;
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm};
 
 #[test]
 fn var_defaults_preserve_parameter_aliases_multiple_declarators_and_for_headers() {
@@ -43,8 +30,8 @@ fn var_defaults_preserve_parameter_aliases_multiple_declarators_and_for_headers(
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result==='7,7,9,11'&&header==='9,9'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result==='7,7,9,11'&&header==='9,9'");
 }
 
 #[test]
@@ -55,12 +42,12 @@ fn with_references_resolve_before_stepping_and_keep_the_selected_object_target()
         let source={[Symbol.iterator](){return this},get next(){events.push('cache');return function(){events.push('next');blocked.x=true;return{done:false,value:undefined}}},return(){events.push('close');return{done:true}}};
         async function f(){with(holder){var [x=await(events.push('default'),7)]=source}return x}f().then(value=>{result=value});
     "#).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "events.join(',')==='cache,resolve,next,default'&&holder.x===1",
     );
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "events.join(',')==='cache,resolve,next,default,close'&&holder.x===7&&result===undefined",
     );
@@ -80,12 +67,12 @@ fn cached_object_references_survive_await_and_pattern_references_resolve_after_t
             "[]"
         };
         realm.eval(&format!("async function f(){{with(holder){{var [x=await gate]={rhs}}}return x}}f().then(value=>{{result=value}})")).unwrap();
-        drain(&mut realm);
+        drain_promise_jobs(&mut realm);
         realm
             .eval("blocked.x=true;delete holder.x;release(7)")
             .unwrap();
-        drain(&mut realm);
-        check(&mut realm, "holder.x===7&&result===undefined");
+        drain_promise_jobs(&mut realm);
+        assert_true_in(&mut realm, "holder.x===7&&result===undefined");
     }
 }
 
@@ -97,8 +84,8 @@ fn references_still_resolve_for_each_binding_after_iterator_exhaustion() {
         let source={[Symbol.iterator](){return this},next(){events.push('next');return{done:true}},return(){events.push('wrong');return{done:true}}};
         async function f(){with(holder){var [x=await(events.push('dx'),7),y=await(events.push('dy'),9)]=source}return x===undefined&&y===undefined}f().then(value=>{result=value});
     "#).unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "events.join(',')==='resolve,next,dx,resolve,dy'&&holder.x===7&&holder.y===9&&result===true",
     );
@@ -112,8 +99,8 @@ fn rest_references_are_resolved_before_collecting_remaining_iterator_values() {
         let source={[Symbol.iterator](){return this},next(){calls++;if(calls===2)blocked.rest=true;return calls===1?{done:false,value:undefined}:calls===2?{done:false,value:11}:calls===3?{done:false,value:12}:{done:true}}};
         async function f(){with(holder){var [first=await 7,...rest]=source}return first===undefined&&rest===undefined}f().then(value=>{result=value});
     "#).unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result===true&&holder.first===7&&holder.rest.join(',')==='11,12'&&calls===4",
     );
@@ -150,8 +137,8 @@ fn var_iteration_defaults_update_mapped_parameters_across_all_three_loop_kinds()
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "results.length===3&&results.includes(7)&&results.includes(9)&&results.includes(11)",
     );
@@ -164,9 +151,9 @@ fn nested_var_defaults_keep_names_and_previously_unsupported_programs_now_execut
         let result,names,before=0,operand=0,handled=0;async function f(){before++;try{var [x=await(operand++)]=[]}catch{handled=1}finally{handled=2}return x}
         async function g(x){var [[x=await 7],fn=function(){}]=await [[],undefined];return x===7&&arguments[0]===7&&fn.name==='fn'}f().then(value=>{result=value});g(1).then(value=>{names=value});
     "#).unwrap();
-    check(&mut realm, "before===1&&operand===1&&handled===0");
-    drain(&mut realm);
-    check(&mut realm, "result===0&&names===true&&handled===2");
+    assert_true_in(&mut realm, "before===1&&operand===1&&handled===0");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===0&&names===true&&handled===2");
 }
 
 #[test]
@@ -176,8 +163,8 @@ fn default_rejection_closes_each_nested_iterator_before_entering_outer_handlers(
         let reason={},events=[],result;function source(name,value){return{[Symbol.iterator](){return this},next(){return{done:false,value}},return(){events.push(name);return{done:true}}}}
         async function f(){try{var [[x=await Promise.reject(reason)]]=source('outer',source('inner',undefined))}catch(error){await 0;return error===reason&&x===undefined}}f().then(value=>{result=value});
     "#).unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result===true&&events.join(',')==='inner,outer'",
     );
@@ -228,8 +215,8 @@ fn host_abort_in_var_defaults_skips_iterator_close_disposal_and_handlers() {
             }
         }
         assert!(reported);
-        collect(&mut realm);
-        check(
+        checkpoint_and_collect(&mut realm);
+        assert_true_in(
             &mut realm,
             "closed===0&&disposed===0&&finalized===0&&!caught&&state.weak.deref()===undefined",
         );

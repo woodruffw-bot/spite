@@ -1,15 +1,9 @@
 //! Host-provided graph loading and stable Module request identities (16.2.1).
 
+use crate::common::assert_true_in;
+use crate::common::checkpoint_and_collect;
 use spite_core::{JsString, Span};
-use spite_runtime::{Error, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-fn collect(realm: &mut Realm) {
-    realm.clear_kept_objects().unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
+use spite_runtime::{Error, Realm};
 
 #[test]
 fn loading_visits_depth_first_source_order_deduplicates_requests_and_caches_shared_records() {
@@ -73,9 +67,9 @@ fn aliases_and_cycles_preserve_record_identity_without_entering_module_bodies() 
         })
         .unwrap();
     assert_eq!(calls, 3);
-    check(&mut realm, "effects===0");
+    assert_true_in(&mut realm, "effects===0");
     realm.evaluate_module_record(&root).unwrap();
-    check(&mut realm, "effects===2");
+    assert_true_in(&mut realm, "effects===2");
 }
 
 #[test]
@@ -201,9 +195,9 @@ fn dependency_edges_keep_record_environments_alive_until_the_root_is_dropped() {
         .load_module_graph(&root, |_, _| Ok(child.clone()))
         .unwrap();
     drop(child);
-    collect(&mut realm);
-    check(&mut realm, "weak.deref()!==undefined");
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(&mut realm, "weak.deref()!==undefined");
     drop(root);
-    collect(&mut realm);
-    check(&mut realm, "weak.deref()===undefined");
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(&mut realm, "weak.deref()===undefined");
 }

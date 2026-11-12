@@ -1,24 +1,10 @@
 //! Lexical Array BindingInitialization with suspended defaults (14.3.3, Await).
 
 use crate::common::UnavailableHostRealm;
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
-fn collect(realm: &mut Realm) {
-    realm.clear_kept_objects().unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
+use crate::common::assert_true_in;
+use crate::common::checkpoint_and_collect;
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm};
 
 #[test]
 fn defaults_resume_in_order_before_later_elements_and_declarators() {
@@ -39,9 +25,9 @@ fn defaults_resume_in_order_before_later_elements_and_declarators() {
             "#,
         )
         .unwrap();
-    check(&mut realm, "events.join(',')==='x'&&result===undefined");
-    drain(&mut realm);
-    check(
+    assert_true_in(&mut realm, "events.join(',')==='x'&&result===undefined");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "events.join(',')==='x,7,tail'&&result==='7,9,11'",
     );
@@ -65,9 +51,9 @@ fn defined_values_and_unselected_await_branches_skip_their_operands() {
             "#,
         )
         .unwrap();
-    check(&mut realm, "effects===0");
-    drain(&mut realm);
-    check(&mut realm, "result===true&&effects===0");
+    assert_true_in(&mut realm, "effects===0");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===true&&effects===0");
 }
 
 #[test]
@@ -118,8 +104,8 @@ fn nested_arrays_rest_patterns_and_elisions_keep_iterator_protocol_order() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result==='7;9;11,12'&&reads===0&&calls===6");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result==='7;9;11,12'&&reads===0&&calls===6");
 }
 
 #[test]
@@ -128,8 +114,8 @@ fn awaited_rhs_and_three_clause_headers_preserve_tdz_and_iteration_closures() {
     realm.eval(r#"
         let result,tdz=false,closures=[];async function f(){try{let [x=await x]=[]}catch(error){tdz=error instanceof ReferenceError}for(let [x=await 7]=await [];x<9;x++){closures.push(()=>x)}return closures.map(f=>f()).join(',')}f().then(value=>{result=value});
     "#).unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result==='7,8'&&tdz&&typeof x==='undefined'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result==='7,8'&&tdz&&typeof x==='undefined'");
 }
 
 #[test]
@@ -157,9 +143,9 @@ fn ordinary_defaults_keep_name_inference_and_awaited_anonymous_values_do_not_gai
             "#,
         )
         .unwrap();
-    check(&mut realm, "events.join(',')==='klass'&&result===undefined");
-    drain(&mut realm);
-    check(&mut realm, "result===true");
+    assert_true_in(&mut realm, "events.join(',')==='klass'&&result===undefined");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===true");
 }
 
 #[test]
@@ -216,8 +202,8 @@ fn rejection_and_normal_close_errors_close_nested_iterators_once_from_inside_out
                 if reject { "reason" } else { "closing" }
             ))
             .unwrap();
-        drain(&mut realm);
-        check(
+        drain_promise_jobs(&mut realm);
+        assert_true_in(
             &mut realm,
             "result===true&&events.join(',')==='inner,outer'",
         );
@@ -233,8 +219,8 @@ fn step_and_result_errors_skip_current_close_but_close_the_parent_iterator() {
         function outer(value){return{[Symbol.iterator](){return this},next(){return{done:false,value}},return(){events.push('outer');return{done:true}}}}
         async function f(kind){try{let [[x=await(operands++,1)]]=outer(inner(kind))}catch(error){return error===reason}}for(const kind of ['next','done','value'])f(kind).then(value=>results.push(value));
     "#).unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "results.length===3&&results.every(x=>x===true)&&events.join(',')==='outer,outer,outer'&&operands===0",
     );
@@ -288,15 +274,15 @@ fn pending_defaults_keep_cached_next_and_its_environment_live_then_release_them(
             "#,
         )
         .unwrap();
-    collect(&mut realm);
-    check(
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "weak.deref()!==undefined&&nextWeak.deref()!==undefined&&iteratorWeak.deref()!==undefined&&result===undefined",
     );
     realm.eval("release(7)").unwrap();
-    drain(&mut realm);
-    collect(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "result===7&&weak.deref()===undefined&&nextWeak.deref()===undefined&&iteratorWeak.deref()===undefined",
     );
@@ -347,8 +333,8 @@ fn host_failure_in_a_default_skips_iterator_close_disposal_catch_and_finally() {
             }
         }
         assert!(reported);
-        collect(&mut realm);
-        check(
+        checkpoint_and_collect(&mut realm);
+        assert_true_in(
             &mut realm,
             "closed===0&&disposed===0&&finalized===0&&!caught&&state.weak.deref()===undefined",
         );
@@ -387,12 +373,12 @@ fn object_bindings_and_assignment_defaults_resume_operands_and_finalizers() {
                 "#
             ))
             .unwrap();
-        check(
+        assert_true_in(
             &mut realm,
             "before===1&&operand===1&&handled===0&&observed===-1",
         );
-        drain(&mut realm);
-        check(
+        drain_promise_jobs(&mut realm);
+        assert_true_in(
             &mut realm,
             "before===1&&operand===1&&handled===2&&observed===0",
         );

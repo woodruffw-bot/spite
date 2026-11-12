@@ -1,19 +1,10 @@
 //! Promise.race subscription ordering, iterator cleanup and host failures.
 
 use crate::common::UnavailableHostRealm;
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, Limits, Realm, Value};
 
 use crate::common::assert_true;
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => {}
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
 
 #[test]
 fn capability_resolve_lookup_and_all_subscriptions_are_ordered_and_generic() {
@@ -135,7 +126,7 @@ fn first_settlement_wins_asynchronously_and_empty_input_stays_pending() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(
         realm.eval("values.join(',')"),
         Ok(Value::String("2,4".into()))

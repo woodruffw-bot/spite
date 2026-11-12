@@ -1,26 +1,10 @@
 //! DestructuringAssignmentEvaluation after an awaited RHS (13.15.5).
 
 use crate::common::UnavailableHostRealm;
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
-
-fn collect(realm: &mut Realm) {
-    realm.clear_kept_objects().unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
+use crate::common::assert_true_in;
+use crate::common::checkpoint_and_collect;
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm};
 
 #[test]
 fn awaited_array_object_nested_and_rest_assignments_return_the_original_rhs() {
@@ -57,8 +41,8 @@ fn awaited_array_object_nested_and_rest_assignments_return_the_original_rhs() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result===true&&a===1&&b===2&&rest.join(',')==='3,4'&&x===3&&y===4&&other.tail===5",
     );
@@ -110,7 +94,7 @@ fn destructuring_resolves_targets_and_computed_names_only_after_rhs_completion()
             "#,
         )
         .unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "events.length===0&&firstResult===undefined&&secondResult===undefined",
     );
@@ -119,8 +103,8 @@ fn destructuring_resolves_targets_and_computed_names_only_after_rhs_completion()
             "current=newObject;release([7]);releaseSecond({get z(){events.push('get');return 9}})",
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             firstResult === 7 && secondResult === 8 && newObject.x === 7 && newObject.y === 9 && old.x ===
@@ -185,8 +169,8 @@ fn awaited_rhs_patterns_close_synchronous_iterators_and_keep_yielded_promises_ra
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             result === 7 && failed === true && value === promise && events.join(',') ===
@@ -225,8 +209,8 @@ fn awaited_rhs_defaults_keep_name_inference_computed_keys_and_rest_exclusion() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result===true&&keys===1&&x===9&&rest.b===2&&!Object.hasOwn(rest,'a')",
     );
@@ -241,8 +225,8 @@ fn rejected_rhs_does_not_resolve_or_write_pattern_targets() {
         async function f(){try{[base().x]=await Promise.reject(reason)}catch(error){return error===reason}}
         f().then(value=>{result=value});
     "#).unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===true&&resolved===0&&written===0");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===true&&resolved===0&&written===0");
 }
 
 #[test]
@@ -277,8 +261,8 @@ fn awaited_patterns_preserve_mapped_arguments_private_context_and_super_receiver
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "mapped===7&&result===6");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "mapped===7&&result===6");
 }
 
 #[test]
@@ -313,24 +297,24 @@ fn destructuring_rhs_and_its_completion_value_remain_live_until_replaced() {
             "#,
         )
         .unwrap();
-    collect(&mut realm);
-    check(
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "weak.deref()!==undefined&&x===undefined&&result===undefined",
     );
-    drain(&mut realm);
-    collect(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "weak.deref()!==undefined&&x===7&&result===undefined",
     );
     realm.eval("release(0)").unwrap();
-    drain(&mut realm);
-    collect(&mut realm);
-    check(&mut realm, "weak.deref()===undefined&&result===undefined");
+    drain_promise_jobs(&mut realm);
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(&mut realm, "weak.deref()===undefined&&result===undefined");
     realm.eval("releaseSecond(0)").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===7");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===7");
 }
 
 #[test]
@@ -373,8 +357,8 @@ fn host_abort_in_a_post_await_default_skips_iterator_close_put_handlers_and_disp
             }
         }
         assert!(reported);
-        collect(&mut realm);
-        check(
+        checkpoint_and_collect(&mut realm);
+        assert_true_in(
             &mut realm,
             "writes===0&&closed===0&&disposed===0&&finalized===0&&!caught&&state.weak.deref()===undefined",
         );

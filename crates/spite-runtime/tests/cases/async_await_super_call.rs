@@ -1,26 +1,10 @@
 //! EvaluateSuperCall with suspended arguments in lexical async arrows (13.3.7.2).
 
 use crate::common::UnavailableHostRealm;
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
-
-fn collect(realm: &mut Realm) {
-    realm.clear_kept_objects().unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
+use crate::common::assert_true_in;
+use crate::common::checkpoint_and_collect;
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm};
 
 #[test]
 fn super_constructor_selection_precedes_arguments_and_derived_fields_follow_this_binding() {
@@ -59,10 +43,10 @@ fn super_constructor_selection_precedes_arguments_and_derived_fields_follow_this
             "#,
         )
         .unwrap();
-    check(&mut realm, "oldCalls===0&&newCalls===0&&result===undefined");
+    assert_true_in(&mut realm, "oldCalls===0&&newCalls===0&&result===undefined");
     realm.eval("release(7)").unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             oldCalls === 1 && newCalls === 0 && result.value === 7 && result.field === 11 &&
@@ -107,9 +91,9 @@ fn super_spread_keeps_raw_values_and_nonconstructors_fail_after_argument_evaluat
             "#,
         )
         .unwrap();
-    check(&mut realm, "effects===1&&calls===0");
-    drain(&mut realm);
-    check(
+    assert_true_in(&mut realm, "effects===1&&calls===0");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             result.values.length === 3 && result.values[0] === symbol && result.values[1] === promise &&
@@ -163,10 +147,10 @@ fn super_new_target_prototype_is_read_after_arguments_and_fields_use_the_active_
             "#,
         )
         .unwrap();
-    check(&mut realm, "events.length===0&&result===undefined");
+    assert_true_in(&mut realm, "events.length===0&&result===undefined");
     realm.eval("proto={marker:2};release(7)").unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             events.join(',') === 'prototype' && Object.getPrototypeOf(result) === proto && result.value ===
@@ -219,10 +203,10 @@ fn super_new_target_prototype_is_read_after_arguments_and_fields_use_the_active_
             "#,
         )
         .unwrap();
-    collect(&mut realm);
+    checkpoint_and_collect(&mut realm);
     realm.eval("release(7);release=null").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "seen&&prototypeReads===0&&result.value===7");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "seen&&prototypeReads===0&&result.value===7");
 }
 
 #[test]
@@ -258,13 +242,13 @@ fn a_repeated_super_call_constructs_before_bind_this_rejects_without_repeating_f
             "#,
         )
         .unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "calls===1&&fields===1&&observed.value===1&&observed.field===1&&failed===undefined",
     );
     realm.eval("release(2)").unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "calls===2&&fields===1&&failed===true&&observed.value===1&&observed.field===1",
     );
@@ -322,19 +306,19 @@ fn a_repeated_super_call_constructs_before_bind_this_rejects_without_repeating_f
             first = null;
             second = null;
         "#)).unwrap();
-        collect(&mut realm);
+        checkpoint_and_collect(&mut realm);
         realm.eval("release2(2);release2=null").unwrap();
-        drain(&mut realm);
-        collect(&mut realm);
-        check(
+        drain_promise_jobs(&mut realm);
+        checkpoint_and_collect(&mut realm);
+        assert_true_in(
             &mut realm,
             "calls===1&&fields===1&&read().value===2&&brand(read())===9",
         );
         realm.eval("release1(1);release1=null").unwrap();
-        drain(&mut realm);
-        collect(&mut realm);
+        drain_promise_jobs(&mut realm);
+        checkpoint_and_collect(&mut realm);
         let expected = if throws { "field" } else { "ok" };
-        check(
+        assert_true_in(
             &mut realm,
             &format!(
                 "calls===2&&fields===1&&read().value===2&&outcomes[0]==='ReferenceError'&&outcomes[1]==='{expected}'"
@@ -375,8 +359,8 @@ fn a_throwing_derived_initializer_leaves_this_bound_for_the_resumed_catch() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result===true&&observed instanceof Derived&&!Object.hasOwn(observed,'field')",
     );
@@ -423,15 +407,15 @@ fn pending_super_arguments_remain_live_and_rejection_releases_them_without_const
             "#,
         )
         .unwrap();
-    collect(&mut realm);
-    check(
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "weak.deref()!==undefined&&calls===0&&result===undefined",
     );
     realm.eval("reject(reason)").unwrap();
-    drain(&mut realm);
-    collect(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "weak.deref()===undefined&&calls===0&&result===true",
     );
@@ -482,7 +466,7 @@ fn super_argument_limits_and_host_abort_skip_construction_fields_handlers_and_di
         }
     }
     assert!(reported);
-    check(
+    assert_true_in(
         &mut realm,
         "effects===3&&calls===0&&fields===0&&disposed===0&&finalized===0&&!caught",
     );
@@ -542,8 +526,8 @@ fn super_argument_limits_and_host_abort_skip_construction_fields_handlers_and_di
             }
         }
         assert!(reported);
-        collect(&mut realm);
-        check(
+        checkpoint_and_collect(&mut realm);
+        assert_true_in(
             &mut realm,
             "calls===0&&fields===0&&disposed===0&&finalized===0&&!caught&&state.weak.deref()===undefined",
         );

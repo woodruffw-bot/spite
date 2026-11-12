@@ -1,20 +1,8 @@
 //! Constructor and argument evaluation across source Await suspension.
 
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
+use crate::common::assert_true_in;
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm};
 
 #[test]
 fn constructor_lookup_precedes_arguments_and_replacement_does_not_change_new_target() {
@@ -55,15 +43,15 @@ fn constructor_lookup_precedes_arguments_and_replacement_does_not_change_new_tar
             "#,
         )
         .unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "events.join(',')==='get,first'&&result===undefined",
     );
     realm
         .eval("C.prototype={marker:true};state.release(2)")
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             events.join(',') === 'get,first,last,construct' && result.sum === 6 && result.target === C &&
@@ -87,8 +75,8 @@ fn awaited_constructor_values_and_member_callees_construct_with_and_without_argu
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             result !== holder && result.value === 7 && result.target === C && result instanceof C && noArgs
@@ -107,14 +95,14 @@ fn nonconstructors_evaluate_all_arguments_and_lookup_failures_skip_arguments() {
         async function g(){return new bad.C(await(operand++))}
         f().catch(value=>{reason=value});g().catch(value=>{lookupReason=value});
     "#).unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "events.join(',')==='first'&&reason===undefined&&lookupReason===marker&&operand===0",
     );
     realm.eval("state.release(2)").unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "reason instanceof TypeError&&events.join(',')==='first,last'",
     );
@@ -132,8 +120,8 @@ fn awaited_constructor_spread_uses_sync_iteration_without_awaiting_yielded_promi
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result.values.length===3&&result.values[0]===1&&result.values[1]===promise&&result.values[2]===3",
     );
@@ -148,8 +136,8 @@ fn nested_construction_in_bindings_arrays_and_calls_resumes_the_original_value_a
         async function f(){const x=new C(await 2);return target([new C(x.value+await 3),new(await C)])}
         f().then(value=>{result=value});
     "#).unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result[0].value===5&&result[0] instanceof C&&result[1].value===undefined&&result[1] instanceof C",
     );
@@ -166,15 +154,15 @@ fn selected_constructors_stay_alive_across_arguments_and_release_after_rejection
     "#).unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "state.weak.deref()!==undefined&&reason===undefined",
     );
     realm.eval("state.reject(marker)").unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "state.weak.deref()===undefined&&reason===marker",
     );
@@ -225,7 +213,7 @@ fn resumed_constructor_argument_limit_failure_bypasses_rejection_and_resource_cl
         }
     }
     assert!(reported);
-    check(&mut realm, "!called&&!caught&&disposed===0");
+    assert_true_in(&mut realm, "!called&&!caught&&disposed===0");
 }
 
 #[test]
@@ -263,10 +251,10 @@ fn proxy_constructor_prototype_lookup_follows_completed_argument_evaluation() {
             "#,
         )
         .unwrap();
-    check(&mut realm, "events.join(',')==='arg'&&result===undefined");
+    assert_true_in(&mut realm, "events.join(',')==='arg'&&result===undefined");
     realm.eval("state.release(7)").unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "events.join(',')==='arg,prototype,construct'&&result.value===7&&result.target===saved",
     );

@@ -1,23 +1,9 @@
 //! EvaluateImportCall validation, Promise rejection and operand suspension (13.3.10).
 
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
-fn collect(realm: &mut Realm) {
-    realm.clear_kept_objects().unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
+use crate::common::assert_true_in;
+use crate::common::checkpoint_and_collect;
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm};
 
 #[test]
 fn invalid_specifiers_reject_fresh_intrinsic_promises_without_public_constructor_hooks() {
@@ -44,14 +30,14 @@ fn invalid_specifiers_reject_fresh_intrinsic_promises_without_public_constructor
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "fresh&&errors===3");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "fresh&&errors===3");
 }
 
 #[test]
 fn operand_abrupts_throw_synchronously_before_specifier_conversion() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let reason = {},
@@ -113,12 +99,12 @@ fn specifier_coercion_follows_both_operands_and_rejects_before_reading_options()
             "#,
         )
         .unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "events.join(',')==='specifier,options,string'&&!same",
     );
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "same&&events.join(',')==='specifier,options,string'",
     );
@@ -144,8 +130,8 @@ fn primitive_options_reject_after_string_conversion() {
                 "#
             ))
             .unwrap();
-        drain(&mut realm);
-        check(&mut realm, "rejected&&events.join(',')==='string'");
+        drain_promise_jobs(&mut realm);
+        assert_true_in(&mut realm, "rejected&&events.join(',')==='string'");
     }
 }
 
@@ -180,8 +166,8 @@ fn with_getter_and_attribute_types_reject_without_synchronous_throws() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "same&&errors===12");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "same&&errors===12");
 }
 
 #[test]
@@ -234,8 +220,8 @@ fn attribute_getters_finish_before_type_validation_and_symbol_keys_are_ignored()
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "same&&typed&&events.join(',')==='first,second,keys,descriptor,get'",
     );
@@ -272,9 +258,9 @@ fn await_and_yield_operands_preserve_order_and_the_original_specifier() {
             "#,
         )
         .unwrap();
-    check(&mut realm, "events.join(',')==='specifier'&&valid");
-    drain(&mut realm);
-    check(
+    assert_true_in(&mut realm, "events.join(',')==='specifier'&&valid");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "asyncRejected&&generatorRejected&&events.join(',')==='specifier,options'",
     );
@@ -320,8 +306,8 @@ fn host_failures_during_conversion_bypass_rejection_handlers_and_disposal() {
             },
             "{error}"
         );
-        collect(&mut realm);
-        check(
+        checkpoint_and_collect(&mut realm);
+        assert_true_in(
             &mut realm,
             "disposed===0&&caught===0&&finalized===0&&weak.deref()===undefined",
         );
@@ -364,7 +350,7 @@ fn valid_requests_run_validation_before_the_module_loading_host_boundary() {
         )
         .unwrap_err();
     assert!(matches!(error, Error::Unsupported { .. }), "{error}");
-    check(
+    assert_true_in(
         &mut realm,
         "caught===0&&finalized===0&&events.join(',')==='specifier,options,string,with,value'",
     );
@@ -402,12 +388,12 @@ fn specifiers_remain_alive_across_await_or_yield_then_release_after_completion()
             "#,
         )
         .unwrap();
-    collect(&mut realm);
-    check(&mut realm, "weak.deref()!==undefined");
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(&mut realm, "weak.deref()!==undefined");
     realm.eval("release({})").unwrap();
-    drain(&mut realm);
-    collect(&mut realm);
-    check(&mut realm, "rejected&&weak.deref()===undefined");
+    drain_promise_jobs(&mut realm);
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(&mut realm, "rejected&&weak.deref()===undefined");
     realm
         .eval(
             r#"
@@ -423,9 +409,9 @@ fn specifiers_remain_alive_across_await_or_yield_then_release_after_completion()
             "#,
         )
         .unwrap();
-    collect(&mut realm);
-    check(&mut realm, "weak.deref()!==undefined");
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(&mut realm, "weak.deref()!==undefined");
     realm.eval("iterator.return(7)").unwrap();
-    collect(&mut realm);
-    check(&mut realm, "weak.deref()===undefined");
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(&mut realm, "weak.deref()===undefined");
 }

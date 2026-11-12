@@ -1,26 +1,10 @@
 //! Suspended SwitchStatement selection, fall-through and scope disposal (14.12).
 
 use crate::common::UnavailableHostRealm;
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
-
-fn collect(realm: &mut Realm) {
-    realm.clear_kept_objects().unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
+use crate::common::assert_true_in;
+use crate::common::checkpoint_and_collect;
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm};
 
 #[test]
 fn awaited_discriminants_and_selectors_run_once_before_selected_fallthrough() {
@@ -37,9 +21,9 @@ fn awaited_discriminants_and_selectors_run_once_before_selected_fallthrough() {
             "#,
         )
         .unwrap();
-    check(&mut realm, "events.join(',')==='input'&&result===undefined");
-    drain(&mut realm);
-    check(
+    assert_true_in(&mut realm, "events.join(',')==='input'&&result===undefined");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "events.join(',')==='input,test1,test2,match,fallthrough'&&result===7",
     );
@@ -59,8 +43,8 @@ fn a_middle_default_runs_only_after_all_nonmatching_selectors_and_then_falls_thr
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result==='a,b,default,tail'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result==='a,b,default,tail'");
 }
 
 #[test]
@@ -102,8 +86,8 @@ fn selectors_use_strict_equality_without_coercion_or_implicit_await() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             conversions === 0 && results.includes('number') && results.includes('bigint') && results
@@ -124,8 +108,8 @@ fn discriminants_precede_the_shared_case_scope_and_selectors_observe_its_tdz_and
         }}async function g(){try{switch(await 0){case await hidden:let hidden=0}}catch(error){return error instanceof ReferenceError}}
         f().then(value=>{result=value});g().then(value=>{failed=value});
     "#).unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result===10&&x===9&&called===1&&failed===true&&typeof later==='undefined'&&typeof hidden==='undefined'",
     );
@@ -181,12 +165,12 @@ fn case_body_blocks_dispose_before_fallthrough_in_ordinary_and_suspended_executi
             "#
         };
         realm.eval(source).unwrap();
-        drain(&mut realm);
-        check(
+        drain_promise_jobs(&mut realm);
+        assert_true_in(
             &mut realm,
             "result==='first,a,body,b'&&events.join(',')==='first,a,body,b'",
         );
-        check(
+        assert_true_in(
             &mut realm,
             "eval(\"1;switch(0){case 0:{using c=resource('c');7;break;}}\")===7",
         );
@@ -245,8 +229,8 @@ fn nested_switch_breaks_and_labelled_continues_unwind_after_awaited_finalizers()
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result==='finally0,dispose0,finally1,dispose1'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result==='finally0,dispose0,finally1,dispose1'");
 }
 
 #[test]
@@ -258,8 +242,8 @@ fn selector_rejections_restore_scope_and_body_disposal_errors_suppress_the_origi
         async function g(){try{switch(await 1){case 1:{using r={[Symbol.dispose](){events.push('dispose');throw disposeReason}};throw await Promise.reject(reason)}}}catch(error){return error instanceof SuppressedError&&error.error===disposeReason&&error.suppressed===reason}finally{await 0;events.push('body-finally')}}
         f();g().then(value=>{result=value});
     "#).unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             failed && !selected && result === true && events.includes('selector-finally') && events
@@ -304,22 +288,22 @@ fn selection_retains_the_input_then_releases_it_while_case_lexicals_stay_live() 
             "#,
         )
         .unwrap();
-    collect(&mut realm);
-    check(
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "inputWeak.deref()!==undefined&&result===undefined",
     );
     realm.eval("select()").unwrap();
-    drain(&mut realm);
-    collect(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "inputWeak.deref()===undefined&&localWeak.deref()!==undefined&&result===undefined",
     );
     realm.eval("body()").unwrap();
-    drain(&mut realm);
-    collect(&mut realm);
-    check(&mut realm, "localWeak.deref()===undefined&&result===7");
+    drain_promise_jobs(&mut realm);
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(&mut realm, "localWeak.deref()===undefined&&result===7");
 }
 
 #[test]
@@ -386,7 +370,7 @@ fn host_abort_skips_switch_disposal_handlers_and_pending_finalizers() {
         "#
         .replace("TAIL", tail);
         realm.eval(&code).unwrap();
-        drain(&mut realm);
+        drain_promise_jobs(&mut realm);
         realm.eval("delete resource[dispose]").unwrap();
         realm.eval("proceed()").unwrap();
         let mut reported = false;
@@ -404,8 +388,8 @@ fn host_abort_skips_switch_disposal_handlers_and_pending_finalizers() {
             }
         }
         assert!(reported);
-        collect(&mut realm);
-        check(
+        checkpoint_and_collect(&mut realm);
+        assert_true_in(
             &mut realm,
             "disposed===0&&finalized===0&&!caught&&state.weak.deref()===undefined",
         );

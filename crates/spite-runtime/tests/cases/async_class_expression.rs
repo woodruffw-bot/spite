@@ -1,20 +1,9 @@
 //! Suspended class expressions and NamedEvaluation before static initialization.
 
+use crate::common::assert_true_in;
+use crate::common::drain_promise_jobs;
 use spite_runtime::object::PromiseState;
 use spite_runtime::{Error, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
 
 #[test]
 fn bindings_and_pattern_defaults_name_classes_before_static_initialization() {
@@ -37,8 +26,8 @@ fn bindings_and_pattern_defaults_name_classes_before_static_initialization() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result.join(',')==='A,B,C,D,E,F'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result.join(',')==='A,B,C,D,E,F'");
 }
 
 #[test]
@@ -87,8 +76,8 @@ fn object_keys_name_classes_while_awaited_and_explicitly_named_values_keep_their
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result.join(',')==='plain,[key],Inner,,,__proto__'",
     );
@@ -114,8 +103,8 @@ fn identifier_assignment_infers_names_and_property_or_parenthesized_targets_do_n
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result.join(',')==='A,B,C,,'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result.join(',')==='A,B,C,,'");
 }
 
 #[test]
@@ -147,14 +136,14 @@ fn nested_class_heritage_and_key_expressions_preserve_outer_tasks_and_internal_t
             "#,
         )
         .unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "(()=>{try{read()}catch(e){return e instanceof ReferenceError}})()",
     );
     realm.collect(usize::MAX).unwrap();
     realm.eval("release()").unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result[1]===7&&result[2]==='Outer'&&result[3]===99&&read()===result[0]",
     );
@@ -173,8 +162,8 @@ fn rejected_nested_expression_classes_unwind_before_enclosing_declaration_contex
         }
         f(true);f(false);
     "#).unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "events.length===4&&events.every(Boolean)&&nestedClassSloppy===7",
     );
@@ -186,14 +175,14 @@ fn expression_class_captures_survive_collection_and_host_abort_releases_them() {
     realm.eval("let weak,flag=0;async function f(){let key=Symbol();weak=new WeakRef(key);try{let C=class{[key]=1;[(key=null,await 0,import('unavailable'))](){}}}catch{flag=1}finally{flag=2}}let pending=f()").unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(&mut realm, "weak.deref()!==undefined&&flag===0");
+    assert_true_in(&mut realm, "weak.deref()!==undefined&&flag===0");
     assert!(matches!(
         realm.run_next_promise_job(),
         Ok(PromiseJobOutcome::Reported(Error::Unsupported { .. }))
     ));
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "weak.deref()===undefined&&flag===0&&(expressionClassSloppy=7)===7",
     );
@@ -202,7 +191,7 @@ fn expression_class_captures_survive_collection_and_host_abort_releases_them() {
 #[test]
 fn yielded_expression_classes_preserve_inferred_names_and_handle_return_and_throw() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let events = [],
@@ -262,11 +251,11 @@ fn parenthesized_default_export_names_expression_classes_before_static_elements(
     let Value::Object(promise) = promise else {
         panic!("evaluation promise")
     };
-    check(&mut realm, "observed.length===0");
-    drain(&mut realm);
+    assert_true_in(&mut realm, "observed.length===0");
+    drain_promise_jobs(&mut realm);
     assert!(matches!(
         realm.inspect_object(&promise).unwrap().promise_state(),
         Some(PromiseState::Fulfilled(Value::Undefined))
     ));
-    check(&mut realm, "observed.join(',')==='default,7,body'");
+    assert_true_in(&mut realm, "observed.join(',')==='default,7,body'");
 }

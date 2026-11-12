@@ -1,21 +1,9 @@
 //! HostGetSupportedImportAttributes and loading-time attribute errors.
 
+use crate::common::assert_true_in;
+use crate::common::drain_promise_jobs;
 use spite_core::JsString;
-use spite_runtime::{Error, ExceptionKind, Limits, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
+use spite_runtime::{Error, ExceptionKind, Limits, Realm};
 
 fn syntax(error: Error) {
     assert!(
@@ -70,12 +58,12 @@ fn default_keys_reject_imports_through_fresh_intrinsic_promises_before_the_host_
             "#,
         )
         .unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "fresh&&errors===0&&events.join(',')==='after,finally'",
     );
-    drain(&mut realm);
-    check(&mut realm, "errors===2");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "errors===2");
 }
 
 #[test]
@@ -116,10 +104,10 @@ fn all_getters_and_value_validation_precede_unsupported_key_rejection() {
             "#,
         )
         .unwrap();
-    check(&mut realm, "events.join(',')==='unknown,later,again,value'");
+    assert_true_in(&mut realm, "events.join(',')==='unknown,later,again,value'");
     assert!(realm.take_module_import_request().is_none());
-    drain(&mut realm);
-    check(&mut realm, "same&&typed");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "same&&typed");
 }
 
 #[test]
@@ -147,8 +135,8 @@ fn supported_keys_forward_arbitrary_string_values_in_canonical_order_and_keep_ut
     );
     realm.eval("let rejected=false;import('bad',{with:{Type:'x'}}).catch(e=>rejected=e instanceof TypeError)").unwrap();
     assert!(realm.take_module_import_request().is_none());
-    drain(&mut realm);
-    check(&mut realm, "rejected");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "rejected");
 }
 
 #[test]
@@ -183,8 +171,8 @@ fn ignored_keys_do_not_require_support_and_normalization_is_not_applied() {
         JsString::from("é")
     );
     assert!(realm.take_module_import_request().is_none());
-    drain(&mut realm);
-    check(&mut realm, "rejected");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "rejected");
 }
 
 #[test]
@@ -204,7 +192,7 @@ fn static_unknown_keys_fail_loading_and_linking_before_resolver_or_body_executio
         );
         syntax(realm.link_module(&module).unwrap_err());
         syntax(realm.evaluate_module_record(&module).unwrap_err());
-        check(&mut realm, "typeof entered==='undefined'");
+        assert_true_in(&mut realm, "typeof entered==='undefined'");
     }
 }
 
@@ -258,7 +246,7 @@ fn configured_static_attributes_load_and_evaluate_with_the_same_fixed_key_list()
         .unwrap();
     assert_eq!(values, [JsString::from("first"), JsString::from("second")]);
     realm.evaluate_module_record(&root).unwrap();
-    check(&mut realm, "result===7");
+    assert_true_in(&mut realm, "result===7");
     realm.enable_module_imports();
     realm
         .eval("import('source',{with:{type:'third'}})")

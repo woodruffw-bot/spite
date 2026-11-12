@@ -1,26 +1,10 @@
 //! Awaited update targets share ordinary ToNumeric and PutValue (13.4.2–5).
 
 use crate::common::UnavailableHostRealm;
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
-
-fn collect(realm: &mut Realm) {
-    realm.clear_kept_objects().unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
+use crate::common::assert_true_in;
+use crate::common::checkpoint_and_collect;
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm};
 
 #[test]
 fn awaited_prefix_and_postfix_targets_return_numeric_values_and_preserve_bigint() {
@@ -46,8 +30,8 @@ fn awaited_prefix_and_postfix_targets_return_numeric_values_and_preserve_bigint(
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===true");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===true");
 }
 
 #[test]
@@ -92,8 +76,8 @@ fn awaited_update_caches_the_key_before_numeric_conversion_and_writes_with_the_r
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result===20&&saved===21&&receiver===object&&events.join(',')==='key,get,number,set'",
     );
@@ -140,8 +124,8 @@ fn private_updates_with_awaited_bases_and_ordinary_super_updates_keep_brand_and_
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===11&&object.saved===4&&bad===true");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===11&&object.saved===4&&bad===true");
 }
 
 #[test]
@@ -203,8 +187,8 @@ fn awaited_updates_share_strict_readonly_and_nonnumeric_failures_without_extra_w
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "results.length===3&&results.every(value=>value)&&coerced===2&&gets===1&&sets===0&&typeof frozen.x==='object'",
     );
@@ -236,8 +220,8 @@ fn awaited_updates_work_in_for_headers_and_preserve_parenthesized_references() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===true");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===true");
 }
 
 #[test]
@@ -273,21 +257,21 @@ fn awaited_key_update_retains_its_base_until_write_then_releases_it() {
             "#,
         )
         .unwrap();
-    collect(&mut realm);
-    check(
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "weak.deref()!==undefined&&old===undefined&&result===undefined",
     );
     realm.eval("release('x')").unwrap();
-    drain(&mut realm);
-    collect(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "weak.deref()===undefined&&old===1&&result===undefined",
     );
     realm.eval("releaseSecond(0)").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===7");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===7");
 }
 
 #[test]
@@ -327,8 +311,8 @@ fn host_abort_during_awaited_key_update_skips_get_put_handlers_and_disposal() {
             }
         }
         assert!(reported);
-        collect(&mut realm);
-        check(
+        checkpoint_and_collect(&mut realm);
+        assert_true_in(
             &mut realm,
             "gets===0&&sets===0&&disposed===0&&finalized===0&&!caught&&state.weak.deref()===undefined",
         );

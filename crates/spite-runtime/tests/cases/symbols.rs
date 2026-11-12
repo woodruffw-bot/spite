@@ -1,25 +1,22 @@
 //! Script-visible Symbols, global descriptors, and well-known hooks.
 
+use crate::common::assert_true_in;
 use spite_core::WellKnownSymbol;
 use spite_runtime::{Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
 
 #[test]
 fn symbol_global_is_mutable_configurable_and_preserves_the_intrinsic() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         "let d=Object.getOwnPropertyDescriptor(globalThis,'Symbol'),S=Symbol,s=S('x');d.value===Symbol && d.writable && !d.enumerable && d.configurable && Symbol.length===0 && Symbol.name==='Symbol'",
     );
-    check(
+    assert_true_in(
         &mut realm,
         "globalThis.Symbol=7;Symbol===7 && s.constructor===S && (delete globalThis.Symbol) && typeof Symbol==='undefined' && globalThis.Symbol===undefined && s.constructor===S",
     );
     realm.collect(usize::MAX).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "s.toString()==='Symbol(x)' && (globalThis.Symbol=S,Symbol('x')!==s) && Symbol.prototype===Object.getPrototypeOf(s)",
     );
@@ -52,7 +49,7 @@ fn fresh_and_registered_symbols_preserve_identity_across_script_evaluations_and_
 #[test]
 fn disposal_symbols_have_standard_descriptions_and_frozen_constructor_properties() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             for (const name of ['dispose', 'asyncDispose']) {
@@ -71,7 +68,7 @@ fn disposal_symbols_have_standard_descriptions_and_frozen_constructor_properties
 #[test]
 fn disposal_symbol_properties_reject_mutation_and_remain_distinct_property_keys() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             'use strict';
@@ -110,7 +107,7 @@ fn disposal_symbols_remain_valid_weak_targets_across_collection() {
         .unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             map.get(Symbol.dispose) === 1 && map.get(Symbol.asyncDispose) === 2 && set.has(Symbol
@@ -123,19 +120,19 @@ fn disposal_symbols_remain_valid_weak_targets_across_collection() {
 #[test]
 fn computed_keys_and_coercion_hooks_are_usable_from_scripts() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         "let a=Symbol('x'),b=Symbol('x'),o={[a]:1,[b]:2},copy=Object.assign({},o);o[a]===1 && o[b]===2 && o.x===undefined && copy[a]===1 && copy[b]===2 && typeof a==='symbol' && Boolean(a)",
     );
-    check(
+    assert_true_in(
         &mut realm,
         "let hint='',k={[Symbol.toPrimitive]:(h)=>{hint=h;return a;}};o[k]===1 && hint==='string'",
     );
-    check(
+    assert_true_in(
         &mut realm,
         "let matcher={[Symbol.match]:true},caught=false;try{'x'.includes(matcher);}catch(e){caught=e instanceof TypeError;}caught",
     );
-    check(
+    assert_true_in(
         &mut realm,
         "let target={[Symbol.hasInstance]:(v)=>v===7};7 instanceof target && !(8 instanceof target) && Object.prototype.toString.call({[Symbol.toStringTag]:'Custom'})==='[object Custom]'",
     );
@@ -144,7 +141,7 @@ fn computed_keys_and_coercion_hooks_are_usable_from_scripts() {
 #[test]
 fn script_iterators_use_standard_aliases_and_code_point_iteration() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let i = [1, , 3][Symbol.iterator]();
@@ -153,7 +150,7 @@ fn script_iterators_use_standard_aliases_and_code_point_iteration() {
                 .done
         "#,
     );
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             i = 'a\uD83D\uDE00\uD800' [Symbol.iterator]();
@@ -161,7 +158,7 @@ fn script_iterators_use_standard_aliases_and_code_point_iteration() {
                 .next().value === '\uD800' && i.next().done
         "#,
     );
-    check(
+    assert_true_in(
         &mut realm,
         "function f(x){let it=arguments[Symbol.iterator]();x=2;return it.next().value===2 && it.next().done;}f(1)",
     );

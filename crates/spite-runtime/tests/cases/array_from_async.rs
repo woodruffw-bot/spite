@@ -1,21 +1,9 @@
 //! Sequential Array.fromAsync conversion, awaiting, and cleanup (23.1.2.2).
 
 use crate::common::UnavailableHostRealm;
-use spite_runtime::{Error, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
+use crate::common::assert_true_in;
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, PromiseJobOutcome, Realm};
 
 #[test]
 fn metadata_and_validation_return_fresh_intrinsic_promises_before_user_lookup() {
@@ -49,9 +37,9 @@ fn metadata_and_validation_return_fresh_intrinsic_promises_before_user_lookup() 
             "#,
         )
         .unwrap();
-    check(&mut realm, "gets===0&&errors===0");
-    drain(&mut realm);
-    check(&mut realm, "errors===4");
+    assert_true_in(&mut realm, "gets===0&&errors===0");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "errors===4");
 }
 
 #[test]
@@ -90,22 +78,22 @@ fn arraylike_values_and_mapping_are_awaited_sequentially_with_captured_length() 
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "log.join(',')==='length,get0'&&result===undefined",
     );
     realm.eval("source.length=9;release(2)").unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "log.join(',')==='length,get0,map0,get1,map1'&&Array.isArray(result)&&result.join(',')==='2,4'",
     );
     realm
         .eval("let holes;Array.fromAsync({length:2}).then(a=>{holes=a})")
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "holes.length===2&&Object.hasOwn(holes,'0')&&Object.hasOwn(holes,'1')&&holes[0]===undefined",
     );
@@ -155,8 +143,8 @@ fn async_values_pass_through_while_sync_values_are_unwrapped_and_async_method_wi
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "asyncResult.length===1&&asyncResult[0]===value&&syncResult[0]===7&&mappedResult[0]===7",
     );
@@ -213,8 +201,8 @@ fn iterator_acquisition_precedes_construction_and_next_is_cached() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             result instanceof C && result[0] === 8 && result.length === 1 && log.join(',') ===
@@ -238,8 +226,8 @@ fn iterator_acquisition_precedes_construction_and_next_is_cached() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "other instanceof D&&other.length===2&&Object.hasOwn(other,'1')",
     );
@@ -260,8 +248,8 @@ fn iterator_acquisition_precedes_construction_and_next_is_cached() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "syncGets===1&&syncResult.length===1&&syncResult[0]===9",
     );
@@ -309,13 +297,13 @@ fn mapper_failures_await_close_and_original_reason_wins_over_close_rejection() {
                 }
             ))
             .unwrap();
-        drain(&mut realm);
-        check(&mut realm, "closed===1&&!rejected");
+        drain_promise_jobs(&mut realm);
+        assert_true_in(&mut realm, "closed===1&&!rejected");
         realm
             .eval("release({then(resolve,reject){reject(9)}})")
             .unwrap();
-        drain(&mut realm);
-        check(&mut realm, "closed===1&&rejected");
+        drain_promise_jobs(&mut realm);
+        assert_true_in(&mut realm, "closed===1&&rejected");
     }
     for tail in [
         "get return(){throw 7}",
@@ -349,8 +337,8 @@ fn mapper_failures_await_close_and_original_reason_wins_over_close_rejection() {
                 "#
             ))
             .unwrap();
-        drain(&mut realm);
-        check(&mut realm, "ok");
+        drain_promise_jobs(&mut realm);
+        assert_true_in(&mut realm, "ok");
     }
     // AsyncIteratorClose preserves a throw without inspecting result fields.
     // A sync adapter first performs its own continuation's done/value reads.
@@ -365,8 +353,8 @@ fn mapper_failures_await_close_and_original_reason_wins_over_close_rejection() {
         "#
         .replace("METHOD", method);
         realm.eval(&source).unwrap();
-        drain(&mut realm);
-        check(&mut realm, &format!("ok&&reads==='{reads}'"));
+        drain_promise_jobs(&mut realm);
+        assert_true_in(&mut realm, &format!("ok&&reads==='{reads}'"));
     }
 }
 
@@ -403,8 +391,8 @@ fn step_errors_do_not_close_and_done_skips_value_lookup() {
                 "#
             ))
             .unwrap();
-        drain(&mut realm);
-        check(&mut realm, "ok&&closed===0");
+        drain_promise_jobs(&mut realm);
+        assert_true_in(&mut realm, "ok&&closed===0");
     }
     let mut realm = Realm::default();
     realm
@@ -429,8 +417,8 @@ fn step_errors_do_not_close_and_done_skips_value_lookup() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "ok");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "ok");
 }
 
 #[test]
@@ -473,8 +461,8 @@ fn define_failure_closes_but_final_length_failure_does_not() {
                 key = if define { "0" } else { "length" }
             ))
             .unwrap();
-        drain(&mut realm);
-        check(&mut realm, &format!("ok&&closed==={}", u8::from(define)));
+        drain_promise_jobs(&mut realm);
+        assert_true_in(&mut realm, &format!("ok&&closed==={}", u8::from(define)));
     }
     // Both branches of 23.1.2.2 use Set with Throw=true for the final length.
     // A false Proxy set result rejects after exhaustion without iterator close.
@@ -496,8 +484,8 @@ fn define_failure_closes_but_final_length_failure_does_not() {
                 "#
             ))
             .unwrap();
-        drain(&mut realm);
-        check(
+        drain_promise_jobs(&mut realm);
+        assert_true_in(
             &mut realm,
             "ok&&sets===1&&closed===0&&target[0]===1&&!Object.hasOwn(target,'length')",
         );
@@ -514,15 +502,15 @@ fn pending_native_state_survives_gc_and_releases_source_after_completion() {
     "#).unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "state.weak.deref()!==undefined&&result===undefined",
     );
     realm.eval("state.release(9)").unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(&mut realm, "state.weak.deref()===undefined&&result[0]===9");
+    assert_true_in(&mut realm, "state.weak.deref()===undefined&&result[0]===9");
     for mapper in ["throw reason", "return Promise.reject(reason)"] {
         for release in [
             "state.release(9)",
@@ -541,18 +529,18 @@ fn pending_native_state_survives_gc_and_releases_source_after_completion() {
             "#
             .replace("MAPPER", mapper);
             realm.eval(&source).unwrap();
-            drain(&mut realm);
+            drain_promise_jobs(&mut realm);
             realm.clear_kept_objects().unwrap();
             realm.collect(usize::MAX).unwrap();
-            check(
+            assert_true_in(
                 &mut realm,
                 "state.marker===null&&state.closed===1&&!state.observed&&weak.deref()!==undefined",
             );
             realm.eval(release).unwrap();
-            drain(&mut realm);
+            drain_promise_jobs(&mut realm);
             realm.clear_kept_objects().unwrap();
             realm.collect(usize::MAX).unwrap();
-            check(&mut realm, "state.observed&&weak.deref()===undefined");
+            assert_true_in(&mut realm, "state.observed&&weak.deref()===undefined");
         }
     }
 }
@@ -596,7 +584,7 @@ fn host_failures_bypass_rejection_and_iterator_close() {
         }
     }
     assert!(reported);
-    check(&mut realm, "!caught&&!closed");
+    assert_true_in(&mut realm, "!caught&&!closed");
 }
 
 #[test]
@@ -614,6 +602,6 @@ fn intrinsic_await_bypasses_public_then_species_and_replaced_bindings() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result.length===1&&result[0]===7");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result.length===1&&result[0]===7");
 }

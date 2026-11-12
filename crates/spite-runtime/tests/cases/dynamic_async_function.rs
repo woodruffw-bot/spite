@@ -1,23 +1,15 @@
 //! Dynamic AsyncFunction conversion, prototype selection, scope and source.
 
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, Limits, Realm, Value};
 
 use crate::common::assert_true;
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => {}
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
 
 #[test]
 fn calls_and_construction_produce_async_functions_with_standard_source_and_fresh_promises() {
     let mut realm = Realm::default();
     assert_eq!(realm.eval("let AF=(async function(){}).constructor,values=[],f=AF('x','y=1','return x+y'),g=new AF('return 7');f(2).then(v=>{values.push(v)});g().then(v=>{values.push(v)});f.name==='anonymous'&&f.length===1&&!Object.hasOwn(f,'prototype')&&Object.getPrototypeOf(f)===AF.prototype&&f.toString()==='async function anonymous(x,y=1\\n) {\\nreturn x+y\\n}'"),Ok(Value::Boolean(true)));
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(
         realm.eval("values.join(',')"),
         Ok(Value::String("3,7".into()))
@@ -27,7 +19,7 @@ fn calls_and_construction_produce_async_functions_with_standard_source_and_fresh
             "let empty=AF(),undefinedResult=false;empty().then(v=>{undefinedResult=v===undefined})",
         )
         .unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(realm.eval("undefinedResult"), Ok(Value::Boolean(true)));
 }
 
@@ -116,7 +108,7 @@ fn subclass_and_primitive_prototype_fallback_preserve_internal_function_kind() {
         ),
         Ok(Value::Boolean(true))
     );
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(
         realm.eval("values.join(',')"),
         Ok(Value::String("3,4,5".into()))
@@ -152,7 +144,7 @@ fn dynamic_scope_and_strictness_are_independent_of_the_constructor_caller() {
         )
         .unwrap();
     realm.collect(usize::MAX).unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(
         realm.eval("values.join(',')==='9,2,8,true'&&strictResult"),
         Ok(Value::Boolean(true))
@@ -164,7 +156,7 @@ fn generated_source_preserves_utf16_literals_and_comment_code_points() {
     let mut realm = Realm::default();
     realm.eval("let AF=(async function(){}).constructor,lone=String.fromCharCode(0xd800),body=\"return '\"+lone+\"'\",f=AF('x/*'+lone+'*/',body),result;f().then(v=>{result=v});if(f.toString().split(lone).length!==3)throw 1").unwrap();
     realm.collect(usize::MAX).unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(realm.eval("result.length===1&&result.charCodeAt(0)===0xd800&&f.toString().startsWith('async function anonymous(')"),Ok(Value::Boolean(true)));
 }
 

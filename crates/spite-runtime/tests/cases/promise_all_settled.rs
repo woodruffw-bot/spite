@@ -1,19 +1,10 @@
 //! Ordered settlement snapshots, shared callback guards and intrinsic allocation.
 
 use crate::common::UnavailableHostRealm;
-use spite_runtime::{Error, PromiseJobOutcome, Realm, Value};
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, Realm, Value};
 
 use crate::common::assert_true;
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => {}
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
 
 #[test]
 fn mixed_snapshots_keep_input_order_descriptors_and_original_values() {
@@ -35,13 +26,13 @@ fn mixed_snapshots_keep_input_order_descriptors_and_original_values() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(
         realm.eval("empty&&result===undefined"),
         Ok(Value::Boolean(true))
     );
     realm.eval("cap.resolve(value)").unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(realm.eval(r#"
         result.length === 3 && result[0].status === 'fulfilled' && result[0].value === value && result[
                 1].status === 'rejected' && result[1].reason === reason && result[2].value === 3 &&
@@ -162,7 +153,7 @@ fn snapshot_and_array_creation_bypass_replaced_globals_and_inherited_setters() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(
         realm.eval(
             r#"
@@ -179,7 +170,7 @@ fn snapshot_and_array_creation_bypass_replaced_globals_and_inherited_setters() {
 fn snapshot_objects_retain_values_and_symbol_reasons_until_results_are_released() {
     let mut realm = Realm::default();
     realm.eval("let state=(()=>{let value={},symbol=Symbol(),cap=Promise.withResolvers();return{all:Promise.allSettled([Promise.resolve(value),Promise.reject(symbol),cap.promise]),finish:cap.resolve,object:new WeakRef(value),symbol:new WeakRef(symbol)}})()").unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
     assert_eq!(
@@ -187,7 +178,7 @@ fn snapshot_objects_retain_values_and_symbol_reasons_until_results_are_released(
         Ok(Value::Boolean(true))
     );
     realm.eval("state.finish(3)").unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
     assert_eq!(

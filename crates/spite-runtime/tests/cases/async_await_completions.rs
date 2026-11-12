@@ -1,25 +1,9 @@
 //! StatementList values remain owned across suspension until replaced.
 
-use spite_runtime::{PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
-
-fn collect(realm: &mut Realm) {
-    realm.clear_kept_objects().unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
+use crate::common::assert_true_in;
+use crate::common::checkpoint_and_collect;
+use crate::common::drain_promise_jobs;
+use spite_runtime::Realm;
 
 fn setup(realm: &mut Realm) {
     realm
@@ -55,49 +39,49 @@ fn root_statement_values_survive_empty_declarations_and_release_when_replaced() 
             "#,
         )
         .unwrap();
-    collect(&mut realm);
-    check(
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "state.weak.deref()!==undefined&&result===undefined",
     );
     realm.eval("state.releaseFirst(0)").unwrap();
-    drain(&mut realm);
-    collect(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "state.weak.deref()===undefined&&result===undefined",
     );
     realm.eval("state.releaseSecond(0)").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===7");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===7");
 }
 
 fn forwarded_value(source: &str) {
     let mut realm = Realm::default();
     setup(&mut realm);
     realm.eval(source).unwrap();
-    collect(&mut realm);
-    check(
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "state.weak.deref()!==undefined&&result===undefined",
     );
     realm.eval("state.releaseFirst(0)").unwrap();
-    drain(&mut realm);
-    collect(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "state.weak.deref()!==undefined&&result===undefined",
     );
     realm.eval("state.releaseSecond(0)").unwrap();
-    drain(&mut realm);
-    collect(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "state.weak.deref()===undefined&&result===undefined",
     );
     realm.eval("state.releaseThird(0)").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===7");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===7");
 }
 
 #[test]
@@ -119,18 +103,18 @@ fn missing_false_branch_applies_update_empty_and_replaces_the_previous_value() {
     let mut realm = Realm::default();
     setup(&mut realm);
     realm.eval("async function f(){make();if(await false);const x=await state.first;return 7}f().then(value=>{result=value})").unwrap();
-    collect(&mut realm);
-    check(
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "state.weak.deref()!==undefined&&result===undefined",
     );
-    drain(&mut realm);
-    collect(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "state.weak.deref()===undefined&&result===undefined",
     );
     realm.eval("state.releaseFirst(0)").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===7");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===7");
 }

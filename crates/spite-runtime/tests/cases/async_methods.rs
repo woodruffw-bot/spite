@@ -2,16 +2,8 @@
 
 use crate::common::UnavailableHostRealm;
 use crate::common::assert_true;
-use spite_runtime::{Error, PromiseJobOutcome, Realm, Value};
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => {}
-            PromiseJobOutcome::Reported(e) => panic!("{e}"),
-        }
-    }
-}
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, Realm, Value};
 
 #[test]
 fn object_and_class_methods_have_async_metadata_standard_descriptors_and_no_construct() {
@@ -65,7 +57,7 @@ fn receivers_arguments_and_parameter_body_errors_follow_async_call_semantics() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(
         realm.eval("values.join(',')"),
         Ok(Value::String("object,param,throw,strict".into()))
@@ -131,7 +123,7 @@ fn super_in_parameters_and_bodies_uses_live_home_objects_and_original_receivers(
             "#,
         )
         .unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(
         realm.eval("values.join(',')"),
         Ok(Value::String("7,9,5,Base,17".into()))
@@ -182,7 +174,7 @@ fn instance_and_static_private_async_methods_enforce_brands_through_rejections()
             "#,
         )
         .unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(
         realm.eval("values.join(',')"),
         Ok(Value::String("8,brand,9,static".into()))
@@ -221,7 +213,7 @@ fn async_method_captures_and_home_objects_survive_collection_and_release() {
 fn dynamic_source_supports_async_methods_and_host_failures_skip_handlers() {
     let mut realm = Realm::with_unavailable_host();
     realm.eval("let AF=(async function(){}).constructor,result;AF('return {async m(){return 5}}')().then(o=>o.m()).then(v=>{result=v})").unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(realm.eval("result"), Ok(Value::Number(5.0)));
     realm
         .eval("let flag=0,o={async m(){return spiteUnavailableHost()}}")

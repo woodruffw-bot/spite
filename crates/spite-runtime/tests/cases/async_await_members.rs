@@ -1,20 +1,8 @@
 //! Awaited member references retain base values and their reference operations.
 
-use spite_runtime::{PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
+use crate::common::assert_true_in;
+use crate::common::drain_promise_jobs;
+use spite_runtime::Realm;
 
 #[test]
 fn awaited_base_and_key_run_once_and_key_conversion_waits_for_fulfillment() {
@@ -26,15 +14,15 @@ fn awaited_base_and_key_run_once_and_key_conversion_waits_for_fulfillment() {
         async function f(){return (events.push('base'),await obj)[(events.push('key'),await state.gate)]}
         f().then(value=>{result=value});
     "#).unwrap();
-    check(&mut realm, "events.join(',')==='base'&&result===undefined");
-    drain(&mut realm);
-    check(
+    assert_true_in(&mut realm, "events.join(',')==='base'&&result===undefined");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "events.join(',')==='base,key'&&result===undefined",
     );
     realm.eval("state.release(key)").unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "events.join(',')==='base,key,string,get'&&result===7",
     );
@@ -70,8 +58,8 @@ fn nullish_base_still_evaluates_the_key_but_does_not_convert_it() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "keys===2&&converted===0&&rejected===marker&&typeError instanceof TypeError",
     );
@@ -106,13 +94,13 @@ fn awaited_member_calls_keep_the_receiver_and_select_the_function_before_argumen
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "reads===1&&result===undefined");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "reads===1&&result===undefined");
     realm
         .eval("Object.defineProperty(obj,'method',{value(){throw 1}});state.release(9)")
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "reads===1&&result===9");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "reads===1&&result===9");
 }
 
 #[test]
@@ -147,8 +135,8 @@ fn private_fields_and_methods_keep_private_context_and_brand_errors_skip_argumen
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "field===12&&method===15&&args===1&&reason instanceof TypeError",
     );
@@ -193,8 +181,8 @@ fn delete_uses_the_reference_without_getting_the_value_and_preserves_strict_erro
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "gets===0&&deleted===true&&!Object.hasOwn(obj,'x')&&fixed===false&&strictReason instanceof TypeError",
     );
@@ -225,8 +213,8 @@ fn symbol_keys_and_primitive_receivers_keep_their_identity() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result[0]===7&&result[1]===true");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result[0]===7&&result[1]===true");
 }
 
 #[test]
@@ -240,15 +228,15 @@ fn base_values_stay_alive_across_awaited_keys_and_are_released_after_rejection()
     "#).unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "state.weak.deref()!==undefined&&reason===undefined",
     );
     realm.eval("state.reject(marker)").unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "state.weak.deref()===undefined&&reason===marker",
     );
@@ -291,8 +279,8 @@ fn proxy_get_and_delete_traps_receive_the_completed_key_and_original_receiver() 
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "gets===1&&deletes===1&&result===7&&deleted===true",
     );

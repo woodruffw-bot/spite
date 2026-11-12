@@ -1,26 +1,10 @@
 //! Synchronous ForOf acquisition, binding and closing through source awaits.
 
 use crate::common::UnavailableHostRealm;
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
-
-fn collect(realm: &mut Realm) {
-    realm.clear_kept_objects().unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
+use crate::common::assert_true_in;
+use crate::common::checkpoint_and_collect;
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm};
 
 #[test]
 fn awaited_rhs_and_iteration_bindings_preserve_tdz_outer_scope_and_distinct_closures() {
@@ -54,9 +38,9 @@ fn awaited_rhs_and_iteration_bindings_preserve_tdz_outer_scope_and_distinct_clos
             "#,
         )
         .unwrap();
-    check(&mut realm, "tdz&&restored===9&&x===9&&result===undefined");
-    drain(&mut realm);
-    check(&mut realm, "result==='1,2,3'&&x===9");
+    assert_true_in(&mut realm, "tdz&&restored===9&&x===9&&result===undefined");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result==='1,2,3'&&x===9");
 }
 
 #[test]
@@ -116,8 +100,8 @@ fn next_is_cached_return_is_live_and_yielded_promises_are_not_implicitly_awaited
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "reads===1&&steps===2&&oldClose===0&&closed===1&&seen.join(',')==='promise,2'&&result===7",
     );
@@ -176,8 +160,8 @@ fn step_failures_do_not_close_but_binding_failures_close_and_keep_the_original_e
                 "#,
             )
             .unwrap();
-        drain(&mut realm);
-        check(
+        drain_promise_jobs(&mut realm);
+        assert_true_in(
             &mut realm,
             if stage == "binding" {
                 "closed===1&&reason instanceof TypeError"
@@ -245,8 +229,8 @@ fn natural_exhaustion_and_continue_skip_return_while_nonthrow_close_errors_overr
         .replace("CLOSE", close)
         .replace("TAIL", tail);
         realm.eval(&source).unwrap();
-        drain(&mut realm);
-        check(&mut realm, expected);
+        drain_promise_jobs(&mut realm);
+        assert_true_in(&mut realm, expected);
     }
 }
 
@@ -290,8 +274,8 @@ fn rejected_body_await_closes_once_and_preserves_the_reason_over_close_throws() 
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "reason===marker&&closed===1");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "reason===marker&&closed===1");
 }
 
 #[test]
@@ -347,8 +331,8 @@ fn using_bindings_dispose_after_finalizers_and_before_continue_next_or_iterator_
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "step===2&&result===7&&events.join(',')==='finally0,dispose0,finally1,dispose1,close'",
     );
@@ -393,8 +377,8 @@ fn var_assignment_and_destructuring_binding_forms_resume_without_adding_the_wron
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result.join('|')==='1,2,6|2|3|4|5'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result.join('|')==='1,2,6|2|3|4|5'");
 }
 
 #[test]
@@ -450,15 +434,15 @@ fn iterator_and_replaced_next_function_stay_alive_across_await_then_release_afte
             "#,
         )
         .unwrap();
-    collect(&mut realm);
-    check(
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "state.weakIterator.deref()!==undefined&&state.weakNext.deref()!==undefined&&result===undefined",
     );
     realm.eval("state.release(0)").unwrap();
-    drain(&mut realm);
-    collect(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "result===7&&closed===1&&state.weakIterator.deref()===undefined&&state.weakNext.deref()===undefined",
     );
@@ -507,8 +491,8 @@ fn synchronous_close_accepts_a_promise_object_without_reading_then_or_awaiting_i
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "closed===1&&thenReads===0&&result===7");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "closed===1&&thenReads===0&&result===7");
 }
 
 #[test]
@@ -585,8 +569,8 @@ fn host_abort_skips_iterator_close_finally_and_using_disposal_even_at_budget_zer
             }
         }
         assert!(reported);
-        collect(&mut realm);
-        check(
+        checkpoint_and_collect(&mut realm);
+        assert_true_in(
             &mut realm,
             "disposed===0&&closed===0&&finalized===0&&!caught&&read()===resource&&state.weak.deref()===undefined",
         );

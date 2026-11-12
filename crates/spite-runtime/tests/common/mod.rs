@@ -1,6 +1,6 @@
 //! Shared Runtime integration test helpers.
 
-use spite_runtime::{Realm, Value};
+use spite_runtime::{PromiseJobOutcome, Realm, Value};
 
 mod realm_entries;
 pub use realm_entries::REALM_ENTRIES;
@@ -13,11 +13,32 @@ pub mod unicode_samples;
 /// Evaluates a behavioral assertion in a fresh Realm and reports its source.
 #[track_caller]
 pub fn assert_true(source: &str) {
-    assert_eq!(
-        spite_runtime::Realm::default().eval(source),
-        Ok(spite_runtime::Value::Boolean(true)),
-        "{source}"
-    );
+    assert_true_in(&mut Realm::default(), source);
+}
+
+/// Evaluates a behavioral assertion in an existing Realm and reports its source.
+#[track_caller]
+pub fn assert_true_in(realm: &mut Realm, source: &str) {
+    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
+}
+
+/// Runs queued promise jobs, failing the test if a job reports an error.
+#[track_caller]
+pub fn drain_promise_jobs(realm: &mut Realm) {
+    loop {
+        match realm.run_next_promise_job().unwrap() {
+            PromiseJobOutcome::NoJob => break,
+            PromiseJobOutcome::Completed => (),
+            PromiseJobOutcome::Reported(error) => panic!("{error:?}"),
+        }
+    }
+}
+
+/// Ends the job's kept-object lifetime and runs a full collection.
+#[track_caller]
+pub fn checkpoint_and_collect(realm: &mut Realm) {
+    realm.clear_kept_objects().unwrap();
+    realm.collect(usize::MAX).unwrap();
 }
 
 /// Checks an expression using SameValue, including NaN and the sign of zero.

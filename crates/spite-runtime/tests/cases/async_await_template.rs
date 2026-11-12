@@ -1,26 +1,10 @@
 //! Untagged template substitutions with Await and immediate ToString (13.2.8.6).
 
 use crate::common::UnavailableHostRealm;
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
-
-fn collect(realm: &mut Realm) {
-    realm.clear_kept_objects().unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
+use crate::common::assert_true_in;
+use crate::common::checkpoint_and_collect;
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm};
 
 #[test]
 fn template_converts_each_substitution_before_evaluating_the_next_one() {
@@ -65,12 +49,12 @@ fn template_converts_each_substitution_before_evaluating_the_next_one() {
             "#,
         )
         .unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "events.join(',')==='first,one:string,second'&&result===undefined",
     );
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result==='AoneBtwoC3D'&&events.join(',')==='first,one:string,second,two:string,third'",
     );
@@ -85,8 +69,8 @@ fn templates_support_nested_and_repeated_awaits_with_bigint_nullish_and_lossless
         async function g(){return`\uD800${await 'x'}\uDFFF${await 1n}`}
         f().then(value=>{first=value});g().then(value=>{second=value});
     "#).unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             first === 'xinner1ynullzundefined|1' && second.length === 4 && second.charCodeAt(0) ===
@@ -143,8 +127,8 @@ fn rejected_or_throwing_substitutions_skip_later_evaluation_and_symbol_conversio
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "results.length===3&&results.every(value=>value)&&later===0",
     );
@@ -174,8 +158,8 @@ fn templates_preserve_private_eval_this_arguments_and_dynamic_async_function_con
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "first==='10:7:1'&&second==='8:1'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "first==='10:7:1'&&second==='8:1'");
 }
 
 #[test]
@@ -207,14 +191,14 @@ fn converted_template_values_release_objects_while_later_substitutions_are_pendi
             "#,
         )
         .unwrap();
-    collect(&mut realm);
-    check(&mut realm, "weak.deref()!==undefined&&result===undefined");
-    drain(&mut realm);
-    collect(&mut realm);
-    check(&mut realm, "weak.deref()===undefined&&result===undefined");
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(&mut realm, "weak.deref()!==undefined&&result===undefined");
+    drain_promise_jobs(&mut realm);
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(&mut realm, "weak.deref()===undefined&&result===undefined");
     realm.eval("release('right')").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result==='leftright'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result==='leftright'");
 }
 
 #[test]
@@ -229,7 +213,7 @@ fn string_limits_abort_before_an_await_operand_and_after_resumed_concatenation()
     let source="async function f(){try{return`PREFIX${await(operand++,0)}`}finally{finalized++}}f().catch(()=>{caught=true});".replace("PREFIX",&"a".repeat(65));
     let script = spite_parser::parse_script(&source).unwrap();
     assert!(matches!(realm.evaluate(&script), Err(Error::Limit { .. })));
-    check(&mut realm, "operand===0&&finalized===0&&!caught");
+    assert_true_in(&mut realm, "operand===0&&finalized===0&&!caught");
 
     let mut realm = Realm::new(Limits {
         max_string_units: Some(64),
@@ -251,7 +235,7 @@ fn string_limits_abort_before_an_await_operand_and_after_resumed_concatenation()
         }
     }
     assert!(reported);
-    check(&mut realm, "later===0&&finalized===0&&!caught");
+    assert_true_in(&mut realm, "later===0&&finalized===0&&!caught");
 }
 
 #[test]
@@ -293,8 +277,8 @@ fn template_host_abort_skips_later_substitutions_handlers_and_disposal_at_budget
             }
         }
         assert!(reported);
-        collect(&mut realm);
-        check(
+        checkpoint_and_collect(&mut realm);
+        assert_true_in(
             &mut realm,
             "later===0&&disposed===0&&finalized===0&&!caught&&state.weak.deref()===undefined",
         );

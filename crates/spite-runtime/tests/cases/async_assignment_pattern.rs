@@ -1,19 +1,8 @@
 //! Destructuring assignment suspension, saved references and iterator closing.
 
-use spite_runtime::{Error, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
+use crate::common::assert_true_in;
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, PromiseJobOutcome, Realm};
 
 #[test]
 fn array_targets_precede_steps_defaults_and_final_raw_key_conversion() {
@@ -58,9 +47,9 @@ fn array_targets_precede_steps_defaults_and_final_raw_key_conversion() {
             "#,
         )
         .unwrap();
-    check(&mut realm, "events.join(',')==='iter,next-get,target'");
-    drain(&mut realm);
-    check(
+    assert_true_in(&mut realm, "events.join(',')==='iter,next-get,target'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result&&out.x===7&&events.join(',')==='iter,next-get,target,next,default,convert,return'",
     );
@@ -111,8 +100,8 @@ fn object_keys_targets_getters_defaults_and_rest_keep_their_order() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             result && out.rest.y === 8 && Object.keys(out.rest).join(',') === 'y' && events.join(',') ===
@@ -140,8 +129,8 @@ fn nested_assignments_and_patterns_preserve_rhs_identity_and_default_class_names
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result.join(',')==='A,B,,1,2,true'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result.join(',')==='A,B,,1,2,true'");
 }
 
 #[test]
@@ -180,8 +169,8 @@ fn exhausted_arrays_still_evaluate_targets_and_rest_can_receive_nested_patterns(
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result===3&&out.a===1&&out.b===2&&out.rest.length===0&&events.join(',')==='iter,next,a,b,rest'",
     );
@@ -223,15 +212,15 @@ fn rejection_closes_inner_iterators_before_outer_and_preserves_the_original_thro
             )
             .unwrap();
         realm.eval(&format!("async function f(){{try{{{pattern}}}catch(e){{events.push(e===marker)}}finally{{events.push('finally')}}}}f()")).unwrap();
-        drain(&mut realm);
-        check(&mut realm, "events.join(',')==='inner,outer,true,finally'");
+        drain_promise_jobs(&mut realm);
+        assert_true_in(&mut realm, "events.join(',')==='inner,outer,true,finally'");
     }
 }
 
 #[test]
 fn generator_return_closes_patterns_and_close_errors_override_return_completions() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let events = [],
@@ -294,16 +283,16 @@ fn saved_raw_target_references_keep_objects_and_symbols_alive_only_while_suspend
         .unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "weakTarget.deref()!==undefined&&weakKey.deref()!==undefined",
     );
     realm.eval("release(7)").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===true");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===true");
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "weakTarget.deref()===undefined&&weakKey.deref()===undefined",
     );
@@ -349,19 +338,19 @@ fn excluded_symbol_keys_survive_later_defaults_and_are_released_after_rest_copy(
         .unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(&mut realm, "weakKey.deref()!==undefined");
+    assert_true_in(&mut realm, "weakKey.deref()!==undefined");
     realm.eval("release(7)").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===true");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===true");
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(&mut realm, "weakKey.deref()===undefined");
+    assert_true_in(&mut realm, "weakKey.deref()===undefined");
 }
 
 #[test]
 fn yielded_keys_targets_and_defaults_share_the_value_expression_task_stack() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let out = {},
@@ -401,7 +390,7 @@ fn host_abort_drops_assignment_captures_without_iterator_or_language_cleanup() {
         ));
         realm.clear_kept_objects().unwrap();
         realm.collect(usize::MAX).unwrap();
-        check(
+        assert_true_in(
             &mut realm,
             "flag===0&&closes===0&&weak.deref()===undefined&&(assignmentEmbeddingSloppy=7)===7",
         );
@@ -426,6 +415,6 @@ fn async_generator_targets_and_defaults_preserve_request_queue_order() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "events.join(',')==='key,true:7,9'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "events.join(',')==='key,true:7,9'");
 }

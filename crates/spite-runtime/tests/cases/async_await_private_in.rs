@@ -1,21 +1,9 @@
 //! PrivateIdentifier in ShiftExpression after Await (13.10.2).
 
 use crate::common::UnavailableHostRealm;
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
+use crate::common::assert_true_in;
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm};
 
 #[test]
 fn awaited_private_in_checks_instance_static_method_and_accessor_brands_without_coercion() {
@@ -76,8 +64,8 @@ fn awaited_private_in_checks_instance_static_method_and_accessor_brands_without_
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "results.length===6&&results.every(value=>value)&&getters===0&&coerced===0&&hasTraps===0",
     );
@@ -112,8 +100,8 @@ fn private_in_rejects_resolved_primitives_and_preserves_await_rejection_reasons(
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "results.length===7&&results.every(value=>value)",
     );
@@ -171,11 +159,11 @@ fn private_in_after_await_resolves_the_innermost_private_environment_and_survive
         .unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(&mut realm, "weak.deref()!==undefined&&results.length===0");
-    drain(&mut realm);
+    assert_true_in(&mut realm, "weak.deref()!==undefined&&results.length===0");
+    drain_promise_jobs(&mut realm);
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "results.length===5&&results.every(value=>value)&&weak.deref()===undefined",
     );
@@ -239,7 +227,7 @@ fn private_in_host_failure_after_await_skips_handlers_disposal_and_resource_capt
         assert!(reported);
         realm.clear_kept_objects().unwrap();
         realm.collect(usize::MAX).unwrap();
-        check(
+        assert_true_in(
             &mut realm,
             "disposed===0&&finalized===0&&!caught&&state.weak.deref()===undefined",
         );

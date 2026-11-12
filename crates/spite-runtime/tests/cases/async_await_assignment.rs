@@ -1,26 +1,10 @@
 //! Assignment references and GetValue/PutValue order across Await (13.15.2).
 
 use crate::common::UnavailableHostRealm;
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
-
-fn collect(realm: &mut Realm) {
-    realm.clear_kept_objects().unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
+use crate::common::assert_true_in;
+use crate::common::checkpoint_and_collect;
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm};
 
 #[test]
 fn awaited_identifier_and_nested_property_assignments_preserve_selected_references() {
@@ -35,13 +19,13 @@ fn awaited_identifier_and_nested_property_assignments_preserve_selected_referenc
             "#,
         )
         .unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "old.x===undefined&&old.y===undefined&&second===undefined",
     );
     realm.eval("release(9)").unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "first===14&&second===9&&old.x===9&&old.y===9&&object.x===undefined&&object.y===undefined",
     );
@@ -96,12 +80,12 @@ fn simple_member_assignment_defers_key_coercion_until_after_the_awaited_rhs() {
             "#,
         )
         .unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "events.join(',')==='base'&&gets===0&&saved===undefined",
     );
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result===7&&saved===7&&receiver===object&&gets===0&&events.join(',')==='base,name,rhs,coerce,set'",
     );
@@ -134,8 +118,8 @@ fn simple_nullish_assignment_runs_the_rhs_before_throwing_without_converting_its
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "rhs===1&&coerced===0&&result===true");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "rhs===1&&coerced===0&&result===true");
 }
 
 #[test]
@@ -180,13 +164,13 @@ fn compound_assignment_caches_the_key_and_getter_before_rhs_but_converts_the_val
             "#,
         )
         .unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "events.join(',')==='key,get'&&saved===undefined",
     );
     realm.eval("left.valueOf=function(){events.push('new-coerce');return 20};key[Symbol.toPrimitive]=()=>{throw 9};release(2)").unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result===22&&saved===22&&events.join(',')==='key,get,new-coerce,set'",
     );
@@ -227,8 +211,8 @@ fn logical_assignments_short_circuit_without_rhs_or_put_and_write_only_selected_
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===true&&rhs===2&&sets===0");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===true&&rhs===2&&sets===0");
 }
 
 #[test]
@@ -277,16 +261,16 @@ fn awaited_assignments_keep_private_brands_super_receivers_and_selected_super_ba
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "events.join(',')==='get'&&result===undefined&&brand===true&&rhs===1",
     );
     realm
         .eval("Object.setPrototypeOf(C.prototype,{set x(value){throw 9}});release(2)")
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result===12&&object.saved===5&&events.join(',')==='get,set'",
     );
@@ -323,8 +307,8 @@ fn saved_object_environment_bindings_ignore_later_unscopables_changes() {
         )
         .unwrap();
     realm.eval("release(7)").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "holder.x===7&&x===5&&result===5");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "holder.x===7&&x===5&&result===5");
 
     // 13.15.2 selects lRef before Await. Object Environment SetMutableBinding
     // (9.1.1.2.5) still checks HasProperty when the selected property was deleted.
@@ -343,19 +327,19 @@ fn saved_object_environment_bindings_ignore_later_unscopables_changes() {
             "#,
         )
         .unwrap();
-    collect(&mut realm);
-    check(
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "events.join(',')==='has'&&weak.deref()!==undefined&&result===undefined",
     );
     realm.eval("release(7)").unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "target.x===7&&x===5&&result===7&&events.join(',')==='has,has,put:7,has,has,get'",
     );
-    collect(&mut realm);
-    check(&mut realm, "weak.deref()===undefined");
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(&mut realm, "weak.deref()===undefined");
 }
 
 #[test]
@@ -415,8 +399,8 @@ fn awaited_writes_reuse_strict_sloppy_immutable_and_rejection_rules() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             results.length === 4 && results.every(value => value) && rhs === 1 && writes === 0 && this
@@ -500,8 +484,8 @@ fn pending_assignment_references_trace_raw_bases_keys_and_compound_values_then_r
             "#,
         )
         .unwrap();
-    collect(&mut realm);
-    check(
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             baseWeak.deref() !== undefined && keyWeak.deref() !== undefined && leftWeak.deref() !==
@@ -510,9 +494,9 @@ fn pending_assignment_references_trace_raw_bases_keys_and_compound_values_then_r
         "#,
     );
     realm.eval("release(2)").unwrap();
-    drain(&mut realm);
-    collect(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             baseWeak.deref() === undefined && keyWeak.deref() === undefined && leftWeak.deref() ===
@@ -520,8 +504,8 @@ fn pending_assignment_references_trace_raw_bases_keys_and_compound_values_then_r
         "#,
     );
     realm.eval("releaseSecond(0)").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "first===7&&other===8");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "first===7&&other===8");
 }
 
 #[test]
@@ -555,8 +539,8 @@ fn assignments_in_for_updates_and_named_rhs_evaluation_keep_existing_semantics()
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result===3&&events.join(',')===',put'&&object.value.name===''",
     );
@@ -601,8 +585,8 @@ fn abandoned_assignment_references_skip_put_handlers_and_disposal_on_host_abort(
             }
         }
         assert!(reported);
-        collect(&mut realm);
-        check(
+        checkpoint_and_collect(&mut realm);
+        assert_true_in(
             &mut realm,
             "writes===0&&disposed===0&&finalized===0&&!caught&&state.weak.deref()===undefined",
         );

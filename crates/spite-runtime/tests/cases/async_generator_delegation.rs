@@ -1,19 +1,8 @@
 //! Async YieldExpression delegation (15.5) through the shared source interpreter.
 
-use spite_runtime::{Error, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error:?}"),
-        }
-    }
-}
+use crate::common::assert_true_in;
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, PromiseJobOutcome, Realm};
 
 #[test]
 fn async_results_are_awaited_cached_next_receives_one_argument_and_values_stay_raw() {
@@ -51,7 +40,7 @@ fn async_results_are_awaited_cached_next_receives_one_argument_and_values_stay_r
             "#,
         )
         .unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "events.join(',')==='async,get-next,true:1:'&&results.length===0",
     );
@@ -76,8 +65,8 @@ fn async_results_are_awaited_cached_next_receives_one_argument_and_values_stay_r
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             results.length === 1 && results[0].value === raw && !results[0].done && events.join(',') ===
@@ -85,8 +74,8 @@ fn async_results_are_awaited_cached_next_receives_one_argument_and_values_stay_r
         "#,
     );
     realm.eval("release({done:true,value:8})").unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "results.length===2&&results[1].done&&results[1].value===8",
     );
@@ -118,8 +107,8 @@ fn sync_fallback_unwraps_values_and_nested_async_delegation_serves_consumers() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "results.join(',')==='1,2,true'&&array.join(',')==='1,2'&&events.join(',')==='finally,finally'",
     );
@@ -158,7 +147,7 @@ fn live_throw_and_return_methods_await_results_and_return_can_keep_delegating() 
             "#,
         )
         .unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     realm
         .eval(
             r#"
@@ -173,8 +162,8 @@ fn live_throw_and_return_methods_await_results_and_return_can_keep_delegating() 
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "results[1].value===9&&!results[1].done&&events.join(',')==='next:undefined,return:4:1'",
     );
@@ -192,8 +181,8 @@ fn live_throw_and_return_methods_await_results_and_return_can_keep_delegating() 
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "results[2].done&&results[2].value===10&&events.join(',')==='next:undefined,return:4:1,throw:7:1,finally'",
     );
@@ -303,7 +292,7 @@ fn live_throw_and_return_methods_await_results_and_return_can_keep_delegating() 
                 PromiseJobOutcome::Reported(error) => panic!("{error:?}"),
             }
         }
-        check(
+        assert_true_in(
             &mut realm,
             &format!(
                 "outcomes.join(',')==='true,true,true'&&events.join(',')==='{prefix},first,finally,rejected,last'"
@@ -358,12 +347,12 @@ fn missing_throw_awaits_close_without_reading_done_or_value_and_cleanup_failure_
                 "#,
             )
             .unwrap();
-        drain(&mut realm);
+        drain_promise_jobs(&mut realm);
         realm.eval("iterator.throw(7).catch(e=>error=e)").unwrap();
-        check(&mut realm, "events.join(',')==='0'&&error===undefined");
+        assert_true_in(&mut realm, "events.join(',')==='0'&&error===undefined");
         realm.eval(close).unwrap();
-        drain(&mut realm);
-        check(
+        drain_promise_jobs(&mut realm);
+        assert_true_in(
             &mut realm,
             &format!("{expected}&&events.join(',')==='0,finally'"),
         );
@@ -403,8 +392,8 @@ fn rejected_method_results_reach_outer_catch_instead_of_delegate_throw() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "forwarded===0&&results[0].value===7&&!results[0].done&&results[1].done",
     );
@@ -461,8 +450,8 @@ fn failed_next_propagates_without_closing_sync_or_async_delegates() {
                 Promise.all([iterator.next(), iterator.next(), iterator.next()]).then(value => results = value)
             "#
         )).unwrap();
-        drain(&mut realm);
-        check(
+        drain_promise_jobs(&mut realm);
+        assert_true_in(
             &mut realm,
             r#"
                 events.join(',') === 'next,next' && results[0].value === 1 && !results[0].done && results[1]
@@ -507,12 +496,12 @@ fn completed_return_preserves_raw_value_while_missing_return_performs_its_own_aw
             "#,
         )
         .unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     realm
         .eval("iterator.return(4).then(r=>results.push(r))")
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "results[0].done&&results[0].value===raw");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "results[0].done&&results[0].value===raw");
     realm
         .eval(
             r#"
@@ -538,10 +527,10 @@ fn completed_return_preserves_raw_value_while_missing_return_performs_its_own_aw
             "#,
         )
         .unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     realm.eval("other.return(5).then(r=>events.push(r.value));Promise.resolve().then(()=>events.push('tick'))").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "events.join(',')==='tick,finally,5'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "events.join(',')==='tick,finally,5'");
 }
 
 #[test]
@@ -575,15 +564,15 @@ fn delegation_records_keep_iterators_and_cached_next_alive_then_release_them() {
         .unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "weakIterator.deref()!==undefined&&weakNext.deref()!==undefined",
     );
     realm.eval("release({done:true});release=null").unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "weakIterator.deref()===undefined&&weakNext.deref()===undefined",
     );
@@ -623,15 +612,15 @@ fn delegation_records_keep_iterators_and_cached_next_alive_then_release_them() {
         .unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(&mut realm, "weakQueued.deref()!==undefined");
+    assert_true_in(&mut realm, "weakQueued.deref()!==undefined");
     realm
         .eval("release({done:false,value:1});release=null")
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "queuedSeen");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "queuedSeen");
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(&mut realm, "weakQueued.deref()===undefined");
+    assert_true_in(&mut realm, "weakQueued.deref()===undefined");
 }
 
 #[test]
@@ -643,10 +632,10 @@ fn host_abort_from_delegate_bypasses_outer_and_iterator_cleanup() {
         realm.eval("iterator.next()"),
         Err(Error::Unsupported { .. })
     ));
-    check(&mut realm, "caught===0&&finalized===0&&closed===0");
+    assert_true_in(&mut realm, "caught===0&&finalized===0&&closed===0");
     realm
         .eval("let done=false;iterator.next().then(r=>done=r.done)")
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "done");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "done");
 }

@@ -1,20 +1,10 @@
 //! Standalone Module environments and top-level Await (16.2.1).
 
+use crate::common::assert_true_in;
+use crate::common::drain_promise_jobs;
 use spite_runtime::object::PromiseState;
 use spite_runtime::{Error, PromiseJobOutcome, Realm, Value};
 
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error:?}"),
-        }
-    }
-}
 fn state<'a>(realm: &'a Realm, value: &Value) -> &'a PromiseState {
     let Value::Object(handle) = value else {
         panic!("evaluation Promise")
@@ -48,7 +38,7 @@ fn module_bindings_are_private_and_functions_are_initialized_before_body_entry()
         state(&realm, &promise),
         PromiseState::Fulfilled(Value::Undefined)
     ));
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             observations.length === 2 && observations.every(x => x === undefined) && shared === 99 &&
@@ -56,7 +46,7 @@ fn module_bindings_are_private_and_functions_are_initialized_before_body_entry()
                 'undefined' && !Object.hasOwn(globalThis, 'value')
         "#,
     );
-    check(
+    assert_true_in(
         &mut realm,
         "writeModule(7)===7&&readModule().join(',')==='7,2,7'&&shared===99",
     );
@@ -88,7 +78,7 @@ fn module_this_and_direct_eval_keep_module_context_across_functions_and_arrows()
         state(&realm, &promise),
         PromiseState::Fulfilled(_)
     ));
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             results.length === 5 && results.every(x => x) && ordinary() === undefined && (() => {
@@ -110,17 +100,17 @@ fn top_level_await_keeps_module_cells_and_restores_the_embedding_script_context(
         .unwrap();
     let promise=realm.eval_module("export let value=1;events.push('start');await gate;value++;events.push(value);globalThis.read=()=>value").unwrap();
     assert!(matches!(state(&realm, &promise), PromiseState::Pending));
-    check(
+    assert_true_in(
         &mut realm,
         "events.join(',')==='start'&&value===99&&this===globalThis",
     );
     realm.eval("release()").unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert!(matches!(
         state(&realm, &promise),
         PromiseState::Fulfilled(Value::Undefined)
     ));
-    check(
+    assert_true_in(
         &mut realm,
         "events.join(',')==='start,2'&&read()===2&&value===99&&this===globalThis",
     );
@@ -131,7 +121,7 @@ fn language_errors_reject_evaluation_and_host_errors_bypass_rejection_and_cleanu
     let mut realm = Realm::default();
     for source in ["throw 7", "await Promise.reject(7)"] {
         let promise = realm.eval_module(source).unwrap();
-        drain(&mut realm);
+        drain_promise_jobs(&mut realm);
         assert!(matches!(
             state(&realm, &promise),
             PromiseState::Rejected(Value::Number(7.0))
@@ -154,7 +144,7 @@ fn language_errors_reject_evaluation_and_host_errors_bypass_rejection_and_cleanu
         Ok(PromiseJobOutcome::Reported(Error::Unsupported { .. }))
     ));
     assert!(matches!(state(&realm, &promise), PromiseState::Pending));
-    check(&mut realm, "finalized===0&&this===globalThis");
+    assert_true_in(&mut realm, "finalized===0&&this===globalThis");
 }
 
 #[test]
@@ -167,7 +157,7 @@ fn dependencies_stop_before_effects_while_default_declarations_and_expressions_e
             "{source}"
         );
     }
-    check(&mut realm, "effects===0");
+    assert_true_in(&mut realm, "effects===0");
     for source in [
         "effects++;export default 1",
         "effects++;export default function(){}",
@@ -179,7 +169,7 @@ fn dependencies_stop_before_effects_while_default_declarations_and_expressions_e
             PromiseState::Fulfilled(_)
         ));
     }
-    check(&mut realm, "effects===3");
+    assert_true_in(&mut realm, "effects===3");
 
     for source in [
         "export default function f(){return 7};globalThis.result=f()",
@@ -190,7 +180,7 @@ fn dependencies_stop_before_effects_while_default_declarations_and_expressions_e
             state(&realm, &promise),
             PromiseState::Fulfilled(_)
         ));
-        check(&mut realm, "result===7");
+        assert_true_in(&mut realm, "result===7");
     }
 }
 
@@ -208,14 +198,14 @@ fn suspended_module_environments_trace_symbols_and_release_finished_scopes() {
     let promise = realm.root_value(promise, usize::MAX).unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(&mut realm, "weak.deref()!==undefined");
+    assert_true_in(&mut realm, "weak.deref()!==undefined");
     realm.eval("release();release=null").unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert!(matches!(
         state(&realm, promise.value()),
         PromiseState::Fulfilled(_)
     ));
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(&mut realm, "observed==='symbol'&&weak.deref()===undefined");
+    assert_true_in(&mut realm, "observed==='symbol'&&weak.deref()===undefined");
 }

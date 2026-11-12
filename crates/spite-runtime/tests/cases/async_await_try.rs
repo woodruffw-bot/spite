@@ -1,26 +1,10 @@
 //! Try/Catch/Finally execution through source suspension.
 
 use crate::common::UnavailableHostRealm;
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
-
-fn collect(realm: &mut Realm) {
-    realm.clear_kept_objects().unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
+use crate::common::assert_true_in;
+use crate::common::checkpoint_and_collect;
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm};
 
 #[test]
 fn catch_handles_await_rejection_and_promise_resolve_getter_failure_without_replay() {
@@ -61,12 +45,12 @@ fn catch_handles_await_rejection_and_promise_resolve_getter_failure_without_repl
             "#,
         )
         .unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "reason===second&&rejected===undefined&&events.join(',')==='get,caught-get,outside'",
     );
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "rejected===first&&reason===second&&events.join(',')==='get,caught-get,outside,caught'",
     );
@@ -123,13 +107,13 @@ fn protected_returns_and_raw_throws_wait_for_finally_before_settlement_or_assimi
             "#,
         )
         .unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "events.join(',')==='return-enter,throw-enter'&&thenCalls===0&&result===undefined&&reason===undefined",
     );
     realm.eval("state.release(0)").unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result===7&&reason===thrown&&thenCalls===1&&events.indexOf('then')>events.indexOf('return-end')",
     );
@@ -148,8 +132,8 @@ fn abrupt_finalizers_override_protected_returns_and_throws() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===second&&reason===second");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===second&&reason===second");
 }
 
 #[test]
@@ -193,8 +177,8 @@ fn inner_disposal_precedes_catch_and_outer_disposal_follows_the_awaited_finalize
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             result === 7 && events.join(',') === 'inner,catch,finally,after,root' &&
@@ -214,8 +198,8 @@ fn catch_patterns_optional_bindings_private_context_and_var_aliases_survive_awai
         async function g(x){try{throw 5}catch(error){var x=await error+2}return[x,arguments[0]]}
         new C().run('arg').then(value=>{result=value});f().then(value=>{optional=value});g(1).then(value=>{aliases=value});
     "#).unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result===13&&optional===2&&aliases.join(',')==='7,7'",
     );
@@ -254,12 +238,12 @@ fn catch_parameter_failure_skips_its_body_and_runs_finally_once() {
             "#,
         )
         .unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "body===0&&reason===undefined&&events.join(',')==='finally'",
     );
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "body===0&&reason===marker&&events.join(',')==='finally,end'",
     );
@@ -279,15 +263,15 @@ fn pending_normal_return_and_throw_values_remain_live_until_an_overriding_finali
             .unwrap();
         let source="async function f(){try{BODY}finally{await state.gate;return 7}}f().then(value=>{result=value})".replace("BODY",body);
         realm.eval(&source).unwrap();
-        collect(&mut realm);
-        check(
+        checkpoint_and_collect(&mut realm);
+        assert_true_in(
             &mut realm,
             "state.weak.deref()!==undefined&&result===undefined",
         );
         realm.eval("state.release(0)").unwrap();
-        drain(&mut realm);
-        collect(&mut realm);
-        check(&mut realm, "state.weak.deref()===undefined&&result===7");
+        drain_promise_jobs(&mut realm);
+        checkpoint_and_collect(&mut realm);
+        assert_true_in(&mut realm, "state.weak.deref()===undefined&&result===7");
     }
 }
 
@@ -356,8 +340,8 @@ fn host_failures_in_try_catch_and_finally_bypass_remaining_handlers_and_release_
         .replace("FINALIZER", finalizer);
         realm.eval(&source).unwrap();
         if phase == 2 {
-            collect(&mut realm);
-            check(&mut realm, "state.weakValue.deref()!==undefined");
+            checkpoint_and_collect(&mut realm);
+            assert_true_in(&mut realm, "state.weakValue.deref()!==undefined");
         }
         let mut reported = false;
         loop {
@@ -369,12 +353,12 @@ fn host_failures_in_try_catch_and_finally_bypass_remaining_handlers_and_release_
             }
         }
         assert!(reported);
-        collect(&mut realm);
-        check(
+        checkpoint_and_collect(&mut realm);
+        assert_true_in(
             &mut realm,
             "disposed===0&&!observed&&read()===resource&&state.weakMethod.deref()===undefined",
         );
-        check(
+        assert_true_in(
             &mut realm,
             &format!(
                 "caught==={}&&finalized==={}",
@@ -383,7 +367,7 @@ fn host_failures_in_try_catch_and_finally_bypass_remaining_handlers_and_release_
             ),
         );
         if phase == 2 {
-            check(&mut realm, "state.weakValue.deref()===undefined");
+            assert_true_in(&mut realm, "state.weakValue.deref()===undefined");
         }
     }
 }
@@ -432,8 +416,8 @@ fn host_budget_exhaustion_in_finally_releases_all_disposers_without_cleanup() {
         }
     }
     assert!(reported);
-    collect(&mut realm);
-    check(
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "disposed===0&&!caught&&read()===resource&&state.weak.deref()===undefined",
     );
@@ -487,19 +471,19 @@ fn normal_finalizer_values_are_ignored_and_empty_try_completion_replaces_prior_v
             "#,
         )
         .unwrap();
-    collect(&mut realm);
-    check(
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "state.weak.deref()!==undefined&&result===undefined",
     );
     realm.eval("state.releaseFirst(0)").unwrap();
-    drain(&mut realm);
-    collect(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "state.weak.deref()===undefined&&normal===undefined&&result===undefined",
     );
     realm.eval("state.releaseSecond(0)").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===7");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===7");
 }

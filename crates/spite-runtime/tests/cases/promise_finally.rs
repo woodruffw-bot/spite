@@ -1,18 +1,9 @@
 //! Generic finally dispatch, cleanup assimilation and native captures (27.2.5.3).
 
-use spite_runtime::{PromiseJobOutcome, Realm, Value};
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Realm, Value};
 
 use crate::common::assert_true;
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => {}
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
 
 #[test]
 fn generic_dispatch_observes_species_before_then_and_preserves_noncallable_arguments() {
@@ -107,13 +98,13 @@ fn cleanup_preserves_settlement_and_waits_for_thenables_with_zero_callback_argum
             "#,
         )
         .unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(
         realm.eval("seen.join(',')"),
         Ok(Value::String("cleanup,reason".into()))
     );
     realm.eval("finish(42)").unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(
         realm.eval("seen.join(',')"),
         Ok(Value::String("cleanup,reason,value".into()))
@@ -138,7 +129,7 @@ fn cleanup_preserves_settlement_and_waits_for_thenables_with_zero_callback_argum
             "#,
         )
         .unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(realm.eval("count"), Ok(Value::Number(4.0)));
 }
 

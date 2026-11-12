@@ -1,25 +1,9 @@
 //! Labelled source statements and direct iteration label chains.
 
-use spite_runtime::{PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
-
-fn collect(realm: &mut Realm) {
-    realm.clear_kept_objects().unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
+use crate::common::assert_true_in;
+use crate::common::checkpoint_and_collect;
+use crate::common::drain_promise_jobs;
+use spite_runtime::Realm;
 
 #[test]
 fn labelled_block_break_unwinds_resources_after_await_and_skips_the_remaining_body() {
@@ -53,9 +37,9 @@ fn labelled_block_break_unwinds_resources_after_await_and_skips_the_remaining_bo
             "#,
         )
         .unwrap();
-    check(&mut realm, "events.length===0&&result===undefined");
-    drain(&mut realm);
-    check(
+    assert_true_in(&mut realm, "events.length===0&&result===undefined");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "events.join(',')==='dispose,after'&&later===0&&result===7",
     );
@@ -102,8 +86,8 @@ fn direct_label_chains_match_while_and_do_while_continues_after_finalizers() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "first===3&&second===3&&tests===2&&events.join(',')==='0,1,2'",
     );
@@ -147,8 +131,8 @@ fn labelled_for_of_continue_keeps_the_iterator_open_and_labelled_break_closes_on
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "steps===3&&closed===1&&result===7");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "steps===3&&closed===1&&result===7");
 }
 
 #[test]
@@ -202,8 +186,8 @@ fn continuing_an_outer_for_of_closes_only_inner_iterators_after_their_finalizers
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result===7&&events.join(',')==='finally1,close-inner,finally2,close-inner,close-outer'",
     );
@@ -245,21 +229,21 @@ fn empty_labelled_blocks_preserve_the_parent_statement_value_without_update_empt
             "#,
         )
         .unwrap();
-    collect(&mut realm);
-    check(
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "state.weak.deref()!==undefined&&result===undefined",
     );
     realm.eval("state.releaseFirst(0)").unwrap();
-    drain(&mut realm);
-    collect(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "state.weak.deref()===undefined&&result===undefined",
     );
     realm.eval("state.releaseSecond(0)").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===7");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===7");
 }
 
 #[test]
@@ -271,6 +255,6 @@ fn labels_add_no_binding_environment_and_keep_private_eval_this_and_arguments() 
         class C{#x=10;async read(){outer:{await 0;break outer}return eval('this.#x')+arguments.length}}
         f(1).then(value=>{alias=value});new C().read('arg').then(value=>{result=value});
     "#).unwrap();
-    drain(&mut realm);
-    check(&mut realm, "alias===7&&result===11");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "alias===7&&result===11");
 }

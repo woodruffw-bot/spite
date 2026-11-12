@@ -1,21 +1,9 @@
 //! Async resource registration, native suspension, suppression and collection.
 
 use crate::common::UnavailableHostRealm;
-use spite_runtime::{Error, PromiseJobOutcome, Realm, Value};
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => {}
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
+use crate::common::assert_true_in;
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, PromiseJobOutcome, Realm};
 
 #[test]
 fn internal_disposer_wrappers_keep_registration_realms_across_borrowed_disposal_methods() {
@@ -85,8 +73,8 @@ fn internal_disposer_wrappers_keep_registration_realms_across_borrowed_disposal_
             complete = true
         });
     "#).unwrap();
-    drain(&mut realm);
-    check(&mut realm, "complete&&correct&&seen===144");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "complete&&correct&&seen===144");
 }
 
 #[test]
@@ -106,8 +94,8 @@ fn sync_fallback_promise_uses_the_registration_realm_before_awaiting() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "rejected&&calls===1&&thenReads===0");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "rejected&&calls===1&&thenReads===0");
 }
 
 #[test]
@@ -139,7 +127,7 @@ fn internal_disposer_wrappers_retain_then_release_their_unreachable_registration
             .unwrap();
         realm.clear_kept_objects().unwrap();
         realm.collect(usize::MAX).unwrap();
-        check(&mut realm, "weakRealm.deref()!==undefined");
+        assert_true_in(&mut realm, "weakRealm.deref()!==undefined");
         realm
             .eval(if constructor == "DisposableStack" {
                 "stack.dispose()"
@@ -150,19 +138,19 @@ fn internal_disposer_wrappers_retain_then_release_their_unreachable_registration
         if constructor != "DisposableStack" {
             realm.clear_kept_objects().unwrap();
             realm.collect(usize::MAX).unwrap();
-            check(&mut realm, "weakRealm.deref()!==undefined");
+            assert_true_in(&mut realm, "weakRealm.deref()!==undefined");
             realm.eval("release()").unwrap();
         }
-        drain(&mut realm);
+        drain_promise_jobs(&mut realm);
         realm.clear_kept_objects().unwrap();
         realm.collect(usize::MAX).unwrap();
-        check(&mut realm, "weakRealm.deref()===undefined");
+        assert_true_in(&mut realm, "weakRealm.deref()===undefined");
     }
 }
 
 #[test]
 fn constructor_metadata_descriptors_subclasses_and_prototype_selection() {
-    check(
+    assert_true_in(
         &mut Realm::default(),
         r#"
             let C = AsyncDisposableStack,
@@ -282,8 +270,8 @@ fn distinct_brands_and_state_checks_precede_observation_and_dispose_rejects() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "rejected===values.length&&traps===0");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "rejected===values.length&&traps===0");
 }
 
 #[test]
@@ -332,9 +320,9 @@ fn cached_methods_preserve_receivers_arguments_and_async_precedence() {
             "#,
         )
         .unwrap();
-    check(&mut realm, "s.disposed&&log.join(',')==='defer'&&!done");
-    drain(&mut realm);
-    check(
+    assert_true_in(&mut realm, "s.disposed&&log.join(',')==='defer'&&!done");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "done&&gets===1&&log.join(',')==='defer,adopt,use'",
     );
@@ -354,12 +342,12 @@ fn pending_cleanup_suspends_before_older_resources_and_reentry_is_independent() 
             "#,
         )
         .unwrap();
-    check(&mut realm, "s.disposed&&log.join(',')==='first'");
-    drain(&mut realm);
-    check(&mut realm, "log.join(',')==='first,again'");
+    assert_true_in(&mut realm, "s.disposed&&log.join(',')==='first'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "log.join(',')==='first,again'");
     realm.eval("release(9)").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "log.join(',')==='first,again,last,done'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "log.join(',')==='first,again,last,done'");
 }
 
 #[test]
@@ -374,8 +362,8 @@ fn synchronous_and_asynchronous_errors_form_intrinsic_suppression_chains() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             Object.getPrototypeOf(caught) === Saved.prototype && caught.error === a && caught.suppressed
@@ -398,8 +386,8 @@ fn synchronous_and_asynchronous_errors_form_intrinsic_suppression_chains() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "passed");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "passed");
 }
 
 #[test]
@@ -416,14 +404,14 @@ fn sync_fallback_ignores_results_and_turns_sync_throws_into_awaited_rejections()
             "#,
         )
         .unwrap();
-    check(&mut realm, "log.join(',')==='ignored'");
+    assert_true_in(&mut realm, "log.join(',')==='ignored'");
     assert!(matches!(
         realm.run_next_promise_job(),
         Ok(PromiseJobOutcome::Completed)
     ));
-    check(&mut realm, "log.join(',')==='ignored,sync'");
-    drain(&mut realm);
-    check(
+    assert_true_in(&mut realm, "log.join(',')==='ignored,sync'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "caught===marker&&log.join(',')==='ignored,sync,older'",
     );
@@ -444,8 +432,8 @@ fn empty_and_nullish_resources_have_the_specified_job_order() {
             ".then(()=>0)"
         };
         realm.eval(&format!("let stack=new AsyncDisposableStack,sequence=[];{registration};Promise.all([Promise.resolve(){prefix}.then(()=>{{sequence.push('job 1')}}),stack.disposeAsync().then(()=>{{sequence.push('dispose')}}),Promise.resolve(){prefix}.then(()=>{{sequence.push('job 2')}})])")).unwrap();
-        drain(&mut realm);
-        check(&mut realm, "sequence.join(',')==='job 1,dispose,job 2'");
+        drain_promise_jobs(&mut realm);
+        assert_true_in(&mut realm, "sequence.join(',')==='job 1,dispose,job 2'");
     }
 }
 
@@ -490,8 +478,8 @@ fn move_uses_intrinsics_and_getter_reentry_retains_the_original_resource_list() 
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "log.join(',')==='new,old'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "log.join(',')==='new,old'");
 }
 
 #[test]
@@ -533,8 +521,8 @@ fn internal_await_bypasses_then_and_species_and_uses_intrinsic_promises() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "done&&log.join(',')==='older'&&Object.getPrototypeOf(s.disposeAsync())===Saved.prototype",
     );
@@ -553,9 +541,9 @@ fn promise_constructor_lookup_errors_and_thenable_jobs_follow_await_semantics() 
             "#,
         )
         .unwrap();
-    check(&mut realm, "log.join(',')==='older'");
-    drain(&mut realm);
-    check(&mut realm, "caught===marker");
+    assert_true_in(&mut realm, "log.join(',')==='older'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "caught===marker");
     let mut realm = Realm::default();
     realm
         .eval(
@@ -584,9 +572,9 @@ fn promise_constructor_lookup_errors_and_thenable_jobs_follow_await_semantics() 
             "#,
         )
         .unwrap();
-    check(&mut realm, "log.join(',')==='get'");
-    drain(&mut realm);
-    check(&mut realm, "done&&log.join(',')==='get,then,older'");
+    assert_true_in(&mut realm, "log.join(',')==='get'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "done&&log.join(',')==='get,then,older'");
 }
 
 #[test]
@@ -625,19 +613,19 @@ fn resources_and_suppressed_failures_are_traced_across_suspension_and_released()
         .unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "state.object.deref()!==undefined&&state.symbol.deref()!==undefined&&state.error.deref()!==undefined",
     );
     realm
         .eval("state.release();state.release=null;state.gate=null")
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "completed");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "completed");
     realm.eval("state.result=null").unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "state.object.deref()===undefined&&state.symbol.deref()===undefined&&state.error.deref()===undefined",
     );
@@ -651,7 +639,7 @@ fn host_failures_abort_initial_and_resumed_cleanup_without_js_rejection() {
         realm.eval("try{s.disposeAsync()}catch(e){flag=1}finally{flag=2}"),
         Err(Error::Unsupported { .. })
     ));
-    check(&mut realm, "flag===0&&s.disposed");
+    assert_true_in(&mut realm, "flag===0&&s.disposed");
     let mut realm = Realm::with_unavailable_host();
     realm
         .eval(
@@ -674,6 +662,6 @@ fn host_failures_abort_initial_and_resumed_cleanup_without_js_rejection() {
         realm.run_next_promise_job(),
         Ok(PromiseJobOutcome::Reported(Error::Unsupported { .. }))
     ));
-    drain(&mut realm);
-    check(&mut realm, "flag===0&&s.disposed");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "flag===0&&s.disposed");
 }

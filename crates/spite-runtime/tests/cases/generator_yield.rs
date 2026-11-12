@@ -1,18 +1,13 @@
 //! Ordinary GeneratorYield and resumed completions through the source VM (27.5.3).
 
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-fn collect(realm: &mut Realm) {
-    realm.clear_kept_objects().unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
+use crate::common::assert_true_in;
+use crate::common::checkpoint_and_collect;
+use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm};
 
 #[test]
 fn next_supplies_expression_values_and_bare_yield_without_promise_jobs() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             function* g() {
@@ -38,7 +33,7 @@ fn next_supplies_expression_values_and_bare_yield_without_promise_jobs() {
 #[test]
 fn nested_operands_member_targets_and_templates_resume_without_replaying_effects() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let events = [],
@@ -65,7 +60,7 @@ fn nested_operands_member_targets_and_templates_resume_without_replaying_effects
 #[test]
 fn loops_labels_switch_and_with_restore_their_progress_and_scopes() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             function* g() {
@@ -108,7 +103,7 @@ fn loops_labels_switch_and_with_restore_their_progress_and_scopes() {
 #[test]
 fn injected_throw_reaches_catches_and_finally_and_uncaught_values_keep_identity() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let reason = {},
@@ -147,7 +142,7 @@ fn injected_throw_reaches_catches_and_finally_and_uncaught_values_keep_identity(
 #[test]
 fn pending_returns_survive_yielding_finalizers_and_later_abrupts_can_override_them() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let events = [],
@@ -187,7 +182,7 @@ fn pending_returns_survive_yielding_finalizers_and_later_abrupts_can_override_th
 #[test]
 fn return_yield_and_short_circuits_observe_only_selected_suspensions() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let effects = 0;
@@ -208,7 +203,7 @@ fn return_yield_and_short_circuits_observe_only_selected_suspensions() {
 #[test]
 fn array_object_var_and_catch_binding_defaults_use_the_shared_pattern_cursor() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             function* g() {
@@ -275,22 +270,22 @@ fn abrupt_binding_resumes_close_nested_iterators_inside_out_with_correct_precede
                 realm.eval("fail=true").unwrap();
             }
             if thrown {
-                check(
+                assert_true_in(
                     &mut realm,
                     "let same=false;try{iterator.throw(reason)}catch(error){same=error===reason}same&&iterator.next().done",
                 );
             } else if closing_error {
-                check(
+                assert_true_in(
                     &mut realm,
                     "let same=false;try{iterator.return(9)}catch(error){same=error===closing}same&&iterator.next().done",
                 );
             } else {
-                check(
+                assert_true_in(
                     &mut realm,
                     "let result=iterator.return(9);result.done&&result.value===9",
                 );
             }
-            check(&mut realm, "events.join(',')==='inner,outer'");
+            assert_true_in(&mut realm, "events.join(',')==='inner,outer'");
         }
     }
 }
@@ -298,7 +293,7 @@ fn abrupt_binding_resumes_close_nested_iterators_inside_out_with_correct_precede
 #[test]
 fn for_of_closes_before_yielding_finally_and_awaited_style_targets_keep_input_values() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let events = [],
@@ -360,13 +355,13 @@ fn method_private_and_argument_contexts_survive_yield_and_collection() {
             "#,
         )
         .unwrap();
-    collect(&mut realm);
-    check(
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "weak.deref()!==undefined&&iterator.next().value===10",
     );
-    collect(&mut realm);
-    check(&mut realm, "weak.deref()===undefined");
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(&mut realm, "weak.deref()===undefined");
 }
 
 #[test]
@@ -392,14 +387,14 @@ fn yielded_state_retains_callees_and_locals_and_releases_them_after_completion()
             "#,
         )
         .unwrap();
-    collect(&mut realm);
-    check(
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "weak.deref()!==undefined&&calleeWeak.deref()!==undefined",
     );
-    check(&mut realm, "iterator.next().value===7");
-    collect(&mut realm);
-    check(
+    assert_true_in(&mut realm, "iterator.next().value===7");
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "weak.deref()===undefined&&calleeWeak.deref()===undefined",
     );
@@ -441,8 +436,8 @@ fn host_abort_after_a_yield_skips_remaining_cleanup_and_releases_captures() {
             "#,
         )
         .unwrap();
-    collect(&mut delegated);
-    check(
+    checkpoint_and_collect(&mut delegated);
+    assert_true_in(
         &mut delegated,
         "effects===1&&disposed===1&&finalized===1&&caught===1&&iterator.next().done&&weak.deref()===undefined",
     );
@@ -488,8 +483,8 @@ fn host_abort_after_a_yield_skips_remaining_cleanup_and_releases_captures() {
         } else {
             assert!(matches!(error, Error::Unsupported { .. }), "{error}");
         }
-        collect(&mut realm);
-        check(
+        checkpoint_and_collect(&mut realm);
+        assert_true_in(
             &mut realm,
             "effects===0&&disposed===0&&finalized===0&&caught===0&&iterator.next().done&&weak.deref()===undefined",
         );
@@ -533,7 +528,7 @@ fn sync_and_async_consumers_close_yielded_generators_and_preserve_values() {
             PromiseJobOutcome::Reported(error) => panic!("{error}"),
         }
     }
-    check(
+    assert_true_in(
         &mut realm,
         "values.join(',')==='1,2'&&result==='1,2'&&events.join(',')==='close,close,close'",
     );
@@ -542,7 +537,7 @@ fn sync_and_async_consumers_close_yielded_generators_and_preserve_values() {
 #[test]
 fn yielded_symbols_bigints_and_promises_remain_raw_values() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let key = Symbol(),
@@ -567,7 +562,7 @@ fn yielded_symbols_bigints_and_promises_remain_raw_values() {
 #[test]
 fn bare_yield_inside_template_middle_and_tail_resumes_its_substitution() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let effects=0;function*g(){return `a${yield}b${(effects++,yield)}c`}

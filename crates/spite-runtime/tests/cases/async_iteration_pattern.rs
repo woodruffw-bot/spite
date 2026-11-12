@@ -1,19 +1,8 @@
 //! Assignment-pattern iteration heads share the suspended assignment engine.
 
-use spite_runtime::{Error, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
+use crate::common::assert_true_in;
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, PromiseJobOutcome, Realm};
 
 #[test]
 fn for_of_patterns_pause_before_body_and_assign_each_iteration_value() {
@@ -31,9 +20,9 @@ fn for_of_patterns_pause_before_body_and_assign_each_iteration_value() {
             "#,
         )
         .unwrap();
-    check(&mut realm, "events.length===0");
-    drain(&mut realm);
-    check(&mut realm, "result===14&&events.join(',')==='2,3,4,5'");
+    assert_true_in(&mut realm, "events.length===0");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===14&&events.join(',')==='2,3,4,5'");
 }
 
 #[test]
@@ -51,8 +40,8 @@ fn for_in_patterns_destructure_key_strings_before_body_entry() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "events.join(',')==='7,3'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "events.join(',')==='7,3'");
 }
 
 #[test]
@@ -94,8 +83,8 @@ fn for_await_patterns_accept_sync_and_async_iterator_values() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "events.join(',')==='2,3,5,4'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "events.join(',')==='2,3,5,4'");
 }
 
 #[test]
@@ -163,8 +152,8 @@ fn rejected_head_defaults_close_inner_patterns_before_sync_or_async_outer_iterat
                 "#,
             )
             .unwrap();
-        drain(&mut realm);
-        check(
+        drain_promise_jobs(&mut realm);
+        assert_true_in(
             &mut realm,
             if asynchronous {
                 "events.join(',')==='inner,outer,outer-done,true,finally'"
@@ -178,7 +167,7 @@ fn rejected_head_defaults_close_inner_patterns_before_sync_or_async_outer_iterat
 #[test]
 fn yielded_assignment_heads_preserve_labelled_continue_and_break() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let events = [];
@@ -229,16 +218,16 @@ fn pending_head_references_are_traced_and_body_waits_for_initialization() {
         .unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "body===0&&weakTarget.deref()!==undefined&&weakKey.deref()!==undefined",
     );
     realm.eval("release(7)").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "body===1&&result===true");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "body===1&&result===true");
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "weakTarget.deref()===undefined&&weakKey.deref()===undefined",
     );
@@ -259,8 +248,8 @@ fn nested_assignment_defaults_and_class_names_use_iteration_pattern_paths() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "events.join(',')==='A,4,3'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "events.join(',')==='A,4,3'");
 }
 
 #[test]
@@ -313,5 +302,5 @@ fn head_host_abort_skips_outer_close_body_rejection_and_finally() {
         }
     }
     assert!(reported);
-    check(&mut realm, "flag===0&&body===0&&closed===0");
+    assert_true_in(&mut realm, "flag===0&&body===0&&closed===0");
 }

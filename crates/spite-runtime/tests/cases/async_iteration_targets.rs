@@ -1,26 +1,10 @@
 //! Awaited ForIn/Of assignment references after each iteration value (14.7.5).
 
 use crate::common::UnavailableHostRealm;
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
-
-fn collect(realm: &mut Realm) {
-    realm.clear_kept_objects().unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
+use crate::common::assert_true_in;
+use crate::common::checkpoint_and_collect;
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm};
 
 #[test]
 fn iteration_values_precede_awaited_bases_keys_coercion_and_writes_without_getting_the_target() {
@@ -84,12 +68,12 @@ fn iteration_values_precede_awaited_bases_keys_coercion_and_writes_without_getti
             "#,
         )
         .unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "events.join(',')==='next1,base'&&result===undefined",
     );
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             events.join(',') ===
@@ -129,10 +113,10 @@ fn for_in_retains_the_selected_key_and_keeps_later_enumeration_live() {
             "#,
         )
         .unwrap();
-    check(&mut realm, "values.length===0&&result===undefined");
+    assert_true_in(&mut realm, "values.length===0&&result===undefined");
     realm.eval("delete object.a;release('x')").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result==='a,c'&&target.x==='c'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result==='a,c'&&target.x==='c'");
 }
 
 #[test]
@@ -177,14 +161,14 @@ fn for_await_keeps_the_raw_async_value_pending_until_target_evaluation_finishes(
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "calls===1&&stored===undefined&&result===undefined",
     );
     realm.eval("release('x')").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "calls===2&&stored===promise&&result===true");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "calls===2&&stored===promise&&result===true");
 }
 
 #[test]
@@ -254,8 +238,8 @@ fn target_rejection_closes_sync_and_async_iterators_but_not_internal_for_in_enum
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             results.length === 3 && results.every(x => x === true) && events.length === 2 && events
@@ -300,8 +284,8 @@ fn private_and_super_targets_keep_their_receiver_and_empty_inputs_skip_target_aw
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===16&&empty===0&&effects===0");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===16&&empty===0&&effects===0");
 }
 
 #[test]
@@ -340,15 +324,15 @@ fn pending_input_is_traced_then_released_before_an_outer_catch_suspends() {
             "#,
         )
         .unwrap();
-    collect(&mut realm);
-    check(&mut realm, "weak.deref()!==undefined&&result===undefined");
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(&mut realm, "weak.deref()!==undefined&&result===undefined");
     realm.eval("reject(reason)").unwrap();
-    drain(&mut realm);
-    collect(&mut realm);
-    check(&mut realm, "weak.deref()===undefined&&result===undefined");
+    drain_promise_jobs(&mut realm);
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(&mut realm, "weak.deref()===undefined&&result===undefined");
     realm.eval("resume()").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===true");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===true");
 }
 
 #[test]
@@ -387,7 +371,7 @@ fn host_abort_in_an_awaited_target_skips_all_iterator_close_and_javascript_clean
                 _ => format!("for await(holder[(await gate,{tail})] of source)"),
             };
             realm.eval(&format!("async function f(){{using r=resource;try{{{header}{{}}}}catch{{caught=true}}finally{{finalized++}}}}f().catch(()=>{{caught=true}})")).unwrap();
-            drain(&mut realm);
+            drain_promise_jobs(&mut realm);
             realm.eval("delete resource[dispose];proceed('x')").unwrap();
             let mut reported = false;
             loop {
@@ -407,8 +391,8 @@ fn host_abort_in_an_awaited_target_skips_all_iterator_close_and_javascript_clean
                 }
             }
             assert!(reported, "{kind}");
-            collect(&mut realm);
-            check(
+            checkpoint_and_collect(&mut realm);
+            assert_true_in(
                 &mut realm,
                 "closed===0&&disposed===0&&finalized===0&&!caught&&state.weak.deref()===undefined",
             );

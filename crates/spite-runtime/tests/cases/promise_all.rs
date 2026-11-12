@@ -1,19 +1,10 @@
 //! Ordered Promise.all aggregation, guarded callbacks and traced result lists.
 
 use crate::common::UnavailableHostRealm;
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, Limits, Realm, Value};
 
 use crate::common::assert_true;
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => {}
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
 
 #[test]
 fn results_follow_input_order_and_wait_for_all_values_including_empty_input() {
@@ -37,13 +28,13 @@ fn results_follow_input_order_and_wait_for_all_values_including_empty_input() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(
         realm.eval("seen.join(';')"),
         Ok(Value::String("empty".into()))
     );
     realm.eval("first.resolve(1)").unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(
         realm.eval("seen.join(';')"),
         Ok(Value::String("empty;1,2,3".into()))
@@ -59,7 +50,7 @@ fn results_follow_input_order_and_wait_for_all_values_including_empty_input() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(realm.eval("caught"), Ok(Value::Boolean(true)));
     realm
         .eval(
@@ -84,7 +75,7 @@ fn results_follow_input_order_and_wait_for_all_values_including_empty_input() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(realm.eval("ArrayIntrinsic.isArray(result)&&Object.getPrototypeOf(result)===ArrayIntrinsic.prototype&&result.join(',')==='1,2'"),Ok(Value::Boolean(true)));
 }
 
@@ -318,7 +309,7 @@ fn reentrant_callbacks_do_not_complete_aggregates_after_iteration_aborts() {
 fn pending_aggregate_values_and_symbols_survive_collection_and_release_after_completion() {
     let mut realm = Realm::default();
     realm.eval("let state=(()=>{let value={},symbol=Symbol(),cap=Promise.withResolvers();return{all:Promise.all([Promise.resolve(value),Promise.resolve(symbol),cap.promise]),finish:cap.resolve,object:new WeakRef(value),symbol:new WeakRef(symbol)}})()").unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
     assert_eq!(
@@ -326,7 +317,7 @@ fn pending_aggregate_values_and_symbols_survive_collection_and_release_after_com
         Ok(Value::Boolean(true))
     );
     realm.eval("state.finish(3)").unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
     assert_eq!(

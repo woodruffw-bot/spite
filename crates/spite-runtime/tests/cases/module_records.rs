@@ -1,20 +1,11 @@
 //! Retained Module identity, evaluation caching and host roots (16.2.1).
 
+use crate::common::assert_true_in;
+use crate::common::checkpoint_and_collect;
+use crate::common::drain_promise_jobs;
 use spite_core::{DiagnosticKind, JsString};
-use spite_runtime::{Error, Limits, PromiseJobOutcome, PromiseState, Realm, Value};
+use spite_runtime::{Error, Limits, PromiseState, Realm, Value};
 
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error:?}"),
-        }
-    }
-}
 fn state<'a>(realm: &'a Realm, promise: &Value) -> &'a PromiseState {
     let Value::Object(handle) = promise else {
         panic!("Promise")
@@ -25,10 +16,6 @@ fn state<'a>(realm: &'a Realm, promise: &Value) -> &'a PromiseState {
         .promise_state()
         .unwrap()
 }
-fn collect(realm: &mut Realm) {
-    realm.clear_kept_objects().unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
 
 #[test]
 fn retained_records_run_once_while_distinct_records_and_fresh_evaluation_remain_independent() {
@@ -36,7 +23,7 @@ fn retained_records_run_once_while_distinct_records_and_fresh_evaluation_remain_
     realm.eval("let effects=0").unwrap();
     let source = "effects++;export let value=effects;globalThis.read=()=>value";
     let module = realm.create_module(source).unwrap();
-    check(&mut realm, "effects===0");
+    assert_true_in(&mut realm, "effects===0");
     let first = realm.evaluate_module_record(&module).unwrap();
     assert!(matches!(
         state(&realm, &first),
@@ -45,13 +32,13 @@ fn retained_records_run_once_while_distinct_records_and_fresh_evaluation_remain_
     let clone = module.clone();
     assert_eq!(clone, module);
     assert_eq!(realm.evaluate_module_record(&clone), Ok(first));
-    check(&mut realm, "effects===1&&read()===1");
+    assert_true_in(&mut realm, "effects===1&&read()===1");
     let other = realm.create_module(source).unwrap();
     assert_ne!(module, other);
     realm.evaluate_module_record(&other).unwrap();
-    check(&mut realm, "effects===2&&read()===2");
+    assert_true_in(&mut realm, "effects===2&&read()===2");
     realm.eval_module(source).unwrap();
-    check(&mut realm, "effects===3&&read()===3");
+    assert_true_in(&mut realm, "effects===3&&read()===3");
 }
 
 #[test]
@@ -66,16 +53,16 @@ fn pending_and_rejected_records_keep_the_same_promise_and_original_reason() {
     let first = realm.evaluate_module_record(&module).unwrap();
     assert!(matches!(state(&realm, &first), PromiseState::Pending));
     assert_eq!(realm.evaluate_module_record(&module), Ok(first.clone()));
-    check(&mut realm, "effects===1");
+    assert_true_in(&mut realm, "effects===1");
     realm.eval("release()").unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     let PromiseState::Rejected(reason) = state(&realm, &first) else {
         panic!("rejected")
     };
     let reason = reason.clone();
     assert_eq!(realm.eval("reason"), Ok(reason));
     assert_eq!(realm.evaluate_module_record(&module), Ok(first));
-    check(&mut realm, "effects===1");
+    assert_true_in(&mut realm, "effects===1");
 }
 
 #[test]
@@ -93,7 +80,7 @@ fn host_aborted_records_keep_their_pending_promise_without_replaying_effects_or_
     let pending = realm.evaluate_module_record(&module).unwrap();
     assert!(matches!(state(&realm, &pending), PromiseState::Pending));
     assert_eq!(realm.evaluate_module_record(&module), Ok(pending));
-    check(&mut realm, "effects===1&&finalized===0");
+    assert_true_in(&mut realm, "effects===1&&finalized===0");
 }
 
 #[test]
@@ -106,15 +93,15 @@ fn the_last_module_handle_keeps_finished_environments_and_rejection_values_alive
         realm.eval("let weak").unwrap();
         let module = realm.create_module(source).unwrap();
         realm.evaluate_module_record(&module).unwrap();
-        collect(&mut realm);
-        check(&mut realm, "weak.deref()!==undefined");
+        checkpoint_and_collect(&mut realm);
+        assert_true_in(&mut realm, "weak.deref()!==undefined");
         let clone = module.clone();
         drop(module);
-        collect(&mut realm);
-        check(&mut realm, "weak.deref()!==undefined");
+        checkpoint_and_collect(&mut realm);
+        assert_true_in(&mut realm, "weak.deref()!==undefined");
         drop(clone);
-        collect(&mut realm);
-        check(&mut realm, "weak.deref()===undefined");
+        checkpoint_and_collect(&mut realm);
+        assert_true_in(&mut realm, "weak.deref()===undefined");
     }
 }
 
@@ -147,10 +134,10 @@ fn parsing_and_opted_in_source_limits_precede_creation_or_body_effects() {
         Err(Error::Parse(_))
     ));
     let module = realm.create_module("effects++").unwrap();
-    check(&mut realm, "effects===0");
+    assert_true_in(&mut realm, "effects===0");
     drop(module);
-    collect(&mut realm);
-    check(&mut realm, "effects===0");
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(&mut realm, "effects===0");
     let mut limited = Realm::new(Limits {
         max_source_bytes: Some(20),
         ..Limits::default()

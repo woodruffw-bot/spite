@@ -1,19 +1,10 @@
 //! Non-suspending async functions, intrinsic metadata and Promise-returning calls.
 
 use crate::common::UnavailableHostRealm;
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, Limits, Realm, Value};
 
 use crate::common::assert_true;
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => {}
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
 
 #[test]
 fn async_objects_have_the_intrinsic_graph_metadata_and_no_construct_capability() {
@@ -71,7 +62,7 @@ fn calls_run_bodies_synchronously_but_return_fresh_promises_and_queue_thenable_a
         ),
         Ok(Value::Boolean(true))
     );
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(
         realm.eval("value===9&&log==='bgst'"),
         Ok(Value::Boolean(true))
@@ -93,7 +84,7 @@ fn calls_run_bodies_synchronously_but_return_fresh_promises_and_queue_thenable_a
         ),
         Ok(Value::Boolean(true))
     );
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(realm.eval("adopted"), Ok(Value::Number(7.0)));
     realm
         .eval(
@@ -114,7 +105,7 @@ fn calls_run_bodies_synchronously_but_return_fresh_promises_and_queue_thenable_a
             "#,
         )
         .unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(realm.eval("returned"), Ok(Value::Number(3.0)));
 }
 
@@ -163,7 +154,7 @@ fn parameter_body_and_return_getter_language_failures_reject_instead_of_throwing
             "#,
         )
         .unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(
         realm.eval("!sync&&!body&&seen===4"),
         Ok(Value::Boolean(true))
@@ -216,7 +207,7 @@ fn closures_receivers_arguments_and_internal_kind_survive_binding_and_prototype_
             "#,
         )
         .unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(
         realm.eval("values.join(',')"),
         Ok(Value::String("call,bound,strict,kind,dynamic".into()))
@@ -351,7 +342,7 @@ fn pattern_default_await_runs_operands_once_and_defers_finalizers() {
         realm.eval("before===1&&operand===1&&handled===0&&!settled"),
         Ok(Value::Boolean(true))
     );
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     assert_eq!(
         realm.eval("before===1&&operand===1&&handled===2&&settled"),
         Ok(Value::Boolean(true))

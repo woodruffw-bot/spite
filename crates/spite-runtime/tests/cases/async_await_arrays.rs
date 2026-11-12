@@ -1,20 +1,8 @@
 //! Array literal accumulation across source Await suspension.
 
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
+use crate::common::assert_true_in;
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm};
 
 #[test]
 fn elements_and_holes_accumulate_once_in_order_across_multiple_awaits() {
@@ -39,10 +27,10 @@ fn elements_and_holes_accumulate_once_in_order_across_multiple_awaits() {
             "#,
         )
         .unwrap();
-    check(&mut realm, "events.join(',')==='first'&&result===undefined");
+    assert_true_in(&mut realm, "events.join(',')==='first'&&result===undefined");
     realm.eval("state.release(2)").unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             events.join(',') === 'first,next' && result.length === 5 && result[0] === 1 && result[2] ===
@@ -81,9 +69,9 @@ fn awaited_spread_iterates_synchronously_and_keeps_yielded_promises_as_values() 
             "#,
         )
         .unwrap();
-    check(&mut realm, "events.length===0&&result===undefined");
-    drain(&mut realm);
-    check(
+    assert_true_in(&mut realm, "events.length===0&&result===undefined");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             events.join(',') === 'iterator,next,next,next,tail' && result.length === 3 && result[0] ===
@@ -107,8 +95,8 @@ fn nested_array_and_call_tasks_use_intrinsic_arrays_and_do_not_infer_element_nam
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             setterCalls === 0 && result instanceof saved && result.length === 3 && result[0] === 1 &&
@@ -142,8 +130,8 @@ fn rejection_skips_later_elements_and_preserves_resource_suppression() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             later === 0 && disposed === 1 && reason instanceof SuppressedError && reason.error ===
@@ -163,15 +151,15 @@ fn partial_arrays_keep_earlier_values_alive_and_release_them_after_rejection() {
     "#).unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "state.weak.deref()!==undefined&&reason===undefined",
     );
     realm.eval("state.reject(marker)").unwrap();
-    drain(&mut realm);
+    drain_promise_jobs(&mut realm);
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "state.weak.deref()===undefined&&reason===marker",
     );
@@ -235,7 +223,7 @@ fn resumed_array_capacity_failure_bypasses_rejection_disposal_and_iterator_closi
         }
     }
     assert!(reported);
-    check(
+    assert_true_in(
         &mut realm,
         "steps>0&&steps<200&&closed===0&&disposed===0&&!caught",
     );

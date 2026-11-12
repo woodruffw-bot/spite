@@ -1,19 +1,13 @@
 //! Async-generator function objects and hidden intrinsic metadata (15.6, 27.4–6).
 
-use spite_runtime::{PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-fn collect(realm: &mut Realm) {
-    realm.clear_kept_objects().unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
+use crate::common::assert_true_in;
+use crate::common::checkpoint_and_collect;
+use spite_runtime::{PromiseJobOutcome, Realm};
 
 #[test]
 fn hidden_constructor_function_and_instance_prototype_graph_has_standard_metadata() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
         async function*g(x,y=1){}let FP=Object.getPrototypeOf(g),AGF=FP.constructor,GP=FP.prototype,AP=Object.getPrototypeOf(GP);
@@ -32,7 +26,7 @@ fn hidden_constructor_function_and_instance_prototype_graph_has_standard_metadat
 #[test]
 fn declarations_expressions_and_public_private_methods_are_callable_and_nonconstructible() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             async function* g() {}
@@ -77,7 +71,7 @@ fn declarations_expressions_and_public_private_methods_are_callable_and_nonconst
 #[test]
 fn dynamic_constructor_calls_and_construction_share_source_conversion_and_prototype_rules() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
         let AGF=Object.getPrototypeOf(async function*(){}).constructor,events=[],custom={};
@@ -88,7 +82,7 @@ fn dynamic_constructor_calls_and_construction_share_source_conversion_and_protot
         plain.toString()==='async function* anonymous(\n) {\n\n}'&&built.toString()==='async function* anonymous(x\n) {\nyield x\n}'&&built instanceof AGF&&built.length===1
     "#,
     );
-    check(
+    assert_true_in(
         &mut realm,
         r#"
         events=[];let caught=false;try{Reflect.construct(AGF,[{toString(){events.push('parameter');return 'x=await 1'}},{toString(){events.push('body');return ''}}],N)}catch(e){caught=e instanceof SyntaxError}
@@ -100,7 +94,7 @@ fn dynamic_constructor_calls_and_construction_share_source_conversion_and_protot
 #[test]
 fn prototype_methods_reject_unbranded_receivers_with_fresh_intrinsic_promises() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let P = Promise,
@@ -126,7 +120,7 @@ fn prototype_methods_reject_unbranded_receivers_with_fresh_intrinsic_promises() 
             PromiseJobOutcome::Reported(error) => panic!("{error:?}"),
         }
     }
-    check(&mut realm, "seen.length===24&&seen.every(value=>value)");
+    assert_true_in(&mut realm, "seen.length===24&&seen.every(value=>value)");
 }
 
 #[test]
@@ -138,11 +132,11 @@ fn calls_perform_parameter_setup_without_entering_the_body() {
     realm
         .eval("try{g()}catch{caught++}finally{finalized++}")
         .unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "effects===3&&body===0&&caught===0&&finalized===1",
     );
-    check(
+    assert_true_in(
         &mut realm,
         "async function*h({x}){body++}try{h({get x(){throw 7}})}catch(e){caught=e===7?1:2}finally{finalized++}caught===1&&finalized===2&&body===0",
     );
@@ -156,10 +150,10 @@ fn function_and_method_captures_remain_live_and_unreachable_symbol_cycles_collec
     ] {
         let mut realm = Realm::default();
         realm.eval(&format!("let weak,fn={factory}")).unwrap();
-        collect(&mut realm);
-        check(&mut realm, "weak.deref()!==undefined");
+        checkpoint_and_collect(&mut realm);
+        assert_true_in(&mut realm, "weak.deref()!==undefined");
         realm.eval("fn=null").unwrap();
-        collect(&mut realm);
-        check(&mut realm, "weak.deref()===undefined");
+        checkpoint_and_collect(&mut realm);
+        assert_true_in(&mut realm, "weak.deref()===undefined");
     }
 }

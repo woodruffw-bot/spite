@@ -1,26 +1,10 @@
 //! Tagged evaluation with awaited tags/substitutions (13.3.11.1).
 
 use crate::common::UnavailableHostRealm;
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
-
-fn collect(realm: &mut Realm) {
-    realm.clear_kept_objects().unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
+use crate::common::assert_true_in;
+use crate::common::checkpoint_and_collect;
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm};
 
 #[test]
 fn tagged_templates_capture_method_and_receiver_before_substitutions() {
@@ -58,15 +42,15 @@ fn tagged_templates_capture_method_and_receiver_before_substitutions() {
             "#,
         )
         .unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "events.join(',')==='get,first'&&result===undefined",
     );
     realm
         .eval("Object.defineProperty(object,'tag',{value(){throw 9}})")
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result===15&&receiver===object&&events.join(',')==='get,first,second,call'",
     );
@@ -99,8 +83,8 @@ fn awaited_tag_values_lose_receivers_while_parenthesized_member_tags_preserve_th
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "first===8&&second===9");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "first===8&&second===9");
 }
 
 #[test]
@@ -112,8 +96,8 @@ fn tagged_substitutions_preserve_raw_symbols_objects_and_promises_without_conver
         async function f(){return tag`${symbol}${object}${promise}${await 8}`}
         f().then(value=>{result=value});
     "#).unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===true");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===true");
 }
 
 #[test]
@@ -138,8 +122,8 @@ fn suspended_tagged_calls_share_frozen_template_sites_and_preserve_invalid_escap
             results.push(value)
         });
     "#).unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "results.length===2&&results.every(value=>value)&&sites[0]===sites[1]",
     );
@@ -172,9 +156,9 @@ fn tagged_callability_is_checked_after_every_substitution_and_eval_receives_the_
             "#,
         )
         .unwrap();
-    check(&mut realm, "effects===1&&result===undefined");
-    drain(&mut realm);
-    check(
+    assert_true_in(&mut realm, "effects===1&&result===undefined");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             effects === 2 && result === true && Array.isArray(template) && Object.isFrozen(template) &&
@@ -232,8 +216,8 @@ fn private_super_and_object_environment_tags_keep_their_receivers_and_contexts()
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "first===17&&second===28&&third===39");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "first===17&&second===28&&third===39");
 }
 
 #[test]
@@ -283,21 +267,21 @@ fn tagged_calls_trace_receivers_and_earlier_arguments_then_release_them_after_in
             "#,
         )
         .unwrap();
-    collect(&mut realm);
-    check(
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "receiverWeak.deref()!==undefined&&argumentWeak.deref()!==undefined&&called===undefined&&result===undefined",
     );
     realm.eval("release(3)").unwrap();
-    drain(&mut realm);
-    collect(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "receiverWeak.deref()===undefined&&argumentWeak.deref()===undefined&&called===6&&result===undefined",
     );
     realm.eval("releaseSecond(0)").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===7");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===7");
 }
 
 #[test]
@@ -339,7 +323,7 @@ fn tagged_argument_quotas_count_the_template_object_and_host_aborts_skip_cleanup
         }
     }
     assert!(reported);
-    check(
+    assert_true_in(
         &mut realm,
         "effects===2&&called===0&&disposed===0&&finalized===0&&!caught",
     );
@@ -381,8 +365,8 @@ fn tagged_argument_quotas_count_the_template_object_and_host_aborts_skip_cleanup
             }
         }
         assert!(reported);
-        collect(&mut realm);
-        check(
+        checkpoint_and_collect(&mut realm);
+        assert_true_in(
             &mut realm,
             "called===0&&disposed===0&&finalized===0&&!caught&&state.weak.deref()===undefined",
         );

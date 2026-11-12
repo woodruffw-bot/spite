@@ -1,24 +1,10 @@
 //! Catch parameter Array BindingInitialization across Await (14.15.3).
 
 use crate::common::UnavailableHostRealm;
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
-fn collect(realm: &mut Realm) {
-    realm.clear_kept_objects().unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
+use crate::common::assert_true_in;
+use crate::common::checkpoint_and_collect;
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm};
 
 #[test]
 fn parameter_defaults_finish_before_the_body_and_catch_scope_ends_before_finally() {
@@ -51,13 +37,13 @@ fn parameter_defaults_finish_before_the_body_and_catch_scope_ends_before_finally
             "#,
         )
         .unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "!entered&&finallySeen===0&&x===1&&result===undefined",
     );
     realm.eval("release(7)").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "entered&&finallySeen===1&&x===1&&result===8");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "entered&&finallySeen===1&&x===1&&result===8");
 }
 
 #[test]
@@ -86,8 +72,8 @@ fn nested_patterns_rest_and_default_name_inference_keep_native_binding_behavior(
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===true");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===true");
 }
 
 #[test]
@@ -120,8 +106,8 @@ fn parameter_tdz_errors_replace_the_throw_and_reach_finally_then_the_outer_handl
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result===true&&entered===0&&events.join(',')==='finally,outer'",
     );
@@ -173,8 +159,8 @@ fn rejected_defaults_close_the_iterator_before_finally_without_reentering_the_ha
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result===true&&entered===0&&events.join(',')==='close,finally,outer'",
     );
@@ -240,8 +226,8 @@ fn iterator_acquisition_step_and_close_errors_skip_the_body_and_unwind_the_catch
                 'close'
             ]) f(kind).then(value => results.push(value));
     "#).unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "entered===0&&finalized===8&&results.length===8&&results.every(x=>x===true)",
     );
@@ -299,15 +285,15 @@ fn suspension_retains_cached_next_then_releases_it_while_escaped_catch_bindings_
             "#,
         )
         .unwrap();
-    collect(&mut realm);
-    check(
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "weak.deref()!==undefined&&nextWeak.deref()!==undefined&&iteratorWeak.deref()!==undefined&&result===undefined",
     );
     realm.eval("release(7)").unwrap();
-    drain(&mut realm);
-    collect(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             result === 7 && get() === 7 && weak.deref() === undefined && nextWeak.deref() === undefined &&
@@ -380,8 +366,8 @@ fn host_abort_in_parameters_skips_close_disposal_finally_body_and_rejection_hand
             }
         }
         assert!(reported);
-        collect(&mut realm);
-        check(
+        checkpoint_and_collect(&mut realm);
+        assert_true_in(
             &mut realm,
             "closed===0&&disposed===0&&finalized===0&&entered===0&&!caught&&state.weak.deref()===undefined",
         );
@@ -396,8 +382,8 @@ fn private_method_context_and_dynamic_async_function_bodies_share_catch_binding_
         new C().f().then(value=>results.push(value));let AsyncFunction=(async function(){}).constructor;
         AsyncFunction('try{throw []}catch([x=await 13]){return x}')().then(value=>results.push(value));
     "#).unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "results.length===2&&results.includes(7)&&results.includes(13)",
     );

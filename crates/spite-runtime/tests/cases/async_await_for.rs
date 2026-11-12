@@ -1,26 +1,10 @@
 //! ForStatement header phases, iteration environments and source suspension.
 
 use crate::common::UnavailableHostRealm;
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
-
-fn collect(realm: &mut Realm) {
-    realm.clear_kept_objects().unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
+use crate::common::assert_true_in;
+use crate::common::checkpoint_and_collect;
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm};
 
 #[test]
 fn for_awaits_all_header_phases_and_body_in_order_without_replaying_initialization() {
@@ -49,9 +33,9 @@ fn for_awaits_all_header_phases_and_body_in_order_without_replaying_initializati
             "#,
         )
         .unwrap();
-    check(&mut realm, "events.join(',')==='init'&&result===undefined");
-    drain(&mut realm);
-    check(
+    assert_true_in(&mut realm, "events.join(',')==='init'&&result===undefined");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result===7&&events.join(',')==='init,test0,body0,finally0,update0,test1,body1,finally1,update1,test2'",
     );
@@ -82,8 +66,8 @@ fn for_copies_let_environments_before_first_test_and_before_each_update() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             result === 7 && heads[0]() === 0 && tests.map(f => f()).join(',') === '0,1,2,3' && bodies.map(
@@ -135,8 +119,8 @@ fn for_initializers_share_tdz_patterns_and_mapped_var_argument_behavior() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result===3&&alias===5&&tdz===true&&a==='outer'&&patterns.join(',')==='3'",
     );
@@ -204,8 +188,8 @@ fn for_labelled_continue_updates_after_finally_and_break_skips_update() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             result === 7 && updates === 2 && events.join(',') === '0,1,2' && returned === 11 && thrown ===
@@ -267,8 +251,8 @@ fn for_using_header_disposes_once_after_body_finalizers_and_on_initializer_failu
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result===7&&failed===true&&events.join(',')==='finally0,body0,finally1,body1,header'",
     );
@@ -309,8 +293,8 @@ fn for_const_header_uses_one_environment_and_restores_the_outer_scope_after_upda
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result===7&&failed===true&&callbacks.map(f=>f()).join(',')==='3,3,3'&&x==='outer'",
     );
@@ -340,8 +324,8 @@ fn for_supports_absent_headers_and_awaited_expression_initializers_without_new_s
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===5&&started===1");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===5&&started===1");
 }
 
 #[test]
@@ -388,8 +372,8 @@ fn for_rejections_in_each_header_phase_restore_lexical_scopes_before_catch() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "results.length===3&&results.every(value=>value)&&x==='outer'",
     );
@@ -450,21 +434,21 @@ fn for_traces_header_environments_and_body_values_then_releases_them_after_exit(
             "#,
         )
         .unwrap();
-    collect(&mut realm);
-    check(
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "bodyWeak.deref()!==undefined&&envWeak.deref()!==undefined&&first===undefined&&secondResult===undefined",
     );
     realm.eval("release(false)").unwrap();
-    drain(&mut realm);
-    collect(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "bodyWeak.deref()===undefined&&envWeak.deref()===undefined&&first===undefined&&secondResult===undefined",
     );
     realm.eval("releaseSecond(0)").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "first===7&&secondResult===8");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "first===7&&secondResult===8");
 }
 
 #[test]
@@ -491,8 +475,8 @@ fn for_headers_and_bodies_preserve_private_eval_this_and_arguments() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===20");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===20");
 }
 
 #[test]
@@ -547,8 +531,8 @@ fn for_host_abort_releases_header_resources_without_handlers_or_disposal_at_budg
             }
         }
         assert!(reported);
-        collect(&mut realm);
-        check(
+        checkpoint_and_collect(&mut realm);
+        assert_true_in(
             &mut realm,
             "disposed===0&&finalized===0&&!caught&&read()===resource&&state.weak.deref()===undefined",
         );

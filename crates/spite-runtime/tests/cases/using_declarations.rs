@@ -1,25 +1,13 @@
 //! Lexical resource lifetimes, abrupt completions and iterator cleanup.
 
 use crate::common::UnavailableHostRealm;
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => {}
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
+use crate::common::assert_true_in;
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, Limits, Realm, Value};
 
 #[test]
 fn ordinary_using_identifiers_accept_word_operators_and_loop_headers() {
-    check(
+    assert_true_in(
         &mut Realm::default(),
         r#"
             for(const prefix of ['', '"use strict";']){
@@ -37,7 +25,7 @@ fn ordinary_using_identifiers_accept_word_operators_and_loop_headers() {
 #[test]
 fn await_using_identifiers_resume_before_word_operators() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let state={};
@@ -50,8 +38,8 @@ fn await_using_identifiers_resume_before_word_operators() {
             Object.keys(state).length===0
         "#,
     );
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             state.member === true && state.absent === false && state.object === true && state.primitive ===
@@ -62,7 +50,7 @@ fn await_using_identifiers_resume_before_word_operators() {
 
 #[test]
 fn block_bindings_cache_disposers_and_preserve_receivers_and_reverse_order() {
-    check(
+    assert_true_in(
         &mut Realm::default(),
         r#"
             let log = [],
@@ -112,7 +100,7 @@ fn block_bindings_cache_disposers_and_preserve_receivers_and_reverse_order() {
 #[test]
 fn resource_cleanup_preserves_return_values_break_continue_and_normal_values() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let log=[];function f(){using a={[Symbol.dispose](){log.push('return');return 99}};return 7}
@@ -130,7 +118,7 @@ fn resource_cleanup_preserves_return_values_break_continue_and_normal_values() {
 
 #[test]
 fn body_and_cleanup_errors_form_intrinsic_suppression_chains() {
-    check(
+    assert_true_in(
         &mut Realm::default(),
         r#"
             let original = {},
@@ -165,7 +153,7 @@ fn body_and_cleanup_errors_form_intrinsic_suppression_chains() {
 
 #[test]
 fn initializer_and_lookup_failures_dispose_prior_resources_before_binding_initialization() {
-    check(
+    assert_true_in(
         &mut Realm::default(),
         r#"
             let log = [],
@@ -199,7 +187,7 @@ fn initializer_and_lookup_failures_dispose_prior_resources_before_binding_initia
 
 #[test]
 fn three_clause_headers_keep_resources_until_the_whole_loop_exits() {
-    check(
+    assert_true_in(
         &mut Realm::default(),
         r#"
             let log = [],
@@ -230,7 +218,7 @@ fn three_clause_headers_keep_resources_until_the_whole_loop_exits() {
                 ',') === '1'
         "#,
     );
-    check(
+    assert_true_in(
         &mut Realm::default(),
         r#"
             let log=[],j=0,resource=tag=>({[Symbol.dispose](){log.push(tag)}});
@@ -245,7 +233,7 @@ fn three_clause_headers_keep_resources_until_the_whole_loop_exits() {
 
 #[test]
 fn for_of_resources_dispose_per_iteration_before_next_and_iterator_close() {
-    check(
+    assert_true_in(
         &mut Realm::default(),
         r#"
             let log = [],
@@ -288,7 +276,7 @@ fn for_of_resources_dispose_per_iteration_before_next_and_iterator_close() {
 
 #[test]
 fn for_of_rhs_has_a_tdz_and_disposal_failures_close_without_replacing_throws() {
-    check(
+    assert_true_in(
         &mut Realm::default(),
         r#"
             let x = [],
@@ -350,17 +338,17 @@ fn functions_methods_static_blocks_eval_and_async_returns_close_their_own_scopes
             "#,
         )
         .unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "!done&&log.join(',')==='function,arrow,static,method,eval,async'",
     );
-    drain(&mut realm);
-    check(&mut realm, "done");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "done");
 }
 
 #[test]
 fn nullish_inputs_primitives_and_named_function_initializers_follow_using_rules() {
-    check(
+    assert_true_in(
         &mut Realm::default(),
         r#"
             let caught = 0,
@@ -391,7 +379,7 @@ fn nullish_inputs_primitives_and_named_function_initializers_follow_using_rules(
 
 #[test]
 fn finalizers_follow_inner_disposal_and_stacks_share_the_disposal_protocol() {
-    check(
+    assert_true_in(
         &mut Realm::default(),
         r#"
             let log = [];
@@ -449,7 +437,7 @@ fn host_aborts_skip_disposal_but_release_cached_methods_from_escaped_environment
     ));
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "flag===0&&state.read()===state.value&&state.weak.deref()===undefined",
     );
@@ -473,7 +461,7 @@ fn opted_in_work_abort_discards_prepaid_captures_without_running_cleanup() {
     ));
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "state.started&&state.read()===state.value&&state.weak.deref()===undefined",
     );

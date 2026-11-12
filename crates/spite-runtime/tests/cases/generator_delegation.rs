@@ -1,19 +1,13 @@
 //! Synchronous yield* iterator forwarding and abrupt completion (15.5).
 
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-fn collect(realm: &mut Realm) {
-    realm.clear_kept_objects().unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
+use crate::common::assert_true_in;
+use crate::common::checkpoint_and_collect;
+use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm};
 
 #[test]
 fn next_is_cached_receives_one_argument_and_forwards_the_exact_result_object() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let calls = [],
@@ -69,7 +63,7 @@ fn next_is_cached_receives_one_argument_and_forwards_the_exact_result_object() {
 #[test]
 fn throw_uses_live_method_lookup_and_its_done_value_completes_the_expression() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let reason = {},
@@ -115,7 +109,7 @@ fn throw_uses_live_method_lookup_and_its_done_value_completes_the_expression() {
 #[test]
 fn return_done_false_yields_then_next_resumes_normally_and_done_true_returns() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let after = 0,
@@ -173,7 +167,7 @@ fn return_done_false_yields_then_next_resumes_normally_and_done_true_returns() {
 fn absent_or_null_return_preserves_the_original_return_value_without_awaiting() {
     for returned in ["undefined", "null"] {
         let mut realm = Realm::default();
-        check(
+        assert_true_in(
             &mut realm,
             &format!(
                 r#"
@@ -215,7 +209,7 @@ fn missing_throw_closes_with_no_arguments_and_close_errors_precede_protocol_type
         } else {
             "error instanceof TypeError"
         };
-        check(
+        assert_true_in(
             &mut realm,
             &format!(
                 r#"
@@ -259,7 +253,7 @@ fn missing_throw_closes_with_no_arguments_and_close_errors_precede_protocol_type
         );
     }
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let closed = 0,
@@ -308,7 +302,7 @@ fn result_done_and_final_value_failures_propagate_without_automatic_iterator_clo
         } else {
             "error===reason"
         };
-        check(
+        assert_true_in(
             &mut realm,
             &format!(
                 r#"
@@ -346,7 +340,7 @@ fn result_done_and_final_value_failures_propagate_without_automatic_iterator_clo
 #[test]
 fn nested_delegation_and_yielded_operands_share_surrounding_expression_state() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             function* inner() {
@@ -375,7 +369,7 @@ fn nested_delegation_and_yielded_operands_share_surrounding_expression_state() {
 #[test]
 fn delegate_reentry_uses_the_executing_brand_and_restores_the_caller_context() {
     let mut realm = Realm::default();
-    check(
+    assert_true_in(
         &mut realm,
         r#"
             let reentry = 0,
@@ -450,14 +444,14 @@ fn suspended_delegates_retain_iterator_and_cached_next_then_release_them() {
             "#,
         )
         .unwrap();
-    collect(&mut realm);
-    check(
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "sourceWeak.deref()!==undefined&&nextWeak.deref()!==undefined",
     );
     realm.eval("iterator.return(7)").unwrap();
-    collect(&mut realm);
-    check(
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "sourceWeak.deref()===undefined&&nextWeak.deref()===undefined",
     );
@@ -526,8 +520,8 @@ fn delegate_host_failures_complete_and_release_state_without_cleanup() {
             },
             "{error}"
         );
-        collect(&mut realm);
-        check(
+        checkpoint_and_collect(&mut realm);
+        assert_true_in(
             &mut realm,
             "closed===0&&caught===0&&finalized===0&&iterator.next().done&&weak.deref()===undefined",
         );

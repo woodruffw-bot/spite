@@ -1,24 +1,10 @@
 //! Suspended lexical array bindings in ForIn/Of heads (14.7.5, 14.3.3).
 
 use crate::common::UnavailableHostRealm;
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
-fn collect(realm: &mut Realm) {
-    realm.clear_kept_objects().unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
+use crate::common::assert_true_in;
+use crate::common::checkpoint_and_collect;
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm};
 
 #[test]
 fn for_of_defaults_use_fresh_mutable_cells_and_skip_defined_values() {
@@ -47,9 +33,9 @@ fn for_of_defaults_use_fresh_mutable_cells_and_skip_defined_values() {
             "#,
         )
         .unwrap();
-    check(&mut realm, "effects===1&&result===undefined");
-    drain(&mut realm);
-    check(
+    assert_true_in(&mut realm, "effects===1&&result===undefined");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "effects===2&&result==='8,10,8'&&typeof x==='undefined'",
     );
@@ -95,14 +81,14 @@ fn for_await_waits_for_binding_defaults_before_advancing_the_outer_iterator() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "calls===1&&values.length===0&&result===undefined",
     );
     realm.eval("release(7)").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "calls===3&&result==='7,9'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "calls===3&&result==='7,9'");
 }
 
 #[test]
@@ -130,8 +116,8 @@ fn for_in_destructures_selected_string_keys_with_awaited_defaults() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "effects===1&&result==='7,a'&&typeof x==='undefined'",
     );
@@ -202,8 +188,8 @@ fn binding_close_precedes_body_finalizers_and_labelled_outer_close() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "calls===2&&result==='inner,body1,finally,inner,body2,finally,outer'",
     );
@@ -216,8 +202,8 @@ fn default_rejection_closes_binding_iterators_before_sync_or_async_outer_iterato
         realm.eval("let reason={},events=[],result;let inner={[Symbol.iterator](){return this},next(){return{done:false,value:undefined}},return(){events.push('inner');return{done:true}}};let outer={[Symbol.iterator](){return this},[Symbol.asyncIterator](){return this},next(){return{done:false,value:inner}},return(){events.push('outer');return{done:true}}}").unwrap();
         let keyword = if asynchronous { "for await" } else { "for" };
         realm.eval(&format!("async function f(){{try{{{keyword}(const [x=await Promise.reject(reason)] of outer){{}}}}catch(error){{await 0;return error===reason}}}}f().then(value=>{{result=value}})")).unwrap();
-        drain(&mut realm);
-        check(
+        drain_promise_jobs(&mut realm);
+        assert_true_in(
             &mut realm,
             "result===true&&events.join(',')==='inner,outer'&&typeof x==='undefined'",
         );
@@ -253,8 +239,8 @@ fn const_defaults_preserve_names_immutability_method_and_dynamic_contexts() {
             dynamic = value
         });
     "#).unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result===7&&dynamic===13&&names.join(',')==='callback'&&readonly",
     );
@@ -271,8 +257,8 @@ fn object_iteration_bindings_and_assignment_patterns_resume_defaults() {
         let mut realm = Realm::default();
         realm.eval("let before=0,operand=0,handled=0").unwrap();
         realm.eval(&format!("async function f(){{var x;before++;try{{{header}{{}}}}catch{{handled=1}}finally{{handled=2}}}}f().catch(()=>{{handled=3}})")).unwrap();
-        drain(&mut realm);
-        check(&mut realm, "before===1&&operand===1&&handled===2");
+        drain_promise_jobs(&mut realm);
+        assert_true_in(&mut realm, "before===1&&operand===1&&handled===2");
     }
 }
 
@@ -312,7 +298,7 @@ fn host_abort_in_a_head_default_skips_inner_and_outer_close_and_root_cleanup() {
                 _ => format!("for await(const [x=(await gate,{tail})] of outer)"),
             };
             realm.eval(&format!("async function f(){{using r=resource;try{{{header}{{}}}}catch{{caught=true}}finally{{finalized++}}}}f().catch(()=>{{caught=true}})")).unwrap();
-            drain(&mut realm);
+            drain_promise_jobs(&mut realm);
             realm.eval("delete resource[dispose];proceed()").unwrap();
             let mut reported = false;
             loop {
@@ -332,8 +318,8 @@ fn host_abort_in_a_head_default_skips_inner_and_outer_close_and_root_cleanup() {
                 }
             }
             assert!(reported, "{kind}");
-            collect(&mut realm);
-            check(
+            checkpoint_and_collect(&mut realm);
+            assert_true_in(
                 &mut realm,
                 "innerClosed===0&&outerClosed===0&&disposed===0&&finalized===0&&!caught&&state.weak.deref()===undefined",
             );

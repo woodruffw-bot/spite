@@ -1,20 +1,8 @@
 //! Nested await value expressions, operation order and retained operand lifetimes.
 
-use spite_runtime::{PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
+use crate::common::assert_true_in;
+use crate::common::drain_promise_jobs;
+use spite_runtime::{PromiseJobOutcome, Realm};
 
 #[test]
 fn unary_binary_chains_and_awaited_initializers_keep_precedence_and_value_semantics() {
@@ -34,8 +22,8 @@ fn unary_binary_chains_and_awaited_initializers_keep_precedence_and_value_semant
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "results.length===7&&results.every(value=>value)",
     );
@@ -61,19 +49,19 @@ fn nested_awaits_each_suspend_before_the_surrounding_expression_completes() {
             "#,
         )
         .unwrap();
-    check(&mut realm, "events.join(',')==='start,outside'");
+    assert_true_in(&mut realm, "events.join(',')==='start,outside'");
     assert!(matches!(
         realm.run_next_promise_job().unwrap(),
         PromiseJobOutcome::Completed
     ));
-    check(&mut realm, "events.join(',')==='start,outside'");
+    assert_true_in(&mut realm, "events.join(',')==='start,outside'");
     assert!(matches!(
         realm.run_next_promise_job().unwrap(),
         PromiseJobOutcome::Completed
     ));
-    check(&mut realm, "events.join(',')==='start,outside,1'");
-    drain(&mut realm);
-    check(&mut realm, "events.join(',')==='start,outside,1,done'");
+    assert_true_in(&mut realm, "events.join(',')==='start,outside,1'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "events.join(',')==='start,outside,1,done'");
 }
 
 #[test]
@@ -113,19 +101,19 @@ fn lhs_evaluation_runs_once_but_primitive_conversion_waits_for_the_rhs_and_survi
             "#,
         )
         .unwrap();
-    check(&mut realm, "events.join(',')==='left,operand'");
+    assert_true_in(&mut realm, "events.join(',')==='left,operand'");
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(&mut realm, "state.weak.deref()!==undefined");
+    assert_true_in(&mut realm, "state.weak.deref()!==undefined");
     realm.eval("state.release(7)").unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result===12&&events.join(',')==='left,operand,get,coerce'",
     );
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
-    check(&mut realm, "state.weak.deref()===undefined");
+    assert_true_in(&mut realm, "state.weak.deref()===undefined");
 }
 
 #[test]
@@ -143,8 +131,8 @@ fn logical_short_circuit_skips_unreachable_awaits_and_continues_later_chain_step
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result.join(',')==='false,true,7,9'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result.join(',')==='false,true,7,9'");
 }
 
 #[test]
@@ -160,8 +148,8 @@ fn conditional_expressions_select_one_awaited_branch_and_do_not_infer_function_n
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result.join(',')==='3,8'&&name===''");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result.join(',')==='3,8'&&name===''");
 }
 
 #[test]
@@ -190,8 +178,8 @@ fn var_target_is_saved_before_the_complete_rhs_and_operand_values_are_not_replay
         )
         .unwrap();
     realm.eval("state.release(9)").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result.join(',')==='11,11'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result.join(',')==='11,11'");
 }
 
 #[test]
@@ -224,8 +212,8 @@ fn rejected_rhs_skips_lhs_conversion_and_preserves_resource_suppression() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             reason instanceof SuppressedError && reason.error === cleanup && reason.suppressed ===

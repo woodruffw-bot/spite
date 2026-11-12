@@ -1,21 +1,11 @@
 //! FinalizationRegistry language semantics and explicit host cleanup (26.2).
 
 use crate::common::REALM_ENTRIES;
+use crate::common::assert_true;
+use crate::common::assert_true_in;
+use crate::common::checkpoint_and_collect;
 use spite_core::JsString;
 use spite_runtime::{Error, ExceptionKind, FinalizationCleanupOutcome, Limits, Realm, Value};
-
-fn check(source: &str) {
-    check_in(&mut Realm::default(), source);
-}
-
-fn check_in(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-
-fn checkpoint_collect(realm: &mut Realm) {
-    realm.clear_kept_objects().unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
 
 fn completed(realm: &mut Realm) {
     let result = realm.run_finalization_cleanup_job();
@@ -64,7 +54,7 @@ fn metadata_and_new_instance_surface_preserve_the_existing_intrinsics() {
     tag:FinalizationRegistry --C
     instance:0 true true
     ");
-    check_in(
+    assert_true_in(
         &mut realm,
         "P.constructor===C && Object.getPrototypeOf(C)===Function.prototype && Object.getPrototypeOf(P)===Object.prototype && !('cleanupSome' in P) && !('gc' in instance) && !(Symbol.iterator in instance) && !(Symbol.species in C)",
     );
@@ -82,7 +72,7 @@ fn constructor_requires_new_and_validates_callability_before_prototype_get() {
         "Symbol()",
         "{}",
     ] {
-        check(&format!(
+        assert_true(&format!(
             r#"
                 let reads=0;function C(){{}}let N=C.bind(null);
                 Object.defineProperty(N,'prototype',{{get(){{reads++;throw 7;}}}});
@@ -91,7 +81,7 @@ fn constructor_requires_new_and_validates_callability_before_prototype_get() {
             "#
         ));
     }
-    check(
+    assert_true(
         r#"
             let reads=0,caught=false,callback={get [Symbol.toPrimitive](){reads++;throw 7;}};
             try{new FinalizationRegistry(callback);}catch(e){caught=e instanceof TypeError;}
@@ -100,7 +90,7 @@ fn constructor_requires_new_and_validates_callability_before_prototype_get() {
             caught
         "#,
     );
-    check(
+    assert_true(
         r#"
             let marker = {},
                 reads = 0,
@@ -127,7 +117,7 @@ fn constructor_requires_new_and_validates_callability_before_prototype_get() {
 
 #[test]
 fn subclasses_and_intrinsic_prototype_fallback_initialize_only_real_instances() {
-    check(
+    assert_true(
         r#"
             let C = FinalizationRegistry,
                 P = C.prototype,
@@ -181,7 +171,7 @@ fn subclasses_and_intrinsic_prototype_fallback_initialize_only_real_instances() 
 
 #[test]
 fn proxy_new_targets_query_the_realm_only_after_nonobject_prototype_results() {
-    check(
+    assert_true(
         r#"
             for (let bound of [false, true]) {
                 for (let objectResult of [false, true]) {
@@ -255,7 +245,7 @@ fn proxy_new_targets_query_the_realm_only_after_nonobject_prototype_results() {
 
 #[test]
 fn methods_require_own_slots_and_never_unwrap_proxy_receivers() {
-    check(
+    assert_true(
         r#"
         let registry=new FinalizationRegistry(()=>{}),hits=0,handler={
             get(){hits++;throw 7;},getPrototypeOf(){hits++;throw 8;},ownKeys(){hits++;throw 9;}
@@ -284,7 +274,7 @@ fn methods_require_own_slots_and_never_unwrap_proxy_receivers() {
 
 #[test]
 fn target_token_categories_and_samevalue_rules_do_not_execute_coercion_hooks() {
-    check(
+    assert_true(
         r#"
             let hits = 0,
                 registry = new FinalizationRegistry(() => {}),
@@ -400,8 +390,8 @@ fn duplicate_cells_and_unregister_all_work_before_and_after_target_clearing() {
             "#,
         )
         .unwrap();
-    checkpoint_collect(&mut realm);
-    check_in(
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "registry.unregister(sameA) && !registry.unregister(sameA) && log.length===0",
     );
@@ -414,7 +404,7 @@ fn duplicate_cells_and_unregister_all_work_before_and_after_target_clearing() {
         "{result:?}"
     );
     no_job(&mut realm);
-    check_in(&mut realm, "log.length===0");
+    assert_true_in(&mut realm, "log.length===0");
 }
 
 #[test]
@@ -434,10 +424,10 @@ fn held_values_are_delivered_verbatim_as_one_argument_with_ordinary_call_semanti
         });
         for (let value of held) registry.register({}, value);
     "#).unwrap();
-    checkpoint_collect(&mut realm);
+    checkpoint_and_collect(&mut realm);
     completed(&mut realm);
     no_job(&mut realm);
-    check_in(
+    assert_true_in(
         &mut realm,
         "log.length===held.length && held.every(value=>log.some(item=>Object.is(item,value)))",
     );
@@ -462,14 +452,14 @@ fn registration_never_keeps_its_target_even_when_the_target_is_its_token() {
     realm.collect(usize::MAX).unwrap();
     assert!(realm.inspect_object(&handle).is_err());
     completed(&mut realm);
-    check_in(&mut realm, "log.length===1 && log[0]===1");
+    assert_true_in(&mut realm, "log.length===1 && log[0]===1");
     realm
         .eval("(()=>{let target=Symbol('target-token');registry.register(target,2,target);})()")
         .unwrap();
     realm.collect(usize::MAX).unwrap();
     completed(&mut realm);
     no_job(&mut realm);
-    check_in(&mut realm, "log.length===2 && log[1]===2");
+    assert_true_in(&mut realm, "log.length===2 && log[1]===2");
     let rejected_target = realm
         .eval(
             r#"
@@ -502,7 +492,7 @@ fn registration_never_keeps_its_target_even_when_the_target_is_its_token() {
     assert!(realm.inspect_object(&rejected_handle).is_err());
     completed(&mut realm);
     no_job(&mut realm);
-    check_in(&mut realm, "log.length===3 && log[2]===3");
+    assert_true_in(&mut realm, "log.length===3 && log[2]===3");
 }
 
 #[test]
@@ -513,14 +503,14 @@ fn dying_tokens_do_not_unregister_or_schedule_their_live_targets() {
             let log=[],target={{}},registry=new FinalizationRegistry(v=>log.push(v)),tokenRef;
             (()=>{{let token={token};tokenRef=new WeakRef(token);registry.register(target,7,token);}})()
         "#)).unwrap();
-        checkpoint_collect(&mut realm);
-        check_in(&mut realm, "tokenRef.deref()===undefined && log.length===0");
+        checkpoint_and_collect(&mut realm);
+        assert_true_in(&mut realm, "tokenRef.deref()===undefined && log.length===0");
         no_job(&mut realm);
         realm.eval("target=undefined").unwrap();
         realm.collect(usize::MAX).unwrap();
         completed(&mut realm);
         no_job(&mut realm);
-        check_in(&mut realm, "log.length===1 && log[0]===7");
+        assert_true_in(&mut realm, "log.length===1 && log[0]===7");
     }
 }
 
@@ -545,21 +535,21 @@ fn registry_held_graphs_keep_targets_live_until_the_real_graph_is_broken() {
             "#,
         )
         .unwrap();
-    checkpoint_collect(&mut realm);
+    checkpoint_and_collect(&mut realm);
     no_job(&mut realm);
-    check_in(
+    assert_true_in(
         &mut realm,
         "targetRef.deref()===heldRef.deref().target && log.length===0",
     );
     realm.eval("heldRef.deref().target=undefined").unwrap();
-    checkpoint_collect(&mut realm);
-    check_in(
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "targetRef.deref()===undefined && heldRef.deref()!==undefined",
     );
     completed(&mut realm);
     no_job(&mut realm);
-    check_in(
+    assert_true_in(
         &mut realm,
         "log.length===1 && log[0]===heldRef.deref() && log[0].target===undefined",
     );
@@ -578,17 +568,17 @@ fn the_stored_callback_and_its_environment_are_strong_registry_edges() {
             registry=new FinalizationRegistry(callback);registry.register(target,7);target=undefined;
         })()
     "#).unwrap();
-    checkpoint_collect(&mut realm);
+    checkpoint_and_collect(&mut realm);
     no_job(&mut realm);
-    check_in(
+    assert_true_in(
         &mut realm,
         "typeof callbackRef.deref()==='function' && targetRef.deref()!==undefined",
     );
     realm.eval("callbackRef.deref().release()").unwrap();
-    checkpoint_collect(&mut realm);
+    checkpoint_and_collect(&mut realm);
     completed(&mut realm);
     no_job(&mut realm);
-    check_in(
+    assert_true_in(
         &mut realm,
         "targetRef.deref()===undefined && log.length===1 && log[0]===7",
     );
@@ -605,19 +595,19 @@ fn held_symbols_are_live_without_any_symbol_keyed_weakmap_history() {
             "#,
         )
         .unwrap();
-    checkpoint_collect(&mut realm);
+    checkpoint_and_collect(&mut realm);
     no_job(&mut realm);
-    check_in(&mut realm, "typeof heldRef.deref()==='symbol'");
+    assert_true_in(&mut realm, "typeof heldRef.deref()==='symbol'");
     realm.eval("target=undefined").unwrap();
-    checkpoint_collect(&mut realm);
+    checkpoint_and_collect(&mut realm);
     completed(&mut realm);
-    check_in(
+    assert_true_in(
         &mut realm,
         "log.length===1 && typeof log[0]==='symbol' && log[0]===heldRef.deref()",
     );
     realm.eval("log=[]").unwrap();
-    checkpoint_collect(&mut realm);
-    check_in(&mut realm, "heldRef.deref()===undefined");
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(&mut realm, "heldRef.deref()===undefined");
     no_job(&mut realm);
 }
 
@@ -636,9 +626,9 @@ fn dead_registry_callback_and_held_cycles_are_not_rescued_by_their_targets() {
             "#,
         )
         .unwrap();
-    checkpoint_collect(&mut realm);
+    checkpoint_and_collect(&mut realm);
     no_job(&mut realm);
-    check_in(
+    assert_true_in(
         &mut realm,
         "references.every(reference=>reference.deref()===undefined) && typeof target==='object' && unrelated instanceof FinalizationRegistry",
     );
@@ -658,21 +648,21 @@ fn an_actual_queued_job_keeps_its_registry_callback_and_held_value_alive() {
             "#,
         )
         .unwrap();
-    checkpoint_collect(&mut realm);
+    checkpoint_and_collect(&mut realm);
     realm.eval("registry=undefined").unwrap();
-    checkpoint_collect(&mut realm);
-    check_in(
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "registryRef.deref()!==undefined && heldRef.deref()!==undefined && log.length===0",
     );
     completed(&mut realm);
     no_job(&mut realm);
-    check_in(
+    assert_true_in(
         &mut realm,
         "log.length===1 && log[0]===heldRef.deref() && log[0].n===7",
     );
-    checkpoint_collect(&mut realm);
-    check_in(&mut realm, "registryRef.deref()===undefined");
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(&mut realm, "registryRef.deref()===undefined");
 }
 
 #[test]
@@ -696,7 +686,7 @@ fn independent_host_roots_prevent_cleanup_until_the_last_root_is_dropped() {
     let root = realm.root_value(target.clone(), usize::MAX).unwrap();
     let clone = root.clone();
     drop(root);
-    checkpoint_collect(&mut realm);
+    checkpoint_and_collect(&mut realm);
     no_job(&mut realm);
     assert_eq!(
         realm.read_property(&target, &JsString::from("n")),
@@ -707,7 +697,7 @@ fn independent_host_roots_prevent_cleanup_until_the_last_root_is_dropped() {
     realm.collect(usize::MAX).unwrap();
     completed(&mut realm);
     no_job(&mut realm);
-    check_in(&mut realm, "log.length===1 && log[0]===8");
+    assert_true_in(&mut realm, "log.length===1 && log[0]===8");
 }
 
 #[test]
@@ -732,17 +722,17 @@ fn releasing_a_held_graph_only_enables_another_registry_on_a_later_collection() 
             "#,
         )
         .unwrap();
-    checkpoint_collect(&mut realm);
+    checkpoint_and_collect(&mut realm);
     completed(&mut realm);
     no_job(&mut realm);
-    check_in(
+    assert_true_in(
         &mut realm,
         "log.length===1 && log[0]==='first' && secondRef.deref()!==undefined",
     );
-    checkpoint_collect(&mut realm);
+    checkpoint_and_collect(&mut realm);
     completed(&mut realm);
     no_job(&mut realm);
-    check_in(
+    assert_true_in(
         &mut realm,
         "log.join(',')==='first,second' && secondRef.deref()===undefined",
     );
@@ -776,18 +766,18 @@ fn weakrefs_and_registrations_agree_on_mixed_ephemeron_cycle_death() {
         .unwrap();
     realm.collect(usize::MAX).unwrap();
     no_job(&mut realm);
-    check_in(
+    assert_true_in(
         &mut realm,
         "first.get(objectRef.deref())===symbolRef.deref() && second.get(symbolRef.deref()).back===objectRef.deref()",
     );
-    checkpoint_collect(&mut realm);
-    check_in(
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "objectRef.deref()===undefined && symbolRef.deref()===undefined",
     );
     completed(&mut realm);
     no_job(&mut realm);
-    check_in(&mut realm, "log.slice().sort((a,b)=>a-b).join(',')==='7,8'");
+    assert_true_in(&mut realm, "log.slice().sort((a,b)=>a-b).join(',')==='7,8'");
 }
 
 #[test]
@@ -803,14 +793,14 @@ fn empty_cleanup_is_inert_and_collect_or_checkpoint_never_runs_javascript() {
     realm.eval("let calls=0,registry=new FinalizationRegistry(()=>{calls++;throw 7;});registry.register({},8)").unwrap();
     no_job(&mut realm);
     realm.clear_kept_objects().unwrap();
-    check_in(&mut realm, "calls===0");
+    assert_true_in(&mut realm, "calls===0");
     realm.collect(usize::MAX).unwrap();
-    check_in(&mut realm, "calls===0");
+    assert_true_in(&mut realm, "calls===0");
     realm.clear_kept_objects().unwrap();
-    check_in(&mut realm, "calls===0");
+    assert_true_in(&mut realm, "calls===0");
     assert_eq!(reported(&mut realm), Error::Thrown(Value::Number(7.0)));
     no_job(&mut realm);
-    check_in(&mut realm, "calls===1");
+    assert_true_in(&mut realm, "calls===1");
 }
 
 #[test]
@@ -834,14 +824,14 @@ fn ordinary_evaluations_and_host_property_reads_do_not_end_the_kept_sequence() {
         );
         realm.collect(usize::MAX).unwrap();
         no_job(&mut realm);
-        check_in(&mut realm, "calls===0 && reference.deref()!==undefined");
+        assert_true_in(&mut realm, "calls===0 && reference.deref()!==undefined");
     }
     drop(observer_root);
-    checkpoint_collect(&mut realm);
-    check_in(&mut realm, "calls===0 && reference.deref()===undefined");
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(&mut realm, "calls===0 && reference.deref()===undefined");
     completed(&mut realm);
     no_job(&mut realm);
-    check_in(&mut realm, "calls===1");
+    assert_true_in(&mut realm, "calls===1");
 }
 
 #[test]
@@ -867,10 +857,10 @@ fn prototype_getter_mutation_does_not_replace_the_original_job_callback() {
             "#,
         )
         .unwrap();
-    checkpoint_collect(&mut realm);
+    checkpoint_and_collect(&mut realm);
     completed(&mut realm);
     no_job(&mut realm);
-    check_in(&mut realm, "log.join(',')==='original:7'");
+    assert_true_in(&mut realm, "log.join(',')==='original:7'");
 }
 
 #[test]
@@ -904,10 +894,10 @@ fn job_callback_proxy_call_uses_undefined_this_and_ignores_public_call_helpers()
             "#,
         )
         .unwrap();
-    checkpoint_collect(&mut realm);
+    checkpoint_and_collect(&mut realm);
     completed(&mut realm);
     no_job(&mut realm);
-    check_in(
+    assert_true_in(
         &mut realm,
         "reads===0 && correct && log.length===1 && log[0]===7",
     );
@@ -926,7 +916,7 @@ fn a_revoked_callable_callback_is_accepted_at_construction_and_reported_on_call(
             "#,
         )
         .unwrap();
-    checkpoint_collect(&mut realm);
+    checkpoint_and_collect(&mut realm);
     assert!(matches!(
         reported(&mut realm),
         Error::Exception {
@@ -952,10 +942,10 @@ fn selected_cell_is_removed_before_callback_side_unregister() {
             "#,
         )
         .unwrap();
-    checkpoint_collect(&mut realm);
+    checkpoint_and_collect(&mut realm);
     completed(&mut realm);
     no_job(&mut realm);
-    check_in(
+    assert_true_in(
         &mut realm,
         "log.length===1 && log[0][0]===7 && log[0][1]===false && !registry.unregister(token)",
     );
@@ -993,10 +983,10 @@ fn callback_mutation_reselects_current_cells_and_new_live_targets_wait_for_colle
             "#,
         )
         .unwrap();
-    checkpoint_collect(&mut realm);
+    checkpoint_and_collect(&mut realm);
     completed(&mut realm);
     no_job(&mut realm);
-    check_in(
+    assert_true_in(
         &mut realm,
         "removed && log.length===1 && log[0]>=1 && log[0]<=3 && Object.isFrozen(registry)",
     );
@@ -1004,7 +994,7 @@ fn callback_mutation_reselects_current_cells_and_new_live_targets_wait_for_colle
     realm.collect(usize::MAX).unwrap();
     completed(&mut realm);
     no_job(&mut realm);
-    check_in(
+    assert_true_in(
         &mut realm,
         "log.length===2 && log[1]===99 && !unregister.call(registry,newToken)",
     );
@@ -1026,13 +1016,13 @@ fn repeated_collections_coalesce_and_each_host_call_runs_only_one_registry_job()
             "#,
         )
         .unwrap();
-    checkpoint_collect(&mut realm);
+    checkpoint_and_collect(&mut realm);
     realm.collect(usize::MAX).unwrap();
     realm.collect(usize::MAX).unwrap();
     completed(&mut realm);
-    check_in(&mut realm, "log.length===2 && log[0]===log[1]");
+    assert_true_in(&mut realm, "log.length===2 && log[0]===log[1]");
     completed(&mut realm);
-    check_in(
+    assert_true_in(
         &mut realm,
         "log.length===4 && log[2]===log[3] && log[0]!==log[2]",
     );
@@ -1058,11 +1048,11 @@ fn first_throw_is_reported_without_retrying_the_removed_cell_or_losing_remaining
             "#,
         )
         .unwrap();
-    checkpoint_collect(&mut realm);
+    checkpoint_and_collect(&mut realm);
     realm.eval("registry=undefined").unwrap();
     for expected in 1..=3 {
         assert_eq!(reported(&mut realm), Error::Thrown(marker.clone()));
-        check_in(
+        assert_true_in(
             &mut realm,
             &format!("attempts.length==={expected} && new Set(attempts).size==={expected}"),
         );
@@ -1070,7 +1060,7 @@ fn first_throw_is_reported_without_retrying_the_removed_cell_or_losing_remaining
         realm.collect(usize::MAX).unwrap();
     }
     no_job(&mut realm);
-    check_in(
+    assert_true_in(
         &mut realm,
         "attempts.slice().sort((a,b)=>a-b).join(',')==='1,2,3'",
     );
@@ -1100,7 +1090,7 @@ fn weakref_symbols_stay_kept_between_callbacks_and_after_normal_or_abrupt_job_ex
         if abrupt {
             assert_eq!(reported(&mut realm), Error::Thrown(Value::Number(8.0)));
             realm.collect(usize::MAX).unwrap();
-            check_in(
+            assert_true_in(
                 &mut realm,
                 "calls===1 && typeof reference.deref()==='symbol' && prior.deref().n===7",
             );
@@ -1110,12 +1100,12 @@ fn weakref_symbols_stay_kept_between_callbacks_and_after_normal_or_abrupt_job_ex
         }
         no_job(&mut realm);
         realm.collect(usize::MAX).unwrap();
-        check_in(
+        assert_true_in(
             &mut realm,
             "calls===2 && observed && typeof reference.deref()==='symbol' && prior.deref().n===7",
         );
-        checkpoint_collect(&mut realm);
-        check_in(
+        checkpoint_and_collect(&mut realm);
+        assert_true_in(
             &mut realm,
             "reference.deref()===undefined && prior.deref()===undefined",
         );
@@ -1145,21 +1135,21 @@ fn opted_in_callback_work_abort_is_reported_and_does_not_retry_or_clear_kept_roo
     realm
         .eval("registry.register({},1);registry.register({},2)")
         .unwrap();
-    checkpoint_collect(&mut realm);
+    checkpoint_and_collect(&mut realm);
     assert!(matches!(reported(&mut realm), Error::Limit { .. }));
-    check_in(
+    assert_true_in(
         &mut realm,
         "attempts.length===1 && flag===0 && typeof reference.deref()==='symbol'",
     );
     completed(&mut realm);
     no_job(&mut realm);
-    check_in(
+    assert_true_in(
         &mut realm,
         "attempts.slice().sort((a,b)=>a-b).join(',')==='1,2' && typeof reference.deref()==='symbol'",
     );
     assert_eq!(realm.eval("2+3"), Ok(Value::Number(5.0)));
-    checkpoint_collect(&mut realm);
-    check_in(&mut realm, "reference.deref()===undefined");
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(&mut realm, "reference.deref()===undefined");
 }
 
 #[test]
@@ -1182,14 +1172,14 @@ fn callbacks_share_one_opted_in_job_allowance_instead_of_resetting_it_each_call(
                 ))
                 .unwrap();
         }
-        checkpoint_collect(&mut realm);
+        checkpoint_and_collect(&mut realm);
         realm
     }
     let mut single = fixture(1);
     completed(&mut single);
-    check_in(&mut single, "finished===1");
+    assert_true_in(&mut single, "finished===1");
     let mut grouped = fixture(64);
     assert!(matches!(reported(&mut grouped), Error::Limit { .. }));
-    check_in(&mut grouped, "finished>=1 && finished<64");
+    assert_true_in(&mut grouped, "finished>=1 && finished<64");
     assert_eq!(grouped.eval("2+3"), Ok(Value::Number(5.0)));
 }

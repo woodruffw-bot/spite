@@ -1,26 +1,10 @@
 //! For-in enumeration and binding state retained across source Await.
 
 use crate::common::UnavailableHostRealm;
-use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm, Value};
-
-fn check(realm: &mut Realm, source: &str) {
-    assert_eq!(realm.eval(source), Ok(Value::Boolean(true)), "{source}");
-}
-
-fn drain(realm: &mut Realm) {
-    loop {
-        match realm.run_next_promise_job().unwrap() {
-            PromiseJobOutcome::NoJob => break,
-            PromiseJobOutcome::Completed => (),
-            PromiseJobOutcome::Reported(error) => panic!("{error}"),
-        }
-    }
-}
-
-fn collect(realm: &mut Realm) {
-    realm.clear_kept_objects().unwrap();
-    realm.collect(usize::MAX).unwrap();
-}
+use crate::common::assert_true_in;
+use crate::common::checkpoint_and_collect;
+use crate::common::drain_promise_jobs;
+use spite_runtime::{Error, Limits, PromiseJobOutcome, Realm};
 
 #[test]
 fn for_in_awaits_the_rhs_once_and_restores_lexical_tdz_before_the_body() {
@@ -59,12 +43,12 @@ fn for_in_awaits_the_rhs_once_and_restores_lexical_tdz_before_the_body() {
             "#,
         )
         .unwrap();
-    check(
+    assert_true_in(
         &mut realm,
         "events.join(',')==='rhs'&&result===undefined&&key==='outer'",
     );
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "result==='a,b'&&tdz===true&&key==='outer'&&events.join(',')==='rhs,a,b'",
     );
@@ -102,8 +86,8 @@ fn for_in_skips_nullish_inputs_without_binding_and_boxes_primitives() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "writes===0&&result==='0,1'");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "writes===0&&result==='0,1'");
 }
 
 #[test]
@@ -149,7 +133,7 @@ fn for_in_snapshots_own_keys_but_reads_descriptors_and_prototypes_after_suspensi
             "#,
         )
         .unwrap();
-    check(&mut realm, "seen.join(',')==='first'&&result===undefined");
+    assert_true_in(&mut realm, "seen.join(',')==='first'&&result===undefined");
     realm
         .eval(
             r#"
@@ -167,8 +151,8 @@ fn for_in_snapshots_own_keys_but_reads_descriptors_and_prototypes_after_suspensi
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "seen.join(',')==='first,accessor,deleted,proto'&&getters===0&&result===7",
     );
@@ -220,8 +204,8 @@ fn for_in_preserves_fresh_lexical_bindings_patterns_and_var_argument_aliases() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         r#"
             result === 7 && closures[0]() === 'a' && closures[1]() === 'b' && patterns.join(',') ===
@@ -285,8 +269,8 @@ fn labelled_for_in_control_finishes_finalizers_and_closes_intervening_for_of() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "events.join(',')==='a,close,b,close'&&returns===0&&result===7",
     );
@@ -348,8 +332,8 @@ fn for_in_binding_failure_rejection_and_return_propagate_without_return_lookup()
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    assert_true_in(
         &mut realm,
         "first===true&&second==='x'&&third===true&&returns===0",
     );
@@ -396,28 +380,28 @@ fn for_in_traces_each_current_object_and_releases_previous_objects_and_finished_
             "#,
         )
         .unwrap();
-    collect(&mut realm);
-    check(
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "weak.deref()!==undefined&&weakPrototype.deref()!==undefined&&result===undefined",
     );
     realm.eval("release(0)").unwrap();
-    drain(&mut realm);
-    collect(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "weak.deref()===undefined&&weakPrototype.deref()!==undefined&&result===undefined",
     );
     realm.eval("releaseSecond(0)").unwrap();
-    drain(&mut realm);
-    collect(&mut realm);
-    check(
+    drain_promise_jobs(&mut realm);
+    checkpoint_and_collect(&mut realm);
+    assert_true_in(
         &mut realm,
         "weakPrototype.deref()===undefined&&result===undefined",
     );
     realm.eval("releaseThird(0)").unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===7");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===7");
 }
 
 #[test]
@@ -447,8 +431,8 @@ fn for_in_preserves_private_eval_this_and_arguments_through_body_await() {
             "#,
         )
         .unwrap();
-    drain(&mut realm);
-    check(&mut realm, "result===22");
+    drain_promise_jobs(&mut realm);
+    assert_true_in(&mut realm, "result===22");
 }
 
 #[test]
@@ -505,8 +489,8 @@ fn for_in_host_abort_skips_handlers_and_releases_resource_captures_at_budget_zer
             }
         }
         assert!(reported);
-        collect(&mut realm);
-        check(
+        checkpoint_and_collect(&mut realm);
+        assert_true_in(
             &mut realm,
             "disposed===0&&finalized===0&&!caught&&read()==='a'&&state.weak.deref()===undefined",
         );
