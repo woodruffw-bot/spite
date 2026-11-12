@@ -235,8 +235,6 @@ fn mixed_v_set_class_sequence_state_context_and_consumers() {
     );
     for source in [
         r"/a[a][[b]][c]/v.test('aabc')",
-        r"/[a]b[[c]][d]/v.test('abcd')",
-        r"/[a][[b]][c]d/v.test('abcd')",
         r"/[a]\b[[b]][c]/v.test('abc')",
         r"/[a]^[[b]][c]/v.test('abc')",
         r"/[a][[b]]$[c]/v.test('abc')",

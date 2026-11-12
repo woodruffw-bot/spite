@@ -284,7 +284,6 @@ fn unicode_class_property_script_execution() {
         r"/[\p{ASCII}]/u.exec('a')",
         r"/^[\p{ASCII}]$/u.exec('a')",
         r"/[\p{ASCII}]/iv.exec('a')",
-        r"/[\p{ASCII}]/u.exec('a')",
         r"/[\p{ASCII}]/v.exec('a')",
     ] {
         let program = format!(
@@ -327,11 +326,6 @@ fn unicode_class_property_script_execution() {
         ]
 
         "/[\u005cp{ASCII}]/iv.exec('a')"
-        [
-          "a"
-        ]
-
-        "/[\u005cp{ASCII}]/u.exec('a')"
         [
           "a"
         ]

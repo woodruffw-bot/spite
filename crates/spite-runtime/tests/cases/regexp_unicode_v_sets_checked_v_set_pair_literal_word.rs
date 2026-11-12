@@ -256,8 +256,6 @@ fn checked_v_set_pair_literal_word_state_context_and_consumers() {
     for source in [
         r"/\b[[a]][[b]]cd/v.test('abcd')",
         r"/\b[[a]][[b]][[c]]d/v.test('abcd')",
-        r"/\b[[a]][[b]]c[[d]]/v.test('abcd')",
-        r"/[[a]][[b]]\bc/v.test('abc')",
         r"/\b[[a]]\b[[b]]c\b/v.test('abc')",
         r"/\b^[[a]][[b]]c/v.test('abc')",
         r"/[[a]][[b]]c$\b/v.test('abc')",

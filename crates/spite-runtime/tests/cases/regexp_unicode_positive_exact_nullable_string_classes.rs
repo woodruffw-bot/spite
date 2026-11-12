@@ -274,8 +274,6 @@ fn complete_positive_exact_proofs_finish_finalizers_and_keep_other_domains_defer
     for source in [
         r"/(|[[\q{ab}&&\q{cd}]&&\p{RGI_Emoji}]){2}/v.test('')",
         r"/(|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]){3}?/v.test('')",
-        r"/(([\q{a|ab}&&a])|(?:X|)?){2}/v.test('a')",
-        r"/([\q{a|b}]|(\b)?){2}/v.test('a')",
         r"/([\q{a|ab}&&a]||){2}/v.test('a')",
         r"/(\b[\q{a|ab}&&a]|){2}/v.test('a')",
         r"/\b^([[\q{a|ab}&&a]&&\p{RGI_Emoji}]|){2}/v.test('a')",

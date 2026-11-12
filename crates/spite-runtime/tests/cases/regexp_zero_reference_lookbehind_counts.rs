@@ -256,9 +256,7 @@ fn explicit_empty_lookbehind_reference_work_aborts_before_last_index_and_handler
 #[test]
 fn pattern_variants_match_reference_results() {
     for source in [
-        r"/(?<=((a)\2){1,2})b/.exec('aab')",
         r"/(?<=((\2)a){1,2})b/.exec('aab')",
-        r"/(?<=(((a)\3){0,2}){2})a/.exec('a')",
         r"/(?<=(\2)+)a()/.exec('a')",
         r"/(?<=((?=a)\1){2})a/.exec('a')",
         r"/(?<=(()\2){2})a/u.exec('a')",

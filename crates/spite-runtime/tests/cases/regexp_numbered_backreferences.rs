@@ -201,11 +201,7 @@ fn explicit_search_work_aborts_before_last_index_writes_and_language_handlers() 
 #[test]
 fn pattern_variants_match_reference_results() {
     for source in [
-        r"/(?:(?:(?:(a)(?:\1)+){2})|){2,3}/.test('aa')",
-        r"/(?:(?:(?:(a|b)(?:\1)+){2})|){2,3}/.test('aa')",
-        r"/(?:(?:(?:([ab])(?:\1)+){2})|){2,3}/.test('aa')",
         r"/(?:(?:(?:^(a)(?:\1)+){2})|){2,3}/.test('aa')",
-        r"/(?:(?:(?:(?<x>a)(?:\k<x>)+){2})|){2,3}/.test('aa')",
         r"/(a)\1/u.test('aa')",
     ] {
         crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);

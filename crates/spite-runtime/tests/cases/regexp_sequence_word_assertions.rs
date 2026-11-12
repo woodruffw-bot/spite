@@ -190,7 +190,6 @@ fn duplicate_checks_shared_sets_and_thousand_capture_copies_survive_collection()
 #[test]
 fn optional_work_counts_assertions_in_fixed_prefixes_and_continuations() {
     for source in [
-        r"/(?:(?:((?:(?:a+^b+){2}){2}){2})|){2,3}/.test('ab')",
         r"/(?:(?:(a\B|c)+)|){2,3}/.test('aa')",
         r"/(?:(?:((?:(?:a\Bb+c+){2}){2}){2})|){2,3}/.test('abc')",
         r"/(?:(?:(?:a\B(?<n>b)(?:\k<n>)+){2})|){2,3}/.test('ab')",

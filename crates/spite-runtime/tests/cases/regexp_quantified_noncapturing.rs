@@ -56,7 +56,6 @@ fn multiple_quantifiers_choices_and_multi_atom_groups_match_reference_results() 
         r"/(?:(?:((?:(?:a[b]|c)+){2}){2})|){2,3}/.test('ab')",
         r"/(?:(?:((?:(?:a|bc)+){2}){2})|){2,3}/.test('a')",
         r"/(?:(?:(?:((?:ab|c)+)){2})|){2,3}/.test('a')",
-        r"/(?:(?:(?:(?<x>a)+\k<x>){2})|){2,3}/.test('a')",
         "/(?:a)+b/u.test('a')",
     ] {
         crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);

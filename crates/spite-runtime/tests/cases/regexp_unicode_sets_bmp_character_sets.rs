@@ -233,11 +233,9 @@ fn unicode_sets_bmp_character_opted_work_and_unproved_atoms() {
     );
     for source in [
         r"/([a])+b/iv.exec('a')",
-        r"/([^a])+b/v.exec('b')",
         r"/(\D)+b/v.exec('a')",
         r"/([\uD800])+b/v.exec('\uD800')",
         r"/([\uD7FF-\uE000])+b/v.exec('a')",
-        r"/([\u{1f600}])+b/v.exec('a')",
         r"/([a])+b/v.exec('a')",
         r"/[a]*b/v.exec('a')",
         r"/(.)+b/v.exec('a')",

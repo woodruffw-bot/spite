@@ -214,8 +214,6 @@ fn unicode_repeated_atom_nested_assertion_groups_opted_work_and_unproved_units()
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/(\b)+/u.exec('a')",
-        r"/(^\B$)+/v.exec('')",
         r"/(\b(a?))+/u.exec('a')",
         r"/(\b(a|b))+b/v.exec('a')",
         r"/(\b(ab))+/u.exec('ab')",

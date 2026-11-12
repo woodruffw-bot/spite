@@ -193,7 +193,6 @@ fn flat_v_set_literal_flat_v_set_state_context_and_consumers() {
         r#"/[a]bc[c]/v.test('abcc')"#,
         r#"/x[a]b[c]/v.test('xabc')"#,
         r#"/[a]b[c]x/v.test('abcx')"#,
-        r#"/[a]b[c][d]/v.test('abcd')"#,
         r#"/([a])b[c]/v.test('abc')"#,
         r#"/[a](b)[c]/v.test('abc')"#,
         r#"/[a]b([c])/v.test('abc')"#,

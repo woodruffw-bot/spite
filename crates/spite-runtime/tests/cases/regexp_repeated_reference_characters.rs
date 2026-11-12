@@ -206,10 +206,6 @@ fn explicit_repeated_character_work_aborts_before_last_index_and_handlers() {
 fn repeated_assertions_choices_and_nested_quantifiers_match_reference_results() {
     for source in [
         r"/(?:(?:(?:(a)(b)(\b\1\2)+){2})|){2,3}/.test('abab')",
-        r"/(a)(b)((\1)|\2){2,3}/.test('abab')",
-        r"/(?:(?:(a)(b)(a+\1\2)+)|){2,3}/.test('aabaab')",
-        r"/(a)(b)((?=a)\1\2){2,3}/.test('abab')",
-        r"/(a)(b)((?i:\1)\2)+/.test('abab')",
         r"/(a)(b)(a\1\2)+/u.test('aabaab')",
     ] {
         crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);

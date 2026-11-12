@@ -188,7 +188,6 @@ fn capturing_alternative_repeated_nested_and_unicode_lookbehind_match_reference_
     for source in [
         r"/(?<=(a+))b/.exec('ab')",
         r"/(?<=a|bb)c/.exec('ac')",
-        r"/(?<=a+)b/.exec('ab')",
         r"/(?<=a{1,2})b/.exec('ab')",
         r"/(?<=(?=a+))a/.exec('a')",
         r"/(?<=a)b/u.exec('ab')",

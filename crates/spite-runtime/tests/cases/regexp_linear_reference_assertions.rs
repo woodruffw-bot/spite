@@ -71,11 +71,7 @@ fn previous_gap_programs_snapshot() {
         r"/(?<=(\1))a/.exec('a')",
         r"/(?<=a(?=(b)\1))b/.exec('abb')",
         r"/(?<=(a)\1)b/.exec('aab')",
-        r"/(?<=(\1))a/.exec('a')",
         r"/(?<=a(?=(b)\1))b/.exec('abbbb')",
-        r"/(?<=(\1))a/.exec('a')",
-        r"/(?<=a(?=(b)\1))b/.exec('abb')",
-        r"/(?<=(\1))a/.exec('a')",
     ] {
         let source = JsString::from(source);
         let program = format!(
@@ -120,43 +116,11 @@ fn previous_gap_programs_snapshot() {
           ]
         }
 
-        "/(?<=(\u005c1))a/.exec('a')"
-        {
-          "result": [
-            "a",
-            ""
-          ]
-        }
-
         "/(?<=a(?=(b)\u005c1))b/.exec('abbbb')"
         {
           "result": [
             "b",
             "b"
-          ]
-        }
-
-        "/(?<=(\u005c1))a/.exec('a')"
-        {
-          "result": [
-            "a",
-            ""
-          ]
-        }
-
-        "/(?<=a(?=(b)\u005c1))b/.exec('abb')"
-        {
-          "result": [
-            "b",
-            "b"
-          ]
-        }
-
-        "/(?<=(\u005c1))a/.exec('a')"
-        {
-          "result": [
-            "a",
-            ""
           ]
         }
         "#);
@@ -260,9 +224,6 @@ fn explicit_work_abort_keeps_last_index_and_bypasses_language_handlers() {
 #[test]
 fn pattern_variants_match_reference_results() {
     for source in [
-        r"/(?<=a(?=(b{1,2})\1))b/.exec('abbbb')",
-        r"/(?<=(\1{1,2}a{1,2}))a/.exec('a')",
-        r"/(?<=(a{1,2})\1)b/.exec('aab')",
         r"/(?<=a(?=(b|aa)\1))b/.exec('abb')",
         r"/(a)(?<=((b)(?=\2)))c/.exec('abc')",
         r"/(?<=a(?=(b)\1))b/u.exec('abb')",

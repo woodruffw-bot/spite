@@ -184,7 +184,6 @@ fn generic_consumers_callbacks_and_intrinsic_arrays_share_capture_layout() {
 fn pattern_variants_match_reference_results() {
     for source in [
         r"/(?:(?:(a+b)*)|){2,3}/.test('ab')",
-        r"/(?:(?:(?:(?:(a+[b]+)){2}){2})|){2,3}/.test('ab')",
         r"/(?:(?:(?:(?:a(a|bc)){2}){2})|){2,3}/.test('ab')",
         r"/(?:(?:((a|bc)+))|){2,3}/.test('ab')",
         "/(a+b)/u.test('ab')",

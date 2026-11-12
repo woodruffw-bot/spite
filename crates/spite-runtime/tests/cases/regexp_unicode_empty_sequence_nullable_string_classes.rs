@@ -248,8 +248,6 @@ fn sequence_empty_complete_proofs_finish_finalizers_and_keep_other_shapes_deferr
         r"/((?:)(?:)|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}])+?/v.test('')",
         r"/(([\q{a|ab}&&a])|(?:X|)?(?:))+/v.test('a')",
         r"/([\q{a|b}]|(?:\b|()))+/v.test('a')",
-        r"/([\q{a|b}]|(?:\b|()))+/v.test('a')",
-        r"/([\q{a|b}]|(?:\b|()))+/v.test('a')",
         r"/([\q{a|ab}&&a]|(\b)?)+/v.test('a')",
         r"/([\q{a|ab}&&a]||(?:)(?:))+/v.test('a')",
         r"/(\b[\q{a|ab}&&a]|(?:)(?:))+/v.test('a')",

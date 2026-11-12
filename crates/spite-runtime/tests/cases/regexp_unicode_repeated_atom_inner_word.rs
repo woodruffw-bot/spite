@@ -210,7 +210,6 @@ fn unicode_repeated_atom_inner_word_opted_work_and_unproved_units() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/(\b)+/u.exec('a')",
         r"/(^\B$)+/v.exec('')",
         r"/(\ba?)+/u.exec('a')",
         r"/(\ba|b)+b/v.exec('a')",

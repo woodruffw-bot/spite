@@ -216,7 +216,6 @@ fn intrinsic_result_creation_does_not_call_prototype_setters() {
 #[test]
 fn pattern_variants_match_reference_results() {
     for source in [
-        r"/(?:(?:(?:(?<x>a)(?:\k<x>)+){2})|){2,3}/.test('aa')",
         r"/(?:(?:(?:(?<x>a)(?:\1)+){2})|){2,3}/.test('aa')",
         r"/(?:(?:(?:(?:x(?:(?<n>a)|(?<n>b))y){2}){2})|){2,3}/.test('xay')",
         "/(?<x>\\u{D800}\\u{DC00})/u.test('a')",

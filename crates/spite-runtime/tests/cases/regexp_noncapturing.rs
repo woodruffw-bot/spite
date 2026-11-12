@@ -66,7 +66,6 @@ fn other_group_productions_and_quantified_groups_match_reference_results() {
         r"/(?:(?:((?:(?:a[b]|c){1}){2}){2})|){2,3}/.test('a')",
         "/(?i:a)/.test('a')",
         r"/(?<=(a+))/.test('a')",
-        r"/(?:(?:(?:(?<x>a)(?:\k<x>)+){2})|){2,3}/.test('a')",
         "/(?:\\u{D800}\\u{DC00})/u.test('a')",
         "/(?:\\u{D800}\\u{DC00})/v.test('a')",
     ] {

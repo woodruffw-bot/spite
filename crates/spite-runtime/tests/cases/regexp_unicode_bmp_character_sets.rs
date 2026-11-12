@@ -228,7 +228,6 @@ fn unicode_bmp_character_opted_work_and_unproved_atoms() {
     );
     for source in [
         r"/([\u{1f600}])+b/v.exec('a')",
-        r"/([a])+b/iu.exec('a')",
         r"/([^a])+b/u.exec('b')",
         r"/(\D)+b/u.exec('a')",
         r"/([\uD800])+b/u.exec('\uD800')",

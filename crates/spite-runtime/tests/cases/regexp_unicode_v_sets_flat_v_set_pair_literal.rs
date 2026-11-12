@@ -224,7 +224,6 @@ fn flat_v_set_pair_literal_state_context_and_consumers() {
     );
     for source in [
         r#"/[a][b]cd/v.test('abcd')"#,
-        r#"/[a][b][c]d/v.test('abcd')"#,
         r#"/[a][b]c[d]/v.test('abcd')"#,
         r#"/([a])[b]c/v.test('abc')"#,
         r#"/[a]([b])c/v.test('abc')"#,

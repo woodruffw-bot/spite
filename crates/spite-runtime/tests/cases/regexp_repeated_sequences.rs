@@ -206,14 +206,11 @@ fn work_limits_and_composition_results() {
         r"/(?:(?:^(a[b]|c)+$)|){2,3}/.test('ab')",
         r"/(?:(?:(a[b]|a)+c)|){2,3}/.test('abc')",
         r"/(?:(?:c(a[b]|c)+)|){2,3}/.test('cab')",
-        r"/(?:(?:(ab|cd)+)|){2,3}/.test('ab')",
-        r"/(?:(?:(a\bb|c)+)|){2,3}/.test('ab')",
         r"/(?:(?:(a[b]$|c)+)|){2,3}/.test('ab')",
         r"/(?:(?:(?:(?:(a[b])+(cd)+){2}){2})|){2,3}/.test('abcd')",
         r"/(?:(?:(?:(?<n>a[b])+\k<n>){2})|){2,3}/.test('ab')",
         r"/(?:(?:(?:(a[b])(?:\1)+){2})|){2,3}/.test('abab')",
         r"/(a[b])+/u.test('ab')",
-        r"/(|a){2,3}/.test('')",
     ] {
         crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }

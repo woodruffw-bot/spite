@@ -204,7 +204,6 @@ fn explicit_counted_lookbehind_capture_work_aborts_before_last_index_and_handler
 fn variable_choice_reference_assertion_empty_and_nested_count_bodies_match_reference_results() {
     for source in [
         r"/(?<=(a){1,2})b/.exec('aab')",
-        r"/(?<=(a|b){2})c/.exec('abc')",
         r"/(?<=(a(?=a)){2})c/.exec('abc')",
         r"/(?<=((a){2}){2})c/.exec('aaaac')",
         r"/(?<=(a\1){1,2})c/.exec('aac')",

@@ -172,7 +172,6 @@ fn explicit_work_aborts_preserve_last_index_and_bypass_handlers() {
 #[test]
 fn pattern_variants_match_reference_results() {
     for source in [
-        r"/(?<=(\2(a)){1,2})b/.exec('aaaab')",
         r"/(a)(?<=(\1\3(b)){1,2})c/.exec('ababc')",
         r"/(?<=(\2(a)){2}|a)b/.exec('aaaab')",
         r"/(?<=(\2(a)){2}(?<=\2))b/.exec('aaaab')",

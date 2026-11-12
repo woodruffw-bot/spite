@@ -183,8 +183,6 @@ fn complete_grouped_unequal_overflowing_proofs_finish_finalizers_and_prove_every
         r"(?:(?:))|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]",
         r"([\q{a|b}])|(?:X|(?:)?)",
         r"[\q{a|b}]|(?:\b|())",
-        r"[\q{a|b}]|(?:\b|())",
-        r"[\q{a|b}]|(?:\b|())",
         r"[\q{a|b}]|(\b)?",
         r"[\q{a|ab}&&a]||(?:(?:))",
         r"\b[\q{a|ab}&&a]|(?:(?:))",

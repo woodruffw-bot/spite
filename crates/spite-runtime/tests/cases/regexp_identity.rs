@@ -77,9 +77,7 @@ fn class_quantifiers_assertions_and_backreferences_remain_distinct_from_identity
         r"/(?:(?:((?:(?:\d+[a]+){2}){2}){2})|){2,3}/.test('1')",
         r"/(?:(?:((?:(?:\w+[a]+){2}){2}){2})|){2,3}/.test('a')",
         r"/(?:(?:((?:(?:\s+[a]+){2}){2}){2})|){2,3}/.test(' ')",
-        r"/(?:(?:((?:(?:a+^b+){2}){2}){2})|){2,3}/.test('ab')",
         r"/(?:(?:((?:(?:a+$b+){2}){2}){2})|){2,3}/.test('ab')",
-        r"/(?:(?:(?:(a)(?:\1)+){2})|){2,3}/.test('aa')",
     ] {
         crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }

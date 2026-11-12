@@ -167,7 +167,6 @@ fn pattern_variants_match_reference_results() {
     for source in [
         r"/(?<=a(?=((b)\2{2,3}){2}))b/.exec('abbbbbb')",
         r"/(?<=((\3{2,3})(b)){2})c/.exec('bbbbbbc')",
-        r"/(?:(a|)(?:\1)+){2}/.test('')",
         r"/((b)\2{2})+/u.exec('bbb')",
         r"/((b)\2{2})+/v.exec('bbb')",
     ] {

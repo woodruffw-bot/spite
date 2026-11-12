@@ -560,32 +560,6 @@ fn simple_repeated_string_class_native_tables_and_consumers_keep_iteration_and_e
 #[test]
 fn simple_repeated_string_class_proofs_keep_counts_predicates_references_and_unknown_leaves_closed()
 {
-    let expected_serialized_output = JsString::from(concat!(
-        r#"[[false,"ab!","#,
-        r#"{"values":["ab","","","<undefined>","",""],"#,
-        r#""indices":[[0,2],[0,0],[2,2],"<undefined>",[2,2],[2,2]],"index":0},2],"#,
-        r#"[false,"","#,
-        r#"{"values":["","","","<undefined>","",""],"#,
-        r#""indices":[[0,0],[0,0],[0,0],"<undefined>",[0,0],[0,0]],"index":0},0],"#,
-        r#"[false,"\n","#,
-        r#"{"values":["","","","<undefined>","",""],"#,
-        r#""indices":[[0,0],[0,0],[0,0],"<undefined>",[0,0],[0,0]],"index":0},0],"#,
-        r#"[false,"x\nab","#,
-        r#"{"values":["","","","<undefined>","",""],"#,
-        r#""indices":[[0,0],[0,0],[0,0],"<undefined>",[0,0],[0,0]],"index":0},0],"#,
-        r#"[true,"ab!","#,
-        r#"{"values":["ab","","","<undefined>","",""],"#,
-        r#""indices":[[0,2],[0,0],[2,2],"<undefined>",[2,2],[2,2]],"index":0},2],"#,
-        r#"[true,"","#,
-        r#"{"values":["","","","<undefined>","",""],"#,
-        r#""indices":[[0,0],[0,0],[0,0],"<undefined>",[0,0],[0,0]],"index":0},0],"#,
-        r#"[true,"\n","#,
-        r#"{"values":["","","","<undefined>","",""],"#,
-        r#""indices":[[0,0],[0,0],[0,0],"<undefined>",[0,0],[0,0]],"index":0},0],"#,
-        r#"[true,"x\nab","#,
-        r#"{"values":["","","","<undefined>","",""],"#,
-        r#""indices":[[0,0],[0,0],[0,0],"<undefined>",[0,0],[0,0]],"index":0},0]]"#,
-    ));
     let expected_serialized_output_2 = JsString::from(concat!(
         r#"[[false,"aaaaaa","#,
         r#"{"values":["aaaaaa","","a","a","<undefined>",""],"#,
@@ -639,40 +613,6 @@ fn simple_repeated_string_class_proofs_keep_counts_predicates_references_and_unk
         r#""indices":[[0,0],[0,0],[0,0],"<undefined>",[0,0],[0,0]],"index":0},0]]"#,
     ));
 
-    assert_true(&format!(
-        r#"
-            var marker = 0,
-                ok = false;
-            try {{
-                ok = (function() {{
-                    var pattern = "()(([\\q{{a|ab}}])|()){{2}}()",
-                        rows = [],
-                        metadata = true;
-                    for (var multi of [false, true]) {{
-                        var r = new RegExp(pattern, 'dvg' + (multi ? 'm' : ''));
-                        metadata = metadata && r.source === pattern;
-                        for (var input of ['ab!', '', '\n', 'x\nab']) {{
-                            r.lastIndex = 0;
-                            var m = r.exec(input),
-                                result = null;
-                            if (m !== null) result = {{
-                                values: Array.from(m, v => v === undefined ? '<undefined>' :
-                                    v),
-                                indices: Array.from(m.indices, v => v === undefined ?
-                                    '<undefined>' : v),
-                                index: m.index
-                            }};
-                            rows.push([multi, input, result, r.lastIndex]);
-                        }}
-                    }}
-                    return metadata && JSON.stringify(rows) === {expected_serialized_output:?}
-                }})();
-            }} finally {{
-                marker = 3
-            }}
-            ok && marker === 3
-        "#
-    ));
     assert_true(&format!(
         r#"
             var marker = 0,

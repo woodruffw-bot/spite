@@ -176,8 +176,6 @@ fn overflowing_exact_grouped_proofs_finish_finalizers_and_prove_unknown_leaves()
         r"(?:)|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]",
         r"([\q{a|b}])|(?:X|)?",
         r"[\q{a|b}]|(?:\b|())",
-        r"[\q{a|b}]|(?:\b|())",
-        r"[\q{a|b}]|(?:\b|())",
         r"[\q{a|b}]|(\b)?",
         r"[\q{a|ab}&&a]||(?:)",
         r"\b[\q{a|ab}&&a]|(?:)",

@@ -203,7 +203,6 @@ fn optional_work_aborts_and_branch_specific_captures_match_reference_results() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/(?:(?:((a)|(b))+)|){2,3}/.test('ab')",
         r"/(?:(?:((a|bc)())+)|){2,3}/.test('ab')",
         r"/(?:(?:(x(a|bc))+)|){2,3}/.test('xab')",
         r"/(?:(?:((ab|a))+)|){2,3}/.test('aba')",

@@ -181,7 +181,6 @@ fn generic_consumers_callbacks_and_intrinsic_arrays_keep_prefix_slots() {
 #[test]
 fn optional_work_abort_and_remaining_nonliteral_prefixes_stay_host_failures() {
     for source in [
-        r"/(?:(?:(?:(?:([a])b+c+){2}){2})|){2,3}/.test('ab')",
         r"/(?:(?:(?:(?:(a|bc)c+){2}){2})|){2,3}/.test('ac')",
         r"/(?:(?:(?:(?:(a)b+c+){2}){2})|){2,3}/.test('abc')",
         r"/(?:(?:(?:(?:(a)b+[c]+){2}){2})|){2,3}/.test('abc')",

@@ -291,8 +291,6 @@ fn complete_nullable_proofs_finish_finalizers_and_never_hide_unknown_leaves() {
     for source in [
         r"/(|[[\q{ab}&&\q{cd}]&&\p{RGI_Emoji}])+/v.test('')",
         r"/(|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}])+?/v.test('')",
-        r"/(([\q{a|ab}&&a])|(?:X|)?)+/v.test('a')",
-        r"/([\q{a|ab}&&a]|(\b)?)+/v.test('a')",
         r"/([\q{a|ab}&&a]||)+/v.test('a')",
         r"/(\b[\q{a|ab}&&a]|)+/v.test('a')",
         r"/\b^([[\q{a|ab}&&a]&&\p{RGI_Emoji}]|)+/v.test('a')",

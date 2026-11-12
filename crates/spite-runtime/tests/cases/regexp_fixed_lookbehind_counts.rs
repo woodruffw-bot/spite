@@ -185,10 +185,8 @@ fn explicit_fixed_count_lookbehind_unit_work_aborts_before_last_index_and_handle
 #[test]
 fn variable_counts_capture_effects_multiple_terms_and_nested_lookbehind_match_reference_results() {
     for source in [
-        r"/(?<=a{1,2})b/.exec('ab')",
         r"/(?<=(a{1,2}))b/.exec('aab')",
         r"/(?<=(?:ab){1,2})c/.exec('ababc')",
-        r"/(?<=(?:(?=a+)){2})a/.exec('a')",
         r"/(?<=a{2}(?=a+))b/.exec('aab')",
         r"/(?<=a{2})b/u.exec('aab')",
         r"/(?<=a{2})b/v.exec('aab')",

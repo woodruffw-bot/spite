@@ -213,8 +213,6 @@ fn pattern_variants_match_reference_results() {
         Ok(Value::Boolean(true))
     );
     for source in [
-        r"/(?:(?:^(ab|a)+$)|){2,3}/.test('ab')",
-        r"/(?:(?:(ab|a)+c)|){2,3}/.test('abc')",
         r"/(?:(?:c(ab|a)+)|){2,3}/.test('cab')",
         r"/(?:(?:(a[bc]|d)+)|){2,3}/.test('ab')",
         r"/(?:(?:(ab|cd)+)|){2,3}/.test('ab')",
@@ -224,7 +222,6 @@ fn pattern_variants_match_reference_results() {
         r"/(?:(?:(?:(?<n>ab)+\k<n>){2})|){2,3}/.test('ab')",
         r"/(?:(?:(?:(ab)(?:\1)+){2})|){2,3}/.test('abab')",
         r"/(ab)+/u.test('ab')",
-        r"/(|a){2,3}/.test('')",
     ] {
         crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }

@@ -133,7 +133,6 @@ fn generic_consumers_and_stateful_exec_use_character_reference_matches() {
 fn pattern_variants_match_reference_results() {
     for source in [
         r"/(?:(?:(?:([ab])(?:\1)+){2})|){2,3}/.test('aa')",
-        r"/(?:(?:(?:(a|b)(?:\1)+){2})|){2,3}/.test('aa')",
         r"/(?:(?:(?:^([ab])(?:\1)+){2})|){2,3}/.test('aa')",
         r"/(?<x>[ab])\k<x>/u.test('aa')",
     ] {

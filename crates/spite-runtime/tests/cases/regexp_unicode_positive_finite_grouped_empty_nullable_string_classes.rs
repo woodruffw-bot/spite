@@ -163,7 +163,6 @@ fn complete_grouped_positive_finite_proofs_finish_finalizers_and_keep_overflowin
         r"/([\q{a|b}]|(?:)){2,3}/v.test('a')",
         r"/([\q{a|ab}&&a]|(?:)){2,3}/v.test('a')",
         r"/([\q{a|ab}&&a]|(?:)){1,2}/v.test('a')",
-        r"/([\q{a|b}]|(?:)){2,3}/v.test('a')",
         r"/([\q{a|ab}&&a]|(?:(?:))){1,2}?/v.test('aaa')",
         r"/(?<each>(?:(?:))|[\q{ab}&&a]){03,004}/v.exec('X').groups.each===''",
     ] {
@@ -216,8 +215,6 @@ fn complete_grouped_positive_finite_proofs_finish_finalizers_and_keep_overflowin
         r"/((?:)|[[\q{ab}&&\q{cd}]&&\p{RGI_Emoji}]){2,3}/v.test('')",
         r"/((?:)|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]){3,4}/v.test('')",
         r"/(([\q{a|ab}&&a])|(?:X|)?){2,3}/v.test('a')",
-        r"/([\q{a|b}]|(?:\b|())){2,3}/v.test('a')",
-        r"/([\q{a|b}]|(?:\b|())){2,3}/v.test('a')",
         r"/([\q{a|b}]|(?:\b|())){2,3}/v.test('a')",
         r"/([\q{a|b}]|(\b)?){2,3}/v.test('a')",
         r"/([\q{a|ab}&&a]||(?:)){2,3}/v.test('a')",

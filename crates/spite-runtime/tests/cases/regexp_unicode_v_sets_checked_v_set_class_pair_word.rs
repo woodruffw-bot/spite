@@ -174,7 +174,6 @@ fn checked_v_set_class_pair_word_state_context_and_consumers() {
         "#,
     );
     for source in [
-        r"/[[a]]\b[[b]]/v.test('ab')",
         r"/\b^[[a]][[b]]/v.test('ab')",
         r"/[[a]][[b]]$\b/v.test('ab')",
         r"/\b\b[[a]][[b]]/v.test('ab')",

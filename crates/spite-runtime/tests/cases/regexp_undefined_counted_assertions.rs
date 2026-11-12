@@ -140,9 +140,6 @@ fn explicit_work_abort_keeps_last_index_and_bypasses_language_handlers() {
 #[test]
 fn pattern_variants_match_reference_results() {
     for source in [
-        r"/(?<=(\1{1,2}a{1,2}))a/.exec('a')",
-        r"/(?<=a(?=(b)\1{1,2}))b/.exec('abb')",
-        r"/(?<=(\2{1,2})(b))c/.exec('bbc')",
         r"/(?<=(\1{1,2}|a))a/.exec('a')",
         r"/(?<=(\1{1,2}))a/u.exec('a')",
         r"/(?<=(\1{1,2}))a/v.exec('a')",

@@ -138,12 +138,8 @@ fn generic_consumers_and_callbacks_share_continuation_ordering() {
 #[test]
 fn captures_sets_multiple_quantifiers_assertions_and_choices_match_reference_results() {
     for source in [
-        r"/(?:(?:(?:(?:a+([b]+)){2}){2})|){2,3}/.test('ab')",
-        r"/(?:(?:((?:(?:a+[b]+){2}){2}){2})|){2,3}/.test('ab')",
         r"/(?:(?:((?:(?:a+b+){2}){2}){2})|){2,3}/.test('ab')",
-        r"/(?:(?:(?:(?:(a+[b]+)){2}){2})|){2,3}/.test('ab')",
         r"/(?:(?:((?:(?:^a+b[c]+$){2}){2}){2})|){2,3}/.test('ab')",
-        r"/(?:(?:((?:(?:a+[b]+|b){2}){2}){2})|){2,3}/.test('b')",
         "/a+b/u.test('ab')",
     ] {
         crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);

@@ -200,7 +200,6 @@ fn completed_local_targets_and_other_repeated_reference_bodies_match_reference_r
         r"/(?:(?:(?:(a)(b)((\1)\4\2)+){2})|){2,3}/.test('abab')",
         r"/(?:(?:(?:(?<x>a)(?<y>b)(?<last>(?<piece>\k<x>)\k<piece>\k<y>)+){2})|){2,3}/.test('aabaab')",
         r"/(?:(?:(?:(a)(b)(a(\1)\2)+){2})|){2,3}/.test('abab')",
-        r"/(a)(b)((\1)|\2){2,3}/.test('abab')",
         r"/(a)(b)((\1)+\2){2,3}/.test('abab')",
         r"/(a)(b)((\1)\2)+/u.test('abab')",
     ] {

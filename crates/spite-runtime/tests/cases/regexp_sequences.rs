@@ -177,7 +177,6 @@ fn choices_quantifiers_assertions_backreferences_and_unicode_match_reference_res
     );
     for source in [
         r"/(?:(?:((?:(?:[a]+[b]+){2}){2}){2})|){2,3}/.test('a')",
-        r"/(?:(?:((?:(?:[a]+[b]+|b){2}){2}){2})|){2,3}/.test('a')",
         r"/(?:(?:((?:(?:^[a]+[b]+){2}){2}){2})|){2,3}/.test('a')",
         r"/(?:(?:((?:(?:[a]b+[b]+$){2}){2}){2})|){2,3}/.test('ab')",
         r"/(?:(?:(?:([a])(?:\1)+){2})|){2,3}/.test('aa')",

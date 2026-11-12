@@ -257,8 +257,6 @@ fn complete_positive_finite_proofs_finish_finalizers_and_keep_overflowing_ranges
     for source in [
         r"/(|[[\q{ab}&&\q{cd}]&&\p{RGI_Emoji}]){2,3}/v.test('')",
         r"/(|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]){2,3}/v.test('')",
-        r"/(([\q{a|ab}&&a])|(?:X|)?){2,3}/v.test('a')",
-        r"/([\q{a|b}]|(\b)?){2,3}/v.test('a')",
         r"/([\q{a|ab}&&a]||){2,3}/v.test('a')",
         r"/(\b[\q{a|ab}&&a]|){2,3}/v.test('a')",
         r"/\b^([[\q{a|ab}&&a]&&\p{RGI_Emoji}]|){2,3}/v.test('a')",

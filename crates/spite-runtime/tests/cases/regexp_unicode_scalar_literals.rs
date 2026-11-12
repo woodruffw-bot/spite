@@ -245,7 +245,6 @@ fn unicode_scalar_literal_opted_work_abort_preserves_state_and_unproved_atoms() 
         r"/([\u{1f600}])+b/v.exec('😀')",
         r"/😀+b/u.exec('😀')",
         r"/(😀)\1/u.exec('😀😀')",
-        r"/\uD800()\uDC00/u.exec('\uD800')",
     ] {
         crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }

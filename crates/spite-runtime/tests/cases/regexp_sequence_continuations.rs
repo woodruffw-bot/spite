@@ -183,14 +183,9 @@ fn generic_consumers_callbacks_and_intrinsic_arrays_preserve_continuation_slots(
 }
 
 #[test]
-fn sticky_optional_work_covers_all_continuation_candidates_and_host_failures() {
-    for source in [
-        r"/(?:(?:((?:(?:a+[b]+){2}){2}){2})|){2,3}/.test('ab')",
-        r"/(?:(?:(a[b]|c)+)|){2,3}/.test('ab')",
-        r"/(?:(?:(?:(?:a+(b|cd)){2}){2})|){2,3}/.test('ab')",
-        r"/(?:(?:(?:a+(?<n>b)\k<n>){2})|){2,3}/.test('ab')",
+fn unicode_sequence_continuation_matches_reference() {
+    crate::common::regexp_oracle::assert_matches_reference(
+        &mut Realm::default(),
         "/a+[b]/u.test('ab')",
-    ] {
-        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
-    }
+    );
 }

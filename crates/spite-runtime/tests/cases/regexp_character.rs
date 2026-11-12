@@ -106,7 +106,6 @@ fn all_generic_consumers_and_string_fallbacks_use_the_same_set_matcher() {
 fn class_quantifiers_choices_assertions_and_unicode_modes_match_reference_results() {
     for source in [
         r"/(?:(?:((?:(?:a[a]+[a]+){2}){2}){2})|){2,3}/.test('aa')",
-        r"/(?:(?:([a]b|c)*)|){2,3}/.test('a')",
         r"/(?:(?:((?:(?:[a]*[b]+){2}){2}){2})|){2,3}/.test('a')",
         r"/(?:(?:((?:(?:[a]+[b]+|b){2}){2}){2})|){2,3}/.test('a')",
         "/([\\u{1f600}])+b/u.test('a')",

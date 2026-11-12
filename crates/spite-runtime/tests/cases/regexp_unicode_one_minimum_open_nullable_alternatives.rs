@@ -12,10 +12,6 @@ fn unicode_one_minimum_open_nullable_alternative_results_snapshot() {
     for atom in [
         r"(a|){01,}",
         r"(|a){0001,}?",
-        r"(a|){01,}",
-        r"(|a){0001,}?",
-        r"(a|){0001,}?",
-        r"(|a){0001,}?",
         r"(a|){0001,}?",
         r"\b((?:\b(?:\ba))|){01,}\B",
         r"\B(|[ſK]){0001,}?\b",

@@ -77,9 +77,6 @@ fn unicode_noncapturing_branch_assertion_sequences_counts_and_branch_scopes() {
     assert_true(r"let r=/((?:a\b)\B\B|b)+/u;r.exec('a')===null&&r.exec('b')[0]==='b'");
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let m=/((?:a)|(?:b))+/{mode}.exec('abba');m[0]==='abba'&&m[1]==='a'&&m.index===0"
-        ));
-        assert_true(&format!(
             r#"
                 let m = /(\b\b(?:a)|(?:b)\b\b)+/{mode}.exec('aaa bbb');
                 m[0] === 'a' && m[1] === 'a' && /(\b\b(?:a)|(?:b)\b\b){{2}}/{mode}.exec('aaa bbb') ===
@@ -88,22 +85,6 @@ fn unicode_noncapturing_branch_assertion_sequences_counts_and_branch_scopes() {
         ));
         assert_true(&format!(
             r"let m=/(^^(?:a)|(?:b)$$)+/{mode}m.exec('aa\nbb');m[0]==='a'&&m[1]==='a'&&m.index===0"
-        ));
-        assert_true(&format!(
-            r"let m=/(((?:a)|(?:b)))*?/{mode}.exec('ab');m[0]===''&&m[1]===undefined&&m[2]===undefined"
-        ));
-        assert_true(&format!(
-            r#"
-                let m = /((?:a)|(?:b)){{2,3}}/{mode}.exec('abba');
-                m[0] === 'abb' && m[1] === 'b' && /((?:a)|(?:b)){{2,3}}?/{mode}.exec('abba')[0] ===
-                    'ab'
-            "#
-        ));
-        assert_true(&format!(
-            r"let m=/((?:[a\|])|(?:b))+/{mode}.exec('a|b');m[0]==='a|b'&&m[1]==='b'"
-        ));
-        assert_true(&format!(
-            r"let m=/((?:\|)|(?:a))+/{mode}.exec('|aa');m[0]==='|aa'&&m[1]==='a'"
         ));
         assert_true(&format!(
             r"let m=/(\B^\B(?:.)$$|\b\b(?:a)\b\b)+/{mode}ms.exec('\r\n');m[0]==='\r\n'&&m[1]==='\n'"

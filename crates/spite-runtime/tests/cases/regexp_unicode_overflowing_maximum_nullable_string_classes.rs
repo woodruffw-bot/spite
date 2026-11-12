@@ -10,7 +10,6 @@ fn complete_overflowing_maximum_proofs_finish_finalizers_without_hiding_unknown_
     for inner in [
         r"|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]",
         r"([\q{a|b}])|(?:X|)?",
-        r"[\q{a|b}]|(\b)?",
         r"[\q{a|ab}&&a]||",
         r"\b[\q{a|ab}&&a]|",
     ] {

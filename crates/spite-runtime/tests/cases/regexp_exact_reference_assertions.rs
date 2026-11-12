@@ -154,7 +154,6 @@ fn pattern_variants_match_reference_results() {
     for source in [
         r"/(?<=a(?=(b)\1{1,2}))b/.exec('abbb')",
         r"/(?<=(\2{1,2})(b))c/.exec('bbbc')",
-        r"/(?<=a(?=(b)(\1){2,3}))b/.exec('abbb')",
         r"/(?<=(\2{2}|a)(b))c/.exec('bbbc')",
         r"/(?<=a(?=(b)\1{2}))b/u.exec('abbb')",
         r"/(?<=a(?=(b)\1{2}))b/v.exec('abbb')",

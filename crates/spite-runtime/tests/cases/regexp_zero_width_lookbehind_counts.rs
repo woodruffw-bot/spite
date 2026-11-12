@@ -202,11 +202,8 @@ fn explicit_zero_width_count_work_aborts_before_last_index_and_handlers() {
 #[test]
 fn pattern_variants_match_reference_results() {
     for source in [
-        r"/(?<=a{1,2})b/.exec('ab')",
         r"/(?<=(a?){1,2})b/.exec('ab')",
-        r"/(?<=((?=a+)){1,2})a/.exec('a')",
         r"/(?<=(|a)+)a/.exec('a')",
-        r"/(?<=(\2)+)a()/.exec('a')",
         r"/(?<=((a*)+))a/.exec('a')",
         r"/(?<=()+)a/u.exec('a')",
         r"/(?<=()+)a/v.exec('a')",

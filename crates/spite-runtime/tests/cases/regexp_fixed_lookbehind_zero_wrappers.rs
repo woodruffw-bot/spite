@@ -198,9 +198,6 @@ fn explicit_fixed_zero_wrapper_work_aborts_before_last_index_and_handlers() {
 #[test]
 fn pattern_variants_match_reference_results() {
     for source in [
-        r"/(?<=(|a){2})a/.exec('a')",
-        r"/(?<=((a{0,2}){2}){2})a/.exec('a')",
-        r"/(?<=((?=a+)){2})a/.exec('a')",
         r"/(?<=(((a)\3){0,2}){2})a/.exec('a')",
         r"/(?<=(|){2})a/u.exec('a')",
         r"/(?<=(|){2})a/v.exec('a')",

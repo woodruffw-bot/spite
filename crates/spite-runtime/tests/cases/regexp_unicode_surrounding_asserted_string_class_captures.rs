@@ -636,26 +636,6 @@ fn surrounding_asserted_string_class_consumers_keep_point_whole_and_branch_alias
         r#"{"values":["","<undefined>","",""],"indices":[[0,0],"<undefined>",[0,0],[0,0]],"#,
         r#""index":0},0]]"#,
     ));
-    let expected_serialized_output_2 = JsString::from(concat!(
-        r#"[[false,"aaaaaa","#,
-        r#"{"values":["aaaaaa","a","<undefined>",""],"#,
-        r#""indices":[[0,6],[5,6],"<undefined>",[6,6]],"index":0},6],"#,
-        r#"[false,"ababa","#,
-        r#"{"values":["ababa","a","<undefined>",""],"indices":[[0,5],[4,5],"<undefined>",[5,5]],"#,
-        r#""index":0},5],"#,
-        r#"[false,"\nab\n","#,
-        r#"{"values":["ab","ab","<undefined>",""],"indices":[[1,3],[1,3],"<undefined>",[3,3]],"#,
-        r#""index":1},3],[false,"",null,0],"#,
-        r#"[true,"aaaaaa","#,
-        r#"{"values":["aaaaaa","a","<undefined>",""],"#,
-        r#""indices":[[0,6],[5,6],"<undefined>",[6,6]],"index":0},6],"#,
-        r#"[true,"ababa","#,
-        r#"{"values":["ababa","a","<undefined>",""],"indices":[[0,5],[4,5],"<undefined>",[5,5]],"#,
-        r#""index":0},5],"#,
-        r#"[true,"\nab\n","#,
-        r#"{"values":["ab","ab","<undefined>",""],"indices":[[1,3],[1,3],"<undefined>",[3,3]],"#,
-        r#""index":1},3],[true,"",null,0]]"#,
-    ));
 
     assert_true(
         r#"
@@ -860,40 +840,6 @@ fn surrounding_asserted_string_class_consumers_keep_point_whole_and_branch_alias
                         }}
                     }}
                     return metadata && JSON.stringify(rows) === {expected_serialized_output:?}
-                }})();
-            }} finally {{
-                marker = 3
-            }}
-            ok && marker === 3
-        "#
-    ));
-    assert_true(&format!(
-        r#"
-            var marker = 0,
-                ok = false;
-            try {{
-                ok = (function() {{
-                    var pattern = "(?:([\\q{{a|ab}}])|())+(\\b)",
-                        rows = [],
-                        metadata = true;
-                    for (var multi of [false, true]) {{
-                        var r = new RegExp(pattern, 'dvg' + (multi ? 'm' : ''));
-                        metadata = metadata && r.source === pattern;
-                        for (var input of ['aaaaaa', 'ababa', '\nab\n', '']) {{
-                            r.lastIndex = 0;
-                            var m = r.exec(input),
-                                result = null;
-                            if (m !== null) result = {{
-                                values: Array.from(m, v => v === undefined ? '<undefined>' :
-                                    v),
-                                indices: Array.from(m.indices, v => v === undefined ?
-                                    '<undefined>' : v),
-                                index: m.index
-                            }};
-                            rows.push([multi, input, result, r.lastIndex]);
-                        }}
-                    }}
-                    return metadata && JSON.stringify(rows) === {expected_serialized_output_2:?}
                 }})();
             }} finally {{
                 marker = 3

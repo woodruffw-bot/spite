@@ -196,7 +196,6 @@ fn general_repeated_choices_nested_quantifiers_and_lookaround_match_reference_re
         r"/(?:(?:(a+)+)|){2,3}/.test('aaaa')",
         r"/(?:(?:(?:(a+)(b*)){2})|){2,3}/.test('aabb')",
         r"/(?<=(a+))a/.test('a')",
-        r"/(?i:a)/.test('a')",
         r"/(a+)(b*)/u.test('ab')",
     ] {
         crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);

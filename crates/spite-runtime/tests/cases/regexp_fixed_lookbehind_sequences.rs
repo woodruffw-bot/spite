@@ -186,7 +186,6 @@ fn explicit_sequence_lookbehind_work_aborts_before_last_index_and_handlers() {
 #[test]
 fn variable_repeated_capture_assertion_reference_and_nested_counts_match_reference_results() {
     for source in [
-        r"/(?<=(?:ab){1,2})c/.exec('ababc')",
         r"/(?<=(ab){1,2})c/.exec('ababc')",
         r"/(?<=(?:a(?=a)){2})c/.exec('ababc')",
         r"/(?<=(?:a(?<=a)){2})c/.exec('ababc')",

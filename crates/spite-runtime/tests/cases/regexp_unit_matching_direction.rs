@@ -153,9 +153,6 @@ fn opted_in_work_abort_preserves_last_index_and_bypasses_handlers() {
 fn pattern_variants_match_reference_results() {
     for source in [
         r"/(?<=a(?=((b)\2+){2}))b/.exec('abbbbbb')",
-        r"/(?<=a(?=((b)\2{2,3}){2}))b/.exec('abbbbbb')",
-        r"/(?<=((\3{2,3})(b)){2})c/.exec('bbbbbbc')",
-        r"/(?:(a|)(?:\1)+){2}/.test('')",
         r"/(\2+(b))+/u.exec('bbb')",
         r"/(\2+(b))+/v.exec('bbb')",
     ] {

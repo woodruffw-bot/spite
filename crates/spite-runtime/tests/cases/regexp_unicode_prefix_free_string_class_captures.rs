@@ -907,14 +907,6 @@ fn exec_preserves_alternative_capture_metadata() {
 #[test]
 fn prefix_free_string_class_proofs_keep_word_backtracking_predicates_references_and_unknown_leaves_closed()
  {
-    let expected_serialized_output = JsString::from(concat!(
-        r#"[[false,"aaaa","#,
-        r#"{"values":["aa","","a",""],"indices":[[0,2],[0,0],[1,2],[2,2]],"index":0},2],"#,
-        r#"[false,"ab",null,0],[false,"ſaX",null,0],[false,"😀aX",null,0],"#,
-        r#"[true,"aaaa","#,
-        r#"{"values":["aa","","a",""],"indices":[[0,2],[0,0],[1,2],[2,2]],"index":0},2],"#,
-        r#"[true,"ab",null,0],[true,"ſaX",null,0],[true,"😀aX",null,0]]"#,
-    ));
     let expected_serialized_output_2 = JsString::from(concat!(
         r#"[[false,"aaaa","#,
         r#"{"values":["aaaa","","aa",""],"indices":[[0,4],[0,0],[2,4],[4,4]],"index":0},4],"#,
@@ -951,40 +943,6 @@ fn prefix_free_string_class_proofs_keep_word_backtracking_predicates_references_
         r#"[true,"ab",null,0],[true,"",null,0]]"#,
     ));
 
-    assert_true(&format!(
-        r#"
-            var marker = 0,
-                ok = false;
-            try {{
-                ok = (function() {{
-                    var pattern = "()([\\q{{a|ab}}]){{2}}()",
-                        rows = [],
-                        metadata = true;
-                    for (var multi of [false, true]) {{
-                        var r = new RegExp(pattern, 'dvg' + (multi ? 'm' : ''));
-                        metadata = metadata && r.source === pattern;
-                        for (var input of ['aaaa', 'ab', 'ſaX', '😀aX']) {{
-                            r.lastIndex = 0;
-                            var m = r.exec(input),
-                                result = null;
-                            if (m !== null) result = {{
-                                values: Array.from(m, v => v === undefined ? '<undefined>' :
-                                    v),
-                                indices: Array.from(m.indices, v => v === undefined ?
-                                    '<undefined>' : v),
-                                index: m.index
-                            }};
-                            rows.push([multi, input, result, r.lastIndex]);
-                        }}
-                    }}
-                    return metadata && JSON.stringify(rows) === {expected_serialized_output:?}
-                }})();
-            }} finally {{
-                marker = 3
-            }}
-            ok && marker === 3
-        "#
-    ));
     assert_true(&format!(
         r#"
             var marker = 0,

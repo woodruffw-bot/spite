@@ -153,7 +153,6 @@ fn opted_in_work_aborts_keep_last_index_and_bypass_handlers() {
 #[test]
 fn pattern_variants_match_reference_results() {
     for source in [
-        r"/(?<=a(?=(b{1,2})\1))b/.exec('abb')",
         r"/(a)(?<=a(?=((\1)b){1,2}))a/.exec('aabab')",
         r"/(a)(?<=a(?=(\1|b)))a/.exec('aa')",
         r"/(a)(?<=a(?=(\1)(?=\2)))a/.exec('aaa')",

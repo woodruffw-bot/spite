@@ -201,7 +201,6 @@ fn work_limits_and_composition_results() {
         r"/(?:(?:(ab|a)+c)|){2,3}/.test('abc')",
         r"/(?:(?:(?:(?:(ab)+(a)+){2}){2})|){2,3}/.test('aba')",
         r"/(?:(?:(?:(?:(ab)+a+){2}){2})|){2,3}/.test('aba')",
-        r"/(?:(?:((ab|a)+)c)|){2,3}/.test('abc')",
         r"/(?:(?:(?:(?<n>ab)+c\k<n>){2})|){2,3}/.test('abc')",
         r"/(?:(?:(?:(ab)+\1){2})|){2,3}/.test('abab')",
         r"/(ab)+c/u.test('abc')",

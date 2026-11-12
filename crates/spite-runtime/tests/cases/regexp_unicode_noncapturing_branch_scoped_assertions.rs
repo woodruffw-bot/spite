@@ -76,28 +76,9 @@ fn unicode_noncapturing_branch_scoped_assertions_counts_and_scopes() {
     assert_true(r"let r=/\b(\b(?:\Ba)|b)+\b/v;r.exec('a')===null&&r.exec('b')[0]==='b'");
     assert_true(r"let r=/\b((?:a\b)\B|b)+\b/u;r.exec('a')===null&&r.exec('b')[0]==='b'");
 
-    for source in [
-        r"/\B((^(?:.)|a)+)\B$b/vms.exec('\n')",
-        r"/\B(?<whole>(^(?:.)|a)+)\B$b/vms.exec('\n')",
-    ] {
-        crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
-    }
-
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let m=/\b((?:a)|(?:b))+\B/{mode}.exec('abba');m[0]==='abb'&&m[1]==='b'&&m.index===0"
-        ));
-        assert_true(&format!(
-            r"let m=/\B((?:a)|(?:b))+\b/{mode}.exec('abba');m[0]==='bba'&&m[1]==='a'&&m.index===1"
-        ));
-        assert_true(&format!(
             r"let m=/\b(\b(?:a)|(?:b)\b)+\B/{mode}.exec('aaa');m[0]==='a'&&m[1]==='a'&&m.index===0"
-        ));
-        assert_true(&format!(
-            r"let m=/\B(^(?:a)|(?:b)$)+\b/{mode}m.exec('aa\nbb');m[0]==='b'&&m[1]==='b'&&m.index===4"
-        ));
-        assert_true(&format!(
-            r"let m=/\b((?:a)|(?:b))*?\b/{mode}.exec('ab');m[0]===''&&m[1]===undefined"
         ));
         assert_true(&format!(
             r"let m=/\B(^\B(?:.)$|\b(?:a)\b)+\B/{mode}ms.exec('\r\n');m[0]==='\r\n'&&m[1]==='\n'"

@@ -222,11 +222,7 @@ fn unicode_class_folding_opted_work_and_unproved_syntax() {
                 .test('A') && !/[[a]]/iv.test('b')
         "#,
     );
-    for source in [
-        r"/([a])+b/iu.exec('a')",
-        r"/[a]+b/iv.exec('a')",
-        r"/[a]b/iu.exec('ab')",
-    ] {
+    for source in [r"/[a]+b/iv.exec('a')", r"/[a]b/iu.exec('ab')"] {
         crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }
 }

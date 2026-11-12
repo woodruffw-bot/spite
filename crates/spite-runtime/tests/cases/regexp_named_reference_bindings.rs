@@ -164,8 +164,6 @@ fn explicit_duplicate_name_search_work_aborts_before_last_index_and_handlers() {
 #[test]
 fn pattern_variants_match_reference_results() {
     for source in [
-        r"/(?:(?:(?:(?:(?<x>a)|(?<x>b))(?:\k<x>)+){2})|){2,3}/.test('bb')",
-        r"/(?:(?:(?:(?<x>a)\k<x>|(?<x>b)(?:\k<x>)+){2})|){2,3}/.test('bb')",
         r"/(?<x>a)\k<x>|(?<x>b)\k<x>/u.test('bb')",
         r"/(?<=(?<x>a+))\k<x>/.test('a')",
     ] {

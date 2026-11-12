@@ -307,8 +307,6 @@ fn exactly_one_grouped_empty_proofs_finish_finalizers_and_keep_other_domains_def
         r"/((?:)|[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]){1,1}/v.test('')",
         r"/(([\q{a|ab}&&a])|(?:X|)?){1}/v.test('a')",
         r"/([\q{a|b}]|(?:\b|())){1}/v.test('a')",
-        r"/([\q{a|b}]|(?:\b|())){1}/v.test('a')",
-        r"/([\q{a|b}]|(?:\b|())){1}/v.test('a')",
         r"/([\q{a|b}]|(\b)?){1}/v.test('a')",
         r"/([\q{a|ab}&&a]||(?:)){1}/v.test('a')",
         r"/(\b[\q{ab}&&\p{Any}&&\p{RGI_Emoji}]|(?:)){1}/v.test('a')",

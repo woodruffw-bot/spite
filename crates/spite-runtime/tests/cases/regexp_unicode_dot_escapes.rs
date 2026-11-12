@@ -268,7 +268,6 @@ fn unicode_dot_escapes_unproved_syntax_matches_reference_results() {
     for source in [
         r"/(.)+b/iu.exec('a')",
         r"/(\W)+b/iv.exec('a')",
-        r"/(.)+b/u.exec('a')",
         r"/./v.exec('a')+/(.)+b/v.exec('a')",
         r"/\D+b/u.exec('a')",
         r"/a./v.exec('ab')",

@@ -205,7 +205,6 @@ fn explicit_empty_count_lookbehind_work_aborts_before_last_index_and_handlers() 
 fn variable_counts_and_empty_compositions_match_reference() {
     for source in [
         r"/(?<=((?=a+)){1,2})a/.exec('a')",
-        r"/(?<=((?=a+)){2})a/.exec('a')",
         r"/(?<=(|a){2})a/.exec('a')",
         r"/(?<=(\2){1,2})a()/.exec('a')",
         r"/(?<=((a{0,2}){2}){2})a/.exec('a')",

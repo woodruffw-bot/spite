@@ -175,8 +175,6 @@ fn flags_and_surrogate_units_capture_original_input_units() {
 fn pattern_variants_match_reference_results() {
     for source in [
         r"/(?:(?:(a[b]|c)+)|){2,3}/.test('ab')",
-        r"/(?:(?:(?:(?:(a+[b]+)){2}){2})|){2,3}/.test('ab')",
-        r"/(?:(?:(?:(?:a+([b]+)){2}){2})|){2,3}/.test('ab')",
         r"/(?:(?:(?:(?<x>a)+\k<x>){2})|){2,3}/.test('a')",
         r"/(?:(?:(a+)+)|){2,3}/.test('a')",
         "/(a)+b/u.test('a')",

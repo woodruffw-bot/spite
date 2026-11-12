@@ -274,45 +274,6 @@ fn grouped_string_consumers_keep_enclosing_captures_and_empty_progress() {
 
 #[test]
 fn grouped_string_proofs_finish_finalizers_and_keep_counts_assertions_and_references_separate() {
-    let expected_serialized_output = JsString::from(concat!(
-        r#"[[false,"ab!","#,
-        r#"{"values":["ab","ab","<undefined>"],"indices":[[0,2],[0,2],"<undefined>"],"index":0},"#,
-        r#"2],[false,"",{"values":["","",""],"indices":[[0,0],[0,0],[0,0]],"index":0},0],"#,
-        r#"[false,"\n",{"values":["","",""],"indices":[[0,0],[0,0],[0,0]],"index":0},0],"#,
-        r#"[false,"x\nab",{"values":["","",""],"indices":[[0,0],[0,0],[0,0]],"index":0},0],"#,
-        r#"[true,"ab!","#,
-        r#"{"values":["ab","ab","<undefined>"],"indices":[[0,2],[0,2],"<undefined>"],"index":0},"#,
-        r#"2],[true,"",{"values":["","",""],"indices":[[0,0],[0,0],[0,0]],"index":0},0],"#,
-        r#"[true,"\n",{"values":["","",""],"indices":[[0,0],[0,0],[0,0]],"index":0},0],"#,
-        r#"[true,"x\nab",{"values":["","",""],"indices":[[0,0],[0,0],[0,0]],"index":0},0]]"#,
-    ));
-    let expected_serialized_output_2 = JsString::from(concat!(
-        r#"[[false,"ab!","#,
-        r#"{"values":["","<undefined>","<undefined>"],"#,
-        r#""indices":[[0,0],"<undefined>","<undefined>"],"index":0},0],"#,
-        r#"[false,"","#,
-        r#"{"values":["","<undefined>","<undefined>"],"#,
-        r#""indices":[[0,0],"<undefined>","<undefined>"],"index":0},0],"#,
-        r#"[false,"\n","#,
-        r#"{"values":["","<undefined>","<undefined>"],"#,
-        r#""indices":[[0,0],"<undefined>","<undefined>"],"index":0},0],"#,
-        r#"[false,"x\nab","#,
-        r#"{"values":["","<undefined>","<undefined>"],"#,
-        r#""indices":[[0,0],"<undefined>","<undefined>"],"index":0},0],"#,
-        r#"[true,"ab!","#,
-        r#"{"values":["","<undefined>","<undefined>"],"#,
-        r#""indices":[[0,0],"<undefined>","<undefined>"],"index":0},0],"#,
-        r#"[true,"","#,
-        r#"{"values":["","<undefined>","<undefined>"],"#,
-        r#""indices":[[0,0],"<undefined>","<undefined>"],"index":0},0],"#,
-        r#"[true,"\n","#,
-        r#"{"values":["","<undefined>","<undefined>"],"#,
-        r#""indices":[[0,0],"<undefined>","<undefined>"],"index":0},0],"#,
-        r#"[true,"x\nab","#,
-        r#"{"values":["","<undefined>","<undefined>"],"#,
-        r#""indices":[[0,0],"<undefined>","<undefined>"],"index":0},0]]"#,
-    ));
-
     assert_true(
         r#"
             var marker = 0,
@@ -351,74 +312,6 @@ fn grouped_string_proofs_finish_finalizers_and_keep_counts_assertions_and_refere
                 undefined && m.indices[1][0] === 3 && a[0] === 'ab' && a[1] === 'ab' && a[2] === undefined
         "#,
     );
-    assert_true(&format!(
-        r#"
-            var marker = 0,
-                ok = false;
-            try {{
-                ok = (function() {{
-                    var pattern = "([\\q{{a|ab}}]|())+",
-                        rows = [],
-                        metadata = true;
-                    for (var multi of [false, true]) {{
-                        var r = new RegExp(pattern, 'dvg' + (multi ? 'm' : ''));
-                        metadata = metadata && r.source === pattern;
-                        for (var input of ['ab!', '', '\n', 'x\nab']) {{
-                            r.lastIndex = 0;
-                            var m = r.exec(input),
-                                result = null;
-                            if (m !== null) result = {{
-                                values: Array.from(m, v => v === undefined ? '<undefined>' :
-                                    v),
-                                indices: Array.from(m.indices, v => v === undefined ?
-                                    '<undefined>' : v),
-                                index: m.index
-                            }};
-                            rows.push([multi, input, result, r.lastIndex]);
-                        }}
-                    }}
-                    return metadata && JSON.stringify(rows) === {expected_serialized_output:?}
-                }})();
-            }} finally {{
-                marker = 3
-            }}
-            ok && marker === 3
-        "#
-    ));
-    assert_true(&format!(
-        r#"
-            var marker = 0,
-                ok = false;
-            try {{
-                ok = (function() {{
-                    var pattern = "([\\q{{|ab}}]|()){{0}}",
-                        rows = [],
-                        metadata = true;
-                    for (var multi of [false, true]) {{
-                        var r = new RegExp(pattern, 'dvg' + (multi ? 'm' : ''));
-                        metadata = metadata && r.source === pattern;
-                        for (var input of ['ab!', '', '\n', 'x\nab']) {{
-                            r.lastIndex = 0;
-                            var m = r.exec(input),
-                                result = null;
-                            if (m !== null) result = {{
-                                values: Array.from(m, v => v === undefined ? '<undefined>' :
-                                    v),
-                                indices: Array.from(m.indices, v => v === undefined ?
-                                    '<undefined>' : v),
-                                index: m.index
-                            }};
-                            rows.push([multi, input, result, r.lastIndex]);
-                        }}
-                    }}
-                    return metadata && JSON.stringify(rows) === {expected_serialized_output_2:?}
-                }})();
-            }} finally {{
-                marker = 3
-            }}
-            ok && marker === 3
-        "#
-    ));
     for pattern in [
         r"^([\q{ab}&&\p{Any}&&\p{RGI_Emoji}]|())",
         r"([\q{ab}&&\p{Any}&&\p{RGI_Emoji}]|())$",

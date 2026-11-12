@@ -241,7 +241,6 @@ fn flat_v_set_class_literal_state_context_and_consumers() {
         r#"/[a]b|c/v.test('ab')"#,
         r#"/[\p{RGI_Emoji}]b/v.test('ab')"#,
         r#"/[]\p{RGI_Emoji}/v.test('')"#,
-        r#"/[a]b/u.test('ab')"#,
     ] {
         crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
     }

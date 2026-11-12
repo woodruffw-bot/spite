@@ -85,19 +85,10 @@ fn unicode_noncapturing_branch_nested_assertion_words_counts_and_scopes() {
 
     for mode in ["u", "v"] {
         assert_true(&format!(
-            r"let m=/\b((?:a)|(?:b))+\B/{mode}.exec('abba');m[0]==='abb'&&m[1]==='b'&&m.index===0"
-        ));
-        assert_true(&format!(
-            r"let m=/\B((?:a)|(?:b))+\b/{mode}.exec('abba');m[0]==='bba'&&m[1]==='a'&&m.index===1"
-        ));
-        assert_true(&format!(
             r"let m=/\b((?:\b(?:\ba))|(?:(?:b\b)\b))+\B/{mode}.exec('aaa');m[0]==='a'&&m[1]==='a'&&m.index===0"
         ));
         assert_true(&format!(
             r"let m=/\B((?:^(?:^a))|(?:(?:b$)$))+\b/{mode}m.exec('aa\nbb');m[0]==='b'&&m[1]==='b'&&m.index===4"
-        ));
-        assert_true(&format!(
-            r"let m=/\b((?:a)|(?:b))*?\b/{mode}.exec('ab');m[0]===''&&m[1]===undefined"
         ));
         assert_true(&format!(
             r"let m=/\B((?:\B^(?:\B.$)$)|(?:\b(?:\ba\b)\b))+\B/{mode}ms.exec('\r\n');m[0]==='\r\n'&&m[1]==='\n'"

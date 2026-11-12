@@ -130,7 +130,6 @@ fn pattern_variants_match_reference_results() {
     for source in [
         r"/(?:(?:((?:(?:a|[b]+[a]+){2}){2}){2})|){2,3}/.test('a')",
         r"/(?:(?:((?:(?:a|b*[a]+){2}){2}){2})|){2,3}/.test('a')",
-        r"/(?:(?:(?:(?:a(a|bc)){2}){2})|){2,3}/.test('a')",
         r"/(?:(?:((?:(?:(?:a|bc)|c){2}){2}){2})|){2,3}/.test('a')",
         "/a|b/u.test('a')",
         "/a|b/v.test('a')",

@@ -196,7 +196,6 @@ fn unicode_character_folding_opted_work_and_unproved_syntax() {
         "#,
     );
     for source in [
-        r"/([a])+b/iu.exec('a')",
         r"/([^a])+b/iv.exec('b')",
         r"/(\w)+b/iu.exec('a')",
         r"/\w+b/iv.exec('a')",

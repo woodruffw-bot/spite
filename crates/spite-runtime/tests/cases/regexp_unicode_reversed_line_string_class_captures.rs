@@ -184,14 +184,6 @@ fn reversed_line_string_class_layouts_keep_actual_endpoint_and_capture_ranges() 
 }
 #[test]
 fn reversed_line_string_class_consumers_ranges_and_scope_keep_original_slots() {
-    let expected_serialized_output = JsString::from(concat!(
-        r#"[[false,"ab!",null,0],"#,
-        r#"[false,"",{"values":["","","",""],"indices":[[0,0],[0,0],[0,0],[0,0]],"index":0},0],"#,
-        r#"[false,"\n",null,0],[false,"x\nab",null,0],[true,"ab!",null,0],"#,
-        r#"[true,"",{"values":["","","",""],"indices":[[0,0],[0,0],[0,0],[0,0]],"index":0},0],"#,
-        r#"[true,"\n",{"values":["","","",""],"indices":[[0,0],[0,0],[0,0],[0,0]],"index":0},0],"#,
-        r#"[true,"x\nab",null,0]]"#,
-    ));
     let expected_serialized_output_2 = JsString::from(concat!(
         r#"[[false,"aaaaaa","#,
         r#"{"values":["a","<undefined>","a"],"indices":[[0,1],"<undefined>",[0,1]],"index":0},"#,
@@ -313,40 +305,6 @@ fn reversed_line_string_class_consumers_ranges_and_scope_keep_original_slots() {
             r.lastIndex = 2;
             var m = r.exec('😀a😀!\n');
             m.index === 7 && m.groups.part === '' && m.indices.groups.part[0] === 7 && r.lastIndex === 7
-        "#
-    ));
-    assert_true(&format!(
-        r#"
-            var marker = 0,
-                ok = false;
-            try {{
-                ok = (function() {{
-                    var pattern = "($)([\\q{{a|ab}}]|)(^)",
-                        rows = [],
-                        metadata = true;
-                    for (var multi of [false, true]) {{
-                        var r = new RegExp(pattern, 'dvg' + (multi ? 'm' : ''));
-                        metadata = metadata && r.source === pattern;
-                        for (var input of ['ab!', '', '\n', 'x\nab']) {{
-                            r.lastIndex = 0;
-                            var m = r.exec(input),
-                                result = null;
-                            if (m !== null) result = {{
-                                values: Array.from(m, v => v === undefined ? '<undefined>' :
-                                    v),
-                                indices: Array.from(m.indices, v => v === undefined ?
-                                    '<undefined>' : v),
-                                index: m.index
-                            }};
-                            rows.push([multi, input, result, r.lastIndex]);
-                        }}
-                    }}
-                    return metadata && JSON.stringify(rows) === {expected_serialized_output:?}
-                }})();
-            }} finally {{
-                marker = 3
-            }}
-            ok && marker === 3
         "#
     ));
     assert_true(

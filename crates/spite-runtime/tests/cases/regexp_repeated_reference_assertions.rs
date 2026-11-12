@@ -204,8 +204,6 @@ fn repeated_choices_nested_quantifiers_and_lookaround_match_reference_results() 
         r"/(a)(b)(^\1|\2){2,3}/.test('abab')",
         r"/(?:(?:(a)(b)(a+\1\2)+)|){2,3}/.test('aabaab')",
         r"/(a)(b)(^\1+\2){2,3}/.test('abab')",
-        r"/(a)(b)((?=a)\1\2){2,3}/.test('abab')",
-        r"/(a)(b)((?i:\1)\2)+/.test('abab')",
         r"/(a)(b)(\b\1\2)+/u.test('aabaab')",
     ] {
         crate::common::regexp_oracle::assert_matches_reference(&mut Realm::default(), source);
