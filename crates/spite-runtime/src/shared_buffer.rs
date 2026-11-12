@@ -91,13 +91,55 @@ mod tests {
         let shared = export(&mut first, "new SharedArrayBuffer(8,{maxByteLength:16})");
         let mut second = Realm::default();
         second
-            .eval("const Original=SharedArrayBuffer;SharedArrayBuffer=function(){throw 1}")
+            .eval(
+                r#"
+                    const Original = SharedArrayBuffer;
+                    SharedArrayBuffer = function() {
+                        throw 1
+                    }
+                "#,
+            )
             .unwrap();
         second.bind_shared_array_buffer("left", &shared).unwrap();
         second.bind_shared_array_buffer("right", &shared).unwrap();
-        assert_eq!(second.eval("left!==right&&left instanceof Original&&right instanceof Original&&Object.getPrototypeOf(left)===Original.prototype&&left.constructor===Original"), Ok(Value::Boolean(true)));
-        assert_eq!(second.eval("new Uint8Array(left)[0]=19;left.grow(16);new Uint8Array(right)[0]===19&&right.byteLength===16"), Ok(Value::Boolean(true)));
-        assert_eq!(second.eval("left.constructor={[Symbol.species]:function(){return right}};let caught=false;try{left.slice(0,4)}catch(e){caught=e instanceof TypeError}caught"), Ok(Value::Boolean(true)));
+        assert_eq!(
+            second.eval(
+                r#"
+                    left !== right && left instanceof Original && right instanceof Original && Object
+                        .getPrototypeOf(left) === Original.prototype && left.constructor === Original
+                "#
+            ),
+            Ok(Value::Boolean(true))
+        );
+        assert_eq!(
+            second.eval(
+                r#"
+                    new Uint8Array(left)[0] = 19;
+                    left.grow(16);
+                    new Uint8Array(right)[0] === 19 && right.byteLength === 16
+                "#
+            ),
+            Ok(Value::Boolean(true))
+        );
+        assert_eq!(
+            second.eval(
+                r#"
+                    left.constructor = {
+                        [Symbol.species]: function() {
+                            return right
+                        }
+                    };
+                    let caught = false;
+                    try {
+                        left.slice(0, 4)
+                    } catch (e) {
+                        caught = e instanceof TypeError
+                    }
+                    caught
+                "#
+            ),
+            Ok(Value::Boolean(true))
+        );
     }
 
     #[test]
@@ -111,7 +153,16 @@ mod tests {
         };
         let mut second = Realm::default();
         second.bind_shared_array_buffer("buffer", &shared).unwrap();
-        assert_eq!(second.eval("buffer.grow(16);let a=new Uint8Array(buffer);a[0]===31&&a[15]===0&&buffer.byteLength===16"), Ok(Value::Boolean(true)));
+        assert_eq!(
+            second.eval(
+                r#"
+                    buffer.grow(16);
+                    let a = new Uint8Array(buffer);
+                    a[0] === 31 && a[15] === 0 && buffer.byteLength === 16
+                "#
+            ),
+            Ok(Value::Boolean(true))
+        );
     }
 
     #[test]
@@ -240,7 +291,12 @@ mod tests {
         let mut sender = Realm::default();
         sender.bind_shared_array_buffer("first", &first).unwrap();
         sender.bind_shared_array_buffer("second", &second).unwrap();
-        assert_eq!(sender.eval("let a=new Int32Array(first),b=new Int32Array(second);Atomics.notify(b,0,1)===1&&Atomics.notify(a,1,1)===1&&Atomics.notify(a,0,1)===1&&Atomics.notify(a,0)===0"), Ok(Value::Boolean(true)));
+        assert_eq!(sender.eval(r#"
+            let a = new Int32Array(first),
+                b = new Int32Array(second);
+            Atomics.notify(b, 0, 1) === 1 && Atomics.notify(a, 1, 1) === 1 && Atomics.notify(a, 0, 1) ===
+                1 && Atomics.notify(a, 0) === 0
+        "#), Ok(Value::Boolean(true)));
         for _ in 0..3 {
             assert!(receiver.run_next_atomics_wait_job().unwrap());
         }
@@ -261,7 +317,15 @@ mod tests {
         );
         let mut second = Realm::default();
         second.bind_shared_array_buffer("buffer", &shared).unwrap();
-        second.eval("let a=new Int32Array(buffer),log='';Atomics.waitAsync(a,0,0).value.then(()=>log+='b')").unwrap();
+        second
+            .eval(
+                r#"
+                    let a = new Int32Array(buffer),
+                        log = '';
+                    Atomics.waitAsync(a, 0, 0).value.then(() => log += 'b')
+                "#,
+            )
+            .unwrap();
         first
             .eval("Atomics.waitAsync(a,0,0).value.then(()=>log+='c')")
             .unwrap();
@@ -388,7 +452,39 @@ mod tests {
         let mut realm = Realm::new_suspending(crate::Limits::default());
         assert!(!Realm::default().can_suspend);
         assert!(realm.can_suspend);
-        assert_eq!(realm.eval("let a=new Int32Array(new SharedArrayBuffer(16)),b=new BigInt64Array(a.buffer),log='';a[0]=7;Promise=function(){throw 1};Object.defineProperty(Object.prototype,'async',{set(){throw 2},configurable:true});Atomics.wait(a,0,8,Infinity)==='not-equal'&&Atomics.wait(a,0,4294967303,0)==='timed-out'&&Atomics.wait(b,1,1n,NaN)==='not-equal'&&Atomics.wait(b,1,0n,-Infinity)==='timed-out'&&Atomics.wait(a,{valueOf(){log+='i';return 0}},{valueOf(){log+='v';return 7}},{valueOf(){log+='t';return 0}})==='timed-out'&&log==='ivt'&&Atomics.notify(a,0)===0"), Ok(Value::Boolean(true)));
+        assert_eq!(realm.eval(r#"
+            let a = new Int32Array(new SharedArrayBuffer(16)),
+                b = new BigInt64Array(a.buffer),
+                log = '';
+            a[0] = 7;
+            Promise = function() {
+                throw 1
+            };
+            Object.defineProperty(Object.prototype, 'async', {
+                set() {
+                    throw 2
+                },
+                configurable: true
+            });
+            Atomics.wait(a, 0, 8, Infinity) === 'not-equal' && Atomics.wait(a, 0, 4294967303, 0) ===
+                'timed-out' && Atomics.wait(b, 1, 1n, NaN) === 'not-equal' && Atomics.wait(b, 1, 0n, -
+                    Infinity) === 'timed-out' && Atomics.wait(a, {
+                    valueOf() {
+                        log += 'i';
+                        return 0
+                    }
+                }, {
+                    valueOf() {
+                        log += 'v';
+                        return 7
+                    }
+                }, {
+                    valueOf() {
+                        log += 't';
+                        return 0
+                    }
+                }) === 'timed-out' && log === 'ivt' && Atomics.notify(a, 0) === 0
+        "#), Ok(Value::Boolean(true)));
         assert!(realm.next_atomics_wait_delay().is_none());
     }
 
@@ -398,7 +494,10 @@ mod tests {
         realm
             .eval("let a=new Int32Array(new SharedArrayBuffer(8))")
             .unwrap();
-        assert_eq!(realm.eval("Atomics.wait(a,0,0,1.1)==='timed-out'&&Atomics.wait(a,1,0,2)==='timed-out'&&Atomics.notify(a,0)===0&&Atomics.notify(a,1)===0"), Ok(Value::Boolean(true)));
+        assert_eq!(realm.eval(r#"
+            Atomics.wait(a, 0, 0, 1.1) === 'timed-out' && Atomics.wait(a, 1, 0, 2) === 'timed-out' &&
+                Atomics.notify(a, 0) === 0 && Atomics.notify(a, 1) === 0
+        "#), Ok(Value::Boolean(true)));
         assert!(!realm.run_next_atomics_wait_job().unwrap());
         assert!(realm.next_atomics_wait_delay().is_none());
     }
@@ -412,18 +511,37 @@ mod tests {
             "let b=new SharedArrayBuffer(8),a=new Int32Array(b);b",
         );
         let (ready, started) = std::sync::mpsc::channel();
-        let thread = std::thread::Builder::new().stack_size(2 * 1024 * 1024).spawn(move || {
-            let mut receiver = Realm::new_suspending(crate::Limits::default());
-            receiver.bind_shared_array_buffer("buffer", &shared).unwrap();
-            receiver.eval("let a=new Int32Array(buffer),log='';Atomics.waitAsync(a,0,0).value.then(v=>log=v)").unwrap();
-            ready.send(()).unwrap();
-            assert_eq!(receiver.eval("Atomics.wait(a,0,0,5000)"), Ok(Value::String("ok".into())));
-            assert_eq!(receiver.eval("log===''"), Ok(Value::Boolean(true)));
-            assert_eq!(receiver.next_atomics_wait_delay(), Some(Duration::ZERO));
-            assert!(receiver.run_next_atomics_wait_job().unwrap());
-            receiver.run_next_promise_job().unwrap();
-            assert_eq!(receiver.eval("log==='ok'&&Atomics.notify(a,0)===0"), Ok(Value::Boolean(true)));
-        }).unwrap();
+        let thread = std::thread::Builder::new()
+            .stack_size(2 * 1024 * 1024)
+            .spawn(move || {
+                let mut receiver = Realm::new_suspending(crate::Limits::default());
+                receiver
+                    .bind_shared_array_buffer("buffer", &shared)
+                    .unwrap();
+                receiver
+                    .eval(
+                        r#"
+                            let a = new Int32Array(buffer),
+                                log = '';
+                            Atomics.waitAsync(a, 0, 0).value.then(v => log = v)
+                        "#,
+                    )
+                    .unwrap();
+                ready.send(()).unwrap();
+                assert_eq!(
+                    receiver.eval("Atomics.wait(a,0,0,5000)"),
+                    Ok(Value::String("ok".into()))
+                );
+                assert_eq!(receiver.eval("log===''"), Ok(Value::Boolean(true)));
+                assert_eq!(receiver.next_atomics_wait_delay(), Some(Duration::ZERO));
+                assert!(receiver.run_next_atomics_wait_job().unwrap());
+                receiver.run_next_promise_job().unwrap();
+                assert_eq!(
+                    receiver.eval("log==='ok'&&Atomics.notify(a,0)===0"),
+                    Ok(Value::Boolean(true))
+                );
+            })
+            .unwrap();
         started.recv_timeout(Duration::from_secs(5)).unwrap();
         // The first registered waiter is asynchronous, even if the synchronous
         // caller has already entered suspension. Deliver its generic job first.

@@ -480,7 +480,26 @@ mod tests {
     #[test]
     fn ordinary_function_metadata_captures_lexical_environment_and_strictness() {
         let mut realm = Realm::default();
-        let Value::Object(handle)=realm.eval("(()=>{'use strict';let captured={value:7};function f(){return captured;}return f;})()").unwrap() else {panic!()};
+        let Value::Object(handle) = realm
+            .eval(
+                r#"
+                    (() => {
+                        'use strict';
+                        let captured = {
+                            value: 7
+                        };
+
+                        function f() {
+                            return captured;
+                        }
+                        return f;
+                    })()
+                "#,
+            )
+            .unwrap()
+        else {
+            panic!()
+        };
         let Some(Callable::Ordinary(code)) = realm.inspect_object(&handle).unwrap().callable()
         else {
             panic!()

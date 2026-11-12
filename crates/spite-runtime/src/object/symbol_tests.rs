@@ -276,7 +276,19 @@ fn string_wrapper_symbol_keys_are_distinct_from_fixed_index_and_length_propertie
 fn symbol_zero_does_not_alias_or_detach_a_mapped_argument() {
     let mut realm = Realm::default();
     let Value::Object(arguments) = realm
-        .eval("let get,set,args;function f(a){get=()=>a;set=x=>a=x;args=arguments;}f(1);args")
+        .eval(
+            r#"
+                let get, set, args;
+
+                function f(a) {
+                    get = () => a;
+                    set = x => a = x;
+                    args = arguments;
+                }
+                f(1);
+                args
+            "#,
+        )
         .unwrap()
     else {
         panic!("arguments")

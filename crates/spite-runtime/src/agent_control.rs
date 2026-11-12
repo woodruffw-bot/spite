@@ -101,7 +101,16 @@ mod tests {
             realm.bind_shared_array_buffer("buffer", &buffer).unwrap();
             realm.eval("let a=new Int32Array(buffer)").unwrap();
             ready.send(realm.agent_control()).unwrap();
-            let result = realm.eval("try{Atomics.store(a,1,1);while(Atomics.load(a,0)===0){}}catch(e){Atomics.store(a,2,1)}finally{Atomics.store(a,3,1)}");
+            let result = realm.eval(r#"
+                try {
+                    Atomics.store(a, 1, 1);
+                    while (Atomics.load(a, 0) === 0) {}
+                } catch (e) {
+                    Atomics.store(a, 2, 1)
+                } finally {
+                    Atomics.store(a, 3, 1)
+                }
+            "#);
             finished.send(matches!(result, Err(Error::Host { message, .. }) if message == "agent terminated by host")).unwrap();
         }).unwrap();
         let control = control.recv_timeout(Duration::from_secs(5)).unwrap();
@@ -129,7 +138,16 @@ mod tests {
             realm.bind_shared_array_buffer("buffer", &buffer).unwrap();
             realm.eval("let a=new Int32Array(buffer)").unwrap();
             ready.send(realm.agent_control()).unwrap();
-            let result = realm.eval("try{Atomics.store(a,1,1);Atomics.wait(a,0,0)}catch(e){Atomics.store(a,2,1)}finally{Atomics.store(a,3,1)}");
+            let result = realm.eval(r#"
+                try {
+                    Atomics.store(a, 1, 1);
+                    Atomics.wait(a, 0, 0)
+                } catch (e) {
+                    Atomics.store(a, 2, 1)
+                } finally {
+                    Atomics.store(a, 3, 1)
+                }
+            "#);
             finished.send(matches!(result, Err(Error::Host { message, .. }) if message == "agent terminated by host")).unwrap();
         }).unwrap();
         let control = control.recv_timeout(Duration::from_secs(5)).unwrap();

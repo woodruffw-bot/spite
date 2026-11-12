@@ -517,7 +517,13 @@ fn recursive_array_search_getters_stop_on_a_two_mebibyte_stack() {
                 let mut realm = Realm::default();
                 realm
                     .eval(&format!(
-                        "let a=[1],flag=0;Object.defineProperty(a,'0',{{get:()=>a.{method}(1)}})"
+                        r#"
+                            let a = [1],
+                                flag = 0;
+                            Object.defineProperty(a, '0', {{
+                                get: () => a.{method}(1)
+                            }})
+                        "#
                     ))
                     .unwrap();
                 assert!(matches!(

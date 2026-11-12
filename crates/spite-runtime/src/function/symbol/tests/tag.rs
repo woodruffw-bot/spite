@@ -23,7 +23,11 @@ fn string_tags_override_internal_brands_and_preserve_utf16_units() {
         check(
             &mut realm,
             &format!(
-                "let item{index}={value};item{index}[tag]='Other';show.call(item{index})==='[object Other]'"
+                r#"
+                    let item{index} = {value};
+                    item{index}[tag] = 'Other';
+                    show.call(item{index}) === '[object Other]'
+                "#
             ),
         );
     }
@@ -82,7 +86,15 @@ fn tag_getters_receive_objects_including_fresh_primitive_wrappers() {
     );
     assert_eq!(
         realm.eval(
-            "let abrupt={};Object.defineProperty(abrupt,tag,{get:()=>{throw s;}});show.call(abrupt)"
+            r#"
+                let abrupt = {};
+                Object.defineProperty(abrupt, tag, {
+                    get: () => {
+                        throw s;
+                    }
+                });
+                show.call(abrupt)
+            "#
         ),
         Err(Error::Thrown(realm.eval("s").unwrap()))
     );

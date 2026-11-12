@@ -37,7 +37,22 @@ fn internal_reactions_skip_then_species_and_result_assimilation() {
         let promise = object(
             &mut realm,
             &format!(
-                "let p={source};Object.defineProperties(p,{{then:{{get(){{throw 3}}}},constructor:{{get(){{throw 4}}}}}});p"
+                r#"
+                    let p = {source};
+                    Object.defineProperties(p, {{
+                        then: {{
+                            get() {{
+                                throw 3
+                            }}
+                        }},
+                        constructor: {{
+                            get() {{
+                                throw 4
+                            }}
+                        }}
+                    }});
+                    p
+                "#
             ),
         );
         let handler = realm.eval("handler").unwrap();

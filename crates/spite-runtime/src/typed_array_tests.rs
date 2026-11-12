@@ -248,30 +248,39 @@ fn an_escaped_typed_array_keeps_its_buffer_alive_through_collection() {
 fn borrowed_array_iterators_ignore_public_length_and_complete_permanently_after_shrink() {
     for method in ["values", "keys", "entries"] {
         let (mut realm, _) = fixture(ElementType::Uint8, 2, Some(8), 0, None);
-        let source = r"
-            let method='@METHOD@';
-            Object.defineProperty(view,'length',{get(){throw 7;}});
-            function matches(result,index,value){
-                if(result.done)return false;
-                if(method==='keys')return result.value===index;
-                if(method==='values')return result.value===value;
-                return result.value[0]===index && result.value[1]===value;
+        let source = r#"
+            let method = '@METHOD@';
+            Object.defineProperty(view, 'length', {
+                get() {
+                    throw 7;
+                }
+            });
+
+            function matches(result, index, value) {
+                if (result.done) return false;
+                if (method === 'keys') return result.value === index;
+                if (method === 'values') return result.value === value;
+                return result.value[0] === index && result.value[1] === value;
             }
-            view[0]=10;view[1]=11;
-            let iterator=Array.prototype[method].call(view);
-            if(!matches(iterator.next(),0,10))return false;
-            buffer.resize(4);view[2]=12;view[3]=13;
-            if(!matches(iterator.next(),1,11) || !matches(iterator.next(),2,12))return false;
+            view[0] = 10;
+            view[1] = 11;
+            let iterator = Array.prototype[method].call(view);
+            if (!matches(iterator.next(), 0, 10)) return false;
+            buffer.resize(4);
+            view[2] = 12;
+            view[3] = 13;
+            if (!matches(iterator.next(), 1, 11) || !matches(iterator.next(), 2, 12)) return false;
             buffer.resize(3);
-            let end=iterator.next();
-            if(!end.done || end.value!==undefined)return false;
-            buffer.resize(8);view[3]=23;
-            let afterGrowth=iterator.next();
+            let end = iterator.next();
+            if (!end.done || end.value !== undefined) return false;
+            buffer.resize(8);
+            view[3] = 23;
+            let afterGrowth = iterator.next();
             buffer.transfer();
-            let afterDetach=iterator.next();
-            return afterGrowth.done && afterGrowth.value===undefined &&
-                   afterDetach.done && afterDetach.value===undefined;
-        "
+            let afterDetach = iterator.next();
+            return afterGrowth.done && afterGrowth.value === undefined &&
+                afterDetach.done && afterDetach.value === undefined;
+        "#
         .replace("@METHOD@", method);
         check(&mut realm, &source);
     }
@@ -282,31 +291,46 @@ fn borrowed_array_iterator_bounds_failures_preserve_position_and_is_view_identit
     for method in ["values", "keys", "entries"] {
         for length in [Some(2), None] {
             let (mut realm, _) = fixture(ElementType::Uint8, 4, Some(8), 2, length);
-            let source = r"
-                let method='@METHOD@';
-                Object.defineProperty(view,'length',{get(){throw 7;}});
-                function matches(result,index,value){
-                    if(result.done)return false;
-                    if(method==='keys')return result.value===index;
-                    if(method==='values')return result.value===value;
-                    return result.value[0]===index && result.value[1]===value;
+            let source = r#"
+                let method = '@METHOD@';
+                Object.defineProperty(view, 'length', {
+                    get() {
+                        throw 7;
+                    }
+                });
+
+                function matches(result, index, value) {
+                    if (result.done) return false;
+                    if (method === 'keys') return result.value === index;
+                    if (method === 'values') return result.value === value;
+                    return result.value[0] === index && result.value[1] === value;
                 }
-                if(!ArrayBuffer.isView(view) || ArrayBuffer.isView(Object.create(view)) ||
-                   ArrayBuffer.isView(prototype) || ArrayBuffer.isView(buffer))return false;
-                view[0]=10;view[1]=11;
-                let iterator=Array.prototype[method].call(view);
-                if(!matches(iterator.next(),0,10))return false;
+                if (!ArrayBuffer.isView(view) || ArrayBuffer.isView(Object.create(view)) ||
+                    ArrayBuffer.isView(prototype) || ArrayBuffer.isView(buffer)) return false;
+                view[0] = 10;
+                view[1] = 11;
+                let iterator = Array.prototype[method].call(view);
+                if (!matches(iterator.next(), 0, 10)) return false;
                 buffer.resize(1);
-                let failed=false;
-                try{iterator.next();}catch(e){failed=e instanceof TypeError;}
-                if(!failed || !ArrayBuffer.isView(view))return false;
-                buffer.resize(6);view[1]=21;
-                if(!matches(iterator.next(),1,21))return false;
+                let failed = false;
+                try {
+                    iterator.next();
+                } catch (e) {
+                    failed = e instanceof TypeError;
+                }
+                if (!failed || !ArrayBuffer.isView(view)) return false;
+                buffer.resize(6);
+                view[1] = 21;
+                if (!matches(iterator.next(), 1, 21)) return false;
                 buffer.transfer();
-                failed=false;
-                try{iterator.next();}catch(e){failed=e instanceof TypeError;}
+                failed = false;
+                try {
+                    iterator.next();
+                } catch (e) {
+                    failed = e instanceof TypeError;
+                }
                 return failed && ArrayBuffer.isView(view);
-            "
+            "#
             .replace("@METHOD@", method);
             check(&mut realm, &source);
         }

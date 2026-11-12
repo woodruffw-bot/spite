@@ -117,7 +117,17 @@ fn tag_setter_uses_strict_set_for_existing_own_properties() {
         realm = realm_with_tag_accessors();
     }
     assert_eq!(
-        realm.eval("let o={};Object.defineProperty(o,key,{set:()=>{throw 7;}});set.call(o,'x')"),
+        realm.eval(
+            r#"
+                let o = {};
+                Object.defineProperty(o, key, {
+                    set: () => {
+                        throw 7;
+                    }
+                });
+                set.call(o, 'x')
+            "#
+        ),
         Err(Error::Thrown(Value::Number(7.0)))
     );
 }
@@ -143,7 +153,15 @@ fn recursive_tag_setters_obey_host_limits_and_restore_call_state() {
         .spawn(|| {
             let mut realm = realm_with_tag_accessors();
             realm
-                .eval("let o={},flag=0;Object.defineProperty(o,key,{set:()=>set.call(o,'x')})")
+                .eval(
+                    r#"
+                        let o = {},
+                            flag = 0;
+                        Object.defineProperty(o, key, {
+                            set: () => set.call(o, 'x')
+                        })
+                    "#,
+                )
                 .unwrap();
             assert!(matches!(
                 realm.eval("try{set.call(o,'x');}catch{flag=1;}finally{flag=2;}"),

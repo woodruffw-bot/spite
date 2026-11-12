@@ -120,7 +120,12 @@ fn registry_methods_have_standard_metadata_and_complete_constructor_enumeration(
         check(
             &mut realm,
             &format!(
-                "let d{name}=ds.{name};d{name}.writable && !d{name}.enumerable && d{name}.configurable && S.{name}.name==='{name}' && S.{name}.length===1 && !Object.hasOwn(S.{name},'prototype')"
+                r#"
+                    let d{name} = ds.{name};
+                    d{name}.writable && !d{name}.enumerable && d{name}
+                        .configurable && S.{name}.name === '{name}' && S.{name}
+                        .length === 1 && !Object.hasOwn(S.{name}, 'prototype')
+                "#
             ),
         );
         assert!(matches!(

@@ -27,19 +27,48 @@ fn date_slot_survives_collection_and_stays_independent_of_prototype_identity() {
 #[test]
 fn intrinsic_property_graph_has_exact_names_lengths_and_descriptors() {
     let mut realm = Realm::default();
-    assert_eq!(realm.eval("Date.name==='Date' && Date.length===7 && Object.getPrototypeOf(Date)===Function.prototype && Object.getPrototypeOf(Date.prototype)===Object.prototype && Date.prototype.constructor===Date && Object.getOwnPropertyNames(Date).join(',')==='length,name,prototype,now,parse,UTC' && Object.keys(Date).length===0 && Object.keys(Date.prototype).length===0"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let p=Object.getOwnPropertyDescriptor(Date,'prototype'),g=Object.getOwnPropertyDescriptor(globalThis,'Date'); !p.writable && !p.enumerable && !p.configurable && p.value===Date.prototype && g.writable && !g.enumerable && g.configurable"),Ok(Value::Boolean(true)));
-    assert_eq!(realm.eval("let d=Object.getOwnPropertyDescriptor(Date.prototype,Symbol.toPrimitive);!d.writable && !d.enumerable && d.configurable && d.value.name==='[Symbol.toPrimitive]' && d.value.length===1 && Object.getOwnPropertySymbols(Date.prototype).length===1 && Object.getOwnPropertyNames(Date.prototype).length===44"),Ok(Value::Boolean(true)));
+    assert_eq!(realm.eval(r#"
+        Date.name === 'Date' && Date.length === 7 && Object.getPrototypeOf(Date) === Function
+            .prototype && Object.getPrototypeOf(Date.prototype) === Object.prototype && Date.prototype
+            .constructor === Date && Object.getOwnPropertyNames(Date).join(',') ===
+            'length,name,prototype,now,parse,UTC' && Object.keys(Date).length === 0 && Object.keys(Date
+                .prototype).length === 0
+    "#),Ok(Value::Boolean(true)));
+    assert_eq!(realm.eval(r#"
+        let p = Object.getOwnPropertyDescriptor(Date, 'prototype'),
+            g = Object.getOwnPropertyDescriptor(globalThis, 'Date');
+        !p.writable && !p.enumerable && !p.configurable && p.value === Date.prototype && g.writable &&
+            !g.enumerable && g.configurable
+    "#),Ok(Value::Boolean(true)));
+    assert_eq!(realm.eval(r#"
+        let d = Object.getOwnPropertyDescriptor(Date.prototype, Symbol.toPrimitive);
+        !d.writable && !d.enumerable && d.configurable && d.value.name === '[Symbol.toPrimitive]' && d
+            .value.length === 1 && Object.getOwnPropertySymbols(Date.prototype).length === 1 && Object
+            .getOwnPropertyNames(Date.prototype).length === 44
+    "#),Ok(Value::Boolean(true)));
     for method in Method::ALL {
         let key = if matches!(method, Method::ToPrimitive) {
             "Symbol.toPrimitive".to_owned()
         } else {
             format!("'{}'", method.name())
         };
-        assert_eq!(realm.eval(&format!("(function(){{let f=Date.prototype[{key}],d=Object.getOwnPropertyDescriptor(Date.prototype,{key});return f.name==='{}' && f.length==={} && Object.getPrototypeOf(f)===Function.prototype && !Object.hasOwn(f,'prototype') && !d.enumerable && d.configurable;}})()",method.name(),method.length())),Ok(Value::Boolean(true)));
+        assert_eq!(realm.eval(&format!(r#"
+            (function() {{
+                let f = Date.prototype[{key}],
+                    d = Object.getOwnPropertyDescriptor(Date.prototype, {key});
+                return f.name === '{}' && f.length === {} && Object
+                    .getPrototypeOf(f) === Function.prototype && !Object.hasOwn(f, 'prototype') && !d
+                    .enumerable && d.configurable;
+            }})()
+        "#,method.name(),method.length())),Ok(Value::Boolean(true)));
     }
     assert_eq!(
-        realm.eval("delete globalThis.Date; typeof Date==='undefined' && !('Date' in globalThis)"),
+        realm.eval(
+            r#"
+                delete globalThis.Date;
+                typeof Date === 'undefined' && !('Date' in globalThis)
+            "#
+        ),
         Ok(Value::Boolean(true))
     );
 }

@@ -31,7 +31,21 @@ fn absent_hooks_fall_back_but_noncallable_and_object_results_throw() {
         check(
             &mut realm,
             &format!(
-                "let log='',o={{[convert]:{absent},valueOf:()=>{{log+='v';return 3;}},toString:()=>{{log+='s';return '4';}}}};Number(o)===3 && String(o)==='4' && log==='vs'"
+                r#"
+                    let log = '',
+                        o = {{
+                            [convert]: {absent},
+                            valueOf: () => {{
+                                log += 'v';
+                                return 3;
+                            }},
+                            toString: () => {{
+                                log += 's';
+                                return '4';
+                            }}
+                        }};
+                    Number(o) === 3 && String(o) === '4' && log === 'vs'
+                "#
             ),
         );
     }
@@ -39,7 +53,16 @@ fn absent_hooks_fall_back_but_noncallable_and_object_results_throw() {
         let mut realm = realm_with_symbols();
         realm
             .eval(&format!(
-                "let called=false,o={{[convert]:{invalid},valueOf:()=>{{called=true;return 1;}}}};"
+                r#"
+                    let called = false,
+                        o = {{
+                            [convert]: {invalid},
+                            valueOf: () => {{
+                                called = true;
+                                return 1;
+                            }}
+                        }};
+                "#
             ))
             .unwrap();
         assert!(
@@ -68,7 +91,20 @@ fn hook_getters_and_calls_preserve_abrupt_completions_and_lookup_order() {
         &mut realm,
         "let log='',p={},o=Object.create(p);Object.defineProperty(p,convert,{get:function(){log+=this===o?'g':'wrong';return function(hint){log+=hint;return this===o?2:0;};}});Object.defineProperty(o,'valueOf',{get:()=>{throw 8;}});+o===2 && log==='gnumber'",
     );
-    assert_eq!(realm.eval("let abrupt={};Object.defineProperty(abrupt,convert,{get:()=>{throw s;}});Number(abrupt)"), Err(Error::Thrown(realm.eval("s").unwrap())));
+    assert_eq!(
+        realm.eval(
+            r#"
+                let abrupt = {};
+                Object.defineProperty(abrupt, convert, {
+                    get: () => {
+                        throw s;
+                    }
+                });
+                Number(abrupt)
+            "#
+        ),
+        Err(Error::Thrown(realm.eval("s").unwrap()))
+    );
     assert_eq!(
         realm.eval("Number({[convert]:()=>{throw 7;}})"),
         Err(Error::Thrown(Value::Number(7.0)))

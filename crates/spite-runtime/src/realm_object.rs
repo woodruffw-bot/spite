@@ -1200,23 +1200,34 @@ mod tests {
     fn string_index_fast_acceptance_keeps_coercion_boxing_and_prototype_fallback() {
         let mut realm = Realm::default();
         assert_eq!(realm.eval(r#"
-            let calls='',key={toString(){calls+='k';return '1'}};
-            let s='A😀\uD800X\uDC00Z',box=new String(s),a=s[key],b=box[key];
-            String.prototype['0']='shadow';String.prototype['01']='leading';
-            String.prototype['999999999999999']='fifteen';
-            String.prototype['1000000000000000']='sixteen';
-            String.prototype['9007199254740992']='even';
-            String.prototype['9007199254740993']='rounded-neighbor';
-            String.prototype['18446744073709551616']='overflow';
-            calls==='kk'&&a==='\uD83D'&&b==='\uD83D'&&s.length===7&&box.length===7
-              &&s[0]==='A'&&box[0]==='A'&&s[2]==='\uDE00'&&box[3]==='\uD800'
-              &&s[5]==='\uDC00'&&s[7]===undefined&&box[7]===undefined
-              &&s['01']==='leading'&&box['01']==='leading'
-              &&s['999999999999999']==='fifteen'&&box['999999999999999']==='fifteen'
-              &&s['1000000000000000']==='sixteen'&&box['1000000000000000']==='sixteen'
-              &&s['9007199254740992']==='even'&&box['9007199254740992']==='even'
-              &&s['9007199254740993']==='rounded-neighbor'&&box['9007199254740993']==='rounded-neighbor'
-              &&s['18446744073709551616']==='overflow'&&box['18446744073709551616']==='overflow'
+            let calls = '',
+                key = {
+                    toString() {
+                        calls += 'k';
+                        return '1'
+                    }
+                };
+            let s = 'A😀\uD800X\uDC00Z',
+                box = new String(s),
+                a = s[key],
+                b = box[key];
+            String.prototype['0'] = 'shadow';
+            String.prototype['01'] = 'leading';
+            String.prototype['999999999999999'] = 'fifteen';
+            String.prototype['1000000000000000'] = 'sixteen';
+            String.prototype['9007199254740992'] = 'even';
+            String.prototype['9007199254740993'] = 'rounded-neighbor';
+            String.prototype['18446744073709551616'] = 'overflow';
+            calls === 'kk' && a === '\uD83D' && b === '\uD83D' && s.length === 7 && box.length === 7 &&
+                s[0] === 'A' && box[0] === 'A' && s[2] === '\uDE00' && box[3] === '\uD800' &&
+                s[5] === '\uDC00' && s[7] === undefined && box[7] === undefined &&
+                s['01'] === 'leading' && box['01'] === 'leading' &&
+                s['999999999999999'] === 'fifteen' && box['999999999999999'] === 'fifteen' &&
+                s['1000000000000000'] === 'sixteen' && box['1000000000000000'] === 'sixteen' &&
+                s['9007199254740992'] === 'even' && box['9007199254740992'] === 'even' &&
+                s['9007199254740993'] === 'rounded-neighbor' && box['9007199254740993'] ===
+                'rounded-neighbor' &&
+                s['18446744073709551616'] === 'overflow' && box['18446744073709551616'] === 'overflow'
         "#), Ok(Value::Boolean(true)));
     }
 }

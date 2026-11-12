@@ -40,19 +40,54 @@ fn drain(realm: &mut Realm) {
 fn metadata_and_forwarding_cache_next_but_lookup_return_and_throw_live() {
     let mut realm = new_realm(
         r#"
-        let gets=0,log=[],source={get next(){gets++;return function(v){if(this!==source)throw 1;log.push('n'+arguments.length);return{value:v,done:false}}}};source
-    "#,
+            let gets=0,log=[],source={get next(){gets++;return function(v){if(this!==source)throw 1;log.push('n'+arguments.length);return{value:v,done:false}}}};source
+        "#,
     );
     realm.eval(r#"
-        let p=Object.getPrototypeOf(ai),parent=Object.getPrototypeOf(p),seen=[];
-        if(Object.getOwnPropertyNames(p).join(',')!=='next,return,throw'||Object.getPrototypeOf(parent)!==Object.prototype||ai[Symbol.asyncIterator]()!==ai)throw 2;
-        for(const name of['next','return','throw']){let d=Object.getOwnPropertyDescriptor(p,name),f=d.value;if(!d.writable||d.enumerable||!d.configurable||f.name!==name||f.length!==1||Object.hasOwn(f,'prototype'))throw 3}
-        Object.defineProperty(source,'next',{get(){throw 4}});
-        ai.next().then(r=>{seen.push(r.value===undefined&&!r.done)});ai.next(undefined,2).then(r=>{seen.push(r.value===undefined&&!r.done)});
-        source.return=function(v){if(this!==source)throw 5;log.push('r'+arguments.length);return{value:v,done:true}};
-        ai.return(7,8).then(r=>{seen.push(r.value===7&&r.done)});
-        source.throw=function(){if(this!==source)throw 6;log.push('t'+arguments.length);return{value:9,done:false}};
-        ai.throw().then(r=>{seen.push(r.value===9&&!r.done)});
+        let p = Object.getPrototypeOf(ai),
+            parent = Object.getPrototypeOf(p),
+            seen = [];
+        if (Object.getOwnPropertyNames(p).join(',') !== 'next,return,throw' || Object.getPrototypeOf(
+                parent) !== Object.prototype || ai[Symbol.asyncIterator]() !== ai) throw 2;
+        for (const name of ['next', 'return', 'throw']) {
+            let d = Object.getOwnPropertyDescriptor(p, name),
+                f = d.value;
+            if (!d.writable || d.enumerable || !d.configurable || f.name !== name || f.length !== 1 ||
+                Object.hasOwn(f, 'prototype')) throw 3
+        }
+        Object.defineProperty(source, 'next', {
+            get() {
+                throw 4
+            }
+        });
+        ai.next().then(r => {
+            seen.push(r.value === undefined && !r.done)
+        });
+        ai.next(undefined, 2).then(r => {
+            seen.push(r.value === undefined && !r.done)
+        });
+        source.return = function(v) {
+            if (this !== source) throw 5;
+            log.push('r' + arguments.length);
+            return {
+                value: v,
+                done: true
+            }
+        };
+        ai.return(7, 8).then(r => {
+            seen.push(r.value === 7 && r.done)
+        });
+        source.throw = function() {
+            if (this !== source) throw 6;
+            log.push('t' + arguments.length);
+            return {
+                value: 9,
+                done: false
+            }
+        };
+        ai.throw().then(r => {
+            seen.push(r.value === 9 && !r.done)
+        });
     "#).unwrap();
     check(
         &mut realm,
@@ -66,8 +101,8 @@ fn metadata_and_forwarding_cache_next_but_lookup_return_and_throw_live() {
 fn continuation_reads_done_then_value_even_when_done_and_awaits_value() {
     let mut realm = new_realm(
         r#"
-        let log='',release,gate=new Promise(r=>{release=r}),source={next(){return{get done(){log+='d';return true},get value(){log+='v';return gate}}}};source
-    "#,
+            let log='',release,gate=new Promise(r=>{release=r}),source={next(){return{get done(){log+='d';return true},get value(){log+='v';return gate}}}};source
+        "#,
     );
     realm
         .eval("let result;ai.next().then(r=>{result=r})")
@@ -115,7 +150,24 @@ fn rejected_values_close_only_next_or_throw_before_done_and_preserve_reason() {
 fn getter_failures_do_not_close_but_promise_resolve_failure_does() {
     for field in ["done", "value"] {
         let mut realm = new_realm(&format!(
-            "let marker={{}},closed=0,source={{next(){{return{{get {field}(){{throw marker}}}}}},return(){{closed++;return{{}}}}}};source"
+            r#"
+                let marker = {{}},
+                    closed = 0,
+                    source = {{
+                        next() {{
+                            return {{
+                                get {field}() {{
+                                    throw marker
+                                }}
+                            }}
+                        }},
+                        return () {{
+                            closed++;
+                            return {{}}
+                        }}
+                    }};
+                source
+            "#
         ));
         realm
             .eval("let ok=false;ai.next().catch(e=>{ok=e===marker})")
@@ -136,12 +188,35 @@ fn getter_failures_do_not_close_but_promise_resolve_failure_does() {
 #[test]
 fn missing_return_embeds_argument_and_missing_throw_performs_normal_close() {
     let mut realm = new_realm("let source={next(){return{done:true}}};source");
-    realm.eval("let argument=Promise.resolve(1),ok=false;ai.return(argument).then(r=>{ok=r.done&&r.value===argument})").unwrap();
+    realm
+        .eval(
+            r#"
+                let argument = Promise.resolve(1),
+                    ok = false;
+                ai.return(argument).then(r => {
+                    ok = r.done && r.value === argument
+                })
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     check(&mut realm, "ok");
     for throws in [false, true] {
         let mut realm = new_realm(&format!(
-            "let marker={{}},closed=0,source={{next(){{return{{}}}},return(){{closed++;{} }}}};source",
+            r#"
+                let marker = {{}},
+                    closed = 0,
+                    source = {{
+                        next() {{
+                            return {{}}
+                        }},
+                        return () {{
+                            closed++;
+                            {}
+                        }}
+                    }};
+                source
+            "#,
             if throws { "throw marker" } else { "return{}" }
         ));
         realm
@@ -162,7 +237,19 @@ fn missing_return_embeds_argument_and_missing_throw_performs_normal_close() {
 #[test]
 fn invalid_results_and_receivers_reject_while_host_failures_bypass_handlers() {
     let mut realm = new_realm("let source={next(){return 7}};source");
-    realm.eval("let errors=0;ai.next().catch(e=>{if(e instanceof TypeError)errors++});ai.next.call({}).catch(e=>{if(e instanceof TypeError)errors++})").unwrap();
+    realm
+        .eval(
+            r#"
+                let errors = 0;
+                ai.next().catch(e => {
+                    if (e instanceof TypeError) errors++
+                });
+                ai.next.call({}).catch(e => {
+                    if (e instanceof TypeError) errors++
+                })
+            "#,
+        )
+        .unwrap();
     drain(&mut realm);
     check(&mut realm, "errors===2");
     let mut realm = new_realm("let source={next(){return spiteUnavailableHost()}};source");

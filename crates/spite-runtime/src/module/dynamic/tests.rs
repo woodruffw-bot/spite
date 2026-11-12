@@ -119,12 +119,56 @@ fn operand_conversion_and_attribute_getters_finish_before_type_validation_or_hos
         [JsString::from("a"), JsString::from("z")],
     );
     realm.enable_module_imports();
-    let imported = realm.eval("let log='';import({toString(){log+='s';return'x'}},{get with(){log+='w';return{get z(){log+='z';return'last'},get a(){log+='a';return'first'}}}})").unwrap();
+    let imported = realm
+        .eval(
+            r#"
+                let log = '';
+                import({
+                    toString() {
+                        log += 's';
+                        return 'x'
+                    }
+                }, {
+                    get with() {
+                        log += 'w';
+                        return {
+                            get z() {
+                                log += 'z';
+                                return 'last'
+                            },
+                            get a() {
+                                log += 'a';
+                                return 'first'
+                            }
+                        }
+                    }
+                })
+            "#,
+        )
+        .unwrap();
     pending(&realm, &imported);
     check(&mut realm, "log==='swza'");
     let request = realm.take_module_import_request().unwrap();
     assert_eq!(request.request().attributes[0].key, JsString::from("a"));
-    let imported = realm.eval("log='';import('bad',{with:{get a(){log+='a';return 7},get b(){log+='b';return'good'}}})").unwrap();
+    let imported = realm
+        .eval(
+            r#"
+                log = '';
+                import('bad', {
+                    with: {
+                        get a() {
+                            log += 'a';
+                            return 7
+                        },
+                        get b() {
+                            log += 'b';
+                            return 'good'
+                        }
+                    }
+                })
+            "#,
+        )
+        .unwrap();
     let PromiseState::Rejected(reason) = state(&realm, &imported) else {
         panic!("type rejection")
     };
@@ -141,17 +185,17 @@ fn module_referrers_survive_foreign_callers_dynamic_functions_eval_fields_and_su
     let module = realm
         .create_module(
             r#"
-        export function own(){return import('x')}
-        export const arrow=()=>import('x');
-        export const method={m(){return import('x')}};
-        export const constructed=Function("return import('x')");
-        export const indirect=(0,eval)("(function(){return import('x')})");
-        export function* g(){yield import('x')}
-        export async function af(){await 0;return import('x')}
-        export async function* ag(){yield import('x')}
-        export function fails(){throw 1}
-        export class C{x=import('x')}
-    "#,
+                export function own(){return import('x')}
+                export const arrow=()=>import('x');
+                export const method={m(){return import('x')}};
+                export const constructed=Function("return import('x')");
+                export const indirect=(0,eval)("(function(){return import('x')})");
+                export function* g(){yield import('x')}
+                export async function af(){await 0;return import('x')}
+                export async function* ag(){yield import('x')}
+                export function fails(){throw 1}
+                export class C{x=import('x')}
+            "#,
         )
         .unwrap();
     realm.evaluate_module_record(&module).unwrap();
@@ -249,7 +293,19 @@ fn global_environment_dynamic_functions_retain_their_defining_module_and_release
 fn host_rejection_preserves_the_original_reason_and_delivers_handlers_as_jobs() {
     let mut realm = Realm::default();
     realm.enable_module_imports();
-    let imported = realm.eval("let token=Symbol(),caught=false;let p=import('missing');p.catch(e=>{caught=e===token});p").unwrap();
+    let imported = realm
+        .eval(
+            r#"
+                let token = Symbol(),
+                    caught = false;
+                let p = import('missing');
+                p.catch(e => {
+                    caught = e === token
+                });
+                p
+            "#,
+        )
+        .unwrap();
     let token = realm.eval("token").unwrap();
     let request = realm.take_module_import_request().unwrap();
     realm

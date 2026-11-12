@@ -160,7 +160,25 @@ fn linking_errors_reject_and_cached_body_rejections_keep_the_original_reason() {
 #[test]
 fn namespace_delivery_ignores_public_promise_constructor_and_then_getters() {
     let mut realm = Realm::default();
-    realm.eval("let reads=0;Object.defineProperty(Promise.prototype,'constructor',{get(){reads++;throw 1}});Object.defineProperty(Promise.prototype,'then',{get(){reads++;throw 2}})").unwrap();
+    realm
+        .eval(
+            r#"
+                let reads = 0;
+                Object.defineProperty(Promise.prototype, 'constructor', {
+                    get() {
+                        reads++;
+                        throw 1
+                    }
+                });
+                Object.defineProperty(Promise.prototype, 'then', {
+                    get() {
+                        reads++;
+                        throw 2
+                    }
+                })
+            "#,
+        )
+        .unwrap();
     let module = realm.create_module("export let x=1").unwrap();
     let imported = realm.import_module_record(&module).unwrap();
     next(&mut realm);

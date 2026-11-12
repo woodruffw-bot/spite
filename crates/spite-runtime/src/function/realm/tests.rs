@@ -39,13 +39,13 @@ fn inspectable_host_absence_follows_the_global_owner_without_enabling_missing_re
     assert_eq!(
         realm.eval(
             r#"
-        const targets=[globalThis,child,new Proxy(globalThis,{}),new Proxy(child,{})];
-        targets.every(target=>!Object.hasOwn(target,'optionalHost') &&
-            !Object.prototype.hasOwnProperty.call(target,'optionalHost') &&
-            !Object.prototype.propertyIsEnumerable.call(target,'optionalHost') &&
-            Object.getOwnPropertyDescriptor(target,'optionalHost')===undefined &&
-            Reflect.getOwnPropertyDescriptor(target,'optionalHost')===undefined)
-    "#
+                const targets = [globalThis, child, new Proxy(globalThis, {}), new Proxy(child, {})];
+                targets.every(target => !Object.hasOwn(target, 'optionalHost') &&
+                    !Object.prototype.hasOwnProperty.call(target, 'optionalHost') &&
+                    !Object.prototype.propertyIsEnumerable.call(target, 'optionalHost') &&
+                    Object.getOwnPropertyDescriptor(target, 'optionalHost') === undefined &&
+                    Reflect.getOwnPropertyDescriptor(target, 'optionalHost') === undefined)
+            "#
         ),
         Ok(Value::Boolean(true))
     );
@@ -178,18 +178,24 @@ fn foreign_calls_use_creation_intrinsics_and_restore_the_caller() {
     expose_child(&mut realm, &environment, function);
     assert_eq!(
         realm.eval(
-            r#"var mark=42;let compiled=child.Function('return mark');let result=foreign();
-            let inspector=child.Object.getOwnPropertyDescriptor;
-            Object.setPrototypeOf(inspector,null);
-            let descriptor=Reflect.apply(inspector,null,[{x:1},'x']);
-            Object.getPrototypeOf(result)===child.Object.prototype &&
-            Object.getPrototypeOf(result.array)===child.Array.prototype &&
-            Object.getPrototypeOf(result.boxed)===child.Number.prototype &&
-            result.global===child &&
-            Object.getPrototypeOf(child.receiver.call('x'))===child.String.prototype &&
-            Object.getPrototypeOf(descriptor)===child.Object.prototype &&
-            compiled()===7 && Object.getPrototypeOf(compiled)===child.Function.prototype &&
-            Object.getPrototypeOf([])===Array.prototype"#,
+            r#"
+                var mark = 42;
+                let compiled = child.Function('return mark');
+                let result = foreign();
+                let inspector = child.Object.getOwnPropertyDescriptor;
+                Object.setPrototypeOf(inspector, null);
+                let descriptor = Reflect.apply(inspector, null, [{
+                    x: 1
+                }, 'x']);
+                Object.getPrototypeOf(result) === child.Object.prototype &&
+                    Object.getPrototypeOf(result.array) === child.Array.prototype &&
+                    Object.getPrototypeOf(result.boxed) === child.Number.prototype &&
+                    result.global === child &&
+                    Object.getPrototypeOf(child.receiver.call('x')) === child.String.prototype &&
+                    Object.getPrototypeOf(descriptor) === child.Object.prototype &&
+                    compiled() === 7 && Object.getPrototypeOf(compiled) === child.Function.prototype &&
+                    Object.getPrototypeOf([]) === Array.prototype
+            "#,
         ),
         Ok(Value::Boolean(true))
     );
@@ -305,16 +311,25 @@ fn proxy_bound_calls_and_template_caches_preserve_their_realms() {
     expose_child(&mut realm, &environment, function);
     assert_eq!(
         realm.eval(
-            r#"function tag(t){return t;}let own=tag`site`;
-            let first=foreign(),second=foreign();
-            let wrapped=new Proxy(foreign,{apply(target,receiver,args){
-                return Object.getPrototypeOf(args)===Array.prototype &&
-                    Object.getPrototypeOf(target())===child.Array.prototype;
-            }});
-            let bound=foreign.bind(null);Object.setPrototypeOf(bound,null);
-            wrapped(1,2) && bound()===first && first===second && first!==own &&
-            Object.getPrototypeOf(first)===child.Array.prototype &&
-            Object.getPrototypeOf(own)===Array.prototype"#,
+            r#"
+                function tag(t) {
+                    return t;
+                }
+                let own = tag`site`;
+                let first = foreign(),
+                    second = foreign();
+                let wrapped = new Proxy(foreign, {
+                    apply(target, receiver, args) {
+                        return Object.getPrototypeOf(args) === Array.prototype &&
+                            Object.getPrototypeOf(target()) === child.Array.prototype;
+                    }
+                });
+                let bound = foreign.bind(null);
+                Object.setPrototypeOf(bound, null);
+                wrapped(1, 2) && bound() === first && first === second && first !== own &&
+                    Object.getPrototypeOf(first) === child.Array.prototype &&
+                    Object.getPrototypeOf(own) === Array.prototype
+            "#,
         ),
         Ok(Value::Boolean(true))
     );
@@ -333,71 +348,99 @@ fn constructor_fallbacks_use_new_target_intrinsics_without_changing_creation_rea
     expose_child(&mut realm, &environment, function);
     assert_eq!(
         realm.eval(
-            r#"foreign.prototype=0;
-            let rows=[
-                [Object,[],child.Object.prototype],
-                [Function,['return 1'],child.Function.prototype],
-                [(async function(){}).constructor,['return 1'],child.asyncCtor.prototype],
-                [(function*(){}).constructor,['return 1'],child.genCtor.prototype],
-                [(async function*(){}).constructor,['return 1'],child.asyncGenCtor.prototype],
-                [Boolean,[1],child.Boolean.prototype],
-                [Number,[7],child.Number.prototype],
-                [String,['x'],child.String.prototype],
-                [Date,[0],child.Date.prototype],
-                [RegExp,['x'],child.RegExp.prototype],
-                [Array,[2],child.Array.prototype],
-                [ArrayBuffer,[4],child.ArrayBuffer.prototype],
-                [SharedArrayBuffer,[4],child.SharedArrayBuffer.prototype],
-                [DataView,[new ArrayBuffer(4)],child.DataView.prototype],
-                [Int8Array,[2],child.Int8Array.prototype],
-                [Uint8Array,[2],child.Uint8Array.prototype],
-                [Uint8ClampedArray,[2],child.Uint8ClampedArray.prototype],
-                [Int16Array,[2],child.Int16Array.prototype],
-                [Uint16Array,[2],child.Uint16Array.prototype],
-                [Int32Array,[2],child.Int32Array.prototype],
-                [Uint32Array,[2],child.Uint32Array.prototype],
-                [BigInt64Array,[2],child.BigInt64Array.prototype],
-                [BigUint64Array,[2],child.BigUint64Array.prototype],
-                [Float16Array,[2],child.Float16Array.prototype],
-                [Float32Array,[2],child.Float32Array.prototype],
-                [Float64Array,[2],child.Float64Array.prototype],
-                [Map,[],child.Map.prototype],[Set,[],child.Set.prototype],
-                [WeakMap,[],child.WeakMap.prototype],[WeakSet,[],child.WeakSet.prototype],
-                [WeakRef,[{}],child.WeakRef.prototype],
-                [FinalizationRegistry,[()=>{}],child.FinalizationRegistry.prototype],
-                [Error,['x'],child.Error.prototype],[EvalError,['x'],child.EvalError.prototype],
-                [RangeError,['x'],child.RangeError.prototype],
-                [ReferenceError,['x'],child.ReferenceError.prototype],
-                [SyntaxError,['x'],child.SyntaxError.prototype],
-                [TypeError,['x'],child.TypeError.prototype],[URIError,['x'],child.URIError.prototype],
-                [AggregateError,[[]],child.AggregateError.prototype],
-                [SuppressedError,[1,2,'x'],child.SuppressedError.prototype],
-                [Promise,[()=>{}],child.Promise.prototype],
-                [Iterator,[],child.Iterator.prototype],
-                [DisposableStack,[],child.DisposableStack.prototype],
-                [AsyncDisposableStack,[],child.AsyncDisposableStack.prototype]
-            ];let failures=[];
-            for(let [ctor,args,expected] of rows){
-                let result=Reflect.construct(ctor,args,foreign);
-                if(Object.getPrototypeOf(result)!==expected)failures.push(ctor.name);
-            }
-            function C(){this.createdIn=globalThis;}
-            let ordinary=Reflect.construct(C,[],foreign);
-            if(Object.getPrototypeOf(ordinary)!==child.Object.prototype||ordinary.createdIn!==globalThis)failures.push('ordinary');
-            let compiled=Reflect.construct(Function,['return globalThis'],foreign);
-            if(compiled()!==globalThis)failures.push('function-creation-realm');
-            let view=Reflect.construct(Uint8Array,[2],foreign);
-            if(Object.getPrototypeOf(view.buffer)!==ArrayBuffer.prototype)failures.push('buffer-allocation-realm');
-            let aggregate=Reflect.construct(AggregateError,[[]],foreign);
-            if(Object.getPrototypeOf(aggregate.errors)!==Array.prototype)failures.push('errors-allocation-realm');
-            let resolving=false;
-            Reflect.construct(Promise,[resolve=>{resolving=Object.getPrototypeOf(resolve)===Function.prototype;resolve(7);}],foreign);
-            if(!resolving)failures.push('promise-executor-realm');
-            let generator=Reflect.construct((function*(){}).constructor,['yield 1'],foreign);generator.prototype=0;
-            if(Object.getPrototypeOf(generator())!==Object.getPrototypeOf((function*(){}).prototype))failures.push('generator-creation-realm');
-            let asyncGenerator=Reflect.construct((async function*(){}).constructor,['yield 1'],foreign);asyncGenerator.prototype=0;
-            if(Object.getPrototypeOf(asyncGenerator())!==Object.getPrototypeOf((async function*(){}).prototype))failures.push('async-generator-creation-realm');
-            JSON.stringify({checked:rows.length,failures})"#,
+            r#"
+                foreign.prototype = 0;
+                let rows = [
+                    [Object, [], child.Object.prototype],
+                    [Function, ['return 1'], child.Function.prototype],
+                    [(async function() {}).constructor, ['return 1'], child.asyncCtor.prototype],
+                    [(function*() {}).constructor, ['return 1'], child.genCtor.prototype],
+                    [(async function*() {}).constructor, ['return 1'], child.asyncGenCtor.prototype],
+                    [Boolean, [1], child.Boolean.prototype],
+                    [Number, [7], child.Number.prototype],
+                    [String, ['x'], child.String.prototype],
+                    [Date, [0], child.Date.prototype],
+                    [RegExp, ['x'], child.RegExp.prototype],
+                    [Array, [2], child.Array.prototype],
+                    [ArrayBuffer, [4], child.ArrayBuffer.prototype],
+                    [SharedArrayBuffer, [4], child.SharedArrayBuffer.prototype],
+                    [DataView, [new ArrayBuffer(4)], child.DataView.prototype],
+                    [Int8Array, [2], child.Int8Array.prototype],
+                    [Uint8Array, [2], child.Uint8Array.prototype],
+                    [Uint8ClampedArray, [2], child.Uint8ClampedArray.prototype],
+                    [Int16Array, [2], child.Int16Array.prototype],
+                    [Uint16Array, [2], child.Uint16Array.prototype],
+                    [Int32Array, [2], child.Int32Array.prototype],
+                    [Uint32Array, [2], child.Uint32Array.prototype],
+                    [BigInt64Array, [2], child.BigInt64Array.prototype],
+                    [BigUint64Array, [2], child.BigUint64Array.prototype],
+                    [Float16Array, [2], child.Float16Array.prototype],
+                    [Float32Array, [2], child.Float32Array.prototype],
+                    [Float64Array, [2], child.Float64Array.prototype],
+                    [Map, [], child.Map.prototype],
+                    [Set, [], child.Set.prototype],
+                    [WeakMap, [], child.WeakMap.prototype],
+                    [WeakSet, [], child.WeakSet.prototype],
+                    [WeakRef, [{}], child.WeakRef.prototype],
+                    [FinalizationRegistry, [() => {}], child.FinalizationRegistry.prototype],
+                    [Error, ['x'], child.Error.prototype],
+                    [EvalError, ['x'], child.EvalError.prototype],
+                    [RangeError, ['x'], child.RangeError.prototype],
+                    [ReferenceError, ['x'], child.ReferenceError.prototype],
+                    [SyntaxError, ['x'], child.SyntaxError.prototype],
+                    [TypeError, ['x'], child.TypeError.prototype],
+                    [URIError, ['x'], child.URIError.prototype],
+                    [AggregateError, [
+                        []
+                    ], child.AggregateError.prototype],
+                    [SuppressedError, [1, 2, 'x'], child.SuppressedError.prototype],
+                    [Promise, [() => {}], child.Promise.prototype],
+                    [Iterator, [], child.Iterator.prototype],
+                    [DisposableStack, [], child.DisposableStack.prototype],
+                    [AsyncDisposableStack, [], child.AsyncDisposableStack.prototype]
+                ];
+                let failures = [];
+                for (let [ctor, args, expected] of rows) {
+                    let result = Reflect.construct(ctor, args, foreign);
+                    if (Object.getPrototypeOf(result) !== expected) failures.push(ctor.name);
+                }
+
+                function C() {
+                    this.createdIn = globalThis;
+                }
+                let ordinary = Reflect.construct(C, [], foreign);
+                if (Object.getPrototypeOf(ordinary) !== child.Object.prototype || ordinary.createdIn !==
+                    globalThis) failures.push('ordinary');
+                let compiled = Reflect.construct(Function, ['return globalThis'], foreign);
+                if (compiled() !== globalThis) failures.push('function-creation-realm');
+                let view = Reflect.construct(Uint8Array, [2], foreign);
+                if (Object.getPrototypeOf(view.buffer) !== ArrayBuffer.prototype) failures.push(
+                    'buffer-allocation-realm');
+                let aggregate = Reflect.construct(AggregateError, [
+                    []
+                ], foreign);
+                if (Object.getPrototypeOf(aggregate.errors) !== Array.prototype) failures.push(
+                    'errors-allocation-realm');
+                let resolving = false;
+                Reflect.construct(Promise, [resolve => {
+                    resolving = Object.getPrototypeOf(resolve) === Function.prototype;
+                    resolve(7);
+                }], foreign);
+                if (!resolving) failures.push('promise-executor-realm');
+                let generator = Reflect.construct((function*() {}).constructor, ['yield 1'], foreign);
+                generator.prototype = 0;
+                if (Object.getPrototypeOf(generator()) !== Object.getPrototypeOf((function*() {}).prototype))
+                    failures.push('generator-creation-realm');
+                let asyncGenerator = Reflect.construct((async function*() {}).constructor, ['yield 1'],
+                    foreign);
+                asyncGenerator.prototype = 0;
+                if (Object.getPrototypeOf(asyncGenerator()) !== Object.getPrototypeOf((async function*() {})
+                        .prototype)) failures.push('async-generator-creation-realm');
+                JSON.stringify({
+                    checked: rows.length,
+                    failures
+                })
+            "#,
         ),
         Ok(Value::String("{\"checked\":45,\"failures\":[]}".into()))
     );
@@ -410,25 +453,70 @@ fn fallback_realm_queries_follow_targets_after_the_single_prototype_get() {
     expose_child(&mut realm, &environment, function);
     assert_eq!(
         realm.eval(
-            r#"foreign.prototype=0;Object.setPrototypeOf(foreign,null);
-            let bound=Function.prototype.bind.call(foreign,null);
-            let symbol=Function.prototype.bind.call(child.Symbol,null);
-            let bigint=Function.prototype.bind.call(child.BigInt,null);
-            let reads=0,proxy=new Proxy(foreign,{get(t,k){if(k==='prototype'){reads++;return 0;}throw 7;}});
-            let a=Reflect.construct(Number,[8],bound),b=Reflect.construct(Object,[],proxy);
-            let symbols=Reflect.construct(Number,[9],symbol),bigints=Reflect.construct(Boolean,[1],bigint);
-            let before=reads,coercion=false;
-            try{Reflect.construct(Number,[Symbol()],proxy)}catch(e){coercion=e instanceof TypeError && reads===before;}
-            let effects=0,pair=Proxy.revocable(foreign,{get(t,k){if(k==='prototype'){pair.revoke();return 0;}throw 7;}});
-            function C(){effects++;}let revoked=false;
-            try{Reflect.construct(C,[],pair.proxy)}catch(e){revoked=e instanceof TypeError && effects===0;}
-            let chosen={},other=Proxy.revocable(foreign,{get(t,k){if(k==='prototype'){other.revoke();return chosen;}throw 7;}});
-            let explicit=Reflect.construct(C,[],other.proxy);
-            Object.getPrototypeOf(a)===child.Number.prototype &&
-            Object.getPrototypeOf(b)===child.Object.prototype && reads===1 &&
-            Object.getPrototypeOf(symbols)===child.Number.prototype &&
-            Object.getPrototypeOf(bigints)===child.Boolean.prototype &&
-            coercion && revoked && effects===1 && Object.getPrototypeOf(explicit)===chosen"#,
+            r#"
+                foreign.prototype = 0;
+                Object.setPrototypeOf(foreign, null);
+                let bound = Function.prototype.bind.call(foreign, null);
+                let symbol = Function.prototype.bind.call(child.Symbol, null);
+                let bigint = Function.prototype.bind.call(child.BigInt, null);
+                let reads = 0,
+                    proxy = new Proxy(foreign, {
+                        get(t, k) {
+                            if (k === 'prototype') {
+                                reads++;
+                                return 0;
+                            }
+                            throw 7;
+                        }
+                    });
+                let a = Reflect.construct(Number, [8], bound),
+                    b = Reflect.construct(Object, [], proxy);
+                let symbols = Reflect.construct(Number, [9], symbol),
+                    bigints = Reflect.construct(Boolean, [1], bigint);
+                let before = reads,
+                    coercion = false;
+                try {
+                    Reflect.construct(Number, [Symbol()], proxy)
+                } catch (e) {
+                    coercion = e instanceof TypeError && reads === before;
+                }
+                let effects = 0,
+                    pair = Proxy.revocable(foreign, {
+                        get(t, k) {
+                            if (k === 'prototype') {
+                                pair.revoke();
+                                return 0;
+                            }
+                            throw 7;
+                        }
+                    });
+
+                function C() {
+                    effects++;
+                }
+                let revoked = false;
+                try {
+                    Reflect.construct(C, [], pair.proxy)
+                } catch (e) {
+                    revoked = e instanceof TypeError && effects === 0;
+                }
+                let chosen = {},
+                    other = Proxy.revocable(foreign, {
+                        get(t, k) {
+                            if (k === 'prototype') {
+                                other.revoke();
+                                return chosen;
+                            }
+                            throw 7;
+                        }
+                    });
+                let explicit = Reflect.construct(C, [], other.proxy);
+                Object.getPrototypeOf(a) === child.Number.prototype &&
+                    Object.getPrototypeOf(b) === child.Object.prototype && reads === 1 &&
+                    Object.getPrototypeOf(symbols) === child.Number.prototype &&
+                    Object.getPrototypeOf(bigints) === child.Boolean.prototype &&
+                    coercion && revoked && effects === 1 && Object.getPrototypeOf(explicit) === chosen
+            "#,
         ),
         Ok(Value::Boolean(true))
     );
@@ -442,24 +530,60 @@ fn array_species_normalizes_only_the_other_realms_exact_intrinsic_array() {
     expose_child(&mut realm, &environment, function);
     assert_eq!(
         realm.eval(
-            r#"let original=child.Array,reads=0;
-            Object.defineProperty(original,Symbol.species,{get(){reads++;throw 42;}});
-            child.Array=function replacement(){};
-            let mapped=Array.prototype.map.call(child.array,x=>x+1);
-            let normalized=Object.getPrototypeOf(mapped)===Array.prototype && mapped.join(',')==='2,3' && reads===0;
-            let backwards=original.prototype.map.call([3,4],x=>x*2);
-            let reverse=Object.getPrototypeOf(backwards)===original.prototype && backwards.join(',')==='6,8' && reads===0;
-            child.array.constructor=new Proxy(original,{});let proxy=false;
-            try{Array.prototype.map.call(child.array,x=>x)}catch(e){proxy=e===42 && reads===1;}
-            let bound=Function.prototype.bind.call(original,null),used=0;
-            function C(n){used++;this.length=n;}
-            Object.defineProperty(bound,Symbol.species,{get(){reads++;return C;}});
-            child.array.constructor=bound;
-            let custom=Array.prototype.map.call(child.array,x=>x);
-            let boundUsed=Object.getPrototypeOf(custom)===C.prototype && reads===2 && used===1;
-            let pair=Proxy.revocable(original,{get(){throw 99;}});pair.revoke();child.array.constructor=pair.proxy;
-            let revoked=false;try{Array.prototype.map.call(child.array,x=>x)}catch(e){revoked=e instanceof TypeError && reads===2;}
-            normalized && reverse && proxy && boundUsed && revoked"#,
+            r#"
+                let original = child.Array,
+                    reads = 0;
+                Object.defineProperty(original, Symbol.species, {
+                    get() {
+                        reads++;
+                        throw 42;
+                    }
+                });
+                child.Array = function replacement() {};
+                let mapped = Array.prototype.map.call(child.array, x => x + 1);
+                let normalized = Object.getPrototypeOf(mapped) === Array.prototype && mapped.join(',') ===
+                    '2,3' && reads === 0;
+                let backwards = original.prototype.map.call([3, 4], x => x * 2);
+                let reverse = Object.getPrototypeOf(backwards) === original.prototype && backwards.join(
+                    ',') === '6,8' && reads === 0;
+                child.array.constructor = new Proxy(original, {});
+                let proxy = false;
+                try {
+                    Array.prototype.map.call(child.array, x => x)
+                } catch (e) {
+                    proxy = e === 42 && reads === 1;
+                }
+                let bound = Function.prototype.bind.call(original, null),
+                    used = 0;
+
+                function C(n) {
+                    used++;
+                    this.length = n;
+                }
+                Object.defineProperty(bound, Symbol.species, {
+                    get() {
+                        reads++;
+                        return C;
+                    }
+                });
+                child.array.constructor = bound;
+                let custom = Array.prototype.map.call(child.array, x => x);
+                let boundUsed = Object.getPrototypeOf(custom) === C.prototype && reads === 2 && used === 1;
+                let pair = Proxy.revocable(original, {
+                    get() {
+                        throw 99;
+                    }
+                });
+                pair.revoke();
+                child.array.constructor = pair.proxy;
+                let revoked = false;
+                try {
+                    Array.prototype.map.call(child.array, x => x)
+                } catch (e) {
+                    revoked = e instanceof TypeError && reads === 2;
+                }
+                normalized && reverse && proxy && boundUsed && revoked
+            "#,
         ),
         Ok(Value::Boolean(true))
     );
@@ -504,31 +628,64 @@ fn builtin_construction_uses_its_creation_realm_for_native_errors() {
     expose_child(&mut realm, &environment, function);
     assert_eq!(
         realm.eval(
-            r#"let failures=[];
-            for(let make of [()=>new child.Symbol(),()=>new child.BigInt(),
-                ()=>new child.Number(Symbol()),()=>new child.String(Symbol()),
-                ()=>new child.WeakMap(1),()=>new child.Promise(1),()=>new child.Iterator()]){
-                try{make();failures.push('missing-type-error')}catch(e){
-                    if(!(e instanceof child.TypeError)||e instanceof TypeError)failures.push('type-error-realm');
+            r#"
+                let failures = [];
+                for (let make of [() => new child.Symbol(), () => new child.BigInt(),
+                        () => new child.Number(Symbol()), () => new child.String(Symbol()),
+                        () => new child.WeakMap(1), () => new child.Promise(1), () => new child.Iterator()
+                    ]) {
+                    try {
+                        make();
+                        failures.push('missing-type-error')
+                    } catch (e) {
+                        if (!(e instanceof child.TypeError) || e instanceof TypeError) failures.push(
+                            'type-error-realm');
+                    }
                 }
-            }
-            for(let make of [()=>new child.Array(-1),()=>new child.ArrayBuffer(-1),
-                ()=>new child.SharedArrayBuffer(-1),()=>new child.Int8Array(-1),
-                ()=>new child.DataView(new ArrayBuffer(1),2)]){
-                try{make();failures.push('missing-range-error')}catch(e){
-                    if(!(e instanceof child.RangeError)||e instanceof RangeError)failures.push('range-error-realm');
+                for (let make of [() => new child.Array(-1), () => new child.ArrayBuffer(-1),
+                        () => new child.SharedArrayBuffer(-1), () => new child.Int8Array(-1),
+                        () => new child.DataView(new ArrayBuffer(1), 2)
+                    ]) {
+                    try {
+                        make();
+                        failures.push('missing-range-error')
+                    } catch (e) {
+                        if (!(e instanceof child.RangeError) || e instanceof RangeError) failures.push(
+                            'range-error-realm');
+                    }
                 }
-            }
-            let callback=false;
-            try{new child.Number({[Symbol.toPrimitive](){return null.x;}})}catch(e){
-                callback=e instanceof TypeError && !(e instanceof child.TypeError);
-            }
-            if(!callback)failures.push('callback-error-realm');
-            let reads=0,coercions=0,proxy=new Proxy(foreign,{get(){reads++;throw 7;}});
-            try{Reflect.construct(child.Symbol,[{[Symbol.toPrimitive](){coercions++;return 1;}}],proxy)}catch(e){
-                if(!(e instanceof child.TypeError)||reads!==0||coercions!==0)failures.push('symbol-order');
-            }
-            JSON.stringify(failures)"#,
+                let callback = false;
+                try {
+                    new child.Number({
+                        [Symbol.toPrimitive]() {
+                            return null.x;
+                        }
+                    })
+                } catch (e) {
+                    callback = e instanceof TypeError && !(e instanceof child.TypeError);
+                }
+                if (!callback) failures.push('callback-error-realm');
+                let reads = 0,
+                    coercions = 0,
+                    proxy = new Proxy(foreign, {
+                        get() {
+                            reads++;
+                            throw 7;
+                        }
+                    });
+                try {
+                    Reflect.construct(child.Symbol, [{
+                        [Symbol.toPrimitive]() {
+                            coercions++;
+                            return 1;
+                        }
+                    }], proxy)
+                } catch (e) {
+                    if (!(e instanceof child.TypeError) || reads !== 0 || coercions !== 0) failures.push(
+                        'symbol-order');
+                }
+                JSON.stringify(failures)
+            "#,
         ),
         Ok(Value::String("[]".into()))
     );
@@ -556,30 +713,60 @@ fn builtin_creation_realm_and_new_target_realm_remain_independent() {
     expose(&mut realm, "thirdTarget", third_target);
     assert_eq!(
         realm.eval(
-            r#"var mark=42;thirdTarget.prototype=0;
-            let compiled=new child.Function('return mark');
-            let mixed=Reflect.construct(child.Function,['return globalThis'],thirdTarget);
-            let view=Reflect.construct(child.Uint8Array,[2],thirdTarget);
-            let aggregate=Reflect.construct(child.AggregateError,[[]],thirdTarget);
-            let resolving=false,promise=Reflect.construct(child.Promise,[resolve=>{
-                resolving=Object.getPrototypeOf(resolve)===child.Function.prototype;resolve(7);
-            }],thirdTarget);
-            let pair=Proxy.revocable(thirdTarget,{get(t,k){if(k==='prototype'){pair.revoke();return 0;}throw 7;}});
-            let builtinError=false;try{Reflect.construct(child.Object,[],pair.proxy)}catch(e){
-                builtinError=e instanceof child.TypeError && !(e instanceof TypeError);
-            }
-            let source=Proxy.revocable(thirdTarget,{get(t,k){if(k==='prototype'){source.revoke();return 0;}throw 7;}});
-            let sourceError=false;try{Reflect.construct(foreign,[],source.proxy)}catch(e){
-                sourceError=e instanceof TypeError && !(e instanceof child.TypeError);
-            }
-            compiled()===7 && mixed()===child &&
-            Object.getPrototypeOf(mixed)===third.Function.prototype &&
-            Object.getPrototypeOf(view)===third.Uint8Array.prototype &&
-            Object.getPrototypeOf(view.buffer)===child.ArrayBuffer.prototype &&
-            Object.getPrototypeOf(aggregate)===third.AggregateError.prototype &&
-            Object.getPrototypeOf(aggregate.errors)===child.Array.prototype &&
-            Object.getPrototypeOf(promise)===third.Promise.prototype && resolving && builtinError && sourceError &&
-            Object.getPrototypeOf([])===Array.prototype"#,
+            r#"
+                var mark = 42;
+                thirdTarget.prototype = 0;
+                let compiled = new child.Function('return mark');
+                let mixed = Reflect.construct(child.Function, ['return globalThis'], thirdTarget);
+                let view = Reflect.construct(child.Uint8Array, [2], thirdTarget);
+                let aggregate = Reflect.construct(child.AggregateError, [
+                    []
+                ], thirdTarget);
+                let resolving = false,
+                    promise = Reflect.construct(child.Promise, [resolve => {
+                        resolving = Object.getPrototypeOf(resolve) === child.Function.prototype;
+                        resolve(7);
+                    }], thirdTarget);
+                let pair = Proxy.revocable(thirdTarget, {
+                    get(t, k) {
+                        if (k === 'prototype') {
+                            pair.revoke();
+                            return 0;
+                        }
+                        throw 7;
+                    }
+                });
+                let builtinError = false;
+                try {
+                    Reflect.construct(child.Object, [], pair.proxy)
+                } catch (e) {
+                    builtinError = e instanceof child.TypeError && !(e instanceof TypeError);
+                }
+                let source = Proxy.revocable(thirdTarget, {
+                    get(t, k) {
+                        if (k === 'prototype') {
+                            source.revoke();
+                            return 0;
+                        }
+                        throw 7;
+                    }
+                });
+                let sourceError = false;
+                try {
+                    Reflect.construct(foreign, [], source.proxy)
+                } catch (e) {
+                    sourceError = e instanceof TypeError && !(e instanceof child.TypeError);
+                }
+                compiled() === 7 && mixed() === child &&
+                    Object.getPrototypeOf(mixed) === third.Function.prototype &&
+                    Object.getPrototypeOf(view) === third.Uint8Array.prototype &&
+                    Object.getPrototypeOf(view.buffer) === child.ArrayBuffer.prototype &&
+                    Object.getPrototypeOf(aggregate) === third.AggregateError.prototype &&
+                    Object.getPrototypeOf(aggregate.errors) === child.Array.prototype &&
+                    Object.getPrototypeOf(promise) === third.Promise.prototype && resolving && builtinError &&
+                    sourceError &&
+                    Object.getPrototypeOf([]) === Array.prototype
+            "#,
         ),
         Ok(Value::Boolean(true))
     );
@@ -591,14 +778,36 @@ fn recursive_foreign_builtin_construction_keeps_the_two_mebibyte_guard() {
         .stack_size(2 * 1024 * 1024)
         .spawn(|| {
             let mut realm = Realm::default();
-            let (environment, function) = child_realm_fixture(&mut realm, "function Foreign(){}Foreign");
+            let (environment, function) =
+                child_realm_fixture(&mut realm, "function Foreign(){}Foreign");
             expose_child(&mut realm, &environment, function);
             let parent = realm.record.global_environment.clone().unwrap();
             assert!(matches!(
-                realm.eval("let effects=0,calls=0,value={[Symbol.toPrimitive](){calls++;return new child.Number(value).valueOf();}};try{new child.Number(value)}catch(e){effects=1}finally{effects=2}"),
+                realm.eval(
+                    r#"
+                        let effects = 0,
+                            calls = 0,
+                            value = {
+                                [Symbol.toPrimitive]() {
+                                    calls++;
+                                    return new child.Number(value).valueOf();
+                                }
+                            };
+                        try {
+                            new child.Number(value)
+                        } catch (e) {
+                            effects = 1
+                        } finally {
+                            effects = 2
+                        }
+                    "#
+                ),
                 Err(Error::Limit { .. })
             ));
-            assert_eq!(realm.eval("effects===0 && calls>0"), Ok(Value::Boolean(true)));
+            assert_eq!(
+                realm.eval("effects===0 && calls>0"),
+                Ok(Value::Boolean(true))
+            );
             assert_eq!(realm.record.global_environment.as_ref(), Some(&parent));
             assert_eq!(realm.call_depth, 0);
             assert_eq!(realm.scopes.len(), 1);
@@ -804,29 +1013,77 @@ fn borrowed_generator_methods_resume_the_defining_realm_and_keep_result_boundari
         "#);
         expose_child(&mut realm,&environment,function);
         assert_eq!(realm.eval(r#"
-            let failures=[],GP=Object.getPrototypeOf(function*(){}.prototype);
-            let local=(function*(){yield [];return [];})();
-            let first=child.GP.next.call(local),last=child.GP.next.call(local),done=child.GP.next.call(local);
-            if(Object.getPrototypeOf(first)!==Object.prototype || Object.getPrototypeOf(first.value)!==Array.prototype)failures.push('parent-yield');
-            if(Object.getPrototypeOf(last)!==child.Object.prototype || Object.getPrototypeOf(last.value)!==Array.prototype || !last.done)failures.push('parent-return');
-            if(Object.getPrototypeOf(done)!==child.Object.prototype || !done.done)failures.push('completed');
-            first=GP.next.call(child.gen);last=GP.next.call(child.gen);
-            if(Object.getPrototypeOf(first)!==child.Object.prototype || Object.getPrototypeOf(first.value)!==child.Array.prototype)failures.push('child-yield');
-            if(Object.getPrototypeOf(last)!==Object.prototype || Object.getPrototypeOf(last.value)!==child.Array.prototype)failures.push('child-return');
-            try{GP.next.call(child.bad);failures.push('child-error:missing');}catch(e){if(!(e instanceof child.TypeError))failures.push('child-error:realm');}
-            try{child.GP.next.call((function*(){null.x;})());failures.push('parent-error:missing');}catch(e){if(!(e instanceof TypeError))failures.push('parent-error:realm');}
-            let abrupt=(function*(){try{yield 1;}finally{yield [];}})();
-            child.GP.next.call(abrupt);let r=child.GP.return.call(abrupt,7),q=child.GP.next.call(abrupt);
-            if(r.done || Object.getPrototypeOf(r)!==Object.prototype || Object.getPrototypeOf(r.value)!==Array.prototype || q.value!==7 || !q.done || Object.getPrototypeOf(q)!==child.Object.prototype)failures.push('return-finally');
-            let marker={},fresh=(function*(){throw 1;})();
-            let skipped=child.GP.return.call(fresh,marker);
-            if(skipped.value!==marker || !skipped.done || Object.getPrototypeOf(skipped)!==child.Object.prototype)failures.push('return-start');
+            let failures = [],
+                GP = Object.getPrototypeOf(function*() {}.prototype);
+            let local = (function*() {
+                yield [];
+                return [];
+            })();
+            let first = child.GP.next.call(local),
+                last = child.GP.next.call(local),
+                done = child.GP.next.call(local);
+            if (Object.getPrototypeOf(first) !== Object.prototype || Object.getPrototypeOf(first.value) !==
+                Array.prototype) failures.push('parent-yield');
+            if (Object.getPrototypeOf(last) !== child.Object.prototype || Object.getPrototypeOf(last
+                    .value) !== Array.prototype || !last.done) failures.push('parent-return');
+            if (Object.getPrototypeOf(done) !== child.Object.prototype || !done.done) failures.push(
+                'completed');
+            first = GP.next.call(child.gen);
+            last = GP.next.call(child.gen);
+            if (Object.getPrototypeOf(first) !== child.Object.prototype || Object.getPrototypeOf(first
+                    .value) !== child.Array.prototype) failures.push('child-yield');
+            if (Object.getPrototypeOf(last) !== Object.prototype || Object.getPrototypeOf(last.value) !==
+                child.Array.prototype) failures.push('child-return');
+            try {
+                GP.next.call(child.bad);
+                failures.push('child-error:missing');
+            } catch (e) {
+                if (!(e instanceof child.TypeError)) failures.push('child-error:realm');
+            }
+            try {
+                child.GP.next.call((function*() {
+                    null.x;
+                })());
+                failures.push('parent-error:missing');
+            } catch (e) {
+                if (!(e instanceof TypeError)) failures.push('parent-error:realm');
+            }
+            let abrupt = (function*() {
+                try {
+                    yield 1;
+                } finally {
+                    yield [];
+                }
+            })();
+            child.GP.next.call(abrupt);
+            let r = child.GP.return.call(abrupt, 7),
+                q = child.GP.next.call(abrupt);
+            if (r.done || Object.getPrototypeOf(r) !== Object.prototype || Object.getPrototypeOf(r
+                    .value) !== Array.prototype || q.value !== 7 || !q.done || Object.getPrototypeOf(q) !==
+                child.Object.prototype) failures.push('return-finally');
+            let marker = {},
+                fresh = (function*() {
+                    throw 1;
+                })();
+            let skipped = child.GP.return.call(fresh, marker);
+            if (skipped.value !== marker || !skipped.done || Object.getPrototypeOf(skipped) !== child
+                .Object.prototype) failures.push('return-start');
             JSON.stringify(failures)
         "#),Ok(Value::String("[]".into())));
         assert!(matches!(realm.eval(r#"
-            let effects=0;
-            function* reenter(){child.GP.next.call(reenter());yield 1;}
-            try{child.GP.next.call(reenter());}catch(e){effects++;}finally{effects++;}
+            let effects = 0;
+
+            function* reenter() {
+                child.GP.next.call(reenter());
+                yield 1;
+            }
+            try {
+                child.GP.next.call(reenter());
+            } catch (e) {
+                effects++;
+            } finally {
+                effects++;
+            }
         "#),Err(Error::Limit{..})));
         assert_eq!(realm.eval("effects"),Ok(Value::Number(0.0)));
         assert_eq!(realm.scopes.len(),1);
@@ -841,11 +1098,11 @@ fn borrowed_async_generator_methods_keep_source_allocations_and_errors_in_their_
     let (environment, function) = child_realm_fixture(
         &mut realm,
         r#"
-        var GP=Object.getPrototypeOf(async function*(){}.prototype);
-        var gen=(async function*(){yield [];return [];})();
-        var bad=(async function*(){null.x;})();
-        function noop(){}noop
-    "#,
+            var GP=Object.getPrototypeOf(async function*(){}.prototype);
+            var gen=(async function*(){yield [];return [];})();
+            var bad=(async function*(){null.x;})();
+            function noop(){}noop
+        "#,
     );
     expose_child(&mut realm, &environment, function);
     assert_eq!(realm.eval(r#"
@@ -896,21 +1153,31 @@ fn foreign_atomic_wait_capabilities_keep_their_realm_until_reactions_complete() 
         assert_eq!(
             realm.eval(&format!(
                 r#"
-                let a=new {kind}(new SharedArrayBuffer(2*{kind}.BYTES_PER_ELEMENT)),log='';
-                {{
-                    const P=child.Promise,objectPrototype=child.Object.prototype;
-                    child.Promise=function(){{throw 'public Promise'}};
-                    let inner;
-                    const outer=foreign(a,{{valueOf(){{inner=Atomics.waitAsync(a,1,{zero});return 0;}}}},{zero});
-                    if(!outer.async || !inner.async || Object.getPrototypeOf(outer)!==objectPrototype ||
-                       Object.getPrototypeOf(outer.value)!==P.prototype)throw 'wait record';
-                    outer.value.constructor=undefined;
-                    const chain=outer.value.then(v=>log+='outer:'+v+';');
-                    if(Object.getPrototypeOf(chain)!==P.prototype)throw 'Promise Realm';
-                    inner.value.then(v=>log+='inner:'+v+';');
-                }}
-                delete globalThis.child;delete globalThis.foreign;
-                log===''
+                    let a = new {kind}(new SharedArrayBuffer(2 * {kind}.BYTES_PER_ELEMENT)),
+                        log = '';
+                    {{
+                        const P = child.Promise,
+                            objectPrototype = child.Object.prototype;
+                        child.Promise = function() {{
+                            throw 'public Promise'
+                        }};
+                        let inner;
+                        const outer = foreign(a, {{
+                            valueOf() {{
+                                inner = Atomics.waitAsync(a, 1, {zero});
+                                return 0;
+                            }}
+                        }}, {zero});
+                        if (!outer.async || !inner.async || Object.getPrototypeOf(outer) !== objectPrototype ||
+                            Object.getPrototypeOf(outer.value) !== P.prototype) throw 'wait record';
+                        outer.value.constructor = undefined;
+                        const chain = outer.value.then(v => log += 'outer:' + v + ';');
+                        if (Object.getPrototypeOf(chain) !== P.prototype) throw 'Promise Realm';
+                        inner.value.then(v => log += 'inner:' + v + ';');
+                    }}
+                    delete globalThis.child;
+                    delete globalThis.foreign;
+                    log === ''
                 "#
             )),
             Ok(Value::Boolean(true))
@@ -977,22 +1244,45 @@ fn thenable_jobs_create_resolving_functions_and_proxy_arguments_in_the_captured_
     let (environment, function) = child_realm_fixture(
         &mut realm,
         r#"
-        var seen=[];
-        function then(resolve,reject){seen.push(Object.getPrototypeOf(resolve)===Function.prototype && Object.getPrototypeOf(reject)===Function.prototype);resolve(7);}
-        Object.setPrototypeOf(then,null);then
-    "#,
+            var seen=[];
+            function then(resolve,reject){seen.push(Object.getPrototypeOf(resolve)===Function.prototype && Object.getPrototypeOf(reject)===Function.prototype);resolve(7);}
+            Object.setPrototypeOf(then,null);then
+        "#,
     );
     expose_child(&mut realm, &environment, function);
-    assert_eq!(realm.eval(r#"
-        let values=[],trapRealm=false;
-        let bound=Function.prototype.bind.call(foreign,null);
-        let wrapped=new Proxy(bound,{apply(t,v,args){trapRealm=Object.getPrototypeOf(args)===child.Array.prototype;return Reflect.apply(t,v,args);}});
-        Promise.resolve({then:foreign}).then(x=>values.push(x));
-        Promise.resolve({then:wrapped}).then(x=>values.push(x));
-        child.seen.length===0 && values.length===0
-    "#),Ok(Value::Boolean(true)));
+    assert_eq!(
+        realm.eval(
+            r#"
+                let values = [],
+                    trapRealm = false;
+                let bound = Function.prototype.bind.call(foreign, null);
+                let wrapped = new Proxy(bound, {
+                    apply(t, v, args) {
+                        trapRealm = Object.getPrototypeOf(args) === child.Array.prototype;
+                        return Reflect.apply(t, v, args);
+                    }
+                });
+                Promise.resolve({
+                    then: foreign
+                }).then(x => values.push(x));
+                Promise.resolve({
+                    then: wrapped
+                }).then(x => values.push(x));
+                child.seen.length === 0 && values.length === 0
+            "#
+        ),
+        Ok(Value::Boolean(true))
+    );
     drain_realm_test_jobs(&mut realm);
-    assert_eq!(realm.eval("child.seen.length===2 && child.seen.every(Boolean) && values.join(',')==='7,7' && trapRealm && Object.getPrototypeOf([])===Array.prototype"),Ok(Value::Boolean(true)));
+    assert_eq!(
+        realm.eval(
+            r#"
+                child.seen.length === 2 && child.seen.every(Boolean) && values.join(',') === '7,7' &&
+                    trapRealm && Object.getPrototypeOf([]) === Array.prototype
+            "#
+        ),
+        Ok(Value::Boolean(true))
+    );
     assert_eq!(
         realm.record.global_environment.as_ref(),
         realm.scopes.first()
@@ -1005,29 +1295,40 @@ fn promise_job_realms_capture_revocation_at_enqueue_and_pending_settlement() {
     let (environment, function) = child_realm_fixture(
         &mut realm,
         r#"
-        var release,pending=new Promise(r=>release=r);
-        function handler(x){return x;}handler
-    "#,
+            var release,pending=new Promise(r=>release=r);
+            function handler(x){return x;}handler
+        "#,
     );
     expose_child(&mut realm, &environment, function);
     realm
         .eval(
             r#"
-        let seen=[];
-        function watch(p,E,label){p.catch(e=>seen.push([label,e instanceof E]));}
-        let later=Proxy.revocable(foreign,{});
-        watch(Promise.resolve(1).then(later.proxy),child.TypeError,'reaction-later');
-        watch(Promise.resolve({then:later.proxy}),child.TypeError,'thenable-later');
-        later.revoke();
-        let earlier=Proxy.revocable(foreign,{});earlier.revoke();
-        watch(Promise.resolve(1).then(earlier.proxy),TypeError,'reaction-before-parent');
-        watch(child.Promise.resolve(1).then(earlier.proxy),child.TypeError,'reaction-before-child');
-        watch(Promise.resolve({then:earlier.proxy}),TypeError,'thenable-before-parent');
-        watch(child.Promise.resolve({then:earlier.proxy}),child.TypeError,'thenable-before-child');
-        let pending=Proxy.revocable(x=>x,{});
-        watch(child.pending.then(pending.proxy),child.TypeError,'pending-settlement');
-        pending.revoke();child.release(7);
-    "#,
+                let seen = [];
+
+                function watch(p, E, label) {
+                    p.catch(e => seen.push([label, e instanceof E]));
+                }
+                let later = Proxy.revocable(foreign, {});
+                watch(Promise.resolve(1).then(later.proxy), child.TypeError, 'reaction-later');
+                watch(Promise.resolve({
+                    then: later.proxy
+                }), child.TypeError, 'thenable-later');
+                later.revoke();
+                let earlier = Proxy.revocable(foreign, {});
+                earlier.revoke();
+                watch(Promise.resolve(1).then(earlier.proxy), TypeError, 'reaction-before-parent');
+                watch(child.Promise.resolve(1).then(earlier.proxy), child.TypeError, 'reaction-before-child');
+                watch(Promise.resolve({
+                    then: earlier.proxy
+                }), TypeError, 'thenable-before-parent');
+                watch(child.Promise.resolve({
+                    then: earlier.proxy
+                }), child.TypeError, 'thenable-before-child');
+                let pending = Proxy.revocable(x => x, {});
+                watch(child.pending.then(pending.proxy), child.TypeError, 'pending-settlement');
+                pending.revoke();
+                child.release(7);
+            "#,
         )
         .unwrap();
     drain_realm_test_jobs(&mut realm);
@@ -1070,7 +1371,20 @@ fn queued_job_realm_retains_an_inactive_record_after_proxy_revocation_and_gc() {
         .prototype
         .clone();
     expose(&mut realm, "foreign", function);
-    realm.eval("var pair=Proxy.revocable(foreign,{}),p=Promise.resolve({then:pair.proxy}),reason;p.catch(e=>reason=e);delete globalThis.foreign;pair.revoke();").unwrap();
+    realm
+        .eval(
+            r#"
+                var pair = Proxy.revocable(foreign, {}),
+                    p = Promise.resolve({
+                        then: pair.proxy
+                    }),
+                    reason;
+                p.catch(e => reason = e);
+                delete globalThis.foreign;
+                pair.revoke();
+            "#,
+        )
+        .unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
     assert!(realm.objects.environment(&environment).is_ok());
@@ -1098,11 +1412,11 @@ fn foreign_promise_job_preflight_refusals_and_started_aborts_restore_the_caller(
     let (environment, function) = child_realm_fixture(
         &mut realm,
         r#"
-        var called=0,effects=0;
-        function then(resolve){called++;resolve(7);}
-        var loop=function(){try{for(;;){}}finally{effects++;}};
-        then
-    "#,
+            var called=0,effects=0;
+            function then(resolve){called++;resolve(7);}
+            var loop=function(){try{for(;;){}}finally{effects++;}};
+            then
+        "#,
     );
     expose_child(&mut realm, &environment, function);
     realm
@@ -1179,10 +1493,10 @@ fn suspended_async_generator_returns_await_with_the_source_realms_promise() {
     let (environment, function) = child_realm_fixture(
         &mut realm,
         r#"
-        var GP=Object.getPrototypeOf(async function*(){}.prototype),cleanup;
-        var gen=(async function*(){try{yield 1;}finally{cleanup=[];}})();
-        function noop(){}noop
-    "#,
+            var GP=Object.getPrototypeOf(async function*(){}.prototype),cleanup;
+            var gen=(async function*(){try{yield 1;}finally{cleanup=[];}})();
+            function noop(){}noop
+        "#,
     );
     expose_child(&mut realm, &environment, function);
     realm.eval(r#"
@@ -1235,24 +1549,51 @@ fn initial_and_completed_async_generator_returns_keep_the_method_realm() {
     realm
         .eval(
             r#"
-        let values=[],errors=[],body=0,gets=0;
-        let fresh=(async function*(){body++;})(),finished=(async function*(){})();
-        finished.next();
-        let own=child.Promise.resolve(7),other=Promise.resolve(8);
-        Object.defineProperty(own,'then',{get(){gets++;throw 11;}});
-        Object.defineProperty(other,'then',{get(){gets++;throw 99;}});
-        child.GP.return.call(fresh,own).then(r=>values.push(r),e=>errors.push(e));
-        child.GP.return.call(finished,own).then(r=>values.push(r),e=>errors.push(e));
-    "#,
+                let values = [],
+                    errors = [],
+                    body = 0,
+                    gets = 0;
+                let fresh = (async function*() {
+                        body++;
+                    })(),
+                    finished = (async function*() {})();
+                finished.next();
+                let own = child.Promise.resolve(7),
+                    other = Promise.resolve(8);
+                Object.defineProperty(own, 'then', {
+                    get() {
+                        gets++;
+                        throw 11;
+                    }
+                });
+                Object.defineProperty(other, 'then', {
+                    get() {
+                        gets++;
+                        throw 99;
+                    }
+                });
+                child.GP.return.call(fresh, own).then(r => values.push(r), e => errors.push(e));
+                child.GP.return.call(finished, own).then(r => values.push(r), e => errors.push(e));
+            "#,
         )
         .unwrap();
     drain_realm_test_jobs(&mut realm);
-    assert_eq!(realm.eval("body===0 && gets===0 && errors.length===0 && values.length===2 && values.every(r=>r.done && r.value===7)"),Ok(Value::Boolean(true)));
+    assert_eq!(realm.eval(r#"
+        body === 0 && gets === 0 && errors.length === 0 && values.length === 2 && values.every(r => r
+            .done && r.value === 7)
+    "#),Ok(Value::Boolean(true)));
     realm
-        .eval("child.GP.return.call(finished,other).then(r=>values.push(r),e=>errors.push(e));")
+        .eval(
+            r#"
+                child.GP.return.call(finished, other).then(r => values.push(r), e => errors.push(e));
+            "#,
+        )
         .unwrap();
     drain_realm_test_jobs(&mut realm);
-    assert_eq!(realm.eval("body===0 && gets===1 && values.length===2 && errors.length===1 && errors[0]===99 && Object.getPrototypeOf([])===Array.prototype"),Ok(Value::Boolean(true)));
+    assert_eq!(realm.eval(r#"
+        body === 0 && gets === 1 && values.length === 2 && errors.length === 1 && errors[0] === 99 &&
+            Object.getPrototypeOf([]) === Array.prototype
+    "#),Ok(Value::Boolean(true)));
     assert_eq!(
         realm.record.global_environment.as_ref(),
         realm.scopes.first()
@@ -1392,24 +1733,45 @@ fn borrowed_map_set_and_string_next_resume_creation_realms_before_returning_to_m
     let (environment, function) = child_realm_fixture(
         &mut realm,
         r#"
-        var map=new Map([[1,2]]).entries(),set=new Set([1]).entries(),string='x'[Symbol.iterator]();
-        var mapNext=Object.getPrototypeOf(map).next,setNext=Object.getPrototypeOf(set).next,stringNext=Object.getPrototypeOf(string).next;
-        function noop(){}noop
-    "#,
+            var map=new Map([[1,2]]).entries(),set=new Set([1]).entries(),string='x'[Symbol.iterator]();
+            var mapNext=Object.getPrototypeOf(map).next,setNext=Object.getPrototypeOf(set).next,stringNext=Object.getPrototypeOf(string).next;
+            function noop(){}noop
+        "#,
     );
     expose_child(&mut realm, &environment, function);
     assert_eq!(realm.eval(r#"
-        let failures=[];
-        let families=[['map',()=>new Map([[1,2]]).entries(),true],['set',()=>new Set([1]).entries(),true],['string',()=>'x'[Symbol.iterator](),false]];
-        for(let [name,make,pair] of families){
-            let own=make(),next=Object.getPrototypeOf(own).next,foreignNext=child[name+'Next'];
-            let first=foreignNext.call(own),foreignFirst=next.call(child[name]);
-            if(Object.getPrototypeOf(first)!==Object.prototype || (pair&&Object.getPrototypeOf(first.value)!==Array.prototype))failures.push(name+':parent-yield');
-            if(Object.getPrototypeOf(foreignFirst)!==child.Object.prototype || (pair&&Object.getPrototypeOf(foreignFirst.value)!==child.Array.prototype))failures.push(name+':child-yield');
-            let done=foreignNext.call(own),foreignDone=next.call(child[name]);
-            if(!done.done || Object.getPrototypeOf(done)!==child.Object.prototype || !foreignDone.done || Object.getPrototypeOf(foreignDone)!==Object.prototype)failures.push(name+':done');
-            if(Object.getPrototypeOf(foreignNext.call(own))!==child.Object.prototype)failures.push(name+':completed');
-            try{foreignNext.call({});failures.push(name+':brand-missing');}catch(e){if(!(e instanceof child.TypeError))failures.push(name+':brand-realm');}
+        let failures = [];
+        let families = [
+            ['map', () => new Map([
+                [1, 2]
+            ]).entries(), true],
+            ['set', () => new Set([1]).entries(), true],
+            ['string', () => 'x' [Symbol.iterator](), false]
+        ];
+        for (let [name, make, pair] of families) {
+            let own = make(),
+                next = Object.getPrototypeOf(own).next,
+                foreignNext = child[name + 'Next'];
+            let first = foreignNext.call(own),
+                foreignFirst = next.call(child[name]);
+            if (Object.getPrototypeOf(first) !== Object.prototype || (pair && Object.getPrototypeOf(
+                    first.value) !== Array.prototype)) failures.push(name + ':parent-yield');
+            if (Object.getPrototypeOf(foreignFirst) !== child.Object.prototype || (pair && Object
+                    .getPrototypeOf(foreignFirst.value) !== child.Array.prototype)) failures.push(
+                name + ':child-yield');
+            let done = foreignNext.call(own),
+                foreignDone = next.call(child[name]);
+            if (!done.done || Object.getPrototypeOf(done) !== child.Object.prototype || !foreignDone
+                .done || Object.getPrototypeOf(foreignDone) !== Object.prototype) failures.push(name +
+                ':done');
+            if (Object.getPrototypeOf(foreignNext.call(own)) !== child.Object.prototype) failures.push(
+                name + ':completed');
+            try {
+                foreignNext.call({});
+                failures.push(name + ':brand-missing');
+            } catch (e) {
+                if (!(e instanceof child.TypeError)) failures.push(name + ':brand-realm');
+            }
         }
         JSON.stringify(failures)
     "#),Ok(Value::String("[]".into())));
@@ -1428,18 +1790,30 @@ fn native_iterator_realms_follow_creation_methods_and_keep_array_regexp_slot_alg
     );
     expose_child(&mut realm, &environment, function);
     assert_eq!(realm.eval(r#"
-        let failures=[],rootMap=new Map([[1,2]]),mapNext=Object.getPrototypeOf(rootMap.entries()).next;
-        let createdThere=child.Map.prototype.entries.call(rootMap);Object.setPrototypeOf(createdThere,null);
-        let a=mapNext.call(createdThere);
-        if(Object.getPrototypeOf(a)!==child.Object.prototype || Object.getPrototypeOf(a.value)!==child.Array.prototype)failures.push('creator-child');
-        let createdHere=Map.prototype.entries.call(child.map);Object.setPrototypeOf(createdHere,Object.getPrototypeOf(child.map.entries()));
-        let b=Object.getPrototypeOf(child.map.entries()).next.call(createdHere);
-        if(Object.getPrototypeOf(b)!==Object.prototype || Object.getPrototypeOf(b.value)!==Array.prototype)failures.push('creator-parent');
-        let array=child.Array.prototype.entries.call([7]),arrayNext=Object.getPrototypeOf([].entries()).next;
-        let c=arrayNext.call(array);
-        if(Object.getPrototypeOf(c)!==Object.prototype || Object.getPrototypeOf(c.value)!==Array.prototype)failures.push('ordinary-array');
-        let regexpNext=Object.getPrototypeOf('x'.matchAll(/x/g)).next,d=regexpNext.call(child.regexp);
-        if(Object.getPrototypeOf(d)!==Object.prototype || Object.getPrototypeOf(d.value)!==child.Array.prototype)failures.push('ordinary-regexp');
+        let failures = [],
+            rootMap = new Map([
+                [1, 2]
+            ]),
+            mapNext = Object.getPrototypeOf(rootMap.entries()).next;
+        let createdThere = child.Map.prototype.entries.call(rootMap);
+        Object.setPrototypeOf(createdThere, null);
+        let a = mapNext.call(createdThere);
+        if (Object.getPrototypeOf(a) !== child.Object.prototype || Object.getPrototypeOf(a.value) !==
+            child.Array.prototype) failures.push('creator-child');
+        let createdHere = Map.prototype.entries.call(child.map);
+        Object.setPrototypeOf(createdHere, Object.getPrototypeOf(child.map.entries()));
+        let b = Object.getPrototypeOf(child.map.entries()).next.call(createdHere);
+        if (Object.getPrototypeOf(b) !== Object.prototype || Object.getPrototypeOf(b.value) !== Array
+            .prototype) failures.push('creator-parent');
+        let array = child.Array.prototype.entries.call([7]),
+            arrayNext = Object.getPrototypeOf([].entries()).next;
+        let c = arrayNext.call(array);
+        if (Object.getPrototypeOf(c) !== Object.prototype || Object.getPrototypeOf(c.value) !== Array
+            .prototype) failures.push('ordinary-array');
+        let regexpNext = Object.getPrototypeOf('x'.matchAll(/x/g)).next,
+            d = regexpNext.call(child.regexp);
+        if (Object.getPrototypeOf(d) !== Object.prototype || Object.getPrototypeOf(d.value) !== child
+            .Array.prototype) failures.push('ordinary-regexp');
         JSON.stringify(failures)
     "#),Ok(Value::String("[]".into())));
 }
@@ -1461,7 +1835,14 @@ fn native_string_iterator_context_retains_then_releases_a_realm_after_prototype_
         .object_prototype
         .clone();
     expose(&mut realm, "foreign", iterator);
-    realm.eval("var next=Object.getPrototypeOf(''[Symbol.iterator]()).next;Object.setPrototypeOf(foreign,null);").unwrap();
+    realm
+        .eval(
+            r#"
+                var next = Object.getPrototypeOf('' [Symbol.iterator]()).next;
+                Object.setPrototypeOf(foreign, null);
+            "#,
+        )
+        .unwrap();
     realm.collect(usize::MAX).unwrap();
     assert!(realm.objects.environment(&environment).is_ok());
     let Value::Object(yielded) = realm.eval("next.call(foreign)").unwrap() else {
@@ -1471,7 +1852,15 @@ fn native_string_iterator_context_retains_then_releases_a_realm_after_prototype_
         realm.inspect_object(&yielded).unwrap().prototype(),
         Some(&prototype)
     );
-    assert_eq!(realm.eval("let done=next.call(foreign);done.done && Object.getPrototypeOf(done)===Object.prototype"),Ok(Value::Boolean(true)));
+    assert_eq!(
+        realm.eval(
+            r#"
+                let done = next.call(foreign);
+                done.done && Object.getPrototypeOf(done) === Object.prototype
+            "#
+        ),
+        Ok(Value::Boolean(true))
+    );
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
     assert!(realm.objects.environment(&environment).is_err());
@@ -1491,29 +1880,45 @@ fn iterator_helper_families_resume_the_creation_realm_and_complete_in_the_method
     let mut realm = Realm::default();
     let (environment, function) = child_realm_fixture(&mut realm, "function noop(){}noop");
     expose_child(&mut realm, &environment, function);
-    assert_eq!(realm.eval(r#"
-        let failures=[];
-        let sample=[1].values().map(x=>x),other=child.Iterator.prototype.map.call([1].values(),x=>x);
-        let next=Object.getPrototypeOf(sample).next,foreignNext=Object.getPrototypeOf(other).next;
-        let factories=[
-            ['map',it=>it.map(x=>x),it=>child.Iterator.prototype.map.call(it,x=>x)],
-            ['filter',it=>it.filter(()=>true),it=>child.Iterator.prototype.filter.call(it,()=>true)],
-            ['flatMap',it=>it.flatMap(x=>[x]),it=>child.Iterator.prototype.flatMap.call(it,x=>[x])],
-            ['take',it=>it.take(1),it=>child.Iterator.prototype.take.call(it,1)],
-            ['drop',it=>it.drop(0),it=>child.Iterator.prototype.drop.call(it,0)],
-            ['concat',it=>Iterator.concat(it),it=>child.Iterator.concat(it)]
-        ];
-        for(let [name,own,foreign] of factories){
-            let a=own([1].values()),b=foreign([1].values());
-            Object.setPrototypeOf(a,Object.getPrototypeOf(other));Object.setPrototypeOf(b,null);
-            let x=foreignNext.call(a),y=next.call(b);
-            if(x.value!==1 || x.done || Object.getPrototypeOf(x)!==Object.prototype)failures.push(name+':parent');
-            if(y.value!==1 || y.done || Object.getPrototypeOf(y)!==child.Object.prototype)failures.push(name+':child');
-            x=foreignNext.call(a);y=next.call(b);
-            if(!x.done || Object.getPrototypeOf(x)!==child.Object.prototype || !y.done || Object.getPrototypeOf(y)!==Object.prototype)failures.push(name+':done');
-        }
-        JSON.stringify(failures)
-    "#),Ok(Value::String("[]".into())));
+    assert_eq!(
+        realm.eval(
+            r#"
+                let failures = [];
+                let sample = [1].values().map(x => x),
+                    other = child.Iterator.prototype.map.call([1].values(), x => x);
+                let next = Object.getPrototypeOf(sample).next,
+                    foreignNext = Object.getPrototypeOf(other).next;
+                let factories = [
+                    ['map', it => it.map(x => x), it => child.Iterator.prototype.map.call(it, x => x)],
+                    ['filter', it => it.filter(() => true), it => child.Iterator.prototype.filter.call(it,
+                        () => true)],
+                    ['flatMap', it => it.flatMap(x => [x]), it => child.Iterator.prototype.flatMap.call(it,
+                        x => [x])],
+                    ['take', it => it.take(1), it => child.Iterator.prototype.take.call(it, 1)],
+                    ['drop', it => it.drop(0), it => child.Iterator.prototype.drop.call(it, 0)],
+                    ['concat', it => Iterator.concat(it), it => child.Iterator.concat(it)]
+                ];
+                for (let [name, own, foreign] of factories) {
+                    let a = own([1].values()),
+                        b = foreign([1].values());
+                    Object.setPrototypeOf(a, Object.getPrototypeOf(other));
+                    Object.setPrototypeOf(b, null);
+                    let x = foreignNext.call(a),
+                        y = next.call(b);
+                    if (x.value !== 1 || x.done || Object.getPrototypeOf(x) !== Object.prototype) failures
+                        .push(name + ':parent');
+                    if (y.value !== 1 || y.done || Object.getPrototypeOf(y) !== child.Object.prototype)
+                        failures.push(name + ':child');
+                    x = foreignNext.call(a);
+                    y = next.call(b);
+                    if (!x.done || Object.getPrototypeOf(x) !== child.Object.prototype || !y.done || Object
+                        .getPrototypeOf(y) !== Object.prototype) failures.push(name + ':done');
+                }
+                JSON.stringify(failures)
+            "#
+        ),
+        Ok(Value::String("[]".into()))
+    );
 }
 
 #[test]
@@ -1522,45 +1927,108 @@ fn helper_body_errors_initial_return_and_reentry_preserve_their_distinct_realms(
     let (environment, function) = child_realm_fixture(&mut realm, "function noop(){}noop");
     expose_child(&mut realm, &environment, function);
     assert_eq!(realm.eval(r#"
-        let failures=[],sample=[1].values().map(x=>x),other=child.Iterator.prototype.map.call([1].values(),x=>x);
-        let P=Object.getPrototypeOf(sample),C=Object.getPrototypeOf(other);
-        let make=it=>child.Iterator.prototype.map.call(it,x=>x);
-        function expect(f,E,label){try{f();failures.push(label+':missing');}catch(e){if(!(e instanceof E))failures.push(label+':realm');}}
-        expect(()=>P.next.call(make({next:1})),child.TypeError,'not-callable');
-        expect(()=>P.next.call(make({next(){return 1;}})),child.TypeError,'primitive-result');
-        expect(()=>P.next.call(child.Iterator.prototype.map.call([1].values(),()=>null.x)),TypeError,'callback');
-        function input(){return {next(){return {value:1,done:false};},return:1};}
-        expect(()=>P.return.call(make(input())),TypeError,'initial-return');
-        let yielded=make(input());P.next.call(yielded);
-        expect(()=>P.return.call(yielded),child.TypeError,'yielded-return');
-        let root=Iterator.prototype.map.call(input(),x=>x);
-        expect(()=>C.return.call(root),child.TypeError,'initial-return-child-method');
-        root=Iterator.prototype.map.call(input(),x=>x);C.next.call(root);
-        expect(()=>C.return.call(root),TypeError,'yielded-return-parent-closure');
-        let reentrant,entered=0;
-        reentrant=child.Iterator.prototype.map.call([1].values(),x=>{
-            expect(()=>P.next.call(reentrant),TypeError,'executing-parent-method');
-            expect(()=>C.next.call(reentrant),child.TypeError,'executing-child-method');entered++;return x;
+        let failures = [],
+            sample = [1].values().map(x => x),
+            other = child.Iterator.prototype.map.call([1].values(), x => x);
+        let P = Object.getPrototypeOf(sample),
+            C = Object.getPrototypeOf(other);
+        let make = it => child.Iterator.prototype.map.call(it, x => x);
+
+        function expect(f, E, label) {
+            try {
+                f();
+                failures.push(label + ':missing');
+            } catch (e) {
+                if (!(e instanceof E)) failures.push(label + ':realm');
+            }
+        }
+        expect(() => P.next.call(make({
+            next: 1
+        })), child.TypeError, 'not-callable');
+        expect(() => P.next.call(make({
+            next() {
+                return 1;
+            }
+        })), child.TypeError, 'primitive-result');
+        expect(() => P.next.call(child.Iterator.prototype.map.call([1].values(), () => null.x)),
+            TypeError, 'callback');
+
+        function input() {
+            return {
+                next() {
+                    return {
+                        value: 1,
+                        done: false
+                    };
+                },
+                return: 1
+            };
+        }
+        expect(() => P.return.call(make(input())), TypeError, 'initial-return');
+        let yielded = make(input());
+        P.next.call(yielded);
+        expect(() => P.return.call(yielded), child.TypeError, 'yielded-return');
+        let root = Iterator.prototype.map.call(input(), x => x);
+        expect(() => C.return.call(root), child.TypeError, 'initial-return-child-method');
+        root = Iterator.prototype.map.call(input(), x => x);
+        C.next.call(root);
+        expect(() => C.return.call(root), TypeError, 'yielded-return-parent-closure');
+        let reentrant, entered = 0;
+        reentrant = child.Iterator.prototype.map.call([1].values(), x => {
+            expect(() => P.next.call(reentrant), TypeError, 'executing-parent-method');
+            expect(() => C.next.call(reentrant), child.TypeError, 'executing-child-method');
+            entered++;
+            return x;
         });
         P.next.call(reentrant);
-        if(entered!==1)failures.push('callback-count');
+        if (entered !== 1) failures.push('callback-count');
         // FlatMap closes its inner and outer within the resumed closure;
         // suspended-start return closes only the outer in the method Realm.
-        for(let creator of [globalThis,child])for(let [methods,methodRealm] of [[P,globalThis],[C,child]])
-        for(let started of [false,true])for(let failing of ['inner','outer'])for(let mode of ['primitive','noncallable']){
-            const calls=[];
-            function input(name){return {next(){return {done:false,value:1}},get return(){calls.push(name);
-                if(name===failing)return mode==='primitive'?function(){return 1}:1;
-                return function(){return {}};
-            }}}
-            const inner=input('inner'),outer=input('outer'),h=creator.Iterator.prototype.flatMap.call(outer,()=>inner);
-            if(started)P.next.call(h);
-            if(!started && failing==='inner'){
-                const result=methods.return.call(h);
-                if(!result.done || result.value!==undefined || Object.getPrototypeOf(result)!==methodRealm.Object.prototype)failures.push('flatMap:initial-result');
-            }else expect(()=>methods.return.call(h),(started?creator:methodRealm).TypeError,'flatMap:close-realm');
-            if(!P.next.call(h).done || !methods.return.call(h).done || calls.join(',')!==(started?'inner,outer':'outer'))failures.push('flatMap:close-state');
-        }
+        for (let creator of [globalThis, child])
+            for (let [methods, methodRealm] of [
+                    [P, globalThis],
+                    [C, child]
+                ])
+                for (let started of [false, true])
+                    for (let failing of ['inner', 'outer'])
+                        for (let mode of ['primitive', 'noncallable']) {
+                            const calls = [];
+
+                            function input(name) {
+                                return {
+                                    next() {
+                                        return {
+                                            done: false,
+                                            value: 1
+                                        }
+                                    },
+                                    get return() {
+                                        calls.push(name);
+                                        if (name === failing) return mode === 'primitive' ?
+                                            function() {
+                                                return 1
+                                            } : 1;
+                                        return function() {
+                                            return {}
+                                        };
+                                    }
+                                }
+                            }
+                            const inner = input('inner'),
+                                outer = input('outer'),
+                                h = creator.Iterator.prototype.flatMap.call(outer, () => inner);
+                            if (started) P.next.call(h);
+                            if (!started && failing === 'inner') {
+                                const result = methods.return.call(h);
+                                if (!result.done || result.value !== undefined || Object
+                                    .getPrototypeOf(result) !== methodRealm.Object.prototype) failures
+                                    .push('flatMap:initial-result');
+                            } else expect(() => methods.return.call(h), (started ? creator :
+                                methodRealm).TypeError, 'flatMap:close-realm');
+                            if (!P.next.call(h).done || !methods.return.call(h).done || calls.join(
+                                    ',') !== (started ? 'inner,outer' : 'outer')) failures.push(
+                                'flatMap:close-state');
+                        }
         JSON.stringify(failures)
     "#),Ok(Value::String("[]".into())));
     assert_eq!(
@@ -1576,34 +2044,95 @@ fn object_tags_preserve_brand_snapshots_accessor_realms_and_primitive_boxing() {
     expose_child(&mut realm, &environment, function);
     // 20.1.3.6 computes the builtin tag before Get(@@toStringTag).
     assert_eq!(realm.eval(r#"
-        const failures=[],tag=Symbol.toStringTag,badGetter=Proxy.revocable(foreign,{});
+        const failures = [],
+            tag = Symbol.toStringTag,
+            badGetter = Proxy.revocable(foreign, {});
         badGetter.revoke();
-        function expect(f,E,label){try{f();failures.push(label+':missing')}catch(e){if(!(e instanceof E))failures.push(label+':realm')}}
-        for(const owner of [globalThis,child])for(const [make,brand] of [[()=>[],'Array'],[()=>function(){},'Function'],[()=>new Date,'Object']]){
-            const show=owner.Object.prototype.toString;
-            let reads=0;
-            const during=Proxy.revocable(make(),{get(t,k,r){reads++;during.revoke();return undefined}});
-            if(show.call(during.proxy)!=='[object '+brand+']'||reads!==1)failures.push('brand-before-get');
-            reads=0;
-            const before=Proxy.revocable(make(),{get(){reads++;throw 'getter'}});before.revoke();
-            expect(()=>show.call(before.proxy),owner.TypeError,'revoked-before-get');
-            if(reads!==0)failures.push('early-get');
-            const direct=make();Object.defineProperty(direct,tag,{get:foreign});
-            expect(()=>show.call(direct),child.TypeError,'class-getter');
-            const target=make();Object.defineProperty(target,tag,{get:badGetter.proxy});
-            const forwarded=new Proxy(target,{get(t,k,r){return Reflect.get(t,k,r)}});
-            expect(()=>show.call(forwarded),TypeError,'trap-reflect-getter');
+
+        function expect(f, E, label) {
+            try {
+                f();
+                failures.push(label + ':missing')
+            } catch (e) {
+                if (!(e instanceof E)) failures.push(label + ':realm')
+            }
         }
-        for(const owner of [globalThis,child])for(const [value,prototype] of [[false,owner.Boolean.prototype],[1,owner.Number.prototype],['x\uD800',owner.String.prototype],[7n,owner.BigInt.prototype],[Symbol(),owner.Symbol.prototype]]){
-            const seen=[];
-            Object.defineProperty(prototype,tag,{get:function(){'use strict';seen.push(this);if(typeof this!=='object'||Object.getPrototypeOf(this)!==prototype)failures.push('wrapper-realm');return 'Box'},configurable:true});
-            const show=owner.Object.prototype.toString;
-            if(show.call(value)!=='[object Box]'||show.call(value)!=='[object Box]'||seen.length!==2||seen[0]===seen[1])failures.push('fresh-wrapper');
-        }
-        for(const owner of [globalThis,child]){
-            Object.defineProperty(owner.Object.prototype,tag,{get(){throw 'nullish lookup'},configurable:true});
-            const show=owner.Object.prototype.toString;
-            if(show.call(null)!=='[object Null]'||show.call(undefined)!=='[object Undefined]')failures.push('nullish');
+        for (const owner of [globalThis, child])
+            for (const [make, brand] of [
+                    [() => [], 'Array'],
+                    [() => function() {}, 'Function'],
+                    [() => new Date, 'Object']
+                ]) {
+                const show = owner.Object.prototype.toString;
+                let reads = 0;
+                const during = Proxy.revocable(make(), {
+                    get(t, k, r) {
+                        reads++;
+                        during.revoke();
+                        return undefined
+                    }
+                });
+                if (show.call(during.proxy) !== '[object ' + brand + ']' || reads !== 1) failures.push(
+                    'brand-before-get');
+                reads = 0;
+                const before = Proxy.revocable(make(), {
+                    get() {
+                        reads++;
+                        throw 'getter'
+                    }
+                });
+                before.revoke();
+                expect(() => show.call(before.proxy), owner.TypeError, 'revoked-before-get');
+                if (reads !== 0) failures.push('early-get');
+                const direct = make();
+                Object.defineProperty(direct, tag, {
+                    get: foreign
+                });
+                expect(() => show.call(direct), child.TypeError, 'class-getter');
+                const target = make();
+                Object.defineProperty(target, tag, {
+                    get: badGetter.proxy
+                });
+                const forwarded = new Proxy(target, {
+                    get(t, k, r) {
+                        return Reflect.get(t, k, r)
+                    }
+                });
+                expect(() => show.call(forwarded), TypeError, 'trap-reflect-getter');
+            }
+        for (const owner of [globalThis, child])
+            for (const [value, prototype] of [
+                    [false, owner.Boolean.prototype],
+                    [1, owner.Number.prototype],
+                    ['x\uD800', owner.String.prototype],
+                    [7n, owner.BigInt.prototype],
+                    [Symbol(), owner.Symbol.prototype]
+                ]) {
+                const seen = [];
+                Object.defineProperty(prototype, tag, {
+                    get: function() {
+                        'use strict';
+                        seen.push(this);
+                        if (typeof this !== 'object' || Object.getPrototypeOf(this) !==
+                            prototype) failures.push('wrapper-realm');
+                        return 'Box'
+                    },
+                    configurable: true
+                });
+                const show = owner.Object.prototype.toString;
+                if (show.call(value) !== '[object Box]' || show.call(value) !== '[object Box]' || seen
+                    .length !== 2 || seen[0] === seen[1]) failures.push('fresh-wrapper');
+            }
+        for (const owner of [globalThis, child]) {
+            Object.defineProperty(owner.Object.prototype, tag, {
+                get() {
+                    throw 'nullish lookup'
+                },
+                configurable: true
+            });
+            const show = owner.Object.prototype.toString;
+            if (show.call(null) !== '[object Null]' || show.call(undefined) !== '[object Undefined]')
+                failures.push('nullish');
         }
         JSON.stringify(failures)
     "#),Ok(Value::String("[]".into())));
@@ -1633,7 +2162,16 @@ fn iterator_helper_context_retains_then_releases_its_realm_without_prototype_or_
         .object_prototype
         .clone();
     expose(&mut realm, "foreignMake", function);
-    realm.eval("var helper=foreignMake([1].values(),x=>x);delete globalThis.foreignMake;Object.setPrototypeOf(helper,null);var next=Object.getPrototypeOf([].values().map(x=>x)).next;").unwrap();
+    realm
+        .eval(
+            r#"
+                var helper = foreignMake([1].values(), x => x);
+                delete globalThis.foreignMake;
+                Object.setPrototypeOf(helper, null);
+                var next = Object.getPrototypeOf([].values().map(x => x)).next;
+            "#,
+        )
+        .unwrap();
     realm.collect(usize::MAX).unwrap();
     assert!(realm.objects.environment(&environment).is_ok());
     let Value::Object(result) = realm.eval("next.call(helper)").unwrap() else {
@@ -1659,16 +2197,47 @@ fn iterator_helper_context_retains_then_releases_its_realm_without_prototype_or_
 
 #[test]
 fn recursive_foreign_helper_callbacks_keep_the_two_mebibyte_guard_and_restore_realms() {
-    std::thread::Builder::new().stack_size(2*1024*1024).spawn(||{
-        let mut realm=Realm::default();
-        let (environment,function)=child_realm_fixture(&mut realm,"function noop(){}noop");
-        expose_child(&mut realm,&environment,function);
-        assert!(matches!(realm.eval("var effects=0,calls=0;function again(){calls++;return child.Iterator.prototype.map.call([1].values(),again).next().value;}try{again();}catch(e){effects++;}finally{effects++;}"),Err(Error::Limit{..})));
-        assert_eq!(realm.eval("effects===0 && calls>0"),Ok(Value::Boolean(true)));
-        assert_eq!(realm.record.global_environment.as_ref(),realm.scopes.first());
-        assert_eq!(realm.scopes.len(),1);
-        assert_eq!(realm.call_depth,0);
-    }).unwrap().join().unwrap();
+    std::thread::Builder::new()
+        .stack_size(2 * 1024 * 1024)
+        .spawn(|| {
+            let mut realm = Realm::default();
+            let (environment, function) = child_realm_fixture(&mut realm, "function noop(){}noop");
+            expose_child(&mut realm, &environment, function);
+            assert!(matches!(
+                realm.eval(
+                    r#"
+                        var effects = 0,
+                            calls = 0;
+
+                        function again() {
+                            calls++;
+                            return child.Iterator.prototype.map.call([1].values(), again).next().value;
+                        }
+                        try {
+                            again();
+                        } catch (e) {
+                            effects++;
+                        } finally {
+                            effects++;
+                        }
+                    "#
+                ),
+                Err(Error::Limit { .. })
+            ));
+            assert_eq!(
+                realm.eval("effects===0 && calls>0"),
+                Ok(Value::Boolean(true))
+            );
+            assert_eq!(
+                realm.record.global_environment.as_ref(),
+                realm.scopes.first()
+            );
+            assert_eq!(realm.scopes.len(), 1);
+            assert_eq!(realm.call_depth, 0);
+        })
+        .unwrap()
+        .join()
+        .unwrap();
 }
 
 #[test]
@@ -1693,7 +2262,18 @@ fn finalization_registry_realm_survives_foreign_new_target_revoked_callback_and_
         .prototype
         .clone();
     expose(&mut realm, "ForeignRegistry", constructor);
-    realm.eval("var pair=Proxy.revocable(function(){},{}),registry=Reflect.construct(ForeignRegistry,[pair.proxy],function N(){});FinalizationRegistry.prototype.register.call(registry,{},7);Object.setPrototypeOf(registry,null);delete globalThis.ForeignRegistry;pair.revoke();").unwrap();
+    realm
+        .eval(
+            r#"
+                var pair = Proxy.revocable(function() {}, {}),
+                    registry = Reflect.construct(ForeignRegistry, [pair.proxy], function N() {});
+                FinalizationRegistry.prototype.register.call(registry, {}, 7);
+                Object.setPrototypeOf(registry, null);
+                delete globalThis.ForeignRegistry;
+                pair.revoke();
+            "#,
+        )
+        .unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
     assert!(realm.objects.environment(&environment).is_ok());
@@ -1724,12 +2304,24 @@ fn finalization_cleanup_starts_in_the_registry_realm_then_calls_the_callbacks_re
     let mut realm = Realm::default();
     let (environment, function) = child_realm_fixture(&mut realm, "function noop(){}noop");
     expose_child(&mut realm, &environment, function);
-    realm.eval(r#"
-        var seen=[];
-        var callback=new Proxy(function(v){seen.push(v===7 && this===globalThis && Object.getPrototypeOf([])===Array.prototype);},
-            {apply(t,v,args){seen.push(Object.getPrototypeOf(args)===child.Array.prototype);return Reflect.apply(t,v,args);}});
-        var registry=new child.FinalizationRegistry(callback);registry.register({},7);
-    "#).unwrap();
+    realm
+        .eval(
+            r#"
+                var seen = [];
+                var callback = new Proxy(function(v) {
+                    seen.push(v === 7 && this === globalThis && Object.getPrototypeOf([]) === Array
+                        .prototype);
+                }, {
+                    apply(t, v, args) {
+                        seen.push(Object.getPrototypeOf(args) === child.Array.prototype);
+                        return Reflect.apply(t, v, args);
+                    }
+                });
+                var registry = new child.FinalizationRegistry(callback);
+                registry.register({}, 7);
+            "#,
+        )
+        .unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
     assert!(matches!(
@@ -1741,7 +2333,14 @@ fn finalization_cleanup_starts_in_the_registry_realm_then_calls_the_callbacks_re
         Ok(Value::Boolean(true))
     );
     realm
-        .eval("var bad=new child.FinalizationRegistry(function(){null.x;});bad.register({},8);")
+        .eval(
+            r#"
+                var bad = new child.FinalizationRegistry(function() {
+                    null.x;
+                });
+                bad.register({}, 8);
+            "#,
+        )
         .unwrap();
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();
@@ -1767,14 +2366,14 @@ fn foreign_finalization_preflight_refusals_and_started_host_aborts_restore_the_c
     let (environment, function) = child_realm_fixture(
         &mut realm,
         r#"
-        var state=(()=>{
-            let calls=0,effects=0;
-            return {
-                cleanup(value){calls++;if(value==='loop'){try{for(;;){}}finally{effects++;}}},
-                read(){return [calls,effects];}
-            };
-        })();state.cleanup
-    "#,
+            var state=(()=>{
+                let calls=0,effects=0;
+                return {
+                    cleanup(value){calls++;if(value==='loop'){try{for(;;){}}finally{effects++;}}},
+                    read(){return [calls,effects];}
+                };
+            })();state.cleanup
+        "#,
     );
     expose_child(&mut realm, &environment, function);
     realm
@@ -1919,11 +2518,11 @@ fn repeated_public_child_creation_cannot_reset_script_or_job_work_allowances() {
     realm
         .eval(
             r#"
-        var controller=(function(create){let count=0;return {
-            run(){while(count<256){create();count++;}},
-            read(){return count;},reset(){count=0;}
-        };})($262.createRealm);
-    "#,
+                var controller=(function(create){let count=0;return {
+                    run(){while(count<256){create();count++;}},
+                    read(){return count;},reset(){count=0;}
+                };})($262.createRealm);
+            "#,
         )
         .unwrap();
     let run = realm.eval("controller.run").unwrap();

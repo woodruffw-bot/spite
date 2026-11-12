@@ -143,7 +143,15 @@ fn string_next_requires_its_own_brand_independent_of_prototypes() {
 fn string_iterators_retain_captured_text_without_retaining_the_original_receiver() {
     let mut realm = realm_with_symbols();
     let Value::Object(source) = realm
-        .eval("let o={toString:()=> 'xy'},i=String.prototype[s.constructor.iterator].call(o);o")
+        .eval(
+            r#"
+                let o = {
+                        toString: () => 'xy'
+                    },
+                    i = String.prototype[s.constructor.iterator].call(o);
+                o
+            "#,
+        )
         .unwrap()
     else {
         panic!("source");

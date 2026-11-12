@@ -305,7 +305,16 @@ fn imported_records_and_symbols_remain_reachable_through_escaped_functions_and_a
     );
     realm.evaluate_module_record(&modules[1]).unwrap();
     expose(&mut realm, &modules[0], "ns");
-    realm.eval("let read=ns.read;let result;ns.write().then(()=>result=false,e=>result=e instanceof TypeError);ns=null").unwrap();
+    realm
+        .eval(
+            r#"
+                let read = ns.read;
+                let result;
+                ns.write().then(() => result = false, e => result = e instanceof TypeError);
+                ns = null
+            "#,
+        )
+        .unwrap();
     drop(modules);
     realm.clear_kept_objects().unwrap();
     realm.collect(usize::MAX).unwrap();

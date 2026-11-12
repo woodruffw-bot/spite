@@ -841,7 +841,15 @@ mod tests {
             realm.eval("inherited===7 && access===this && delete inherited && inherited===7"),
             Ok(Value::Boolean(true))
         );
-        assert_eq!(realm.eval("var inherited,access;inherited===undefined && access===undefined && !delete inherited"),Ok(Value::Boolean(true)));
+        assert_eq!(
+            realm.eval(
+                r#"
+                    var inherited, access;
+                    inherited === undefined && access === undefined && !delete inherited
+                "#
+            ),
+            Ok(Value::Boolean(true))
+        );
     }
 
     #[test]

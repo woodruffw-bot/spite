@@ -108,7 +108,17 @@ fn entries_ignore_species() {
 fn recursive_next_length_getters_obey_the_host_limit_and_restore_call_state() {
     std::thread::Builder::new().stack_size(2*1024*1024).spawn(|| {
         let mut realm=realm_with_symbols();
-        realm.eval("let o={0:7},i=Array.prototype.values.call(o),flag=0;Object.defineProperty(o,'length',{get:()=>i.next(),configurable:true})").unwrap();
+        realm.eval(r#"
+            let o = {
+                    0: 7
+                },
+                i = Array.prototype.values.call(o),
+                flag = 0;
+            Object.defineProperty(o, 'length', {
+                get: () => i.next(),
+                configurable: true
+            })
+        "#).unwrap();
         assert!(matches!(realm.eval("try{i.next();}catch{flag=1;}finally{flag=2;}"),Err(Error::Limit{..})));
         check(&mut realm,"flag===0 && (Object.defineProperty(o,'length',{value:1}),i.next().value===7) && i.next().done");
     }).unwrap().join().unwrap();

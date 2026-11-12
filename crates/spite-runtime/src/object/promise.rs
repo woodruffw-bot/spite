@@ -302,14 +302,41 @@ mod tests {
     #[test]
     fn queued_jobs_and_settled_symbols_survive_collection_without_leaking_cycles() {
         let mut realm = Realm::default();
-        realm.eval("let calls=0;(()=>{let thenable={then(resolve){calls++;resolve(1)}};Promise.resolve(thenable)})();").unwrap();
+        realm
+            .eval(
+                r#"
+                    let calls = 0;
+                    (() => {
+                        let thenable = {
+                            then(resolve) {
+                                calls++;
+                                resolve(1)
+                            }
+                        };
+                        Promise.resolve(thenable)
+                    })();
+                "#,
+            )
+            .unwrap();
         realm.collect(usize::MAX).unwrap();
         assert!(matches!(
             realm.run_next_promise_job(),
             Ok(PromiseJobOutcome::Completed)
         ));
         assert_eq!(realm.eval("calls"), Ok(Value::Number(1.0)));
-        realm.eval("let holder=(()=>{let symbol=Symbol();return {promise:Promise.resolve(symbol),weak:new WeakRef(symbol)}})();").unwrap();
+        realm
+            .eval(
+                r#"
+                    let holder = (() => {
+                        let symbol = Symbol();
+                        return {
+                            promise: Promise.resolve(symbol),
+                            weak: new WeakRef(symbol)
+                        }
+                    })();
+                "#,
+            )
+            .unwrap();
         realm.clear_kept_objects().unwrap();
         realm.collect(usize::MAX).unwrap();
         assert_eq!(

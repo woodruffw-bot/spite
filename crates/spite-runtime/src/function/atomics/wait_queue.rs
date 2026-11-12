@@ -307,7 +307,15 @@ mod tests {
     #[test]
     fn a_removed_native_waiter_keeps_its_capability_for_a_later_foreign_delivery() {
         let mut realm = Realm::default();
-        realm.eval("let a=new Int32Array(new SharedArrayBuffer(8)),result='';Atomics.waitAsync(a,0,0,1).value.then(v=>result=v)").unwrap();
+        realm
+            .eval(
+                r#"
+                    let a = new Int32Array(new SharedArrayBuffer(8)),
+                        result = '';
+                    Atomics.waitAsync(a, 0, 0, 1).value.then(v => result = v)
+                "#,
+            )
+            .unwrap();
         let waits = realm.atomic_waits.as_ref().unwrap();
         let backing = waits.pending[0].backing.clone();
         let owner = waits.owner.clone();
@@ -362,7 +370,27 @@ mod tests {
     #[test]
     fn pending_wait_roots_reactions_until_notification_and_releases_after_the_job() {
         let mut realm = Realm::default();
-        realm.eval("let a=new Int32Array(new SharedArrayBuffer(8)),weak,log='';function keep(value){return ()=>{log+=value.tag}}{let token={tag:'ok'};weak=new WeakRef(token);Atomics.waitAsync(a,0,0).value.then(keep(token));}0").unwrap();
+        realm
+            .eval(
+                r#"
+                    let a = new Int32Array(new SharedArrayBuffer(8)),
+                        weak, log = '';
+
+                    function keep(value) {
+                        return () => {
+                            log += value.tag
+                        }
+                    } {
+                        let token = {
+                            tag: 'ok'
+                        };
+                        weak = new WeakRef(token);
+                        Atomics.waitAsync(a, 0, 0).value.then(keep(token));
+                    }
+                    0
+                "#,
+            )
+            .unwrap();
         realm.clear_kept_objects().unwrap();
         realm.collect(usize::MAX).unwrap();
         assert_eq!(

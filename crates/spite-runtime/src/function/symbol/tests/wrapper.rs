@@ -181,7 +181,10 @@ fn symbol_intrinsic_descriptors_and_methods_have_standard_attributes() {
         check(
             &mut realm,
             &format!(
-                "d=Object.getOwnPropertyDescriptor(p,'{name}');d.writable && !d.enumerable && d.configurable"
+                r#"
+                    d = Object.getOwnPropertyDescriptor(p, '{name}');
+                    d.writable && !d.enumerable && d.configurable
+                "#
             ),
         );
     }
@@ -190,7 +193,11 @@ fn symbol_intrinsic_descriptors_and_methods_have_standard_attributes() {
         check(
             &mut realm,
             &format!(
-                "d=Object.getOwnPropertyDescriptor(S,'{name}');typeof d.value==='symbol' && d.value.description==='Symbol.{name}' && !d.writable && !d.enumerable && !d.configurable"
+                r#"
+                    d = Object.getOwnPropertyDescriptor(S, '{name}');
+                    typeof d.value === 'symbol' && d.value.description === 'Symbol.{name}' && !d
+                        .writable && !d.enumerable && !d.configurable
+                "#
             ),
         );
         assert_eq!(

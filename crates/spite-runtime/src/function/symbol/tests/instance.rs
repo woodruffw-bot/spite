@@ -77,7 +77,20 @@ fn hook_lookup_and_abrupt_completions_precede_prototype_access() {
         &mut realm,
         "let log='',target={};Object.defineProperty(target,hasInstance,{get:function(){log+=this===target?'g':'bad';return function(v){log+='c';return v===3;};}});Object.defineProperty(target,'prototype',{get:()=>{throw 8;}});3 instanceof target && log==='gc'",
     );
-    assert_eq!(realm.eval("let abrupt={};Object.defineProperty(abrupt,hasInstance,{get:()=>{throw 7;}});1 instanceof abrupt"),Err(Error::Thrown(Value::Number(7.0))));
+    assert_eq!(
+        realm.eval(
+            r#"
+                let abrupt = {};
+                Object.defineProperty(abrupt, hasInstance, {
+                    get: () => {
+                        throw 7;
+                    }
+                });
+                1 instanceof abrupt
+            "#
+        ),
+        Err(Error::Thrown(Value::Number(7.0)))
+    );
     assert_eq!(
         realm.eval("1 instanceof {[hasInstance]:()=>{throw 9;}}"),
         Err(Error::Thrown(Value::Number(9.0)))
@@ -99,7 +112,13 @@ fn hook_lookup_and_abrupt_completions_precede_prototype_access() {
         check(
             &mut realm,
             &format!(
-                "function F(){{}}Object.defineProperty(F,hasInstance,{{value:{absent}}});new F instanceof F && !(1 instanceof F)"
+                r#"
+                    function F() {{}}
+                    Object.defineProperty(F, hasInstance, {{
+                        value: {absent}
+                    }});
+                    new F instanceof F && !(1 instanceof F)
+                "#
             ),
         );
         assert!(matches!(

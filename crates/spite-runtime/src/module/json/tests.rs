@@ -165,15 +165,15 @@ fn intrinsic_parsing_ignores_public_json_and_preserves_object_layout() {
     let root = realm
         .create_module(
             r#"
-        import data, * as ns from 'data';
-        globalThis.result=Object.getPrototypeOf(data)===Object.prototype &&
-            Object.hasOwn(data,'__proto__') && data.__proto__.x===1 &&
-            data.dup===2 && data.nested[0]===true && data.nested[1]===null &&
-            Object.isExtensible(data) && Object.getPrototypeOf(ns)===null &&
-            Reflect.ownKeys(ns).length===2 && !Reflect.set(ns,'default',0);
-        try {data=0;result=false} catch(e) {result=result && e instanceof TypeError}
-        data.dup=3;result=result && ns.default.dup===3;
-    "#,
+                import data, * as ns from 'data';
+                globalThis.result=Object.getPrototypeOf(data)===Object.prototype &&
+                    Object.hasOwn(data,'__proto__') && data.__proto__.x===1 &&
+                    data.dup===2 && data.nested[0]===true && data.nested[1]===null &&
+                    Object.isExtensible(data) && Object.getPrototypeOf(ns)===null &&
+                    Reflect.ownKeys(ns).length===2 && !Reflect.set(ns,'default',0);
+                try {data=0;result=false} catch(e) {result=result && e instanceof TypeError}
+                data.dup=3;result=result && ns.default.dup===3;
+            "#,
         )
         .unwrap();
     realm
@@ -194,10 +194,10 @@ fn shared_default_reexports_and_namespaces_resolve_to_one_json_value() {
     let root = realm
         .create_module(
             r#"
-        import {data} from 'bridge';import direct,* as ns from 'data';
-        globalThis.same=data===direct && ns.default===data && data.x===7 &&
-            Object.keys(ns).join(',')==='default';
-    "#,
+                import {data} from 'bridge';import direct,* as ns from 'data';
+                globalThis.same=data===direct && ns.default===data && data.x===7 &&
+                    Object.keys(ns).join(',')==='default';
+            "#,
         )
         .unwrap();
     realm
@@ -243,7 +243,17 @@ fn dynamic_import_completion_accepts_json_records_and_reuses_namespace_identity(
     realm.enable_module_imports();
     let data = realm.create_json_module(r#"{"x":7}"#).unwrap();
     realm
-        .eval("let a,b;import('data').then(ns=>{a=ns});import('data').then(ns=>{b=ns})")
+        .eval(
+            r#"
+                let a, b;
+                import('data').then(ns => {
+                    a = ns
+                });
+                import('data').then(ns => {
+                    b = ns
+                })
+            "#,
+        )
         .unwrap();
     for _ in 0..8 {
         drain(&mut realm);

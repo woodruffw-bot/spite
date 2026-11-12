@@ -106,7 +106,25 @@ fn abrupt_body_completion_preserves_queued_symbol_reasons_and_top_level_promise_
 #[test]
 fn internal_module_reactions_ignore_public_promise_constructor_and_then_getters() {
     let mut realm = Realm::default();
-    realm.eval("let reads=0;Object.defineProperty(Promise.prototype,'constructor',{get(){reads++;throw 1}});Object.defineProperty(Promise.prototype,'then',{get(){reads++;throw 2}})").unwrap();
+    realm
+        .eval(
+            r#"
+                let reads = 0;
+                Object.defineProperty(Promise.prototype, 'constructor', {
+                    get() {
+                        reads++;
+                        throw 1
+                    }
+                });
+                Object.defineProperty(Promise.prototype, 'then', {
+                    get() {
+                        reads++;
+                        throw 2
+                    }
+                })
+            "#,
+        )
+        .unwrap();
     let promise = realm.eval_module("if(false){await 0}").unwrap();
     pending(&realm, &promise);
     next(&mut realm);
