@@ -163,7 +163,6 @@ fn flat_then_checked_v_set_pair_state_context_and_consumers() {
     assert_true(
         r"/[a][c--b]\b/v.test('ac')&&!/[a][c--b]\b/v.test('ab')&&!/[a][c--b]\b/v.test('acx')",
     );
-    assert_true(r"/[a][b]/v.test('ab')&&!/[a][b]/v.test('ac')");
     assert_true(r"/[a][c--b][d]/v.test('acd')");
     assert_true(
         r#"

@@ -646,20 +646,6 @@ fn truth_table_string_classes_keep_unproved_class_spines_and_unknown_proofs_dist
                 ]) === "[[\"aba\",\"\",\"\"],[[0,3],[0,0],[3,3]],0,0]"
         "#,
     );
-    assert_true(
-        r#"
-            var pattern = "(^|\\b)([\\q{a|ab}])",
-                input = "aba",
-                r = new RegExp(pattern, "dv"),
-                m = r.exec(input);
-            r.source === pattern && r.flags === "dv" && r.hasIndices && r.unicodeSets && (m === null || (m
-                .input === input && m.groups === undefined && m.indices.groups === undefined &&
-                Object.hasOwn(m, "groups") && Object.hasOwn(m.indices, "groups"))) && JSON.stringify(
-                m === null ? null : [Array.from(m, v => v === undefined ? "<undefined>" : v), Array
-                    .from(m.indices, v => v === undefined ? "<undefined>" : v), m.index, r.lastIndex
-                ]) === "[[\"ab\",\"\",\"ab\"],[[0,2],[0,0],[0,2]],0,0]"
-        "#,
-    );
     for pattern in [
         r"((\b)|z|())([\q{a|ab}])+",
         r"((\b)|\1|())([\q{a|ab}])+",

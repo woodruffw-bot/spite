@@ -181,7 +181,6 @@ fn flat_then_checked_v_set_pair_word_state_context_and_consumers() {
             caught && marker === 0
         "#,
     );
-    assert_true(r"/\b[a][b]/v.test('ab')&&!/\b[a][b]/v.test('xab')&&!/\b[a][b]/v.test('ac')");
     assert_true(r"/\b[a][[b]][c]/v.test('abc')");
     assert_true(
         r#"

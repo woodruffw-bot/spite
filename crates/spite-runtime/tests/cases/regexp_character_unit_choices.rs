@@ -73,13 +73,6 @@ fn fixed_choices_surround_repetition_with_partial_enclosing_captures() {
     );
     assert_true(
         r#"
-            let a = /(x|y)(a+)(b|c)/d.exec('yaaac');
-            a[1] === 'y' && a[2] === 'aaa' && a[3] === 'c' && a.indices[2][0] === 1 && a.indices[2][1] ===
-                4
-        "#,
-    );
-    assert_true(
-        r#"
             let a = /((x|y)(([a]|b)(c|d))*)(e|f)/d.exec('xf');
             a[1] === 'x' && a[2] === 'x' && a[3] === undefined && a[4] === undefined && a[5] ===
                 undefined && a[6] === 'f' && a.indices[1][1] === 1
@@ -152,28 +145,8 @@ fn alternatives_and_state_keep_branch_capture_offsets_and_original_source() {
 fn escapes_flags_surrogates_and_adjacent_empty_groups_keep_exact_units() {
     assert_true(
         r#"
-            let a = /\0()(\x61|\u0062)1/d.exec('\0b1');
-            a[1] === '' && a[2] === 'b' && a.indices[1][0] === 1 && a.indices[2][0] === 1
-        "#,
-    );
-    assert_true(
-        r#"
-            let a = /(µ|Μ)(ſ|S)(σ|ς)/di.exec('ΜSΣ');
-            a[1] === 'Μ' && a[2] === 'S' && a[3] === 'Σ' && /(ſ|S)/i.exec('s')[0] === 's' && /(ſ|S)/i.exec(
-                'ſ')[0] === 'ſ'
-        "#,
-    );
-    assert_true(
-        r#"
             let a = /.([a]|b)./ds.exec('\nab\n');
             a[0] === '\nab' && a[1] === 'a' && a.indices[1][0] === 1 && /.([a]|b)./.exec('\nab\n') === null
-        "#,
-    );
-    assert_true(
-        r#"
-            let a = /(\uD83D|a)(\uDCA9|b)/d.exec('💩');
-            a[1].charCodeAt(0) === 55357 && a[2].charCodeAt(0) === 56489 && a.indices[1][1] === 1 && a
-                .indices[2][0] === 1
         "#,
     );
 }

@@ -269,32 +269,6 @@ fn single_character_v_string_class_pair_state_context_and_consumers() {
         );
         assert_eq!(realm.eval("marker"), Ok(Value::Number(3.0)), "{source}");
     }
-    assert_true(
-        r#"
-            let r = /(?<whole>([[a]][\q{b}]))/dvg,
-                m = r.exec("ab");
-            Array.isArray(m) && Object.getPrototypeOf(m) === Array.prototype && m.length === 3 && m[0] ===
-                "ab" && m[1] === "ab" && m[2] === "ab" && m.index === 0 && m.input === "ab" && Object
-                .getPrototypeOf(m.groups) === null && m.groups.whole === "ab" && m.indices.length === 3 &&
-                m.indices[0][0] === 0 && m.indices[0][1] === 2 && m.indices[1][0] === 0 && m.indices[1][
-                1] === 2 && m.indices[2][0] === 0 && m.indices[2][1] === 2 && m.indices.groups.whole[0] ===
-                0 && m.indices.groups.whole[1] === 2 && r.source === "(?<whole>([[a]][\\q{b}]))" && r
-                .flags === 'dgv' && r.lastIndex === 2 && r.exec("ab") === null && r.lastIndex === 0
-        "#,
-    );
-    assert_true(
-        r#"
-            let r = /(?<whole>([a&&a][\q{b}]))/dvg,
-                m = r.exec("ab");
-            Array.isArray(m) && Object.getPrototypeOf(m) === Array.prototype && m.length === 3 && m[0] ===
-                "ab" && m[1] === "ab" && m[2] === "ab" && m.index === 0 && m.input === "ab" && Object
-                .getPrototypeOf(m.groups) === null && m.groups.whole === "ab" && m.indices.length === 3 &&
-                m.indices[0][0] === 0 && m.indices[0][1] === 2 && m.indices[1][0] === 0 && m.indices[1][
-                1] === 2 && m.indices[2][0] === 0 && m.indices[2][1] === 2 && m.indices.groups.whole[0] ===
-                0 && m.indices.groups.whole[1] === 2 && r.source === "(?<whole>([a&&a][\\q{b}]))" && r
-                .flags === 'dgv' && r.lastIndex === 2 && r.exec("ab") === null && r.lastIndex === 0
-        "#,
-    );
 }
 
 #[test]

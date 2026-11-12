@@ -7,18 +7,6 @@ use std::fmt::Write;
 
 #[test]
 fn flat_v_set_class_literal_state_context_and_consumers() {
-    assert_true(r#"/\b[a]b\b/v.test('ab')"#);
-    assert_true(
-        r#"
-            let r = /\b[a]b\b/v,
-                m = r.exec('ab');
-            m !== null && Array.isArray(m) && m.length === 1 && m[0] === 'ab' && m.index === 0 && m
-                .input === 'ab' && m.groups === undefined && m.indices === undefined && r.source ===
-                '\\b[a]b\\b' && r.lastIndex === 0 && r.exec('xb') === null && r.exec('ax') === null && r
-                .exec('a') === null && r.exec('xab') === null && r.exec('!ab').index === 1 && r.exec(
-                'abx') === null
-        "#,
-    );
     assert_true(r#"/\b[a]b/v.test('ab')"#);
     assert_true(
         r#"

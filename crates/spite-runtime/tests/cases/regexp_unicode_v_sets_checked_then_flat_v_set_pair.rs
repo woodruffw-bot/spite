@@ -168,17 +168,6 @@ fn checked_then_flat_v_set_pair_state_context_and_consumers() {
                 r.exec('xacd').index === 1 && r.exec('acdx').index === 0 && r.lastIndex === 0
         "#,
     );
-    assert_true(r"/c[a--b][c]/v.test('cac')");
-    assert_true(
-        r#"
-            let r = /c[a--b][c]/v,
-                m = r.exec('cac');
-            m !== null && Array.isArray(m) && m.length === 1 && m[0] === 'cac' && m.index === 0 && m
-                .input === 'cac' && m.groups === undefined && m.indices === undefined && r.source ===
-                'c[a--b][c]' && r.lastIndex === 0 && !r.test('xac') && !r.test('cxc') && !r.test('cax') &&
-                !r.test('ca') && r.test('cacx') && r.exec('xcac').index === 1
-        "#,
-    );
     for source in [
         r"/[a--b]^[c]/v.test('ac')",
         r"/([a--b])[c]/v.test('ac')",

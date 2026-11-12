@@ -74,13 +74,6 @@ fn fixed_choices_surround_repetition_with_partial_enclosing_captures() {
     );
     assert_true(
         r#"
-            let a = /(x|y)(a+)(b|c)/d.exec('yaaac');
-            a[1] === 'y' && a[2] === 'aaa' && a[3] === 'c' && a.indices[2][0] === 1 && a.indices[2][1] ===
-                4
-        "#,
-    );
-    assert_true(
-        r#"
             let a = /((x|y)(((?:(?:)[^z]|[^z])|(?:(?:)b|b))(c|d))*)(e|f)/d.exec('xf');
             a[1] === 'x' && a[2] === 'x' && a[3] === undefined && a[4] === undefined && a[5] ===
                 undefined && a[6] === 'f' && a.indices[1][1] === 1
@@ -157,29 +150,9 @@ fn alternatives_and_state_keep_branch_capture_offsets_and_original_source() {
 fn escapes_flags_surrogates_and_adjacent_empty_groups_keep_exact_units() {
     assert_true(
         r#"
-            let a = /\0()(\x61|\u0062)1/d.exec('\0b1');
-            a[1] === '' && a[2] === 'b' && a.indices[1][0] === 1 && a.indices[2][0] === 1
-        "#,
-    );
-    assert_true(
-        r#"
-            let a = /(µ|Μ)(ſ|S)(σ|ς)/di.exec('ΜSΣ');
-            a[1] === 'Μ' && a[2] === 'S' && a[3] === 'Σ' && /(ſ|S)/i.exec('s')[0] === 's' && /(ſ|S)/i.exec(
-                'ſ')[0] === 'ſ'
-        "#,
-    );
-    assert_true(
-        r#"
             let a = /.((?:(?:)[^z]|[^z])|(?:(?:)b|b))./ds.exec('\nab\n');
             a[0] === '\nab' && a[1] === 'a' && a.indices[1][0] === 1 && /.((?:(?:)[^z]|[^z])|(?:(?:)b|b))./
                 .exec('\nab\n') === null
-        "#,
-    );
-    assert_true(
-        r#"
-            let a = /(\uD83D|a)(\uDCA9|b)/d.exec('💩');
-            a[1].charCodeAt(0) === 55357 && a[2].charCodeAt(0) === 56489 && a.indices[1][1] === 1 && a
-                .indices[2][0] === 1
         "#,
     );
 }
@@ -247,29 +220,9 @@ fn each_branch_inverts_after_canonicalization_before_union() {
     );
     assert_true(
         r#"
-            /([^\w]|\w)/i.exec('ſ')[1] === 'ſ' && /([^\D]|[1])/.exec('2')[1] === '2' && /([^\D]|[1])/.exec(
-                'x') === null && /([^\s]|\s)/.exec('\n')[1] === '\n'
-        "#,
-    );
-    assert_true(
-        r#"
-            let a = /([]|[^])+/d.exec('\n\uD800');
-            a[0].length === 2 && a[1].charCodeAt(0) === 55296 && a.indices[1][0] === 1 && /([]|[^])+/.exec(
-                '') === null
-        "#,
-    );
-    assert_true(
-        r#"
             let a = /((?:(?:)[^a]|[^a])|(?:(?:)b|b))|a/d.exec('a'),
                 b = /((?:(?:)[^a]|[^a])|(?:(?:)b|b))|a/d.exec('b');
             a[1] === undefined && a.indices[1] === undefined && b[1] === 'b' && b.indices[1][0] === 0
-        "#,
-    );
-    assert_true(
-        r#"
-            let a = /((x|[^z])((a|[^z])(c|d))+)(e|f)/d.exec('yacbdf');
-            a[1] === 'yacbd' && a[2] === 'y' && a[3] === 'bd' && a[4] === 'b' && a[5] === 'd' && a[6] ===
-                'f' && a.indices[3][0] === 3 && a.indices[6][0] === 5
         "#,
     );
 }

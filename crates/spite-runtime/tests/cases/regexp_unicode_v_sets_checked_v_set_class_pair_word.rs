@@ -162,9 +162,6 @@ fn checked_v_set_class_pair_word_state_context_and_consumers() {
             x && y && a.lastIndex === 1 && b.lastIndex === 0
         "#,
     );
-    assert_true(
-        r"/\b[a][b--c]/v.test('ab')&&!/\b[a][b--c]/v.test('ac')&&!/\b[a][b--c]/v.test('xab')",
-    );
     assert_true(r"/\b[[a]][[b]][[c]]/v.test('abc')");
     assert_true(
         r#"

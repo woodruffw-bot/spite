@@ -1361,21 +1361,6 @@ fn layered_asserted_string_class_consumers_keep_distinct_endpoints_and_branch_al
             ok && marker === 3
         "#
     ));
-    assert_true(
-        r#"
-            var pattern = "\\b((([\\q{a|ab}])|(\\b)?))",
-                input = "aba",
-                r = new RegExp(pattern, "dv"),
-                m = r.exec(input);
-            r.source === pattern && r.flags === "dv" && r.hasIndices && r.unicodeSets && (m === null || (m
-                    .input === input && m.groups === undefined && m.indices.groups === undefined &&
-                    Object.hasOwn(m, "groups") && Object.hasOwn(m.indices, "groups"))) && JSON.stringify(
-                    m === null ? null : [Array.from(m, v => v === undefined ? "<undefined>" : v), Array
-                        .from(m.indices, v => v === undefined ? "<undefined>" : v), m.index, r.lastIndex
-                    ]) ===
-                "[[\"ab\",\"ab\",\"ab\",\"ab\",\"<undefined>\"],[[0,2],[0,2],[0,2],[0,2],\"<undefined>\"],0,0]"
-        "#,
-    );
     for pattern in [
         r"\b\b((([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])|()))",
         r"\b((([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])|()))\b\b",

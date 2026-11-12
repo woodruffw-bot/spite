@@ -191,13 +191,6 @@ fn unicode_pure_empty_disjunction_explicit_work_abort_preserves_state() {
 fn unicode_pure_empty_disjunction_preserves_earlier_empty_and_capture_results() {
     assert_true(
         r#"
-            let m = /(())()/du.exec('a');
-            m.length === 4 && m[1] === '' && m[2] === '' && m[3] === '' && m.indices[3][0] === 0 && m
-                .indices[3][1] === 0
-        "#,
-    );
-    assert_true(
-        r#"
             let m = /(?<x>(?:|))()/dvi.exec('😀');
             m.length === 3 && m.groups.x === '' && m[2] === '' && m.indices.groups.x === m.indices[1]
         "#,

@@ -73,9 +73,6 @@ fn unicode_noncapturing_branch_sequence_words_results_snapshot() {
 
 #[test]
 fn unicode_noncapturing_branch_sequence_words_counts_and_scopes() {
-    assert_true(r"let r=/\b(\b\b(?:\Ba)|b)+\b/v;r.exec('a')===null&&r.exec('b')[0]==='b'");
-    assert_true(r"let r=/\b((?:a\b)\B\B|b)+\b/u;r.exec('a')===null&&r.exec('b')[0]==='b'");
-
     for source in [
         r"/\B((^(?:.)|a)+)\B$b/vms.exec('\n')",
         r"/\B(?<whole>(^(?:.)|a)+)\B$b/vms.exec('\n')",
@@ -122,18 +119,6 @@ fn unicode_noncapturing_branch_sequence_words_contradictions_empty_counts_and_li
             m[0] === '' && m[1] === '' && m.groups.whole === '' && m[2] === undefined && m.indices[1][
                 0
             ] === 0 && m.indices[1][1] === 0 && m.indices[2] === undefined
-        "#,
-    );
-    assert_true(
-        r#"
-            let m = /\b(\b\b(?:\$)|b)+\B$/du.exec('a$');
-            m.index === 1 && m[0] === '$' && m[1] === '$' && m.indices[1][0] === 1 && m.indices[1][1] === 2
-        "#,
-    );
-    assert_true(
-        r#"
-            let m = /\B((?:\$)\b\b|b)+\b/dv.exec('$a');
-            m.index === 0 && m[0] === '$' && m[1] === '$' && m.indices[1][0] === 0 && m.indices[1][1] === 1
         "#,
     );
 }

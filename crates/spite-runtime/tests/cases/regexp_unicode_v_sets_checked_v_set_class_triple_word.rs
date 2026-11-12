@@ -248,18 +248,6 @@ fn checked_v_set_class_triple_word_state_context_and_consumers() {
                     'abcx')[0] === 'abc' && r.lastIndex === 0
         "#,
     );
-    assert_true(r"/\b[[a]][b][[c]]/v.test('abc')");
-    assert_true(
-        r#"
-            let r = /\b[[a]][b][[c]]/v,
-                m = r.exec('abc');
-            m !== null && m.length === 1 && m[0] === 'abc' && m.index === 0 && m.input === 'abc' && m
-                .groups === undefined && m.indices === undefined && r.source === '\\b[[a]][b][[c]]' && r
-                .lastIndex === 0 && !r.test('xbc') && !r.test('axc') && !r.test('abx') && !r.test('ab') &&
-                !r.test('xabc') && r.exec('!abc').index === 1 && r.exec('abcx').index === 0 && r.exec(
-                    'abcx')[0] === 'abc' && r.lastIndex === 0
-        "#,
-    );
     assert_true(r"/\b[[a]][[b]][c]/v.test('abc')");
     assert_true(
         r#"

@@ -276,12 +276,6 @@ fn unicode_han_script_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     assert_true(
-        r#"
-            let m = /\p{Script_Extensions=Latin}/u.exec('A');
-            JSON.stringify(m) === '["A"]' && m.index === 0 && m.input === 'A'
-        "#,
-    );
-    assert_true(
         r#"let m=/\p{scx=Han}/u.exec('一');JSON.stringify(m)==='["一"]'&&m.index===0&&m.input==='一'"#,
     );
     assert_true(r"/[\p{sc=Han}&&A]/v.exec('A')===null");

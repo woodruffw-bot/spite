@@ -218,28 +218,6 @@ fn checked_v_set_pair_literal_word_state_context_and_consumers() {
             caught && marker === 0
         "#,
     );
-    assert_true(r"/\b[[a]]b[[c]]/v.test('abc')");
-    assert_true(
-        r#"
-            let r = /\b[[a]]b[[c]]/v,
-                m = r.exec('abc');
-            m !== null && m.length === 1 && m[0] === 'abc' && m.index === 0 && m.input === 'abc' && m
-                .groups === undefined && m.indices === undefined && r.source === '\\b[[a]]b[[c]]' && r
-                .lastIndex === 0 && !r.test('xbc') && !r.test('axc') && !r.test('abx') && !r.test('ab') &&
-                !r.test('xabc') && r.test('abcx')
-        "#,
-    );
-    assert_true(r"/[[a]]b[[c]]\b/v.test('abc')");
-    assert_true(
-        r#"
-            let r = /[[a]]b[[c]]\b/v,
-                m = r.exec('abc');
-            m !== null && m.length === 1 && m[0] === 'abc' && m.index === 0 && m.input === 'abc' && m
-                .groups === undefined && m.indices === undefined && r.source === '[[a]]b[[c]]\\b' && r
-                .lastIndex === 0 && !r.test('xbc') && !r.test('axc') && !r.test('abx') && !r.test('ab') &&
-                !r.test('abcx') && r.test('xabc')
-        "#,
-    );
     assert_true(r"/\b[a][b]c/v.test('abc')");
     assert_true(
         r#"

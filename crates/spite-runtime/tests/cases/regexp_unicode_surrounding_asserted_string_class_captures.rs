@@ -901,49 +901,6 @@ fn surrounding_asserted_string_class_consumers_keep_point_whole_and_branch_alias
             ok && marker === 3
         "#
     ));
-    assert_true(
-        r#"
-            var pattern = "(\\b)?(([\\q{a|ab}])|())",
-                input = "aba",
-                r = new RegExp(pattern, "dv"),
-                m = r.exec(input);
-            r.source === pattern && r.flags === "dv" && r.hasIndices && r.unicodeSets && m !== null && m
-                .input === input && m.groups === undefined && m.indices.groups === undefined && Object
-                .hasOwn(m, "groups") && Object.hasOwn(m.indices, "groups") && JSON.stringify(m === null ?
-                    null : [Array.from(m, v => v === undefined ? "<undefined>" : v), Array.from(m.indices,
-                        v => v === undefined ? "<undefined>" : v), m.index, r.lastIndex]) ===
-                "[[\"ab\",\"<undefined>\",\"ab\",\"ab\",\"<undefined>\"],[[0,2],\"<undefined>\",[0,2],[0,2],\"<undefined>\"],0,0]"
-        "#,
-    );
-    assert_true(
-        r#"
-            var pattern = "(([\\q{a|ab}])|())(\\b)?",
-                input = "aba",
-                r = new RegExp(pattern, "dv"),
-                m = r.exec(input);
-            r.source === pattern && r.flags === "dv" && r.hasIndices && r.unicodeSets && m !== null && m
-                .input === input && m.groups === undefined && m.indices.groups === undefined && Object
-                .hasOwn(m, "groups") && Object.hasOwn(m.indices, "groups") && JSON.stringify(m === null ?
-                    null : [Array.from(m, v => v === undefined ? "<undefined>" : v), Array.from(m.indices,
-                        v => v === undefined ? "<undefined>" : v), m.index, r.lastIndex]) ===
-                "[[\"ab\",\"ab\",\"ab\",\"<undefined>\",\"<undefined>\"],[[0,2],[0,2],[0,2],\"<undefined>\",\"<undefined>\"],0,0]"
-        "#,
-    );
-    assert_true(
-        r#"
-            var pattern = "((\\b)|())(([\\q{a|ab}])|())",
-                input = "aba",
-                r = new RegExp(pattern, "dv"),
-                m = r.exec(input);
-            r.source === pattern && r.flags === "dv" && r.hasIndices && r.unicodeSets && (m === null || (m
-                    .input === input && m.groups === undefined && m.indices.groups === undefined &&
-                    Object.hasOwn(m, "groups") && Object.hasOwn(m.indices, "groups"))) && JSON.stringify(
-                    m === null ? null : [Array.from(m, v => v === undefined ? "<undefined>" : v), Array
-                        .from(m.indices, v => v === undefined ? "<undefined>" : v), m.index, r.lastIndex
-                    ]) ===
-                "[[\"ab\",\"\",\"\",\"<undefined>\",\"ab\",\"ab\",\"<undefined>\"],[[0,2],[0,0],[0,0],\"<undefined>\",[0,2],[0,2],\"<undefined>\"],0,0]"
-        "#,
-    );
     for pattern in [
         r"(?:([[\q{a|ab}]&&\p{RGI_Emoji}])|())+(\b)",
         r"(?:([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])|()){1}(\b)",

@@ -7,7 +7,6 @@ use std::fmt::Write;
 
 #[test]
 fn single_character_v_strings_state_context_and_consumers() {
-    assert_true(r#"/a[\q{b}]/v.test('ab')"#);
     assert_true(r#"/[\q{a|b}]/v.test('a')&&/[\q{a|b}]/v.test('b')&&!/[\q{a|b}]/v.test('c')"#);
     assert_true(
         r#"! /[^\q{a|b}]/v.test('ab')&&/[^\q{a|b}]/v.test('c')&&/[^\q{a|b}]/v.exec('😀')[0]==='😀'"#,
@@ -203,7 +202,6 @@ fn single_character_v_strings_state_context_and_consumers() {
         );
     }
     assert_true(r#"/[\q{a|b}]+/v.test('ab')"#);
-    assert_true(r#"/[\q{a}]b/v.test('ab')"#);
     assert_true(r#"/[\q{a}][b]/v.test('ab')"#);
     for (source, expected) in [
         (r#"/[\q{}]/v.test('')"#, true),

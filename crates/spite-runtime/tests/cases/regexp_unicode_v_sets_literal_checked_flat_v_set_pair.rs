@@ -230,17 +230,6 @@ fn literal_checked_flat_v_set_pair_state_context_and_consumers() {
                 r.test('ca') && r.test('cabx') && r.exec('xcab').index === 1
         "#,
     );
-    assert_true(r#"/c[a][c--b]/v.test('cac')"#);
-    assert_true(
-        r#"
-            let r = /c[a][c--b]/v,
-                m = r.exec('cac');
-            m !== null && Array.isArray(m) && m.length === 1 && m[0] === 'cac' && m.index === 0 && m
-                .input === 'cac' && m.groups === undefined && m.indices === undefined && r.source ===
-                'c[a][c--b]' && r.lastIndex === 0 && !r.test('xac') && !r.test('cxc') && !r.test('cax') &&
-                !r.test('ca') && r.test('cacx') && r.exec('xcac').index === 1
-        "#,
-    );
     assert_true(r#"/\bc[a][[b]]/v.test('cab')"#);
     assert_true(
         r#"
@@ -250,30 +239,6 @@ fn literal_checked_flat_v_set_pair_state_context_and_consumers() {
                 .input === 'cab' && m.groups === undefined && m.indices === undefined && r.source ===
                 '\\bc[a][[b]]' && r.lastIndex === 0 && !r.test('xab') && !r.test('cxb') && !r.test(
                 'cax') && !r.test('ca') && r.test('cabx') && !r.test('xcab') && r.exec('!cab').index === 1
-        "#,
-    );
-    assert_true(r#"/[[a]][b]c/v.test('abc')"#);
-    assert_true(
-        r#"
-            let r = /[[a]][b]c/v,
-                m = r.exec('abc');
-            m !== null && Array.isArray(m) && m.length === 1 && m[0] === 'abc' && m.index === 0 && m
-                .input === 'abc' && m.groups === undefined && m.indices === undefined && r.source ===
-                '[[a]][b]c' && r.lastIndex === 0 && !r.test('xbc') && !r.test('axc') && !r.test('abx') && !
-                r.test('ab') && r.exec('abcx')[0] === 'abc' && r.exec('abcx').index === 0 && r.exec('xabc')
-                .index === 1
-        "#,
-    );
-    assert_true(r#"/[[a]]c[b]/v.test('acb')"#);
-    assert_true(
-        r#"
-            let r = /[[a]]c[b]/v,
-                m = r.exec('acb');
-            m !== null && Array.isArray(m) && m.length === 1 && m[0] === 'acb' && m.index === 0 && m
-                .input === 'acb' && m.groups === undefined && m.indices === undefined && r.source ===
-                '[[a]]c[b]' && r.lastIndex === 0 && !r.test('xcb') && !r.test('axb') && !r.test('acx') && !
-                r.test('ac') && r.exec('acbx')[0] === 'acb' && r.exec('acbx').index === 0 && r.exec('xacb')
-                .index === 1
         "#,
     );
     for source in [

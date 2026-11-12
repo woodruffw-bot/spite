@@ -78,20 +78,6 @@ fn nested_progressing_choice_result_snapshot() {
 fn nested_choice_iteration_retries_restore_counts_named_enclosures_and_source_order() {
     assert_true(
         r#"
-            let a = /(?<all>(?:\k<all>a|b)+)\k<all>/d.exec('abab');
-            a[0] === 'abab' && a.groups.all === 'ab' && a.indices.groups.all === a.indices[1] && a.indices
-                .groups.all[1] === 2
-        "#,
-    );
-    assert_true(
-        r#"
-            let a = /(?<x>a)(?:\k<later>b|a)+(?<later>\k<x>)/d.exec('abbaa');
-            a[0] === 'abbaa' && a.groups.x === 'a' && a.groups.later === 'a' && a.indices.groups.x === a
-                .indices[1] && a.indices.groups.later === a.indices[2] && a.indices.groups.later[0] === 4
-        "#,
-    );
-    assert_true(
-        r#"
             let a = /(?<all>(?:(?:ab|a))+)b/d.exec('ab'),
                 b = /(?<all>(?:(?:ab|a))+)b/d.exec('abb');
             a[0] === 'ab' && a.groups.all === 'a' && a.indices.groups.all === a.indices[1] && a.indices

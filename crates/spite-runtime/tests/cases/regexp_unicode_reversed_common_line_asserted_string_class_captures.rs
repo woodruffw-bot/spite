@@ -1062,20 +1062,6 @@ fn reversed_common_line_asserted_string_class_consumers_keep_actual_endpoint_sco
             ok && marker === 3
         "#
     ));
-    assert_true(
-        r#"
-            var pattern = "$((([\\q{a|ab}])|(\\b)?))^",
-                input = "aba",
-                r = new RegExp(pattern, "dv"),
-                m = r.exec(input);
-            r.source === pattern && r.flags === "dv" && r.hasIndices && r.unicodeSets && (m === null || (m
-                .input === input && m.groups === undefined && m.indices.groups === undefined &&
-                Object.hasOwn(m, "groups") && Object.hasOwn(m.indices, "groups"))) && JSON.stringify(
-                m === null ? null : [Array.from(m, v => v === undefined ? "<undefined>" : v), Array
-                    .from(m.indices, v => v === undefined ? "<undefined>" : v), m.index, r.lastIndex
-                ]) === "null"
-        "#,
-    );
     for pattern in [
         r"$$((([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])|()))^",
         r"$((([\q{ab}&&\p{Any}&&\p{RGI_Emoji}])|()))^^",

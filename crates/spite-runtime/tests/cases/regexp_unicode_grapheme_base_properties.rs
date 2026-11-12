@@ -293,12 +293,6 @@ fn unicode_grapheme_base_properties_opted_work_and_remaining_sets() {
         Ok(Value::Boolean(true))
     );
     assert_true(
-        r#"
-            let m = /\p{Script_Extensions=Latin}/u.exec('A');
-            JSON.stringify(m) === '["A"]' && m.index === 0 && m.input === 'A'
-        "#,
-    );
-    assert_true(
         r"let m=/[\p{Gr_Base}&&A]/v.exec('A');m!==null&&m.length===1&&m[0]==='A'&&m.index===0&&m.input==='A'",
     );
     assert_true(r"/[\p{Gr_Base}--A]/v.exec('A')===null");

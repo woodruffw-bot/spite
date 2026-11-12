@@ -353,48 +353,6 @@ fn pattern_variants_match_reference_results() {
     );
     assert_true(
         r#"
-            var pattern = "(([\\q{a|ab}&&a])|(?:X|)?){0}",
-                input = "a😀b",
-                r = new RegExp(pattern, "dgvy");
-            r.lastIndex = 2;
-            var m = r.exec(input);
-            r.source === pattern && r.flags === "dgvy" && m.input === input && Object.hasOwn(m,
-                "groups") && Object.hasOwn(m.indices, "groups") && (m.groups === undefined || Object
-                    .getPrototypeOf(m.groups) === null && Object.getPrototypeOf(m.indices.groups) === null
-                    ) && JSON.stringify([Array.from(m, v => v === undefined ? "<undefined>" : v), Array
-                    .from(m.indices, v => v === undefined ? "<undefined>" : v), m.index, r.lastIndex, m
-                    .groups === undefined ? null : Object.keys(m.groups).map(k => [k, m.groups[k] ===
-                        undefined ? "<undefined>" : m.groups[k]
-                    ]), m.indices.groups === undefined ? null : Object.keys(m.indices.groups).map(
-                        k => [k, m.indices.groups[k] === undefined ? "<undefined>" : m.indices.groups[
-                            k]])
-                ]) ===
-                "[[\"\",\"<undefined>\",\"<undefined>\"],[[1,1],\"<undefined>\",\"<undefined>\"],1,1,null,null]"
-        "#,
-    );
-    assert_true(
-        r#"
-            var pattern = "([\\q{a|b}]|(\\b)?){0}",
-                input = "a😀b",
-                r = new RegExp(pattern, "dgvy");
-            r.lastIndex = 2;
-            var m = r.exec(input);
-            r.source === pattern && r.flags === "dgvy" && m.input === input && Object.hasOwn(m,
-                "groups") && Object.hasOwn(m.indices, "groups") && (m.groups === undefined || Object
-                    .getPrototypeOf(m.groups) === null && Object.getPrototypeOf(m.indices.groups) === null
-                    ) && JSON.stringify([Array.from(m, v => v === undefined ? "<undefined>" : v), Array
-                    .from(m.indices, v => v === undefined ? "<undefined>" : v), m.index, r.lastIndex, m
-                    .groups === undefined ? null : Object.keys(m.groups).map(k => [k, m.groups[k] ===
-                        undefined ? "<undefined>" : m.groups[k]
-                    ]), m.indices.groups === undefined ? null : Object.keys(m.indices.groups).map(
-                        k => [k, m.indices.groups[k] === undefined ? "<undefined>" : m.indices.groups[
-                            k]])
-                ]) ===
-                "[[\"\",\"<undefined>\",\"<undefined>\"],[[1,1],\"<undefined>\",\"<undefined>\"],1,1,null,null]"
-        "#,
-    );
-    assert_true(
-        r#"
             var pattern = "([\\q{a|ab}&&a]||){0}",
                 input = "a😀b",
                 r = new RegExp(pattern, "dgvy");

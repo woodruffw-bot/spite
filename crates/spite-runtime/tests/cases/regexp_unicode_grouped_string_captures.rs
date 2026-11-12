@@ -342,20 +342,6 @@ fn grouped_string_proofs_finish_finalizers_and_keep_counts_assertions_and_refere
             var marker = 0,
                 m;
             try {
-                m = /^([\q{a|ab}]|())/dv.exec('ab!')
-            } finally {
-                marker = 3
-            }
-            var e = /^([\q{a|ab}]|())/dv.exec('!ab');
-            marker === 3 && m.length === 3 && m[0] === 'ab' && m[1] === 'ab' && m[2] === undefined && e[
-                0] === '' && e[1] === '' && e[2] === '' && e.index === 0
-        "#,
-    );
-    assert_true(
-        r#"
-            var marker = 0,
-                m;
-            try {
                 m = /([\q{|ab}]|())$/dv.exec('ab!')
             } finally {
                 marker = 3
@@ -433,21 +419,6 @@ fn grouped_string_proofs_finish_finalizers_and_keep_counts_assertions_and_refere
             ok && marker === 3
         "#
     ));
-    assert_true(
-        r#"
-            var pattern = "([[\\q{|ab}]&&\\p{RGI_Emoji}]|()){0}",
-                input = "a😀b",
-                r = new RegExp(pattern, "dgvy");
-            r.lastIndex = 2;
-            var m = r.exec(input);
-            r.source === pattern && r.flags === "dgvy" && r.hasIndices && r.unicodeSets && m.input ===
-                input && Object.hasOwn(m, "groups") && Object.hasOwn(m.indices, "groups") && m.groups ===
-                undefined && m.indices.groups === undefined && JSON.stringify([Array.from(m, v => v ===
-                    undefined ? "<undefined>" : v), Array.from(m.indices, v => v === undefined ?
-                    "<undefined>" : v), m.index, r.lastIndex]) ===
-                "[[\"\",\"<undefined>\",\"<undefined>\"],[[1,1],\"<undefined>\",\"<undefined>\"],1,1]"
-        "#,
-    );
     for pattern in [
         r"^([\q{ab}&&\p{Any}&&\p{RGI_Emoji}]|())",
         r"([\q{ab}&&\p{Any}&&\p{RGI_Emoji}]|())$",

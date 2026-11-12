@@ -194,17 +194,6 @@ fn checked_v_set_class_triple_state_context_and_consumers() {
             caught && marker === 0
         "#,
     );
-    assert_true(r"/\b[[a]][[b]][[c]]/v.test('abc')");
-    assert_true(
-        r#"
-            let r = /\b[[a]][[b]][[c]]/v,
-                m = r.exec('abc');
-            m.length === 1 && m[0] === 'abc' && m.index === 0 && m.input === 'abc' && m.groups ===
-                undefined && m.indices === undefined && r.source === '\\b[[a]][[b]][[c]]' && r
-                .lastIndex === 0 && !r.test('xbc') && !r.test('axc') && !r.test('abx') && !r.test('ab') &&
-                !r.test('xabc')
-        "#,
-    );
     assert_true(r"/[[a]][[b]][[c]]\b/v.test('abc')");
     assert_true(
         r#"
@@ -234,17 +223,6 @@ fn checked_v_set_class_triple_state_context_and_consumers() {
                 m = r.exec('abc');
             m !== null && m.length === 1 && m[0] === 'abc' && m.index === 0 && m.input === 'abc' && m
                 .groups === undefined && m.indices === undefined && r.source === '[a][[b]][[c]]' && r
-                .lastIndex === 0 && !r.test('xbc') && !r.test('axc') && !r.test('abx') && !r.test('ab') &&
-                r.exec('xabc').index === 1 && r.exec('abcx').index === 0 && r.lastIndex === 0
-        "#,
-    );
-    assert_true(r"/[[a]][b][[c]]/v.test('abc')");
-    assert_true(
-        r#"
-            let r = /[[a]][b][[c]]/v,
-                m = r.exec('abc');
-            m !== null && m.length === 1 && m[0] === 'abc' && m.index === 0 && m.input === 'abc' && m
-                .groups === undefined && m.indices === undefined && r.source === '[[a]][b][[c]]' && r
                 .lastIndex === 0 && !r.test('xbc') && !r.test('axc') && !r.test('abx') && !r.test('ab') &&
                 r.exec('xabc').index === 1 && r.exec('abcx').index === 0 && r.lastIndex === 0
         "#,

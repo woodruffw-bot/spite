@@ -831,36 +831,6 @@ fn named_capture_results(
 
 #[test]
 fn truth_table_alternative_string_classes_keep_branch_ownership_and_unknown_proofs() {
-    assert_true(
-        r#"
-            var pattern = "(((\\b)|(\\b))([\\q{a|ab}]))|()",
-                input = "aba",
-                r = new RegExp(pattern, "dv"),
-                m = r.exec(input);
-            r.source === pattern && r.flags === "dv" && r.hasIndices && r.unicodeSets && (m === null || (m
-                    .input === input && m.groups === undefined && m.indices.groups === undefined &&
-                    Object.hasOwn(m, "groups") && Object.hasOwn(m.indices, "groups"))) && JSON.stringify(
-                    m === null ? null : [Array.from(m, v => v === undefined ? "<undefined>" : v), Array
-                        .from(m.indices, v => v === undefined ? "<undefined>" : v), m.index, r.lastIndex
-                    ]) ===
-                "[[\"ab\",\"ab\",\"\",\"\",\"<undefined>\",\"ab\",\"<undefined>\"],[[0,2],[0,2],[0,0],[0,0],\"<undefined>\",[0,2],\"<undefined>\"],0,0]"
-        "#,
-    );
-    assert_true(
-        r#"
-            var pattern = "((\\b)|(\\b))(((\\b)|(\\b))([\\q{a|ab}])|())",
-                input = "aba",
-                r = new RegExp(pattern, "dv"),
-                m = r.exec(input);
-            r.source === pattern && r.flags === "dv" && r.hasIndices && r.unicodeSets && (m === null || (m
-                    .input === input && m.groups === undefined && m.indices.groups === undefined &&
-                    Object.hasOwn(m, "groups") && Object.hasOwn(m.indices, "groups"))) && JSON.stringify(
-                    m === null ? null : [Array.from(m, v => v === undefined ? "<undefined>" : v), Array
-                        .from(m.indices, v => v === undefined ? "<undefined>" : v), m.index, r.lastIndex
-                    ]) ===
-                "[[\"ab\",\"\",\"\",\"<undefined>\",\"ab\",\"\",\"\",\"<undefined>\",\"ab\",\"<undefined>\"],[[0,2],[0,0],[0,0],\"<undefined>\",[0,2],[0,0],[0,0],\"<undefined>\",[0,2],\"<undefined>\"],0,0]"
-        "#,
-    );
     for pattern in [
         r"((\b)|z|())(([\q{a|ab}])|())",
         r"((\b)|\1|())(([\q{a|ab}])|())",

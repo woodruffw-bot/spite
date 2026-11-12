@@ -164,7 +164,6 @@ fn flat_v_set_pair_state_context_and_consumers() {
             caught && marker === 0
         "#,
     );
-    assert_true(r"/\b[a][b]/v.test('ab')&&!/\b[a][b]/v.test('xab')&&!/\b[a][b]/v.test('ac')");
     assert_true(r"/[a][c][d]/v.test('acd')");
     assert_true(
         r#"

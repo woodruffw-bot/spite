@@ -251,25 +251,7 @@ fn unicode_binary_property_opted_work_and_remaining_sets() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
-    assert_true(
-        r#"
-            let m = /\p{Script_Extensions=Latin}/u.exec('A');
-            JSON.stringify(m) === '["A"]' && m.index === 0 && m.input === 'A'
-        "#,
-    );
     assert_true(r"/\p{Script_Extensions=Greek}/v.exec('𠮷')===null");
-    assert_true(
-        r#"
-            let m = /[\p{Script_Extensions=Latin}]/u.exec('A');
-            JSON.stringify(m) === '["A"]' && m.index === 0 && m.input === 'A'
-        "#,
-    );
-    assert_true(
-        r#"
-            let m = /^(\p{Script_Extensions=Latin})$/u.exec('A');
-            JSON.stringify(m) === '["A","A"]' && m.index === 0 && m.input === 'A'
-        "#,
-    );
     for source in [
         r"/\p{RGI_Emoji}/v.exec('😀')",
         r"/\p{ASCII}+b/v.exec('A')",

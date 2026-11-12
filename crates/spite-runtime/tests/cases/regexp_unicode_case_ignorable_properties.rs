@@ -301,12 +301,6 @@ fn unicode_case_ignorable_properties_opted_work_and_remaining_sets() {
         realm.eval("marker===0&&r.lastIndex===1"),
         Ok(Value::Boolean(true))
     );
-    assert_true(
-        r#"
-            let m = /\p{Script_Extensions=Latin}/u.exec('A');
-            JSON.stringify(m) === '["A"]' && m.index === 0 && m.input === 'A'
-        "#,
-    );
     assert_true(r"/[\p{CI}&&A]/v.exec('A')===null");
     assert_true(r"/[\p{CI}--A]/v.exec('A')===null");
     assert_true(

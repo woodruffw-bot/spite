@@ -152,27 +152,6 @@ fn checked_v_set_class_pair_state_context_and_consumers() {
             x && y && a.lastIndex === 1 && b.lastIndex === 0
         "#,
     );
-    assert_true(r"/[[a]][[b]][[c]]/v.test('abc')");
-    assert_true(
-        r#"
-            let r = /[[a]][[b]][[c]]/v,
-                m = r.exec('abc');
-            m.length === 1 && m[0] === 'abc' && m.index === 0 && m.input === 'abc' && m.groups ===
-                undefined && m.indices === undefined && r.source === '[[a]][[b]][[c]]' && r.lastIndex ===
-                0 && !r.test('xbc') && !r.test('axc') && !r.test('abx') && !r.test('ab')
-        "#,
-    );
-    assert_true(r"/c[a--b][c]/v.test('cac')");
-    assert_true(
-        r#"
-            let r = /c[a--b][c]/v,
-                m = r.exec('cac');
-            m !== null && Array.isArray(m) && m.length === 1 && m[0] === 'cac' && m.index === 0 && m
-                .input === 'cac' && m.groups === undefined && m.indices === undefined && r.source ===
-                'c[a--b][c]' && r.lastIndex === 0 && !r.test('xac') && !r.test('cxc') && !r.test('cax') &&
-                !r.test('ca') && r.test('cacx') && r.exec('xcac').index === 1
-        "#,
-    );
     for source in [
         r"/[[a]]\b[[b]]/v.test('ab')",
         r"/[[a]]^[[b]]/v.test('ab')",

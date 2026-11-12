@@ -223,30 +223,6 @@ fn flat_checked_v_set_pair_literal_state_context_and_consumers() {
             caught && marker === 0
         "#,
     );
-    assert_true(r#"/[[a]]c[b]/v.test('acb')"#);
-    assert_true(
-        r#"
-            let r = /[[a]]c[b]/v,
-                m = r.exec('acb');
-            m !== null && Array.isArray(m) && m.length === 1 && m[0] === 'acb' && m.index === 0 && m
-                .input === 'acb' && m.groups === undefined && m.indices === undefined && r.source ===
-                '[[a]]c[b]' && r.lastIndex === 0 && !r.test('xcb') && !r.test('axb') && !r.test('acx') && !
-                r.test('ac') && r.exec('acbx')[0] === 'acb' && r.exec('acbx').index === 0 && r.exec('xacb')
-                .index === 1
-        "#,
-    );
-    assert_true(r#"/[a]c[[b]]/v.test('acb')"#);
-    assert_true(
-        r#"
-            let r = /[a]c[[b]]/v,
-                m = r.exec('acb');
-            m !== null && Array.isArray(m) && m.length === 1 && m[0] === 'acb' && m.index === 0 && m
-                .input === 'acb' && m.groups === undefined && m.indices === undefined && r.source ===
-                '[a]c[[b]]' && r.lastIndex === 0 && !r.test('xcb') && !r.test('axb') && !r.test('acx') && !
-                r.test('ac') && r.exec('acbx')[0] === 'acb' && r.exec('acbx').index === 0 && r.exec('xacb')
-                .index === 1
-        "#,
-    );
     for source in [
         r#"/[a][[b]]cd/v.test('abcd')"#,
         r#"/[a][[b]][c]d/v.test('abcd')"#,

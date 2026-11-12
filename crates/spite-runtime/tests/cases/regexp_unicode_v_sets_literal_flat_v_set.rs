@@ -8,18 +8,6 @@ use std::fmt::Write;
 #[test]
 fn literal_flat_v_set_state_context_and_consumers() {
     assert_true(r#"/a[\q{b}]/v.test('ab')"#);
-    assert_true(r#"/\ba[b]\b/v.test('ab')"#);
-    assert_true(
-        r#"
-            let r = /\ba[b]\b/v,
-                m = r.exec('ab');
-            m !== null && Array.isArray(m) && m.length === 1 && m[0] === 'ab' && m.index === 0 && m
-                .input === 'ab' && m.groups === undefined && m.indices === undefined && r.source ===
-                '\\ba[b]\\b' && r.lastIndex === 0 && r.exec('xb') === null && r.exec('ac') === null && r
-                .exec('a') === null && r.exec('xab') === null && r.exec('abx') === null && r.exec('!ab!')
-                .index === 1
-        "#,
-    );
     assert_true(
         r#"
             let r = /(?<whole>(a[b]))/dvg,

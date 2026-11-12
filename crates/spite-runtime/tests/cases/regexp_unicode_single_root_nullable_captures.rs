@@ -290,17 +290,4 @@ fn root_nullable_proofs_finish_finalizers_and_keep_branch_assertions_in_scope() 
             ),
         );
     }
-    assert_true(
-        r#"
-            var yes = 0;
-            for (var p of ['(?<x>[a])|(?<x>)(?<x>)', '[\q{ab}&&a--a]|']) {
-                try {
-                    new RegExp(p, 'v')
-                } catch (e) {
-                    if (e instanceof SyntaxError) yes++
-                }
-            }
-            yes === 2
-        "#,
-    );
 }

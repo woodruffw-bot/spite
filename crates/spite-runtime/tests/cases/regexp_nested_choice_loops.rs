@@ -86,13 +86,6 @@ fn nested_choice_loop_result_snapshot() {
 fn child_loop_retries_restore_parent_contexts_and_outside_capture_closes() {
     assert_true(
         r#"
-            let a = /(?<all>(?:a+b+){2})c/d.exec('aabaabc');
-            a[0] === 'aabaabc' && a.groups.all === 'aabaab' && a.indices.groups.all === a.indices[1] && a
-                .indices.groups.all[1] === 6
-        "#,
-    );
-    assert_true(
-        r#"
             let a = /(?<all>(?:(?:a|aa)+a|b)+)a/d.exec('aaaa');
             a[0] === 'aaaa' && a.groups.all === 'aaa' && a.indices.groups.all === a.indices[1] && a.indices
                 .groups.all[1] === 3

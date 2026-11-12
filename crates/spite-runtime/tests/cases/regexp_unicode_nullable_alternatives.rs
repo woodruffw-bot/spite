@@ -135,7 +135,6 @@ fn unicode_nullable_alternative_names_surrogates_and_scopes() {
     );
     assert_true(r"let m=/(|[ſK])+/div.exec('Sk');m[0]==='Sk'&&m[1]==='k'");
     assert_true(r"let m=/\B((?:\B^(?:.$)$)|)+\B$/dvms.exec('\r\n');m[0]==='\r\n'&&m[1]==='\n'");
-    assert_true(r"let m=/((?:\b(?:\Ba))|)+/du.exec('a');m[0]===''&&m[1]===''");
 }
 
 #[test]
