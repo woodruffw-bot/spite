@@ -1,0 +1,245 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_unicode_counted_nullable_string_class_captures.rs
+expression: report
+---
+[
+  [
+    {
+      "matches": [
+        "ab",
+        "ab",
+        "",
+        "",
+        "<undefined>"
+      ],
+      "indices": [
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          2,
+          2
+        ],
+        "<undefined>"
+      ],
+      "index": 0,
+      "input": "abXaa",
+      "groupNames": [
+        "whole",
+        "iteration",
+        "c",
+        "e"
+      ],
+      "namedCaptures": [
+        "ab",
+        "",
+        "",
+        "<undefined>"
+      ],
+      "namedIndices": [
+        [
+          0,
+          2
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          2,
+          2
+        ],
+        "<undefined>"
+      ],
+      "namedAliasesValid": true,
+      "groupsPrototypeValid": true
+    },
+    {
+      "matches": [
+        "",
+        "",
+        "",
+        "",
+        "<undefined>"
+      ],
+      "indices": [
+        [
+          2,
+          2
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          2,
+          2
+        ],
+        "<undefined>"
+      ],
+      "index": 2,
+      "input": "abXaa",
+      "groupNames": [
+        "whole",
+        "iteration",
+        "c",
+        "e"
+      ],
+      "namedCaptures": [
+        "",
+        "",
+        "",
+        "<undefined>"
+      ],
+      "namedIndices": [
+        [
+          2,
+          2
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          2,
+          2
+        ],
+        "<undefined>"
+      ],
+      "namedAliasesValid": true,
+      "groupsPrototypeValid": true
+    },
+    {
+      "matches": [
+        "aa",
+        "aa",
+        "a",
+        "a",
+        "<undefined>"
+      ],
+      "indices": [
+        [
+          3,
+          5
+        ],
+        [
+          3,
+          5
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          4,
+          5
+        ],
+        "<undefined>"
+      ],
+      "index": 3,
+      "input": "abXaa",
+      "groupNames": [
+        "whole",
+        "iteration",
+        "c",
+        "e"
+      ],
+      "namedCaptures": [
+        "aa",
+        "a",
+        "a",
+        "<undefined>"
+      ],
+      "namedIndices": [
+        [
+          3,
+          5
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          4,
+          5
+        ],
+        "<undefined>"
+      ],
+      "namedAliasesValid": true,
+      "groupsPrototypeValid": true
+    },
+    {
+      "matches": [
+        "",
+        "",
+        "",
+        "",
+        "<undefined>"
+      ],
+      "indices": [
+        [
+          5,
+          5
+        ],
+        [
+          5,
+          5
+        ],
+        [
+          5,
+          5
+        ],
+        [
+          5,
+          5
+        ],
+        "<undefined>"
+      ],
+      "index": 5,
+      "input": "abXaa",
+      "groupNames": [
+        "whole",
+        "iteration",
+        "c",
+        "e"
+      ],
+      "namedCaptures": [
+        "",
+        "",
+        "",
+        "<undefined>"
+      ],
+      "namedIndices": [
+        [
+          5,
+          5
+        ],
+        [
+          5,
+          5
+        ],
+        [
+          5,
+          5
+        ],
+        "<undefined>"
+      ],
+      "namedAliasesValid": true,
+      "groupsPrototypeValid": true
+    }
+  ],
+  0
+]

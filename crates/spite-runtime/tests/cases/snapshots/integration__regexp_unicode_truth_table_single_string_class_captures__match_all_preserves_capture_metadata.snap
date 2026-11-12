@@ -1,0 +1,300 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_unicode_truth_table_single_string_class_captures.rs
+expression: report
+---
+[
+  [
+    {
+      "matches": [
+        "a",
+        "",
+        "",
+        "<undefined>",
+        "a",
+        "a",
+        "",
+        "<undefined>",
+        ""
+      ],
+      "indices": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        "<undefined>",
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          1
+        ],
+        "<undefined>",
+        [
+          1,
+          1
+        ]
+      ],
+      "index": 0,
+      "input": "ab!aa",
+      "groupNames": [
+        "b",
+        "s",
+        "w",
+        "whole",
+        "c",
+        "a",
+        "end",
+        "nw"
+      ],
+      "namedCaptures": [
+        "",
+        "",
+        "<undefined>",
+        "a",
+        "a",
+        "",
+        "<undefined>",
+        ""
+      ],
+      "namedIndices": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        "<undefined>",
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          1
+        ],
+        "<undefined>",
+        [
+          1,
+          1
+        ]
+      ],
+      "namedAliasesValid": true,
+      "groupsPrototypeValid": true
+    },
+    {
+      "matches": [
+        "a",
+        "",
+        "<undefined>",
+        "",
+        "a",
+        "a",
+        "",
+        "<undefined>",
+        ""
+      ],
+      "indices": [
+        [
+          3,
+          4
+        ],
+        [
+          3,
+          3
+        ],
+        "<undefined>",
+        [
+          3,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          4
+        ],
+        "<undefined>",
+        [
+          4,
+          4
+        ]
+      ],
+      "index": 3,
+      "input": "ab!aa",
+      "groupNames": [
+        "b",
+        "s",
+        "w",
+        "whole",
+        "c",
+        "a",
+        "end",
+        "nw"
+      ],
+      "namedCaptures": [
+        "",
+        "<undefined>",
+        "",
+        "a",
+        "a",
+        "",
+        "<undefined>",
+        ""
+      ],
+      "namedIndices": [
+        [
+          3,
+          3
+        ],
+        "<undefined>",
+        [
+          3,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          4
+        ],
+        "<undefined>",
+        [
+          4,
+          4
+        ]
+      ],
+      "namedAliasesValid": true,
+      "groupsPrototypeValid": true
+    },
+    {
+      "matches": [
+        "",
+        "",
+        "<undefined>",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "<undefined>"
+      ],
+      "indices": [
+        [
+          5,
+          5
+        ],
+        [
+          5,
+          5
+        ],
+        "<undefined>",
+        [
+          5,
+          5
+        ],
+        [
+          5,
+          5
+        ],
+        [
+          5,
+          5
+        ],
+        [
+          5,
+          5
+        ],
+        [
+          5,
+          5
+        ],
+        "<undefined>"
+      ],
+      "index": 5,
+      "input": "ab!aa",
+      "groupNames": [
+        "b",
+        "s",
+        "w",
+        "whole",
+        "c",
+        "a",
+        "end",
+        "nw"
+      ],
+      "namedCaptures": [
+        "",
+        "<undefined>",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "<undefined>"
+      ],
+      "namedIndices": [
+        [
+          5,
+          5
+        ],
+        "<undefined>",
+        [
+          5,
+          5
+        ],
+        [
+          5,
+          5
+        ],
+        [
+          5,
+          5
+        ],
+        [
+          5,
+          5
+        ],
+        [
+          5,
+          5
+        ],
+        "<undefined>"
+      ],
+      "namedAliasesValid": true,
+      "groupsPrototypeValid": true
+    }
+  ],
+  0
+]

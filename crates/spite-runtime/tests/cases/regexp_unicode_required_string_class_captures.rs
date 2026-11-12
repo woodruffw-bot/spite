@@ -1,5 +1,7 @@
 //! Required counts retain successful starts and final-word captures.
 use crate::common::assert_true;
+use crate::common::eval_string;
+use crate::common::regexp_matches::DESCRIBE_MATCH;
 use spite_core::JsString;
 use spite_runtime::{Realm, Value};
 #[test]
@@ -454,210 +456,6 @@ fn required_string_class_native_tables_consumers_and_successful_start_identity()
                 "[[\"(aX(\",\"\",\"(aX(\",\"(\",\"(\",\"\"],[[0,4],[0,0],[0,4],[3,4],[3,4],[4,4]],0,4]"
         "#,
     );
-    assert_true(
-        r#"
-            (function() {
-                function row(m) {
-                    if (m === null) return null;
-                    var names = m.groups === undefined ? [] : Object.keys(m.groups);
-                    return [Array.from(m, v => v === undefined ? '<undefined>' : v), Array.from(m
-                            .indices, v => v === undefined ? '<undefined>' : v), m.index, m.input,
-                        names, names.map(n => m.groups[n] === undefined ? '<undefined>' : m.groups[
-                            n]), names.map(n => m.indices.groups[n] === undefined ? '<undefined>' :
-                            m.indices.groups[n]), names.every((n, i) => Object.hasOwn(m.groups,
-                            n) && Object.hasOwn(m.indices.groups, n) && m.groups[n] === m[i + 1] &&
-                            m.indices.groups[n] === m.indices[i + 1]), m.groups === undefined ||
-                        Object.getPrototypeOf(m.groups) === null
-                    ]
-                }
-                var r = /(?<whole>(?<word>[\q{aa|aaa}]){3,4})/dvg,
-                    a = Array.from('!aaaaaaXaaaaaaaaaa!'.matchAll(r));
-                return JSON.stringify([a.map(row), r.lastIndex]);
-            })() ===
-            "[[[[\"aaaaaa\",\"aaaaaa\",\"aa\"],[[1,7],[1,7],[5,7]],1,\"!aaaaaaXaaaaaaaaaa!\",[\"whole\",\"word\"],[\"aaaaaa\",\"aa\"],[[1,7],[5,7]],true,true],[[\"aaaaaaaaa\",\"aaaaaaaaa\",\"aaa\"],[[8,17],[8,17],[14,17]],8,\"!aaaaaaXaaaaaaaaaa!\",[\"whole\",\"word\"],[\"aaaaaaaaa\",\"aaa\"],[[8,17],[14,17]],true,true]],0]"
-        "#,
-    );
-    assert_true(
-        r#"
-            (function() {
-                function row(m) {
-                    if (m === null) return null;
-                    var names = m.groups === undefined ? [] : Object.keys(m.groups);
-                    return [Array.from(m, v => v === undefined ? '<undefined>' : v), Array.from(m
-                            .indices, v => v === undefined ? '<undefined>' : v), m.index, m.input,
-                        names, names.map(n => m.groups[n] === undefined ? '<undefined>' : m.groups[
-                            n]), names.map(n => m.indices.groups[n] === undefined ? '<undefined>' :
-                            m.indices.groups[n]), names.every((n, i) => Object.hasOwn(m.groups,
-                            n) && Object.hasOwn(m.indices.groups, n) && m.groups[n] === m[i + 1] &&
-                            m.indices.groups[n] === m.indices[i + 1]), m.groups === undefined ||
-                        Object.getPrototypeOf(m.groups) === null
-                    ]
-                }
-                var calls = [],
-                    r = /(?<whole>(?<word>[\q{aa|aaa}]){3,4})/vg,
-                    out = '!aaaaaaXaaaaaaaaaa!'.replace(r, function(all, w, word, offset, input, g) {
-                        calls.push([all, w, word, offset, input, arguments.length, g.word === word,
-                            Object.getPrototypeOf(g) === null
-                        ]);
-                        return '[' + word + ']'
-                    });
-                return JSON.stringify([out, calls, r.lastIndex]);
-            })() ===
-            "[\"![aa]X[aaa]a!\",[[\"aaaaaa\",\"aaaaaa\",\"aa\",1,\"!aaaaaaXaaaaaaaaaa!\",6,true,true],[\"aaaaaaaaa\",\"aaaaaaaaa\",\"aaa\",8,\"!aaaaaaXaaaaaaaaaa!\",6,true,true]],0]"
-        "#,
-    );
-    assert_true(
-        r#"
-            (function() {
-                function row(m) {
-                    if (m === null) return null;
-                    var names = m.groups === undefined ? [] : Object.keys(m.groups);
-                    return [Array.from(m, v => v === undefined ? '<undefined>' : v), Array.from(m
-                            .indices, v => v === undefined ? '<undefined>' : v), m.index, m.input,
-                        names, names.map(n => m.groups[n] === undefined ? '<undefined>' : m.groups[
-                            n]), names.map(n => m.indices.groups[n] === undefined ? '<undefined>' :
-                            m.indices.groups[n]), names.every((n, i) => Object.hasOwn(m.groups,
-                            n) && Object.hasOwn(m.indices.groups, n) && m.groups[n] === m[i + 1] &&
-                            m.indices.groups[n] === m.indices[i + 1]), m.groups === undefined ||
-                        Object.getPrototypeOf(m.groups) === null
-                    ]
-                }
-                var r = /(?<whole>(?<word>[\q{ab|abc|c}]){3})/dvg;
-                r.lastIndex = 9;
-                var a = '!abcab'.split(r),
-                    at = '!abcab'.search(r);
-                return JSON.stringify([a.map(v => v === undefined ? '<undefined>' : v), at, r
-                    .lastIndex]);
-            })() === "[[\"!\",\"abcab\",\"ab\",\"\"],1,9]"
-        "#,
-    );
-    assert_true(
-        r#"
-            (function() {
-                function row(m) {
-                    if (m === null) return null;
-                    var names = m.groups === undefined ? [] : Object.keys(m.groups);
-                    return [Array.from(m, v => v === undefined ? '<undefined>' : v), Array.from(m
-                            .indices, v => v === undefined ? '<undefined>' : v), m.index, m.input,
-                        names, names.map(n => m.groups[n] === undefined ? '<undefined>' : m.groups[
-                            n]), names.map(n => m.indices.groups[n] === undefined ? '<undefined>' :
-                            m.indices.groups[n]), names.every((n, i) => Object.hasOwn(m.groups,
-                            n) && Object.hasOwn(m.indices.groups, n) && m.groups[n] === m[i + 1] &&
-                            m.indices.groups[n] === m.indices[i + 1]), m.groups === undefined ||
-                        Object.getPrototypeOf(m.groups) === null
-                    ]
-                }
-                var r = /[\q{aa|aaa}]{3}/vg;
-                Object.defineProperty(r, 'lastIndex', {
-                    writable: false
-                });
-                var caught = false;
-                try {
-                    r.exec('xaaaa')
-                } catch (e) {
-                    caught = e instanceof TypeError
-                }
-                return JSON.stringify([caught, r.lastIndex]);
-            })() === "[true,0]"
-        "#,
-    );
-    assert_true(
-        r#"
-            (function() {
-                function row(m) {
-                    if (m === null) return null;
-                    var names = m.groups === undefined ? [] : Object.keys(m.groups);
-                    return [Array.from(m, v => v === undefined ? '<undefined>' : v), Array.from(m
-                            .indices, v => v === undefined ? '<undefined>' : v), m.index, m.input,
-                        names, names.map(n => m.groups[n] === undefined ? '<undefined>' : m.groups[
-                            n]), names.map(n => m.indices.groups[n] === undefined ? '<undefined>' :
-                            m.indices.groups[n]), names.every((n, i) => Object.hasOwn(m.groups,
-                            n) && Object.hasOwn(m.indices.groups, n) && m.groups[n] === m[i + 1] &&
-                            m.indices.groups[n] === m.indices[i + 1]), m.groups === undefined ||
-                        Object.getPrototypeOf(m.groups) === null
-                    ]
-                }
-                var r = /(?<\u{1D49C}>)(?<whole>(?<word>[\q{😀|😀a|aX}]){3})(?<after>)/dvgy;
-                r.lastIndex = 1;
-                var m = r.exec('😀aX😀!');
-                return JSON.stringify([row(m), r.lastIndex, r.source.indexOf('1D49C') !== -1]);
-            })() ===
-            "[[[\"\ud83d\ude00aX\ud83d\ude00\",\"\",\"\ud83d\ude00aX\ud83d\ude00\",\"\ud83d\ude00\",\"\"],[[0,6],[0,0],[0,6],[4,6],[6,6]],0,\"\ud83d\ude00aX\ud83d\ude00!\",[\"\ud835\udc9c\",\"whole\",\"word\",\"after\"],[\"\",\"\ud83d\ude00aX\ud83d\ude00\",\"\ud83d\ude00\",\"\"],[[0,0],[0,6],[4,6],[6,6]],true,true],6,true]"
-        "#,
-    );
-    assert_true(
-        r#"
-            (function() {
-                function row(m) {
-                    if (m === null) return null;
-                    var names = m.groups === undefined ? [] : Object.keys(m.groups);
-                    return [Array.from(m, v => v === undefined ? '<undefined>' : v), Array.from(m
-                            .indices, v => v === undefined ? '<undefined>' : v), m.index, m.input,
-                        names, names.map(n => m.groups[n] === undefined ? '<undefined>' : m.groups[
-                            n]), names.map(n => m.indices.groups[n] === undefined ? '<undefined>' :
-                            m.indices.groups[n]), names.every((n, i) => Object.hasOwn(m.groups,
-                            n) && Object.hasOwn(m.indices.groups, n) && m.groups[n] === m[i + 1] &&
-                            m.indices.groups[n] === m.indices[i + 1]), m.groups === undefined ||
-                        Object.getPrototypeOf(m.groups) === null
-                    ]
-                }
-                var r = /(?<before>)(?<whole>(?<word>[\q{S|sa|aX}]){3,4})(?<after>)/dvi,
-                    m = r.exec('ſaXſ!');
-                return JSON.stringify([row(m)]);
-            })() ===
-            "[[[\"\u017faX\u017f\",\"\",\"\u017faX\u017f\",\"\u017f\",\"\"],[[0,4],[0,0],[0,4],[3,4],[4,4]],0,\"\u017faX\u017f!\",[\"before\",\"whole\",\"word\",\"after\"],[\"\",\"\u017faX\u017f\",\"\u017f\",\"\"],[[0,0],[0,4],[3,4],[4,4]],true,true]]"
-        "#,
-    );
-    assert_true(
-        r#"
-            (function() {
-                function row(m) {
-                    if (m === null) return null;
-                    var names = m.groups === undefined ? [] : Object.keys(m.groups);
-                    return [Array.from(m, v => v === undefined ? '<undefined>' : v), Array.from(m
-                            .indices, v => v === undefined ? '<undefined>' : v), m.index, m.input,
-                        names, names.map(n => m.groups[n] === undefined ? '<undefined>' : m.groups[
-                            n]), names.map(n => m.indices.groups[n] === undefined ? '<undefined>' :
-                            m.indices.groups[n]), names.every((n, i) => Object.hasOwn(m.groups,
-                            n) && Object.hasOwn(m.indices.groups, n) && m.groups[n] === m[i + 1] &&
-                            m.indices.groups[n] === m.indices[i + 1]), m.groups === undefined ||
-                        Object.getPrototypeOf(m.groups) === null
-                    ]
-                }
-                var g = /(?<whole>(?<word>[\q{aa|aaa}]){3,4})/dv.exec('aaaaaaaa!'),
-                    l = /(?<whole>(?<word>[\q{aa|aaa}]){3,4}?)/dv.exec('aaaaaaaa!');
-                return JSON.stringify([row(g), row(l)]);
-            })() ===
-            "[[[\"aaaaaaaa\",\"aaaaaaaa\",\"aa\"],[[0,8],[0,8],[6,8]],0,\"aaaaaaaa!\",[\"whole\",\"word\"],[\"aaaaaaaa\",\"aa\"],[[0,8],[6,8]],true,true],[[\"aaaaaaaa\",\"aaaaaaaa\",\"aa\"],[[0,8],[0,8],[6,8]],0,\"aaaaaaaa!\",[\"whole\",\"word\"],[\"aaaaaaaa\",\"aa\"],[[0,8],[6,8]],true,true]]"
-        "#,
-    );
-    assert_true(
-        r#"
-            (function() {
-                function row(m) {
-                    if (m === null) return null;
-                    var names = m.groups === undefined ? [] : Object.keys(m.groups);
-                    return [Array.from(m, v => v === undefined ? '<undefined>' : v), Array.from(m
-                            .indices, v => v === undefined ? '<undefined>' : v), m.index, m.input,
-                        names, names.map(n => m.groups[n] === undefined ? '<undefined>' : m.groups[
-                            n]), names.map(n => m.indices.groups[n] === undefined ? '<undefined>' :
-                            m.indices.groups[n]), names.every((n, i) => Object.hasOwn(m.groups,
-                            n) && Object.hasOwn(m.indices.groups, n) && m.groups[n] === m[i + 1] &&
-                            m.indices.groups[n] === m.indices[i + 1]), m.groups === undefined ||
-                        Object.getPrototypeOf(m.groups) === null
-                    ]
-                }
-                var r = /(?<whole>(?<word>[\q{ab|abc|c}]){3})/dvg,
-                    s = /(?<whole>(?<word>[\q{ab|abc|c}]){3})/dvgy,
-                    m = r.exec('!abcab'),
-                    n = s.exec('!abcab');
-                s.lastIndex = 1;
-                var p = s.exec('!abcab');
-                return JSON.stringify([row(m), row(n), row(p), r.lastIndex, s.lastIndex]);
-            })() ===
-            "[[[\"abcab\",\"abcab\",\"ab\"],[[1,6],[1,6],[4,6]],1,\"!abcab\",[\"whole\",\"word\"],[\"abcab\",\"ab\"],[[1,6],[4,6]],true,true],null,[[\"abcab\",\"abcab\",\"ab\"],[[1,6],[1,6],[4,6]],1,\"!abcab\",[\"whole\",\"word\"],[\"abcab\",\"ab\"],[[1,6],[4,6]],true,true],6,6]"
-        "#,
-    );
 
     let mut realm = Realm::default();
     realm.eval(r"var r=/(?<before>)(?<whole>(?<word>[\q{aa|aaa}]){3,4})(?<after>)/dvg,clone=new RegExp(r),m=r.exec('aaaaaaaa')").unwrap();
@@ -667,6 +465,613 @@ fn required_string_class_native_tables_consumers_and_successful_start_identity()
                 3] && m.indices[3][0] === 6 && m.indices[3][1] === 8 && clone.exec('!') === null &&
             clone.source === r.source && clone.lastIndex === 0 && r.lastIndex === 8
     "#),Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn match_all_preserves_capture_metadata() {
+    let source = format!(
+        r#"
+            (function() {{
+                {DESCRIBE_MATCH}
+
+                var r = /(?<whole>(?<word>[\q{{aa|aaa}}]){{3,4}})/dvg,
+                    a = Array.from('!aaaaaaXaaaaaaaaaa!'.matchAll(r));
+                return JSON.stringify([a.map(describeMatch), r.lastIndex], null, 2);
+            }})()
+        "#
+    );
+    let report = eval_string(&mut Realm::default(), &source);
+    insta::assert_snapshot!(report, @r#"
+        [
+          [
+            {
+              "matches": [
+                "aaaaaa",
+                "aaaaaa",
+                "aa"
+              ],
+              "indices": [
+                [
+                  1,
+                  7
+                ],
+                [
+                  1,
+                  7
+                ],
+                [
+                  5,
+                  7
+                ]
+              ],
+              "index": 1,
+              "input": "!aaaaaaXaaaaaaaaaa!",
+              "groupNames": [
+                "whole",
+                "word"
+              ],
+              "namedCaptures": [
+                "aaaaaa",
+                "aa"
+              ],
+              "namedIndices": [
+                [
+                  1,
+                  7
+                ],
+                [
+                  5,
+                  7
+                ]
+              ],
+              "namedAliasesValid": true,
+              "groupsPrototypeValid": true
+            },
+            {
+              "matches": [
+                "aaaaaaaaa",
+                "aaaaaaaaa",
+                "aaa"
+              ],
+              "indices": [
+                [
+                  8,
+                  17
+                ],
+                [
+                  8,
+                  17
+                ],
+                [
+                  14,
+                  17
+                ]
+              ],
+              "index": 8,
+              "input": "!aaaaaaXaaaaaaaaaa!",
+              "groupNames": [
+                "whole",
+                "word"
+              ],
+              "namedCaptures": [
+                "aaaaaaaaa",
+                "aaa"
+              ],
+              "namedIndices": [
+                [
+                  8,
+                  17
+                ],
+                [
+                  14,
+                  17
+                ]
+              ],
+              "namedAliasesValid": true,
+              "groupsPrototypeValid": true
+            }
+          ],
+          0
+        ]
+        "#);
+}
+
+#[test]
+fn replacement_callback_receives_captures() {
+    let source = r#"
+        (function() {
+
+            var calls = [],
+                r = /(?<whole>(?<word>[\q{aa|aaa}]){3,4})/vg,
+                out = '!aaaaaaXaaaaaaaaaa!'.replace(r, function(all, w, word, offset, input, g) {
+                    calls.push([all, w, word, offset, input, arguments.length, g.word === word,
+                        Object.getPrototypeOf(g) === null
+                    ]);
+                    return '[' + word + ']'
+                });
+            return JSON.stringify([out, calls, r.lastIndex], null, 2);
+        })()
+    "#;
+    let report = eval_string(&mut Realm::default(), source);
+    insta::assert_snapshot!(report, @r#"
+        [
+          "![aa]X[aaa]a!",
+          [
+            [
+              "aaaaaa",
+              "aaaaaa",
+              "aa",
+              1,
+              "!aaaaaaXaaaaaaaaaa!",
+              6,
+              true,
+              true
+            ],
+            [
+              "aaaaaaaaa",
+              "aaaaaaaaa",
+              "aaa",
+              8,
+              "!aaaaaaXaaaaaaaaaa!",
+              6,
+              true,
+              true
+            ]
+          ],
+          0
+        ]
+        "#);
+}
+
+#[test]
+fn split_and_search_preserve_last_index() {
+    let source = r#"
+        (function() {
+
+            var r = /(?<whole>(?<word>[\q{ab|abc|c}]){3})/dvg;
+            r.lastIndex = 9;
+            var a = '!abcab'.split(r),
+                at = '!abcab'.search(r);
+            return JSON.stringify([a.map(v => v === undefined ? '<undefined>' : v), at, r
+                .lastIndex
+            ], null, 2);
+        })()
+    "#;
+    let report = eval_string(&mut Realm::default(), source);
+    insta::assert_snapshot!(report, @r#"
+        [
+          [
+            "!",
+            "abcab",
+            "ab",
+            ""
+          ],
+          1,
+          9
+        ]
+        "#);
+}
+
+#[test]
+fn failed_last_index_write_throws_type_error() {
+    let source = r#"
+        (function() {
+
+            var r = /[\q{aa|aaa}]{3}/vg;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            var caught = false;
+            try {
+                r.exec('xaaaa')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            return JSON.stringify([caught, r.lastIndex], null, 2);
+        })()
+    "#;
+    let report = eval_string(&mut Realm::default(), source);
+    insta::assert_snapshot!(report, @r#"
+        [
+          true,
+          0
+        ]
+        "#);
+}
+
+#[test]
+fn supplementary_capture_names_preserve_utf16_ranges() {
+    let source = format!(
+        r#"
+            (function() {{
+                {DESCRIBE_MATCH}
+
+                var r = /(?<\u{{1D49C}}>)(?<whole>(?<word>[\q{{😀|😀a|aX}}]){{3}})(?<after>)/dvgy;
+                r.lastIndex = 1;
+                var m = r.exec('😀aX😀!');
+                return JSON.stringify([describeMatch(m), r.lastIndex, r.source.indexOf('1D49C') !== -
+                    1], null, 2);
+            }})()
+        "#
+    );
+    let report = eval_string(&mut Realm::default(), &source);
+    insta::assert_snapshot!(report, @r#"
+        [
+          {
+            "matches": [
+              "😀aX😀",
+              "",
+              "😀aX😀",
+              "😀",
+              ""
+            ],
+            "indices": [
+              [
+                0,
+                6
+              ],
+              [
+                0,
+                0
+              ],
+              [
+                0,
+                6
+              ],
+              [
+                4,
+                6
+              ],
+              [
+                6,
+                6
+              ]
+            ],
+            "index": 0,
+            "input": "😀aX😀!",
+            "groupNames": [
+              "𝒜",
+              "whole",
+              "word",
+              "after"
+            ],
+            "namedCaptures": [
+              "",
+              "😀aX😀",
+              "😀",
+              ""
+            ],
+            "namedIndices": [
+              [
+                0,
+                0
+              ],
+              [
+                0,
+                6
+              ],
+              [
+                4,
+                6
+              ],
+              [
+                6,
+                6
+              ]
+            ],
+            "namedAliasesValid": true,
+            "groupsPrototypeValid": true
+          },
+          6,
+          true
+        ]
+        "#);
+}
+
+#[test]
+fn ignore_case_preserves_capture_metadata() {
+    let source = format!(
+        r#"
+            (function() {{
+                {DESCRIBE_MATCH}
+
+                var r = /(?<before>)(?<whole>(?<word>[\q{{S|sa|aX}}]){{3,4}})(?<after>)/dvi,
+                    m = r.exec('ſaXſ!');
+                return JSON.stringify([describeMatch(m)], null, 2);
+            }})()
+        "#
+    );
+    let report = eval_string(&mut Realm::default(), &source);
+    insta::assert_snapshot!(report, @r#"
+        [
+          {
+            "matches": [
+              "ſaXſ",
+              "",
+              "ſaXſ",
+              "ſ",
+              ""
+            ],
+            "indices": [
+              [
+                0,
+                4
+              ],
+              [
+                0,
+                0
+              ],
+              [
+                0,
+                4
+              ],
+              [
+                3,
+                4
+              ],
+              [
+                4,
+                4
+              ]
+            ],
+            "index": 0,
+            "input": "ſaXſ!",
+            "groupNames": [
+              "before",
+              "whole",
+              "word",
+              "after"
+            ],
+            "namedCaptures": [
+              "",
+              "ſaXſ",
+              "ſ",
+              ""
+            ],
+            "namedIndices": [
+              [
+                0,
+                0
+              ],
+              [
+                0,
+                4
+              ],
+              [
+                3,
+                4
+              ],
+              [
+                4,
+                4
+              ]
+            ],
+            "namedAliasesValid": true,
+            "groupsPrototypeValid": true
+          }
+        ]
+        "#);
+}
+
+#[test]
+fn greedy_and_lazy_quantifiers_preserve_captures() {
+    let source = format!(
+        r#"
+            (function() {{
+                {DESCRIBE_MATCH}
+
+                var g = /(?<whole>(?<word>[\q{{aa|aaa}}]){{3,4}})/dv.exec('aaaaaaaa!'),
+                    l = /(?<whole>(?<word>[\q{{aa|aaa}}]){{3,4}}?)/dv.exec('aaaaaaaa!');
+                return JSON.stringify([describeMatch(g), describeMatch(l)], null, 2);
+            }})()
+        "#
+    );
+    let report = eval_string(&mut Realm::default(), &source);
+    insta::assert_snapshot!(report, @r#"
+        [
+          {
+            "matches": [
+              "aaaaaaaa",
+              "aaaaaaaa",
+              "aa"
+            ],
+            "indices": [
+              [
+                0,
+                8
+              ],
+              [
+                0,
+                8
+              ],
+              [
+                6,
+                8
+              ]
+            ],
+            "index": 0,
+            "input": "aaaaaaaa!",
+            "groupNames": [
+              "whole",
+              "word"
+            ],
+            "namedCaptures": [
+              "aaaaaaaa",
+              "aa"
+            ],
+            "namedIndices": [
+              [
+                0,
+                8
+              ],
+              [
+                6,
+                8
+              ]
+            ],
+            "namedAliasesValid": true,
+            "groupsPrototypeValid": true
+          },
+          {
+            "matches": [
+              "aaaaaaaa",
+              "aaaaaaaa",
+              "aa"
+            ],
+            "indices": [
+              [
+                0,
+                8
+              ],
+              [
+                0,
+                8
+              ],
+              [
+                6,
+                8
+              ]
+            ],
+            "index": 0,
+            "input": "aaaaaaaa!",
+            "groupNames": [
+              "whole",
+              "word"
+            ],
+            "namedCaptures": [
+              "aaaaaaaa",
+              "aa"
+            ],
+            "namedIndices": [
+              [
+                0,
+                8
+              ],
+              [
+                6,
+                8
+              ]
+            ],
+            "namedAliasesValid": true,
+            "groupsPrototypeValid": true
+          }
+        ]
+        "#);
+}
+
+#[test]
+fn exec_preserves_alternative_capture_metadata() {
+    let source = format!(
+        r#"
+            (function() {{
+                {DESCRIBE_MATCH}
+
+                var r = /(?<whole>(?<word>[\q{{ab|abc|c}}]){{3}})/dvg,
+                    s = /(?<whole>(?<word>[\q{{ab|abc|c}}]){{3}})/dvgy,
+                    m = r.exec('!abcab'),
+                    n = s.exec('!abcab');
+                s.lastIndex = 1;
+                var p = s.exec('!abcab');
+                return JSON.stringify([describeMatch(m), describeMatch(n), describeMatch(p), r
+                    .lastIndex, s.lastIndex
+                ], null, 2);
+            }})()
+        "#
+    );
+    let report = eval_string(&mut Realm::default(), &source);
+    insta::assert_snapshot!(report, @r#"
+        [
+          {
+            "matches": [
+              "abcab",
+              "abcab",
+              "ab"
+            ],
+            "indices": [
+              [
+                1,
+                6
+              ],
+              [
+                1,
+                6
+              ],
+              [
+                4,
+                6
+              ]
+            ],
+            "index": 1,
+            "input": "!abcab",
+            "groupNames": [
+              "whole",
+              "word"
+            ],
+            "namedCaptures": [
+              "abcab",
+              "ab"
+            ],
+            "namedIndices": [
+              [
+                1,
+                6
+              ],
+              [
+                4,
+                6
+              ]
+            ],
+            "namedAliasesValid": true,
+            "groupsPrototypeValid": true
+          },
+          null,
+          {
+            "matches": [
+              "abcab",
+              "abcab",
+              "ab"
+            ],
+            "indices": [
+              [
+                1,
+                6
+              ],
+              [
+                1,
+                6
+              ],
+              [
+                4,
+                6
+              ]
+            ],
+            "index": 1,
+            "input": "!abcab",
+            "groupNames": [
+              "whole",
+              "word"
+            ],
+            "namedCaptures": [
+              "abcab",
+              "ab"
+            ],
+            "namedIndices": [
+              [
+                1,
+                6
+              ],
+              [
+                4,
+                6
+              ]
+            ],
+            "namedAliasesValid": true,
+            "groupsPrototypeValid": true
+          },
+          6,
+          6
+        ]
+        "#);
 }
 
 #[test]

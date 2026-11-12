@@ -1,0 +1,231 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_unicode_predicate_choice_string_class_alternative_captures.rs
+expression: report
+---
+[
+  {
+    "matches": [
+      "",
+      "",
+      "<undefined>",
+      "",
+      "",
+      "",
+      "<undefined>",
+      "",
+      "",
+      "<undefined>",
+      "<undefined>",
+      "<undefined>"
+    ],
+    "indices": [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      "<undefined>",
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      "<undefined>",
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      "<undefined>",
+      "<undefined>",
+      "<undefined>"
+    ],
+    "index": 0,
+    "input": "",
+    "groupNames": [
+      "b",
+      "w",
+      "nw",
+      "whole",
+      "c",
+      "e",
+      "a",
+      "s",
+      "end",
+      "wb",
+      "nwb"
+    ],
+    "namedCaptures": [
+      "",
+      "<undefined>",
+      "",
+      "",
+      "",
+      "<undefined>",
+      "",
+      "",
+      "<undefined>",
+      "<undefined>",
+      "<undefined>"
+    ],
+    "namedIndices": [
+      [
+        0,
+        0
+      ],
+      "<undefined>",
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      "<undefined>",
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      "<undefined>",
+      "<undefined>",
+      "<undefined>"
+    ],
+    "namedAliasesValid": true,
+    "groupsPrototypeValid": true
+  },
+  {
+    "matches": [
+      "ab",
+      "",
+      "",
+      "<undefined>",
+      "ab",
+      "ab",
+      "<undefined>",
+      "",
+      "<undefined>",
+      "",
+      "<undefined>",
+      "<undefined>"
+    ],
+    "indices": [
+      [
+        0,
+        2
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      "<undefined>",
+      [
+        0,
+        2
+      ],
+      [
+        0,
+        2
+      ],
+      "<undefined>",
+      [
+        2,
+        2
+      ],
+      "<undefined>",
+      [
+        2,
+        2
+      ],
+      "<undefined>",
+      "<undefined>"
+    ],
+    "index": 0,
+    "input": "ab",
+    "groupNames": [
+      "b",
+      "w",
+      "nw",
+      "whole",
+      "c",
+      "e",
+      "a",
+      "s",
+      "end",
+      "wb",
+      "nwb"
+    ],
+    "namedCaptures": [
+      "",
+      "",
+      "<undefined>",
+      "ab",
+      "ab",
+      "<undefined>",
+      "",
+      "<undefined>",
+      "",
+      "<undefined>",
+      "<undefined>"
+    ],
+    "namedIndices": [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      "<undefined>",
+      [
+        0,
+        2
+      ],
+      [
+        0,
+        2
+      ],
+      "<undefined>",
+      [
+        2,
+        2
+      ],
+      "<undefined>",
+      [
+        2,
+        2
+      ],
+      "<undefined>",
+      "<undefined>"
+    ],
+    "namedAliasesValid": true,
+    "groupsPrototypeValid": true
+  },
+  2
+]

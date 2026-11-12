@@ -1,5 +1,7 @@
 //! Prefix-free counts retain successful starts and final-word captures.
 use crate::common::assert_true;
+use crate::common::eval_string;
+use crate::common::regexp_matches::DESCRIBE_MATCH;
 use spite_core::JsString;
 use spite_runtime::{Realm, Value};
 #[test]
@@ -316,211 +318,6 @@ fn prefix_free_string_class_native_tables_consumers_and_successful_start_identit
         "#,
     );
 
-    assert_true(
-        r#"
-            (function() {
-                function row(m) {
-                    if (m === null) return null;
-                    var names = m.groups === undefined ? [] : Object.keys(m.groups);
-                    return [Array.from(m, v => v === undefined ? '<undefined>' : v), Array.from(m
-                            .indices, v => v === undefined ? '<undefined>' : v), m.index, m.input,
-                        names, names.map(n => m.groups[n] === undefined ? '<undefined>' : m.groups[
-                            n]), names.map(n => m.indices.groups[n] === undefined ? '<undefined>' :
-                            m.indices.groups[n]), names.every((n, i) => Object.hasOwn(m.groups,
-                            n) && Object.hasOwn(m.indices.groups, n) && m.groups[n] === m[i + 1] &&
-                            m.indices.groups[n] === m.indices[i + 1]), m.groups === undefined ||
-                        Object.getPrototypeOf(m.groups) === null
-                    ]
-                }
-                var r = /(?<whole>(?<word>[\q{ab|cd}]){2,3})/dvg,
-                    a = Array.from('!abcdXcdabab!'.matchAll(r));
-                return JSON.stringify([a.map(row), r.lastIndex]);
-            })() ===
-            "[[[[\"abcd\",\"abcd\",\"cd\"],[[1,5],[1,5],[3,5]],1,\"!abcdXcdabab!\",[\"whole\",\"word\"],[\"abcd\",\"cd\"],[[1,5],[3,5]],true,true],[[\"cdabab\",\"cdabab\",\"ab\"],[[6,12],[6,12],[10,12]],6,\"!abcdXcdabab!\",[\"whole\",\"word\"],[\"cdabab\",\"ab\"],[[6,12],[10,12]],true,true]],0]"
-        "#,
-    );
-    assert_true(
-        r#"
-            (function() {
-                function row(m) {
-                    if (m === null) return null;
-                    var names = m.groups === undefined ? [] : Object.keys(m.groups);
-                    return [Array.from(m, v => v === undefined ? '<undefined>' : v), Array.from(m
-                            .indices, v => v === undefined ? '<undefined>' : v), m.index, m.input,
-                        names, names.map(n => m.groups[n] === undefined ? '<undefined>' : m.groups[
-                            n]), names.map(n => m.indices.groups[n] === undefined ? '<undefined>' :
-                            m.indices.groups[n]), names.every((n, i) => Object.hasOwn(m.groups,
-                            n) && Object.hasOwn(m.indices.groups, n) && m.groups[n] === m[i + 1] &&
-                            m.indices.groups[n] === m.indices[i + 1]), m.groups === undefined ||
-                        Object.getPrototypeOf(m.groups) === null
-                    ]
-                }
-                var calls = [],
-                    r = /(?<whole>(?<word>[\q{ab|cd}]){2,3})/vg,
-                    out = '!abcdXcdabab!'.replace(r, function(all, w, word, offset, input, g) {
-                        calls.push([all, w, word, offset, input, arguments.length, g.word === word,
-                            Object.getPrototypeOf(g) === null
-                        ]);
-                        return '[' + word + ']'
-                    });
-                return JSON.stringify([out, calls, r.lastIndex]);
-            })() ===
-            "[\"![cd]X[ab]!\",[[\"abcd\",\"abcd\",\"cd\",1,\"!abcdXcdabab!\",6,true,true],[\"cdabab\",\"cdabab\",\"ab\",6,\"!abcdXcdabab!\",6,true,true]],0]"
-        "#,
-    );
-    assert_true(
-        r#"
-            (function() {
-                function row(m) {
-                    if (m === null) return null;
-                    var names = m.groups === undefined ? [] : Object.keys(m.groups);
-                    return [Array.from(m, v => v === undefined ? '<undefined>' : v), Array.from(m
-                            .indices, v => v === undefined ? '<undefined>' : v), m.index, m.input,
-                        names, names.map(n => m.groups[n] === undefined ? '<undefined>' : m.groups[
-                            n]), names.map(n => m.indices.groups[n] === undefined ? '<undefined>' :
-                            m.indices.groups[n]), names.every((n, i) => Object.hasOwn(m.groups,
-                            n) && Object.hasOwn(m.indices.groups, n) && m.groups[n] === m[i + 1] &&
-                            m.indices.groups[n] === m.indices[i + 1]), m.groups === undefined ||
-                        Object.getPrototypeOf(m.groups) === null
-                    ]
-                }
-                var r = /(?<whole>(?<word>[\q{abcd|bc|da}]){2})/dvg;
-                r.lastIndex = 9;
-                var a = 'abcda'.split(r),
-                    at = 'abcda'.search(r);
-                return JSON.stringify([a.map(v => v === undefined ? '<undefined>' : v), at, r
-                    .lastIndex]);
-            })() === "[[\"a\",\"bcda\",\"da\",\"\"],1,9]"
-        "#,
-    );
-    assert_true(
-        r#"
-            (function() {
-                function row(m) {
-                    if (m === null) return null;
-                    var names = m.groups === undefined ? [] : Object.keys(m.groups);
-                    return [Array.from(m, v => v === undefined ? '<undefined>' : v), Array.from(m
-                            .indices, v => v === undefined ? '<undefined>' : v), m.index, m.input,
-                        names, names.map(n => m.groups[n] === undefined ? '<undefined>' : m.groups[
-                            n]), names.map(n => m.indices.groups[n] === undefined ? '<undefined>' :
-                            m.indices.groups[n]), names.every((n, i) => Object.hasOwn(m.groups,
-                            n) && Object.hasOwn(m.indices.groups, n) && m.groups[n] === m[i + 1] &&
-                            m.indices.groups[n] === m.indices[i + 1]), m.groups === undefined ||
-                        Object.getPrototypeOf(m.groups) === null
-                    ]
-                }
-                var r = /[\q{ab|cd}]{2}/vg;
-                Object.defineProperty(r, 'lastIndex', {
-                    writable: false
-                });
-                var caught = false;
-                try {
-                    r.exec('xabcd')
-                } catch (e) {
-                    caught = e instanceof TypeError
-                }
-                return JSON.stringify([caught, r.lastIndex]);
-            })() === "[true,0]"
-        "#,
-    );
-    assert_true(
-        r#"
-            (function() {
-                function row(m) {
-                    if (m === null) return null;
-                    var names = m.groups === undefined ? [] : Object.keys(m.groups);
-                    return [Array.from(m, v => v === undefined ? '<undefined>' : v), Array.from(m
-                            .indices, v => v === undefined ? '<undefined>' : v), m.index, m.input,
-                        names, names.map(n => m.groups[n] === undefined ? '<undefined>' : m.groups[
-                            n]), names.map(n => m.indices.groups[n] === undefined ? '<undefined>' :
-                            m.indices.groups[n]), names.every((n, i) => Object.hasOwn(m.groups,
-                            n) && Object.hasOwn(m.indices.groups, n) && m.groups[n] === m[i + 1] &&
-                            m.indices.groups[n] === m.indices[i + 1]), m.groups === undefined ||
-                        Object.getPrototypeOf(m.groups) === null
-                    ]
-                }
-                var r = /(?<\u{1D49C}>)(?<whole>(?<word>[\q{😀a|😀b}]){2})(?<after>)/dvgy;
-                r.lastIndex = 1;
-                var m = r.exec('😀a😀b!');
-                return JSON.stringify([row(m), r.lastIndex, r.source.indexOf('1D49C') !== -1]);
-            })() ===
-            "[[[\"\ud83d\ude00a\ud83d\ude00b\",\"\",\"\ud83d\ude00a\ud83d\ude00b\",\"\ud83d\ude00b\",\"\"],[[0,6],[0,0],[0,6],[3,6],[6,6]],0,\"\ud83d\ude00a\ud83d\ude00b!\",[\"\ud835\udc9c\",\"whole\",\"word\",\"after\"],[\"\",\"\ud83d\ude00a\ud83d\ude00b\",\"\ud83d\ude00b\",\"\"],[[0,0],[0,6],[3,6],[6,6]],true,true],6,true]"
-        "#,
-    );
-    assert_true(
-        r#"
-            (function() {
-                function row(m) {
-                    if (m === null) return null;
-                    var names = m.groups === undefined ? [] : Object.keys(m.groups);
-                    return [Array.from(m, v => v === undefined ? '<undefined>' : v), Array.from(m
-                            .indices, v => v === undefined ? '<undefined>' : v), m.index, m.input,
-                        names, names.map(n => m.groups[n] === undefined ? '<undefined>' : m.groups[
-                            n]), names.map(n => m.indices.groups[n] === undefined ? '<undefined>' :
-                            m.indices.groups[n]), names.every((n, i) => Object.hasOwn(m.groups,
-                            n) && Object.hasOwn(m.indices.groups, n) && m.groups[n] === m[i + 1] &&
-                            m.indices.groups[n] === m.indices[i + 1]), m.groups === undefined ||
-                        Object.getPrototypeOf(m.groups) === null
-                    ]
-                }
-                var r = /(?<before>)(?<whole>(?<word>[\q{Sx|k}]){2,3})(?<after>)/dvi,
-                    m = r.exec('ſxKk!');
-                return JSON.stringify([row(m)]);
-            })() ===
-            "[[[\"\u017fx\u212ak\",\"\",\"\u017fx\u212ak\",\"k\",\"\"],[[0,4],[0,0],[0,4],[3,4],[4,4]],0,\"\u017fx\u212ak!\",[\"before\",\"whole\",\"word\",\"after\"],[\"\",\"\u017fx\u212ak\",\"k\",\"\"],[[0,0],[0,4],[3,4],[4,4]],true,true]]"
-        "#,
-    );
-    assert_true(
-        r#"
-            (function() {
-                function row(m) {
-                    if (m === null) return null;
-                    var names = m.groups === undefined ? [] : Object.keys(m.groups);
-                    return [Array.from(m, v => v === undefined ? '<undefined>' : v), Array.from(m
-                            .indices, v => v === undefined ? '<undefined>' : v), m.index, m.input,
-                        names, names.map(n => m.groups[n] === undefined ? '<undefined>' : m.groups[
-                            n]), names.map(n => m.indices.groups[n] === undefined ? '<undefined>' :
-                            m.indices.groups[n]), names.every((n, i) => Object.hasOwn(m.groups,
-                            n) && Object.hasOwn(m.indices.groups, n) && m.groups[n] === m[i + 1] &&
-                            m.indices.groups[n] === m.indices[i + 1]), m.groups === undefined ||
-                        Object.getPrototypeOf(m.groups) === null
-                    ]
-                }
-                var g = /(?<whole>(?<word>[\q{ab|cd}]){2,3})/dv.exec('abcdab!'),
-                    l = /(?<whole>(?<word>[\q{ab|cd}]){2,3}?)/dv.exec('abcdab!');
-                return JSON.stringify([row(g), row(l)]);
-            })() ===
-            "[[[\"abcdab\",\"abcdab\",\"ab\"],[[0,6],[0,6],[4,6]],0,\"abcdab!\",[\"whole\",\"word\"],[\"abcdab\",\"ab\"],[[0,6],[4,6]],true,true],[[\"abcd\",\"abcd\",\"cd\"],[[0,4],[0,4],[2,4]],0,\"abcdab!\",[\"whole\",\"word\"],[\"abcd\",\"cd\"],[[0,4],[2,4]],true,true]]"
-        "#,
-    );
-    assert_true(
-        r#"
-            (function() {
-                function row(m) {
-                    if (m === null) return null;
-                    var names = m.groups === undefined ? [] : Object.keys(m.groups);
-                    return [Array.from(m, v => v === undefined ? '<undefined>' : v), Array.from(m
-                            .indices, v => v === undefined ? '<undefined>' : v), m.index, m.input,
-                        names, names.map(n => m.groups[n] === undefined ? '<undefined>' : m.groups[
-                            n]), names.map(n => m.indices.groups[n] === undefined ? '<undefined>' :
-                            m.indices.groups[n]), names.every((n, i) => Object.hasOwn(m.groups,
-                            n) && Object.hasOwn(m.indices.groups, n) && m.groups[n] === m[i + 1] &&
-                            m.indices.groups[n] === m.indices[i + 1]), m.groups === undefined ||
-                        Object.getPrototypeOf(m.groups) === null
-                    ]
-                }
-                var r = /(?<whole>(?<word>[\q{abcd|bc|da}]){2})/dvg,
-                    s = /(?<whole>(?<word>[\q{abcd|bc|da}]){2})/dvgy,
-                    m = r.exec('abcda'),
-                    n = s.exec('abcda');
-                s.lastIndex = 1;
-                var p = s.exec('abcda');
-                return JSON.stringify([row(m), row(n), row(p), r.lastIndex, s.lastIndex]);
-            })() ===
-            "[[[\"bcda\",\"bcda\",\"da\"],[[1,5],[1,5],[3,5]],1,\"abcda\",[\"whole\",\"word\"],[\"bcda\",\"da\"],[[1,5],[3,5]],true,true],null,[[\"bcda\",\"bcda\",\"da\"],[[1,5],[1,5],[3,5]],1,\"abcda\",[\"whole\",\"word\"],[\"bcda\",\"da\"],[[1,5],[3,5]],true,true],5,5]"
-        "#,
-    );
-
     let mut realm = Realm::default();
     realm.eval(r"var r=/(?<before>)(?<whole>(?<word>[\q{ab|cd}]){2,3})(?<after>)/dvg,clone=new RegExp(r),m=r.exec('abcdab')").unwrap();
     realm.collect(usize::MAX).unwrap();
@@ -529,6 +326,613 @@ fn prefix_free_string_class_native_tables_consumers_and_successful_start_identit
             3] && m.indices[3][0] === 4 && m.indices[3][1] === 6 && clone.exec('!') === null && clone
             .source === r.source && clone.lastIndex === 0 && r.lastIndex === 6
     "#),Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn match_all_preserves_capture_metadata() {
+    let source = format!(
+        r#"
+            (function() {{
+                {DESCRIBE_MATCH}
+
+                var r = /(?<whole>(?<word>[\q{{ab|cd}}]){{2,3}})/dvg,
+                    a = Array.from('!abcdXcdabab!'.matchAll(r));
+                return JSON.stringify([a.map(describeMatch), r.lastIndex], null, 2);
+            }})()
+        "#
+    );
+    let report = eval_string(&mut Realm::default(), &source);
+    insta::assert_snapshot!(report, @r#"
+        [
+          [
+            {
+              "matches": [
+                "abcd",
+                "abcd",
+                "cd"
+              ],
+              "indices": [
+                [
+                  1,
+                  5
+                ],
+                [
+                  1,
+                  5
+                ],
+                [
+                  3,
+                  5
+                ]
+              ],
+              "index": 1,
+              "input": "!abcdXcdabab!",
+              "groupNames": [
+                "whole",
+                "word"
+              ],
+              "namedCaptures": [
+                "abcd",
+                "cd"
+              ],
+              "namedIndices": [
+                [
+                  1,
+                  5
+                ],
+                [
+                  3,
+                  5
+                ]
+              ],
+              "namedAliasesValid": true,
+              "groupsPrototypeValid": true
+            },
+            {
+              "matches": [
+                "cdabab",
+                "cdabab",
+                "ab"
+              ],
+              "indices": [
+                [
+                  6,
+                  12
+                ],
+                [
+                  6,
+                  12
+                ],
+                [
+                  10,
+                  12
+                ]
+              ],
+              "index": 6,
+              "input": "!abcdXcdabab!",
+              "groupNames": [
+                "whole",
+                "word"
+              ],
+              "namedCaptures": [
+                "cdabab",
+                "ab"
+              ],
+              "namedIndices": [
+                [
+                  6,
+                  12
+                ],
+                [
+                  10,
+                  12
+                ]
+              ],
+              "namedAliasesValid": true,
+              "groupsPrototypeValid": true
+            }
+          ],
+          0
+        ]
+        "#);
+}
+
+#[test]
+fn replacement_callback_receives_captures() {
+    let source = r#"
+        (function() {
+
+            var calls = [],
+                r = /(?<whole>(?<word>[\q{ab|cd}]){2,3})/vg,
+                out = '!abcdXcdabab!'.replace(r, function(all, w, word, offset, input, g) {
+                    calls.push([all, w, word, offset, input, arguments.length, g.word === word,
+                        Object.getPrototypeOf(g) === null
+                    ]);
+                    return '[' + word + ']'
+                });
+            return JSON.stringify([out, calls, r.lastIndex], null, 2);
+        })()
+    "#;
+    let report = eval_string(&mut Realm::default(), source);
+    insta::assert_snapshot!(report, @r#"
+        [
+          "![cd]X[ab]!",
+          [
+            [
+              "abcd",
+              "abcd",
+              "cd",
+              1,
+              "!abcdXcdabab!",
+              6,
+              true,
+              true
+            ],
+            [
+              "cdabab",
+              "cdabab",
+              "ab",
+              6,
+              "!abcdXcdabab!",
+              6,
+              true,
+              true
+            ]
+          ],
+          0
+        ]
+        "#);
+}
+
+#[test]
+fn split_and_search_preserve_last_index() {
+    let source = r#"
+        (function() {
+
+            var r = /(?<whole>(?<word>[\q{abcd|bc|da}]){2})/dvg;
+            r.lastIndex = 9;
+            var a = 'abcda'.split(r),
+                at = 'abcda'.search(r);
+            return JSON.stringify([a.map(v => v === undefined ? '<undefined>' : v), at, r
+                .lastIndex
+            ], null, 2);
+        })()
+    "#;
+    let report = eval_string(&mut Realm::default(), source);
+    insta::assert_snapshot!(report, @r#"
+        [
+          [
+            "a",
+            "bcda",
+            "da",
+            ""
+          ],
+          1,
+          9
+        ]
+        "#);
+}
+
+#[test]
+fn failed_last_index_write_throws_type_error() {
+    let source = r#"
+        (function() {
+
+            var r = /[\q{ab|cd}]{2}/vg;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            var caught = false;
+            try {
+                r.exec('xabcd')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            return JSON.stringify([caught, r.lastIndex], null, 2);
+        })()
+    "#;
+    let report = eval_string(&mut Realm::default(), source);
+    insta::assert_snapshot!(report, @r#"
+        [
+          true,
+          0
+        ]
+        "#);
+}
+
+#[test]
+fn supplementary_capture_names_preserve_utf16_ranges() {
+    let source = format!(
+        r#"
+            (function() {{
+                {DESCRIBE_MATCH}
+
+                var r = /(?<\u{{1D49C}}>)(?<whole>(?<word>[\q{{😀a|😀b}}]){{2}})(?<after>)/dvgy;
+                r.lastIndex = 1;
+                var m = r.exec('😀a😀b!');
+                return JSON.stringify([describeMatch(m), r.lastIndex, r.source.indexOf('1D49C') !== -
+                    1], null, 2);
+            }})()
+        "#
+    );
+    let report = eval_string(&mut Realm::default(), &source);
+    insta::assert_snapshot!(report, @r#"
+        [
+          {
+            "matches": [
+              "😀a😀b",
+              "",
+              "😀a😀b",
+              "😀b",
+              ""
+            ],
+            "indices": [
+              [
+                0,
+                6
+              ],
+              [
+                0,
+                0
+              ],
+              [
+                0,
+                6
+              ],
+              [
+                3,
+                6
+              ],
+              [
+                6,
+                6
+              ]
+            ],
+            "index": 0,
+            "input": "😀a😀b!",
+            "groupNames": [
+              "𝒜",
+              "whole",
+              "word",
+              "after"
+            ],
+            "namedCaptures": [
+              "",
+              "😀a😀b",
+              "😀b",
+              ""
+            ],
+            "namedIndices": [
+              [
+                0,
+                0
+              ],
+              [
+                0,
+                6
+              ],
+              [
+                3,
+                6
+              ],
+              [
+                6,
+                6
+              ]
+            ],
+            "namedAliasesValid": true,
+            "groupsPrototypeValid": true
+          },
+          6,
+          true
+        ]
+        "#);
+}
+
+#[test]
+fn ignore_case_preserves_capture_metadata() {
+    let source = format!(
+        r#"
+            (function() {{
+                {DESCRIBE_MATCH}
+
+                var r = /(?<before>)(?<whole>(?<word>[\q{{Sx|k}}]){{2,3}})(?<after>)/dvi,
+                    m = r.exec('ſxKk!');
+                return JSON.stringify([describeMatch(m)], null, 2);
+            }})()
+        "#
+    );
+    let report = eval_string(&mut Realm::default(), &source);
+    insta::assert_snapshot!(report, @r#"
+        [
+          {
+            "matches": [
+              "ſxKk",
+              "",
+              "ſxKk",
+              "k",
+              ""
+            ],
+            "indices": [
+              [
+                0,
+                4
+              ],
+              [
+                0,
+                0
+              ],
+              [
+                0,
+                4
+              ],
+              [
+                3,
+                4
+              ],
+              [
+                4,
+                4
+              ]
+            ],
+            "index": 0,
+            "input": "ſxKk!",
+            "groupNames": [
+              "before",
+              "whole",
+              "word",
+              "after"
+            ],
+            "namedCaptures": [
+              "",
+              "ſxKk",
+              "k",
+              ""
+            ],
+            "namedIndices": [
+              [
+                0,
+                0
+              ],
+              [
+                0,
+                4
+              ],
+              [
+                3,
+                4
+              ],
+              [
+                4,
+                4
+              ]
+            ],
+            "namedAliasesValid": true,
+            "groupsPrototypeValid": true
+          }
+        ]
+        "#);
+}
+
+#[test]
+fn greedy_and_lazy_quantifiers_preserve_captures() {
+    let source = format!(
+        r#"
+            (function() {{
+                {DESCRIBE_MATCH}
+
+                var g = /(?<whole>(?<word>[\q{{ab|cd}}]){{2,3}})/dv.exec('abcdab!'),
+                    l = /(?<whole>(?<word>[\q{{ab|cd}}]){{2,3}}?)/dv.exec('abcdab!');
+                return JSON.stringify([describeMatch(g), describeMatch(l)], null, 2);
+            }})()
+        "#
+    );
+    let report = eval_string(&mut Realm::default(), &source);
+    insta::assert_snapshot!(report, @r#"
+        [
+          {
+            "matches": [
+              "abcdab",
+              "abcdab",
+              "ab"
+            ],
+            "indices": [
+              [
+                0,
+                6
+              ],
+              [
+                0,
+                6
+              ],
+              [
+                4,
+                6
+              ]
+            ],
+            "index": 0,
+            "input": "abcdab!",
+            "groupNames": [
+              "whole",
+              "word"
+            ],
+            "namedCaptures": [
+              "abcdab",
+              "ab"
+            ],
+            "namedIndices": [
+              [
+                0,
+                6
+              ],
+              [
+                4,
+                6
+              ]
+            ],
+            "namedAliasesValid": true,
+            "groupsPrototypeValid": true
+          },
+          {
+            "matches": [
+              "abcd",
+              "abcd",
+              "cd"
+            ],
+            "indices": [
+              [
+                0,
+                4
+              ],
+              [
+                0,
+                4
+              ],
+              [
+                2,
+                4
+              ]
+            ],
+            "index": 0,
+            "input": "abcdab!",
+            "groupNames": [
+              "whole",
+              "word"
+            ],
+            "namedCaptures": [
+              "abcd",
+              "cd"
+            ],
+            "namedIndices": [
+              [
+                0,
+                4
+              ],
+              [
+                2,
+                4
+              ]
+            ],
+            "namedAliasesValid": true,
+            "groupsPrototypeValid": true
+          }
+        ]
+        "#);
+}
+
+#[test]
+fn exec_preserves_alternative_capture_metadata() {
+    let source = format!(
+        r#"
+            (function() {{
+                {DESCRIBE_MATCH}
+
+                var r = /(?<whole>(?<word>[\q{{abcd|bc|da}}]){{2}})/dvg,
+                    s = /(?<whole>(?<word>[\q{{abcd|bc|da}}]){{2}})/dvgy,
+                    m = r.exec('abcda'),
+                    n = s.exec('abcda');
+                s.lastIndex = 1;
+                var p = s.exec('abcda');
+                return JSON.stringify([describeMatch(m), describeMatch(n), describeMatch(p), r
+                    .lastIndex, s.lastIndex
+                ], null, 2);
+            }})()
+        "#
+    );
+    let report = eval_string(&mut Realm::default(), &source);
+    insta::assert_snapshot!(report, @r#"
+        [
+          {
+            "matches": [
+              "bcda",
+              "bcda",
+              "da"
+            ],
+            "indices": [
+              [
+                1,
+                5
+              ],
+              [
+                1,
+                5
+              ],
+              [
+                3,
+                5
+              ]
+            ],
+            "index": 1,
+            "input": "abcda",
+            "groupNames": [
+              "whole",
+              "word"
+            ],
+            "namedCaptures": [
+              "bcda",
+              "da"
+            ],
+            "namedIndices": [
+              [
+                1,
+                5
+              ],
+              [
+                3,
+                5
+              ]
+            ],
+            "namedAliasesValid": true,
+            "groupsPrototypeValid": true
+          },
+          null,
+          {
+            "matches": [
+              "bcda",
+              "bcda",
+              "da"
+            ],
+            "indices": [
+              [
+                1,
+                5
+              ],
+              [
+                1,
+                5
+              ],
+              [
+                3,
+                5
+              ]
+            ],
+            "index": 1,
+            "input": "abcda",
+            "groupNames": [
+              "whole",
+              "word"
+            ],
+            "namedCaptures": [
+              "bcda",
+              "da"
+            ],
+            "namedIndices": [
+              [
+                1,
+                5
+              ],
+              [
+                3,
+                5
+              ]
+            ],
+            "namedAliasesValid": true,
+            "groupsPrototypeValid": true
+          },
+          5,
+          5
+        ]
+        "#);
 }
 
 #[test]

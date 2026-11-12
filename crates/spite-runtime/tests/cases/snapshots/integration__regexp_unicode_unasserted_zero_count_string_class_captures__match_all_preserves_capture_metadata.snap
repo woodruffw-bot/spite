@@ -1,0 +1,171 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_unicode_unasserted_zero_count_string_class_captures.rs
+expression: report
+---
+[
+  [
+    {
+      "matches": [
+        "ab!aa!",
+        "",
+        "ab!aa!",
+        "!",
+        "<undefined>",
+        "!",
+        ""
+      ],
+      "indices": [
+        [
+          0,
+          6
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          6
+        ],
+        [
+          5,
+          6
+        ],
+        "<undefined>",
+        [
+          5,
+          6
+        ],
+        [
+          6,
+          6
+        ]
+      ],
+      "index": 0,
+      "input": "ab!aa!",
+      "groupNames": [
+        "before",
+        "whole",
+        "iteration",
+        "e",
+        "c",
+        "after"
+      ],
+      "namedCaptures": [
+        "",
+        "ab!aa!",
+        "!",
+        "<undefined>",
+        "!",
+        ""
+      ],
+      "namedIndices": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          6
+        ],
+        [
+          5,
+          6
+        ],
+        "<undefined>",
+        [
+          5,
+          6
+        ],
+        [
+          6,
+          6
+        ]
+      ],
+      "namedAliasesValid": true,
+      "groupsPrototypeValid": true
+    },
+    {
+      "matches": [
+        "",
+        "",
+        "",
+        "",
+        "",
+        "<undefined>",
+        ""
+      ],
+      "indices": [
+        [
+          6,
+          6
+        ],
+        [
+          6,
+          6
+        ],
+        [
+          6,
+          6
+        ],
+        [
+          6,
+          6
+        ],
+        [
+          6,
+          6
+        ],
+        "<undefined>",
+        [
+          6,
+          6
+        ]
+      ],
+      "index": 6,
+      "input": "ab!aa!",
+      "groupNames": [
+        "before",
+        "whole",
+        "iteration",
+        "e",
+        "c",
+        "after"
+      ],
+      "namedCaptures": [
+        "",
+        "",
+        "",
+        "",
+        "<undefined>",
+        ""
+      ],
+      "namedIndices": [
+        [
+          6,
+          6
+        ],
+        [
+          6,
+          6
+        ],
+        [
+          6,
+          6
+        ],
+        [
+          6,
+          6
+        ],
+        "<undefined>",
+        [
+          6,
+          6
+        ]
+      ],
+      "namedAliasesValid": true,
+      "groupsPrototypeValid": true
+    }
+  ],
+  0
+]

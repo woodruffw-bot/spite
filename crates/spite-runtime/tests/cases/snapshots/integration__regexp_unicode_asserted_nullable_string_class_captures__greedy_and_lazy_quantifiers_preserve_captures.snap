@@ -1,0 +1,171 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_unicode_asserted_nullable_string_class_captures.rs
+expression: report
+---
+[
+  {
+    "matches": [
+      "",
+      "",
+      "<undefined>",
+      "<undefined>",
+      "<undefined>"
+    ],
+    "indices": [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      "<undefined>",
+      "<undefined>",
+      "<undefined>"
+    ],
+    "index": 0,
+    "input": "x",
+    "groupNames": [
+      "whole",
+      "iteration",
+      "c",
+      "e"
+    ],
+    "namedCaptures": [
+      "",
+      "<undefined>",
+      "<undefined>",
+      "<undefined>"
+    ],
+    "namedIndices": [
+      [
+        0,
+        0
+      ],
+      "<undefined>",
+      "<undefined>",
+      "<undefined>"
+    ],
+    "namedAliasesValid": true,
+    "groupsPrototypeValid": true
+  },
+  {
+    "matches": [
+      "",
+      "",
+      "",
+      "",
+      "<undefined>"
+    ],
+    "indices": [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      "<undefined>"
+    ],
+    "index": 0,
+    "input": "x",
+    "groupNames": [
+      "whole",
+      "iteration",
+      "e",
+      "c"
+    ],
+    "namedCaptures": [
+      "",
+      "",
+      "",
+      "<undefined>"
+    ],
+    "namedIndices": [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      "<undefined>"
+    ],
+    "namedAliasesValid": true,
+    "groupsPrototypeValid": true
+  },
+  {
+    "matches": [
+      "",
+      "",
+      "",
+      "",
+      "<undefined>"
+    ],
+    "indices": [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      "<undefined>"
+    ],
+    "index": 0,
+    "input": "x",
+    "groupNames": [
+      "whole",
+      "iteration",
+      "c",
+      "e"
+    ],
+    "namedCaptures": [
+      "",
+      "",
+      "",
+      "<undefined>"
+    ],
+    "namedIndices": [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      "<undefined>"
+    ],
+    "namedAliasesValid": true,
+    "groupsPrototypeValid": true
+  }
+]

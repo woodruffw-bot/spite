@@ -1,0 +1,119 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_unicode_predicate_choice_string_class_alternative_captures.rs
+expression: report
+---
+[
+  {
+    "matches": [
+      "ſa",
+      "",
+      "",
+      "<undefined>",
+      "ſa",
+      "ſa",
+      "<undefined>",
+      "",
+      "<undefined>",
+      "<undefined>",
+      "<undefined>",
+      ""
+    ],
+    "indices": [
+      [
+        0,
+        2
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      "<undefined>",
+      [
+        0,
+        2
+      ],
+      [
+        0,
+        2
+      ],
+      "<undefined>",
+      [
+        2,
+        2
+      ],
+      "<undefined>",
+      "<undefined>",
+      "<undefined>",
+      [
+        2,
+        2
+      ]
+    ],
+    "index": 0,
+    "input": "ſaX!",
+    "groupNames": [
+      "b",
+      "w",
+      "nw",
+      "whole",
+      "c",
+      "e",
+      "a",
+      "s",
+      "end",
+      "wb",
+      "nwb"
+    ],
+    "namedCaptures": [
+      "",
+      "",
+      "<undefined>",
+      "ſa",
+      "ſa",
+      "<undefined>",
+      "",
+      "<undefined>",
+      "<undefined>",
+      "<undefined>",
+      ""
+    ],
+    "namedIndices": [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      "<undefined>",
+      [
+        0,
+        2
+      ],
+      [
+        0,
+        2
+      ],
+      "<undefined>",
+      [
+        2,
+        2
+      ],
+      "<undefined>",
+      "<undefined>",
+      "<undefined>",
+      [
+        2,
+        2
+      ]
+    ],
+    "namedAliasesValid": true,
+    "groupsPrototypeValid": true
+  },
+  2
+]

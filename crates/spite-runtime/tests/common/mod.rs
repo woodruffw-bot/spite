@@ -6,6 +6,7 @@ mod realm_entries;
 pub use realm_entries::REALM_ENTRIES;
 
 pub mod regexp_captures;
+pub mod regexp_matches;
 pub mod regexp_oracle;
 pub mod unicode_samples;
 

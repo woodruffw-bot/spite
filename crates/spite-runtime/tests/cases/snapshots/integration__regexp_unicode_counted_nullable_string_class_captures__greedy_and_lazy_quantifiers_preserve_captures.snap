@@ -1,0 +1,119 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_unicode_counted_nullable_string_class_captures.rs
+expression: report
+---
+[
+  {
+    "matches": [
+      "ab",
+      "ab",
+      "",
+      ""
+    ],
+    "indices": [
+      [
+        0,
+        2
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        2,
+        2
+      ],
+      [
+        2,
+        2
+      ]
+    ],
+    "index": 0,
+    "input": "ab",
+    "groupNames": [
+      "whole",
+      "iteration",
+      "c"
+    ],
+    "namedCaptures": [
+      "ab",
+      "",
+      ""
+    ],
+    "namedIndices": [
+      [
+        0,
+        2
+      ],
+      [
+        2,
+        2
+      ],
+      [
+        2,
+        2
+      ]
+    ],
+    "namedAliasesValid": true,
+    "groupsPrototypeValid": true
+  },
+  {
+    "matches": [
+      "",
+      "",
+      "",
+      "",
+      "<undefined>"
+    ],
+    "indices": [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      "<undefined>"
+    ],
+    "index": 0,
+    "input": "ab",
+    "groupNames": [
+      "whole",
+      "iteration",
+      "e",
+      "c"
+    ],
+    "namedCaptures": [
+      "",
+      "",
+      "",
+      "<undefined>"
+    ],
+    "namedIndices": [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      "<undefined>"
+    ],
+    "namedAliasesValid": true,
+    "groupsPrototypeValid": true
+  }
+]

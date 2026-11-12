@@ -1,0 +1,109 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_unicode_truth_table_string_class_alternative_captures.rs
+expression: report
+---
+[
+  {
+    "matches": [
+      "ſa",
+      "",
+      "",
+      "<undefined>",
+      "ſa",
+      "ſa",
+      "<undefined>",
+      "",
+      "<undefined>",
+      ""
+    ],
+    "indices": [
+      [
+        0,
+        2
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      "<undefined>",
+      [
+        0,
+        2
+      ],
+      [
+        0,
+        2
+      ],
+      "<undefined>",
+      [
+        2,
+        2
+      ],
+      "<undefined>",
+      [
+        2,
+        2
+      ]
+    ],
+    "index": 0,
+    "input": "ſaX!",
+    "groupNames": [
+      "b",
+      "s",
+      "w",
+      "whole",
+      "c",
+      "e",
+      "a",
+      "end",
+      "nw"
+    ],
+    "namedCaptures": [
+      "",
+      "",
+      "<undefined>",
+      "ſa",
+      "ſa",
+      "<undefined>",
+      "",
+      "<undefined>",
+      ""
+    ],
+    "namedIndices": [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      "<undefined>",
+      [
+        0,
+        2
+      ],
+      [
+        0,
+        2
+      ],
+      "<undefined>",
+      [
+        2,
+        2
+      ],
+      "<undefined>",
+      [
+        2,
+        2
+      ]
+    ],
+    "namedAliasesValid": true,
+    "groupsPrototypeValid": true
+  },
+  2
+]

@@ -1,0 +1,107 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_unicode_conjunctive_predicate_choice_single_string_class_captures.rs
+expression: report
+---
+[
+  {
+    "matches": [
+      "ab",
+      "",
+      "",
+      "<undefined>",
+      "ab",
+      "ab",
+      "",
+      "<undefined>",
+      ""
+    ],
+    "indices": [
+      [
+        0,
+        2
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      "<undefined>",
+      [
+        0,
+        2
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        2,
+        2
+      ],
+      "<undefined>",
+      [
+        2,
+        2
+      ]
+    ],
+    "index": 0,
+    "input": "ab!",
+    "groupNames": [
+      "𝒜",
+      "w",
+      "nw",
+      "whole",
+      "c",
+      "a",
+      "end",
+      "wb"
+    ],
+    "namedCaptures": [
+      "",
+      "",
+      "<undefined>",
+      "ab",
+      "ab",
+      "",
+      "<undefined>",
+      ""
+    ],
+    "namedIndices": [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      "<undefined>",
+      [
+        0,
+        2
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        2,
+        2
+      ],
+      "<undefined>",
+      [
+        2,
+        2
+      ]
+    ],
+    "namedAliasesValid": true,
+    "groupsPrototypeValid": true
+  },
+  true,
+  true,
+  2,
+  3
+]

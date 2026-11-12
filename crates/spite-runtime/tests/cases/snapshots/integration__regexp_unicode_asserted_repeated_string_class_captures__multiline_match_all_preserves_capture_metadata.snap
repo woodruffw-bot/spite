@@ -1,0 +1,132 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_unicode_asserted_repeated_string_class_captures.rs
+expression: report
+---
+[
+  [
+    {
+      "matches": [
+        "aaaa",
+        "aaaa",
+        "aa"
+      ],
+      "indices": [
+        [
+          0,
+          4
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          2,
+          4
+        ]
+      ],
+      "index": 0,
+      "input": "aaaa\n\naaaaaa",
+      "groupNames": [
+        "whole",
+        "word"
+      ],
+      "namedCaptures": [
+        "aaaa",
+        "aa"
+      ],
+      "namedIndices": [
+        [
+          0,
+          4
+        ],
+        [
+          2,
+          4
+        ]
+      ],
+      "namedAliasesValid": true,
+      "groupsPrototypeValid": true
+    },
+    {
+      "matches": [
+        "",
+        "",
+        "<undefined>"
+      ],
+      "indices": [
+        [
+          5,
+          5
+        ],
+        [
+          5,
+          5
+        ],
+        "<undefined>"
+      ],
+      "index": 5,
+      "input": "aaaa\n\naaaaaa",
+      "groupNames": [
+        "whole",
+        "word"
+      ],
+      "namedCaptures": [
+        "",
+        "<undefined>"
+      ],
+      "namedIndices": [
+        [
+          5,
+          5
+        ],
+        "<undefined>"
+      ],
+      "namedAliasesValid": true,
+      "groupsPrototypeValid": true
+    },
+    {
+      "matches": [
+        "aaaaaa",
+        "aaaaaa",
+        "aaa"
+      ],
+      "indices": [
+        [
+          6,
+          12
+        ],
+        [
+          6,
+          12
+        ],
+        [
+          9,
+          12
+        ]
+      ],
+      "index": 6,
+      "input": "aaaa\n\naaaaaa",
+      "groupNames": [
+        "whole",
+        "word"
+      ],
+      "namedCaptures": [
+        "aaaaaa",
+        "aaa"
+      ],
+      "namedIndices": [
+        [
+          6,
+          12
+        ],
+        [
+          9,
+          12
+        ]
+      ],
+      "namedAliasesValid": true,
+      "groupsPrototypeValid": true
+    }
+  ],
+  0
+]

@@ -1,6 +1,8 @@
 //! Required predicate choices preserve conditional lexical captures.
 use crate::common::assert_true;
+use crate::common::eval_string;
 use crate::common::regexp_captures::{MatchExpectation, assert_named_captures};
+use crate::common::regexp_matches::DESCRIBE_MATCH;
 use spite_core::JsString;
 use spite_runtime::{Realm, Value};
 use test_case::test_case;
@@ -127,230 +129,6 @@ fn matching_controls_and_string_consumers() {
         "#,
     );
 
-    assert_true(
-        r#"
-            (function() {
-                function row(m) {
-                    if (m === null) return null;
-                    var names = m.groups === undefined ? [] : Object.keys(m.groups);
-                    return [Array.from(m, v => v === undefined ? '<undefined>' : v), Array.from(m
-                            .indices, v => v === undefined ? '<undefined>' : v), m.index, m.input,
-                        names, names.map(n => m.groups[n] === undefined ? '<undefined>' : m.groups[
-                            n]), names.map(n => m.indices.groups[n] === undefined ? '<undefined>' :
-                            m.indices.groups[n]), names.every((n, i) => Object.hasOwn(m.groups,
-                            n) && Object.hasOwn(m.indices.groups, n) && m.groups[n] === m[i + 1] &&
-                            m.indices.groups[n] === m.indices[i + 1]), m.groups === undefined ||
-                        Object.getPrototypeOf(m.groups) === null
-                    ]
-                }
-                var P =
-                    "(?<b>(?<w>\\b)|(?<nw>\\B))(?<whole>(?<c>[\\q{|a|ab}]))(?<a>(?<s>^)|(?<end>$)|(?<wb>\\b)|(?<nwb>\\B))";
-                var r = new RegExp(P, "dvg"),
-                    a = Array.from("ab!aa".matchAll(r));
-                return JSON.stringify([a.map(row), r.lastIndex]);
-            })() ===
-            "[[[[\"ab\",\"\",\"\",\"<undefined>\",\"ab\",\"ab\",\"\",\"<undefined>\",\"<undefined>\",\"\",\"<undefined>\"],[[0,2],[0,0],[0,0],\"<undefined>\",[0,2],[0,2],[2,2],\"<undefined>\",\"<undefined>\",[2,2],\"<undefined>\"],0,\"ab!aa\",[\"b\",\"w\",\"nw\",\"whole\",\"c\",\"a\",\"s\",\"end\",\"wb\",\"nwb\"],[\"\",\"\",\"<undefined>\",\"ab\",\"ab\",\"\",\"<undefined>\",\"<undefined>\",\"\",\"<undefined>\"],[[0,0],[0,0],\"<undefined>\",[0,2],[0,2],[2,2],\"<undefined>\",\"<undefined>\",[2,2],\"<undefined>\"],true,true],[[\"\",\"\",\"\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"<undefined>\",\"\",\"<undefined>\"],[[2,2],[2,2],[2,2],\"<undefined>\",[2,2],[2,2],[2,2],\"<undefined>\",\"<undefined>\",[2,2],\"<undefined>\"],2,\"ab!aa\",[\"b\",\"w\",\"nw\",\"whole\",\"c\",\"a\",\"s\",\"end\",\"wb\",\"nwb\"],[\"\",\"\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"<undefined>\",\"\",\"<undefined>\"],[[2,2],[2,2],\"<undefined>\",[2,2],[2,2],[2,2],\"<undefined>\",\"<undefined>\",[2,2],\"<undefined>\"],true,true],[[\"a\",\"\",\"\",\"<undefined>\",\"a\",\"a\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\"],[[3,4],[3,3],[3,3],\"<undefined>\",[3,4],[3,4],[4,4],\"<undefined>\",\"<undefined>\",\"<undefined>\",[4,4]],3,\"ab!aa\",[\"b\",\"w\",\"nw\",\"whole\",\"c\",\"a\",\"s\",\"end\",\"wb\",\"nwb\"],[\"\",\"\",\"<undefined>\",\"a\",\"a\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\"],[[3,3],[3,3],\"<undefined>\",[3,4],[3,4],[4,4],\"<undefined>\",\"<undefined>\",\"<undefined>\",[4,4]],true,true],[[\"a\",\"\",\"<undefined>\",\"\",\"a\",\"a\",\"\",\"<undefined>\",\"\",\"<undefined>\",\"<undefined>\"],[[4,5],[4,4],\"<undefined>\",[4,4],[4,5],[4,5],[5,5],\"<undefined>\",[5,5],\"<undefined>\",\"<undefined>\"],4,\"ab!aa\",[\"b\",\"w\",\"nw\",\"whole\",\"c\",\"a\",\"s\",\"end\",\"wb\",\"nwb\"],[\"\",\"<undefined>\",\"\",\"a\",\"a\",\"\",\"<undefined>\",\"\",\"<undefined>\",\"<undefined>\"],[[4,4],\"<undefined>\",[4,4],[4,5],[4,5],[5,5],\"<undefined>\",[5,5],\"<undefined>\",\"<undefined>\"],true,true],[[\"\",\"\",\"\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"\",\"<undefined>\",\"<undefined>\"],[[5,5],[5,5],[5,5],\"<undefined>\",[5,5],[5,5],[5,5],\"<undefined>\",[5,5],\"<undefined>\",\"<undefined>\"],5,\"ab!aa\",[\"b\",\"w\",\"nw\",\"whole\",\"c\",\"a\",\"s\",\"end\",\"wb\",\"nwb\"],[\"\",\"\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"\",\"<undefined>\",\"<undefined>\"],[[5,5],[5,5],\"<undefined>\",[5,5],[5,5],[5,5],\"<undefined>\",[5,5],\"<undefined>\",\"<undefined>\"],true,true]],0]"
-        "#,
-    );
-    assert_true(
-        r#"
-            (function() {
-                function row(m) {
-                    if (m === null) return null;
-                    var names = m.groups === undefined ? [] : Object.keys(m.groups);
-                    return [Array.from(m, v => v === undefined ? '<undefined>' : v), Array.from(m
-                            .indices, v => v === undefined ? '<undefined>' : v), m.index, m.input,
-                        names, names.map(n => m.groups[n] === undefined ? '<undefined>' : m.groups[
-                            n]), names.map(n => m.indices.groups[n] === undefined ? '<undefined>' :
-                            m.indices.groups[n]), names.every((n, i) => Object.hasOwn(m.groups,
-                            n) && Object.hasOwn(m.indices.groups, n) && m.groups[n] === m[i + 1] &&
-                            m.indices.groups[n] === m.indices[i + 1]), m.groups === undefined ||
-                        Object.getPrototypeOf(m.groups) === null
-                    ]
-                }
-                var P =
-                    "(?<b>(?<w>\\b)|(?<nw>\\B))(?<whole>(?<c>[\\q{|a|ab}]))(?<a>(?<s>^)|(?<end>$)|(?<wb>\\b)|(?<nwb>\\B))";
-                var calls = [],
-                    r = new RegExp(P, "vg"),
-                    out = "ab!aa".replace(r, function() {
-                        var a = Array.from(arguments);
-                        calls.push(a.map(v => v === undefined ? "<undefined>" : typeof v ===
-                            "object" ? Object.keys(v).map(k => [k, v[k] === undefined ?
-                                "<undefined>" : v[k]
-                            ]) : v));
-                        return "[" + a[0] + "]"
-                    });
-                return JSON.stringify([out, calls, r.lastIndex]);
-            })() ===
-            "[\"[ab][]![a][a][]\",[[\"ab\",\"\",\"\",\"<undefined>\",\"ab\",\"ab\",\"\",\"<undefined>\",\"<undefined>\",\"\",\"<undefined>\",0,\"ab!aa\",[[\"b\",\"\"],[\"w\",\"\"],[\"nw\",\"<undefined>\"],[\"whole\",\"ab\"],[\"c\",\"ab\"],[\"a\",\"\"],[\"s\",\"<undefined>\"],[\"end\",\"<undefined>\"],[\"wb\",\"\"],[\"nwb\",\"<undefined>\"]]],[\"\",\"\",\"\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"<undefined>\",\"\",\"<undefined>\",2,\"ab!aa\",[[\"b\",\"\"],[\"w\",\"\"],[\"nw\",\"<undefined>\"],[\"whole\",\"\"],[\"c\",\"\"],[\"a\",\"\"],[\"s\",\"<undefined>\"],[\"end\",\"<undefined>\"],[\"wb\",\"\"],[\"nwb\",\"<undefined>\"]]],[\"a\",\"\",\"\",\"<undefined>\",\"a\",\"a\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\",3,\"ab!aa\",[[\"b\",\"\"],[\"w\",\"\"],[\"nw\",\"<undefined>\"],[\"whole\",\"a\"],[\"c\",\"a\"],[\"a\",\"\"],[\"s\",\"<undefined>\"],[\"end\",\"<undefined>\"],[\"wb\",\"<undefined>\"],[\"nwb\",\"\"]]],[\"a\",\"\",\"<undefined>\",\"\",\"a\",\"a\",\"\",\"<undefined>\",\"\",\"<undefined>\",\"<undefined>\",4,\"ab!aa\",[[\"b\",\"\"],[\"w\",\"<undefined>\"],[\"nw\",\"\"],[\"whole\",\"a\"],[\"c\",\"a\"],[\"a\",\"\"],[\"s\",\"<undefined>\"],[\"end\",\"\"],[\"wb\",\"<undefined>\"],[\"nwb\",\"<undefined>\"]]],[\"\",\"\",\"\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"\",\"<undefined>\",\"<undefined>\",5,\"ab!aa\",[[\"b\",\"\"],[\"w\",\"\"],[\"nw\",\"<undefined>\"],[\"whole\",\"\"],[\"c\",\"\"],[\"a\",\"\"],[\"s\",\"<undefined>\"],[\"end\",\"\"],[\"wb\",\"<undefined>\"],[\"nwb\",\"<undefined>\"]]]],0]"
-        "#,
-    );
-    assert_true(
-        r#"
-            (function() {
-                function row(m) {
-                    if (m === null) return null;
-                    var names = m.groups === undefined ? [] : Object.keys(m.groups);
-                    return [Array.from(m, v => v === undefined ? '<undefined>' : v), Array.from(m
-                            .indices, v => v === undefined ? '<undefined>' : v), m.index, m.input,
-                        names, names.map(n => m.groups[n] === undefined ? '<undefined>' : m.groups[
-                            n]), names.map(n => m.indices.groups[n] === undefined ? '<undefined>' :
-                            m.indices.groups[n]), names.every((n, i) => Object.hasOwn(m.groups,
-                            n) && Object.hasOwn(m.indices.groups, n) && m.groups[n] === m[i + 1] &&
-                            m.indices.groups[n] === m.indices[i + 1]), m.groups === undefined ||
-                        Object.getPrototypeOf(m.groups) === null
-                    ]
-                }
-                var P =
-                    "(?<b>(?<w>\\b)|(?<nw>\\B))(?<whole>(?<c>[\\q{|a|ab}]))(?<a>(?<s>^)|(?<end>$)|(?<wb>\\b)|(?<nwb>\\B))";
-                var r = new RegExp(P, "dvg");
-                r.lastIndex = 9;
-                var a = "!abaa!".split(r),
-                    b = "!abaa!".search(r);
-                return JSON.stringify([a.map(v => v === undefined ? "<undefined>" : v), b, r
-                    .lastIndex]);
-            })() ===
-            "[[\"!\",\"\",\"\",\"<undefined>\",\"ab\",\"ab\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"\",\"a\",\"a\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"\",\"a\",\"a\",\"\",\"<undefined>\",\"<undefined>\",\"\",\"<undefined>\",\"!\"],0,9]"
-        "#,
-    );
-    assert_true(
-        r#"
-            (function() {
-                function row(m) {
-                    if (m === null) return null;
-                    var names = m.groups === undefined ? [] : Object.keys(m.groups);
-                    return [Array.from(m, v => v === undefined ? '<undefined>' : v), Array.from(m
-                            .indices, v => v === undefined ? '<undefined>' : v), m.index, m.input,
-                        names, names.map(n => m.groups[n] === undefined ? '<undefined>' : m.groups[
-                            n]), names.map(n => m.indices.groups[n] === undefined ? '<undefined>' :
-                            m.indices.groups[n]), names.every((n, i) => Object.hasOwn(m.groups,
-                            n) && Object.hasOwn(m.indices.groups, n) && m.groups[n] === m[i + 1] &&
-                            m.indices.groups[n] === m.indices[i + 1]), m.groups === undefined ||
-                        Object.getPrototypeOf(m.groups) === null
-                    ]
-                }
-                var P =
-                    "(?<b>(?<w>\\b)|(?<nw>\\B))(?<whole>(?<c>[\\q{|a|ab}]))(?<a>(?<s>^)|(?<end>$)|(?<wb>\\b)|(?<nwb>\\B))";
-                var r = new RegExp(P, "vg");
-                Object.defineProperty(r, "lastIndex", {
-                    writable: false
-                });
-                var caught = false;
-                try {
-                    r.exec("ab")
-                } catch (e) {
-                    caught = e instanceof TypeError
-                }
-                return JSON.stringify([caught, r.lastIndex]);
-            })() === "[true,0]"
-        "#,
-    );
-    assert_true(
-        r#"
-            (function() {
-                function row(m) {
-                    if (m === null) return null;
-                    var names = m.groups === undefined ? [] : Object.keys(m.groups);
-                    return [Array.from(m, v => v === undefined ? '<undefined>' : v), Array.from(m
-                            .indices, v => v === undefined ? '<undefined>' : v), m.index, m.input,
-                        names, names.map(n => m.groups[n] === undefined ? '<undefined>' : m.groups[
-                            n]), names.map(n => m.indices.groups[n] === undefined ? '<undefined>' :
-                            m.indices.groups[n]), names.every((n, i) => Object.hasOwn(m.groups,
-                            n) && Object.hasOwn(m.indices.groups, n) && m.groups[n] === m[i + 1] &&
-                            m.indices.groups[n] === m.indices[i + 1]), m.groups === undefined ||
-                        Object.getPrototypeOf(m.groups) === null
-                    ]
-                }
-                var P =
-                    "(?<b>(?<w>\\b)|(?<nw>\\B))(?<whole>(?<c>[\\q{|a|ab}]))(?<a>(?<s>^)|(?<end>$)|(?<wb>\\b)|(?<nwb>\\B))";
-                var r = new RegExp(P, "dvg"),
-                    a = r.exec(""),
-                    b = r.exec("ab");
-                return JSON.stringify([row(a), row(b), r.lastIndex]);
-            })() ===
-            "[[[\"\",\"\",\"<undefined>\",\"\",\"\",\"\",\"\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\"],[[0,0],[0,0],\"<undefined>\",[0,0],[0,0],[0,0],[0,0],[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\"],0,\"\",[\"b\",\"w\",\"nw\",\"whole\",\"c\",\"a\",\"s\",\"end\",\"wb\",\"nwb\"],[\"\",\"<undefined>\",\"\",\"\",\"\",\"\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\"],[[0,0],\"<undefined>\",[0,0],[0,0],[0,0],[0,0],[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\"],true,true],[[\"ab\",\"\",\"\",\"<undefined>\",\"ab\",\"ab\",\"\",\"<undefined>\",\"\",\"<undefined>\",\"<undefined>\"],[[0,2],[0,0],[0,0],\"<undefined>\",[0,2],[0,2],[2,2],\"<undefined>\",[2,2],\"<undefined>\",\"<undefined>\"],0,\"ab\",[\"b\",\"w\",\"nw\",\"whole\",\"c\",\"a\",\"s\",\"end\",\"wb\",\"nwb\"],[\"\",\"\",\"<undefined>\",\"ab\",\"ab\",\"\",\"<undefined>\",\"\",\"<undefined>\",\"<undefined>\"],[[0,0],[0,0],\"<undefined>\",[0,2],[0,2],[2,2],\"<undefined>\",[2,2],\"<undefined>\",\"<undefined>\"],true,true],2]"
-        "#,
-    );
-    assert_true(
-        r#"
-            (function() {
-                function row(m) {
-                    if (m === null) return null;
-                    var names = m.groups === undefined ? [] : Object.keys(m.groups);
-                    return [Array.from(m, v => v === undefined ? '<undefined>' : v), Array.from(m
-                            .indices, v => v === undefined ? '<undefined>' : v), m.index, m.input,
-                        names, names.map(n => m.groups[n] === undefined ? '<undefined>' : m.groups[
-                            n]), names.map(n => m.indices.groups[n] === undefined ? '<undefined>' :
-                            m.indices.groups[n]), names.every((n, i) => Object.hasOwn(m.groups,
-                            n) && Object.hasOwn(m.indices.groups, n) && m.groups[n] === m[i + 1] &&
-                            m.indices.groups[n] === m.indices[i + 1]), m.groups === undefined ||
-                        Object.getPrototypeOf(m.groups) === null
-                    ]
-                }
-                var P =
-                    "(?<b>(?<w>\\b)|(?<nw>\\B))(?<whole>(?<c>[a-z\\q{|S|sa|aX}]))(?<a>(?<s>^)|(?<end>$)|(?<wb>\\b)|(?<nwb>\\B))";
-                var r = new RegExp(P, "dvgi"),
-                    a = r.exec("ſaX!");
-                return JSON.stringify([row(a), r.lastIndex]);
-            })() ===
-            "[[[\"\u017fa\",\"\",\"\",\"<undefined>\",\"\u017fa\",\"\u017fa\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\"],[[0,2],[0,0],[0,0],\"<undefined>\",[0,2],[0,2],[2,2],\"<undefined>\",\"<undefined>\",\"<undefined>\",[2,2]],0,\"\u017faX!\",[\"b\",\"w\",\"nw\",\"whole\",\"c\",\"a\",\"s\",\"end\",\"wb\",\"nwb\"],[\"\",\"\",\"<undefined>\",\"\u017fa\",\"\u017fa\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\"],[[0,0],[0,0],\"<undefined>\",[0,2],[0,2],[2,2],\"<undefined>\",\"<undefined>\",\"<undefined>\",[2,2]],true,true],2]"
-        "#,
-    );
-    assert_true(
-        r#"
-            (function() {
-                function row(m) {
-                    if (m === null) return null;
-                    var names = m.groups === undefined ? [] : Object.keys(m.groups);
-                    return [Array.from(m, v => v === undefined ? '<undefined>' : v), Array.from(m
-                            .indices, v => v === undefined ? '<undefined>' : v), m.index, m.input,
-                        names, names.map(n => m.groups[n] === undefined ? '<undefined>' : m.groups[
-                            n]), names.map(n => m.indices.groups[n] === undefined ? '<undefined>' :
-                            m.indices.groups[n]), names.every((n, i) => Object.hasOwn(m.groups,
-                            n) && Object.hasOwn(m.indices.groups, n) && m.groups[n] === m[i + 1] &&
-                            m.indices.groups[n] === m.indices[i + 1]), m.groups === undefined ||
-                        Object.getPrototypeOf(m.groups) === null
-                    ]
-                }
-                var P =
-                    "(?<b>(?<w>\\b)|(?<nw>\\B))(?<whole>(?<c>[\\q{|a|ab}]))(?<a>(?<s>^)|(?<end>$)|(?<wb>\\b)|(?<nwb>\\B))";
-                var r = new RegExp(P, "dvgm"),
-                    a = Array.from("ab\n\naa".matchAll(r));
-                return JSON.stringify([a.map(row), r.lastIndex]);
-            })() ===
-            "[[[[\"ab\",\"\",\"\",\"<undefined>\",\"ab\",\"ab\",\"\",\"<undefined>\",\"\",\"<undefined>\",\"<undefined>\"],[[0,2],[0,0],[0,0],\"<undefined>\",[0,2],[0,2],[2,2],\"<undefined>\",[2,2],\"<undefined>\",\"<undefined>\"],0,\"ab\\n\\naa\",[\"b\",\"w\",\"nw\",\"whole\",\"c\",\"a\",\"s\",\"end\",\"wb\",\"nwb\"],[\"\",\"\",\"<undefined>\",\"ab\",\"ab\",\"\",\"<undefined>\",\"\",\"<undefined>\",\"<undefined>\"],[[0,0],[0,0],\"<undefined>\",[0,2],[0,2],[2,2],\"<undefined>\",[2,2],\"<undefined>\",\"<undefined>\"],true,true],[[\"\",\"\",\"\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"\",\"<undefined>\",\"<undefined>\"],[[2,2],[2,2],[2,2],\"<undefined>\",[2,2],[2,2],[2,2],\"<undefined>\",[2,2],\"<undefined>\",\"<undefined>\"],2,\"ab\\n\\naa\",[\"b\",\"w\",\"nw\",\"whole\",\"c\",\"a\",\"s\",\"end\",\"wb\",\"nwb\"],[\"\",\"\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"\",\"<undefined>\",\"<undefined>\"],[[2,2],[2,2],\"<undefined>\",[2,2],[2,2],[2,2],\"<undefined>\",[2,2],\"<undefined>\",\"<undefined>\"],true,true],[[\"\",\"\",\"<undefined>\",\"\",\"\",\"\",\"\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\"],[[3,3],[3,3],\"<undefined>\",[3,3],[3,3],[3,3],[3,3],[3,3],\"<undefined>\",\"<undefined>\",\"<undefined>\"],3,\"ab\\n\\naa\",[\"b\",\"w\",\"nw\",\"whole\",\"c\",\"a\",\"s\",\"end\",\"wb\",\"nwb\"],[\"\",\"<undefined>\",\"\",\"\",\"\",\"\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\"],[[3,3],\"<undefined>\",[3,3],[3,3],[3,3],[3,3],[3,3],\"<undefined>\",\"<undefined>\",\"<undefined>\"],true,true],[[\"a\",\"\",\"\",\"<undefined>\",\"a\",\"a\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\"],[[4,5],[4,4],[4,4],\"<undefined>\",[4,5],[4,5],[5,5],\"<undefined>\",\"<undefined>\",\"<undefined>\",[5,5]],4,\"ab\\n\\naa\",[\"b\",\"w\",\"nw\",\"whole\",\"c\",\"a\",\"s\",\"end\",\"wb\",\"nwb\"],[\"\",\"\",\"<undefined>\",\"a\",\"a\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"\"],[[4,4],[4,4],\"<undefined>\",[4,5],[4,5],[5,5],\"<undefined>\",\"<undefined>\",\"<undefined>\",[5,5]],true,true],[[\"a\",\"\",\"<undefined>\",\"\",\"a\",\"a\",\"\",\"<undefined>\",\"\",\"<undefined>\",\"<undefined>\"],[[5,6],[5,5],\"<undefined>\",[5,5],[5,6],[5,6],[6,6],\"<undefined>\",[6,6],\"<undefined>\",\"<undefined>\"],5,\"ab\\n\\naa\",[\"b\",\"w\",\"nw\",\"whole\",\"c\",\"a\",\"s\",\"end\",\"wb\",\"nwb\"],[\"\",\"<undefined>\",\"\",\"a\",\"a\",\"\",\"<undefined>\",\"\",\"<undefined>\",\"<undefined>\"],[[5,5],\"<undefined>\",[5,5],[5,6],[5,6],[6,6],\"<undefined>\",[6,6],\"<undefined>\",\"<undefined>\"],true,true],[[\"\",\"\",\"\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"\",\"<undefined>\",\"<undefined>\"],[[6,6],[6,6],[6,6],\"<undefined>\",[6,6],[6,6],[6,6],\"<undefined>\",[6,6],\"<undefined>\",\"<undefined>\"],6,\"ab\\n\\naa\",[\"b\",\"w\",\"nw\",\"whole\",\"c\",\"a\",\"s\",\"end\",\"wb\",\"nwb\"],[\"\",\"\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"\",\"<undefined>\",\"<undefined>\"],[[6,6],[6,6],\"<undefined>\",[6,6],[6,6],[6,6],\"<undefined>\",[6,6],\"<undefined>\",\"<undefined>\"],true,true]],0]"
-        "#,
-    );
-    assert_true(
-        r#"
-            (function() {
-                function row(m) {
-                    if (m === null) return null;
-                    var names = m.groups === undefined ? [] : Object.keys(m.groups);
-                    return [Array.from(m, v => v === undefined ? '<undefined>' : v), Array.from(m
-                            .indices, v => v === undefined ? '<undefined>' : v), m.index, m.input,
-                        names, names.map(n => m.groups[n] === undefined ? '<undefined>' : m.groups[
-                            n]), names.map(n => m.indices.groups[n] === undefined ? '<undefined>' :
-                            m.indices.groups[n]), names.every((n, i) => Object.hasOwn(m.groups,
-                            n) && Object.hasOwn(m.indices.groups, n) && m.groups[n] === m[i + 1] &&
-                            m.indices.groups[n] === m.indices[i + 1]), m.groups === undefined ||
-                        Object.getPrototypeOf(m.groups) === null
-                    ]
-                }
-                var P =
-                    "(?<b>(?<w>\\b)|(?<nw>\\B))(?<whole>(?<c>[\\q{|a|ab}]))(?<a>(?<s>^)|(?<end>$)|(?<wb>\\b)|(?<nwb>\\B))";
-                var r = new RegExp(P, "dvg"),
-                    s = new RegExp(r);
-                r.lastIndex = 3;
-                var a = s.exec("ab!");
-                return JSON.stringify([row(a), s.source === r.source, s.flags === r.flags, s.lastIndex,
-                    r.lastIndex
-                ]);
-            })() ===
-            "[[[\"ab\",\"\",\"\",\"<undefined>\",\"ab\",\"ab\",\"\",\"<undefined>\",\"<undefined>\",\"\",\"<undefined>\"],[[0,2],[0,0],[0,0],\"<undefined>\",[0,2],[0,2],[2,2],\"<undefined>\",\"<undefined>\",[2,2],\"<undefined>\"],0,\"ab!\",[\"b\",\"w\",\"nw\",\"whole\",\"c\",\"a\",\"s\",\"end\",\"wb\",\"nwb\"],[\"\",\"\",\"<undefined>\",\"ab\",\"ab\",\"\",\"<undefined>\",\"<undefined>\",\"\",\"<undefined>\"],[[0,0],[0,0],\"<undefined>\",[0,2],[0,2],[2,2],\"<undefined>\",\"<undefined>\",[2,2],\"<undefined>\"],true,true],true,true,2,3]"
-        "#,
-    );
-
     let mut realm = Realm::default();
     realm.eval(r"var r=/(?<b>(?<w>\b)|(?<nw>\B))(?<c>[\q{a|ab}])(?<a>(?<end>$)|())/dvg,clone=new RegExp(r),m=r.exec('ab')").unwrap();
     realm.collect(usize::MAX).unwrap();
@@ -366,6 +144,224 @@ fn matching_controls_and_string_consumers() {
         ),
         Ok(Value::Boolean(true))
     );
+}
+
+#[test]
+fn match_all_preserves_capture_metadata() {
+    let source = format!(
+        r#"
+            (function() {{
+                {DESCRIBE_MATCH}
+
+                var P =
+                    "(?<b>(?<w>\\b)|(?<nw>\\B))(?<whole>(?<c>[\\q{{|a|ab}}]))(?<a>(?<s>^)|(?<end>$)|(?<wb>\\b)|(?<nwb>\\B))";
+                var r = new RegExp(P, "dvg"),
+                    a = Array.from("ab!aa".matchAll(r));
+                return JSON.stringify([a.map(describeMatch), r.lastIndex], null, 2);
+            }})()
+        "#
+    );
+    let report = eval_string(&mut Realm::default(), &source);
+    insta::assert_snapshot!(report);
+}
+
+#[test]
+fn replacement_callback_receives_captures() {
+    let source = r#"
+        (function () {
+          var P =
+            "(?<b>(?<w>\\b)|(?<nw>\\B))(?<whole>(?<c>[\\q{|a|ab}]))(?<a>(?<s>^)|(?<end>$)|(?<wb>\\b)|(?<nwb>\\B))";
+          var calls = [],
+            r = new RegExp(P, "vg"),
+            out = "ab!aa".replace(r, function () {
+              var a = Array.from(arguments);
+              calls.push(
+                a.map((v) =>
+                  v === undefined
+                    ? "<undefined>"
+                    : typeof v === "object"
+                      ? Object.keys(v).map((k) => [k, v[k] === undefined ? "<undefined>" : v[k]])
+                      : v,
+                ),
+              );
+              return "[" + a[0] + "]";
+            });
+          return JSON.stringify([out, calls, r.lastIndex], null, 2);
+        })();
+    "#;
+    let report = eval_string(&mut Realm::default(), source);
+    insta::assert_snapshot!(report);
+}
+
+#[test]
+fn split_and_search_preserve_last_index() {
+    let source = r#"
+        (function() {
+
+            var P =
+                "(?<b>(?<w>\\b)|(?<nw>\\B))(?<whole>(?<c>[\\q{|a|ab}]))(?<a>(?<s>^)|(?<end>$)|(?<wb>\\b)|(?<nwb>\\B))";
+            var r = new RegExp(P, "dvg");
+            r.lastIndex = 9;
+            var a = "!abaa!".split(r),
+                b = "!abaa!".search(r);
+            return JSON.stringify([a.map(v => v === undefined ? "<undefined>" : v), b, r
+                .lastIndex
+            ], null, 2);
+        })()
+    "#;
+    let report = eval_string(&mut Realm::default(), source);
+    insta::assert_snapshot!(report, @r#"
+        [
+          [
+            "!",
+            "",
+            "",
+            "<undefined>",
+            "ab",
+            "ab",
+            "",
+            "<undefined>",
+            "<undefined>",
+            "<undefined>",
+            "",
+            "",
+            "",
+            "<undefined>",
+            "",
+            "a",
+            "a",
+            "",
+            "<undefined>",
+            "<undefined>",
+            "<undefined>",
+            "",
+            "",
+            "",
+            "<undefined>",
+            "",
+            "a",
+            "a",
+            "",
+            "<undefined>",
+            "<undefined>",
+            "",
+            "<undefined>",
+            "!"
+          ],
+          0,
+          9
+        ]
+        "#);
+}
+
+#[test]
+fn failed_last_index_write_throws_type_error() {
+    let source = r#"
+        (function () {
+          var P =
+            "(?<b>(?<w>\\b)|(?<nw>\\B))(?<whole>(?<c>[\\q{|a|ab}]))(?<a>(?<s>^)|(?<end>$)|(?<wb>\\b)|(?<nwb>\\B))";
+          var r = new RegExp(P, "vg");
+          Object.defineProperty(r, "lastIndex", {
+            writable: false,
+          });
+          var caught = false;
+          try {
+            r.exec("ab");
+          } catch (e) {
+            caught = e instanceof TypeError;
+          }
+          return JSON.stringify([caught, r.lastIndex], null, 2);
+        })();
+    "#;
+    let report = eval_string(&mut Realm::default(), source);
+    insta::assert_snapshot!(report, @r#"
+        [
+          true,
+          0
+        ]
+        "#);
+}
+
+#[test]
+fn exec_preserves_alternative_capture_metadata() {
+    let source = format!(
+        r#"
+            (function() {{
+                {DESCRIBE_MATCH}
+
+                var P =
+                    "(?<b>(?<w>\\b)|(?<nw>\\B))(?<whole>(?<c>[\\q{{|a|ab}}]))(?<a>(?<s>^)|(?<end>$)|(?<wb>\\b)|(?<nwb>\\B))";
+                var r = new RegExp(P, "dvg"),
+                    a = r.exec(""),
+                    b = r.exec("ab");
+                return JSON.stringify([describeMatch(a), describeMatch(b), r.lastIndex], null, 2);
+            }})()
+        "#
+    );
+    let report = eval_string(&mut Realm::default(), &source);
+    insta::assert_snapshot!(report);
+}
+
+#[test]
+fn ignore_case_preserves_capture_metadata() {
+    let source = format!(
+        r#"
+            (function() {{
+                {DESCRIBE_MATCH}
+
+                var P =
+                    "(?<b>(?<w>\\b)|(?<nw>\\B))(?<whole>(?<c>[a-z\\q{{|S|sa|aX}}]))(?<a>(?<s>^)|(?<end>$)|(?<wb>\\b)|(?<nwb>\\B))";
+                var r = new RegExp(P, "dvgi"),
+                    a = r.exec("ſaX!");
+                return JSON.stringify([describeMatch(a), r.lastIndex], null, 2);
+            }})()
+        "#
+    );
+    let report = eval_string(&mut Realm::default(), &source);
+    insta::assert_snapshot!(report);
+}
+
+#[test]
+fn multiline_match_all_preserves_capture_metadata() {
+    let source = format!(
+        r#"
+            (function() {{
+                {DESCRIBE_MATCH}
+
+                var P =
+                    "(?<b>(?<w>\\b)|(?<nw>\\B))(?<whole>(?<c>[\\q{{|a|ab}}]))(?<a>(?<s>^)|(?<end>$)|(?<wb>\\b)|(?<nwb>\\B))";
+                var r = new RegExp(P, "dvgm"),
+                    a = Array.from("ab\n\naa".matchAll(r));
+                return JSON.stringify([a.map(describeMatch), r.lastIndex], null, 2);
+            }})()
+        "#
+    );
+    let report = eval_string(&mut Realm::default(), &source);
+    insta::assert_snapshot!(report);
+}
+
+#[test]
+fn exec_preserves_capture_metadata() {
+    let source = format!(
+        r#"
+            (function() {{
+                {DESCRIBE_MATCH}
+
+                var P =
+                    "(?<b>(?<w>\\b)|(?<nw>\\B))(?<whole>(?<c>[\\q{{|a|ab}}]))(?<a>(?<s>^)|(?<end>$)|(?<wb>\\b)|(?<nwb>\\B))";
+                var r = new RegExp(P, "dvg"),
+                    s = new RegExp(r);
+                r.lastIndex = 3;
+                var a = s.exec("ab!");
+                return JSON.stringify([describeMatch(a), s.source === r.source, s.flags === r.flags, s
+                    .lastIndex,
+                    r.lastIndex
+                ], null, 2);
+            }})()
+        "#
+    );
+    let report = eval_string(&mut Realm::default(), &source);
+    insta::assert_snapshot!(report);
 }
 
 #[test_case(

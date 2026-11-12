@@ -1,5 +1,7 @@
 //! Required empty iterations preserve class-versus-empty capture identity.
 use crate::common::assert_true;
+use crate::common::eval_string;
+use crate::common::regexp_matches::DESCRIBE_MATCH;
 use spite_runtime::{Realm, Value};
 #[test]
 fn unasserted_zero_count_single_string_class_native_tables_consumers_and_required_class_identity() {
@@ -821,224 +823,6 @@ fn unasserted_zero_count_single_string_class_native_tables_consumers_and_require
                 "[[\"\",\"<undefined>\",\"\",\"\",\"\",\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\"],[[0,0],\"<undefined>\",[0,0],[0,0],[0,0],\"<undefined>\",\"<undefined>\",\"<undefined>\",\"<undefined>\"],0,0]"
         "#,
     );
-    assert_true(
-        r#"
-            (function() {
-                function row(m) {
-                    if (m === null) return null;
-                    var names = m.groups === undefined ? [] : Object.keys(m.groups);
-                    return [Array.from(m, v => v === undefined ? '<undefined>' : v), Array.from(m
-                            .indices, v => v === undefined ? '<undefined>' : v), m.index, m.input,
-                        names, names.map(n => m.groups[n] === undefined ? '<undefined>' : m.groups[
-                            n]), names.map(n => m.indices.groups[n] === undefined ? '<undefined>' :
-                            m.indices.groups[n]), names.every((n, i) => Object.hasOwn(m.groups,
-                            n) && Object.hasOwn(m.indices.groups, n) && m.groups[n] === m[i + 1] &&
-                            m.indices.groups[n] === m.indices[i + 1]), m.groups === undefined ||
-                        Object.getPrototypeOf(m.groups) === null
-                    ]
-                }
-                var r =
-                    /(?:(?:\b)|(?:\B)){0}(?<before>(?:\b){0})(?<whole>(?<iteration>(?<e>){0}(?<c>[\p{Any}\q{a|ab}])){1})(?<after>(?:\b){0})/dvg,
-                    a = Array.from('ab!aa!'.matchAll(r));
-                return JSON.stringify([a.map(row), r.lastIndex]);
-            })() ===
-            "[[[[\"ab\",\"\",\"ab\",\"ab\",\"<undefined>\",\"ab\",\"\"],[[0,2],[0,0],[0,2],[0,2],\"<undefined>\",[0,2],[2,2]],0,\"ab!aa!\",[\"before\",\"whole\",\"iteration\",\"e\",\"c\",\"after\"],[\"\",\"ab\",\"ab\",\"<undefined>\",\"ab\",\"\"],[[0,0],[0,2],[0,2],\"<undefined>\",[0,2],[2,2]],true,true],[[\"!\",\"\",\"!\",\"!\",\"<undefined>\",\"!\",\"\"],[[2,3],[2,2],[2,3],[2,3],\"<undefined>\",[2,3],[3,3]],2,\"ab!aa!\",[\"before\",\"whole\",\"iteration\",\"e\",\"c\",\"after\"],[\"\",\"!\",\"!\",\"<undefined>\",\"!\",\"\"],[[2,2],[2,3],[2,3],\"<undefined>\",[2,3],[3,3]],true,true],[[\"a\",\"\",\"a\",\"a\",\"<undefined>\",\"a\",\"\"],[[3,4],[3,3],[3,4],[3,4],\"<undefined>\",[3,4],[4,4]],3,\"ab!aa!\",[\"before\",\"whole\",\"iteration\",\"e\",\"c\",\"after\"],[\"\",\"a\",\"a\",\"<undefined>\",\"a\",\"\"],[[3,3],[3,4],[3,4],\"<undefined>\",[3,4],[4,4]],true,true],[[\"a\",\"\",\"a\",\"a\",\"<undefined>\",\"a\",\"\"],[[4,5],[4,4],[4,5],[4,5],\"<undefined>\",[4,5],[5,5]],4,\"ab!aa!\",[\"before\",\"whole\",\"iteration\",\"e\",\"c\",\"after\"],[\"\",\"a\",\"a\",\"<undefined>\",\"a\",\"\"],[[4,4],[4,5],[4,5],\"<undefined>\",[4,5],[5,5]],true,true],[[\"!\",\"\",\"!\",\"!\",\"<undefined>\",\"!\",\"\"],[[5,6],[5,5],[5,6],[5,6],\"<undefined>\",[5,6],[6,6]],5,\"ab!aa!\",[\"before\",\"whole\",\"iteration\",\"e\",\"c\",\"after\"],[\"\",\"!\",\"!\",\"<undefined>\",\"!\",\"\"],[[5,5],[5,6],[5,6],\"<undefined>\",[5,6],[6,6]],true,true]],0]"
-        "#,
-    );
-    assert_true(
-        r#"
-            (function() {
-                function row(m) {
-                    if (m === null) return null;
-                    var names = m.groups === undefined ? [] : Object.keys(m.groups);
-                    return [Array.from(m, v => v === undefined ? '<undefined>' : v), Array.from(m
-                            .indices, v => v === undefined ? '<undefined>' : v), m.index, m.input,
-                        names, names.map(n => m.groups[n] === undefined ? '<undefined>' : m.groups[
-                            n]), names.map(n => m.indices.groups[n] === undefined ? '<undefined>' :
-                            m.indices.groups[n]), names.every((n, i) => Object.hasOwn(m.groups,
-                            n) && Object.hasOwn(m.indices.groups, n) && m.groups[n] === m[i + 1] &&
-                            m.indices.groups[n] === m.indices[i + 1]), m.groups === undefined ||
-                        Object.getPrototypeOf(m.groups) === null
-                    ]
-                }
-                var calls = [],
-                    r =
-                    /(?:(?:\b)|(?:\B)){0}(?<before>(?:\b){0})(?<whole>(?<iteration>(?<c>[\p{Any}\q{|a|ab}])(?<e>){0}){1})(?<after>(?:\b){0})/vg,
-                    out = 'ab!X!'.replace(r, function(all, b, w, it, c, e, a, offset, input, g) {
-                        calls.push([all, b, w, it, c === undefined ? '<undefined>' : c, e ===
-                            undefined ? '<undefined>' : e, a, offset, input, arguments
-                            .length, g.c === c, g.e === e, Object.getPrototypeOf(g) ===
-                            null
-                        ]);
-                        return c === undefined ? '<E>' : '<C:' + c + '>'
-                    });
-                return JSON.stringify([out, calls, r.lastIndex]);
-            })() ===
-            "[\"<C:ab><C:!><C:X><C:!><C:>\",[[\"ab\",\"\",\"ab\",\"ab\",\"ab\",\"<undefined>\",\"\",0,\"ab!X!\",10,true,true,true],[\"!\",\"\",\"!\",\"!\",\"!\",\"<undefined>\",\"\",2,\"ab!X!\",10,true,true,true],[\"X\",\"\",\"X\",\"X\",\"X\",\"<undefined>\",\"\",3,\"ab!X!\",10,true,true,true],[\"!\",\"\",\"!\",\"!\",\"!\",\"<undefined>\",\"\",4,\"ab!X!\",10,true,true,true],[\"\",\"\",\"\",\"\",\"\",\"<undefined>\",\"\",5,\"ab!X!\",10,true,true,true]],0]"
-        "#,
-    );
-    assert_true(
-        r#"
-            (function() {
-                function row(m) {
-                    if (m === null) return null;
-                    var names = m.groups === undefined ? [] : Object.keys(m.groups);
-                    return [Array.from(m, v => v === undefined ? '<undefined>' : v), Array.from(m
-                            .indices, v => v === undefined ? '<undefined>' : v), m.index, m.input,
-                        names, names.map(n => m.groups[n] === undefined ? '<undefined>' : m.groups[
-                            n]), names.map(n => m.indices.groups[n] === undefined ? '<undefined>' :
-                            m.indices.groups[n]), names.every((n, i) => Object.hasOwn(m.groups,
-                            n) && Object.hasOwn(m.indices.groups, n) && m.groups[n] === m[i + 1] &&
-                            m.indices.groups[n] === m.indices[i + 1]), m.groups === undefined ||
-                        Object.getPrototypeOf(m.groups) === null
-                    ]
-                }
-                var r =
-                    /(?:(?:\b)|(?:\B)){0}(?<before>(?:\b){0})(?<whole>(?<iteration>(?<e>){0}(?<c>[\p{Any}\q{a|ab}])){1})(?<after>(?:\b){0})/dvg;
-                r.lastIndex = 9;
-                var a = '!ab!X!'.split(r),
-                    at = '!ab!X!'.search(r);
-                return JSON.stringify([a.map(v => v === undefined ? '<undefined>' : v), at, r
-                    .lastIndex]);
-            })() ===
-            "[[\"\",\"\",\"!\",\"!\",\"<undefined>\",\"!\",\"\",\"\",\"\",\"ab\",\"ab\",\"<undefined>\",\"ab\",\"\",\"\",\"\",\"!\",\"!\",\"<undefined>\",\"!\",\"\",\"\",\"\",\"X\",\"X\",\"<undefined>\",\"X\",\"\",\"\",\"\",\"!\",\"!\",\"<undefined>\",\"!\",\"\",\"\"],0,9]"
-        "#,
-    );
-    assert_true(
-        r#"
-            (function() {
-                function row(m) {
-                    if (m === null) return null;
-                    var names = m.groups === undefined ? [] : Object.keys(m.groups);
-                    return [Array.from(m, v => v === undefined ? '<undefined>' : v), Array.from(m
-                            .indices, v => v === undefined ? '<undefined>' : v), m.index, m.input,
-                        names, names.map(n => m.groups[n] === undefined ? '<undefined>' : m.groups[
-                            n]), names.map(n => m.indices.groups[n] === undefined ? '<undefined>' :
-                            m.indices.groups[n]), names.every((n, i) => Object.hasOwn(m.groups,
-                            n) && Object.hasOwn(m.indices.groups, n) && m.groups[n] === m[i + 1] &&
-                            m.indices.groups[n] === m.indices[i + 1]), m.groups === undefined ||
-                        Object.getPrototypeOf(m.groups) === null
-                    ]
-                }
-                var r = /(?:(?:\b)|(?:\B)){0}(?:^){0}((){0}([\p{Any}\q{a|ab}])){1}(?:\b){0}/vg;
-                Object.defineProperty(r, 'lastIndex', {
-                    writable: false
-                });
-                var caught = false;
-                try {
-                    r.exec('x')
-                } catch (e) {
-                    caught = e instanceof TypeError
-                }
-                return JSON.stringify([caught, r.lastIndex]);
-            })() === "[true,0]"
-        "#,
-    );
-    assert_true(
-        r#"
-            (function() {
-                function row(m) {
-                    if (m === null) return null;
-                    var names = m.groups === undefined ? [] : Object.keys(m.groups);
-                    return [Array.from(m, v => v === undefined ? '<undefined>' : v), Array.from(m
-                            .indices, v => v === undefined ? '<undefined>' : v), m.index, m.input,
-                        names, names.map(n => m.groups[n] === undefined ? '<undefined>' : m.groups[
-                            n]), names.map(n => m.indices.groups[n] === undefined ? '<undefined>' :
-                            m.indices.groups[n]), names.every((n, i) => Object.hasOwn(m.groups,
-                            n) && Object.hasOwn(m.indices.groups, n) && m.groups[n] === m[i + 1] &&
-                            m.indices.groups[n] === m.indices[i + 1]), m.groups === undefined ||
-                        Object.getPrototypeOf(m.groups) === null
-                    ]
-                }
-                var r =
-                    /(?:(?:\b)|(?:\B)){0}(?:^){0}(?<\u{1D49C}>)(?<whole>(?<iteration>(?<e>){0}(?<c>[\p{Any}\q{|😀|😀a|aX}])){1})(?<after>)(?:$){0}/dvgy;
-                r.lastIndex = 1;
-                var m = r.exec('😀aX');
-                return JSON.stringify([row(m), r.lastIndex, r.source.indexOf('1D49C') !== -1]);
-            })() ===
-            "[[[\"\ud83d\ude00a\",\"\",\"\ud83d\ude00a\",\"\ud83d\ude00a\",\"<undefined>\",\"\ud83d\ude00a\",\"\"],[[0,3],[0,0],[0,3],[0,3],\"<undefined>\",[0,3],[3,3]],0,\"\ud83d\ude00aX\",[\"\ud835\udc9c\",\"whole\",\"iteration\",\"e\",\"c\",\"after\"],[\"\",\"\ud83d\ude00a\",\"\ud83d\ude00a\",\"<undefined>\",\"\ud83d\ude00a\",\"\"],[[0,0],[0,3],[0,3],\"<undefined>\",[0,3],[3,3]],true,true],3,true]"
-        "#,
-    );
-    assert_true(
-        r#"
-            (function() {
-                function row(m) {
-                    if (m === null) return null;
-                    var names = m.groups === undefined ? [] : Object.keys(m.groups);
-                    return [Array.from(m, v => v === undefined ? '<undefined>' : v), Array.from(m
-                            .indices, v => v === undefined ? '<undefined>' : v), m.index, m.input,
-                        names, names.map(n => m.groups[n] === undefined ? '<undefined>' : m.groups[
-                            n]), names.map(n => m.indices.groups[n] === undefined ? '<undefined>' :
-                            m.indices.groups[n]), names.every((n, i) => Object.hasOwn(m.groups,
-                            n) && Object.hasOwn(m.indices.groups, n) && m.groups[n] === m[i + 1] &&
-                            m.indices.groups[n] === m.indices[i + 1]), m.groups === undefined ||
-                        Object.getPrototypeOf(m.groups) === null
-                    ]
-                }
-                var r =
-                    /(?:(?:\b)|(?:\B)){0}(?<before>(?:\b){0})(?<whole>(?<iteration>(?<e>){0}(?<c>[\p{Any}\q{|S|sa|aX}])){1})(?<after>(?:\b){0})/dvi,
-                    m = r.exec('ſaX!');
-                return JSON.stringify([row(m)]);
-            })() ===
-            "[[[\"\u017fa\",\"\",\"\u017fa\",\"\u017fa\",\"<undefined>\",\"\u017fa\",\"\"],[[0,2],[0,0],[0,2],[0,2],\"<undefined>\",[0,2],[2,2]],0,\"\u017faX!\",[\"before\",\"whole\",\"iteration\",\"e\",\"c\",\"after\"],[\"\",\"\u017fa\",\"\u017fa\",\"<undefined>\",\"\u017fa\",\"\"],[[0,0],[0,2],[0,2],\"<undefined>\",[0,2],[2,2]],true,true]]"
-        "#,
-    );
-    assert_true(
-        r#"
-            (function() {
-                function row(m) {
-                    if (m === null) return null;
-                    var names = m.groups === undefined ? [] : Object.keys(m.groups);
-                    return [Array.from(m, v => v === undefined ? '<undefined>' : v), Array.from(m
-                            .indices, v => v === undefined ? '<undefined>' : v), m.index, m.input,
-                        names, names.map(n => m.groups[n] === undefined ? '<undefined>' : m.groups[
-                            n]), names.map(n => m.indices.groups[n] === undefined ? '<undefined>' :
-                            m.indices.groups[n]), names.every((n, i) => Object.hasOwn(m.groups,
-                            n) && Object.hasOwn(m.indices.groups, n) && m.groups[n] === m[i + 1] &&
-                            m.indices.groups[n] === m.indices[i + 1]), m.groups === undefined ||
-                        Object.getPrototypeOf(m.groups) === null
-                    ]
-                }
-                var z =
-                    /(?:(?:\b)|(?:\B)){0}(?:^){0}(?<whole>(?<iteration>(?<c>[\p{Any}\q{|a|ab}])(?<e>){0}){1})(?:\b){0}/dv
-                    .exec('x'),
-                    e =
-                    /(?:(?:\b)|(?:\B)){0}(?:^){0}(?<whole>(?<iteration>(?<e>){0}(?<c>[\p{Any}\q{|a|ab}])){1})(?:\b){0}/dv
-                    .exec('x'),
-                    c =
-                    /(?:(?:\b)|(?:\B)){0}(?:^){0}(?<whole>(?<iteration>(?<c>[\p{Any}\q{|a|ab}])(?<e>){0}){1})(?:\b){0}/dv
-                    .exec('x');
-                return JSON.stringify([row(z), row(e), row(c)]);
-            })() ===
-            "[[[\"x\",\"x\",\"x\",\"x\",\"<undefined>\"],[[0,1],[0,1],[0,1],[0,1],\"<undefined>\"],0,\"x\",[\"whole\",\"iteration\",\"c\",\"e\"],[\"x\",\"x\",\"x\",\"<undefined>\"],[[0,1],[0,1],[0,1],\"<undefined>\"],true,true],[[\"x\",\"x\",\"x\",\"<undefined>\",\"x\"],[[0,1],[0,1],[0,1],\"<undefined>\",[0,1]],0,\"x\",[\"whole\",\"iteration\",\"e\",\"c\"],[\"x\",\"x\",\"<undefined>\",\"x\"],[[0,1],[0,1],\"<undefined>\",[0,1]],true,true],[[\"x\",\"x\",\"x\",\"x\",\"<undefined>\"],[[0,1],[0,1],[0,1],[0,1],\"<undefined>\"],0,\"x\",[\"whole\",\"iteration\",\"c\",\"e\"],[\"x\",\"x\",\"x\",\"<undefined>\"],[[0,1],[0,1],[0,1],\"<undefined>\"],true,true]]"
-        "#,
-    );
-    assert_true(
-        r#"
-            (function() {
-                function row(m) {
-                    if (m === null) return null;
-                    var names = m.groups === undefined ? [] : Object.keys(m.groups);
-                    return [Array.from(m, v => v === undefined ? '<undefined>' : v), Array.from(m
-                            .indices, v => v === undefined ? '<undefined>' : v), m.index, m.input,
-                        names, names.map(n => m.groups[n] === undefined ? '<undefined>' : m.groups[
-                            n]), names.map(n => m.indices.groups[n] === undefined ? '<undefined>' :
-                            m.indices.groups[n]), names.every((n, i) => Object.hasOwn(m.groups,
-                            n) && Object.hasOwn(m.indices.groups, n) && m.groups[n] === m[i + 1] &&
-                            m.indices.groups[n] === m.indices[i + 1]), m.groups === undefined ||
-                        Object.getPrototypeOf(m.groups) === null
-                    ]
-                }
-                var e =
-                    /(?:(?:\b)|(?:\B)){0}(?:^){0}(?<whole>(?<iteration>(?<e>){0}(?<c>[\q{ab}&&\q{cd}])){1})(?:$){0}/dv
-                    .exec(''),
-                    c = /(?:(?:\b)|(?:\B)){0}(?:^){0}(?<whole>(?<c>[\p{Any}\q{}]){1})(?:$){0}/dv.exec(
-                        '');
-                return JSON.stringify([row(e), row(c)]);
-            })() ===
-            "[null,[[\"\",\"\",\"\"],[[0,0],[0,0],[0,0]],0,\"\",[\"whole\",\"c\"],[\"\",\"\"],[[0,0],[0,0]],true,true]]"
-        "#,
-    );
 
     let mut realm = Realm::default();
     realm.eval(r"var r=/(?:(?:(?:\b){0})|(?:(?:\B){0})){0}(?:^){0}(?<whole>(?<iteration>(?<e>){0}(?<c>[\p{Any}\q{|ababa|a|ab}])){1})(?<after>)(?:$){0}/dvg,clone=new RegExp(r),m=r.exec('ababa')").unwrap();
@@ -1052,4 +836,515 @@ fn unasserted_zero_count_single_string_class_native_tables_consumers_and_require
             0] === 0 && n.indices[4][1] === 0 && clone.source === r.source && clone.lastIndex === 0 &&
             r.lastIndex === 5
     "#),Ok(Value::Boolean(true)));
+}
+
+#[test]
+fn match_all_preserves_capture_metadata() {
+    let source = format!(
+        r#"
+            (function() {{
+                {DESCRIBE_MATCH}
+
+                var r =
+                    /(?:(?:\b)|(?:\B)){{0}}(?<before>(?:\b){{0}})(?<whole>(?<iteration>(?<e>){{0}}(?<c>[\p{{Any}}\q{{a|ab}}])){{1}})(?<after>(?:\b){{0}})/dvg,
+                    a = Array.from('ab!aa!'.matchAll(r));
+                return JSON.stringify([a.map(describeMatch), r.lastIndex], null, 2);
+            }})()
+        "#
+    );
+    let report = eval_string(&mut Realm::default(), &source);
+    insta::assert_snapshot!(report);
+}
+
+#[test]
+fn replacement_callback_receives_captures() {
+    let source = r#"
+        (function() {
+
+            var calls = [],
+                r =
+                /(?:(?:\b)|(?:\B)){0}(?<before>(?:\b){0})(?<whole>(?<iteration>(?<c>[\p{Any}\q{|a|ab}])(?<e>){0}){1})(?<after>(?:\b){0})/vg,
+                out = 'ab!X!'.replace(r, function(all, b, w, it, c, e, a, offset, input, g) {
+                    calls.push([all, b, w, it, c === undefined ? '<undefined>' : c, e ===
+                        undefined ? '<undefined>' : e, a, offset, input, arguments
+                        .length, g.c === c, g.e === e, Object.getPrototypeOf(g) ===
+                        null
+                    ]);
+                    return c === undefined ? '<E>' : '<C:' + c + '>'
+                });
+            return JSON.stringify([out, calls, r.lastIndex], null, 2);
+        })()
+    "#;
+    let report = eval_string(&mut Realm::default(), source);
+    insta::assert_snapshot!(report, @r#"
+        [
+          "<C:ab><C:!><C:X><C:!><C:>",
+          [
+            [
+              "ab",
+              "",
+              "ab",
+              "ab",
+              "ab",
+              "<undefined>",
+              "",
+              0,
+              "ab!X!",
+              10,
+              true,
+              true,
+              true
+            ],
+            [
+              "!",
+              "",
+              "!",
+              "!",
+              "!",
+              "<undefined>",
+              "",
+              2,
+              "ab!X!",
+              10,
+              true,
+              true,
+              true
+            ],
+            [
+              "X",
+              "",
+              "X",
+              "X",
+              "X",
+              "<undefined>",
+              "",
+              3,
+              "ab!X!",
+              10,
+              true,
+              true,
+              true
+            ],
+            [
+              "!",
+              "",
+              "!",
+              "!",
+              "!",
+              "<undefined>",
+              "",
+              4,
+              "ab!X!",
+              10,
+              true,
+              true,
+              true
+            ],
+            [
+              "",
+              "",
+              "",
+              "",
+              "",
+              "<undefined>",
+              "",
+              5,
+              "ab!X!",
+              10,
+              true,
+              true,
+              true
+            ]
+          ],
+          0
+        ]
+        "#);
+}
+
+#[test]
+fn split_and_search_preserve_last_index() {
+    let source = r#"
+        (function() {
+
+            var r =
+                /(?:(?:\b)|(?:\B)){0}(?<before>(?:\b){0})(?<whole>(?<iteration>(?<e>){0}(?<c>[\p{Any}\q{a|ab}])){1})(?<after>(?:\b){0})/dvg;
+            r.lastIndex = 9;
+            var a = '!ab!X!'.split(r),
+                at = '!ab!X!'.search(r);
+            return JSON.stringify([a.map(v => v === undefined ? '<undefined>' : v), at, r
+                .lastIndex
+            ], null, 2);
+        })()
+    "#;
+    let report = eval_string(&mut Realm::default(), source);
+    insta::assert_snapshot!(report, @r#"
+        [
+          [
+            "",
+            "",
+            "!",
+            "!",
+            "<undefined>",
+            "!",
+            "",
+            "",
+            "",
+            "ab",
+            "ab",
+            "<undefined>",
+            "ab",
+            "",
+            "",
+            "",
+            "!",
+            "!",
+            "<undefined>",
+            "!",
+            "",
+            "",
+            "",
+            "X",
+            "X",
+            "<undefined>",
+            "X",
+            "",
+            "",
+            "",
+            "!",
+            "!",
+            "<undefined>",
+            "!",
+            "",
+            ""
+          ],
+          0,
+          9
+        ]
+        "#);
+}
+
+#[test]
+fn failed_last_index_write_throws_type_error() {
+    let source = r#"
+        (function() {
+
+            var r = /(?:(?:\b)|(?:\B)){0}(?:^){0}((){0}([\p{Any}\q{a|ab}])){1}(?:\b){0}/vg;
+            Object.defineProperty(r, 'lastIndex', {
+                writable: false
+            });
+            var caught = false;
+            try {
+                r.exec('x')
+            } catch (e) {
+                caught = e instanceof TypeError
+            }
+            return JSON.stringify([caught, r.lastIndex], null, 2);
+        })()
+    "#;
+    let report = eval_string(&mut Realm::default(), source);
+    insta::assert_snapshot!(report, @r#"
+        [
+          true,
+          0
+        ]
+        "#);
+}
+
+#[test]
+fn supplementary_capture_names_preserve_utf16_ranges() {
+    let source = format!(
+        r#"
+            (function() {{
+                {DESCRIBE_MATCH}
+
+                var r =
+                    /(?:(?:\b)|(?:\B)){{0}}(?:^){{0}}(?<\u{{1D49C}}>)(?<whole>(?<iteration>(?<e>){{0}}(?<c>[\p{{Any}}\q{{|😀|😀a|aX}}])){{1}})(?<after>)(?:$){{0}}/dvgy;
+                r.lastIndex = 1;
+                var m = r.exec('😀aX');
+                return JSON.stringify([describeMatch(m), r.lastIndex, r.source.indexOf('1D49C') !== -
+                    1], null, 2);
+            }})()
+        "#
+    );
+    let report = eval_string(&mut Realm::default(), &source);
+    insta::assert_snapshot!(report, @r#"
+        [
+          {
+            "matches": [
+              "😀a",
+              "",
+              "😀a",
+              "😀a",
+              "<undefined>",
+              "😀a",
+              ""
+            ],
+            "indices": [
+              [
+                0,
+                3
+              ],
+              [
+                0,
+                0
+              ],
+              [
+                0,
+                3
+              ],
+              [
+                0,
+                3
+              ],
+              "<undefined>",
+              [
+                0,
+                3
+              ],
+              [
+                3,
+                3
+              ]
+            ],
+            "index": 0,
+            "input": "😀aX",
+            "groupNames": [
+              "𝒜",
+              "whole",
+              "iteration",
+              "e",
+              "c",
+              "after"
+            ],
+            "namedCaptures": [
+              "",
+              "😀a",
+              "😀a",
+              "<undefined>",
+              "😀a",
+              ""
+            ],
+            "namedIndices": [
+              [
+                0,
+                0
+              ],
+              [
+                0,
+                3
+              ],
+              [
+                0,
+                3
+              ],
+              "<undefined>",
+              [
+                0,
+                3
+              ],
+              [
+                3,
+                3
+              ]
+            ],
+            "namedAliasesValid": true,
+            "groupsPrototypeValid": true
+          },
+          3,
+          true
+        ]
+        "#);
+}
+
+#[test]
+fn ignore_case_preserves_capture_metadata() {
+    let source = format!(
+        r#"
+            (function() {{
+                {DESCRIBE_MATCH}
+
+                var r =
+                    /(?:(?:\b)|(?:\B)){{0}}(?<before>(?:\b){{0}})(?<whole>(?<iteration>(?<e>){{0}}(?<c>[\p{{Any}}\q{{|S|sa|aX}}])){{1}})(?<after>(?:\b){{0}})/dvi,
+                    m = r.exec('ſaX!');
+                return JSON.stringify([describeMatch(m)], null, 2);
+            }})()
+        "#
+    );
+    let report = eval_string(&mut Realm::default(), &source);
+    insta::assert_snapshot!(report, @r#"
+        [
+          {
+            "matches": [
+              "ſa",
+              "",
+              "ſa",
+              "ſa",
+              "<undefined>",
+              "ſa",
+              ""
+            ],
+            "indices": [
+              [
+                0,
+                2
+              ],
+              [
+                0,
+                0
+              ],
+              [
+                0,
+                2
+              ],
+              [
+                0,
+                2
+              ],
+              "<undefined>",
+              [
+                0,
+                2
+              ],
+              [
+                2,
+                2
+              ]
+            ],
+            "index": 0,
+            "input": "ſaX!",
+            "groupNames": [
+              "before",
+              "whole",
+              "iteration",
+              "e",
+              "c",
+              "after"
+            ],
+            "namedCaptures": [
+              "",
+              "ſa",
+              "ſa",
+              "<undefined>",
+              "ſa",
+              ""
+            ],
+            "namedIndices": [
+              [
+                0,
+                0
+              ],
+              [
+                0,
+                2
+              ],
+              [
+                0,
+                2
+              ],
+              "<undefined>",
+              [
+                0,
+                2
+              ],
+              [
+                2,
+                2
+              ]
+            ],
+            "namedAliasesValid": true,
+            "groupsPrototypeValid": true
+          }
+        ]
+        "#);
+}
+
+#[test]
+fn exec_preserves_alternative_capture_metadata() {
+    let source = format!(
+        r#"
+            (function() {{
+                {DESCRIBE_MATCH}
+
+                var z =
+                    /(?:(?:\b)|(?:\B)){{0}}(?:^){{0}}(?<whole>(?<iteration>(?<c>[\p{{Any}}\q{{|a|ab}}])(?<e>){{0}}){{1}})(?:\b){{0}}/dv
+                    .exec('x'),
+                    e =
+                    /(?:(?:\b)|(?:\B)){{0}}(?:^){{0}}(?<whole>(?<iteration>(?<e>){{0}}(?<c>[\p{{Any}}\q{{|a|ab}}])){{1}})(?:\b){{0}}/dv
+                    .exec('x'),
+                    c =
+                    /(?:(?:\b)|(?:\B)){{0}}(?:^){{0}}(?<whole>(?<iteration>(?<c>[\p{{Any}}\q{{|a|ab}}])(?<e>){{0}}){{1}})(?:\b){{0}}/dv
+                    .exec('x');
+                return JSON.stringify([describeMatch(z), describeMatch(e), describeMatch(c)], null, 2);
+            }})()
+        "#
+    );
+    let report = eval_string(&mut Realm::default(), &source);
+    insta::assert_snapshot!(report);
+}
+
+#[test]
+fn exec_recovers_after_a_failed_match() {
+    let source = format!(
+        r#"
+            (function() {{
+                {DESCRIBE_MATCH}
+
+                var e =
+                    /(?:(?:\b)|(?:\B)){{0}}(?:^){{0}}(?<whole>(?<iteration>(?<e>){{0}}(?<c>[\q{{ab}}&&\q{{cd}}])){{1}})(?:$){{0}}/dv
+                    .exec(''),
+                    c = /(?:(?:\b)|(?:\B)){{0}}(?:^){{0}}(?<whole>(?<c>[\p{{Any}}\q{{}}]){{1}})(?:$){{0}}/dv.exec(
+                        '');
+                return JSON.stringify([describeMatch(e), describeMatch(c)], null, 2);
+            }})()
+        "#
+    );
+    let report = eval_string(&mut Realm::default(), &source);
+    insta::assert_snapshot!(report, @r#"
+        [
+          null,
+          {
+            "matches": [
+              "",
+              "",
+              ""
+            ],
+            "indices": [
+              [
+                0,
+                0
+              ],
+              [
+                0,
+                0
+              ],
+              [
+                0,
+                0
+              ]
+            ],
+            "index": 0,
+            "input": "",
+            "groupNames": [
+              "whole",
+              "c"
+            ],
+            "namedCaptures": [
+              "",
+              ""
+            ],
+            "namedIndices": [
+              [
+                0,
+                0
+              ],
+              [
+                0,
+                0
+              ]
+            ],
+            "namedAliasesValid": true,
+            "groupsPrototypeValid": true
+          }
+        ]
+        "#);
 }

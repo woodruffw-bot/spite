@@ -1,0 +1,108 @@
+---
+source: crates/spite-runtime/tests/cases/regexp_unicode_unasserted_zero_count_string_class_captures.rs
+expression: report
+---
+[
+  {
+    "matches": [
+      "",
+      "",
+      "",
+      "",
+      "<undefined>"
+    ],
+    "indices": [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      "<undefined>"
+    ],
+    "index": 0,
+    "input": "",
+    "groupNames": [
+      "whole",
+      "iteration",
+      "e",
+      "c"
+    ],
+    "namedCaptures": [
+      "",
+      "",
+      "",
+      "<undefined>"
+    ],
+    "namedIndices": [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      "<undefined>"
+    ],
+    "namedAliasesValid": true,
+    "groupsPrototypeValid": true
+  },
+  {
+    "matches": [
+      "",
+      "",
+      ""
+    ],
+    "indices": [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ]
+    ],
+    "index": 0,
+    "input": "",
+    "groupNames": [
+      "whole",
+      "c"
+    ],
+    "namedCaptures": [
+      "",
+      ""
+    ],
+    "namedIndices": [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ]
+    ],
+    "namedAliasesValid": true,
+    "groupsPrototypeValid": true
+  }
+]
